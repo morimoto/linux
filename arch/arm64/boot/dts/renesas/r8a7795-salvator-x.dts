@@ -112,6 +112,11 @@
 			  1800000 0>;
 	};
 
+	dummy_sound_codec: sound-codec {
+		#sound-dai-cells = <0>;
+		compatible = "alsa-soc-dummy";
+	};
+
 	audio_clkout: audio_clkout {
 		/*
 		 * This is same as <&rcar_sound 0>
@@ -122,7 +127,7 @@
 		clock-frequency = <11289600>;
 	};
 
-	rsnd_ak4613: sound {
+	rsnd_tdm: sound {
 		compatible = "simple-audio-card";
 
 		simple-audio-card,format = "left_j";
@@ -130,11 +135,12 @@
 		simple-audio-card,frame-master = <&sndcpu>;
 
 		sndcpu: simple-audio-card,cpu {
+			dai-tdm-slot-num = <6>;
 			sound-dai = <&rcar_sound>;
 		};
 
 		sndcodec: simple-audio-card,codec {
-			sound-dai = <&ak4613>;
+			sound-dai = <&dummy_sound_codec>;
 		};
 	};
 
