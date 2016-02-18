@@ -13,6 +13,7 @@
  *  option) any later version.
  */
 
+#include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/export.h>
 #include <sound/core.h>
@@ -160,9 +161,16 @@ static int snd_soc_dummy_remove(struct platform_device *pdev)
 	return 0;
 }
 
+static const struct of_device_id soc_dummy_of_match[] = {
+	{ .compatible = "alsa-soc-dummy" },
+	{},
+};
+MODULE_DEVICE_TABLE(of, soc_dummy_of_match);
+
 static struct platform_driver soc_dummy_driver = {
 	.driver = {
 		.name = "snd-soc-dummy",
+		.of_match_table = soc_dummy_of_match,
 	},
 	.probe = snd_soc_dummy_probe,
 	.remove = snd_soc_dummy_remove,
