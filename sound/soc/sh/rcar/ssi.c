@@ -134,7 +134,7 @@ static void rsnd_ssi_status_check(struct rsnd_mod *mod,
 	u32 status;
 	int i;
 
-	for (i = 0; i < 1024; i++) {
+	for (i = 0; i < 16; i++) {
 		status = rsnd_ssi_status_get(mod);
 		if (status & bit)
 			return;
