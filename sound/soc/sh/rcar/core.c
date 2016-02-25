@@ -93,6 +93,7 @@
  *  [mod]->fn() -> [mod]->fn() -> [mod]->fn()...
  *
  */
+#define DEBUG
 #include <linux/pm_runtime.h>
 #include "rsnd.h"
 

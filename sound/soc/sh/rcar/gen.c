@@ -18,7 +18,7 @@
  *
  * #define LOG_DEVICE "xxxx.rcar_sound"
  */
-
+#define DEBUG
 #include "rsnd.h"
 
 struct rsnd_gen {
