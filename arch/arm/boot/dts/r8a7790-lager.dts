@@ -19,7 +19,7 @@
  *
  * This command is required when Playback/Capture
  *
- *	amixer set "LINEOUT Mixer DACL" on
+ *	amixer set "ak4642 LINEOUT Mixer DACL" on
  *	amixer set "DVC Out" 100%
  *	amixer set "DVC In" 100%
  *
@@ -36,6 +36,13 @@
  *	aplay xxx.wav &
  *	amixer set "DVC Out"  80%  // Volume Down
  *	amixer set "DVC Out" 100%  // Volume Up
+ *
+ * You can use Synchronous Sampling Rate Convert (if no DVC)
+ *
+ *	amixer set "SRC Out Rate" on
+ *	aplay xxx.wav &
+ *	amixer set "SRC Out Rate" 96000	// convert rate to 96000Hz
+ *	amixer set "SRC Out Rate" 22050 // convert rate to 22050Hz
  */
 
 /dts-v1/;
@@ -182,18 +189,44 @@
 		clock-frequency = <11289600>;
 	};
 
-	rsnd_ak4643: sound {
+	rsnd_ak4643: sound@1 {
 		compatible = "simple-audio-card";
 
 		simple-audio-card,format = "left_j";
 		simple-audio-card,bitclock-master = <&sndcodec>;
 		simple-audio-card,frame-master = <&sndcodec>;
 
+		status = "disabled";
+
 		sndcpu: simple-audio-card,cpu {
 			sound-dai = <&rcar_sound>;
 		};
 
 		sndcodec: simple-audio-card,codec {
+			sound-dai = <&ak4643>;
+			clocks = <&audio_clock>;
+		};
+	};
+
+	sound@2 {
+		compatible = "simple-dpcm-audio-card";
+
+		simple-audio-card,name = "rsnd-ak4643";
+		simple-audio-card,format = "left_j";
+		simple-audio-card,bitclock-master = <&dpcmcodec>;
+		simple-audio-card,frame-master = <&dpcmcodec>;
+
+		simple-audio-card,convert-rate = <48000>; /* see audio_clk_a */
+
+		simple-audio-card,prefix = "ak4642";
+		simple-audio-card,routing = "ak4642 Playback", "DAI0 Playback",
+				"DAI0 Capture", "ak4642 Capture";
+
+		dpcmcpu: simple-audio-card,cpu {
+			sound-dai = <&rcar_sound>;
+		};
+
+		dpcmcodec: simple-audio-card,codec {
 			sound-dai = <&ak4643>;
 			clocks = <&audio_clock>;
 		};
@@ -759,4 +792,8 @@
 
 &ssi1 {
 	shared-pin;
+};
+
+&audio_clk_a {
+       clock-frequency = <12288000>; /* 48000 base clock */
 };
