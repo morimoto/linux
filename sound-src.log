@@ -1,0 +1,510 @@
+morimoto-linux-sound-src-v4.6-2016-05-24
+lager
+
+boot
+dmesg | grep rcar_sound
+
+rcar_sound ec500000.sound: b adg[0] - SSICKR             ( 108) : 00000000/80ff0000
+rcar_sound ec500000.sound: w adg[0] - BRRA               ( 106) : 00000002
+rcar_sound ec500000.sound: w adg[0] - BRRB               ( 107) : 00000002
+rcar_sound ec500000.sound: ssi[0] is connected to io (Playback)
+rcar_sound ec500000.sound: ssi[1] is connected to io (Capture)
+rcar_sound ec500000.sound: src[2] is connected to io (Playback)
+rcar_sound ec500000.sound: src[3] is connected to io (Capture)
+rcar_sound ec500000.sound: dvc[0] is connected to io (Playback)
+rcar_sound ec500000.sound: dvc[1] is connected to io (Capture)
+rcar_sound ec500000.sound: rsnd-dai.0 (play/capture)
+rcar_sound ec500000.sound: ssi[0]        0x00000000 probe
+rcar_sound ec500000.sound: ssiu[0] is connected to io (Playback)
+rcar_sound ec500000.sound: audmac-pp[0] is connected to io (Playback)
+rcar_sound ec500000.sound: ssiu[0]       0x00000000
+rcar_sound ec500000.sound: dvc[0]        0x00000000 probe
+rcar_sound ec500000.sound: cmd[0] is connected to io (Playback)
+rcar_sound ec500000.sound: cmd[0]        0x00000000
+rcar_sound ec500000.sound: src[2]        0x00000000 probe
+rcar_sound ec500000.sound: audmac[0] is connected to io (Playback)
+rcar_sound ec500000.sound: dvc[1]        0x00000000 probe
+rcar_sound ec500000.sound: cmd[1] is connected to io (Capture)
+rcar_sound ec500000.sound: cmd[1]        0x00000000
+rcar_sound ec500000.sound: src[3]        0x00000000 probe
+rcar_sound ec500000.sound: audmac[1] is connected to io (Capture)
+rcar_sound ec500000.sound: ssi[1]        0x00000000 probe
+rcar_sound ec500000.sound: ssiu[1] is connected to io (Capture)
+rcar_sound ec500000.sound: audmac-pp[1] is connected to io (Capture)
+rcar_sound ec500000.sound: probed
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000000
+rcar_sound ec500000.sound: audmac[0]     0x00000000
+rcar_sound ec500000.sound: ssi[0]        0x00000000 pcm_new
+rcar_sound ec500000.sound: ssiu[0]       0x00000000
+rcar_sound ec500000.sound: dvc[0]        0x00000000 pcm_new
+rcar_sound ec500000.sound: cmd[0]        0x00000000
+rcar_sound ec500000.sound: src[2]        0x00000000 pcm_new
+rcar_sound ec500000.sound: audmac-pp[1]  0x00000000
+rcar_sound ec500000.sound: audmac[1]     0x00000000
+rcar_sound ec500000.sound: dvc[1]        0x00000000 pcm_new
+rcar_sound ec500000.sound: cmd[1]        0x00000000
+rcar_sound ec500000.sound: src[3]        0x00000000 pcm_new
+rcar_sound ec500000.sound: ssiu[1]       0x00000000
+rcar_sound ec500000.sound: ssi[1]        0x00000000 pcm_new
+
+Async mode
+16bit 44.1kHz -> 48kHz
+
+amixer set "ak4642 LINEOUT Mixer DACL" on
+amixer set "DVC Out" 50%
+aplay 44.1
+
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000000
+rcar_sound ec500000.sound: audmac[0]     0x00000000
+rcar_sound ec500000.sound: ssi[0]        0x00000000 hw_params
+rcar_sound ec500000.sound: ssiu[0]       0x00000000
+rcar_sound ec500000.sound: dvc[0]        0x00000000
+rcar_sound ec500000.sound: cmd[0]        0x00000000
+rcar_sound ec500000.sound: src[2]        0x00000000 hw_params
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000010
+rcar_sound ec500000.sound: audmac[0]     0x00000010
+rcar_sound ec500000.sound: ssi[0]        0x00000010 init
+rcar_sound ec500000.sound: w ssi[0] - SSIWSR             ( 117) : 00000000
+rcar_sound ec500000.sound: w ssi[0] - SSICR              ( 113) : 9c0b1302
+rcar_sound ec500000.sound: w ssi[0] - SSISR              ( 114) : 00000000
+rcar_sound ec500000.sound: ssiu[0]       0x00000010 init
+rcar_sound ec500000.sound: b ssiu[0] - SSI_MODE0          (   1) : 00000000/00000001
+rcar_sound ec500000.sound: b ssiu[0] - SSI_MODE1          (   2) : 00000000/00100010
+rcar_sound ec500000.sound: b ssiu[0] - SSI_MODE2          (   3) : 00000000/00000010
+rcar_sound ec500000.sound: w ssiu[0] - SSI_BUSIF_ADINR    (   7) : 00080002
+rcar_sound ec500000.sound: w ssiu[0] - SSI_BUSIF_MODE     (   6) : 00000001
+rcar_sound ec500000.sound: w ssiu[0] - SSI_BUSIF_DALIGN   (   8) : 76543210
+rcar_sound ec500000.sound: dvc[0]        0x00000010 init
+rcar_sound ec500000.sound: w dvc[0] - DVC_SWRSR          (  89) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_SWRSR          (  89) : 00000001
+rcar_sound ec500000.sound: w dvc[0] - DVC_DVUIR          (  90) : 00000001
+rcar_sound ec500000.sound: w dvc[0] - DVC_ADINR          (  91) : 00080002
+rcar_sound ec500000.sound: w dvc[0] - DVC_DVUCR          (  92) : 00000101
+rcar_sound ec500000.sound: w dvc[0] - DVC_VRCTR          ( 103) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VRPDR          ( 104) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VRDBR          ( 105) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL0R          (  94) : 00400000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL1R          (  95) : 00400000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL2R          (  96) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL3R          (  97) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL4R          (  98) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL5R          (  99) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL6R          ( 100) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL7R          ( 101) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_DVUIR          (  90) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_DVUER          ( 102) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_ZCMCR          (  93) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VRPDR          ( 104) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VRDBR          ( 105) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL0R          (  94) : 00400000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL1R          (  95) : 00400000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL2R          (  96) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL3R          (  97) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL4R          (  98) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL5R          (  99) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL6R          ( 100) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL7R          ( 101) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_DVUER          ( 102) : 00000001
+rcar_sound ec500000.sound: cmd[0]        0x00000010 init
+rcar_sound ec500000.sound: w cmd[0] - CMD_ROUTE_SLCT     (  40) : 00040000
+rcar_sound ec500000.sound: w cmd[0] - CMD_BUSIF_DALIGN   (  39) : 76543210
+rcar_sound ec500000.sound: b adg[0] - CMDOUT_TIMSEL      (  41) : 00000600/0000ffff
+rcar_sound ec500000.sound: src[2]        0x00000010 init
+rcar_sound ec500000.sound: w src[2] - SRC_SWRSR          (  13) : 00000000
+rcar_sound ec500000.sound: w src[2] - SRC_SWRSR          (  13) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_ROUTE_MODE0    (  12) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_SRCIR          (  14) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_ADINR          (  15) : 00080002
+rcar_sound ec500000.sound: w src[2] - SRC_IFSCR          (  16) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_IFSVR          (  17) : 003a8b1c
+rcar_sound ec500000.sound: w src[2] - SRC_SRCCR          (  18) : 00011110
+rcar_sound ec500000.sound: w src[2] - SRC_BSDSR          (  20) : 01800000
+rcar_sound ec500000.sound: w src[2] - SRC_BSISR          (  21) : 00100060
+rcar_sound ec500000.sound: w src[2] - SRC_SRCIR          (  14) : 00000000
+rcar_sound ec500000.sound: w src[2] - SRC_I_BUSIF_MODE   (  10) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_O_BUSIF_MODE   (  11) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_BUSIF_DALIGN   (  23) : 76543201
+rcar_sound ec500000.sound: b adg[0] - SRCIN_TIMSEL1      (  25) : 00000408/0000ffff
+rcar_sound ec500000.sound: b adg[0] - SRCOUT_TIMSEL1     (  30) : 00000600/0000ffff
+rcar_sound ec500000.sound: b adg[0] - DIV_EN             ( 109) : 00000020/00000020
+rcar_sound ec500000.sound: b src[2] - SCU_SYS_STATUS0    (  34) : 00040004/00040004
+rcar_sound ec500000.sound: b src[2] - SCU_SYS_STATUS1    (  35) : 00040004/00040004
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000110 start
+rcar_sound ec500000.sound: audmac[0]     0x00000110 start
+rcar_sound ec500000.sound: ssi[0]        0x00000110 start
+rcar_sound ec500000.sound: b ssi[0] - SSICR              ( 113) : 00000001/00000001
+rcar_sound ec500000.sound: ssiu[0]       0x00000110 start
+rcar_sound ec500000.sound: w ssiu[0] - SSI_CTRL           (   5) : 00000001
+rcar_sound ec500000.sound: dvc[0]        0x00000110
+rcar_sound ec500000.sound: cmd[0]        0x00000110 start
+rcar_sound ec500000.sound: w cmd[0] - CMD_CTRL           (  38) : 00000010
+rcar_sound ec500000.sound: src[2]        0x00000110 start
+rcar_sound ec500000.sound: w src[2] - SRC_CTRL           (  19) : 00000001
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000110
+rcar_sound ec500000.sound: audmac[0]     0x00000110
+rcar_sound ec500000.sound: ssi[0]        0x00000110 irq
+rcar_sound ec500000.sound: w ssi[0] - SSI_INT_ENABLE     (   9) : 0e000000
+rcar_sound ec500000.sound: ssiu[0]       0x00000110
+rcar_sound ec500000.sound: dvc[0]        0x00000110
+rcar_sound ec500000.sound: cmd[0]        0x00000110
+rcar_sound ec500000.sound: src[2]        0x00000110 irq
+rcar_sound ec500000.sound: w src[2] - SRC_INT_ENABLE0    (  22) : 00003300
+rcar_sound ec500000.sound: b src[2] - SCU_SYS_INT_EN0    (  36) : 00040004/00040004
+rcar_sound ec500000.sound: b src[2] - SCU_SYS_INT_EN1    (  37) : 00040004/00040004
+
+stop
+
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000110
+rcar_sound ec500000.sound: audmac[0]     0x00000110
+rcar_sound ec500000.sound: ssi[0]        0x00000110 irq
+rcar_sound ec500000.sound: w ssi[0] - SSI_INT_ENABLE     (   9) : 00000000
+rcar_sound ec500000.sound: ssiu[0]       0x00000110
+rcar_sound ec500000.sound: dvc[0]        0x00000110
+rcar_sound ec500000.sound: cmd[0]        0x00000110
+rcar_sound ec500000.sound: src[2]        0x00000110 irq
+rcar_sound ec500000.sound: w src[2] - SRC_INT_ENABLE0    (  22) : 00000000
+rcar_sound ec500000.sound: b src[2] - SCU_SYS_INT_EN0    (  36) : 00000000/00040004
+rcar_sound ec500000.sound: b src[2] - SCU_SYS_INT_EN1    (  37) : 00000000/00040004
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000010 stop
+rcar_sound ec500000.sound: audmac[0]     0x00000010 stop
+rcar_sound ec500000.sound: ssi[0]        0x00000010 stop
+rcar_sound ec500000.sound: w ssi[0] - SSICR              ( 113) : 800b1303
+rcar_sound ec500000.sound: r ssi[0] - SSISR              ( 114) : 0980ab30
+rcar_sound ec500000.sound: w ssi[0] - SSICR              ( 113) : 800b1302
+rcar_sound ec500000.sound: r ssi[0] - SSISR              ( 114) : 0a90a001
+rcar_sound ec500000.sound: ssiu[0]       0x00000010 stop
+rcar_sound ec500000.sound: w ssiu[0] - SSI_CTRL           (   5) : 00000000
+rcar_sound ec500000.sound: dvc[0]        0x00000010
+rcar_sound ec500000.sound: cmd[0]        0x00000010 stop
+rcar_sound ec500000.sound: w cmd[0] - CMD_CTRL           (  38) : 00000000
+rcar_sound ec500000.sound: src[2]        0x00000010 stop
+rcar_sound ec500000.sound: w src[2] - SRC_CTRL           (  19) : 00000000
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000000 quit
+rcar_sound ec500000.sound: audmac[0]     0x00000000
+rcar_sound ec500000.sound: ssi[0]        0x00000000 quit
+rcar_sound ec500000.sound: ssiu[0]       0x00000000
+rcar_sound ec500000.sound: dvc[0]        0x00000000 quit
+rcar_sound ec500000.sound: w dvc[0] - DVC_DVUIR          (  90) : 00000001
+rcar_sound ec500000.sound: w dvc[0] - DVC_SWRSR          (  89) : 00000000
+rcar_sound ec500000.sound: cmd[0]        0x00000000
+rcar_sound ec500000.sound: src[2]        0x00000000 quit
+rcar_sound ec500000.sound: w src[2] - SRC_SRCIR          (  14) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_SWRSR          (  13) : 00000000
+
+Sync
+16bit 48kHz -> 48kHz
+
+amixer set "SRC Out Rate" on
+aplay xxx.wav &
+
+rcar_sound ec500000.sound: audmac-pp[0]        0x00000000
+rcar_sound ec500000.sound: audmac[0]     0x00000000
+rcar_sound ec500000.sound: ssi[0]        0x00000000 hw_params
+rcar_sound ec500000.sound: ssiu[0]       0x00000000
+rcar_sound ec500000.sound: dvc[0]        0x00000000
+rcar_sound ec500000.sound: cmd[0]        0x00000000
+rcar_sound ec500000.sound: src[2]        0x00000000 hw_params
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000010
+rcar_sound ec500000.sound: audmac[0]     0x00000010
+rcar_sound ec500000.sound: ssi[0]        0x00000010 init
+rcar_sound ec500000.sound: w ssi[0] - SSIWSR             ( 117) : 00000000
+rcar_sound ec500000.sound: w ssi[0] - SSICR              ( 113) : 9c0b1302
+rcar_sound ec500000.sound: w ssi[0] - SSISR              ( 114) : 00000000
+rcar_sound ec500000.sound: ssiu[0]       0x00000010 init
+rcar_sound ec500000.sound: b ssiu[0] - SSI_MODE0          (   1) : 00000000/00000001
+rcar_sound ec500000.sound: b ssiu[0] - SSI_MODE1          (   2) : 00000000/00100010
+rcar_sound ec500000.sound: b ssiu[0] - SSI_MODE2          (   3) : 00000000/00000010
+rcar_sound ec500000.sound: w ssiu[0] - SSI_BUSIF_ADINR    (   7) : 00080002
+rcar_sound ec500000.sound: w ssiu[0] - SSI_BUSIF_MODE     (   6) : 00000001
+rcar_sound ec500000.sound: w ssiu[0] - SSI_BUSIF_DALIGN   (   8) : 76543210
+rcar_sound ec500000.sound: dvc[0]        0x00000010 init
+rcar_sound ec500000.sound: w dvc[0] - DVC_SWRSR          (  89) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_SWRSR          (  89) : 00000001
+rcar_sound ec500000.sound: w dvc[0] - DVC_DVUIR          (  90) : 00000001
+rcar_sound ec500000.sound: w dvc[0] - DVC_ADINR          (  91) : 00080002
+rcar_sound ec500000.sound: w dvc[0] - DVC_DVUCR          (  92) : 00000101
+rcar_sound ec500000.sound: w dvc[0] - DVC_VRCTR          ( 103) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VRPDR          ( 104) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VRDBR          ( 105) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL0R          (  94) : 00400000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL1R          (  95) : 00400000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL2R          (  96) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL3R          (  97) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL4R          (  98) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL5R          (  99) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL6R          ( 100) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL7R          ( 101) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_DVUIR          (  90) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_DVUER          ( 102) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_ZCMCR          (  93) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VRPDR          ( 104) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VRDBR          ( 105) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL0R          (  94) : 00400000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL1R          (  95) : 00400000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL2R          (  96) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL3R          (  97) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL4R          (  98) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL5R          (  99) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL6R          ( 100) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_VOL7R          ( 101) : 00000000
+rcar_sound ec500000.sound: w dvc[0] - DVC_DVUER          ( 102) : 00000001
+rcar_sound ec500000.sound: cmd[0]        0x00000010 init
+rcar_sound ec500000.sound: w cmd[0] - CMD_ROUTE_SLCT     (  40) : 00040000
+rcar_sound ec500000.sound: w cmd[0] - CMD_BUSIF_DALIGN   (  39) : 76543210
+rcar_sound ec500000.sound: b adg[0] - CMDOUT_TIMSEL      (  41) : 00000600/0000ffff
+rcar_sound ec500000.sound: src[2]        0x00000010 init
+rcar_sound ec500000.sound: w src[2] - SRC_SWRSR          (  13) : 00000000
+rcar_sound ec500000.sound: w src[2] - SRC_SWRSR          (  13) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_ROUTE_MODE0    (  12) : 00000000
+rcar_sound ec500000.sound: w src[2] - SRC_SRCIR          (  14) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_ADINR          (  15) : 00080002
+rcar_sound ec500000.sound: w src[2] - SRC_IFSCR          (  16) : 00000000
+rcar_sound ec500000.sound: w src[2] - SRC_IFSVR          (  17) : 00000000
+rcar_sound ec500000.sound: w src[2] - SRC_SRCCR          (  18) : 00011110
+rcar_sound ec500000.sound: w src[2] - SRC_BSDSR          (  20) : 01800000
+rcar_sound ec500000.sound: w src[2] - SRC_BSISR          (  21) : 00100060
+rcar_sound ec500000.sound: w src[2] - SRC_SRCIR          (  14) : 00000000
+rcar_sound ec500000.sound: w src[2] - SRC_I_BUSIF_MODE   (  10) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_O_BUSIF_MODE   (  11) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_BUSIF_DALIGN   (  23) : 76543201
+rcar_sound ec500000.sound: b adg[0] - SRCIN_TIMSEL1      (  25) : 00000600/0000ffff
+rcar_sound ec500000.sound: b adg[0] - SRCOUT_TIMSEL1     (  30) : 00000600/0000ffff
+rcar_sound ec500000.sound: b src[2] - SCU_SYS_STATUS0    (  34) : 00040004/00040004
+rcar_sound ec500000.sound: b src[2] - SCU_SYS_STATUS1    (  35) : 00040004/00040004
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000110 start
+rcar_sound ec500000.sound: audmac[0]     0x00000110 start
+rcar_sound ec500000.sound: ssi[0]        0x00000110 start
+rcar_sound ec500000.sound: b ssi[0] - SSICR              ( 113) : 00000001/00000001
+rcar_sound ec500000.sound: ssiu[0]       0x00000110 start
+rcar_sound ec500000.sound: w ssiu[0] - SSI_CTRL           (   5) : 00000001
+rcar_sound ec500000.sound: dvc[0]        0x00000110
+rcar_sound ec500000.sound: cmd[0]        0x00000110 start
+rcar_sound ec500000.sound: w cmd[0] - CMD_CTRL           (  38) : 00000010
+rcar_sound ec500000.sound: src[2]        0x00000110 start
+rcar_sound ec500000.sound: w src[2] - SRC_CTRL           (  19) : 00000011
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000110
+rcar_sound ec500000.sound: audmac[0]     0x00000110
+rcar_sound ec500000.sound: ssi[0]        0x00000110 irq
+rcar_sound ec500000.sound: w ssi[0] - SSI_INT_ENABLE     (   9) : 0e000000
+rcar_sound ec500000.sound: ssiu[0]       0x00000110
+rcar_sound ec500000.sound: dvc[0]        0x00000110
+rcar_sound ec500000.sound: cmd[0]        0x00000110
+rcar_sound ec500000.sound: src[2]        0x00000110 irq
+rcar_sound ec500000.sound: w src[2] - SRC_INT_ENABLE0    (  22) : 00003300
+rcar_sound ec500000.sound: b src[2] - SCU_SYS_INT_EN0    (  36) : 00000004/00040004
+rcar_sound ec500000.sound: b src[2] - SCU_SYS_INT_EN1    (  37) : 00000004/00040004
+
+amixer set "SRC Out Rate" 96000
+
+rcar_sound ec500000.sound: w src[2] - SRC_ROUTE_MODE0    (  12) : 01000001
+rcar_sound ec500000.sound: w src[2] - SRC_SRCIR          (  14) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_ADINR          (  15) : 00080002
+rcar_sound ec500000.sound: w src[2] - SRC_IFSCR          (  16) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_IFSVR          (  17) : 001f7e80
+rcar_sound ec500000.sound: w src[2] - SRC_SRCCR          (  18) : 00011111
+rcar_sound ec500000.sound: w src[2] - SRC_BSDSR          (  20) : 01800000
+rcar_sound ec500000.sound: w src[2] - SRC_BSISR          (  21) : 00100060
+rcar_sound ec500000.sound: w src[2] - SRC_SRCIR          (  14) : 00000000
+rcar_sound ec500000.sound: w src[2] - SRC_I_BUSIF_MODE   (  10) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_O_BUSIF_MODE   (  11) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_BUSIF_DALIGN   (  23) : 76543201
+rcar_sound ec500000.sound: b adg[0] - SRCIN_TIMSEL1      (  25) : 0000000d/0000ffff
+rcar_sound ec500000.sound: b adg[0] - SRCOUT_TIMSEL1     (  30) : 00000600/0000ffff
+rcar_sound ec500000.sound: b adg[0] - DIV_EN             ( 109) : 00000002/00000002
+
+amixer set "SRC Out Rate" 22050
+
+rcar_sound ec500000.sound: w src[2] - SRC_ROUTE_MODE0    (  12) : 01000001
+rcar_sound ec500000.sound: w src[2] - SRC_SRCIR          (  14) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_ADINR          (  15) : 00080002
+rcar_sound ec500000.sound: w src[2] - SRC_IFSCR          (  16) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_IFSVR          (  17) : 008b2900
+rcar_sound ec500000.sound: w src[2] - SRC_SRCCR          (  18) : 00011111
+rcar_sound ec500000.sound: w src[2] - SRC_BSDSR          (  20) : 01800000
+rcar_sound ec500000.sound: w src[2] - SRC_BSISR          (  21) : 00100060
+rcar_sound ec500000.sound: w src[2] - SRC_SRCIR          (  14) : 00000000
+rcar_sound ec500000.sound: w src[2] - SRC_I_BUSIF_MODE   (  10) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_O_BUSIF_MODE   (  11) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_BUSIF_DALIGN   (  23) : 76543201
+rcar_sound ec500000.sound: b adg[0] - SRCIN_TIMSEL1      (  25) : 0000000d/0000ffff
+rcar_sound ec500000.sound: b adg[0] - SRCOUT_TIMSEL1     (  30) : 00000600/0000ffff
+rcar_sound ec500000.sound: b adg[0] - DIV_EN             ( 109) : 00000002/00000002
+
+stop
+
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000110
+rcar_sound ec500000.sound: audmac[0]     0x00000110
+rcar_sound ec500000.sound: ssi[0]        0x00000110 irq
+rcar_sound ec500000.sound: w ssi[0] - SSI_INT_ENABLE     (   9) : 00000000
+rcar_sound ec500000.sound: ssiu[0]       0x00000110
+rcar_sound ec500000.sound: dvc[0]        0x00000110
+rcar_sound ec500000.sound: cmd[0]        0x00000110
+rcar_sound ec500000.sound: src[2]        0x00000110 irq
+rcar_sound ec500000.sound: w src[2] - SRC_INT_ENABLE0    (  22) : 00000000
+rcar_sound ec500000.sound: b src[2] - SCU_SYS_INT_EN0    (  36) : 00000000/00040004
+rcar_sound ec500000.sound: b src[2] - SCU_SYS_INT_EN1    (  37) : 00000000/00040004
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000010 stop
+rcar_sound ec500000.sound: audmac[0]     0x00000010 stop
+rcar_sound ec500000.sound: ssi[0]        0x00000010 stop
+rcar_sound ec500000.sound: w ssi[0] - SSICR              ( 113) : 800b1303
+rcar_sound ec500000.sound: r ssi[0] - SSISR              ( 114) : 09c0ab32
+rcar_sound ec500000.sound: w ssi[0] - SSICR              ( 113) : 800b1302
+rcar_sound ec500000.sound: r ssi[0] - SSISR              ( 114) : 0a90a003
+rcar_sound ec500000.sound: ssiu[0]       0x00000010 stop
+rcar_sound ec500000.sound: w ssiu[0] - SSI_CTRL           (   5) : 00000000
+rcar_sound ec500000.sound: dvc[0]        0x00000010
+rcar_sound ec500000.sound: cmd[0]        0x00000010 stop
+rcar_sound ec500000.sound: w cmd[0] - CMD_CTRL           (  38) : 00000000
+rcar_sound ec500000.sound: src[2]        0x00000010 stop
+rcar_sound ec500000.sound: w src[2] - SRC_CTRL           (  19) : 00000000
+rcar_sound ec500000.sound: audmac-pp[0]  0x00000000 quit
+rcar_sound ec500000.sound: audmac[0]     0x00000000
+rcar_sound ec500000.sound: ssi[0]        0x00000000 quit
+rcar_sound ec500000.sound: ssiu[0]       0x00000000
+rcar_sound ec500000.sound: dvc[0]        0x00000000 quit
+rcar_sound ec500000.sound: w dvc[0] - DVC_DVUIR          (  90) : 00000001
+rcar_sound ec500000.sound: w dvc[0] - DVC_SWRSR          (  89) : 00000000
+rcar_sound ec500000.sound: cmd[0]        0x00000000
+rcar_sound ec500000.sound: src[2]        0x00000000 quit
+rcar_sound ec500000.sound: w src[2] - SRC_SRCIR          (  14) : 00000001
+rcar_sound ec500000.sound: w src[2] - SRC_SWRSR          (  13) : 00000000
+
+amixer set "DVC In" 50%
+arecord -c 2 -t wav -d 10 -r 44100 -f S16_LE /tmp/hoge
+
+rcar_sound ec500000.sound: audmac-pp[1]  0x00000000
+rcar_sound ec500000.sound: audmac[1]     0x00000000
+rcar_sound ec500000.sound: dvc[1]        0x00000000
+rcar_sound ec500000.sound: cmd[1]        0x00000000
+rcar_sound ec500000.sound: src[3]        0x00000000 hw_params
+rcar_sound ec500000.sound: ssiu[1]       0x00000000
+rcar_sound ec500000.sound: ssi[1]        0x00000000 hw_params
+rcar_sound ec500000.sound: audmac-pp[1]  0x00000010
+rcar_sound ec500000.sound: audmac[1]     0x00000010
+rcar_sound ec500000.sound: dvc[1]        0x00000010 init
+rcar_sound ec500000.sound: w dvc[1] - DVC_SWRSR          (  89) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_SWRSR          (  89) : 00000001
+rcar_sound ec500000.sound: w dvc[1] - DVC_DVUIR          (  90) : 00000001
+rcar_sound ec500000.sound: w dvc[1] - DVC_ADINR          (  91) : 00080002
+rcar_sound ec500000.sound: w dvc[1] - DVC_DVUCR          (  92) : 00000101
+rcar_sound ec500000.sound: w dvc[1] - DVC_VRCTR          ( 103) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VRPDR          ( 104) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VRDBR          ( 105) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL0R          (  94) : 00400000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL1R          (  95) : 00400000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL2R          (  96) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL3R          (  97) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL4R          (  98) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL5R          (  99) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL6R          ( 100) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL7R          ( 101) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_DVUIR          (  90) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_DVUER          ( 102) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_ZCMCR          (  93) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VRPDR          ( 104) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VRDBR          ( 105) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL0R          (  94) : 00400000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL1R          (  95) : 00400000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL2R          (  96) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL3R          (  97) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL4R          (  98) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL5R          (  99) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL6R          ( 100) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_VOL7R          ( 101) : 00000000
+rcar_sound ec500000.sound: w dvc[1] - DVC_DVUER          ( 102) : 00000001
+rcar_sound ec500000.sound: cmd[1]        0x00000010 init
+rcar_sound ec500000.sound: w cmd[1] - CMD_ROUTE_SLCT     (  40) : 00010000
+rcar_sound ec500000.sound: w cmd[1] - CMD_BUSIF_DALIGN   (  39) : 76543201
+rcar_sound ec500000.sound: b adg[0] - CMDOUT_TIMSEL      (  41) : 04080000/ffff0000
+rcar_sound ec500000.sound: src[3]        0x00000010 init
+rcar_sound ec500000.sound: w src[3] - SRC_SWRSR          (  13) : 00000000
+rcar_sound ec500000.sound: w src[3] - SRC_SWRSR          (  13) : 00000001
+rcar_sound ec500000.sound: w src[3] - SRC_ROUTE_MODE0    (  12) : 00000001
+rcar_sound ec500000.sound: w src[3] - SRC_SRCIR          (  14) : 00000001
+rcar_sound ec500000.sound: w src[3] - SRC_ADINR          (  15) : 00080002
+rcar_sound ec500000.sound: w src[3] - SRC_IFSCR          (  16) : 00000001
+rcar_sound ec500000.sound: w src[3] - SRC_IFSVR          (  17) : 00459480
+rcar_sound ec500000.sound: w src[3] - SRC_SRCCR          (  18) : 00011110
+rcar_sound ec500000.sound: w src[3] - SRC_BSDSR          (  20) : 01800000
+rcar_sound ec500000.sound: w src[3] - SRC_BSISR          (  21) : 00100060
+rcar_sound ec500000.sound: w src[3] - SRC_SRCIR          (  14) : 00000000
+rcar_sound ec500000.sound: w src[3] - SRC_I_BUSIF_MODE   (  10) : 00000001
+rcar_sound ec500000.sound: w src[3] - SRC_O_BUSIF_MODE   (  11) : 00000001
+rcar_sound ec500000.sound: w src[3] - SRC_BUSIF_DALIGN   (  23) : 76543210
+rcar_sound ec500000.sound: b adg[0] - SRCIN_TIMSEL1      (  25) : 06000000/ffff0000
+rcar_sound ec500000.sound: b adg[0] - SRCOUT_TIMSEL1     (  30) : 04080000/ffff0000
+rcar_sound ec500000.sound: b adg[0] - DIV_EN             ( 109) : 00000020/00000020
+rcar_sound ec500000.sound: b src[3] - SCU_SYS_STATUS0    (  34) : 00080008/00080008
+rcar_sound ec500000.sound: b src[3] - SCU_SYS_STATUS1    (  35) : 00080008/00080008
+rcar_sound ec500000.sound: ssiu[1]       0x00000010 init
+rcar_sound ec500000.sound: b ssiu[1] - SSI_MODE0          (   1) : 00000000/00000002
+rcar_sound ec500000.sound: b ssiu[1] - SSI_MODE1          (   2) : 00000001/00100013
+rcar_sound ec500000.sound: b ssiu[1] - SSI_MODE2          (   3) : 00000000/00000010
+rcar_sound ec500000.sound: w ssiu[1] - SSI_BUSIF_ADINR    (   7) : 00080002
+rcar_sound ec500000.sound: w ssiu[1] - SSI_BUSIF_MODE     (   6) : 00000001
+rcar_sound ec500000.sound: w ssiu[1] - SSI_BUSIF_DALIGN   (   8) : 76543210
+rcar_sound ec500000.sound: ssi[1]        0x00000010 init
+rcar_sound ec500000.sound: w ssi[1] - SSIWSR             ( 117) : 00000000
+rcar_sound ec500000.sound: w ssi[1] - SSICR              ( 113) : 9c0b1300
+rcar_sound ec500000.sound: w ssi[1] - SSISR              ( 114) : 00000000
+rcar_sound ec500000.sound: audmac-pp[1]  0x00000110 start
+rcar_sound ec500000.sound: audmac[1]     0x00000110 start
+rcar_sound ec500000.sound: dvc[1]        0x00000110
+rcar_sound ec500000.sound: cmd[1]        0x00000110 start
+rcar_sound ec500000.sound: w cmd[1] - CMD_CTRL           (  38) : 00000010
+rcar_sound ec500000.sound: src[3]        0x00000110 start
+rcar_sound ec500000.sound: w src[3] - SRC_CTRL           (  19) : 00000001
+rcar_sound ec500000.sound: ssiu[1]       0x00000110 start
+rcar_sound ec500000.sound: w ssiu[1] - SSI_CTRL           (   5) : 00000001
+rcar_sound ec500000.sound: ssi[1]        0x00000110 start
+rcar_sound ec500000.sound: b ssi[1] - SSICR              ( 113) : 00000001/00000001
+rcar_sound ec500000.sound: audmac-pp[1]  0x00000110
+rcar_sound ec500000.sound: audmac[1]     0x00000110
+rcar_sound ec500000.sound: dvc[1]        0x00000110
+rcar_sound ec500000.sound: cmd[1]        0x00000110
+rcar_sound ec500000.sound: src[3]        0x00000110 irq
+rcar_sound ec500000.sound: w src[3] - SRC_INT_ENABLE0    (  22) : 00003300
+rcar_sound ec500000.sound: b src[3] - SCU_SYS_INT_EN0    (  36) : 00080008/00080008
+rcar_sound ec500000.sound: b src[3] - SCU_SYS_INT_EN1    (  37) : 00080008/00080008
+rcar_sound ec500000.sound: ssiu[1]       0x00000110
+rcar_sound ec500000.sound: ssi[1]        0x00000110 irq
+rcar_sound ec500000.sound: w ssi[1] - SSI_INT_ENABLE     (   9) : 0e000000
+
+stop
+
+rcar_sound ec500000.sound: audmac-pp[1]  0x00000110
+rcar_sound ec500000.sound: audmac[1]     0x00000110
+rcar_sound ec500000.sound: dvc[1]        0x00000110
+rcar_sound ec500000.sound: cmd[1]        0x00000110
+rcar_sound ec500000.sound: src[3]        0x00000110 irq
+rcar_sound ec500000.sound: w src[3] - SRC_INT_ENABLE0    (  22) : 00000000
+rcar_sound ec500000.sound: b src[3] - SCU_SYS_INT_EN0    (  36) : 00000000/00080008
+rcar_sound ec500000.sound: b src[3] - SCU_SYS_INT_EN1    (  37) : 00000000/00080008
+rcar_sound ec500000.sound: ssiu[1]       0x00000110
+rcar_sound ec500000.sound: ssi[1]        0x00000110 irq
+rcar_sound ec500000.sound: w ssi[1] - SSI_INT_ENABLE     (   9) : 00000000
+rcar_sound ec500000.sound: audmac-pp[1]  0x00000010 stop
+rcar_sound ec500000.sound: audmac[1]     0x00000010 stop
+rcar_sound ec500000.sound: dvc[1]        0x00000010
+rcar_sound ec500000.sound: cmd[1]        0x00000010 stop
+rcar_sound ec500000.sound: w cmd[1] - CMD_CTRL           (  38) : 00000000
+rcar_sound ec500000.sound: src[3]        0x00000010 stop
+rcar_sound ec500000.sound: w src[3] - SRC_CTRL           (  19) : 00000000
+rcar_sound ec500000.sound: ssiu[1]       0x00000010 stop
+rcar_sound ec500000.sound: w ssiu[1] - SSI_CTRL           (   5) : 00000000
+rcar_sound ec500000.sound: ssi[1]        0x00000010 stop
+rcar_sound ec500000.sound: w ssi[1] - SSICR              ( 113) : 800b1301
+rcar_sound ec500000.sound: r ssi[1] - SSISR              ( 114) : 052142b0
+rcar_sound ec500000.sound: w ssi[1] - SSICR              ( 113) : 800b1300
+rcar_sound ec500000.sound: r ssi[1] - SSISR              ( 114) : 0630a001
+rcar_sound ec500000.sound: audmac-pp[1]  0x00000000 quit
+rcar_sound ec500000.sound: audmac[1]     0x00000000
+rcar_sound ec500000.sound: dvc[1]        0x00000000 quit
+rcar_sound ec500000.sound: w dvc[1] - DVC_DVUIR          (  90) : 00000001
+rcar_sound ec500000.sound: w dvc[1] - DVC_SWRSR          (  89) : 00000000
+rcar_sound ec500000.sound: cmd[1]        0x00000000
+rcar_sound ec500000.sound: src[3]        0x00000000 quit
+rcar_sound ec500000.sound: w src[3] - SRC_SRCIR          (  14) : 00000001
+rcar_sound ec500000.sound: w src[3] - SRC_SWRSR          (  13) : 00000000
+rcar_sound ec500000.sound: ssiu[1]       0x00000000
+rcar_sound ec500000.sound: ssi[1]        0x00000000 quit
