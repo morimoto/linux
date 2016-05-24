@@ -19,7 +19,7 @@
  *
  * This command is required when Playback/Capture
  *
- *	amixer set "LINEOUT Mixer DACL" on
+ *	amixer set "ak4642 LINEOUT Mixer DACL" on
  *	amixer set "DVC Out" 100%
  *	amixer set "DVC In" 100%
  *
@@ -182,18 +182,49 @@
 		clock-frequency = <11289600>;
 	};
 
-	rsnd_ak4643: sound {
+	rsnd_ak4643: sound@0 {
 		compatible = "simple-audio-card";
 
 		simple-audio-card,format = "left_j";
 		simple-audio-card,bitclock-master = <&sndcodec>;
 		simple-audio-card,frame-master = <&sndcodec>;
 
+		status = "disabled";
+
 		sndcpu: simple-audio-card,cpu {
 			sound-dai = <&rcar_sound>;
 		};
 
 		sndcodec: simple-audio-card,codec {
+			sound-dai = <&ak4643>;
+			clocks = <&audio_clock>;
+		};
+	};
+
+	rsnd_mix_ak4643_: sound@1 {
+		compatible = "simple-dpcm-audio-card";
+
+		simple-audio-card,name = "rsnd-ak4643";
+		simple-audio-card,format = "left_j";
+		simple-audio-card,bitclock-master = <&dpcmcpu>;
+		simple-audio-card,frame-master = <&dpcmcpu>;
+
+		simple-audio-card,convert-rate = <48000>;  /* see audio_clk_a */
+		simple-audio-card,convert-channels = <2>;
+
+		simple-audio-card,prefix = "ak4642";
+		simple-audio-card,routing = "ak4642 Playback", "DAI0 Playback",
+				"ak4642 Playback", "DAI1 Playback";
+
+		dpcmcpu: simple-audio-card,cpu@0 {
+			sound-dai = <&rcar_sound 0>;
+		};
+
+		simple-audio-card,cpu@1 {
+			sound-dai = <&rcar_sound 1>;
+		};
+
+		simple-audio-card,codec {
 			sound-dai = <&ak4643>;
 			clocks = <&audio_clock>;
 		};
@@ -605,6 +636,9 @@
 		compatible = "asahi-kasei,ak4643";
 		#sound-dai-cells = <0>;
 		reg = <0x12>;
+		clocks = <&audio_clock>;
+		clock-frequency = <12288000>;
+		clock-output-names = "ak4643_mcko";
 	};
 
 	composite-in@20 {
@@ -744,19 +778,25 @@
 	pinctrl-0 = <&sound_pins &sound_clk_pins>;
 	pinctrl-names = "default";
 
-	/* Single DAI */
-	#sound-dai-cells = <0>;
+	/* Multi DAI */
+	#sound-dai-cells = <1>;
 
 	status = "okay";
 
 	rcar_sound,dai {
 		dai0 {
-			playback = <&ssi0 &src2 &dvc0>;
-			capture  = <&ssi1 &src3 &dvc1>;
+			playback = <&src1 &ctu02 &mix0 &dvc0 &ssi0>;
+		};
+		dai1 {
+			playback = <&src2 &ctu03 &mix0 &dvc0 &ssi0>;
 		};
 	};
 };
 
 &ssi1 {
 	shared-pin;
+};
+
+&audio_clk_a {
+	clock-frequency = <12288000>; /* 48000 base clock */
 };
