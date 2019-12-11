@@ -44,7 +44,6 @@
 		port@2 {
 			reg = <2>;
 			dw_hdmi0_snd_in: endpoint {
-				remote-endpoint = <&rsnd_endpoint1>;
 			};
 		};
 	};
@@ -60,23 +59,6 @@
 		gpios = <7 GPIO_ACTIVE_HIGH>;
 		output-low; /* enable SATA by default */
 		line-name = "PCIE/SATA switch";
-	};
-};
-
-&rcar_sound {
-	ports {
-		rsnd_port1: port@1 {
-			reg = <1>;
-			rsnd_endpoint1: endpoint {
-				remote-endpoint = <&dw_hdmi0_snd_in>;
-
-				dai-format = "i2s";
-				bitclock-master = <&rsnd_endpoint1>;
-				frame-master = <&rsnd_endpoint1>;
-
-				playback = <&ssi2>;
-			};
-		};
 	};
 };
 
