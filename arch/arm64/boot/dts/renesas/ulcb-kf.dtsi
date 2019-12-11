@@ -50,6 +50,51 @@
 		startup-delay-us = <70000>;
 		enable-active-high;
 	};
+
+	/delete-node/sound;
+	rsnd_ulcb_kf: sound {
+		compatible = "simple-audio-card";
+
+		simple-audio-card,dai-link@0 {
+			format = "left_j";
+			bitclock-master = <&sndcpu0>;
+			frame-master = <&sndcpu0>;
+
+			sndcpu0: cpu {
+				sound-dai = <&rcar_sound 0>;
+			};
+			codec {
+				sound-dai = <&ak4613>;
+			};
+		};
+		simple-audio-card,dai-link@1 {
+			format = "i2s";
+			bitclock-master = <&sndcpu1>;
+			frame-master = <&sndcpu1>;
+
+			sndcpu1: cpu@0 {
+				dai-tdm-slot-num = <8>;
+				sound-dai = <&rcar_sound 1>;
+			};
+			codec {
+				mclk-fs = <512>;
+				sound-dai = <&pcm3168a 0>;
+			};
+		};
+		simple-audio-card,dai-link@2 {
+			format = "i2s";
+			bitclock-master = <&sndcpu2>;
+			frame-master = <&sndcpu2>;
+
+			sndcpu2: cpu {
+				sound-dai = <&rcar_sound 2>;
+			};
+			codec {
+				mclk-fs = <512>;
+				sound-dai = <&pcm3168a 1>;
+			};
+		};
+	};
 };
 
 &can0 {
@@ -97,7 +142,7 @@
 			reg = <7>;
 
 			pcm3168a: audio-codec@44 {
-				#sound-dai-cells = <0>;
+				#sound-dai-cells = <1>;
 				compatible = "ti,pcm3168a";
 				reg = <0x44>;
 				clocks = <&clksndsel>;
@@ -117,14 +162,12 @@
 					port@0 {
 						reg = <0>;
 						pcm3168a_endpoint_p: endpoint {
-							remote-endpoint = <&rsnd_for_pcm3168a_play>;
 							clocks = <&clksndsel>;
 						};
 					};
 					port@1 {
 						reg = <1>;
 						pcm3168a_endpoint_c: endpoint {
-							remote-endpoint = <&rsnd_for_pcm3168a_capture>;
 							clocks = <&clksndsel>;
 						};
 					};
@@ -295,33 +338,15 @@
 		     &sound_clk_pins
 		     &sound_pcm_pins>;
 
-	ports {
-		/* rsnd_port0/1 are on salvator-common */
-		rsnd_port2: port@2 {
-			reg = <2>;
-			rsnd_for_pcm3168a_play: endpoint {
-				remote-endpoint = <&pcm3168a_endpoint_p>;
+	/* Multi DAI */
+	#sound-dai-cells = <1>;
 
-				dai-format = "i2s";
-				bitclock-master = <&rsnd_for_pcm3168a_play>;
-				frame-master = <&rsnd_for_pcm3168a_play>;
-				dai-tdm-slot-num = <8>;
-
-				playback = <&ssi3>;
-			};
+	rcar_sound,dai {
+		dai1 {
+			playback = <&ssi3>;
 		};
-		rsnd_port3: port@3 {
-			reg = <3>;
-			rsnd_for_pcm3168a_capture: endpoint {
-				remote-endpoint = <&pcm3168a_endpoint_c>;
-
-				dai-format = "i2s";
-				bitclock-master = <&rsnd_for_pcm3168a_capture>;
-				frame-master = <&rsnd_for_pcm3168a_capture>;
-				dai-tdm-slot-num = <6>;
-
-				capture  = <&ssi4>;
-			};
+		dai2 {
+			capture = <&ssi4>;
 		};
 	};
 };
@@ -356,14 +381,6 @@
 		interrupt-parent = <&gpio1>;
 		interrupts = <25 IRQ_TYPE_EDGE_FALLING>;
 	};
-};
-
-&sound_card {
-	dais = <&rsnd_port0	/* ak4613 */
-		&rsnd_port1	/* HDMI0  */
-		&rsnd_port2	/* pcm3168a playback */
-		&rsnd_port3	/* pcm3168a capture  */
-		>;
 };
 
 &ssi4 {
