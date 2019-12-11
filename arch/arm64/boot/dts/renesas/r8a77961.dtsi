@@ -1150,9 +1150,26 @@
 				dvc1: dvc-1 { };
 			};
 
+			rcar_sound,mix {
+				mix0: mix-0 { };
+				mix1: mix-1 { };
+			};
+
+			rcar_sound,ctu {
+				ctu00: ctu-0 { };
+				ctu01: ctu-1 { };
+				ctu02: ctu-2 { };
+				ctu03: ctu-3 { };
+				ctu10: ctu-4 { };
+				ctu11: ctu-5 { };
+				ctu12: ctu-6 { };
+				ctu13: ctu-7 { };
+			};
+
 			rcar_sound,src {
 				src0: src-0 { };
 				src1: src-1 { };
+				src2: src-2 { };
 			};
 
 			rcar_sound,ssi {
