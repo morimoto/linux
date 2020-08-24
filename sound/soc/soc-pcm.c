@@ -2805,7 +2805,7 @@ int soc_new_pcm(struct snd_soc_pcm_runtime *rtd, int num)
 
 	pcm->no_device_suspend = true;
 out:
-	dev_dbg(rtd->card->dev, "%s <-> %s mapping ok\n",
+	dev_info(rtd->card->dev, "%s <-> %s mapping ok\n",
 		soc_codec_dai_name(rtd), soc_cpu_dai_name(rtd));
 	return ret;
 }
