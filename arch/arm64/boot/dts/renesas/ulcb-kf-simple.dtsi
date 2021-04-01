@@ -1,0 +1,92 @@
+/*
+ * Current ULCB-KF sound is using Audio-Graph
+ *
+ *	CPU0 ------ ak4613
+ *	CPU1 ------ HDMI
+ *	CPU2 ------ PCM3168A-p
+ *	CPU3 ------ PCM3168A-c
+ *
+ * This patch back to Simple-Card
+ *
+ *	CPU0 ------ ak4613
+ *	CPU1 ------ PCM3168A-p
+ *	CPU2 ------ PCM3168A-c
+ *
+ */
+/delete-node/ &sound_card;
+/delete-node/ &ak4613_endpoint;
+/delete-node/ &rsnd_for_pcm3168a_play;
+/delete-node/ &rsnd_for_pcm3168a_capture;
+/delete-node/ &pcm3168a_endpoint_p;
+/delete-node/ &pcm3168a_endpoint_c;
+/delete-node/ &rsnd_port0;
+/delete-node/ &rsnd_port1;
+/delete-node/ &rsnd_port2;
+/delete-node/ &rsnd_port3;
+/delete-node/ &dw_hdmi0_snd_in;
+
+/ {
+	sound {
+		compatible = "simple-audio-card";
+
+		simple-audio-card,dai-link@0 {
+			format = "left_j";
+			bitclock-master = <&sndcpu0>;
+			frame-master = <&sndcpu0>;
+
+			sndcpu0: cpu {
+				sound-dai = <&rcar_sound 0>;
+			};
+			codec {
+				sound-dai = <&ak4613>;
+			};
+		};
+		simple-audio-card,dai-link@1 {
+			format = "i2s";
+			bitclock-master = <&sndcpu1>;
+			frame-master = <&sndcpu1>;
+
+			sndcpu1: cpu@0 {
+				dai-tdm-slot-num = <8>;
+				sound-dai = <&rcar_sound 1>;
+			};
+			codec {
+				mclk-fs = <512>;
+				sound-dai = <&pcm3168a 0>;
+		};
+		};
+		simple-audio-card,dai-link@2 {
+			format = "i2s";
+			bitclock-master = <&sndcpu2>;
+			frame-master = <&sndcpu2>;
+
+			sndcpu2: cpu {
+				sound-dai = <&rcar_sound 2>;
+			};
+			codec {
+				mclk-fs = <512>;
+				sound-dai = <&pcm3168a 1>;
+			};
+		};
+	};
+};
+
+&pcm3168a {
+	#sound-dai-cells = <1>;
+};
+
+&rcar_sound {
+	#sound-dai-cells = <1>;
+	rcar_sound,dai {
+		dai0 {
+			playback = <&ssi0 &src0 &dvc0>;
+			capture  = <&ssi1 &src1 &dvc1>;
+		};
+		dai1 {
+			playback = <&ssi3>;
+		};
+		dai2 {
+			capture = <&ssi4>;
+		};
+	};
+};
