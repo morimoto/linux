@@ -1,0 +1,141 @@
+/*
+ * Current ULCB-KF sound is using Audio-Graph
+ *
+ *	CPU0 ------ ak4613
+ *	CPU1 ------ HDMI
+ *	CPU2 ------ PCM3168A-p
+ *	CPU3 ------ PCM3168A-c
+ *
+ * This patch back to Simple-Card, and uses MIX and TDM-Split
+ *
+ *	CPU0 ------ ak4613	(MIX-0)
+ *	CPU1 --/		(MIX-1)
+ *	CPU2 ------ PCM3168A-p	(TDM-0 : 0,1ch)
+ *	CPU3 ------ PCM3168A-p	(TDM-1 : 2,3ch)
+ *	CPU4 ------ PCM3168A-p	(TDM-2 : 4,5ch)
+ *	CPU5 ------ PCM3168A-p	(TDM-3 : 6,7ch)
+ *	CPU6 ------ PCM3168A-c
+ *
+ * aplay -D plughw:0,0 xxx.wav	(MIX-0)
+ * aplay -D plughw:0,1 xxx.wav	(MIX-1)
+ * aplay -D plughw:0,2 xxx.wav	(TDM-0)
+ * aplay -D plughw:0,3 xxx.wav	(TDM-1)
+ * aplay -D plughw:0,4 xxx.wav	(TDM-2)
+ * aplay -D plughw:0,5 xxx.wav	(TDM-3)
+ */
+
+/delete-node/ &sound_card;
+/delete-node/ &ak4613_endpoint;
+/delete-node/ &rsnd_for_pcm3168a_play;
+/delete-node/ &rsnd_for_pcm3168a_capture;
+/delete-node/ &pcm3168a_endpoint_p;
+/delete-node/ &pcm3168a_endpoint_c;
+/delete-node/ &rsnd_port0;
+/delete-node/ &rsnd_port1;
+/delete-node/ &rsnd_port2;
+/delete-node/ &rsnd_port3;
+/delete-node/ &dw_hdmi0_snd_in;
+
+/ {
+	sound {
+		compatible = "simple-scu-audio-card";
+
+		simple-audio-card,prefix  = "ak4613";
+		simple-audio-card,routing = "ak4613 Playback", "DAI0 Playback",
+					    "ak4613 Playback", "DAI1 Playback",
+					    "pcm3168a Playback", "DAI2 Playback",
+					    "pcm3168a Playback", "DAI3 Playback",
+					    "pcm3168a Playback", "DAI4 Playback",
+					    "pcm3168a Playback", "DAI5 Playback";
+
+		simple-audio-card,dai-link@0 {
+			format = "left_j";
+			bitclock-master = <&sndcpu0>;
+			frame-master = <&sndcpu0>;
+
+			convert-rate = <48000>;
+
+			sndcpu0: cpu {
+				sound-dai = <&rcar_sound 0>;
+			};
+			cpu@1 {
+				sound-dai = <&rcar_sound 1>;
+			};
+			codec {
+				prefix = "ak4613";
+				sound-dai = <&ak4613>;
+			};
+		};
+		simple-audio-card,dai-link@1 {
+			format = "i2s";
+			bitclock-master = <&sndcpu1>;
+			frame-master = <&sndcpu1>;
+
+			convert-channels = <8>; /* TDM Split */
+
+			sndcpu1: cpu@0 {
+				dai-tdm-slot-num = <8>;
+				sound-dai = <&rcar_sound 2>;
+			};
+			cpu@1 {
+				sound-dai = <&rcar_sound 3>;
+			};
+			cpu@2 {
+				sound-dai = <&rcar_sound 4>;
+			};
+			cpu@3 {
+				sound-dai = <&rcar_sound 5>;
+			};
+			codec {
+				prefix = "pcm3168a";
+				mclk-fs = <512>;
+				sound-dai = <&pcm3168a 0>;
+			};
+		};
+		simple-audio-card,dai-link@2 {
+			format = "i2s";
+			bitclock-master = <&sndcpu2>;
+			frame-master = <&sndcpu2>;
+
+			sndcpu2: cpu {
+				sound-dai = <&rcar_sound 6>;
+			};
+			codec {
+				prefix = "pcm3168a";
+				mclk-fs = <512>;
+				sound-dai = <&pcm3168a 1>;
+			};
+		};
+	};
+};
+
+&pcm3168a {
+	#sound-dai-cells = <1>;
+};
+
+&rcar_sound {
+	#sound-dai-cells = <1>;
+	rcar_sound,dai {
+		dai0 {
+			playback = <&src1 &ctu02 &mix0 &dvc0 &ssi0>;
+		};
+		dai1 {
+			playback = <&src2 &ctu03 &mix0 &dvc0 &ssi0>;
+		};
+		dai2 {
+			playback = <&ssiu30 &ssi3>;
+		};
+		dai3 {
+			playback = <&ssiu31 &ssi3>;
+		};
+		dai4 {
+			playback = <&ssiu32 &ssi3>;
+		};
+		dai5 {
+			playback = <&ssiu33 &ssi3>;
+		};
+		dai6 {
+			capture = <&ssi4>;
+		};
+	};
+};
