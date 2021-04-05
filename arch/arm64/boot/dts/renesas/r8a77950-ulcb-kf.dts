@@ -15,4 +15,4 @@
 		     "renesas,r8a7795";
 };
 
-#include "ulcb-kf-tdm.dtsi"
+#include "ulcb-kf-mix.dtsi"
