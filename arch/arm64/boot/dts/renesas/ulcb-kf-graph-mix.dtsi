@@ -1,0 +1,81 @@
+/*
+ * Current ULCB-KF sound is using Audio-Graph
+ *
+ *	CPU0 ------ ak4613
+ *	CPU1 ------ HDMI
+ *	CPU2 ------ PCM3168A-p
+ *	CPU3 ------ PCM3168A-c
+ *
+ * This patch uses MIX
+ *
+ *	CPU0 ------ ak4613	(MIX-0)
+ *	CPU1 --/		(MIX-1)
+ *	CPU2 ------ PCM3168A-p
+ *	CPU3 ------ PCM3168A-c
+ *
+ *	aplay   -D plughw:0,0 xxx.wav // ak4613 (MIX-0)
+ *	aplay   -D plughw:0,1 xxx.wav // ak4613 (MIX-1)
+ *	aplay   -D plughw:0,2 xxx.wav // PCM3168A playback
+ *	arecord -D plughw:0,3 xxx     // PCM8168A capture
+ */
+/delete-node/ &sound_card;
+/delete-node/ &ak4613_endpoint;
+/delete-node/ &rsnd_for_ak4613;
+/delete-node/ &rsnd_for_hdmi;
+/delete-node/ &rsnd_port0;
+/delete-node/ &rsnd_port1;
+/delete-node/ &dw_hdmi0_snd_in;
+/ {
+	sound {
+		compatible = "audio-graph-scu-card";
+
+		routing =	"ak4613 Playback", "DAI0 Playback",
+				"ak4613 Playback", "DAI1 Playback";
+
+		dais =	<&rsnd_port0 /* ak4613 (MIX-0) */
+			 &rsnd_port1 /* ak4613 (MIX-1) */
+			 &rsnd_port2 /* pcm3168a playback */
+			 &rsnd_port3 /* pcm3168a capture  */
+		>;
+	};
+};
+
+&ak4613 {
+	port {
+		prefix = "ak4613";
+		ak4613_ep1: endpoint@0 {
+			remote-endpoint = <&rsnd_for_ak4613_1>;
+		};
+		ak4613_ep2: endpoint@1 {
+			remote-endpoint = <&rsnd_for_ak4613_2>;
+		};
+	};
+};
+
+&rcar_sound {
+	ports {
+		rsnd_port0: port@0 {
+			reg = <0>;
+			rsnd_for_ak4613_1: endpoint {
+				convert-rate = <48000>;
+				remote-endpoint = <&ak4613_ep1>;
+				dai-format = "left_j";
+				bitclock-master = <&rsnd_for_ak4613_1>;
+				frame-master    = <&rsnd_for_ak4613_1>;
+				playback = <&src0 &ctu02 &mix0 &dvc0 &ssi0>;
+				capture  = <&ssi1 &src1 &dvc1>;
+			};
+		};
+		rsnd_port1: port@1 {
+			reg = <1>;
+			rsnd_for_ak4613_2: endpoint {
+				convert-rate = <48000>;
+				remote-endpoint = <&ak4613_ep2>;
+				dai-format = "left_j";
+				bitclock-master = <&rsnd_for_ak4613_2>;
+				frame-master    = <&rsnd_for_ak4613_2>;
+				playback = <&src2 &ctu03 &mix0 &dvc0 &ssi0>;
+			};
+		};
+	};
+};
