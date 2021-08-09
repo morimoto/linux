@@ -5,6 +5,7 @@
 #include <linux/device.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
+#include <linux/freezer.h>
 #include "optee_private.h"
 
 struct optee_supp_req {
@@ -160,6 +161,7 @@ u32 optee_supp_thrd_req(struct tee_context *ctx, u32 func, size_t num_params,
 		}
 
 		mutex_unlock(&supp->mutex);
+		try_to_freeze();
 	} else {
 		ret = req->ret;
 	}
