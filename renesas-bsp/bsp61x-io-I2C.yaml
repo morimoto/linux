@@ -1,0 +1,13 @@
+title: "BSP v6.1: I2C"
+team: IO
+status: New
+
+bsp52x:
+ - 3607e145db47 # i2c: rcar: Add fast mode plus support
+
+comments:
+ - this patch needs refactoring before going upstream
+ - that means we must be able to test FM+
+ - patch description says it is supported on Gen4 only
+ - documentation and schematics suggest it is available on Gen3, too
+ - needs investigation first if the above assumption is correct

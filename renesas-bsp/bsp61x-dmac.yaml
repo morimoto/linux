@@ -1,0 +1,24 @@
+title: DMAC; Fixed address mode and bus rate control
+team: Core
+key: 0668bf2e-6628-11eb-bc6b-9fd22e9552e6
+status: New
+
+bsp41x:
+ - 89a62dfc79805cb4492c25858a767c0ef870fe4a # dmaengine: rcar-dmac: Document optional properties
+ - 5ab02430ec6ca27a2e91fc4a3eda0a11551ca172 # dmaengine: rcar-dmac: Add fixed address mode support
+ - d49a14d0b061919d0f8c0fffbd79323a6f176475 # dmaengine: rcar-dmac: Add bus rate control support for R-Car V3U
+
+bsp51x:
+ - d983b218ec061bd217aed2919e0dd5bbbcb8b02d # dmaengine: rcar-dmac: Document optional properties
+ - 08bd675abaa94d453c77c61f7bd7efb5694faad2 # dmaengine: rcar-dmac: Add fixed address mode support
+
+bsp52x:
+  - 46cca390830d5275687cbfd3e2619ef1e0424b5c # dt-bindings: renesas,rcar-dmac: Add bus rate control support for R-Car V3U/V4H
+  - 234e0d5eb188d60df3a847c2f87755e45c852b5f # dt-bindings: renesas,rcar-dmac: Document optional properties
+  - fdfe96d831f0b31d4d62b4c8515a1ae813aa5f4d # dmaengine: rcar-dmac: Add bus rate control support for R-Car V3U/V4H
+  - 3baf2c4e8881b6fd942df7fee1aad32c49a6bb16 # dmaengine: rcar-dmac: Add fixed address mode support
+
+comments:
+  - These are ignored, because it is not clear what is the real use case.
+    Is this intended for upstream, or is this just meant for local debugging?
+  - The DT properties describe software policy, not hardware.

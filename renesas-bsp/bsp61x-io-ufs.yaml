@@ -1,0 +1,7 @@
+title: "BSP v6.1: UFS"
+team: IO
+status: New
+
+bsp52x:
+ - 96cea6157e17 # arm64: dts: renesas: r8a779f0: spider-cpu: Enable UFS controller
+ - 261c8a8138c3 # arm64: dts: renesas: Disable UFS dirver

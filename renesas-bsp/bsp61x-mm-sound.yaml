@@ -1,0 +1,25 @@
+title: BSP v6.1 Sound
+team: MM
+key: f2ce3749-0360-4359-9489-ce3f055f5db9
+status: New
+assignee: Morimoto
+
+bsp52x:
+ - 77c0859b5328 # arm64: dts: renesas: r8a779g0: whitehawk: Add R-Car Sound support
+ - fc60c20649e9 # arm64: dts: renesas: r8a779g0: Audio R-Car Sound support
+ - 21c8766ab233 # dt-bindings: rsnd: Add r8a779g0 support
+ - 1df4ef95143b # ASoC: renesas: Add R-Car V4H to R-Car Sound Driver
+ - f07854ecac12 # arm64: defconfig: Enable DA7213 Codec
+ - 393244153d30 # pinctrl: renesas: r8a779g0: Add Audio support
+ - 6d2224b4f404 # arm64: dts: renesas: r8a779g0: Add PWM device node
+ - fa2f9bc11e10 # arm64: dts: renesas: r8a779g0: Fix naming to SYS-DMAC0 and SYS-DMAC1.
+ - 0d65a95455d3 # arm64: dts: renesas: r8a779g0: add R-Car Sound support
+
+upstream:
+ - torvalds: c2bc65274a30 # ASoC: rsnd: add R-Car Gen4 Sound support
+ - torvalds: f76fec606d07 # ASoC: dt-bindings: renesas: add R8A779G0 V4H
+ - torvalds: 55194032620a # ASoC: dt-bindings: renesas,rsnd.yaml: tidyup reg/reg-name
+
+ignored:
+ - 6d2224b4f404 # arm64: dts: renesas: r8a779g0: Add PWM device node
+ - fa2f9bc11e10 # arm64: dts: renesas: r8a779g0: Fix naming to SYS-DMAC0 and SYS-DMAC1.

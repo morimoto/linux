@@ -1,0 +1,12 @@
+title: "BSP v6.1: maybe upportable commits"
+team: MM
+status: New
+
+bsp52x:
+ - 84efcbedf26a # Revert "drm/rcar-du: Convert to the new generic alpha property"
+ - f526433a23a7 # drm: rcar-du: Add W/A setting for WhiteHawk board
+ - 0a1de0131e5c # media: i2c: max9286: Delay initialize timing in launching driver
+
+comments:
+ - These are ignored because unclear reason, not documented
+ - If there is an issue on upstream, it should be explained and addressed properly.

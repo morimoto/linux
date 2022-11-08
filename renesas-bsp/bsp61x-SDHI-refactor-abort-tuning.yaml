@@ -1,0 +1,25 @@
+title: SDHI; mmc_send_abort_tuning needs refactorization to support SD cards
+team: IO
+key: 2df07932-117d-11ec-bc26-4ffb07de7674
+assignee: Wolfram
+status: Active
+
+bsp51x:
+ - 2d7c017355ce83b26ef739183f28a8e0da5ea233 # mmc: core: mmc_ops: Enable stop command
+
+bsp52x:
+ - d10133565b530859e7b55c84ebdac5a49c827aee #  mmc: core: mmc_ops: Enable stop command
+
+upstream:
+
+comments:
+ - details at lore.kernel.org/all/20210831133349.18203-1-wsa+renesas@sang-engineering.com/
+ - v1; https://lore.kernel.org/r/20210914182023.8103-1-wsa+renesas@sang-engineering.com
+ - upstream review hinted that this might be only a workaround
+ - one alternative found by Wolfram is to delay 100ms after the cmd error
+ - for Wolfram's setup, the issue only happens with 4tap devices and a SanDisk card
+ - another alternative seems to use the 1:4 divider instead of the 2:2
+ - needs further investigation
+ - BSP team reports that the 1:4 divider doesn't work for them
+ - next step is discover why the 100ms delay works and if we can find a better condition to wait for
+ - Wolfram got a reliably failing SD card from another user of Renesas hardware

@@ -1,0 +1,19 @@
+title: "BSP v6.1: GMSL2, FPD-Link III"
+team: MM
+status: New
+
+bsp52x:
+ - 15c84e6a1c2d # media: i2c: Add max96712 driver prototype
+ - 1e15a520d473 # media: i2c: add camera lvds support
+ - c8b353b49501 # media: i2c: dummy-camera: Add dummy camera support
+ - dce559decaec # arm64: defconfig: enable max96789 on defconfig
+ - 1687c19f731c # arm64: defconfig: VIDEO_MAX96712_STAGING and VIDEO_DUMMY_CAMERA
+ - 32030bf07d39 # arm64: defconfig: Enable MAX9286 and GMSL camera by default
+ - 46aa3d2a438d # arm64: dts: renesas: r8a779g0: Add max96789 node
+ - 2daefde67813 # arm64: dts: renesas: r8a779g0: Add C-PHY option to gsml node
+
+comments:
+ - GMSL2 and FPD-Link III support is a large project that needs to be scheduled
+   on its own. The V4L2 streams API has been merged upstream, so now would be a
+   good time to resume work in this area. Some FPD-Link III serializer and
+   deserializer drivers are also close to being merged upstream.

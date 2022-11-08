@@ -1,0 +1,22 @@
+title: "BSP v6.1: PHY"
+team: IO
+status: New
+
+bsp52x:
+ - 20dbf63e68097c1f8d9016a38874cd14ef4e25e4 # Revert "net: phy: consider that suspend2ram may cut off PHY power"
+
+comments:
+ - The above revert is not the proper fix, but the reverted patch causes in deed two regressions with suspend
+ - calling phy_init_hw() in mdio_bus_phy_resume() causes both regressions
+ - a minimal workaround avoiding phy_init_hw() has been added to the BSP
+ - but both regressions need to be properly fixed
+ - Regression 1;
+   - on all Gen3 platforms with a Micrel PHY, a message about invalid skew parameters can be seen if the interface was not up before suspend
+   - phy_init_hw() calls .config_init() in the Micrel driver
+   - this .config_init() assumes a properly set pheydev->interface
+   - but it has not been set correctly because the interface is not up
+ - Regression 2;
+   - with phy_init_hw() now called, phy_poll_reset() is also called via genphy_soft_reset()
+   - this times out only on Ebisu
+   - adding the power-up delay from kszphy_resume() to .config_init for KSZ9031 didn't help
+   - investigate why this only happens on Ebisu and not on Salvator-XS

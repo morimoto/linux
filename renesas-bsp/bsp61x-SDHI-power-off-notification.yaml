@@ -1,0 +1,20 @@
+title: SDHI; issue power off notification when removing
+team: IO
+key: 87427c38-70b8-11ed-b52c-87ff9b48da06
+status: New
+
+bsp41x:
+ - c2ca1ccb83afd7c790ae361c720d257e050483f2 # mmc: core: Issue power off notification in mmc_remove()
+
+bsp51x:
+ - e533a0ea555e061170b4102d9085c70546fe4768 # mmc: core: Issue power off notification in mmc_remove()
+
+bsp52x:
+ - bc75d8c5907a3499afea960753deffdd76bfef0b # mmc: core: Issue power off notification in mmc_remove()
+
+upstream:
+
+comments:
+ - https://patchwork.kernel.org/project/linux-mmc/patch/1605005330-7178-1-git-send-email-yoshihiro.shimoda.uh@renesas.com/
+ - MMC maintainer promised two years ago to look for a more complete solution
+ - he confirmed to have not found time for it yet

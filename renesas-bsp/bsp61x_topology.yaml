@@ -1,0 +1,18 @@
+title: R-Car big.LITTLE topology
+team: Core
+key: c4fd9edc-a7cb-11ed-a08c-1709dbea0a67
+status: New
+
+bsp41x:
+ - b05df20945c96d9e62db8acc5262c2a46f0bb7ae # soc: renesas: rcar-topology: Add support for R-Car capacity awareness
+
+bsp51x:
+ - eb3a525bc1013c9903613253cca1459775bd703b # soc: renesas: rcar-topology: Add support for R-Car capacity awareness
+
+bsp52x:
+  - 0846e66813ab6e611f262d027a03d7ca4fc64ad2 # soc: renesas: rcar-topology: Add support for R-Car capacity awareness
+  - a2d17d3b15769d1e4b78c72742afe33d5b8f0c84 # soc: renesas: rcar-topology: Add missing device for rcar topology
+
+comments:
+  - Is this still needed with temporary kernels?
+  - This should be generic for big.LITTLE instead of specific to R-Car.

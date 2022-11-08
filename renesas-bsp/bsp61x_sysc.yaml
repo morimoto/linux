@@ -1,0 +1,31 @@
+title: "rcar-sysc improvements"
+team: Core
+key: 7963b49e-6636-11eb-a3db-dbea1474d408
+status: New
+
+bsp41x:
+ - 37e0a4f9455dd109e0deea3d00356300e24426f0 # soc: renesas: rcar-sysc: Remove power domains always on for M3N v1.0
+ - 1a0149ae735d1f02019a5af1311ce4380db0ef67 # soc: renesas: rcar-sysc: Support S2RAM
+ - 720540c59029406cda6406b7067fb36a2be4e413 # soc: renesas: rcar-sysc: Improve power domains always on implementation
+ - 495e47e390499c522197352a08f423e8a3b41e83 # soc: renesas: rcar-sysc: Add wait 1us before turning off power domain
+ - 8d8c75cef82fbe802598143ef668662c72f23528 # soc: renesas: rcar-sysc: Adjust the waiting time to cover the worst case
+
+bsp51x:
+ - b69cbc84d92905606f0d7f58d3d5381028eb2e9c # soc: renesas: rcar-sysc: Remove power domains always on for M3N v1.0
+ - 28a7c3395ab839688c87f36b95c030904105f619 # soc: renesas: rcar-sysc: Support S2RAM
+ - 7fbef1384701e08bb78e25a6181036ae5fe81c9d # soc: renesas: rcar-sysc: Improve power domains always on implementation
+ - aadb6597193ae9b1e44abc5d24b4e3a75ef3cb01 # soc: renesas: rcar-sysc: Add wait 1us before turning off power domain
+ - 8d3ce5fb89760567a9a0c437866941ca219a0db6 # soc: renesas: rcar-sysc: Adjust the waiting time to cover the worst case
+
+bsp52x:
+  - 57ccb1c20a4a9489dc3103be185abb7572f919b6 # soc: renesas: rcar-sysc: Add CR7 domain for r8a77980 in quirks_match
+  - 973fbc34bf5dd4d94d09f469b71efe29c8ac6e0c # soc: renesas: rcar-sysc: Remove power domains always on for M3N v1.0
+  - ad70433f1eda0add16372ca9ed8fbedda990da7d # soc: renesas: rcar-sysc: Support S2RAM
+  - e07b497cf41e4609d0db7ce7442a16fb23871fda # soc: renesas: rcar-sysc: Improve power domains always on implementation
+  - ea52a14c974861263937d37dea1a6975dd050f3f # soc: renesas: rcar-sysc: Add wait 1us before turning off power domain
+  - 118bfc69fe4de9797583e82447c75ffbedd66352 # soc: renesas: rcar-sysc: Adjust the waiting time to cover the worst case
+
+comments:
+  - "57ccb1c20a4a9489dc3103be185abb7572f919b6: This is not a quirk, add force-on flag to r8a77980_areas[]"
+  - "973fbc34bf5dd4d94d09f469b71efe29c8ac6e0c is a partial revert of e07b497cf41e4609d0db7ce7442a16fb23871fda"
+  - What are the real limitations? Does this involve races between PSCI and Linux?

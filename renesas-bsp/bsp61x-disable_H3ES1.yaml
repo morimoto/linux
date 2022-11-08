@@ -1,0 +1,17 @@
+title: disable H3ES1 support in the Kernel
+team: IO
+key: 376c9e10-a33e-11ed-b226-a370df81da31
+status: Active
+assignee: Wolfram
+
+upstream:
+ - lore: 20230202092332.2504-1-wsa+renesas@sang-engineering.com
+
+comments:
+ - H3 ES1.* needs many workarounds which become a maintenance burden
+ - because it was only available internally, we agreed to remove upstream support for it
+ - Wolfram created a series to disable H3 ES1 support in the kernel which will be merged into the BSP
+ - this task tracks the upstreaming effort of the above series
+ - first item is to upstream the patch which disables booting on H3 ES1
+ - after that, the H3 ES1 handling code and workarounds can safely be removed
+ - patch to disable booting sent

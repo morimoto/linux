@@ -1,0 +1,135 @@
+============== -*- outline -*- ==============
+
+                BSP rebase README
+
+2022/11/24	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+=============================================
+
+* Before commit
+
+	Let's run sanity-check before commit.
+	No report is required
+
+		> renesas-bsp/script/sanity-check.sh
+
+* Todo
+	Core
+		- BSP is using many "ebisu-xxx" dts, but upstream has only "ebisu".
+		  We can remove these from "remains", and explain about it on "comment"
+		- Let's accept "defconfig" update patch even though it was local patch.
+
+* Files
+
+	full
+		BSP full commits created by
+
+			> git log --oneline --no-merges v5.10.147..renesas-bsp/v5.10.147/rcar-5.2.0.rcX
+
+	remains
+		not yet handled commits
+
+		remains = full - handled - ignored
+
+	handled
+		handled commits
+			- included on v6.1
+			- the issue doesn't happen on v6.1
+			- etc
+
+		Remove target commit from "remains", and add it to "handled"
+
+	ignored
+		BSP real local patches.
+		Remove target commit from "remains", and add it to "ignored"
+		with comment why the it was ignored.
+
+		You can use below script to get raw commits
+
+			> renesas-bsp/script/commit-ignored.sh
+
+	bsp61x-*.yaml
+		PeriJect format todo file for upporting.
+		You can use below script to get raw commits
+
+			> renesas-bsp/script/commit-bsp61x.sh renesas-bsp/bsp61x-*
+
+	comment
+		Some comment to BSP team.
+		ex) XXXX is handled, but BSP solution and upstream solution are different
+
+	cve
+		Handled CVEs
+
+* Git
+	Morimoto
+		https://github.com/morimoto/linux.git  topic/renesas-bsp-rebase-v6.1
+	Wolfram
+		git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git
+	Shimoda
+		https://github.com/shimoday/linux.git
+	Geert
+		git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git
+		https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git
+		https://kernel.googlesource.com/pub/scm/linux/kernel/git/geert/renesas-drivers.git
+	Laurent
+		git://linuxtv.org/pinchartl/media.git topic/renesas-bsp-rebase-v6.1
+
+* Task
+	1) Backport/Handle each "remains" patches on latest renesas-bsp-rebase-v6.1
+	2) Update comment/handled/ignored/remains files accordingly
+	3) Push it to your git repository, and indicate it. Morimoto will merge it.
+	4) back to 1)
+
+* How to handle V3U patch ?
+
+	BSP team is still using V3U, let's keep it.
+
+* How to handle *upportable* patch ?
+
+	If the patch can be upstreamed, but is now trying to,
+	let's apply the patch, and remove it from "remains".
+	The patch can be replaced if the patch was accepted on upstream.
+
+	Let's add it to bsp61x-*.yaml
+
+* How to handle *real* local patch ?
+
+	Remove it from "remains" file, and add it on "ignored" file
+	with reason.
+
+	Please find and use last part of "remains" for now.
+
+	These non-upstreamable commits will be handled by BSP team.
+
+* Schedule
+
+	I could connect to BSP team. The time limit is "End of Feb".
+
+	~ Jan/E
+		- focus "backportable" patches
+			- From linus or linux-next branches
+		- focus "defconfig update" patches
+			- let's accept defconfig update patch even though
+			  it was local patch
+		- focus "upportable" patches
+			- This means, it is still local patch, but can be upported.
+			  Please apply such patch, and remove it from remain file.
+			  And try to upport it. We can replace it if upport has done.
+		- pickup *real* local patch
+			- and move it to "ignored" file.
+
+	~ Feb/E
+		- aggressive backport (if needed)
+		- finalize
+
+	Every Friday
+		I will ask latest git every Friday, and merge it at next Monday.
+		But please don't hesitate to say "did nothing, because of SoW",
+		we never complain about it. We don't know when you are working for Renesas.
+
+* CVEs
+
+	It is reported by using "Linux kernel CVE tracker" (CIP Kernel sec).
+	Handled CVE list on v6.1.1
+
+		https://gitlab.com/cip-project/cip-kernel/cip-kernel-sec.git

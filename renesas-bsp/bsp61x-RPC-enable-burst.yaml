@@ -1,0 +1,19 @@
+title: RPC; enable burst read operation
+team: IO
+key: 7c83dec2-3d6f-11ec-bbab-9b62e2056cce
+status: New
+
+bsp41x:
+ - c419cfd7766efb7bbc95d964586ca3668b61cdb7 # memory: renesas-rpc-if: Use burst read operation
+
+bsp52x:
+ - 1b212c753d0c3122a6b7ef358a71f28b66fd9928 # memory: renesas-rpc-if: Use burst read operation
+
+upstream:
+
+comments:
+ - needs more investigation if burst read support needs more driver updates than this commit
+ - patch dropped from BSP5.1 and no test case, make it a maybe-item
+ - patch reappeared for BSP6.1, moving back
+ - Geert reported that this patch breaks QSPI on Gen3; this needs more investigation
+ - this patch is incomplete because it does not handle wrap around (see DRCR register desc)
