@@ -1,0 +1,110 @@
+#
+# Media
+#
+8fb9f82e224b drm: bridge: ti-sn65dsi86: Add checking to detect bridge device connection failure
+4fa0d1c5fd0e arm64: dts: renesas: r8a779h0-gray-hawk: Add setting for Display
+8d490596fc9a clk: renesas: r8a779h0: Add FCPVD0 clock
+61b876a8fa2c drm: rcar-du: rcar_mipi_dsi: Add R8A779H0 SoC support
+f2fc3314dab2 drm: rcar-du: Add R8A779H0 SoC support
+3396171734c8 drm: rcar-du: rcar_mipi_dsi: fix PHY lock bit mistake in CLOCKSET1
+4405b13d3317 clk: renesas: r8a779h0-cpg-mssr: Update VSP clock
+79b45ffb90e7 media: i2c: max96712: Fix horizontal nosie issue when running 4 cameras on R-Car V4M
+45fd1264d613 arm64: dts: renesas: gray-hawk-csi-dsi: Disable polarity inversion function of MAX96724 MIPI PHY1
+#
+# MMC (ported as is to 6.1 but need upstream solutions)
+#
+d10133565b53 mmc: core: mmc_ops: Enable stop command
+bc75d8c5907a mmc: core: Issue power off notification in mmc_remove()
+#
+# Network
+#
+675bcc5d8cbb net: ethernet: renesas: ravb: Returns an error value when gPTP is not used
+47e1a870dd58 arm64: dts: renesas: Add node to support AVB1/2
+3a2d955daaab net: ethernet: renesas: ravb: Remove PTP initialize in ravb_open()
+fa8a15271377 net: ethernet: renesas: ravb: Fix Null pointer when getting parameters with ethtool
+31968a5bf2b7 ravb: Support ravb driver for R-Car V4M
+f5f257bbef94 arm64: dts: renesas: r8a779g0-whitehawk: Add power-source setting for ethernet
+611328f8fc4a net: ethernet: renesas: ravb: Fix initialization failed in module state on channel 1/2
+cd6678e10496 net: ethernet: renesas: ravb: Fix Deadlock warning related to EthernetAVB
+846d4ecfc9f9 net: ethernet: renesas: rcar_gen4_ptp: Add a function to unregister the PTP device
+d785d96b2961 net: ethernet: renesas: ravb: Fix missing MDIO bus with channel 1/2
+3d545d5e0463 net: ethernet: renesas: ravb: Disable Link Signal Change Interrupt for AVB0
+eae72e77117c net: ethernet: renesas: ravb: Add gPTP support on R-Car V4H
+# Workaround added to 6.1 (2451a288fe93). Task created for further investigation
+20dbf63e6809 Revert "net: phy: consider that suspend2ram may cut off PHY power"
+#
+# PCI
+#
+# next: 23319333146fb856f6e767f419830f6d7114eefc # clk: renesas: r8a779h0: Add PCIe clock
+b8ec226fcba2 clk: renesas: r8a779h0: Add PCIe clock
+#
+# Minor stuff
+#
+# MSIOF FIFO sizes to be investigated (Geert)
+f7f0636f4392 spi: spi-sh-msiof: Add generic structural data for MSIOF on R-Car Gen4.
+# more information needed from Renesas (Geert)
+e1d847bfd3ca dmaengine: rcar-dmac: Add repeat mode support
+3df1d5f023b1 soc: renesas: r8a779g0-sysc: Always-on A3IR, A2CN0, A1CNN0
+#
+# Sound patches (Morimoto-san)
+#
+# upstream v6.12: ebeb40c77b3c3 arm64: dts: renesas: gray-hawk-single: Add Sound support
+caff53d84cb9 arm64: dts: renesas: r8a779h0: Correct compatible string for Audio on R-Car V4M
+61cf5c9632b3 arm64: dts: renesas: r8a779h0: grayhawk: Add R-Car Sound support
+# upstream v6.12: 4200161c564da arm64: defconfig: Enable AK4619 codec support
+973e01582372 arm64: defconfig: Enable AK4619 codec support
+#
+# CAN patches (Geert)
+#
+# V4M upstreaming in progress
+82035924e9ca can: rcar_canfd: Add support for V4M SoC
+a4b78a81b5a9 dt-bindings: can: renesas,rcar-canfd: Document R-Car V4M support
+478beadd7760 clk: renesas: r8a779h0: Add CANFD clock
+6c2f3189955b arm64: dts: renesas: grayhawk: Add CANFD support
+1542b2a6219a arm64: dts: renesas: r8a779h0: Add CAN-FD node
+# to be investigated
+905813c180f4 can: rcar_canfd: Add secondary sample point
+e9ba9ac6fe77 can: rcar_canfd: Configure receive rules
+#
+# PWM patches (to be tested by Geert)
+#
+# next: 362b3204e5509e3810d6ef3ed5a8187755d09fbf # dt-bindings: pwm: renesas,tpu: Add r8a779h0 support
+c27e8001fccf dt-bindings: pwm: tpu: Add support for V4M
+# next: 5cab32997e6ed7269eb7c0549190740c4b42caa7 # dt-bindings: pwm: renesas,pwm-rcar: Add r8a779h0 support
+65b908e6f515 dt-bindings: pwm: Add support for V4M
+# lore: 20240725194906.14644-10-wsa+renesas@sang-engineering.com
+32397139103a clk: renesas: r8a779h0: Add TPU clock
+# next: ab52dd821f89abd3165f5b39936cc08ef2f9169e # clk: renesas: r8a779h0: Add PWM clock
+9800531f0188 clk: renesas: r8a779h0: Add PWM clock
+# next: ca999750b95caf4829dbd89ecff5c673107d257c # arm64: dts: renesas: r8a779h0: Add PWM device nodes
+# lore: 20240725194906.14644-12-wsa+renesas@sang-engineering.com
+fd446b2b77ff arm64: dts: renesas: Add node to support PWM on R-Car V4M
+#
+# VIN related patches (Niklas)
+#
+# Enable video capture pipleine on V4M - In progress
+# lore: 20240527131849.1678877-1-niklas.soderlund+renesas@ragnatech.se
+8471c5bb3f14 dt-bindings: media: rcar-vin: Document R8A779H0 bindings
+# lore: 20240527132429.1683547-1-niklas.soderlund+renesas@ragnatech.se
+df19a197a11a media: rcar-vin: Add support for R-Car R8A779H0 SoC
+# lore: 20240527132513.1684232-1-niklas.soderlund+renesas@ragnatech.se
+a2d284f9c799 media: rcar-vin: rcar-isp: Add support for R8A779H0 SoC
+# lore: 20240527133221.1688830-1-niklas.soderlund+renesas@ragnatech.se
+2a031845abb3 media: rcar-vin: rcar-csi2: Add D-PHY setting for R8A779H0 SoC
+# lore: 20240527133221.1688830-1-niklas.soderlund+renesas@ragnatech.se
+c4427579e253 media: rcar-vin: rcar-csi2: Add compatible string for R8A779H0 SoC
+# lore: 20240527134129.1695450-3-niklas.soderlund+renesas@ragnatech.se
+479990bf87e1 arm64: dts: renesas: gray-hawk: Add CSI/DSI sub-board
+# lore:  20240527134129.1695450-4-niklas.soderlund+renesas@ragnatech.se
+56b79b145b9d arm64: dts: renesas: gray-hawk-csi-dsi: Add and connect MAX96712
+# lore: 20240527134129.1695450-4-niklas.soderlund+renesas@ragnatech.se
+3bdc50fa6840 arm64: dts: renesas: gray-hawk-csi-dsi: Change support to Max96724 Deserializer
+# lore: 20240527132216.1681903-1-niklas.soderlund+renesas@ragnatech.se
+# lore: 20240527133410.1690169-1-niklas.soderlund+renesas@ragnatech.se
+36a34468fc43 media: max96712: Add compatible string for Max96724 Deserializer
+#
+# Add C-PHY pin ordering - In progress (Niklas)
+#
+73be8101dbbe dt-bindings: media: Add specific CSI-2 information for R-Car V4H
+6346917cdaa4 media: rcar-csi2: Add interface for C-PHY Analog pin swap on R-Car V4H
+b879ce6ca34a arm64: dts: renesas: r8a779g0-whitehawk: Add specific CSI-2 information for R-Car V4H
