@@ -1,0 +1,90 @@
+#
+# SoC
+#
+124986c8255c9 arm64: dts: renesas: r8a779h2: Add Gray Hawk V4M-7 support
+9b6ca899736a0 arm64: dts: renesas: Add Renesas R8A779H2 SoC support
+371850fbc4649 arm64: dts: renesas: gray-hawk-cpu: Factor out common parts
+b4264f977baa8 arm64: dts: renesas: gray-hawk: Factor out common parts
+3e71992bbc55f arm64: dts: renesas: white-hawk-sound: Factor out common parts
+96874b1963ed8 arm64: dts: renesas: white-hawk-cpu: Factor out common parts
+324ac3b29faa0 arm64: dts: renesas: white-hawk: Factor out common parts
+#
+# R8A779G3
+#
+099f46961bdb3 arm64: dts: renesas: r8a779g3: Add White Hawk V4H-7 sound support
+# lore: cover.1733156661.git.geert+renesas@glider.be
+bf946ad8ccb36 arm64: dts: renesas: r8a779g3: Add White Hawk V4H-7 support
+94447be9085b3 arm64: dts: renesas: Add Renesas R8A779G3 SoC support
+dcc78f472661 arm64: dts: renesas: r8a779g3: Add White Hawk support
+57f8fb543b7c arm64: dts: renesas: Add Renesas R8A779G3 SoC support
+#
+# Media
+#
+8fb9f82e224b drm: bridge: ti-sn65dsi86: Add checking to detect bridge device connection failure
+4fa0d1c5fd0e arm64: dts: renesas: r8a779h0-gray-hawk: Add setting for Display
+8d490596fc9a clk: renesas: r8a779h0: Add FCPVD0 clock
+61b876a8fa2c drm: rcar-du: rcar_mipi_dsi: Add R8A779H0 SoC support
+f2fc3314dab2 drm: rcar-du: Add R8A779H0 SoC support
+3396171734c8 drm: rcar-du: rcar_mipi_dsi: fix PHY lock bit mistake in CLOCKSET1
+4405b13d3317 clk: renesas: r8a779h0-cpg-mssr: Update VSP clock
+79b45ffb90e7 media: i2c: max96712: Fix horizontal nosie issue when running 4 cameras on R-Car V4M
+89fed544119c dt-bindings: display: renesas: du: Document the r8a779g0 and r8a779h0 bindings
+#
+# MMC (ported as is to 6.1 but need upstream solutions)
+#
+d10133565b53 mmc: core: mmc_ops: Enable stop command
+bc75d8c5907a mmc: core: Issue power off notification in mmc_remove()
+#
+# Network
+#
+47e1a870dd58 arm64: dts: renesas: Add node to support AVB1/2
+f5f257bbef94 arm64: dts: renesas: r8a779g0-whitehawk: Add power-source setting for ethernet
+667534413db9 arm64: dts: renesas: r8a779a0-falcon: Add missing Ethernet-AVB in Falcon board
+# Workaround added to 6.1 (2451a288fe93). Task created for further investigation
+20dbf63e6809 Revert "net: phy: consider that suspend2ram may cut off PHY power"
+#
+# Enable RAVB gPTP for Gen4
+#
+675bcc5d8cbb net: ethernet: renesas: ravb: Returns an error value when gPTP is not used
+3a2d955daaab net: ethernet: renesas: ravb: Remove PTP initialize in ravb_open()
+fa8a15271377 net: ethernet: renesas: ravb: Fix Null pointer when getting parameters with ethtool
+31968a5bf2b7 ravb: Support ravb driver for R-Car V4M
+cd6678e10496 net: ethernet: renesas: ravb: Fix Deadlock warning related to EthernetAVB
+d785d96b2961 net: ethernet: renesas: ravb: Fix missing MDIO bus with channel 1/2
+eae72e77117c net: ethernet: renesas: ravb: Add gPTP support on R-Car V4H
+a4793f2edbaa net: ethernet: renesas: ravb: Kernel panic when performing S2RAM on R-Car Gen4
+#
+# Minor stuff
+#
+# MSIOF FIFO sizes to be investigated (Geert)
+f7f0636f4392 spi: spi-sh-msiof: Add generic structural data for MSIOF on R-Car Gen4.
+# more information needed from Renesas (Geert)
+e1d847bfd3ca dmaengine: rcar-dmac: Add repeat mode support
+3df1d5f023b1 soc: renesas: r8a779g0-sysc: Always-on A3IR, A2CN0, A1CNN0
+# PCI update (Shimoda-san)
+1a1becca92ff PCI: dwc: rcar-gen4: Update the initial setting to align with V4H HWUM v0.81
+#
+# CAN patches (Geert)
+#
+# to be investigated
+905813c180f4 can: rcar_canfd: Add secondary sample point
+e9ba9ac6fe77 can: rcar_canfd: Configure receive rules
+#
+# VIN related patches (Niklas)
+#
+# Enable video capture pipleine on V4M - In progress
+# lore: 20240527134129.1695450-3-niklas.soderlund+renesas@ragnatech.se
+479990bf87e1 arm64: dts: renesas: gray-hawk: Add CSI/DSI sub-board
+# lore:  20240527134129.1695450-4-niklas.soderlund+renesas@ragnatech.se
+56b79b145b9d arm64: dts: renesas: gray-hawk-csi-dsi: Add and connect MAX96712
+# lore:  20240527134129.1695450-4-niklas.soderlund+renesas@ragnatech.se
+45fd1264d613 arm64: dts: renesas: gray-hawk-csi-dsi: Disable polarity inversion function of MAX96724 MIPI PHY1
+# lore: 20240527134129.1695450-4-niklas.soderlund+renesas@ragnatech.se
+3bdc50fa6840 arm64: dts: renesas: gray-hawk-csi-dsi: Change support to Max96724 Deserializer
+952468543edf media: rcar-vin: rcar-csi2: Update D-PHY Start-up sequence to align with R-Car V4M HWUM v0.70
+#
+# Add C-PHY pin ordering - In progress (Niklas)
+#
+73be8101dbbe dt-bindings: media: Add specific CSI-2 information for R-Car V4H
+6346917cdaa4 media: rcar-csi2: Add interface for C-PHY Analog pin swap on R-Car V4H
+b879ce6ca34a arm64: dts: renesas: r8a779g0-whitehawk: Add specific CSI-2 information for R-Car V4H

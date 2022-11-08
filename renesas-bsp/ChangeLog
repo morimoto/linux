@@ -1,0 +1,141 @@
+* v6.1.124-2025-01-14
+
+	* Because it will be error, revert these commits
+
+		commit 95331514d95fae22a13df955275038d531cf85a0)
+		("net: ethernet: renesas: rswitch: C45 only transactions")
+
+		commit 4e4aafcddbbfcdd6eed5780e190fcbfac8b4685a
+		("net: mdio: Add dedicated C45 API to MDIO bus drivers")
+
+* v6.1.124-2025-01-10
+
+	* Merge/Rebase v6.1.124
+
+	* update CVE
+
+* v6.1.123-2025-01-08
+
+	* Merge/Rebase v6.1.123
+
+	* update CVE
+
+* v6.1.122-2025-01-06
+
+	* Merge/Rebase v6.1.122
+
+	* update CVE
+
+* v6.1.121-2024-12-23
+
+	* Merge/Rebase v6.1.121
+
+	* update CVE
+
+* v6.1.120-2024-12-16
+
+	* Merge/Rebase v6.1.120
+
+	* update list
+
+	* update CVE
+
+* v6.1.119-2024-12-06
+
+	* update list
+
+	* Below patches were backported
+
+		commit 1b7e7240eaf39aeebed08e09d0aae86f5f207286
+		("media: rcar-vin: Add support for RAW10")
+
+		commit a1c6d22421501fc1016b99ac8570a1030714c70f
+		("media: staging: max96712: fix copy-paste error")
+
+		commit 5ba5bda6b62e81a1e2e6a41b5e7102a77134ae5a
+		("dt-bindings: media: renesas,csi2: Add binding for V4M")
+
+		commit 27d23cecf33a0d4d95e91dc3524dda4dc3815b06
+		("dt-bindings: media: renesas,isp: Add binding for V4M")
+
+		commit f367e313d2dc91afa578b5adb3d6356b0642cb66
+		("dt-bindings: media: renesas,isp: Add Gen4 family fallback")
+
+		commit 59ba2cd33196d848646d6838d463760e4b78c5dd
+		("media: rcar-isp: Add family compatible for R-Car Gen4 family")
+
+		commit b14257abe7057def6127f6fb2f14f9adc8acabdb
+		("media: rcar-isp: Disallow unbind of devices")
+
+		commit 92850bed9d4d334ee502a035ed5750285faccbea
+		("clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks")
+
+		commit f8da001ae7af0abd9f6250c02c01a1121074ca60
+		("ASoC: audio-graph-card2: Purge absent supplies for device tree nodes")
+
+* v6.1.119-2024-11-26
+
+	* new full2/ignored2/handled2/remain2 are added
+
+	* Below patches were backported
+
+		commit 1a5361189b7acac15b9b086b2300a11b7aa84c06
+		("phy: renesas: r8a779f0-ether-serdes: Add .exit() ops")
+
+		commit aa4c0bbf820ddb9dd8105a403aa12df57b9e5129
+		("phy: renesas: r8a779f0-ether-serdes: Reset in .init()")
+
+		commit d746f127ea5b1d631d48977d1e599c312cbb05c2
+		("phy: renesas: r8a779f0-ether-serdes: Convert to devm_platform_ioremap_resource()")
+
+		commit 89ec686a17914a6b663b11b8bdaf3f966546da32
+		("uio: Constify struct kobj_type")
+
+		commit 6392194470575de1ac0cb7223ff3bf30da94bbea
+		("uio: add missing MODULE_DESCRIPTION() macros")
+
+		commit ebbc1a4789c666846b9854ef845a37a64879e5f9
+		("uio: update kerneldoc comments for interrupt functions")
+
+		commit f8a27dfa4b82d442af1c0645a5acc70cc97c67f6
+		("uio: use threaded interrupts")
+
+		commit 95331514d95fae22a13df955275038d531cf85a0)
+		("net: ethernet: renesas: rswitch: C45 only transactions")
+
+		commit 4e4aafcddbbfcdd6eed5780e190fcbfac8b4685a
+		("net: mdio: Add dedicated C45 API to MDIO bus drivers")
+
+* v6.1.119-2024-11-25
+
+	* Merge/Rebase v6.1.119
+
+	* update CVE
+
+* v6.1.118-2024-11-19
+
+	* update list
+
+* v6.1.118-2024-11-11
+
+	* Merge/Rebase v6.1.118
+
+	* update CVE
+
+* v6.1.117-2024-11-18
+
+	* Merge/Rebase v6.1.117
+
+	* update CVE
+
+* v6.1.116-2024-11-11
+
+	* Merge/Rebase v6.1.116
+
+	* update CVE
+
+* v6.1.115-2024-11-05
+
+	* Merge/Rebase v6.1.115
+
+	* update CVE
