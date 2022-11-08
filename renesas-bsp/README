@@ -1,0 +1,94 @@
+============== -*- outline -*- ==============
+
+             BSP rebase by Upstream team
+
+2023/02		Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+=============================================
+
+* About BSP rebase
+
+	Upstream team rebased BSP v5.2.0-rcX (Linux Kernel v5.10.147 base)
+	to Linux Kernel v6.1.X. Rebased BSP structure is like below.
+
+		(C) xxxxx BSP rebase work on v6.1.X
+		 ^  xxxxx ...
+		 |  xxxxx local patches which is/will posted to upstream ML
+		(B) xxxxx local patches from previous BSP
+		 |  xxxxx backported patches from latest Linux
+		 v
+		(A) xxxxx v6.1.X
+
+	(A) is base kernel (= LTS v6.1.X)
+	(B) are BSP additional patches (backport, etc)
+	(C) is information from Upstream team.
+
+	(C) is for BSP team, but not for customer.
+	Please remove (C) commit when BSP team uses this rebased BSP.
+	^^^^^^^^^^^^^^^^^^^^^^^^
+
+	(C) is including below
+
+		${LINUX}/renesas-bsp
+
+* Original BSP commits
+
+	It has list of target BSP commits since v5.10.147 kernel.
+	BSP team need to handle the commits by themself which was added on top
+	of it *after* Upstream's rebase work if exist.
+	Please see below
+
+		${LINUX}/renesas-bsp/full
+
+* Handled commits / ignored commits
+
+	Upstream team has been trying to upport BSP local patches,
+	thus many of these patches are now upstreamed.
+	We can categorize previous BSP commits into below
+
+		(1) upstreamed, and included in LTS v6.1.X.
+		(2) upstreamed, and included in latest Linux kernel.
+		(3) not yet upstreamed.
+		(4) ignored.
+
+	We did nothing (1) patches because it is already included on base
+	kernel (= LTS v6.1.X).
+	We backported (2) patches into this rebased BSP. Each commit has
+	"cherry picked from" tag.
+	We are trying to upport (3) patches, thus it is not yet included.
+	you can see which one was so in "remains" file.
+
+	But, we ignored (4) patches, because these are..
+
+		(4.1) BSP specific patch which is not possible to upport
+		(4.2) It is not accepable in upstream
+		(4.3) It is wrong solution
+		(4.4) We don't have the board / can't test
+
+	BSP team need to handle (4) patches by themself.
+
+	You can see which commit was included, which commit was ignored,
+	and some comments from Upstream team.
+	Please see below
+
+		${LINUX}/renesas-bsp/comment : (1)/(2)/(3)
+		${LINUX}/renesas-bsp/handled : (1)/(2)
+		${LINUX}/renesas-bsp/remains : (3)
+		${LINUX}/renesas-bsp/ignored : (4)
+
+* About handled CVE
+
+	Upstream team knows that sometimes BSP team is asked about supported CVE from
+	customer. Rebase BSP has support CVE list to support BSP team.
+	It comes from CIP project.
+
+		cip-kernel-sec
+		https://gitlab.com/cip-project/cip-kernel/cip-kernel-sec
+
+	Please see below
+
+		 ${LINUX}/renesas-bsp/cve
+
+* defconfig vs renesas_defconfig
+
+	Upstream team recommend to use "renesas_defconfig" instead of customized defconfig.
+	"renesas_defconfig" doesn't have unrelated configs, and is using "=y" for all configs.
