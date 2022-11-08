@@ -1,0 +1,20 @@
+#
+# MMC (ported as is to 6.1 but need upstream solutions)
+#
+d10133565b53 mmc: core: mmc_ops: Enable stop command
+#
+# Enable RAVB gPTP for Gen4
+#
+675bcc5d8cbb net: ethernet: renesas: ravb: Returns an error value when gPTP is not used
+3a2d955daaab net: ethernet: renesas: ravb: Remove PTP initialize in ravb_open()
+fa8a15271377 net: ethernet: renesas: ravb: Fix Null pointer when getting parameters with ethtool
+cd6678e10496 net: ethernet: renesas: ravb: Fix Deadlock warning related to EthernetAVB
+d785d96b2961 net: ethernet: renesas: ravb: Fix missing MDIO bus with channel 1/2
+eae72e77117c net: ethernet: renesas: ravb: Add gPTP support on R-Car V4H
+a4793f2edbaa net: ethernet: renesas: ravb: Kernel panic when performing S2RAM on R-Car Gen4
+#
+# Minor stuff
+#
+# more information needed from Renesas (Geert)
+e1d847bfd3ca dmaengine: rcar-dmac: Add repeat mode support
+3df1d5f023b1 soc: renesas: r8a779g0-sysc: Always-on A3IR, A2CN0, A1CNN0
