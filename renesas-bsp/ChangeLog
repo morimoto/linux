@@ -1,0 +1,296 @@
+* v6.1.119-2024-12-06
+
+	* update list
+
+	* Below patches were backported
+
+		commit 1b7e7240eaf39aeebed08e09d0aae86f5f207286
+		("media: rcar-vin: Add support for RAW10")
+
+		commit a1c6d22421501fc1016b99ac8570a1030714c70f
+		("media: staging: max96712: fix copy-paste error")
+
+		commit 5ba5bda6b62e81a1e2e6a41b5e7102a77134ae5a
+		("dt-bindings: media: renesas,csi2: Add binding for V4M")
+
+		commit 27d23cecf33a0d4d95e91dc3524dda4dc3815b06
+		("dt-bindings: media: renesas,isp: Add binding for V4M")
+
+		commit f367e313d2dc91afa578b5adb3d6356b0642cb66
+		("dt-bindings: media: renesas,isp: Add Gen4 family fallback")
+
+		commit 59ba2cd33196d848646d6838d463760e4b78c5dd
+		("media: rcar-isp: Add family compatible for R-Car Gen4 family")
+
+		commit b14257abe7057def6127f6fb2f14f9adc8acabdb
+		("media: rcar-isp: Disallow unbind of devices")
+
+		commit 92850bed9d4d334ee502a035ed5750285faccbea
+		("clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks")
+
+		commit f8da001ae7af0abd9f6250c02c01a1121074ca60
+		("ASoC: audio-graph-card2: Purge absent supplies for device tree nodes")
+
+* v6.1.119-2024-11-26
+
+	* new full2/ignored2/handled2/remain2 are added
+
+	* Below patches were backported
+
+		commit 1a5361189b7acac15b9b086b2300a11b7aa84c06
+		("phy: renesas: r8a779f0-ether-serdes: Add .exit() ops")
+
+		commit aa4c0bbf820ddb9dd8105a403aa12df57b9e5129
+		("phy: renesas: r8a779f0-ether-serdes: Reset in .init()")
+
+		commit d746f127ea5b1d631d48977d1e599c312cbb05c2
+		("phy: renesas: r8a779f0-ether-serdes: Convert to devm_platform_ioremap_resource()")
+
+		commit 89ec686a17914a6b663b11b8bdaf3f966546da32
+		("uio: Constify struct kobj_type")
+
+		commit 6392194470575de1ac0cb7223ff3bf30da94bbea
+		("uio: add missing MODULE_DESCRIPTION() macros")
+
+		commit ebbc1a4789c666846b9854ef845a37a64879e5f9
+		("uio: update kerneldoc comments for interrupt functions")
+
+		commit f8a27dfa4b82d442af1c0645a5acc70cc97c67f6
+		("uio: use threaded interrupts")
+
+		commit 95331514d95fae22a13df955275038d531cf85a0)
+		("net: ethernet: renesas: rswitch: C45 only transactions")
+
+		commit 4e4aafcddbbfcdd6eed5780e190fcbfac8b4685a
+		("net: mdio: Add dedicated C45 API to MDIO bus drivers")
+
+* v6.1.119-2024-11-25
+
+	* Merge/Rebase v6.1.119
+
+	* update CVE
+
+* v6.1.118-2024-11-19
+
+	* update list
+
+* v6.1.118-2024-11-11
+
+	* Merge/Rebase v6.1.118
+
+	* update CVE
+
+* v6.1.117-2024-11-18
+
+	* Merge/Rebase v6.1.117
+
+	* update CVE
+
+* v6.1.116-2024-11-11
+
+	* Merge/Rebase v6.1.116
+
+	* update CVE
+
+* v6.1.115-2024-11-05
+
+	* Merge/Rebase v6.1.115
+
+	* update CVE
+
+* v6.1.114-2024-10-23
+
+	* Merge/Rebase v6.1.114
+
+	* update CVE
+
+	* update list
+
+	* Below patches were backported
+
+		commit 89dd679303f4b4a76204c2269a7724b545cd84df
+		("dt-bindings: media: renesas,vin: Add binding for V4M")
+
+		commit 9fba8eb8d55ddd8bb779fee3e36b7d8a6a2924b0
+		("dt-bindings: media: renesas,vin: Add Gen4 family fallback")
+
+		commit cee66375b7f4c03cd944dcc9e0a15eb78edbb24d
+		("dt-bindings: media: renesas,vin: Fix field-even-active spelling")
+
+		commit 9a73e931308f89bfecf18787af29a21a92470fa8
+		("media: rcar-vin: Add family compatible for R-Car Gen4 family")
+
+* v6.1.113-2024-10-18
+
+	* Merge/Rebase v6.1.113
+
+	* update CVE
+
+	* update list
+
+	* Below patches were reverted
+
+		commit 4b45a978b25da1d4de051ed8e91e669e3701d780
+		("arm64: defconfig: Enable Marvell 88Q2XXX PHY support")
+
+		commit 00f11ac71708d2e5e434aa2ef9249f95b5e7e313
+		("net: phy: marvell-88q2xxx: add driver for the Marvell 88Q2110 PHY")
+
+* v6.1.112-2024-10-02
+
+	* Merge/Rebase v6.1.112
+
+	* update CVE
+
+	* update list
+
+	* Below patches were backported
+
+		commit 41ee62317087f249fca0eda56217de69cd399da5
+		("net: renesas: rswitch: Remove setting of RX software timestamp")
+
+		commit d73dcff9eb0d30956e9caa86d0d94d4c8e402037
+		("net: ethernet: renesas: rcar_gen4_ptp: Remove incorrect comment")
+
+		commit 22f5c234141d657a132f230aec08a670ee96232a
+		("ethernet: remove superfluous clearing of phydev")
+
+		commit 4b45a978b25da1d4de051ed8e91e669e3701d780
+		("arm64: defconfig: Enable Marvell 88Q2XXX PHY support")
+
+		commit 00f11ac71708d2e5e434aa2ef9249f95b5e7e313
+		("net: phy: marvell-88q2xxx: add driver for the Marvell 88Q2110 PHY")
+
+		commit b4944dc7b7935a022be7f777d5cf47e0c1becc96
+		("arm64: dts: renesas: white-hawk: ethernet: Describe AVB1 and AVB2")
+
+		commit ced52c6ed257315c922dc870aafbc64dc8bd746d
+		("dt-bindings: can: renesas,rcar-canfd: Document R-Car V4M support")
+
+		commit b3749d434ea48cca473afd440771f048d0860a2e
+		("arm64: dts: renesas: r8a779h0: Add CAN-FD node")
+
+		commit ca999750b95caf4829dbd89ecff5c673107d257c
+		("arm64: dts: renesas: r8a779h0: Add PWM device nodes")
+
+		commit cd0a847aa6c8a08ba948db4ff0dd6d5f94da998d
+		("arm64: dts: renesas: r8a779h0: Add missing iommus properties")
+
+		commit 120c2833b72f4bdbd67ea2cf70b9d96d1c235717
+		("clk: renesas: r8a779h0: Add CANFD clock")
+
+		commit ab52dd821f89abd3165f5b39936cc08ef2f9169e
+		("clk: renesas: r8a779h0: Add PWM clock")
+
+		commit 93d46d465f7dfbcf55096821565f04402088b09d
+		("clk: renesas: rcar-gen4: Remove unused default PLL2/3/4/6 configs")
+
+		commit bd721d922c87a025fe458cc70f7ce5ce72c70e78
+		("clk: renesas: r8a779a0: cpg_pll_configs should be __initconst")
+
+		commit f7444f0fde1f51229c5a4c796730b5caaae0bb6d
+		("clk: renesas: rcar-gen4: Remove unused fixed PLL clock types")
+
+		commit ccdf745bd10f0682bfd87ba5612fabdf57ff1d5b
+		("clk: renesas: rcar-gen4: Remove unused variable PLL2 clock type")
+
+		commit 732a6108ef5eb5fe6b961295d91d80991d724c06
+		("clk: renesas: rcar-gen4: Add support for fractional 9.24 PLLs")
+
+		commit 3284ffb74c75cde0fbad41ab4a7736f56d570bd7
+		("clk: renesas: rcar-gen4: Add support for fixed variable PLLs")
+
+		commit 724620bd711364f352d13563d48ade7b5c5ea297
+		("clk: renesas: rcar-gen4: Add support for variable fractional PLLs")
+
+		commit dd82ab4fdf402461fb768e31f687c7b8ec4eb91f
+		("clk: renesas: rcar-gen4: Use defines for common CPG registers")
+
+		commit 1b131e08e7f2b2271a32361bb0ae466d6cc50fbd
+		("clk: renesas: rcar-gen4: Add support for fractional multiplication")
+
+		commit f719e598439db26f63293ae5992e654ca110af1f
+		("clk: renesas: rcar-gen4: Use FIELD_GET()")
+
+		commit 9edc5c209d3e192baed2230af90591a6dad51607
+		("clk: renesas: rcar-gen4: Clarify custom PLL clock support")
+
+		commit 4897930debb4abb98317b4a18c4f20bad1f71b9f
+		("clk: renesas: rcar-gen4: Removed unused SSMODE_* definitions")
+
+		commit 3b2f834dd3f952a0c69c0dacef68172742acacbc
+		("clk: renesas: cpg-lib: Use DEFINE_SPINLOCK() for global spinlock")
+
+		commit ad3393fefd6427999de8d93accb8ea31e1339fa0
+		("clk: renesas: rcar-gen4: Add support for FRQCRC1")
+
+		commit e1924c6cd148f49b3e3c7085906272b966163bc4
+		("clk: renesas: r8a779g0: Model PLL1/3/4/6 as fractional PLLs")
+
+		commit e4915fc7ded539cc9197fe35da25003cd66533db
+		("clk: renesas: r8a779f0: Model PLL1/2/3/6 as fractional PLLs")
+
+		commit 4c63e9a13560fef7fd42b45f58687b400b958e3c
+		("clk: renesas: r8a779a0: Use defines for PLL control registers")
+
+		commit 2cf316b4c54e8411c91a901a11a3d78db7fd10b7
+		("clk: renesas: r8a779h0: Model PLL1/2/3/4/6 as fractional PLLs")
+
+		commit 898b5bc482b4db4dad8c4cc95f235fb7b88c8e35
+		("clk: renesas: r8a779g0: cpg_pll_configs should be __initconst")
+
+		commit 096311157d2a6bb8f06e28e1143e2a5de6a0183b
+		("clk: renesas: r8a779g0: Fix PCIe clock name")
+
+		commit 5ab16198b431ca4885dbcc3433527fdf5b66be3c
+		("clk: renesas: r8a779g0: Add PCIe clocks")
+
+		commit f154ef08ca637c26178cb7a5c8e7b75952a47ab1
+		("clk: renesas: r8a779g0: Add EtherTSN clock")
+
+		commit 7d5c73d960a94e8c5b5c6eab569c5c8e57709013
+		("clk: renesas: r8a779f0: cpg_pll_configs should be __initconst")
+
+		commit 588d55aba025eeeb9c905401e636a7efc1c54730
+		("clk: renesas: r8a779h0: Initial clock descriptions should be __initconst")
+
+		commit 9407f23d14edd42d372cefee023302bd95c9bca6
+		("dt-bindings: pwm: renesas,tpu: Add r8a779h0 support")
+
+		commit 24e529c5fbcad9a480607bb05128c61ba908a926
+		("dt-bindings: pwm: renesas,pwm-rcar: Add r8a779h0 support")
+
+		commit 4200161c564da91eefe8eeea1151a537290319c7
+		("arm64: defconfig: Enable AK4619 codec support")
+
+		commit ab7d885a33a7ef328a97ccae0d1340b68c3db9ad
+		("arm64: dts: renesas: gray-hawk-single: Add CAN-FD support")
+
+		commit 1200525fbc958a045e71e986ee7542739542d767
+		("arm64: dts: renesas: gray-hawk-single: Add GP LEDs")
+
+		commit d4d9a2fbeaa0efdca0a4cf779aaeff931949c703
+		("arm64: dts: renesas: gray-hawk-single: Add push switches")
+
+		commit ebeb40c77b3c3d19a96b92e067dd8161916a56d6
+		("arm64: dts: renesas: gray-hawk-single: Add Sound support")
+
+		commit 23319333146fb856f6e767f419830f6d7114eefc
+		("clk: renesas: r8a779h0: Add PCIe clock")
+
+* v6.1.111-2024-09-20
+
+	* Merge/Rebase v6.1.111
+
+	* update CVE
+
+	* update list
+		sync with v6.11
+
+* v6.1.110-2024-09-13
+
+	* Merge/Rebase v6.1.110
+
+	* update CVE
+
+	* add README
