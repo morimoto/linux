@@ -19,19 +19,19 @@ definitions:
         description: "device name prefix"
         $ref: /schemas/types.yaml#/definitions/string
       convert-rate:
-        $ref: "/schemas/sound/dai-params.yaml#/$defs/dai-sample-rate"
+        $ref: /schemas/sound/dai-params.yaml#/$defs/dai-sample-rate
       convert-channels:
-        $ref: "/schemas/sound/dai-params.yaml#/$defs/dai-channels"
+        $ref: /schemas/sound/dai-params.yaml#/$defs/dai-channels
       convert-sample-format:
-        $ref: "/schemas/sound/dai-params.yaml#/$defs/dai-sample-format"
+        $ref: /schemas/sound/dai-params.yaml#/$defs/dai-sample-format
       mclk-fs:
-        $ref: "simple-card.yaml#/definitions/mclk-fs"
+        $ref: simple-card.yaml#/definitions/mclk-fs
 
   endpoint-base:
     $ref: /schemas/graph.yaml#/$defs/endpoint-base
     properties:
       mclk-fs:
-        $ref: "simple-card.yaml#/definitions/mclk-fs"
+        $ref: simple-card.yaml#/definitions/mclk-fs
       frame-inversion:
         description: dai-link uses frame clock inversion
         $ref: /schemas/types.yaml#/definitions/flag
@@ -52,11 +52,11 @@ definitions:
         description: Indicates system clock
         $ref: /schemas/types.yaml#/definitions/phandle
       system-clock-frequency:
-        $ref: "simple-card.yaml#/definitions/system-clock-frequency"
+        $ref: simple-card.yaml#/definitions/system-clock-frequency
       system-clock-direction-out:
-        $ref: "simple-card.yaml#/definitions/system-clock-direction-out"
+        $ref: simple-card.yaml#/definitions/system-clock-direction-out
       system-clock-fixed:
-        $ref: "simple-card.yaml#/definitions/system-clock-fixed"
+        $ref: simple-card.yaml#/definitions/system-clock-fixed
 
       dai-format:
         description: audio format.
@@ -72,11 +72,11 @@ definitions:
             - msb
             - lsb
       convert-rate:
-        $ref: "/schemas/sound/dai-params.yaml#/$defs/dai-sample-rate"
+        $ref: /schemas/sound/dai-params.yaml#/$defs/dai-sample-rate
       convert-channels:
-        $ref: "/schemas/sound/dai-params.yaml#/$defs/dai-channels"
+        $ref: /schemas/sound/dai-params.yaml#/$defs/dai-channels
       convert-sample-format:
-        $ref: "/schemas/sound/dai-params.yaml#/$defs/dai-sample-format"
+        $ref: /schemas/sound/dai-params.yaml#/$defs/dai-sample-format
 
       dai-tdm-slot-num:
         description: Number of slots in use.
