@@ -696,6 +696,28 @@ struct device_node *of_graph_get_next_port(struct device_node *parent,
 EXPORT_SYMBOL(of_graph_get_next_port);
 
 /**
+ * of_graph_get_next_port_endpoint() - get next endpoint node in port.
+ * If it reached to end of the port, it will return NULL.
+ * @port: pointer to the target port node
+ * @endpoint: current endpoint node, or NULL to get first
+ *
+ * Return: An 'endpoint' node pointer with refcount incremented. Refcount
+ * of the passed @prev node is decremented.
+ */
+struct device_node *of_graph_get_next_port_endpoint(const struct device_node *port,
+						    struct device_node *endpoint)
+{
+	do {
+		endpoint = of_get_next_child(port, endpoint);
+		if (!endpoint)
+			break;
+	} while (!of_node_name_eq(endpoint, "endpoint"));
+
+	return endpoint;
+}
+EXPORT_SYMBOL(of_graph_get_next_port_endpoint);
+
+/**
  * of_graph_get_next_endpoint() - get next endpoint node
  *
  * @parent: pointer to the parent device node
