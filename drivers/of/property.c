@@ -1122,8 +1122,30 @@ static struct fwnode_handle *
 of_fwnode_graph_get_next_endpoint(const struct fwnode_handle *fwnode,
 				  struct fwnode_handle *prev)
 {
-	return of_fwnode_handle(of_graph_get_next_endpoint(to_of_node(fwnode),
-							   to_of_node(prev)));
+	struct device_node *node = to_of_node(fwnode);
+	struct device_node *port, *endpoint;
+
+	if (prev) {
+		endpoint = to_of_node(prev);
+		port	 = of_get_parent(endpoint);
+	} else {
+		endpoint = NULL;
+		port	 = of_graph_get_next_port(node, NULL);
+	}
+
+	while (1) {
+		endpoint = of_graph_get_next_port_endpoint(port, endpoint);
+		if (endpoint) {
+			of_node_put(port);
+			goto found;
+		}
+
+		port = of_graph_get_next_port(node, port);
+		if (!port)
+			break;
+	}
+found:
+	return of_fwnode_handle(endpoint);
 }
 
 static struct fwnode_handle *
