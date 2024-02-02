@@ -34,8 +34,10 @@ struct of_endpoint {
  * When breaking out of the loop, of_node_put(child) has to be called manually.
  */
 #define for_each_endpoint_of_node(parent, child) \
-	for (child = of_graph_get_next_endpoint(parent, NULL); child != NULL; \
-	     child = of_graph_get_next_endpoint(parent, child))
+	for (struct device_node *___port = of_graph_get_next_port(parent, NULL); ___port != NULL; \
+	     ___port = of_graph_get_next_port(parent, ___port)) \
+		for (child = of_graph_get_next_port_endpoint(___port, NULL); child != NULL; \
+		     child = of_graph_get_next_port_endpoint(___port, child))
 
 /**
  * for_each_of_graph_ports - iterate over every ports in a device node
@@ -74,8 +76,7 @@ struct of_endpoint {
 bool of_graph_is_present(const struct device_node *node);
 int of_graph_parse_endpoint(const struct device_node *node,
 				struct of_endpoint *endpoint);
-
-unsigned int of_graph_get_endpoint_count(const struct device_node *np);
+unsigned int of_graph_get_endpoint_count(struct device_node *np);
 unsigned int of_graph_get_port_count(struct device_node *np);
 struct device_node *of_graph_get_port_by_id(struct device_node *node, u32 id);
 struct device_node *of_graph_get_next_endpoint(const struct device_node *parent,
@@ -87,14 +88,14 @@ struct device_node *of_graph_get_next_port(struct device_node *parent,
 struct device_node *of_graph_get_next_port_endpoint(const struct device_node *port,
 						    struct device_node *prev);
 struct device_node *of_graph_get_endpoint_by_regs(
-		const struct device_node *parent, int port_reg, int reg);
+		struct device_node *parent, int port_reg, int reg);
 struct device_node *of_graph_get_remote_endpoint(
 					const struct device_node *node);
 struct device_node *of_graph_get_port_parent(struct device_node *node);
 struct device_node *of_graph_get_remote_port_parent(
 					const struct device_node *node);
 struct device_node *of_graph_get_remote_port(const struct device_node *node);
-struct device_node *of_graph_get_remote_node(const struct device_node *node,
+struct device_node *of_graph_get_remote_node(struct device_node *node,
 					     u32 port, u32 endpoint);
 #else
 
@@ -109,7 +110,7 @@ static inline int of_graph_parse_endpoint(const struct device_node *node,
 	return -ENOSYS;
 }
 
-static inline unsigned int of_graph_get_endpoint_count(const struct device_node *np)
+static inline unsigned int of_graph_get_endpoint_count(struct device_node *np)
 {
 	return 0;
 }
@@ -154,7 +155,7 @@ static inline struct device_node *of_graph_get_next_port_endpoint(
 }
 
 static inline struct device_node *of_graph_get_endpoint_by_regs(
-		const struct device_node *parent, int port_reg, int reg)
+		struct device_node *parent, int port_reg, int reg)
 {
 	return NULL;
 }
@@ -183,7 +184,7 @@ static inline struct device_node *of_graph_get_remote_port(
 	return NULL;
 }
 static inline struct device_node *of_graph_get_remote_node(
-					const struct device_node *node,
+					struct device_node *node,
 					u32 port, u32 endpoint)
 {
 	return NULL;
