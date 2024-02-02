@@ -794,7 +794,7 @@ EXPORT_SYMBOL(of_graph_get_next_endpoint);
  * ignored when they are -1. Use of_node_put() on the pointer when done.
  */
 struct device_node *of_graph_get_endpoint_by_regs(
-	const struct device_node *parent, int port_reg, int reg)
+	struct device_node *parent, int port_reg, int reg)
 {
 	struct of_endpoint endpoint;
 	struct device_node *node = NULL;
@@ -904,7 +904,7 @@ EXPORT_SYMBOL(of_graph_get_remote_port);
  *
  * Return: count of endpoint of this device node
  */
-unsigned int of_graph_get_endpoint_count(const struct device_node *np)
+unsigned int of_graph_get_endpoint_count(struct device_node *np)
 {
 	struct device_node *endpoint;
 	unsigned int num = 0;
@@ -943,7 +943,7 @@ EXPORT_SYMBOL(of_graph_get_port_count);
  * Return: Remote device node associated with remote endpoint node linked
  * to @node. Use of_node_put() on it when done.
  */
-struct device_node *of_graph_get_remote_node(const struct device_node *node,
+struct device_node *of_graph_get_remote_node(struct device_node *node,
 					     u32 port, u32 endpoint)
 {
 	struct device_node *endpoint_node, *remote;

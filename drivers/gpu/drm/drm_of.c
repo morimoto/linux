@@ -234,7 +234,7 @@ EXPORT_SYMBOL_GPL(drm_of_encoder_active_endpoint);
  *
  * Returns zero if successful, or one of the standard error codes if it fails.
  */
-int drm_of_find_panel_or_bridge(const struct device_node *np,
+int drm_of_find_panel_or_bridge(struct device_node *np,
 				int port, int endpoint,
 				struct drm_panel **panel,
 				struct drm_bridge **bridge)
@@ -479,7 +479,7 @@ EXPORT_SYMBOL_GPL(drm_of_get_data_lanes_count);
  * * -EINVAL - the "data-mapping" property is unsupported
  * * -ENODEV - the "data-mapping" property is missing
  */
-int drm_of_get_data_lanes_count_ep(const struct device_node *port,
+int drm_of_get_data_lanes_count_ep(struct device_node *port,
 				   int port_reg, int reg,
 				   const unsigned int min,
 				   const unsigned int max)

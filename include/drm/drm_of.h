@@ -46,7 +46,7 @@ int drm_of_component_probe(struct device *dev,
 int drm_of_encoder_active_endpoint(struct device_node *node,
 				   struct drm_encoder *encoder,
 				   struct of_endpoint *endpoint);
-int drm_of_find_panel_or_bridge(const struct device_node *np,
+int drm_of_find_panel_or_bridge(struct device_node *np,
 				int port, int endpoint,
 				struct drm_panel **panel,
 				struct drm_bridge **bridge);
@@ -55,7 +55,7 @@ int drm_of_lvds_get_dual_link_pixel_order(const struct device_node *port1,
 int drm_of_lvds_get_data_mapping(const struct device_node *port);
 int drm_of_get_data_lanes_count(const struct device_node *endpoint,
 				const unsigned int min, const unsigned int max);
-int drm_of_get_data_lanes_count_ep(const struct device_node *port,
+int drm_of_get_data_lanes_count_ep(struct device_node *port,
 				   int port_reg, int reg,
 				   const unsigned int min,
 				   const unsigned int max);
@@ -94,7 +94,7 @@ static inline int drm_of_encoder_active_endpoint(struct device_node *node,
 {
 	return -EINVAL;
 }
-static inline int drm_of_find_panel_or_bridge(const struct device_node *np,
+static inline int drm_of_find_panel_or_bridge(struct device_node *np,
 					      int port, int endpoint,
 					      struct drm_panel **panel,
 					      struct drm_bridge **bridge)
@@ -123,7 +123,7 @@ drm_of_get_data_lanes_count(const struct device_node *endpoint,
 }
 
 static inline int
-drm_of_get_data_lanes_count_ep(const struct device_node *port,
+drm_of_get_data_lanes_count_ep(struct device_node *port,
 			       int port_reg, int reg,
 			       const unsigned int min,
 			       const unsigned int max)
@@ -150,7 +150,7 @@ mipi_dsi_host *drm_of_get_dsi_bus(struct device *dev)
  *
  * Returns zero if successful, or one of the standard error codes if it fails.
  */
-static inline int drm_of_panel_bridge_remove(const struct device_node *np,
+static inline int drm_of_panel_bridge_remove(struct device_node *np,
 					     int port, int endpoint)
 {
 #if IS_ENABLED(CONFIG_OF) && IS_ENABLED(CONFIG_DRM_PANEL_BRIDGE)
