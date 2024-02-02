@@ -79,8 +79,6 @@ int of_graph_parse_endpoint(const struct device_node *node,
 unsigned int of_graph_get_endpoint_count(struct device_node *np);
 unsigned int of_graph_get_port_count(struct device_node *np);
 struct device_node *of_graph_get_port_by_id(struct device_node *node, u32 id);
-struct device_node *of_graph_get_next_endpoint(const struct device_node *parent,
-					struct device_node *previous);
 struct device_node *of_graph_get_next_ports(struct device_node *parent,
 					    struct device_node *ports);
 struct device_node *of_graph_get_next_port(struct device_node *parent,
@@ -122,13 +120,6 @@ static inline unsigned int of_graph_get_port_count(struct device_node *np)
 
 static inline struct device_node *of_graph_get_port_by_id(
 					struct device_node *node, u32 id)
-{
-	return NULL;
-}
-
-static inline struct device_node *of_graph_get_next_endpoint(
-					const struct device_node *parent,
-					struct device_node *previous)
 {
 	return NULL;
 }
