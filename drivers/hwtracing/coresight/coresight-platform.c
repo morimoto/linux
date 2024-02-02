@@ -263,7 +263,7 @@ static int of_get_coresight_platform_data(struct device *dev,
 {
 	int ret = 0;
 	struct device_node *ep = NULL;
-	const struct device_node *parent = NULL;
+	struct device_node *parent = NULL;
 	bool legacy_binding = false;
 	struct device_node *node = dev->of_node;
 
