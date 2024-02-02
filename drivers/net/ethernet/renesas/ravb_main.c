@@ -2958,6 +2958,9 @@ static int ravb_wol_setup(struct net_device *ndev)
 	/* Enable MagicPacket */
 	ravb_modify(ndev, ECMR, ECMR_MPDE, ECMR_MPDE);
 
+	if (priv->info->ccc_gac)
+		ravb_ptp_stop(ndev);
+
 	return enable_irq_wake(priv->emac_irq);
 }
 
@@ -2990,16 +2993,15 @@ static int ravb_suspend(struct device *dev)
 	netif_device_detach(ndev);
 
 	rtnl_lock();
-	if (priv->wol_enabled)
+	if (priv->wol_enabled) {
 		ret = ravb_wol_setup(ndev);
-	else
-		ret = ravb_close(ndev);
+		rtnl_unlock();
+		return ret;
+	}
+
+	ret = ravb_close(ndev);
 	rtnl_unlock();
-
-	if (priv->info->ccc_gac)
-		ravb_ptp_stop(ndev);
-
-	if (priv->wol_enabled)
+	if (ret)
 		return ret;
 
 reset_assert:
