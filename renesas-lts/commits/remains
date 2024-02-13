@@ -1,0 +1,459 @@
+69e19cdfb2cd3 drivers: usb: dwc3: renesas: Reset the controller before hardware initialization
+310014c756cdc arm64: defconfig: Enable virtio-scmi and virtio-i2c
+639c7136f744f arm64: dts: renesas: perceptor: Temporarily disable some drivers in SDKv4.37.0
+b2183b68ddc8a arm64: dts: renesas: perceptor-uio: Add UIO variant without power-domains
+610254cb39547 arm64: dts: renesas: perceptor-uio: Add UIO device support for R8J78070 (R-Car X5HAIH)
+d7f9e0f6feafb arm64: dts: renesas: Add R8J78070 Perceptor board code
+54573ede44e11 arm64: dts: renesas: Add R8J78070 X5HAIH(MDP) DTs
+5df450e29a251 clk: scmi: return 0 instead of -EACCES for restricted clocks on R-Car X5H only
+58e9d9b4f85a5 arm64: defconfig: Disable unused CONFIG_RCAR_SCP_FIXUP
+c1f36d01f9924 firmware: arm_scmi: Remove SCP clock rate fixup workaround
+5cb8af836a786 serial: sh-sci: Use hardcored fck rate as fallback only
+dfb7a0164bb77 arm64: defconfig: Enable NUMA support
+5aedfba433ea5 uio: uio_pdrv_genirq: Fix coding style issues
+ea9ddc30c75ee PCI: dwc: rcar-gen5: Remove rcar_gen5_pcie6_set_max_link_width() function from PCIe6 driver
+e479c887e49d8 net: ethernet: renesas: rswitch3: restart all TX queues on open
+0d57e837518ed kconfig: Enable GCC_ASM_GOTO_OUTPUT_BROKEN on GCC 15
+0bcb5baa8c908 clk: Fix clk_set_rate bail-early to respect CLK_GET_RATE_NOCACHE flag
+835689d9e8489 dt-bindings: display: bridge: Add TI TDP2004 DisplayPort redriver
+ea985b65217d4 misc: ti-tdp2004: Add suspend/resume support
+be1910924336f drm: bridge: dw_dp: Fix coding style issues
+a8ddc2da4cd10 dt-bindings: display: Add Renesas R-Car VCON and DisplayPort TX bindings
+003689939ed38 drm: bridge: dw_dp: Fix link enable failure on DP_MSTM_CTRL NACK
+64a5b50d95489 arm64: configs: defconfig: Enable RPMSG_CHAR and RPMSG_CTRL
+833a901723a66 dt-bindings: soc: renesas: Document R-Car Gen5 KCRC controller
+059caeb6ca366 dt-bindings: soc: renesas: Document R-Car Gen5 WCRC controller
+46d01b46f68bd dt-bindings: soc: renesas: Document R-Car Gen5 CRC controller
+266fbbe51d097 soc: renesas: crc-wrapper: Remove unused variable in wcrc_release()
+4cc748ee6835c soc: renesas: kcrc-drv: Fix drvdata set order in kcrc_probe
+8061388098c3a drivers: soc: renesas: Add suspend/resume support for wcrc
+7314eeabfbcbf net: ethernet: renesas: rswitch3: Fix peer port link loss on cable unplug
+6911e61401e11 arm64: dts: renesas: Correct Max96726's GPIO pin for power control
+c44387cfc7a90 arm64: defconfig: Align R-Car X5H's DT with Linux kernel 6.12 implementation
+58a1e3ea3d859 drm: Add R14/16/20/24/28 FourCC
+e2f40ffbbe813 arm64: defconfig: Enable PL011 UART console support
+081598b3eb3fe arm64: defconfig: enable BLK_DEV_NVME
+4b1e5da394b2e drivers: soc: renesas: Support new modes for Renesas CRC
+e337fab68d818 drivers: soc: renesas: Add driver for Renesas CRC
+e851ab936494b arm64: dts: renesas: r8a78000: Enable LUT, CLU, HGO for VSPB
+694f51a71bbbf arm64: defconfig: Clear localversion and enable DEVFREQ_GOV_USERSPACE
+fed9c753ac46a arm64: dts: renesas: ironhide-common: Update display device nodes
+6dbd9db24b86d arm64: dts: r8a78000: Update display device nodes
+3028815674553 media: renesas: vsp1: Fix du_complete race condition issue
+c857b1ccac929 media: renesas: rcar-fcp: Add explicit clock control
+24b15cedce9a6 media: renesas: vsp1: Add explicit clock control
+b281fac5f94fe drm: bridge: dw_dp: Add MST mode support
+0fb1d383ca17e drm: bridge: dw_dp: Update to support R-Car operation
+48ccfd1ab9cdc The DW DP TX Controller is compliant with the DisplayPort Specification Version 1.4 with the following features:
+615be5b64468a phy: Add phy_set_dp_format() to configure DP pixel encoding
+cf52dc98b72c3 phy: phy-core: Add phy_init_post functions for using in the future
+14ecad299ac2d drm: rcar-vcon: Add VCON support on X5H SoC
+48e6289016a85 misc: ti-tdp2004: Add simple driver for disabling the default test mode
+f53d9ae144900 media: vsp1: Add support for VSPD (b) instance of R-Car X5H
+60d3e2b33a3fb media: vsp1: Fix setting control register by display list
+6614ef9805501 media: vsp1: Fix access to reserved registers
+fba03bd67912f PCI: dwc: rcar-gen5: Remove redundant PCIe4 host code
+50128ee9f5b08 PCI: dwc: rcar-gen5: Remove MDLC hardcode setting from PCIe4 driver
+6e030373602e8 PCI: dwc: rcar-gen5: Add reset handler for PCIe4 PERST#
+882bd358366ec PCI: dwc: rcar-gen5: Replace host_init with init callback
+6a12b797e6b9c PCI: dwc: rcar-gen5: Fix dependency for PCIe4 host driver
+5554127568731 PCI: dwc: rcar-gen5: Add suspend/resume support for PCIe4
+48fc98fd91768 PCI: dwc: rcar-gen5: Remove PERST# handling from PCIe4 driver
+cbac86cc0307d PCI: dwc: rcar-gen5: Correct license and author info in PCIe4 host driver
+c66dc855cd947 PCIe: dwc: rcar: Add check_speed() to retrain link if speed mismatch
+771b6ef4306b6 PCIe: dwc: rcar: Fix set_device_type function
+c066a0c674cac PCI: dwc: rcar: Integrate MP-PHY set_mode ops into PCIe4 driver
+0dce1fe951d02 PCIe: dwc: rcar: Temporarily remove PERST# handling from driver
+3f51666d81413 PCIe: dwc: rcar: Rename clkreq to perst to reflect actual usage
+0954cd93a2591 PCIe: dwc: rcar: Integrate MP-PHY into PCIe4 driver
+68089763ace5b PCI: dwc: rcar: Add PCIe4 Host driver for R-Car Gen5
+e841452b1cce9 dmaengine: dw-edma: Extend chip data with HDMA register offsets
+548277a1dce23 PCI: dwc: rcar-gen5: Configure custom HDMA layout for r8a78000
+4ef2b7ae35206 dmaengine: dw-edma: Support customer HDMA channel register layout
+fea35dd258433 PCI: dwc: rcar-gen5: Update PCIe 6.0 driver to support for channel 1
+3c241693aaba5 PCI: dwc: rcar-gen5: Update PCIe 6.0 DMA support
+ab3b5ab1bb3ea PCI: dwc: rcar: Get rid of PCI_MSI_IRQ_DOMAIN
+3becdc33a4ce9 misc: pci_endpoint_test: Add deviceID for R-Car X5H PCIe EP device support
+3d2588398dbb7 arm64: dts: renesas: r8a78000: Update PCIe 6.0 dts for channel 1
+0612809dc937d PCI: dwc: rcar-gen5: Update PCIe 6.0 driver for v6.12.80 compatibility
+4dbc683d16921 PCI: dwc: rcar-gen5: Update PCIe 6.0 DWC to kernel v6.12.80
+1f3bb25eae182 PCI: dwc: rcar-gen5: Add reset handler for PCIe6
+35db1e3957cef PCI: dwc: rcar-gen5: Load PCIe6 ICCM/DCCM firmware
+89105845f94ef PCI: dwc: rcar-gen5: Update PCIe 6.0 to support Gen6 x8 lane
+81caa3b225e0e PCI: dwc: rcar-gen5: Remove MDLC hardcode setting from PCIe6 driver
+3fffa8d878a11 PCI: dwc: rcar-gen5: Move the PERST# get resource to PCIe6 host driver
+b0c168d821e7a PCI: dwc: rcar-gen5: Add reset handler for PCIe6 PERST#
+1d04af41aff10 PCI: dwc: rcar-gen5: Enable DMA interrupt for PCIe6
+cf8c647cd130a PCI: dwc: rcar-gen5: Add suspend/resume support for PCIe6
+ce6ec8b3fbf88 PCI: dwc: rcar-gen5: Add HW Workaround setting for PCIe6 Endpoint
+a29edc13184b7 PCI: dwc: rcar-gen5: Update bootload setting for PCIe6
+bf255f125f98d PCI: dwc: rcar-gen5: Update new FW for PCIe6 to support Gen5 speed
+96c93f97ac8b0 PCI: dwc: rcar-gen5: Remove PCIe6 unused function declarations from header
+7224fc872b1e9 PCI: dwc: rcar-gen5: Add static to PCIe6 internal functions to prevent external access
+ea36089ed61e8 PCI: dwc: rcar-gen5: Update PCIe6 bootloader setting
+dba0ca38db078 PCI: dwc: rcar-gen5: Add update FW function for PCIe6
+fbabf9fec103c PCI: dwc: rcar-gen5: Re-enable speed check after link up
+4f9b53fdf4c30 PCI: dwc: rcar-gen5: Correct license information in PCIe6 driver
+ecb61c355bd8f PCI: dwc: rcar-gen5: Rename MSI IRQ handlers for PCIe6
+4529a8f703592 PCI: dwc: rcar-gen5: Update PCIe6 RC and EP driver init settings
+cfb9afd342013 PCI: dwc: rcar-gen5: Disable multi-function support for PCIe6 EP
+6dc05f320ee61 PCI: dwc: rcar-gen5: Use readl_poll_timeout() for PMD RX/TX ACK check
+76ba4d0fe9e4e PCI: dwc: rcar-gen5: Map PHY base address for PCIe6
+a854d1c1c917f PCI: dwc: rcar-gen5: Add R-Car Gen5 PCIe 6.0 Controller
+e3701a3900617 PCI: dwc: rcar-gen5: Add EXPORT_SYMBOL_GPL() for raise_msix_irq() function
+73a184c3415e1 PCI: dwc: rcar-gen5: Add get link speed function for PCIe 6.0
+102ff0d331dd0 PCI: dwc: rcar-gen5: Add R-Car Gen5 PCIe 6.0 Host and Endpoint support
+7557c399f4996 phy: renesas: Reorder Module Standby sequence of PCS to avoid HW limitation on R-Car Gen5
+6f4acf45eaf29 ASoC: ak4619: Add suspend and resume callbacks
+9dc44dbe97bf6 ASoC: rsnd: Handle module clocks dynamically for Gen5 S2R support
+22352f60b8701 ASoC: rsnd: ssiu: Add missing .quit callback for gen5
+90b184b0b004e ASoC: renesas: Support SRC and DVC on R-Car X5H
+e445f7b697995 ASoC: renesas: Update SSIU, SSI, ADG based on TS 0.36 for R-Car X5H
+edd311e97477e ASoC: renesas: Add R-Car X5H to R-Car Sound Driver
+274c090b34b54 Revert "ASoC: rsnd: use snd_pcm_direction_name()"
+6623fc9205dd9 pwm: tpu: Add S2R support for R-Car X5H TPU driver
+190c66b1ae4b8 pwm: tpu: Add SCMI clock support for R-Car X5H TPU driver
+db39bcc236d8f pwm: tpu: Add compatible string for X5H
+88b937b757c6e pwm: rcar: Add S2R support for R-Car X5H PWM driver
+b983d47b8e8f2 pwm: rcar: Add SCMI clock support for R-Car X5H PWM driver
+e302251e40c3e rtc: rcar: Add SCMI clock support for R-Car X5H RTC Driver
+db17ccea5af44 rtc: rcar: Add additional information for proc interface
+f018e70966742 rtc: rcar: Add support for interrupt requests generator and output pulse control
+1b175469ffe6c rtc: rcar: Update time reading procedure
+83c267fb1952c rtc: rcar: Add compatible string for X5H
+07c2583004656 rtc: Add Renesas R-Car RTC driver
+d237466d40574 arm64: dts: renesas: ironhide-coresight: Add Coresight support
+35bf27d8ee50b arm64: defconfig: Enable ARM-SMMU-V3 as defconfig
+491e6f6c41851 iommu/arm-smmu-v3: Add suspend/resume support for Renesas RCar Gen5
+b5ebfbe9afee0 hwspinlock: rcar: Add support for R-Car X5H SoC
+c9ee6f8da9258 hwspinlock: rcar: Add support for R-Car Gen3 Hardware Spinlock
+0e019db4a1c22 arm64: dts: renesas: add scmi clock for RWDT driver
+57baa7b965bc5 renesas: watchdog: enable clock and support devicetree fallback rate
+7c9883b7f7d9c renesas: watchdog: add compatible string to support R-Car Gen5 Soc.
+46d70efe141e4 ufs/host/ufs-renesas-rcar-gen5: Reorder Module Standby sequence of UFS to avoid HW limitation on R-Car Gen5
+115d1ea408294 drivers/ufs/host/ufs-renesas-rcar-gen5: Use PA_INITIAL_ADAPT instead of PA_NO_ADAPT
+8be09cd032cf5 ufs: renesas: ufs-renesas-rcar-gen5: Resume control on R-Car X5H
+2e2cd601719b2 ufs: ufs-renesas-rcar-gen5: switch DME access to ufshcd helpers and enable interrupt handling
+e7ecf3094e2fc ufs: renesas: ufs-renesas-rcar-gen5: switch from FASTAUTO mode to FAST mode
+438f9b6881575 ufs: host: Update support suspend/resume for Renesas R-Car Gen5 UFS
+98b9524fd041e ufs:core:ufshcd: Disable MCQ mode
+42002271bbf59 ufs: host: Add support for Renesas R-Car Gen5 UFS
+8282d3938a8e0 clocksource: sh_tmu: Remove hardcoded clock rate and use dummy clk rate
+6fb7ec5a4ea60 clocksource: sh_tmu: Avoid re-enabling PM runtime if already enabled
+e21296336d86e clocksource: sh_tmu: Hardcode clock rate and check TMU timer clock signal
+d5780e150cd5b clocksource: sh_cmt: Remove hardcoded clock rate and use dummy clk rate
+2a36bf7d5c77e clocksource: sh_cmt: Avoid re-enabling PM runtime if already enabled
+5ef300890f431 clocksource: sh_cmt: Hardcode clock rate and check CMT timer clock signal
+04d7dd2057258 clocksource: sh_cmt: Correct some information to be more suitable for R-Car Gen5
+6997330a07b78 clocksource: sh_tmu: Support shared interrupts for Timer(TMU) on VDK
+c31e1227e49a5 clocksource: sh_cmt: Support shared interrupts for Timer(CMT) on VDK
+2b48c21f5b725 clocksource: sh_cmt: Add R-Car Gen5 support
+dcdc482d30d4e spi: spi-sh-msiof: Update clk handling for MSIOF
+21287925e4cf5 spi: spi-sh-msiof: Support MSIOF for R-Car X5H
+b0cb584b5a4c0 arm64: defconfig: Enable CONFIG_REMOTEPROC
+a3add0ebfc479 samples: rpmsg: Add an RPMsg performance sample
+e3033758de6ff remoteproc: rcar_gen5_rproc: Add R-Car Gen5 remoteproc driver
+b5f2dd2f5bf14 arm64: defconfig: Enable DWC3 USB support
+da48ba7a26174 phy: renesas: mp-phy-rcar-gen5: Reorder Module Standby sequence of MP-PHY to avoid HW limitation on R-Car Gen5
+957ce0a78c01a net: ethernet: renesas: Add R-Car Gen5 Ethernet-TSN support
+8ce4c96a031bf arm64: dts: renesas: r8a78000: Add Ethernet-TSN node
+6b51bf39234ea dt-bindings: net: renesas: Add R-Car Gen5 Ethernet TSN binding
+92e265cd95026 arm64: defconfig: Enable networking options for RTSN
+7367debc0f647 net: ethernet: renesas: Order RSWITCH3 before RTSN
+698d27817ba1f tee: Update optee driver to Rev1.0.12
+24235e7119b8e tee: Support to get the R-Car software revision of the Trusted OS
+af54c6a82a07f optee: Update the number of CPU cores
+ecec71b6711cf tee: rcar: Update NS LOG area address
+ba0bef089cbcb optee driver: stop log thread when module is unloaded
+c62fbde205a00 tee: optee: rcar: invoke_fn() callback is element of smc_abi
+283114b11e078 tee: optee: Added optee_rcar_suspend_sync and optee_rcar_resume functions
+69cc72d55e19f tee: optee: notif: Allow to freeze while waiting
+b0814ad1809e6 tee: optee: Allow to freeze while waiting for call_queue
+1050e64833d40 tee: optee: Allow to freeze the task waiting for tee-supplicant
+9350d972c1a9f tee: optee: add SMC of NORMAL_WORLD_COMPLETE_INIT to rcar_optee_init_debug_log()
+df904dbbba0ab tee: optee: Modify duration of spinlock for list
+b5060762ad0be tee: optee: Change wait to interruptible
+26c97f1964f28 tee: optee: Change workqueue to kthread in debug log function
+12ba1682c332b tee: optee: add r-car original function
+8af240c0114ae mtd: hyperbus: rpc-if: Add suspend/resume procedure
+3c82115c22b2e memory: renesas-rpc-if: Modify DDR Timing and burst read operation
+a74fae795b069 memory: renesas-rpc-if: Add R-Car Gen5 support
+eb950a5a2f32e dt-bindings: memory-controllers: Document R-Car X5H support
+0dcad58ff9cf7 mmc: renesas_sdhi: Add R-Car Gen5 support
+8590e8b5b6fb2 mmc: renesas_sdhi: host: Change to get, set rate from SD clock when support clk-scmi
+3d0806643a3e9 mmc: renesas_sdhi: Enable clock via core clock
+decb1ca915d37 firmware: arm_scmi: mailbox: increase max_msg_size for R-Car X5H
+55caf7ed87b53 arm64: dts: renesas: r8a78000: Add thermal support
+f421d2b53ef75 arm64: dts: renesas: r8a78000: Reorder USB node definitions
+41d5ef4bf3746 can: rcar_canxl: Add suspend/resume support
+0693624151171 can: rcar_canxl: Convert to DEFINE_SIMPLE_DEV_PM_OPS()
+eb79bdca3bad8 can: rcar_canxl: Invert CAN clock and close_candev() order
+9643269930092 can: rcar_canxl: Extract rcar_canxl_global_{,de}init()
+291fa95f9520b rcar_canxl: add scmi reset handler support
+21e6411f6ed5e rcar_canxl: add unlock key register write sequence
+f7ed78966680b can: rcar_canxl: Add SCMI clock support and fix clock handling
+4a8dff636b18e canxl: update start address and ending of TX FIFO
+a7848c71abd00 rcar_canxl: Implement CRC computation
+86d4a2271f697 can: rcar_canxl: update source code for X5H bring up
+774f76be3e581 can: rcar_canxl: Fix data reception issue
+a8526aa0d3886 can: rcar_canxl: Support CAN-FD frame on CAN-XL bus
+91220af9e7278 can: rcar_canxl: Add support for X5H SoC
+aa9efcb4a4199 wwdt: rcar: add suspend/resume support
+66f594fe8aec4 wwdt: rcar: add window watchdog support on R-Car X5H
+9fa86c4e31cf8 MAINTAINERS: add Renesas WWDT driver
+0fb4821812362 arm64: dts: ironhide: drop unused I2C sensor node in I3C
+5c28e19452016 i3cdev: i3c: Add sysfs attribute for IBI handling in userspace
+d05fe7100a5be i3c: rcar: add suspend/resume support
+74cba0f5d76ae i3c: rcar: Add support for in-band interrupts
+4f2b8b6329870 i3c: rcar: add "force-i2c" DT property for testing I2C mode
+49619329c5120 i3c: add i3cdev module to expose i3c dev in /dev
+de9f99ad308c9 i3c: master: add i3c_for_each_dev helper
+d04030e7de8b0 i3c: master: export i3c_masterdev_type
+28637409e70a0 i3c: rcar: feat: add I2C legacy support
+9fe94ef68a2f2 i3c: rcar: add I3C driver support for R-Car X5H
+64eec21623eab dt-bindings: i3c: Add binding for Renesas R-Car I3C master controller
+7f17b5cba2d14 can: rcar_canfd: set clock rate to match hardware specification
+cf95bd44b7149 arm64: dts: r8a78000: add fallback clockrate for CANFD driver
+ca14d0ada85ac can: rcar_canfd: Register each IRQ number for each channel on R-Car X5H
+6b9990f578a43 canfd: add scmi clk support and temporarily skip PM-Reset
+530d6950eaa9f can: rcar_canfd: Add support for X5H SoC
+5e2007803b669 arm64: dts: renesas: remove EEPROM device from i2c0
+08edefda03318 arm64: dts: r8a78000: add scmi clock and reset for I2C
+04aec4b7e48b8 serial: sh-sci: Hardcode fck rate with SCP fixup for R-Car Gen5
+7e8fec9315ad4 net: renesas: rswitch3: Restore PTP timer when resumming
+c78304415e503 net: ethernet: renesas: rcar_gen4_ptp: Add hardware reinit support on resume
+621a35524fbf0 net: renesas: rswitch3: Control clock when S2RAM
+40ce4abaf5186 net: renesas: rswitch3: Disable clock if error
+a484aa3157560 phy: renesas: Change clock control for PCS S2RAM
+b5d7ad443db09 net: ethernet: renesas: rswitch3: Map TX/RX queues to dedicated interrupts for GWCA chains
+8e87a2ae2f058 net: ethernet: renesas: rswitch3: Add TX and RX multi-queue support
+47cf3db6a67c7 net: renesas: rswitch3: Refactor NAPI implementation to support multi-queue
+02e7319c830d7 net: renesas: rswitch3: Implement NAPI for TX
+00595beff634d net: renesas: rswitch3: fix MPIC.PSMCS discontiguous bitfield
+b03c88e8f68e2 net: renesas: rswitch3: fix PSMCS calc with clk fallback
+c19bcd8e28ab1 net: renesas: rswitch3: Update the flow for handling suspend and resume for RSwitch3
+fe5787569fabd net: renesas: rswitch3: add DT fixed-link support
+a00ef40a06e05 net: renesas: rswitch3: honor connect_to_xpcs even with max-speed
+d6b116e814c59 net: renesas: rswitch3: remove stray early return in rsw3_gwca_queue_free()
+28c0397094899 net: renesas: rswitch3: Preserve MAC addresses across deferred probe
+7d1d28114662d net: ethernet: renesas: rswitch: check phy get first
+3ae1f9409a5c5 net: ethernet: renesas: rswitch3: Add R-Car gPTP support
+242a48b66eedf net: ethernet: renesas: rswitch: Change PHY init until interface up
+b64e7d574be3e net: ethernet: rswitch3: Increase value for TX ring size
+5f54232dd6889 net: renesas: rswitch3: Fix wrong setting PHY interface of USXGMII
+fa6ee6eb0e8d2 net: ethernet: renesas: rswitch3: Fix sharing one ETHA_MII channel for multiple ports
+f7e8a7c84dee4 driver: net: rswitch3: Add 5G/10G Ethernet port support
+e673608433c28 net: renesas: rswitch3: Add support for R-Car X5H (r8a78000) SoC on evaluation board
+90b7449d93891 net: ethernet: rswitch3: Add support for parallel mode
+c7db5cc0c8c00 net: ethernet: renesas: rswitch3: Add R-Car gPTP support
+a4c31e74af0cc net: rswitch3: Add support for "Ethernet Switch3"
+f5697749ad8ba phy: renesas: Suspend to Ram support for PCS
+167d95ed7060f phy: renesas: Add PCS driver for R-Car X5H (R8A78000)
+b04fd6f9bf968 phy: renesas: mp-phy-rcar-gen5: Support S2RAM for MP-PHY and fix some issues
+564f4396d3178 mp-phy-rcar-gen5: Add firmware update for USB
+bd7be8e30a9f5 mp-phy-rcar-gen5: Update PCIe and USB for CMNCNT2
+b1488555a660f Update initialization sequence for the latest material
+9061eed24859b phy: renesas: mp-phy-rcar-gen5: Add firmware update for Ethernet PCS
+591f379d15192 usb: dwc3: Add USB driver for R-Car X5H (R8A78000)
+c25a7f594e000 phy: renesas: Add Multi-Protocol PHY driver for R-Car X5H
+b5fa04c81aa12 net: phy: dp83869: Fix STRAP_OPMODE bitmask per datasheet
+c0dadf8592bb8 firmware: arm_scmi: Move vendor protocol to vendors/renesas/ and add vendor_id
+078e21e273e57 firmware: arm_scmi: Vendor-backed reset status for R-Car X5H
+fd697e5c5c250 firmware: arm_scmi: Add vendor protocol support for R-Car X5H
+52da310ec03fa reset: scmi: Add reset status support for R-Car X5H
+d762805572188 firmware: arm_scmi: Set mailbox as atomic for r8a78000
+63e613439850b firmware: arm_scmi: Add oem_config_val
+f70e242cda5c1 drivers: soc: renesas: Add config for SCP fixup
+505e7436449e0 firmware: arm_scmi: Change transport method for full hw virt
+59ff584f35c9f xen: Kconfig: Support CONFIG_SCMI_FULL_HW_VIRTUALIZATION
+dc612f23ca8ea dt-bindings: gpio: renesas,rcar-gpio: Add r8a78000 support
+89e047e1512c4 gpio: gpio-rcar: Support for gen5
+2c4220f60c0c6 gpio: gpio-rcar: Update to get registers through struct gpio_rcar_info
+2d9b9c0df3aa0 gpio: gpio-rcar: Update get pin state
+4bc94756cbe8c gpio: gpio-rcar: Add setting enable/disable input
+1736c958921e3 dt-bindings: pinctrl: renesas,pfc: Document R-Car X5H support
+1139e8489214f pinctrl: renesas: r8a78000: Fix missing definition for DP-TX hotplug pins
+2676e36d55cdb pinctrl: renesas: r8a78000: Add DP-TX pin control support
+bce26ee23036d pinctrl: renesas: r8a78000: Fix typo CANFD
+dcc4d68530213 pinctrl: renesas: r8a78000: Add USB pins, groups, functions
+27bebbabbf86e pinctrl: renesas: r8a78000: Add PWM/TPU pins, groups, functions
+640da04c97bbe pinctrl: renesas: r8a78000: Add CANFD pins, groups, functions
+dff55bace11df pinctrl: renesas: r8a78000: fix typo CANFD define
+15b4a20e52f22 pinctrl: renesas: r8a78000: Add CANXL pins, groups, functions
+2f17463a231e5 pinctrl: renesas: r8a78000: Add I3C pins, groups, functions
+02c87bc2c7d78 pinctrl: renesas: r8a78000: Add Audio pins, groups, functions
+50bb846228517 pinctrl: renesas: r8a78000: Add MSIOF pins, groups, functions
+87a48a8e90a99 pinctrl: renesas: r8a78000: Update QSPI, RPC to be used with RPC pins, groups, and functions
+8bd74a8a56caf pinctrl: renesas: r8a78000: Add pins, groups, functions for modules
+894f34dc7d247 pinctrl: renesas: Initial R8A78000 (R-Car X5H) PFC support
+fe609b4486456 pinctrl: renesas: Allow drive strength configuration via SoC driver
+3822bbf8df893 arm64: defconfig: Increase CONFIG_NR_CPUS to 32 for R-Car X5H
+3ab251687a0cc arm64: defconfig: Sync with in-house configuration on v6.12.80
+23e54e5d4dd1c arm64: defconfig: Use renesas_defconfig as defconfig
+91255892448f9 dt-bindings: PCI: renesas: Update R-Car Gen5 PCIe 6.0 Host documentation
+b5548c7e32e59 dt-bindings: PCI: renesas: Update R-Car Gen5 PCIe 6.0 Endpoint documentation
+9f3fc032ea0c9 dt-bindings: mmc: renesas,sdhi: Document Renesas R-Car Gen5 MMC support
+150c39122bdb5 dt-bindings: ufs: Document Renesas R-Car Gen5 UFS host controller
+a4e43d2dbfde8 dt-bindings: hwlock: rcar: Add binding documentation for R-Car Gen5
+05dd45cf37244 dt-bindings: PCI: renesas: Add R-Car UCIe Host and Endpoint
+45cad0be756b7 dt-bindings: PCI: renesas: Add R-Car Gen5 PCIe 6.0 Endpoint
+f648f715ebf51 dt-bindings: PCI: renesas: Add R-Car Gen5 PCIe 6.0 Host
+e01ad8b50eb2e dt-bindings: PCI: renesas: Add R-Car Gen5 PCIe 4.0 Host
+39084392d5f87 dt-bindings: rsnd: Add r8a78000 support
+6ab3ffd2aed3b dt-bindings: ufs: renesas: Add efuse registers area
+742f789dd8b63 dt-bindings: hwlock: rcar: Add binding documentation for R-Car hardware spinlock
+80f31738655be dt-bindings: rtc: rcar: Add R-Car Gen5 RTC support
+064604aa92fb0 dt-bindings: window watchdog: Document R-Car X5H support
+568551619e42e dt-bindings: can: renesas,rcar-canfd: Document R-Car X5H support
+2ebeba3752c23 dt-bindings: spi: renesas,sh-msiof: Add support for R-Car X5H
+16a877ca49134 dt-bindings: spi: renesas,sh-msiof: Add description of clock handling
+565a1ef42fe2b dt-bindings: timer: renesas, cmt: Document R-Car X5H TMU support
+cb963104516ee dt-bindings: timer: renesas, cmt: Document R-Car X5H CMT support
+83da77cedc91a dt-bindings: pwm: tpu: Add support for X5H
+29feba9b974d6 dt-bindings: pwm: Add support for X5H
+24860955c72ec dt-bindings: watchdog: Document R-Car X5H support
+fc101563d8751 dt-bindings: can: renesas,rcar-canxl: Document R-Car X5H support
+86dab7bc86e8e arm64: dts: renesas: r8a78000: Update PCIe 6.0 device tree
+799f1b44d451c arm64: dts: renesas: r8a78000: Remove redundant DMAC-pp clock
+a7278b003908f arm64: dts: renesas: r8a78000: Update SCP definitions for (H)SCIF
+39e1a71d83fae arm64: dts: renesas: r8a78000: Update power domain, clock and reset for PCIe4 align with SCMI
+a623c7c718af8 arm64: dts: renesas: r8a78000: Update power domain, clock and reset for PCIe6 align with SCMI
+204fbda40f135 arm64: dts: renesas: r8a78000: Add power-domains, clocks, resets definitions for display nodes
+534d7ba105728 arm64: dts: renesas: ironhide: Add DP-TX pinctrl for hotplug support
+9f0770d446d98 arm64: dts: r8a78000: add clock rate for WWDT driver
+ff6d491230d9e arm64: dts: renesas: ironhide-common: Add additional CMA region
+1e979bce1ab85 arm64: dts: renesas: ironhide-common: Move LDR region to 0x8E20_0000
+18744cf7eb39d arm64: dts: renesas: r8a78000: Add SCMI vendor protocol node
+138ee28717d7b arm64: dts: renesas: r8a78000: Add dummy clocks and reset for Timer(CMT/TMU)
+2ef8e6f331355 arm64: dts: renesas: r8a78000: Add dummy clocks and reset for MSIOF
+adb2064dea79e arm64: dts: r8a78000: add scmi reset for UFS
+3c358a29102b2 arm64: dts: renesas: r8a78000: rpc: update definitions
+a69fefceeb7f7 arm64: dts: r8a78000: add scmi clk and reset for WWDT
+b90c221c43fd1 arm64: dts: r8a78000: add scmi reset for I3C driver
+608af6c7c1be5 arm64: dts: r8a78000: add scmi reset for CAN-XL
+9ac9b5ba02769 arm64: dts: r8a78000: Add RAM clock for CAN-FD driver
+58f14386945a5 arm64: dts: renesas: r8a78000: Add power-domain, clock and reset for USB
+81a9edca13b96 arm64: dts: renesas: ironhide-common: Add reserved memory area for GSX
+dbb3437e5f13e arm64: dts: renesas: ironhide: Correct interface property for MP-PHY
+9759d92c07347 dt-bindings: clock: Add 2 new domain ID for PCIe4/PCIe6
+aca04a722ff81 arch: arm64: dts: Add resets property for PCIe4/6 dts node
+01681b137614b arm64: dts: renesas: r8a78000: Update PCIe6 interrupts and add corresponding interrupt-names
+37e2ad90236fd arm64: renesas: r8a78000: Update to get,set clock rate from sd_clock for SDHI driver
+6042410ffe14e arm64: dts: renesas: ironhide: Enable WWDT0-19 node
+fe6f331c77dde arm64: dts: renesas: r8a78000: Add INTC for WWDT node
+3d4d0b8e2710b arm64: dts: renesas: ironhide: Refactor Ironhide board components.
+ed189e1a2a040 arm64: dts: renesas: r8a78000: Add SCMI clock for Audio
+cc66bafcf7c7d arm64: dts: renesas: r8a78000: Add SCMI clock for PWM and TPU drivers
+6d7c7346b1415 arm64: dts: renesas: r8a78000: Add reset and reset-names properties for PCS on R-Car X5H
+465be393ba55b arm64: dts: renesas: r8a78000: Add clock to MSIOF
+8582ffd9908b1 arm64: dts: renesas: r8a78000: Add SCMI clock for RTC
+123469d61027b arm64: dts: renesas: ironhide: Correct interface property for MP-PHY
+ad0d106311c6b dt-bindings: clock: Update R8A78000 reset definitions
+933ad116b1c37 dt-bindings: clock: Update R8A78000 clock definitions
+033a7a1284c4c arm64: dts: renesas: r8a78000: Correct Audio register range size and DMA request numbers
+ab0b0b80d2959 arm64: dts: renesas: ironhide-common: Update ECC reserved regions
+bdd654e8d0f5a arm64: dts: renesas: r8a78000-ironhide: Add renesas specific props for MP-PHY
+cbe1e3750664b arm64: dts: renesas: r8a78000: Add SCMI clock for CAN-XL
+ea9197d2fad8f arm64: dts: renesas: r8a78000: Add SCMI clock for CAN-FD
+bc103d196ad0f arm64: dts: renesas: r8a78000: add DMA support for I2C driver
+d85a4cf26d826 arm64: dts: renesas: ironhide: Update ECC reserved regions
+e9bb2e109e26d arm64: dts: renesas: r8a78000: Update PCIe6 link speed to gen4
+aac415c1644bf arm64: dts: renesas: r8a78000: Correct cache hierarchy mapping and report cache sizes
+e808a4a9633f6 dt-bindings: clock: Update R8A78000 clock definitions
+763068f266f44 arm64: dts: renesas: ironhide: Update USB3.2 gen2 controller properties
+12e0275dfde35 arm64: dts: renesas: ironhide: Drop unused DWC3 quirks
+02cd1864b5c6f arm64: dts: renesas: r8a78000: Add GSX node device
+5098e7b4419f2 arm64: dts: renesas: ironhide: add reserved area for the ECC Data region
+4a782dec8e50c arch: arm64: dts: add clock-name for I3C driver
+3ec8806f88e25 arm64: dts: renesas: ironhide: Enable display support
+e4190ea72dae0 arm64: dts: renesas: r8a78000: Add display device nodes
+b9b39af036ea5 arm64: dts: renesas: r8a78000: Update PCIe6 link width to x2 and link speed to Gen3
+e7dce848cf7da arm64: dts: renesas: r8a78000: Fix clock IDs
+a1c83248e2897 arm64: dts: renesas: r8a78000: Add atomic-threshold-us
+b3d0fc1f87cfd dt-bindings: power: Update r8a78000 ID_COUNT domain
+35c3e6e4d03c4 dt-bindings: clock: Update R8A78000 clock definitions
+668a19d46286b arm64: dts: renesas: ironhide: remove CAN-XL pin function define
+40b253f2eaa82 arm64: dts: renesas: r8a78000: Update SCP definitions for CAN-XL
+3d8bb393dd91c arm64: dts: renesas: r8a78000: Update SCP definitions for I3C
+2182d0e78e9f9 arm64: dts: renesas: r8a78000: Update SCP definitions for timer
+018825451a63a arm64: dts: renesas: ironhide: Add DWC3 quirks for USB stability
+0befea32060a3 arm64: dts: renesas: ironhide: Add workaround for USB OC (Overcurrent) issue
+cd728a4e44e29 arm64: dts: renesas: ironhide: Add USB2/3 support
+1ac7e66e9c0bb arm64: dts: renesas: r8a78000: Add USB2/3 device tree node
+f8adb7485b5d7 arch: arm64: renesas: r8a78000: Enable PFC for USB
+0ade2d8ba8315 arm64: dts: renesas: ironhide: Enable RTC
+225975127f696 arm64: dts: renesas: r8a78000: R-Car RTC support
+5384df689c988 arm64: dts: renesas: r8a78000: R-Car TPU support
+84531496e3025 arm64: dts: renesas: r8a78000: R-Car PWM support
+1cb7b8e68c068 arm64: dts: renesas: ironhide: Update memory map and reserved area
+5a9d47c1fa82e arm64: dts: renesas: ironhide: Add Sound support
+65e7eb97d99e6 arm64: dts: renesas: r8a78000: R-Car Sound support
+6e448be75c2d9 arch: arm64: renesas: r8a78000: Enable WWDT node
+9845a7ade0df3 arm64: dts: renesas: r8a78000: Add WWDT device tree node
+712fc1e5881ac arm64: dts: renesas: ironhide: Enable CAN-XL node
+833865e118ead arm64: dts: renesas: r8a78000: Add CANXL node
+ef84af6cd6abc arm64: dts: renesas: ironhide: Enable CANFD node
+0469e5ab21260 arm64: dts: renesas: r8a78000: Add CANFD node
+e40564d6cb08d arm64: dts: renesas: ironhide: Add PFC for I3C channels 0, 1 and 2
+8d7d639b3c180 arm64: dts: renesas: r8a78000: Add I3C node
+b48da65785281 arm64: dts: renesas: r8a78000: Update interrupt-map for PCIe6 Host node
+5763dc69d8201 arm64: dts: renesas: ironhide: Add PCIe6 ch1 node
+22bbafa25f2a2 arm64: dts: renesas: r8a78000: Add PCIe6 ch1 node
+e50b3b05ec476 arm64: dts: renesas: r8a78000: expand PCIe6 EP addr_space region
+4956d872dbcca arm64: dts: renesas: r8a78000: Fix PCIe6 interrupt number for MSI
+11ecd1a726f71 arm64: dts: renesas: r8a78000: Update PCIe6 address mappings
+70cbc305ac30d arm64: dts: renesas: r8a78000: Update PCIe6 PHY and config space regions
+518618b786f94 arm64: dts: renesas: ironhide: Add Timer(TMU) support for X5H ironhide board
+bafdbb15b18d3 arm64: dts: renesas: r8a78000: Add Timer(TMU) device tree node
+17d2af2e03232 arm64: dts: renesas: ironhide: Add Timer(CMT) support for X5H ironhide board
+8ec26545382b5 arm64: dts: renesas: r8a78000: Add Timer(CMT) device tree node
+4b44ffe1f8192 arm64: dts: renesas: r8a78000: update definitions
+64494bd845ff6 arm64: dts: renesas: r8a78000: support scmi reset
+60b5070d9c6bc dt-bindings: clock: Add R8A78000 reset definitions
+43beaf40fd5d3 dt-bindings: clock: Update R8A78000 clock definitions
+19c6d2da13331 dt-bindings: power: Update r8a78000 power domain definitions
+482f5d5e77fef arm64: dts: renesas: r8a78000: Add gPTP address support
+7035ca691cdc7 arm64: dts: renesas: r8a78000: Add optee node
+8436896c25002 arm64: dts: renesas: r8a78000: Update DMAC device tree node
+876feab90ef0f arm64: dts: renesas: r8a78000: Add SMMU device tree node
+554016cd3fd25 arm64: dts: renesas: ironhide: Add eMMC support
+cb4ab41f9831c arm64: dts: renesas: r8a78000: Add SD/MMC node
+ca929d9dc1ae6 arm64: dts: renesas: r8a78000: Add device tree node for MSIOF
+55ba231ff8b34 arch: arm64: renesas: r8a78000: Enable PFC for MSIOF0 and MSIOF6_A
+b4cccc9021db0 arm64: dts: renesas: ironhide: Set max speed value for Ethernet 10G port
+38221afb54a9c arm64: dts: renesas: ironhide: Drop unused reset GPIO for PCIe4
+8058cbad7b26c arm64: dts: renesas: r8a78000: Add PHY register address for PCIe6 node
+4292d4984ba73 arm64: dts: renesas: r8a78000: enable clk & pwr for some modules
+a3806d75d4fa2 arm64: dts: renesas: r8a78000: support scmi clk & pwdm
+bced32f8c2837 arm64: dts: renesas: ironhide: Add PCIe6 device tree node
+a70f081e250f8 arm64: dts: renesas: r8a78000: Add PCIe6 device tree node
+ca91e2aa80639 arm64: dts: renesas: r8a78000: Temporarily downgrade link speed and num-lanes to Gen1 x1lane
+9b60d5e0f1e58 arm64: dts: r8a78000-ironhide: Update for RSW3 with multiple mp-phy channels
+51ad9ee163413 arm64: dts: r8a78000-ironhide: Add support for 10G Ethernet port
+31d6a1cc7d78f arm64: dts: r8a78000: Fix CPU cache hierarchy to enable cacheinfo detection
+899c188c88b64 arm64: dts: renesas: ironhide: Add default CMA region
+aae3eaa2b00e4 arm64: renesas: r8a78000-ironhide: Enable UFS controllers
+e88ebfc786134 arm64: dts: renesas: r8a78000: Add UFS nodes
+f4a5a8bd35f1f arm64: dts: renesas: ironhide: Enable HyperFlash support
+88a0130dfc938 arm64: dts: renesas: r8a78000: Add RPC/SPI device node
+7a11b685b31a0 arm64: dts: renesas: r8a78000: Add RT-DMA device tree node
+e1dc7e3c96ed4 arm64: dts: renesas: ironhide: Enable WCRC device nodes
+a7b6ad6a81dba arm64: dts: renesas: r8a78000: Add WCRC device tree nodes
+8b382e57e1526 arm64: dts: renesas: ironhide: Enable RPMsg channels
+8aa539df196ca arm64: dts: renesas: ironhide: Add PCIe4 device tree node
+6dee003b39102 arm64: dts: renesas: r8a78000: Add PCIe4 device tree node
+2ae52c4329f5c arm64: dts: renesas: r8a78000: Correct size of secure_base register block of rswitch3 node
+cb849c9866447 arm64: dts: renesas: ironhide: Add Ethernet support
+bf8314173dab3 arm64: dts: renesas: r8a78000: Add Ethernet Switch3 node
+85bdfbcd27716 arm64: dts: renesas: ironhide: Enable Ethernet PCS
+0f6219f113296 arm64: dts: renesas: r8a78000: Add device tree node for Ethernet PCS
+87d940809a0f4 arm64: dts: renesas: ironhide: Enable Multi-Protocol PHY
+0130742e92942 arm64: dts: renesas: r8a78000: Add device tree node for Multi-Protocol PHY
+fe68e3cdd29ca arm64: dts: renesas: ironhide: set I2C0 clock to 100 kHz
+f1fff70b759ab arm64: dts: renesas: r8a78000: Enable RWDT node
+4952d02b69cd0 arm64: dts: renesas: r8a78000: add RCLK Watchdog node
+bc6921c34b12a arm64: dts: renesas: r8a78000: Add Reset node
+f7e334e63df9a arm64: dts: renesas: r8a78000: Add I2C EEPROM device
+04a12b959e6cd ARM: renesas: Add R8A78000 Ironhide board code
+f92d9467fce92 dt-bindings: clock: Add R8A78000 clock definitions
+c1f21c525ecdf dt-bindings: power: Add r8a78000 power domain definitions

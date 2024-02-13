@@ -1,0 +1,36 @@
+#
+# Video capture (VIN, CSI-2, ISP) drivers
+#
+9046028a16589 media: renesas: Update to fix style issues reported by checkpatch
+9bfd72f259bdb media: renesas: rcar-vin: Add VIN's parent clock
+bc23821444991 media: renesas: rcar-vin: Add workaround for I/O error to toggle module clock via SCP
+f30498741ab1f media: renesas: rcar-csi2: Add callback support for enable_link
+0c8eeae044417 media: rcar-isp: Fix NULL pointer dereference in pad format propagation
+58b1210010595 media: rcar-vin: Set CSI-2 clock frequency to 800MHz
+7a5b389d34778 media: rcar-vin: Deffer the driver probe until the Reset controller is readly
+16800ce524420 media: rcar-vin: Align with master-slave mechanism in Power Domain (PD) structure of R-Car X5H
+5dda1fd3338f5 media: rcar-csi2: Correct stop sequence
+e725eebc9546e media: rcar-vin: rcar-csi2: Add 1/2/3/4 lane support for MIPI CSI-2 C-PHY
+5ae4ef92ba96b media: rcar-vin: rcar-csi2: Add w/a to work with Gen1 datarates (<3500Mbps)
+042ca69bd9998 media: rcar-csi2: Add support for C-PHY on R-Car X5H Ironhide board
+13d42abb3659e media: rcar-vin: Hardcoded to control Module Standby
+03df8c0587caf media: RAW12/14/16/20/24/28 support
+fcfd63cf865f2 media: media: Add 1X20, 1x24 and 1x28 raw bayer media bus code definitions
+9cbb2e707aaa1 media: v4l: Add 20/24/28-bit raw bayer pixel formats
+a48fb184cbf77 media: rcar-vin: Add support for crop function for Gen3 and above
+dc2b76c49b932 media: rcar-isp: Corect start up sequence follow description in HWUM
+e9411b103398b media: rcar-vin: rcar-dma: Fix error state message reports by V4L2 videobuf2 framework
+08473e2d45b9c media: rcar-vin: Add support for R-Car X5H
+8b6658813f574 media: rcar-csi2: Remove v4l2_async_notifier_cleanup in remove function
+
+#
+# Video capture (VIN, CSI-2, ISP) device tree
+#
+4c7d36cb005cf arm64: dts: renesas: r8a78000: Add VIN's parent clock
+12f1d330a9100 arm64: dts: renesas: ironhide-fakra: Change I2C address for Camera IMX728
+b5ce8d1a749fd arm64: dts: renesas: Hardcode I2C address for Camera IMX728
+457390e46abfc arm64: dts: renesas: r8a78000: Update SCP definitions for VIN
+659be0e538bb0 arm64: dts: renesas: r8a78000: Use dummy_clk for Video Capture related nodes
+f763ef478cd6d arm64: dts: renesas: ironhide: Add node for Camera Power Protectors
+b436c3ee7b0d3 arm64: dts: renesas: r8a78000-ironhide: Add CSI-2 pin swap order of R-Car X5H
+661a85310945d arm64: dts: renesas: Add Video Capture related DTs for R8A78000 X5H

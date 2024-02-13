@@ -1,0 +1,97 @@
+============== -*- outline -*- ==============
+
+             Renesas LTS Kernel
+
+2024/12		Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+=============================================
+
+* About Renesas LTS Kernel
+
+	"Renesas LTS" = "Linux LTS" + "Backport from latest Linux Kernel for Renesas".
+
+	We will try to backport Renesas related patch from latest Linux Kernel as much as
+	possible, but no guarantee, because backport will be very difficult if it depends
+	on Framework, etc.
+
+* URL
+
+	You can get Renesas LTS Kernel by
+
+		> git clone https://github.com/renesas-rcar/upstream_bsp.git
+
+* Branch
+
+	We have 2 type of Renesas LTS Kernels branchs
+
+	branch
+		(A) renesas-lts/v6.12-dev
+		(B) renesas-lts/v6.12.xxx-yyyy-mm-dd
+
+	(A) is using "git merge". Pros is you can use "git merge" for it. Cons is it is difficult
+	to know what kind of patch was backported from upstream.
+
+	(B) is using "git rebase". Pros is it is easy to know what kind of patch was backported from
+	upstream. Cons is you need to use "git rebase" for it, can't use "git merge" when update.
+
+	Latest (B) and (A) will have no diff.
+
+	[Note]
+	We will keep total 10 versions for each (B).
+	Be care if you *not* update frequently. See below "Tag"
+
+* Tag
+
+	We have 2 type of Renesas LTS Kernels Tags
+
+	tag
+		(A) renesas-dev-v6.12.85
+		    renesas-dev-v6.12.90
+		    renesas-dev-v6.12.95
+		    ...
+		(B) renesas-lts-v6.12.85
+		    renesas-lts-v6.12.90
+		    renesas-lts-v6.12.95
+		    ...
+
+	The feature of (A)/(B) are same as "Branch". See above.
+	These tags are added when the last version digit was 0 or 5.
+	These tree are well-tested by Renesas Test team since Aug 2026
+	(The tags before that were not).
+	# You can see the tag which last version digit was not 0 or 5.
+	# These are mile stone for Android or other branch.
+	If you *not* update frequently, we recommend to use "Tag", instead of "Branch".
+
+	[Note]
+	You can't check/fetch above tag by normal ways.  You need to do...
+
+		> git ls-remote --tags ${upstream_bsp}
+		> git fetch renesas-rcar refs/tags/renesas-xxx-v6.1.xxx
+
+	or
+
+		> git fetch --tags --force ${upstream_bsp}
+
+* renesas_defconfig
+
+	You can find "renesas_defconfig" for Renesas SoC/Board which removed
+	unnecessary configs from "defconfig".
+
+* CVE info
+
+	You can find CVE info at
+
+		linux/renesas-lts/cve/all
+		linux/renesas-lts/cve/affected
+		linux/renesas-lts/cve/no-affect
+
+* Backported commit
+
+	You can find what commits were backported from latest Linux Kernel at
+
+		linux/renesas-lts/backported
+
+* Backport request
+
+	Please let me know if you find missing backport.
+
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
