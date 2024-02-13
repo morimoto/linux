@@ -1,0 +1,7 @@
+# needs refactoring to implement 40 bits mode of Gen3 as well. And test case
+a8b391b6a3651 dmaengine: rcar-dmac: Support HW descriptor 43 bits mode
+# No feedback about use case. IIO can make use of repeated mode if we really want that
+068b6b7a4bc55 dmaengine: rcar-dmac: Add repeat mode support
+# Renesas feedback suggests it is a debug feature
+b7a9462dc6220 dmaengine: rcar-dmac: Add bus rate control support for R-Car Gen4
+3349a46d762aa dt-bindings: renesas,rcar-dmac: Add bus rate control support for R-Car Gen4
