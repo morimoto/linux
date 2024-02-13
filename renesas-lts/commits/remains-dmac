@@ -1,0 +1,8 @@
+# Wolfram wants to handle these
+a8b391b6a3651 dmaengine: rcar-dmac: Support HW descriptor 43 bits mode
+6dd61b9a71617 dmaengine: rcar-dmac: Enable channel 0 when using SMMU
+6a44573397f60 dmaengine: rcar-dmac: Add support for X5H SoC
+7da2c066c191c dt-bindings: renesas,rcar-dmac: Add R-Car X5H SoC support
+068b6b7a4bc55 dmaengine: rcar-dmac: Add repeat mode support
+b7a9462dc6220 dmaengine: rcar-dmac: Add bus rate control support for R-Car Gen4
+3349a46d762aa dt-bindings: renesas,rcar-dmac: Add bus rate control support for R-Car Gen4
