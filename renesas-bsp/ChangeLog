@@ -1,0 +1,64 @@
+v6.12.4-2024-12-12
+
+	* Merge/Rebase v6.12.4
+
+v6.12.3-2024-12-09
+
+	* update CVE
+
+v6.12.2-2024-12-06
+
+	* update CVE
+
+	* update list
+
+	* Below patches were backported
+
+		commit 6c872b782aeaec31042643e57d6aedba1464d0b9
+		("media: staging: max96712: Add support for MAX96724")
+
+		commit 9350219aa3570ae89cd3cad59d3d00ecf44e7f48
+		("media: staging: max96712: Document the DEBUG_EXTRA register")
+
+		commit 2536a0715f0e5441c3daa377cc2f859cd14d8f28
+		("media: staging: max96712: Move link frequency setting to device struct")
+
+		commit aa1e8e1842662f8d095099d4b47b8a25d66f84bf
+		("media: staging: max96712: Remove device id check")
+
+		commit 7e86c7a520b9226b39785e9f9ed330ffb48babe2
+		("media: rcar-csi2: Add support for R-Car V4M")
+
+		commit a59f7ffdf4351fa98bc0ffea17faebdbf89d044c
+		("media: rcar-csi2: Add documentation for PHY_EN and PHY_MODE registers")
+
+		commit a8c916edc04e0d76595f26bd2a49466a106968dc
+		("media: rcar-csi2: Move PHTW write helpers")
+
+		commit e5be5622b3a28682e95f3f23a7e6834868e4a14f
+		("media: rcar-csi2: Add helper to lookup mbps settings")
+
+		commit 28a034da232d39b1a26c2198a0ac2625102d9594
+		("media: rcar-csi2: Abstract PHTW and PHYPLL register offsets")
+
+		commit b230ddd876018a52e6d8cc61b1064091312f6d37
+		("media: rcar-csi2: Allow writing any code and data value to PHTW")
+
+		commit ba7eb745e058cb8239b235b986ea446653b25db9
+		("media: rcar-csi2: Correct field size for PHTW writes")
+
+		commit 5ba5bda6b62e81a1e2e6a41b5e7102a77134ae5a
+		("dt-bindings: media: renesas,csi2: Add binding for V4M")
+
+		commit 27d23cecf33a0d4d95e91dc3524dda4dc3815b06
+		("dt-bindings: media: renesas,isp: Add binding for V4M")
+
+		commit f367e313d2dc91afa578b5adb3d6356b0642cb66
+		("dt-bindings: media: renesas,isp: Add Gen4 family fallback")
+
+		commit 59ba2cd33196d848646d6838d463760e4b78c5dd
+		("media: rcar-isp: Add family compatible for R-Car Gen4 family")
+
+		commit 92850bed9d4d334ee502a035ed5750285faccbea
+		("clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks")
+

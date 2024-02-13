@@ -1,0 +1,16 @@
+Local     / media: staging: max96712: Add support for MAX96724
+Local     / media: staging: max96712: Document the DEBUG_EXTRA register
+Local     / media: staging: max96712: Move link frequency setting to device struct
+Local     / media: staging: max96712: Remove device id check
+Local     / media: rcar-csi2: Add support for R-Car V4M
+Local     / media: rcar-csi2: Add documentation for PHY_EN and PHY_MODE registers
+Local     / media: rcar-csi2: Move PHTW write helpers
+Local     / media: rcar-csi2: Add helper to lookup mbps settings
+Local     / media: rcar-csi2: Abstract PHTW and PHYPLL register offsets
+Local     / media: rcar-csi2: Allow writing any code and data value to PHTW
+Local     / media: rcar-csi2: Correct field size for PHTW writes
+Local     / dt-bindings: media: renesas,csi2: Add binding for V4M
+Local     / dt-bindings: media: renesas,isp: Add binding for V4M
+Local     / dt-bindings: media: renesas,isp: Add Gen4 family fallback
+Local     / media: rcar-isp: Add family compatible for R-Car Gen4 family
+Local     / clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks
