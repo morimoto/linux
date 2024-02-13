@@ -1,0 +1,386 @@
+v7.1      / spi: sh-msiof: fix controller deregistration
+v6.17     / spi: sh-msiof: Convert to DEFINE_SIMPLE_DEV_PM_OPS()
+v7.0      / can: rcar_canfd: Add support for FD-Only mode
+v6.19     / can: rcar_canfd: Add suspend/resume support
+v6.19     / can: rcar_canfd: Convert to DEFINE_SIMPLE_DEV_PM_OPS()
+v6.19     / can: rcar_canfd: Invert CAN clock and close_candev() order
+v6.19     / can: rcar_canfd: Extract rcar_canfd_global_{,de}init()
+v6.19     / can: rcar_canfd: Use devm_clk_get_optional() for RAM clk
+v6.19     / can: rcar_canfd: Invert global vs. channel teardown
+v6.19     / can: rcar_canfd: Invert reset assert order
+v6.18     / can: rcar_canfd: Simplify data bit rate config
+v6.18     / can: rcar_canfd: Simplify nominal bit rate config
+v6.18     / can: rcar_canfd: Update RCANFD_CFG_* macros
+v6.18     / can: rcar_canfd: Update bit rate constants for RZ/G3E and R-Car Gen4
+v6.17     / can: rcar_canfd: Drop unused macros
+v6.17     / can: rcar_canfd: Describe channel-specific FD registers using C struct
+v6.16     / can: rcar_canfd: Use of_get_available_child_by_name()
+v6.15     / of: base: Add of_get_available_child_by_name()
+v6.15     / net: renesas: rswitch: Convert to for_each_available_child_of_node()
+v6.14     / net: renesas: rswitch: add mdio C22 support
+v6.14     / net: renesas: rswitch: use generic MPSM operation for mdio C45
+v6.14     / net: renesas: rswitch: align mdio C45 operations with datasheet
+v6.17     / ASoC: rsnd: tidyup direction name on rsnd_dai_connect()
+v6.14     / PCI: Add enable_device() and disable_device() callbacks for bridges
+v7.0      / arm64: dts: renesas: sparrow-hawk: Reserve first 128 MiB of DRAM
+v7.1      / arm64: dts: renesas: sparrow-hawk: Add overlay for Olimex MIPI-HDMI adapter
+v7.1      / arm64: dts: renesas: sparrow-hawk: Add overlay for WaveShare Display 13.3"
+v7.1      / dt-bindings: display: bridge: waveshare,dsi2dpi: Document 1..4 DSI lane support
+v6.18     / dt-bindings: display: bridge: Add waveshare DSI2DPI unit support
+v7.1      / drm/panel: simple: Add Waveshare 13.3" panel support
+v7.1      / drm/bridge: waveshare-dsi: Fix signedness bug
+v7.1      / drm/bridge: waveshare-dsi: Add support for 1..4 DSI data lanes
+v7.1      / drm/bridge: waveshare-dsi: Register and attach our DSI device at probe
+v6.18     / drm/bridge: waveshare-dsi: Fix bailout for devm_drm_bridge_alloc()
+v6.18     / drm: bridge: Add waveshare DSI2DPI unit driver
+v7.0      / Input: ili210x - add support for polling mode
+v7.0      / dt-bindings: touchscreen: trivial-touch: Drop 'interrupts' requirement for old Ilitek
+v7.0      / Input: ili210x - convert to dev_err_probe()
+v6.19     / media: v4l2-core: Introduce v4l2-isp.c
+v6.19     / media: uapi: Introduce V4L2 generic ISP types
+v7.0      / mailbox: remove unneeded double quotation
+v6.13     / pwm: Provide new consumer API functions for waveforms
+v6.13     / pwm: New abstraction for PWM waveforms
+v6.13     / pwm: Add more locking
+v6.18     / media: vsp1: Export missing vsp1_isp_free_buffer symbol
+v6.17     / media: vsp1: Add missing export.h
+v6.19     / media: i2c: imx219: Replace exposure magic value with named constant
+v6.19     / media: i2c: imx219: Propagate errors from control range updates
+v6.19     / media: i2c: imx219: Simplify imx219_get_binning() function
+v6.18     / media: i2c: imx: Add note to prevent buggy code re-use
+v6.17     / media: Remove redundant pm_runtime_mark_last_busy() calls
+v6.16     / media: i2c: imx219: media: i2c: imx219: Enable runtime PM autosuspend
+v6.16     / media: i2c: imx219: switch to {enable,disable}_streams
+v6.15     / media: i2c: imx219: Only use higher LLP_MIN for binned resolutions
+v6.15     / media: i2c: imx219: Use subdev state to calculate binning and pixelrate
+v6.15     / media: i2c: imx219: Simplify binning mode
+v6.15     / media: i2c: imx219: remove context around case
+v6.15     / media: i2c: imx219: Scale the pixel rate for analog binning
+v6.15     / media: i2c: imx219: Increase minimum LLP to fix blocky artefacts
+v6.15     / media: i2c: imx219: make HBLANK r/w to allow longer exposures
+v6.15     / media: i2c: imx219: Rename VTS to FRM_LENGTH
+v6.19     / drm/panel: ilitek-ili9881c: Add configuration for 5" Raspberry Pi 720x1280
+v6.19     / drm/panel: ilitek-ili9881c: Turn ILI9881C_COMMAND_INSTR() parameters lowercase
+v6.18     / drm/panel: ilitek-ili9881c: Add Bestar BSD1218-A101KL68 support
+v6.18     / drm/panel: ilitek-ili9881c: convert (un-)prepare to mipi_dsi_multi_context
+v6.18     / drm/panel: ilitek-ili9881c: move display_on/_off dcs calls to (un-)prepare
+v6.18     / drm/panel: ilitek-ili9881c: turn off power-supply when init fails
+v6.19     / arm64: dts: renesas: sparrow-hawk: Add overlay for RPi Display 2
+v6.19     / arm64: dts: renesas: sparrow-hawk: Add overlay for Argon40 fan HAT
+v6.18     / hwmon: (pwm-fan) Implement after shutdown fan settings
+v6.18     / dt-bindings: hwmon: pwm-fan: Document after shutdown fan settings
+v6.17     / pwm: argon-fan-hat: Add Argon40 Fan HAT support
+v6.16     / hwmon: (pwm-fan) disable threaded interrupts
+v6.14     / hwmon: (pwm-fan) Default to the Maximum cooling level if provided
+v6.14     / hwmon: (pwm-fan): Make use of device properties everywhere
+v6.13     / hwmon: (pwm-fan) Introduce start from stopped state handling
+v6.13     / dt-bindings: hwmon: pwm-fan: Document start from stopped state properties
+v6.18     / arm64: dts: renesas: rcar-gen3: Increase CANFD clock rates
+v6.17     / can: rcar_canfd: Add support for Transceiver Delay Compensation
+v6.17     / can: rcar_canfd: Return early in rcar_canfd_set_bittiming() when not FD
+v6.17     / can: rcar_canfd: Share config code in rcar_canfd_set_bittiming()
+v6.17     / can: rcar_canfd: Rename rcar_canfd_setrnc() to rcar_canfd_set_rnc()
+v6.17     / can: rcar_canfd: Repurpose f_dcfg base for other registers
+v6.17     / can: rcar_canfd: Simplify data access in rcar_canfd_{ge,pu}t_data()
+v6.17     / can: rcar_canfd: Add helper variable dev to rcar_canfd_reset_controller()
+v6.17     / can: rcar_canfd: Add helper variable ndev to rcar_canfd_rx_pkt()
+v6.17     / can: rcar_canfd: Remove bittiming debug prints
+v6.17     / can: rcar_canfd: Consistently use ndev for net_device pointers
+v6.18     / soc: renesas: Identify R-Car X5H
+v6.18     / soc: renesas: rz-sysc: Add syscon/regmap support
+v6.17     / soc: renesas: Sort Renesas Kconfig configs
+v6.17     / soc: renesas: Add RZ/N2H (R9A09G087) config option
+v6.17     / soc: renesas: Add RZ/T2H (R9A09G077) config option
+v6.16     / soc: renesas: rz-sysc: Add SoC identification for RZ/V2N SoC
+v6.16     / soc: renesas: Add config option for RZ/V2N (R9A09G056) SoC
+v6.16     / soc: renesas: Kconfig: Enable SoCs by default when ARCH_RENESAS is set
+v6.15     / soc: renesas: rz-sysc: Move RZ/V2H SoC detection to the SYS driver
+v6.15     / soc: renesas: rz-sysc: Add support for RZ/G3E family
+v6.15     / soc: renesas: rz-sysc: Move RZ/G3S SoC detection to the SYSC driver
+v6.15     / soc: renesas: Add SYSC driver for Renesas RZ family
+v6.14     / soc: renesas: Add RZ/G3E (R9A09G047) config option
+v6.13     / irqchip: Add RZ/V2H(P) Interrupt Control Unit (ICU) driver
+v6.18     / arm64: errata: Expand speculative SSBS workaround for Cortex-A720AE
+v6.18     / arm64: cputype: Add Cortex-A720AE definitions
+v6.18     / dt-bindings: arm: Add Cortex-A320/A520AE/A720AE cores and PMU
+v6.18     / dt-bindings: soc: renesas: Document R-Car X5H Ironhide
+v6.17     / dt-bindings: soc: renesas: Document R-Car V4M-7 Gray Hawk Single
+v6.17     / dt-bindings: soc: renesas: Document RZ/V2H EVK board part number
+v6.18     / ASoC: renesas: msiof: ignore 1st FSERR
+v6.18     / ASoC: renesas: msiof: Add note for The possibility of R/L opposite Capture
+v6.18     / ASoC: renesas: msiof: setup both (Playback/Capture) in the same time
+v6.18     / ASoC: renesas: msiof: tidyup DMAC stop timing
+v6.18     / ASoC: renesas: msiof: add .symmetric_xxx on snd_soc_dai_driver
+v6.18     / ASoC: renesas: msiof: set SIFCTR register
+v6.18     / ASoC: renesas: msiof: use reset controller
+v6.18     / ASoC: renesas: msiof: add unique NOTE name
+v6.18     / ASoC: renesas: msiof: Use guard() for spin locks
+v6.18     / ASoC: renesas: msiof: start DMAC first
+v6.18     / ASoC: renesas: msiof: cleanup status clear method
+v6.18     / ASoC: renesas: msiof: tidyup error message
+v6.18     / ASoC: renesas: msiof: msiof_update_and_wait() checks whether reg was updated
+v6.17     / ASoC: renesas: msiof: Convert to <linux/spi/sh_msiof.h>
+v6.18     / drm/rcar-du: dsi: Implement DSI command support
+v6.18     / arm64: dts: renesas: sparrow-hawk: Add overlay for IMX462 on J2
+v6.18     / arm64: dts: renesas: sparrow-hawk: Add overlay for IMX462 on J1
+v6.18     / arm64: dts: renesas: sparrow-hawk: Add overlay for IMX219 on J2
+v6.18     / arm64: dts: renesas: sparrow-hawk: Add overlay for IMX219 on J1
+v6.17     / arm64: dts: renesas: r8a779g3-sparrow-hawk-fan-pwm: Add missing install target
+v6.17     / arm64: dts: renesas: r8a779h2: Add Gray Hawk Single support
+v6.17     / arm64: dts: renesas: Add Renesas R8A779H2 SoC support
+v6.17     / arm64: dts: renesas: Factor out Gray Hawk Single board support
+v6.15     / arm64: dts: renesas: rcar: Add boot phase tags
+v6.16     / arm64: dts: renesas: sparrow-hawk: Disable dtc spi_bus_bridge check
+v6.18     / thermal/drivers/rcar_gen3: Add support for R-Car V4H default trim values
+v6.18     / thermal/drivers/rcar_gen3: Add support for per-SoC default trim values
+v6.18     / arm64: dts: renesas: sparrow-hawk: Set VDDQ18_25_AVB voltage on EVTB1
+v6.18     / arm64: dts: renesas: sparrow-hawk: Invert microSD voltage selector on EVTB1
+v6.18     / arm64: dts: renesas: sparrow-hawk: Update thermal trip points
+v6.17     / Input: goodix - add support for polling mode
+v6.18     / arm64: dts: renesas: sparrow-hawk: Describe generic SPI NOR support
+v6.17     / dt-bindings: serial: sh-sci: Document r8a78000 bindings
+v6.14     / dt-bindings: serial: renesas: Document RZ/G3E (r9a09g047) scif
+v6.17     / serial: sh-sci: Use private port ID
+v6.17     / serial: sh-sci: Replace direct stop_rx/stop_tx calls with port ops in sci_shutdown()
+v6.17     / serial: sh-sci: Add R-Car Gen5 support
+v6.16     / serial: sh-sci: Introduced sci_of_data
+v6.16     / serial: sh-sci: Introduced function pointers
+v6.16     / serial: sh-sci: Fix a comment about SCIFA
+v6.14     / serial: sh-sci: Use plain struct copy in early_console_setup()
+v6.17     / media: vsp1: Add VSPX support
+v6.17     / media: vsp1: vsp1_dl: Count display lists
+v6.17     / media: vsp1: vsp1_dl: Detect double list release
+v6.17     / media: vsp1: Reset FCP after VSPD
+v6.17     / media: rcar-fcp: Add rcar_fcp_soft_reset()
+v6.17     / media: rcar-vin: Generate FRAME_SYNC events
+v6.17     / media: rcar-vin: Check for correct capture interrupt event
+v6.17     / media: rcar-vin: Fold interrupt helpers into only callers
+v6.17     / media: rcar-vin: Fold event notifier into only user
+v6.17     / media: rcar-vin: Enable media-graph on Gen2
+v6.17     / media: rcar-vin: Only expose VIN controls
+v6.17     / media: rcar-vin: Remove NTSC workaround
+v6.17     / media: rcar-vin: Always create a media pad
+v6.17     / media: rcar-vin: Merge all notifiers
+v6.17     / media: rcar-vin: Improve error paths for parallel devices
+v6.17     / media: rcar-vin: Prepare for unifying all v4l-async notifiers
+v6.17     / media: rcar-vin: Generate a VIN group ID for Gen2
+v6.17     / media: rcar-vin: Use error labels in probe
+v6.17     / media: rcar-vin: Change link setup argument
+v6.17     / media: rcar-vin: Store platform info with group structure
+v6.17     / media: rcar-vin: Use correct count of remote subdevices
+v6.17     / regulator: rpi-panel-v2: Add shutdown hook
+v6.17     / media: rcar-csi2: Add D-PHY support for V4H
+v6.17     / media: rcar-csi2: Update start procedure for V4H
+v6.17     / media: rcar-csi2: Rework macros to access AFE lanes
+v6.17     / media: rcar-csi2: Clarify usage of mbps and msps
+v6.17     / arm64: dts: renesas: sparrow-hawk: Describe split PCIe clock
+v6.17     / arm64: dts: renesas: r8a779g3-sparrow-hawk: Sort DTS
+v6.17     / arm64: dts: renesas: r8a779g0: Describe PCIe root ports
+v6.15     / thermal: rcar_gen3: Reuse logic to read fuses on Gen3 and Gen4
+v6.15     / thermal: rcar_gen3: Use lowercase hex constants
+v6.14     / media: i2c: imx290: Add configuration for IMX462
+v6.14     / media: i2c: imx290: Limit analogue gain according to module
+v6.13     / media: i2c: imx290: Check for availability in probe()
+v6.13     / media: i2c: imx290: Avoid communication during probe()
+v6.13     / media: i2c: imx290: Remove CHIP_ID reg definition
+v6.16     / arm64: dts: renesas: r8a779g0: Add ISP core function block
+v6.15     / arm64: dts: renesas: r8a779g0: Restore sort order
+v6.14     / arm64: dts: renesas: r8a779g0: Add VSPX instances
+v6.14     / arm64: dts: renesas: r8a779g0: Add FCPVX instances
+v6.13     / arm64: dts: renesas: r8a779g0: Add OTP_MEM node
+v6.15     / clk: renesas: r8a779g0: Add ISP core clocks
+v6.14     / clk: renesas: r8a779g0: Add VSPX clocks
+v6.14     / clk: renesas: r8a779g0: Add FCPVX clocks
+v6.16     / media: renesas: vsp1: Expose color space through the DRM API
+v6.16     / media: renesas: vsp1: Name nested structure in vsp1_drm
+v6.16     / media: renesas: vsp1: Allow setting encoding and quantization
+v6.16     / media: renesas: vsp1: Report colour space information to userspace
+v6.16     / media: renesas: vsp1: Fix media bus code setup on RWPF source pad
+v6.16     / media: renesas: vsp1: Fix HSV format enumeration
+v6.16     / media: renesas: vsp1: Make HSI and HST modules optional
+v6.16     / media: renesas: vsp1: Implement pixel format enumeration
+v6.16     / media: renesas: vsp1: Use %p4cc printk modifier to print FourCC codes
+v6.16     / media: renesas: vsp1: rwpf: Support operations with IIF
+v6.16     / media: renesas: vsp1: wpf: Propagate vsp1_rwpf_init_ctrls()
+v6.16     / media: renesas: vsp1: dl: Use singleshot DL for VSPX
+v6.16     / media: renesas: vsp1: Add support IIF ISP Interface
+v6.16     / media: rcar-isp: Parse named cs memory region
+v6.16     / media: rcar-isp: Rename base register variable
+v6.16     / media: rcar-isp: Move driver to own directory
+v6.16     / media: rcar-vin: Fix RAW10
+v6.16     / media: rcar-vin: Fix RAW8
+v6.16     / media: rcar-vin: Remove unnecessary checks
+v6.16     / media: rcar-vin: Add RCAR_GEN4 model value
+v6.16     / media: rcar-csi2: Remove hack to detect NTSC content
+v6.16     / media: rcar-vin: Simplify the shutdown process
+v6.16     / media: rcar-vin: Remove superfluous starting state
+v6.16     / media: rcar-vin: Remove superfluous suspended state
+v6.16     / media: rcar-vin: Remove emulated SEQ_{TB,BT}
+v6.16     / media: rcar-vin: Fix stride setting for RAW8 formats
+v6.17     / drm/panel: ilitek-ili9881c: Add configuration for 7" Raspberry Pi 720x1280
+v6.17     / drm/panel: ilitek-ili9881c: Allow configuration of the number of lanes
+v6.13     / drm/panel: ilitek-ili9881c: Report subpixel order according to rotation
+v6.13     / drm/panel: ilitek-ili9881c: Explicitly set address mode, allow 180° rotation
+v6.17     / dt-bindings: ili9881c: Document 7" Raspberry Pi 720x1280
+v6.17     / regulator: rpi-panel-v2: Fix missing OF dependency
+v6.17     / regulator: rpi-panel-v2: Add missing GPIOLIB dependency
+v6.17     / regulator: rpi-panel-v2: Add regulator for 7" Raspberry Pi 720x1280
+v6.16     / mmc: rename mmc_host_uhs() to mmc_host_can_uhs()
+v6.16     / mmc: core: Add support for graceful host removal for SD
+v6.13     / mmc: core: Enable SDUC
+v6.13     / mmc: core: Prevent HSQ from enabling for SDUC
+v6.16     / mmc: rename mmc_boot_partition_access() to mmc_host_can_access_boot()
+v6.16     / mmc: rename mmc_host_cmd23() to mmc_host_can_cmd23()
+v6.16     / mmc: rename mmc_can_sleep() to mmc_card_can_sleep()
+v6.16     / mmc: rename mmc_can_reset() to mmc_card_can_reset()
+v6.16     / mmc: rename mmc_can_poweroff_notify() to mmc_card_can_poweroff_notify()
+v6.16     / mmc: rename mmc_can_ext_csd() to mmc_card_can_ext_csd()
+v6.16     / mmc: rename mmc_can_discard() to mmc_card_can_discard()
+v6.16     / mmc: core: Add support for graceful host removal for eMMC
+v6.16     / mmc: core: Convert into an enum for the poweroff-type for eMMC
+v6.16     / mmc: core: Further avoid re-storing power to the eMMC before a shutdown
+v6.16     / mmc: core: Convert mmc_can_poweroff_notify() into a bool
+v6.15     / mmc: core: Trim trailing whitespace from card product names
+v6.16     / spi: sh-msiof: Move register definitions to <linux/spi/sh_msiof.h>
+v6.16     / spi: sh-msiof: Document frame start sync pulse mode
+v6.16     / spi: sh-msiof: Double maximum DMA transfer size using two groups
+v6.16     / spi: sh-msiof: Simplify BRG's Division Ratio
+v6.16     / spi: sh-msiof: Increase TX FIFO size for R-Car V4H/V4M
+v6.16     / spi: sh-msiof: Correct RX FIFO size for R-Car Gen3
+v6.16     / spi: sh-msiof: Correct RX FIFO size for R-Car Gen2
+v6.16     / spi: sh-msiof: Add core support for dual-group transfers
+v6.16     / spi: sh-msiof: Correct SIMDR2_GRPMASK
+v6.16     / spi: sh-msiof: SIFCTR bitfield conversion
+v6.16     / spi: sh-msiof: SICTR bitfield conversion
+v6.16     / spi: sh-msiof: SITSCR/SIRSCR bitfield conversion
+v6.16     / spi: sh-msiof: SITMDR2 and SIRMDR2 bitfield conversion
+v6.16     / spi: sh-msiof: SITMDR1/SIRMDR1 bitfield conversion
+v6.16     / spi: sh-msiof: Make words/fs unsigned in FIFO helpers
+v6.16     / spi: sh-msiof: Make words/bits unsigned in sh_msiof_spi_txrx_once()
+v6.16     / spi: sh-msiof: Use bool for boolean flags
+v6.16     / spi: sh-msiof: Complete using dev in sh_msiof_spi_probe()
+v6.16     / spi: sh-msiof: Remove unneeded compatible values
+v6.16     / spi: sh-msiof: Drop comma after OF match table sentinel
+v6.15     / arm64: dts: renesas: gray-hawk-single: Restore sort order
+v6.15     / arm64: dts: renesas: gray-hawk-single: Describe AVB1 and AVB2
+v6.15     / arm64: dts: renesas: r8a779h0: Remove #address- and #size-cells from AVB[0-2]
+v6.16     / can: rcar_canfd: Add RZ/G3E support
+v6.16     / can: rcar_canfd: Enhance multi_channel_irqs handling
+v6.16     / can: rcar_canfd: Add external_clk variable to struct rcar_canfd_hw_info
+v6.16     / can: rcar_canfd: Add sh variable to struct rcar_canfd_hw_info
+v6.16     / can: rcar_canfd: Add struct rcanfd_regs variable to struct rcar_canfd_hw_info
+v6.16     / can: rcar_canfd: Add shared_can_regs variable to struct rcar_canfd_hw_info
+v6.16     / can: rcar_canfd: Add ch_interface_mode variable to struct rcar_canfd_hw_info
+v6.16     / can: rcar_canfd: Add {nom,data}_bittiming variables to struct rcar_canfd_hw_info
+v6.16     / can: rcar_canfd: Add max_cftml variable to struct rcar_canfd_hw_info
+v6.16     / can: rcar_canfd: Add max_aflpn variable to struct rcar_canfd_hw_info
+v6.16     / can: rcar_canfd: Add rnc_field_width variable to struct rcar_canfd_hw_info
+v6.16     / can: rcar_canfd: Update RCANFD_GAFLCFG macro
+v6.16     / can: rcar_canfd: Add rcar_canfd_setrnc()
+v6.16     / can: rcar_canfd: Drop the mask operation in RCANFD_GAFLCFG_SETRNC macro
+v6.16     / can: rcar_canfd: Update RCANFD_GERFL_ERR macro
+v6.16     / can: rcar_canfd: Drop RCANFD_GAFLCFG_GETRNC macro
+v6.16     / arm64: defconfig: Add Renesas MSIOF sound support
+v6.16     / arm64: dts: renesas: sparrow-hawk: Add MSIOF Sound support
+v6.16     / ASoC: renesas: add MSIOF sound support
+v6.16     / ASoC: renesas: rsnd: enable to use "adg" clock
+v6.16     / ASoC: renesas: rsnd: care BRGA/BRGB select in rsnd_adg_clk_enable()
+v6.16     / ASoC: renesas: rsnd: allow to use ADG as standalone
+v6.16     / ASoC: rsnd: use snd_pcm_direction_name()
+v6.16     / spi: sh-msiof: ignore driver probing if it was MSIOF Sound
+v6.16     / spi: sh-msiof: use dev in sh_msiof_spi_probe()
+v6.16     / dt-bindings: renesas,sh-msiof: Add MSIOF I2S Sound support
+v6.16     / arm64: dts: renesas: r8a779g3: Add Retronix R-Car V4H Sparrow Hawk board support
+v6.16     / dt-bindings: soc: renesas: Document Retronix R-Car V4H Sparrow Hawk board support
+v6.16     / dt-bindings: vendor-prefixes: Add Retronix Technology Inc.
+v6.14     / ASoC: audio-graph-card2: Use extra format on each DAI
+v6.14     / ASoC: soc-core: Enable to use extra format on each DAI
+v6.14     / ASoC: audio-graph-card2: use of_graph_get_port_by_id() at graph_get_next_multi_ep()
+v6.14     / ASoC: simple-card: use __free(device_node) for device node
+v6.14     / ASoC: audio-graph-card: use __free(device_node) for device node
+v6.14     / ASoC: audio-graph-card2: use __free(device_node) for device node
+v6.13     / ASoC: audio-graph-card2: use new of_graph functions
+v6.14     / ASoC: simple-card: Drop unnecessary "dai-tdm-slot-width-map" property presence check
+v6.14     / ASoC: Use of_property_present() for non-boolean properties
+v6.14     / ASoC: simple-card-utils: Unify clock direction by clk_direction
+v6.14     / ASoC: simple-card-utils: use for_each_of_graph_port() on graph_get_dai_id()
+v6.14     / ASoC: simple-card-utils: check port reg first on graph_get_dai_id()
+v6.13     / ASoC: simple-card-utils: care simple_util_dai for dummy DAI
+v6.13     / ASoC: test-component: Support continuous rates for test component
+v6.15     / dt-bindings: timer: renesas,tpu: remove obsolete binding
+v6.15     / dt-bindings: soc: renesas: Document MYIR Remi Pi board
+v6.15     / dt-bindings: soc: renesas: Document Yuridenki-Shokai Kakip board
+v6.15     / dt-bindings: soc: renesas: Document more Renesas RZ/V2H SoC variants
+v6.14     / dt-bindings: soc: renesas: Document RZ/G3E SMARC SoM and Carrier-II EVK
+v6.14     / dt-bindings: soc: renesas: Document Renesas RZ/G3E SoC variants
+v6.14     / dt-bindings: soc: renesas: Document R8A779G3 White Hawk Single
+v6.14     / dt-bindings: soc: renesas: Move R8A779G0 White Hawk up
+v6.15     / dt-bindings: timer: Correct indentation and style in DTS example
+v6.13     / of: property: use new of_graph functions
+v6.13     / of: property: add of_graph_get_next_port_endpoint()
+v6.13     / of: property: add of_graph_get_next_port()
+v6.13     / ASoC: rsnd: check rsnd_adg_clk_enable() return value
+v6.13     / ASoC: Rename "sh" to "renesas"
+v6.14     / arm64: dts: renesas: white-hawk-single: Add R-Car Sound support
+v6.14     / arm64: dts: renesas: white-hawk-ard-audio: Drop SoC part
+v6.14     / arm64: dts: renesas: r8a779g3: Add White Hawk Single support
+v6.14     / arm64: dts: renesas: Add R8A779G3 SoC support
+v6.13     / dt-bindings: fuse: Move renesas,rcar-{efuse,otp} to nvmem
+v6.13     / nvmem: Add R-Car E-FUSE driver
+v6.14     / clk: renesas: r8a779h0: Add display clocks
+v6.14     / drm/rcar-du: Add support for r8a779h0
+v6.14     / drm/rcar-du: Write DPTSR only if the second source exists
+v6.14     / drm/rcar-du: dsi: Add r8a779h0 support
+v6.14     / dt-bindings: display: bridge: renesas,dsi-csi2-tx: Add r8a779h0
+v6.14     / dt-bindings: display: renesas,du: Add r8a779h0
+v6.14     / dt-bindings: display: renesas,du: Add missing constraints
+v6.14     / arm64: dts: renesas: falcon-ethernet: Describe PHYs connected on the breakout board
+v6.14     / arm64: dts: renesas: r8a779a0: Remove address- and size-cells from AVB[1-5]
+v6.13     / arm64: dts: renesas: r8a779a0: Add E-FUSE node
+v6.14     / arm64: dts: renesas: gray-hawk-single: Add video capture support
+v6.14     / arm64: dts: renesas: gray-hawk-single: Add DisplayPort support
+v6.14     / arm64: dts: renesas: gray-hawk-single: Fix indentation
+v6.13     / arm64: dts: renesas: Use interrupts-extended for I/O expanders
+v6.13     / arm64: dts: renesas: r8a779h0: gray-hawk-single: Enable PCIe Host
+v6.14     / arm64: dts: renesas: r8a779h0: Add display support
+v6.13     / arm64: dts: renesas: r8a779h0: Add OTP_MEM node
+v6.13     / arm64: dts: renesas: r8a779h0: Add PCIe Host and Endpoint nodes
+v6.14     / arm64: dts: renesas: white-hawk-csi-dsi: Define CSI-2 data line orders
+v6.14     / media: dt-bindings: Add property to describe CSI-2 C-PHY line orders
+v6.14     / media: v4l: fwnode: Parse MiPI DisCo for C-PHY line-orders
+v6.14     / net: renesas: rswitch: use FIELD_PREP for remaining MPIC register fields
+v6.14     / net: renesas: rswitch: do not write to MPSM register at init time
+v6.14     / net: renesas: rswitch: enable only used MFWD features
+v6.14     / net: renesas: rswitch: remove speed from gwca structure
+v6.14     / net: renesas: rswitch: do not deinit disabled ports
+v6.13     / media: staging: max96712: Add support for MAX96724
+v6.13     / media: staging: max96712: Document the DEBUG_EXTRA register
+v6.13     / media: staging: max96712: Move link frequency setting to device struct
+v6.13     / media: staging: max96712: Remove device id check
+v6.15     / media: rcar-csi2: Convert to .{enable|disable}_streams
+v6.15     / media: rcar-isp: Convert to .{enable|disable}_streams
+v6.15     / media: rcar-isp: Convert to subdev state
+v6.15     / media: rcar-csi2: Use v4l2_subdev_{enable|disable}_streams()
+v6.15     / media: rcar-isp: Use v4l2_subdev_{enable|disable}_streams()
+v6.15     / media: rcar-vin: Use v4l2_subdev_{enable|disable}_streams()
+v6.15     / media: rcar-csi2: Use v4l2_get_link_freq()
+v6.15     / media: rcar-isp: Add RAW8, RAW10 and RAW12 formats
+v6.15     / media: rcar-csi2: Add RAW10 and RAW12 formats
+v6.15     / media: rcar-csi2: Move Y8 entry to a better place
+v6.14     / media: rcar-csi2: Update D-PHY startup on V4M
+v6.14     / media: rcar-csi2: Allow specifying C-PHY line order
+v6.13     / media: platform: drop vb2_ops_wait_prepare/finish
+v6.13     / media: rcar-vin: Add support for RAW10
+v6.13     / media: rcar-isp: Add family compatible for R-Car Gen4 family
+v6.13     / media: rcar-csi2: Add support for R-Car V4M
+v6.13     / media: rcar-csi2: Add documentation for PHY_EN and PHY_MODE registers
+v6.13     / media: rcar-csi2: Move PHTW write helpers
+v6.13     / media: rcar-csi2: Add helper to lookup mbps settings
+v6.13     / media: rcar-csi2: Abstract PHTW and PHYPLL register offsets
+v6.13     / media: rcar-csi2: Allow writing any code and data value to PHTW
+v6.13     / media: rcar-csi2: Correct field size for PHTW writes
+v6.13     / media: rcar_drif.c: set lock before calling vb2_queue_init()
+v6.13     / dt-bindings: media: renesas,csi2: Add binding for V4M
+v6.13     / dt-bindings: media: renesas,isp: Add binding for V4M
+v6.13     / dt-bindings: media: renesas,isp: Add Gen4 family fallback
+v6.13     / clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks
