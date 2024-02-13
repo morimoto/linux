@@ -723,19 +723,27 @@ EXPORT_SYMBOL(of_graph_get_port_by_id);
  *
  * Return: An 'endpoint' node pointer which is identified by reg and at the same
  * is the child of a port node identified by port_reg. reg and port_reg are
- * ignored when they are -1. Use of_node_put() on the pointer when done.
+ * ignored when they are < 0. Use of_node_put() on the pointer when done.
  */
 struct device_node *of_graph_get_endpoint_by_regs(
 	struct device_node *parent, int port_reg, int reg)
 {
-	struct of_endpoint endpoint;
-	struct device_node *node = NULL;
+	struct device_node *port;
 
-	for_each_endpoint_of_node(parent, node) {
-		of_graph_parse_endpoint(node, &endpoint);
-		if (((port_reg == -1) || (endpoint.port == port_reg)) &&
-			((reg == -1) || (endpoint.id == reg)))
-			return node;
+	port = of_graph_get_port_by_id(parent, port_reg);
+	if (port) {
+		struct device_node *node;
+
+		for_each_of_graph_port_endpoint(port, node) {
+			u32 id;
+
+			if (reg < 0)
+				return node;
+
+			of_property_read_u32(node, "reg", &id);
+			if (id == reg)
+				return node;
+		}
 	}
 
 	return NULL;
