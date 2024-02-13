@@ -1,0 +1,85 @@
+* v6.6.63-2024-11-25
+
+	* Merge/Rebase v6.6.63
+
+	* update CVE
+
+* v6.6.62-2024-11-19
+
+	* update list
+
+* v6.6.62-2024-11-18
+
+	* Merge/Rebase v6.6.62
+
+	* update CVE
+
+* v6.6.61-2024-11-18
+
+	* Merge/Rebase v6.6.61
+
+	* update CVE
+
+* v6.6.60-2024-11-11
+
+	* Merge/Rebase v6.6.60
+
+	* update CVE
+
+* v6.6.59-2024-11-05
+
+	* Merge/Rebase v6.6.59
+
+	* update CVE
+
+* v6.6.58-2024-11-01
+
+	* Merge/Rebase v6.6.58
+
+	* update CVE
+
+* v6.6.57-2024-11-01
+
+	* Merge/Rebase v6.6.57
+
+	* update CVE
+
+* v6.6.56-2024-11-01
+
+	* Merge/Rebase v6.6.56
+
+	* update CVE
+
+* v6.6.55-2024-10-23
+
+	* Merge/Rebase v6.6.55
+
+	* update CVE
+
+	* update list
+
+	* Below patches were backported
+
+		commit 89dd679303f4b4a76204c2269a7724b545cd84df
+		("dt-bindings: media: renesas,vin: Add binding for V4M")
+
+		commit 9fba8eb8d55ddd8bb779fee3e36b7d8a6a2924b0
+		("dt-bindings: media: renesas,vin: Add Gen4 family fallback")
+
+		commit 9a73e931308f89bfecf18787af29a21a92470fa8
+		("media: rcar-vin: Add family compatible for R-Car Gen4 family")
+
+* v6.6.54-2024-10-18
+
+	* Merge/Rebase v6.6.54
+
+	* update CVE
+
+	* update list
+
+	* Below patches was backported
+
+		808852fa3a5e11c8d2bf0aef3695aaf930bd4fa9
+		("riscv: dts: renesas: r9a07g043f: Add IRQC node to RZ/Five SoC DTSI")
+
+	* add rcar_bsp_defconfig
