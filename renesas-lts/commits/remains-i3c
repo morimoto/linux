@@ -1,0 +1,7 @@
+# Yes, we need this at some point
+74cba0f5d76ae i3c: rcar: Add support for in-band interrupts
+# unclear if we need userspace support, though
+5c28e19452016 i3cdev: i3c: Add sysfs attribute for IBI handling in userspace
+# Why should we have native I2C support if we can use I3C->I2C fallback?
+4f2b8b6329870 i3c: rcar: add "force-i2c" DT property for testing I2C mode
+28637409e70a0 i3c: rcar: feat: add I2C legacy support
