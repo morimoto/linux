@@ -1,0 +1,85 @@
+============== -*- outline -*- ==============
+
+             BSP rebase by Upstream team
+
+2024/12		Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+=============================================
+
+* About BSP rebase
+
+	Upstream team rebases BSP kernel to Linux Kernel v6.12.X.
+	Rebased BSP structure is like below.
+
+		(C) xxxxx BSP rebase work on v6.12.X
+		 ^  xxxxx ...
+		 |  xxxxx local patches which is/will posted to upstream ML
+		(B) xxxxx local patches from previous BSP
+		 |  xxxxx backported patches from latest Linux
+		 v
+		(A) xxxxx v6.12.X
+
+	(A) is base kernel (= LTS v6.12.X)
+	(B) are BSP additional patches (backport, etc)
+	(C) is information from Upstream team.
+
+	(C) is for BSP team, but not for customer.
+	Please remove (C) commit when BSP team uses this rebased BSP.
+	^^^^^^^^^^^^^^^^^^^^^^^^
+
+	(C) is including below
+
+		${LINUX}/renesas-lts
+
+* About git repository/branch/tag
+
+	You can find BSP rebase repository at
+
+		Github
+		https://github.com/renesas-rcar/upstream_bsp
+
+	You can clone it by
+
+		git clone https://github.com/renesas-rcar/upstream_bsp.git
+
+	You can find 2 type of branch/tag
+
+	branch
+		(A) renesas-lts/v6.12-dev
+		(B) renesas-lts/v6.12.xxx-yyyy-mm-dd
+
+	tag
+		(A) renesas-dev-v6.12.xxx
+		(B) renesas-lts-v6.12.xxx
+
+	(A) is using "git merge". Pros is you can use "git merge" for it. Cons is it is difficult
+	to know what kind of patch was backported from upstream.
+
+	(B) is using "git rebase". Pros is it is easy to know what kind of patch was backported from
+	upstream. Cons is you need to use "git rebase" for it, can't use "git merge".
+
+	You can't check/fetch above tag by normal ways.  You need to do...
+
+		> git ls-remote --tags renesas-rcar
+		> git fetch renesas-rcar refs/tags/renesas-xxx-v6.1.xxx
+
+* files
+
+	Supported CVE, by using CIP project (*)
+		${LINUX}/renesas-lts/cve
+
+	Backported patch list
+		${LINUX}/renesas-lts/list
+
+	Others
+		${LINUX}/renesas-lts/ChangeLog
+		${LINUX}/renesas-lts/README
+
+	(*) cip-kernel-sec
+
+		https://gitlab.com/cip-project/cip-kernel/cip-kernel-sec
+
+* about defconfig
+
+** renesas_defconfig
+
+	Upstream team recommend to defconfig

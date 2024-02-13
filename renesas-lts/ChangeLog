@@ -1,0 +1,183 @@
+* v6.12.12-2025-02-07
+
+	* update list
+
+	* Below patches were backported
+
+		commit c2484af44be1ee55cc9116fcde2b4dffe9bfcf5d
+		("arm64: dts: renesas: r8a779h0: Add display support")
+
+		commit 2aea0d17ff9e08e8ab50dd588c53cc37d963e016
+		("dt-bindings: fuse: Move renesas,rcar-{efuse,otp} to nvmem")
+
+		commit 1530b923a514b158b91453bf5adc9291e77638f5
+		("nvmem: Add R-Car E-FUSE driver")
+
+		commit 0270dbe4f891325dffecc74cbc90a4d567b02c4d
+		("arm64: dts: renesas: r8a779h0: Add PCIe Host and Endpoint nodes")
+
+		commit 548f9a3c3eb32dc4e93a947a0d8bd6331bdb8d19
+		("clk: renesas: r8a779h0: Add display clocks")
+
+		commit 7fc2adcddd929716539ad93594481799310d004b
+		("drm/rcar-du: Add support for r8a779h0")
+
+		commit bb5f268b7662469b47e9b518c2353803bc7f4ec9
+		("drm/rcar-du: Write DPTSR only if the second source exists")
+
+		commit c303814c38cde135b8e9a0696c3b505a3ef5123f
+		("drm/rcar-du: dsi: Add r8a779h0 support")
+
+		commit 6389e616fae8a101ce00068f7690461ab57b29d8
+		("drm/rcar-du: dsi: Fix PHY lock bit check")
+
+		commit a409a9058fe1feecbb123701172af0ea46b71f24
+		("dt-bindings: display: bridge: renesas,dsi-csi2-tx: Add r8a779h0")
+
+		commit 3a7c9b42b464becfec9e98776b169f38f8520d8a
+		("dt-bindings: display: renesas,du: Add r8a779h0")
+
+		commit 8fe1db6bd85072f6cae1913208400edcd92addbd
+		("dt-bindings: display: renesas,du: Add missing constraints")
+
+* v6.12.12-2025-02-04
+
+	* update list
+
+	* Below patches were backported
+
+		commit a57e6e1fe02e2499663c409f039eab7a746af11d
+		("arm64: dts: renesas: falcon-ethernet: Describe PHYs connected on the breakout board")
+
+		commit 95605458312787fadff4001b1df53154451c05a2
+		("arm64: dts: renesas: r8a779a0: Remove address- and size-cells from AVB[1-5]")
+
+		commit e05f6e48e4f95dbb51d4b7ae153e0628e1700d3d
+		("arm64: dts: renesas: r8a779a0: Add E-FUSE node")
+
+		commit e7402a7983de1c7148ee0fdc024fe5242f2c3357
+		("arm64: dts: renesas: gray-hawk-single: Add video capture support")
+
+		commit b1000645dc29701fafd12d0c6f22ab080de6ab43
+		("arm64: dts: renesas: gray-hawk-single: Add DisplayPort support")
+
+		commit 4fd66d72b9d0b2b343332aec309ae8861f881181
+		("arm64: dts: renesas: gray-hawk-single: Fix indentation")
+
+		commit ecc5bfdbe74b79555258594b3cf4d5daf56f827e
+		("arm64: dts: renesas: Use interrupts-extended for I/O expanders")
+
+		commit ba4d843a2ac646abc034b013c0722630f6ea1c90
+		("arm64: dts: renesas: Use interrupts-extended for Ethernet PHYs")
+
+		commit 0f9752bacea25689271485ba0ff98ebc86c01ba5
+		("arm64: dts: renesas: r8a779h0: gray-hawk-single: Enable PCIe Host")
+
+		commit c2484af44be1ee55cc9116fcde2b4dffe9bfcf5d
+		("arm64: dts: renesas: r8a779h0: Add display support")
+
+		commit 34e5d9ff622ea5acf36d66a71cd46a1212b1f5a1
+		("arm64: dts: renesas: r8a779h0: Add OTP_MEM node")
+
+		commit 0270dbe4f891325dffecc74cbc90a4d567b02c4d
+		("arm64: dts: renesas: r8a779h0: Add PCIe Host and Endpoint nodes")
+
+		commit c357e2295b7880b1d9d365c3389f06ef2eb464d0
+		("arm64: dts: renesas: white-hawk-csi-dsi: Define CSI-2 data line orders")
+
+		commit 91a7088096a49eb413ca11a9d80bc8ba60695c18
+		("media: dt-bindings: Add property to describe CSI-2 C-PHY line orders")
+
+		commit 573b4adddbd22baf14c5022b8e4b1dd93bac22ee
+		("media: v4l: fwnode: Parse MiPI DisCo for C-PHY line-orders")
+
+		commit f6470be571362bd0ea19a597226933b61fa6e313
+		("media: rcar-csi2: Update D-PHY startup on V4M")
+
+		commit b06ec03b7464fdf235487cb68ce0902df8c34aa6
+		("media: rcar-csi2: Allow specifying C-PHY line order")
+
+v6.12.12-2025-02-03
+
+	* Merge/Rebase v6.12.12
+
+	* update CVE
+
+* v6.12.11-2025-01-30
+
+	* update list
+
+	* Below patches were backported
+
+		commit da75ba93e3383fc10af71e5029b5a57378a57576
+		("net: renesas: rswitch: use FIELD_PREP for remaining MPIC register fields")
+
+		commit 206112fa65790221ca3ebbc43092911bb8836a19
+		("net: renesas: rswitch: do not write to MPSM register at init time")
+
+		commit 54d3970548bd9de40f921c95f8c31e1b1b2382cb
+		("net: renesas: rswitch: enable only used MFWD features")
+
+		commit 32fd46f5b69e9a2e1206d576359e533e5b7c4694
+		("net: renesas: rswitch: remove speed from gwca structure")
+
+		commit 070927427d82debf5797e60c96165f2666c0bc42
+		("net: renesas: rswitch: do not deinit disabled ports")
+
+v6.12.11-2025-01-24
+
+	* Merge/Rebase v6.12.11
+
+	* update CVE
+
+	* Disable CONFIG_PROVE_LOCKING on renesas_defconfig
+
+		It has effect to the performance.
+
+	* Rename "renesas-bsp" to "renesas-lts"
+
+		It was confusable nameing. rename it
+
+	* Add missing explanation for tag fetch on README
+
+v6.12.10-2025-01-20
+
+	* Merge/Rebase v6.12.10
+
+	* update CVE
+
+	* update list
+
+v6.12.9-2025-01-10
+
+	* Merge/Rebase v6.12.9
+
+	* update CVE
+
+v6.12.8-2025-01-08
+
+	* Merge/Rebase v6.12.8
+
+	* update CVE
+
+v6.12.7-2025-01-06
+
+	* Merge/Rebase v6.12.7
+
+	* update CVE
+
+v6.12.6-2024-12-23
+
+	* Merge/Rebase v6.12.6
+
+v6.12.5-2024-12-16
+
+	* Merge/Rebase v6.12.5
+
+v6.12.4-2024-12-12
+
+	* Merge/Rebase v6.12.4
+
+v6.12.3-2024-12-09
+
+	* update CVE

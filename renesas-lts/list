@@ -1,0 +1,50 @@
+Local     / arm64: dts: renesas: r8a779h0: Add display support
+v6.13     / dt-bindings: fuse: Move renesas,rcar-{efuse,otp} to nvmem
+v6.13     / nvmem: Add R-Car E-FUSE driver
+v6.13     / arm64: dts: renesas: r8a779h0: Add PCIe Host and Endpoint nodes
+Local     / clk: renesas: r8a779h0: Add display clocks
+Local     / drm/rcar-du: Add support for r8a779h0
+Local     / drm/rcar-du: Write DPTSR only if the second source exists
+Local     / drm/rcar-du: dsi: Add r8a779h0 support
+Local     / drm/rcar-du: dsi: Fix PHY lock bit check
+Local     / dt-bindings: display: bridge: renesas,dsi-csi2-tx: Add r8a779h0
+Local     / dt-bindings: display: renesas,du: Add r8a779h0
+Local     / dt-bindings: display: renesas,du: Add missing constraints
+Local     / arm64: dts: renesas: falcon-ethernet: Describe PHYs connected on the breakout board
+Local     / arm64: dts: renesas: r8a779a0: Remove address- and size-cells from AVB[1-5]
+v6.13     / arm64: dts: renesas: r8a779a0: Add E-FUSE node
+Local     / arm64: dts: renesas: gray-hawk-single: Add video capture support
+Local     / arm64: dts: renesas: gray-hawk-single: Add DisplayPort support
+Local     / arm64: dts: renesas: gray-hawk-single: Fix indentation
+v6.13     / arm64: dts: renesas: Use interrupts-extended for I/O expanders
+v6.13     / arm64: dts: renesas: Use interrupts-extended for Ethernet PHYs
+v6.13     / arm64: dts: renesas: r8a779h0: gray-hawk-single: Enable PCIe Host
+Local     / arm64: dts: renesas: r8a779h0: Add display support
+v6.13     / arm64: dts: renesas: r8a779h0: Add OTP_MEM node
+v6.13     / arm64: dts: renesas: r8a779h0: Add PCIe Host and Endpoint nodes
+Local     / arm64: dts: renesas: white-hawk-csi-dsi: Define CSI-2 data line orders
+Local     / media: dt-bindings: Add property to describe CSI-2 C-PHY line orders
+Local     / media: v4l: fwnode: Parse MiPI DisCo for C-PHY line-orders
+Local     / media: rcar-csi2: Update D-PHY startup on V4M
+Local     / media: rcar-csi2: Allow specifying C-PHY line order
+Local     / net: renesas: rswitch: use FIELD_PREP for remaining MPIC register fields
+Local     / net: renesas: rswitch: do not write to MPSM register at init time
+Local     / net: renesas: rswitch: enable only used MFWD features
+Local     / net: renesas: rswitch: remove speed from gwca structure
+Local     / net: renesas: rswitch: do not deinit disabled ports
+v6.13     / media: staging: max96712: Add support for MAX96724
+v6.13     / media: staging: max96712: Document the DEBUG_EXTRA register
+v6.13     / media: staging: max96712: Move link frequency setting to device struct
+v6.13     / media: staging: max96712: Remove device id check
+v6.13     / media: rcar-csi2: Add support for R-Car V4M
+v6.13     / media: rcar-csi2: Add documentation for PHY_EN and PHY_MODE registers
+v6.13     / media: rcar-csi2: Move PHTW write helpers
+v6.13     / media: rcar-csi2: Add helper to lookup mbps settings
+v6.13     / media: rcar-csi2: Abstract PHTW and PHYPLL register offsets
+v6.13     / media: rcar-csi2: Allow writing any code and data value to PHTW
+v6.13     / media: rcar-csi2: Correct field size for PHTW writes
+v6.13     / dt-bindings: media: renesas,csi2: Add binding for V4M
+v6.13     / dt-bindings: media: renesas,isp: Add binding for V4M
+v6.13     / dt-bindings: media: renesas,isp: Add Gen4 family fallback
+v6.13     / media: rcar-isp: Add family compatible for R-Car Gen4 family
+v6.13     / clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks
