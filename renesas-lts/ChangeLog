@@ -1,0 +1,84 @@
+v6.12.12-2025-02-03
+
+	* Merge/Rebase v6.12.12
+
+	* update CVE
+
+* v6.12.11-2025-01-30
+
+	* update list
+
+	* Below patches were backported
+
+		commit da75ba93e3383fc10af71e5029b5a57378a57576
+		("net: renesas: rswitch: use FIELD_PREP for remaining MPIC register fields")
+
+		commit 206112fa65790221ca3ebbc43092911bb8836a19
+		("net: renesas: rswitch: do not write to MPSM register at init time")
+
+		commit 54d3970548bd9de40f921c95f8c31e1b1b2382cb
+		("net: renesas: rswitch: enable only used MFWD features")
+
+		commit 32fd46f5b69e9a2e1206d576359e533e5b7c4694
+		("net: renesas: rswitch: remove speed from gwca structure")
+
+		commit 070927427d82debf5797e60c96165f2666c0bc42
+		("net: renesas: rswitch: do not deinit disabled ports")
+
+v6.12.11-2025-01-24
+
+	* Merge/Rebase v6.12.11
+
+	* update CVE
+
+	* Disable CONFIG_PROVE_LOCKING on renesas_defconfig
+
+		It has effect to the performance.
+
+	* Rename "renesas-bsp" to "renesas-lts"
+
+		It was confusable nameing. rename it
+
+	* Add missing explanation for tag fetch on README
+
+v6.12.10-2025-01-20
+
+	* Merge/Rebase v6.12.10
+
+	* update CVE
+
+	* update list
+
+v6.12.9-2025-01-10
+
+	* Merge/Rebase v6.12.9
+
+	* update CVE
+
+v6.12.8-2025-01-08
+
+	* Merge/Rebase v6.12.8
+
+	* update CVE
+
+v6.12.7-2025-01-06
+
+	* Merge/Rebase v6.12.7
+
+	* update CVE
+
+v6.12.6-2024-12-23
+
+	* Merge/Rebase v6.12.6
+
+v6.12.5-2024-12-16
+
+	* Merge/Rebase v6.12.5
+
+v6.12.4-2024-12-12
+
+	* Merge/Rebase v6.12.4
+
+v6.12.3-2024-12-09
+
+	* update CVE
