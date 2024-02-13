@@ -1,0 +1,22 @@
+# Empty line below is needed
+
+# Wolfram
+d05fe7100a5be i3c: rcar: add suspend/resume support
+9fe94ef68a2f2 i3c: rcar: add I3C driver support for R-Car X5H
+64eec21623eab dt-bindings: i3c: Add binding for Renesas R-Car I3C master controller
+24860955c72ec dt-bindings: watchdog: Document R-Car X5H support
+7c9883b7f7d9c renesas: watchdog: add compatible string to support R-Car Gen5 Soc.
+f1fff70b759ab arm64: dts: renesas: r8a78000: Enable RWDT node
+4952d02b69cd0 arm64: dts: renesas: r8a78000: add RCLK Watchdog node
+064604aa92fb0 dt-bindings: window watchdog: Document R-Car X5H support
+9845a7ade0df3 arm64: dts: renesas: r8a78000: Add WWDT device tree node
+fe6f331c77dde arm64: dts: renesas: r8a78000: Add INTC for WWDT node
+a69fefceeb7f7 arm64: dts: r8a78000: add scmi clk and reset for WWDT
+66f594fe8aec4 wwdt: rcar: add window watchdog support on R-Car X5H
+9fa86c4e31cf8 MAINTAINERS: add Renesas WWDT driver
+
+# Sam Agazaryan, Google
+# lore: 20260921230603.2518652-1-samagazaryan@google.com
+49619329c5120 i3c: add i3cdev module to expose i3c dev in /dev
+de9f99ad308c9 i3c: master: add i3c_for_each_dev helper
+d04030e7de8b0 i3c: master: export i3c_masterdev_type
