@@ -1,0 +1,302 @@
+* v6.6.42-2024-07-26
+
+	* Merge/Rebase v6.6.42
+
+	* update CVE
+
+	* update list
+
+	* Below patches are backported
+		commit 6ade6513832d21599bdcaca59c715f23dde026a8
+		("arm64: dts: renesas: r8a779h0: R-Car Sound support")
+
+		commit 8f3a0069fb2555a60841a15c523aaa110b8e9fb3
+		("arm64: dts: renesas: r8a779g0: Tidy up sound DT settings")
+
+		commit 1f5ed3ae020a0624c9f51ed9720f8279bb0cae60
+		("clk: renesas: r8a779h0: Add Audio clocks")
+
+		commit 6469267afed4ffb9d16ce8c44a2b518b9b31c215
+		("ASoC: dt-bindings: ak4619: Add initial DT binding")
+
+		commit 9337f15f4fd6ebd35d911225c4a88ec82d27b2a2
+		("ASoC: dt-bindings: simple-audio-mux: add state-labels property")
+
+		commit 7109f10ca4225c4a7e47dee5eab0d8d72edbf324
+		("ASoC: dt-bindings: audio-graph-card2: add support for aux devices")
+
+		commit ca73d314363d6682b6c736ea45e3a4ca551923a6
+		("ASoC: Add ak4619 codec support")
+
+		commit 3913ecb38833e8926467a17f1f1679ccd25a7230
+		("ASoC: simple-audio-mux: enable to select MUX names")
+
+		commit f7d97cb564a2ac5517ee7cc933de729e533d659a
+		("ASoC: simple-mux: add read function")
+
+		commit 195815c2755d70df92f46e6d737cd677db7adeef
+		("ASoC: audio-graph-card2: add support for aux devices")
+
+		commit d640af49b65c6d260a5154dfb822e8371b502707
+		("dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility")
+
+		commit 200cba84b6a9e6b16f5c2a61ef231b199222028b
+		("arm64: dts: renesas: gray-hawk-single: Add aliases for I2C buses")
+
+		commit 046084b5e1426efbf08913830bdb101dcbb06be5
+		("arm64: dts: renesas: rzg2l: Update fallback string for SDHI nodes")
+
+		commit 1731ab2f8b62f0be2073de581ffef6db1196ad4f
+		("arm64: dts: renesas: r9a07g043: Move interrupt-parent property to common DTSI")
+
+		commit 3bfe384f6f4f7433103ffcc36e7a7106f7e70c4e
+		("arm64: dts: renesas: r9a07g0{43,44,54}: Update RZ/G2L family compatible")
+
+* v6.6.41-2024-07-19
+
+	* Merge/Rebase v6.6.41
+
+	* update CVE
+
+* v6.6.40-2024-07-16
+
+	* Merge/Rebase v6.6.40
+
+	* update CVE
+
+* v6.6.39-2024-07-16
+
+	* Merge/Rebase v6.6.39
+
+	* update CVE
+
+	* update list
+
+* v6.6.38-2024-07-10
+
+	* Merge/Rebase v6.6.38
+
+* v6.6.37-2024-07-08
+
+	* RISCV related backports are reverted
+
+	To avoid RISCV related compile test error, RISCV is not BSP terget for now.
+
+		soc: renesas: Make RZ/Five depend on !DMA_DIRECT_REMAP
+
+	* Local patch from BSP are reverted
+
+	To avoid dtbs_check error, etc
+
+		arm64: dts: renesas: r8a779g0: Add PCIe Host and Endpoint nodes
+		arm64: dts: renesas: r8a779g0: white-hawk: Enable PCIe Host ch0
+		media: rcar-vin: Add support for RAW10 on V3U
+		dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility
+		misc: pci_endpoint_test: Add Device ID for R-Car V4H PCIe controller
+
+	* Below patches are backported
+
+		commit 56d02cfa3fbfca7466ccd68f4db78b0297f5c01f
+		("dt-bindings: dma: rz-dmac: Document RZ/Five SoC")
+
+		commit 7d562ac331ddc4f798e6185a858bc98c22ee7d1b
+		("ASoC: dt-bindings: renesas,rz-ssi: Document RZ/Five SoC")
+
+		commit 4056d88866e5941ebd15fb2523119f0ddc5186da
+		("spi: renesas,rzv2m-csi: Add CSI (SPI) target related property")
+
+		commit 078a5babf2bc92eba04b8f9162e5fea7afc2749e
+		("dt-bindings: timer: renesas,rz-mtu3: Document RZ/{G2UL,Five} SoCs")
+
+		commit b121e7881b8975cf8dc24d9bd71a5af81ed8a6b1
+		("dt-bindings: timer: renesas,rz-mtu3: Improve documentation")
+
+		commit 7b71da59122c3ab82908910abf78db1fd6340cac
+		("ASoC: dt-bindings: Add missing (unevaluated|additional)Properties on child node schemas")
+
+* v6.6.36-2024-07-02
+
+	* Below patches are backported
+
+		commit 01dffdcaa094858a03e3694694815f1a4915940c
+		("ASoC: dt-bindings: audio-graph-port: Drop type from "clocks"")
+
+		commit af29e51bee8223d8b26e574489d2433b88cdeb2f
+		("ASoC: dt-bindings: audio-graph-port: Document new DAI link flags playback-only/capture-only")
+
+		commit 6d02f355c3d2fe86f503793e4df09898e9f9e703
+		("ASoC: dt-bindings: Simplify port schema")
+
+		commit 967dad97757057dcd72ec27cdb3c14c1774f606c
+		("ASoC: dt-bindings: Simplify referencing dai-params.yaml")
+
+* v6.6.36-2024-06-28
+
+	* Merge/Rebase v6.6.36
+
+	* update CVE
+
+* v6.6.35-2024-06-24
+
+	* Merge/Rebase v6.6.35
+
+	* update CVE
+
+	* Below patches are backported
+
+		commit ee2929118884d7f6e8af35e166d5bc01379bf63f
+		("dt-bindings: interrupt-controller: renesas,irqc: Add r8a779g0 support")
+
+		commit 1f48cbd6f00f2d1442ac8757ae8c32b672073927
+		("spi: renesas,sh-msiof: Add r8a779h0 support")
+
+		commit ed53d391b6401d624172d1c97458d115893c6e0b
+		("dt-bindings: timer: renesas,cmt: Add R-Car V4M support")
+
+		commit 6796c1b68fa92c303923812a0658f3afe8366db2
+		("dt-bindings: thermal: rcar-gen3-thermal: Add r8a779h0 support")
+
+		commit 588b82546d585e8b6ab9c2af06a8ac1d4e5731ab
+		("dt-bindings: watchdog: renesas-wdt: Add support for R-Car V4M")
+
+		commit fdb88a1453d212ac52bbacfbaa9a950c626bfd1e
+		("dt-bindings: memory: renesas,rpc-if: Document R-Car V4M support")
+
+		commit 75a7d8146ac90849a6239c0d029e8b089e7ec6bf
+		("dt-bindings: pinctrl: renesas,pfc: Document R-Car V4M support")
+
+		commit 35b78e2eef2d75c8722bf39d6bd1d89a8e21479e
+		("dt-bindings: renesas,rcar-dmac: Add r8a779h0 support")
+
+		commit d9a9657a1343a7eef7bcbf6e974bf4cea75121a5
+		("dt-bindings: i2c: renesas,rcar-i2c: Add r8a779h0 support")
+
+		commit ff3d9bfa25fabc4bf014d4e350ded1dc12b0a44a
+		("dt-bindings: gpio: renesas,rcar-gpio: Add r8a779h0 support")
+
+		commit 58d4b25c883192377bf6255a46d46d0589e6f4ca
+		("dt-bindings: timer: renesas,tmu: Add R-Car V4M support")
+
+		commit 0076a37a426b6c850a0b41b814952760e4a70fcf
+		("dt-bindings: timer: renesas,tmu: Document input capture interrupt")
+
+		commit cd508bba82e4e0f405f593d7ada8067ebba289cb
+		("dt-bindings: reset: renesas,rst: Document R-Car V4M support")
+
+		commit 2a8998479328a6eb6a2b07a68c7a756fe717b9e2
+		("dt-bindings: clock: renesas,cpg-mssr: Document R-Car V4M support")
+
+		commit a87590c45c87424953118e8a43f36d967f3ca406
+		("dt-bindings: net: renesas,etheravb: Add optional MDIO bus node")
+
+		commit 060baa9b90d4e14eac7123abc563070dd30b21a2
+		("dt-bindings: net: renesas,etheravb: Document RZ/G3S support")
+
+		commit 7c93d177d913a3a43bcb8f8edd4e2f78074a18a3
+		("dt-bindings: net: renesas,etheravb: Document RZ/Five SoC")
+
+		commit ac8fe40c3628e12123ef32098216476dccea7b6a
+		("dt-bindings: net: renesas: Drop ethernet-phy node schema")
+
+		commit 66010ba94c9b9c273eb9682132d6b809440b9013
+		("dt-bindings: soc: renesas: Document Renesas RZ/V2H(P) SoC variants")
+
+		commit ce3e7d48ada5c74c03682eb11027ead177dd3008
+		("dt-bindings: soc: renesas: Preserve the order of SoCs based on their part numbers")
+
+		commit 49558e814fefdf33bf0b2d1c46c30d6a3f9634f3
+		("dt-bindings: soc: renesas: Document R-Car V4M Gray Hawk Single")
+
+		commit c18327b36e9c1efb917953fc14b869c37d2884e1
+		("dt-bindings: soc: renesas: Document R-Car V4H White Hawk Single")
+
+		commit c083e9daf4a6f5bc61c5a0eb3ba3e229271fc624
+		("arm64: dts: renesas: ebisu: Document Ebisu-4D support")
+
+		commit c0a2c7619666ae857a52219f344fbaa915cd181a
+		("dt-bindings: soc: renesas: Document R-Car S4 Starter Kit")
+
+		commit 6042f5365bee167ac27d02454f5cba403747277a
+		("dt-bindings: soc: renesas: Document SMARC Carrier-II EVK")
+
+		commit 1c3be6ca72293723e009a29fbe90385fa047e5ee
+		("dt-bindings: soc: renesas: Document RZ/G3S SMARC SoM")
+
+		commit 9c57c4a9a45c04c19f38986c73847b756ceae237
+		("dt-bindings: soc: renesas: Document Renesas RZ/G3S SoC variants")
+
+* v6.6.34-2024-06-20
+
+	* Add backport list
+
+	* update remains / handled
+
+		Below patches are goes to remains
+
+		net: phy: workaround 'resume' regression with Micrel PHYs
+		mmc: core: mmc_ops: Enable stop command
+		mmc: core: Issue power off notification in mmc_remove()
+
+	* Below patches are backported
+
+		commit d640af49b65c6d260a5154dfb822e8371b502707
+		("dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility")
+
+		commit 493d2b2969d477802310e8e215cf1924f95a7284
+		("dt-bindings: mmc: renesas,sdhi: Group single const value items into an enum list")
+
+		commit 4aee14527e4fd92d4a7487c430b54d099b99b4d1
+		("dt-bindings: mmc: renesas,sdhi: Document R-Car V4M support")
+
+		commit 3e3ce6314fc0eaa91d4cf7a663f6f3a793b4988c
+		("dt-bindings: mmc: renesas,sdhi: Document RZ/Five SoC")
+
+		commit 3b7eee6aae0b3212183fa63a4ae7887924218987
+		("dt-bindings: mmc: renesas,sdhi: Document RZ/G3S support")
+
+		commit 466c8c46b4ba763435b2a787b7824d9f0fd3e76e
+		("ASoC: dt-bindings: renesas: Fix R-Car Gen4 SoC-specific compatibles")
+
+*v6.6.34-2024-06-19
+
+	* Below patches are backported
+
+		commit fdea114ac26ce0eae4e248e6194d39e4e7536f7a
+		("pmdomain: renesas: rcar-sysc: Add R-Car M3-W power-off delay quirk")
+
+		commit c8d87704444a8ac731249ca43b6b2039c2949218
+		("pmdomain: renesas: rcar-sysc: Remove rcar_sysc_nullify() helper")
+
+		commit 43fefaea066b9522ab56a7ab095f86865ca39c2f
+		("pmdomain: renesas: rcar-sysc: Split R-Car M3-W and M3-W+ sub-drivers")
+
+		commit ce5e83925c99ff43cc0b9bebe53d9dcba8e7c08b
+		("pmdomain: renesas: rcar-sysc: Absorb rcar_sysc_ch into rcar_sysc_pd")
+
+		commit c588e1c9846b32182fd5a0ceb637b983810e7100
+		("arm64: dts: renesas: r8a779f0: spider: Enable PCIe Host ch0")
+
+* v6.6.34-2024-06-18
+
+	* Below patches are backported
+
+		commit 713240877a26f3cc035d6531795bd819dfaa633c
+		("pmdomain: renesas: Adjust the waiting time to cover the worst case")
+
+		commit c037263db4ce4b63b7f56732a46da257ae27c00d
+		("dt-bindings: PCI: rcar-gen4-pci-ep: Add R-Car V4H compatible")
+
+		commit  5220b11a5beb941a0bf882e4f39b7693df093231
+		("dt-bindings: PCI: rcar-gen4-pci-host: Add R-Car V4H compatible")
+
+* v6.6.34-2024-06-17
+
+	* Merge/Rebase v6.6.34
+
+	* update CVE
+
+* v6.6.33-2024-06-13
+
+	* Merge/Rebase v6.6.33
+
+	* update CVE
