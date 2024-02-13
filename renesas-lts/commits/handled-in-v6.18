@@ -1,0 +1,68 @@
+# Empty line below is needed
+
+# upstream: 005fa59aeb86aa70815104d3d0c65ac0ea80513b soc: renesas: Add Renesas R-Car MFIS driver
+45deb6ff51c2f mailbox: renesas: Support MFIS mailbox driver
+# upstream: 005fa59aeb86aa70815104d3d0c65ac0ea80513b soc: renesas: Add Renesas R-Car MFIS driver
+4453e42e96d09 misc: rcar-mfis: Add R-Car Gen5 MFIS support
+# upstream: 0f63ba15dde8748ed3818fa6553c81b5296318f1 dt-bindings: soc: renesas: Document MFIS IP core
+fe89d0e595d39 dt-bindings: mailbox: Document renesas mailbox
+# upstream: 6ac1d604737279313bbd55797460204f21044327 dt-bindings: serial: sh-sci: Document r8a78000 bindings
+df896b28190f2 dt-bindings: serial: sh-sci: Document x5h bindings
+# upstream: 1b6a230750ee66b9ca8cb5675cc7eca802657570 arm64: dts: renesas: ironhide: Enable to use SCMI
+fa94a4d4e84e9 arm64: dts: renesas: ironhide: enable mailbox
+# upstream: a3904c5a6e59e3454c268a43da800cd46fa36523 arm64: dts: renesas: r8a78000: Add MFIS, MFIS-SCP, and transport nodes
+ae5f8e2d83e21 arm64: dts: renesas: r8a78000: Add MFIS-Lock device node
+# upstream: a3904c5a6e59e3454c268a43da800cd46fa36523 arm64: dts: renesas: r8a78000: Add MFIS, MFIS-SCP, and transport nodes
+dce8b7274be7c arm64: dts: renesas: r8a78000: Add RPMsg definitions
+# upstream: 63500d12cf76d003fe7adb396360f558c2889e50 arm64: dts: renesas: Add R8A78000 SoC support
+f546734c9d4e3 arm64: dts: renesas: Add R8A78000 X5H DTs
+# upstream: 4f5f8baf73411d799f3a51b73190ebecf522eb83 dma-buf: heaps: cma: Create CMA heap for each CMA reserved region
+840eda0f852c7 dma-buf: heaps: cma: Create CMA heap for each CMA reserved region
+# upstream: 72804d1631b3688014e06065b9f95885ba3e08b6 hwmon: (scmi) Enable sensors to assure they can be read
+5688a905874e6 hwmon: (scmi) Enable sensors to assure they can be read
+# upstream: 8f1fc1bf1a3d5a61f7465435591a439c1e4671f2 dma: contiguous: Reserve default CMA heap
+53ac868411baf dma: contiguous: Reserve default CMA heap
+# upstream: 84a593066a85e6fdfb7b71f74400ed6bb5e0c3fa dma: contiguous: Register reusable CMA regions at boot
+e4ff3e509f69e dma: contiguous: Register reusable CMA regions at boot
+# upstream: 86e59cc5069700361041aa5bf536a8a66be6b9ec dma-buf: heaps: Parameterize heap name in __add_cma_heap()
+0ee91a08474ee dma-buf: heaps: Parameterize heap name in __add_cma_heap()
+# upstream: 8b5690d5c942a80535f095c8965028262d4ab0f7 dma-buf: heaps: cma: Register list of CMA regions at boot
+9fbd838c71e10 dma-buf: heaps: cma: Register list of CMA regions at boot
+# upstream: 09cdda7a60f45784cebddf1fa2109d6279f9890b
+378413ca94ec2 drm/dp: Pull drm_dp_link_power_up/down from Tegra to common drm_dp_helper
+# upstream: 3a34330f6339641b7f5b76b066385f56c114490f
+f569c6d75cc4b can: rcar_canfd: Add suspend/resume support
+# upstream: 161266c754e71d979be994967984c9fdcab74090
+3a206ac474380 can: rcar_canfd: Convert to DEFINE_SIMPLE_DEV_PM_OPS()
+# upstream: ddf9bbf22b70d6b1a10e7d45de8ec3b94de7c54c
+319c06f048ec7 can: rcar_canfd: Invert CAN clock and close_candev() order
+# upstream: fa5f4ec8fff8bc587a2cbf7101303306e045c11f
+91e5360ab91ea can: rcar_canfd: Extract rcar_canfd_global_{,de}init()
+# upstream: eda3d6c8d784835cec86f42b3f8118c9eb0cc58c
+6db578303ca1b can: rcar_canfd: Use devm_clk_get_optional() for RAM clk
+# upstream: da75ba93e3383fc10af71e5029b5a57378a57576
+dfa7ad34da030 net: renesas: rswitch: use FIELD_PREP for remaining MPIC register fields
+# upstream: 206112fa65790221ca3ebbc43092911bb8836a19
+ca9f318a4b858 net: renesas: rswitch: do not write to MPSM register at init time
+# upstream: fb9e6039c325cc205a368046dc03c56c87df2310
+3d5273b694454 net: renesas: rswitch: fix initial MPIC register setting
+# upstream: 54d3970548bd9de40f921c95f8c31e1b1b2382cb
+ab39e09c62d3a net: renesas: rswitch: enable only used MFWD features
+# upstream: 3dd002f20098b9569f8fd7f8703f364571e2e975
+6eb6662d45e2d net: renesas: rswitch: handle stop vs interrupt race
+# upstream: 66b7e9f85b8459c823b11e9af69dbf4be5eb6be8
+a8bd435a00f6b net: renesas: rswitch: avoid use-after-put for a device tree node
+# upstream: bb617328bafa1023d8e9c25a25345a564c66c14f
+7c80bb0a8b032 net: renesas: rswitch: fix leaked pointer on error path
+# upstream: 0c9547e6ccf40455b0574cf589be3b152a3edf5b
+1e0496b6af638 net: renesas: rswitch: fix race window between tx start and complete
+# upstream: 5cb099902b6b6292b3a85ffa1bb844e0ba195945
+0083c25d9d6ae net: renesas: rswitch: fix possible early skb release
+# upstream: 32fd46f5b69e9a2e1206d576359e533e5b7c4694
+56add7c969a1f net: renesas: rswitch: remove speed from gwca structure
+# upstream: 070927427d82debf5797e60c96165f2666c0bc42
+31cd76dabeef1 net: renesas: rswitch: do not deinit disabled ports
+# upstream: 9a0c28efeec6383ef22e97437616b920e7320b67
+2b15293b0ecf0 rswitch_poll(). Since `skb` and `gq->skbs[gq->dirty]` are in fact the same pointer, the skb is first freed using dev_kfree_skb_any(), then the value in skb->len is used to update the interface statistics.
+# upstream: bc83a87759cabbf6f3366568e44bda088b315204
+157ddf77be469 dt-bindings: usb: dwc3: Add snps,host-vbus-glitches-quirk avoid vbus glitch
