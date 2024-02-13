@@ -1,0 +1,21 @@
+Local     / net: renesas: rswitch: use FIELD_PREP for remaining MPIC register fields
+Local     / net: renesas: rswitch: do not write to MPSM register at init time
+Local     / net: renesas: rswitch: enable only used MFWD features
+Local     / net: renesas: rswitch: remove speed from gwca structure
+Local     / net: renesas: rswitch: do not deinit disabled ports
+v6.13     / media: staging: max96712: Add support for MAX96724
+v6.13     / media: staging: max96712: Document the DEBUG_EXTRA register
+v6.13     / media: staging: max96712: Move link frequency setting to device struct
+v6.13     / media: staging: max96712: Remove device id check
+v6.13     / media: rcar-csi2: Add support for R-Car V4M
+v6.13     / media: rcar-csi2: Add documentation for PHY_EN and PHY_MODE registers
+v6.13     / media: rcar-csi2: Move PHTW write helpers
+v6.13     / media: rcar-csi2: Add helper to lookup mbps settings
+v6.13     / media: rcar-csi2: Abstract PHTW and PHYPLL register offsets
+v6.13     / media: rcar-csi2: Allow writing any code and data value to PHTW
+v6.13     / media: rcar-csi2: Correct field size for PHTW writes
+v6.13     / dt-bindings: media: renesas,csi2: Add binding for V4M
+v6.13     / dt-bindings: media: renesas,isp: Add binding for V4M
+v6.13     / dt-bindings: media: renesas,isp: Add Gen4 family fallback
+v6.13     / media: rcar-isp: Add family compatible for R-Car Gen4 family
+v6.13     / clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks
