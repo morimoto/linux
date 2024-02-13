@@ -1,0 +1,12 @@
+# Empty line below is needed
+
+# Wolfram
+d05fe7100a5be i3c: rcar: add suspend/resume support
+9fe94ef68a2f2 i3c: rcar: add I3C driver support for R-Car X5H
+64eec21623eab dt-bindings: i3c: Add binding for Renesas R-Car I3C master controller
+
+# Sam Agazaryan, Google
+# https://jpn01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fr%2F20260921230603.2518652-1-samagazaryan%40google.com&data=05%7C02%7Ckuninori.morimoto.gx%40renesas.com%7C207385d72e604da676d908df2b75a4d4%7C53d82571da1947e49cb4625a166a4a2a%7C0%7C0%7C639277456461913815%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Vnk%2FgZ0PbbVQDkZ3%2BXHt17dXBGKQuABAtlpcpIJEn5c%3D&reserved=0
+49619329c5120 i3c: add i3cdev module to expose i3c dev in /dev
+de9f99ad308c9 i3c: master: add i3c_for_each_dev helper
+d04030e7de8b0 i3c: master: export i3c_masterdev_type
