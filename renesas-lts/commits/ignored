@@ -1,0 +1,175 @@
+# Empty line below is needed
+
+# Style change
+6dca6dab6a83a media: rcar-csi2: move macro defination to top (no functional changes)
+# Workaround for running the driver in simulator
+07feaa541e4bc media: rcar-vin: Reduce the waiting time of the stop capturing process
+# Workaround for running the driver in simulator
+705d972f2d026 media: rcar-vin: Add SW workaround to run Video Capture drivers on virtual platform (e.g. VDK, RFS, RFS2X)
+# Rejected: https://patchwork.kernel.org/project/linux-dmaengine/patch/20170728131613.122505-1-arnd@arndb.de/
+e4ea07d0e1c04 dmaengine: rcar-dmac: Fix array-bounds warning refer chcr_ts[]
+# Workaround for broken SCMI firmware? Such a fallback is not upstreamable
+e2b9c98f44510 i2c: rcar: fallback to DT clock rate
+# Not needed. HW allows 1 cycle, it will just output HIGH only. Confirmed by Shimoda-san
+3515a2d8ebfe6 pwm: rcar: Add a judgment of the period out of range
+# This is already handled correctly in upstream. No need to use clk_set_phase()
+d2f90c58772ed mmc: renesas_sdhi: Fix SDnCKCR setting in 4TAP SoC
+# This patch was dropped in upstream as the feature is needed for digital zoom
+12375c3df1ad9 rcar-vin: do not allow changing scaling and composing while streaming
+# Development debug not intended for upstream
+cc92301e949c6 media: rcar-vin: Add w/a to measure capture fps in both IRQ callback and V4L2 driver
+# Missing information on "REN camera"
+47de3ed7d8e0f media: rcar-vin: Support REN camera script from MBD team
+# Workaround for VDK
+0a95817d8ee10 media: rcar-isp: Add support for R-Car X5H
+# Workaround for VDK
+3f3b9657a92cb media: rcar-csi2: Add support for R-Car X5H
+# SNPS CSI-2 dummy camera is used by VDK and is not intended for upstream
+b1d0c7e22b873 media: rcar-vin: Add support for SNPS CSI-2 Camera driver
+# USERPTR is deprecated upstream
+3a3cd0720493c media: rcar-vin: Add memory type of VB2_USERPTR support
+# VSP is a local patch file for MMP. So we don't need to upport.
+9cc3a06f95885 arm64: dts: renesas: r8a78000: Add device tree node for VSPI and VSPB
+# UIO and OSAL are not intended for upstream.
+38e9feb06ec01 uio: uio_pdrv_genirq: switch to the  fwnode_property_present
+# UIO and OSAL are not intended for upstream.
+c1d2e3dd2428a uio: uio_pdrv_genirq: initialize ret in priv_set_rst()
+# UIO and OSAL are not intended for upstream.
+039a337653652 uio: uio_pdrv_genirq: decouple clk_cnt from runtime PM
+# UIO and OSAL are not intended for upstream.
+6ee9eb4f7eabc uio: uio_pdrv_genirq: Use clk_prepare_enable/clk_disable_unprepare
+# UIO and OSAL are not intended for upstream.
+9d20f18bdb83e uio: uio_pdrv_genirq: Add shared interrupt support
+# UIO and OSAL are not intended for upstream.
+11835f8ba71bf uio: Support error notification to upper layer
+# UIO and OSAL are not intended for upstream.
+579983d420097 uio: Switch to clk_hw_get_flags()
+# UIO and OSAL are not intended for upstream.
+e46ddbbb96e06 arm64: dts: renesas: r8a78000: Add UIO variant without power-domains
+# UIO and OSAL are not intended for upstream.
+fc7147526eacd arch: arm64: renesas: r8a78000-uio: Add reset IMR and IMS UIO devices
+# UIO and OSAL are not intended for upstream.
+1372c4456fb39 arch: arm64: renesas: r8a78000-uio: Update RFSO UIO devices
+# UIO and OSAL are not intended for upstream.
+edd2ded45b677 arch: arm64: renesas: r8a78000-uio: Add new RSIP UIO for ostm devices
+# UIO and OSAL are not intended for upstream.
+7f2e0accb8524 arch: arm64: renesas: r8a78000-uio: Update RSIP UIO devices
+# UIO and OSAL are not intended for upstream.
+d11d985884209 arm64: dts: renesas: ironhide-uio: Synchronize device configuration with native DT
+# UIO and OSAL are not intended for upstream.
+8e766e4a6d56d arch: arm64: renesas: r8a78000-uio: Add VIN UIO devices
+# UIO and OSAL are not intended for upstream.
+3ad3b52b9d69d arch: arm64: renesas: r8a78000-uio: Add clocks, resets, and interrupts for RSIP UIO devices
+# UIO and OSAL are not intended for upstream.
+99081e3806d25 arch: arm64: renesas: r8a78000-uio: Restore rsipe uio devices
+# UIO and OSAL are not intended for upstream.
+bd7ebe0bf825a arch: arm64: renesas: r8a78000-uio: Update name of rsip_e_stb_00
+# UIO and OSAL are not intended for upstream.
+1d994e0358b3a arch: arm64: renesas: r8a78000-uio: Add rsipe UIO device support
+# UIO and OSAL are not intended for upstream.
+c103910cb5977 arch: arm64: renesas: r8a78000-uio: Remove unregistered devices in UIO
+# UIO and OSAL are not intended for upstream.
+ec5fe3df35fdf arm64: dts: renesas: ironhide-uio: add reserved area for the ECC Data region
+# UIO and OSAL are not intended for upstream.
+a3818523954ac arm64: dts: renesas: r8a78000-uio: update definitions
+# UIO and OSAL are not intended for upstream.
+2cb0890368a71 arm64: dts: renesas: ironhide-uio: Update memory map and reserved area
+# UIO and OSAL are not intended for upstream.
+3d6c4d6f9d537 arch: arm64: renesas: r8a78000-uio: Add power domain and for isp devices
+# UIO and OSAL are not intended for upstream.
+ac3db7c1473c2 ach: arm64: renesas: r8a78000-uio: Add power domain and for imr devices
+# UIO and OSAL are not intended for upstream.
+c25a8ff5fc799 arch: arm64: renesas: r8a78000-uio: Add power domain and for vcp5 devices
+# UIO and OSAL are not intended for upstream.
+f5a50bd9d6445 arm64: dts: renesas: ironhide-uio: Add UIO device support for R8A78000 (R-Car X5H)
+# from old 'handled': e22c6bae0ea6
+da92eda205d2a media: rcar-vin: Fix clock control flow
+# from old 'handled': e88f4e52ad53
+58369eab707d7 v4l: vsp1: Add write back support
+# This patch is too simple, e.g. wrap arounds not handled. Check action item in periject
+8c0da341f5d03 memory: renesas-rpc-if: Use burst read operation
+# Test and debug code
+d389e4f01a8e0 mmc: renesas_sdhi: Add PIO mode support
+# This patch as clearly marked as a development debug patch, its only function is to prinkt when an interrupt handles, no use upstream
+# from old 'ignored: 2058a7e8eddc
+fb71265347a65 media: rcar-vin: Add overflow debug message option
+# This patch implements incorrect behavior, if a CSI-2 node is not connected to a video source it should be disabled i DT
+# from old 'ignored: 9a473723caaf
+94746874f0b18 rcar-vin: rcar-csi2: Don't bail out from probe on no ep
+# Time out. Should be confirmed.
+# from old 'ignored: 441c24bfdab0
+6fab0f1f5b911 vsp1: Add display interrupt wait after setting STRCMD bit
+# Used by rcar-du, which adds a new userspace API, which is blocked
+# from old 'ignored: dffa26bbdf08
+ed730fb041ca1 v4l: vsp1: Add support for colorkey alpha blending
+# More information about use case is needed
+# from old 'ignored: 56b96a3db3e8
+c3342499455c2 v4l: vsp1: Add Vmute function support
+# Prototype code / Proof of concept code
+# from old 'ignored: 3baf2c4e8881
+89878b9a51749 dmaengine: rcar-dmac: Add fixed address mode support
+# Use "assigned-clocks" and "assigned-clock-rates" in board DTS file that
+# actually uses MSIOF, and drop the second clock from the msiof nodes
+# from old 'ignored: 469c8f7e8387
+ae0e82db6d633 spi: sh-msiof: Add MSIOF module clock changing processing for R-Car Gen3
+# Local debug code not suitable for upstream
+# from old 'ignored: aa5fd2cbca66
+c455abc152c42 spi: sh-msiof: Add sleep before master transfer for test
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: e21494bf0175
+419622e05495b uio: Add IPMMU info for user-space
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: ad701408b101
+8b10b0462b5ad dt-bindings: ipmmu: Add definition IPMMU info for UIO devices
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 8be32e61e150
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 72805b07fc95
+aa68455434759 uio: uio_pdrv_genirq: Add parameter error in case not define property in node
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 54d98b4c127c
+f128c241b530c Revert "uio: uio_pdrv_genirq: Add parameter error in case not define property in node"
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: e841dd60cb71
+123640964837e uio: uio_pdrv_genirq: Hotfix clock and power control for multi task
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 8be32e61e150
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 72805b07fc95
+4d4c51d76d6af uio: uio_pdrv_genirq: Add parameter error in case not define property in node
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 6d96e6755a60
+6823d43acf09d uio: uio_pdrv_genirq: Add parameter to check device no clock
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 0f76ba844d14
+cc62deedc1a80 uio: Use EOPNOTSUPP, not ENOTSUPP
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: bf847527de9c
+bebf85b52c47c uio: Inform UIO no-reset-line to users
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 3c6d4fd45c93
+5ce5292f77b37 uio: Initialize reset struct of each UIO device
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: fcb14163efe8
+f33cded85b0b0 uio: Fix the logic of setting reset to UIO devices
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: fa18bbf5f256
+9d910f0f1140f uio: uio_pdrv_genirq: renesas: Add clock divisor ioctl support
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: a11d168c6464
+a3f4aa72b2c44 uio: Add PMA IOCTL to compat list
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 6668f1736f72
+db56c421a21fa uio: Add new ioctl for power management
+# According to our research tty-core activates clocks. Testcase needed.
+# from old 'ignored: dac54422c0d0
+18003ca339f27 serial: sh-sci: Use pm_runtime_get/put when resume
+# According to our research tty-core activates clocks. Testcase needed.
+# from old 'ignored: 4ad9b3444ded
+98418319a449d serial: sh-sci: Use pm_runtime_get/put when suspend
+# Prototype code / Proof of concept code
+# from old 'ignored: 234e0d5eb188
+7eb0cfa8b290d dt-bindings: renesas,rcar-dmac: Document optional properties
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 492cdd5c9cff
+f9007e2b86906 dt-bindings: ipmmu: Add IPMMU info for UIO devices

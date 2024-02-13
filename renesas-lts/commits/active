@@ -1,0 +1,5 @@
+# Empty line below is needed
+
+# https://lore.kernel.org/all/20260727122546.4232-4-wsa+renesas@sang-engineering.com/
+c050a71a66d21 i2c: rcar: add compatible string to support R-Car X5H of I2C module
+037e9778e28e1 dt-bindings: i2c: rcar-i2c: Document R-Car X5H support
