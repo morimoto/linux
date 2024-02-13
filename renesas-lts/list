@@ -1,0 +1,309 @@
+v6.13     / media: rcar-vin: Add support for RAW10
+v6.7      / phy: renesas: r8a779f0-ether-serdes: Reset in .init()
+v6.7      / phy: renesas: r8a779f0-ether-serdes: Add .exit() ops
+v6.10     / media: staging: max96712: fix copy-paste error
+v6.13     / dt-bindings: media: renesas,csi2: Add binding for V4M
+v6.13     / dt-bindings: media: renesas,isp: Add binding for V4M
+v6.13     / dt-bindings: media: renesas,isp: Add Gen4 family fallback
+v6.13     / media: rcar-isp: Add family compatible for R-Car Gen4 family
+v6.9      / media: rcar-isp: Disallow unbind of devices
+v6.7      / media: use sizeof() instead of V4L2_SUBDEV_NAME_SIZE
+v6.7      / media: v4l2-subdev.h: increase struct v4l2_subdev name size
+v6.13     / clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks
+v6.12     / dt-bindings: media: renesas,vin: Add binding for V4M
+v6.12     / dt-bindings: media: renesas,vin: Add Gen4 family fallback
+v6.12     / media: rcar-vin: Add family compatible for R-Car Gen4 family
+v6.10     / riscv: dts: renesas: r9a07g043f: Add IRQC node to RZ/Five SoC DTSI
+v6.12     / net: renesas: rswitch: Remove setting of RX software timestamp
+v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Remove incorrect comment
+v6.11     / arm64: defconfig: Enable Marvell 88Q2XXX PHY support
+v6.11     / arm64: dts: renesas: white-hawk: ethernet: Describe AVB1 and AVB2
+v6.12     / dt-bindings: can: renesas,rcar-canfd: Document R-Car V4M support
+v6.12     / arm64: dts: renesas: r8a779h0: Add CAN-FD node
+v6.12     / arm64: dts: renesas: r8a779h0: Add PWM device nodes
+v6.12     / arm64: dts: renesas: r8a779h0: Add missing iommus properties
+v6.12     / clk: renesas: r8a779h0: Add CANFD clock
+v6.12     / clk: renesas: r8a779h0: Add PWM clock
+v6.12     / clk: renesas: rcar-gen4: Remove unused default PLL2/3/4/6 configs
+v6.12     / clk: renesas: r8a779a0: cpg_pll_configs should be __initconst
+v6.12     / clk: renesas: rcar-gen4: Remove unused fixed PLL clock types
+v6.12     / clk: renesas: rcar-gen4: Remove unused variable PLL2 clock type
+v6.12     / clk: renesas: rcar-gen4: Add support for fractional 9.24 PLLs
+v6.12     / clk: renesas: rcar-gen4: Add support for fixed variable PLLs
+v6.12     / clk: renesas: rcar-gen4: Add support for variable fractional PLLs
+v6.12     / clk: renesas: rcar-gen4: Use defines for common CPG registers
+v6.12     / clk: renesas: rcar-gen4: Add support for fractional multiplication
+v6.12     / clk: renesas: rcar-gen4: Use FIELD_GET()
+v6.12     / clk: renesas: rcar-gen4: Clarify custom PLL clock support
+v6.12     / clk: renesas: rcar-gen4: Removed unused SSMODE_* definitions
+v6.11     / clk: renesas: cpg-lib: Use DEFINE_SPINLOCK() for global spinlock
+v6.9      / clk: renesas: rcar-gen4: Add support for FRQCRC1
+v6.12     / clk: renesas: r8a779g0: Model PLL1/3/4/6 as fractional PLLs
+v6.12     / clk: renesas: r8a779f0: Model PLL1/2/3/6 as fractional PLLs
+v6.12     / clk: renesas: r8a779a0: Use defines for PLL control registers
+v6.12     / clk: renesas: r8a779h0: Model PLL1/2/3/4/6 as fractional PLLs
+v6.12     / clk: renesas: r8a779g0: cpg_pll_configs should be __initconst
+v6.9      / clk: renesas: r8a779g0: Fix PCIe clock name
+v6.8      / clk: renesas: r8a779g0: Add PCIe clocks
+v6.8      / clk: renesas: r8a779g0: Add EtherTSN clock
+v6.12     / clk: renesas: r8a779f0: cpg_pll_configs should be __initconst
+v6.12     / clk: renesas: r8a779h0: Initial clock descriptions should be __initconst
+v6.12     / dt-bindings: pwm: renesas,tpu: Add r8a779h0 support
+v6.12     / dt-bindings: pwm: renesas,pwm-rcar: Add r8a779h0 support
+v6.12     / arm64: dts: renesas: gray-hawk-single: Add CAN-FD support
+v6.12     / arm64: dts: renesas: gray-hawk-single: Add GP LEDs
+v6.12     / arm64: dts: renesas: gray-hawk-single: Add push switches
+v6.12     / arm64: dts: renesas: gray-hawk-single: Add Sound support
+v6.12     / clk: renesas: r8a779h0: Add PCIe clock
+v6.11     / ASoC: Remove unneeded semicolon
+v6.11     / arm64: dts: renesas: white-hawk-cpu: Add aliases for I2C buses
+v6.11     / arm64: dts: renesas: r8a779g0: Use MDIO node for all AVB devices
+v6.9      / arm64: dts: renesas: Improve TMU interrupt descriptions
+v6.9      / arm64: dts: renesas: white-hawk: Factor out common parts
+v6.9      / arm64: dts: renesas: white-hawk-cpu: Factor out common parts
+v6.9      / arm64: dts: renesas: white-hawk: Add SoC name to top-level comment
+v6.9      / arm64: dts: renesas: white-hawk: Drop SoC parts from sub boards
+v6.9      / arm64: dts: renesas: white-hawk-cpu: Restore sort order
+v6.9      / arm64: dts: renesas: r8a779g0: Add standalone White Hawk CPU support
+v6.11     / arm64: dts: renesas: s4sk: Add aliases for I2C buses
+v6.10     / arm64: dts: renesas: s4sk: Fix ethernet0 alias
+v6.7      / arm64: dts: renesas: Add R-Car S4 Starter Kit support
+v6.7      / arm64: dts: renesas: Add Renesas R8A779F4 SoC support
+v6.8      / PCI: rcar-gen4: Fix -Wvoid-pointer-to-enum-cast error
+v6.11     / net: ethernet: rtsn: Add support for Renesas Ethernet-TSN
+v6.11     / net: ravb: Use NAPI threaded mode on 1-core CPUs with GbEth IP
+v6.11     / net: ravb: Enable SW IRQ Coalescing for GbEth
+v6.11     / net: ravb: Refactor GbEth RX code path
+v6.11     / net: ravb: Refactor RX ring refill
+v6.11     / net: ravb: Align poll function with NAPI docs
+v6.11     / net: ravb: Simplify poll & receive functions
+v6.9      / net: ravb: Fix registered interrupt names
+v6.9      / net: ravb: Fix RX byte accounting for jumbo packets
+v6.9      / net: ravb: Fix GbEth jumbo packet RX checksum handling
+v6.9      / net: ravb: Allow RX loop to move past DMA mapping errors
+v6.9      / net: ravb: Count packets instead of descriptors in R-Car RX path
+v6.10     / ravb: Add support for an optional MDIO mode
+v6.9      / ravb: Correct buffer size to map for R-Car Rx
+v6.9      / ravb: Unify Rx ring maintenance code paths
+v6.9      / ravb: Move maximum Rx descriptor data usage to info struct
+v6.9      / ravb: Use the max frame size from hardware info for RZ/G2L
+v6.9      / ravb: Create helper to allocate skb and align it
+v6.9      / ravb: Make it clear the information relates to maximum frame size
+v6.9      / ravb: Group descriptor types used in Rx ring
+v6.9      / net: ravb: Add runtime PM support
+v6.9      / net: ravb: Do not apply features to hardware if the interface is down
+v6.9      / net: ravb: Move the update of ndev->features to ravb_set_features()
+v6.9      / net: ravb: Return cached statistics if the interface is down
+v6.9      / net: ravb: Keep the reverse order of operations in ravb_close()
+v6.9      / net: ravb: Get rid of the temporary variable irq
+v6.8      / net: ravb: Count packets instead of descriptors in GbEth RX path
+v6.9      / ravb: Add Tx checksum offload support for GbEth
+v6.9      / ravb: Add Rx checksum offload support for GbEth
+v6.9      / net: ravb: Simplify ravb_resume()
+v6.9      / net: ravb: Simplify ravb_suspend()
+v6.9      / net: ravb: Set config mode in ndo_open and reset mode in ndo_close
+v6.9      / net: ravb: Move PTP initialization in the driver's ndo_open API for ccc_gac platorms
+v6.9      / net: ravb: Move DBAT configuration to the driver's ndo_open API
+v6.9      / net: ravb: Move delay mode set in the driver's ndo_open API
+v6.9      / net: ravb: Split GTI computation and set operations
+v6.9      / net: ravb: Move getting/requesting IRQs in the probe() method
+v6.9      / net: ravb: Move reference clock enable/disable on runtime PM APIs
+v6.9      / net: ravb: Assert/de-assert reset on suspend/resume
+v6.9      / net: ravb: Use tabs instead of spaces
+v6.9      / net: ravb: Switch to SYSTEM_SLEEP_PM_OPS()/RUNTIME_PM_OPS() and pm_ptr()
+v6.9      / net: ravb: Make reset controller support mandatory
+v6.9      / net: ravb: Rely on PM domain to enable gptp_clk
+v6.8      / net: rswitch: Allow jumbo frames
+v6.8      / net: rswitch: Add jumbo frames handling for RX
+v6.8      / net: rswitch: Set GWMDNC register
+v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Depend on PTP_1588_CLOCK
+v6.11     / arm64: dts: renesas: Add interrupt-names to arch timer nodes
+v6.11     / arm64: dts: renesas: r8a779h0: Drop "opp-shared" from opp-table-0
+v6.11     / arm64: dts: renesas: r8a779h0: Add video capture nodes
+v6.11     / clk: renesas: r8a779h0: Fix PLL2/PLL4 multipliers in comments
+v6.11     / clk: renesas: r8a779h0: Add VIN clocks
+v6.11     / clk: renesas: r8a779h0: Add CSI-2 clocks
+v6.11     / clk: renesas: r8a779h0: Add ISPCS clocks
+v6.10     / mmc: renesas_sdhi: Add compatible string for RZ/G2L family, RZ/G3S, and RZ/V2M SoCs
+v6.10     / dt-bindings: usb: renesas,usbhs: Document RZ/G2L family compatible
+v6.8      / dt-bindings: usb: renesas,usbhs: Document RZ/Five SoC
+v6.10     / usb: renesas_usbhs: Remove renesas_usbhs_get_info() wrapper
+v6.10     / usb: renesas_usbhs: Remove trailing comma in the terminator entry for OF table
+v6.10     / usb: renesas_usbhs: Update usbhs pipe configuration for RZ/G2L family
+v6.10     / usb: renesas_usbhs: Improve usbhsc_default_pipe[] for isochronous transfers
+v6.10     / usb: renesas_usbhs: Simplify obtaining device data
+v6.11     / arm64: dts: renesas: r8a779h0: R-Car Sound support
+v6.11     / arm64: dts: renesas: r8a779g0: Tidy up sound DT settings
+v6.11     / clk: renesas: r8a779h0: Add Audio clocks
+v6.11     / ASoC: dt-bindings: ak4619: Add initial DT binding
+v6.11     / ASoC: dt-bindings: simple-audio-mux: add state-labels property
+v6.11     / ASoC: dt-bindings: audio-graph-card2: add support for aux devices
+v6.11     / ASoC: Add ak4619 codec support
+v6.11     / ASoC: simple-audio-mux: enable to select MUX names
+v6.11     / ASoC: audio-graph-card2: add support for aux devices
+v6.10     / dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility
+v6.11     / arm64: dts: renesas: gray-hawk-single: Add aliases for I2C buses
+v6.11     / arm64: dts: renesas: rzg2l: Update fallback string for SDHI nodes
+v6.10     / arm64: dts: renesas: r9a07g043: Move interrupt-parent property to common DTSI
+v6.10     / arm64: dts: renesas: r9a07g0{43,44,54}: Update RZ/G2L family compatible
+v6.8      / dt-bindings: dma: rz-dmac: Document RZ/Five SoC
+v6.8      / ASoC: dt-bindings: renesas,rz-ssi: Document RZ/Five SoC
+v6.7      / spi: renesas,rzv2m-csi: Add CSI (SPI) target related property
+v6.7      / dt-bindings: timer: renesas,rz-mtu3: Document RZ/{G2UL,Five} SoCs
+v6.7      / dt-bindings: timer: renesas,rz-mtu3: Improve documentation
+v6.7      / ASoC: dt-bindings: Add missing (unevaluated|additional)Properties on child node schemas
+v6.9      / ASoC: dt-bindings: audio-graph-port: Drop type from "clocks"
+v6.8      / ASoC: dt-bindings: audio-graph-port: Document new DAI link flags playback-only/capture-only
+v6.8      / ASoC: dt-bindings: Simplify port schema
+v6.7      / ASoC: dt-bindings: Simplify referencing dai-params.yaml
+v6.10     / dt-bindings: interrupt-controller: renesas,irqc: Add r8a779g0 support
+v6.10     / spi: renesas,sh-msiof: Add r8a779h0 support
+v6.10     / dt-bindings: timer: renesas,cmt: Add R-Car V4M support
+v6.9      / dt-bindings: thermal: rcar-gen3-thermal: Add r8a779h0 support
+v6.9      / dt-bindings: watchdog: renesas-wdt: Add support for R-Car V4M
+v6.9      / dt-bindings: memory: renesas,rpc-if: Document R-Car V4M support
+v6.9      / dt-bindings: pinctrl: renesas,pfc: Document R-Car V4M support
+v6.9      / dt-bindings: renesas,rcar-dmac: Add r8a779h0 support
+v6.9      / dt-bindings: i2c: renesas,rcar-i2c: Add r8a779h0 support
+v6.9      / dt-bindings: gpio: renesas,rcar-gpio: Add r8a779h0 support
+v6.10     / dt-bindings: timer: renesas,tmu: Add R-Car V4M support
+v6.9      / dt-bindings: timer: renesas,tmu: Document input capture interrupt
+v6.9      / dt-bindings: reset: renesas,rst: Document R-Car V4M support
+v6.9      / dt-bindings: clock: renesas,cpg-mssr: Document R-Car V4M support
+v6.10     / dt-bindings: net: renesas,etheravb: Add optional MDIO bus node
+v6.8      / dt-bindings: net: renesas,etheravb: Document RZ/G3S support
+v6.8      / dt-bindings: net: renesas,etheravb: Document RZ/Five SoC
+v6.7      / dt-bindings: net: renesas: Drop ethernet-phy node schema
+v6.10     / dt-bindings: soc: renesas: Document Renesas RZ/V2H(P) SoC variants
+v6.9      / dt-bindings: soc: renesas: Preserve the order of SoCs based on their part numbers
+v6.9      / dt-bindings: soc: renesas: Document R-Car V4M Gray Hawk Single
+v6.9      / dt-bindings: soc: renesas: Document R-Car V4H White Hawk Single
+v6.7      / arm64: dts: renesas: ebisu: Document Ebisu-4D support
+v6.7      / dt-bindings: soc: renesas: Document R-Car S4 Starter Kit
+v6.7      / dt-bindings: soc: renesas: Document SMARC Carrier-II EVK
+v6.7      / dt-bindings: soc: renesas: Document RZ/G3S SMARC SoM
+v6.7      / dt-bindings: soc: renesas: Document Renesas RZ/G3S SoC variants
+v6.10     / dt-bindings: mmc: renesas,sdhi: Group single const value items into an enum list
+v6.9      / dt-bindings: mmc: renesas,sdhi: Document R-Car V4M support
+v6.8      / dt-bindings: mmc: renesas,sdhi: Document RZ/Five SoC
+v6.7      / dt-bindings: mmc: renesas,sdhi: Document RZ/G3S support
+v6.10     / ASoC: dt-bindings: renesas: Fix R-Car Gen4 SoC-specific compatibles
+v6.10     / pmdomain: renesas: rcar-sysc: Add R-Car M3-W power-off delay quirk
+v6.10     / pmdomain: renesas: rcar-sysc: Remove rcar_sysc_nullify() helper
+v6.10     / pmdomain: renesas: rcar-sysc: Split R-Car M3-W and M3-W+ sub-drivers
+v6.10     / pmdomain: renesas: rcar-sysc: Absorb rcar_sysc_ch into rcar_sysc_pd
+v6.10     / arm64: dts: renesas: gray-hawk-single: Enable nfsroot
+v6.10     / arm64: dts: renesas: gray-hawk-single: Add second debug serial port
+v6.9      / arm64: dts: renesas: gray-hawk-single: Add QSPI FLASH support
+v6.9      / arm64: dts: renesas: gray-hawk-single: Add eMMC support
+v6.9      / arm64: dts: renesas: gray-hawk-single: Add Ethernet support
+v6.9      / arm64: dts: renesas: gray-hawk-single: Add I2C0 and EEPROMs
+v6.9      / arm64: dts: renesas: gray-hawk-single: Add serial console pin control
+v6.9      / arm64: dts: renesas: gray-hawk-single: Enable watchdog timer
+v6.9      / arm64: dts: renesas: Add Gray Hawk Single board support
+v6.10     / arm64: dts: renesas: r8a779h0: Link IOMMU consumers
+v6.10     / arm64: dts: renesas: r8a779h0: Add IPMMU nodes
+v6.10     / arm64: dts: renesas: r8a779h0: Add INTC-EX node
+v6.10     / arm64: dts: renesas: r8a779h0: Add MSIOF nodes
+v6.10     / arm64: dts: renesas: r8a779h0: Add TMU nodes
+v6.10     / arm64: dts: renesas: r8a779h0: Add CMT nodes
+v6.10     / arm64: dts: renesas: r8a779h0: Add SCIF nodes
+v6.10     / arm64: dts: renesas: r8a779h0: Add remaining HSCIF nodes
+v6.10     / dt-bindings: serial: renesas,scif: Document r8a779h0 bindings
+v6.10     / clk: renesas: r8a779h0: Add INTC-EX clock
+v6.10     / clk: renesas: r8a779h0: Add MSIOF clocks
+v6.10     / clk: renesas: r8a779h0: Add timer clocks
+v6.10     / clk: renesas: r8a779h0: Add SCIF clocks
+v6.10     / clk: renesas: r8a779h0: Add thermal clock
+v6.10     / dt-bindings: iommu: renesas,ipmmu-vmsa: add r8a779h0 support
+v6.9      / dt-bindings: power: Add r8a779h0 SYSC power domain definitions
+v6.9      / pmdomain: renesas: r8a779h0-sysc: Add r8a779h0 support
+v6.9      / dt-bindings: power: renesas,rcar-sysc: Document R-Car V4M support
+v6.10     / arm64: dts: renesas: r8a779h0: Add thermal nodes
+v6.10     / thermal/drivers/rcar_gen3: Update temperature approximation calculation
+v6.10     / thermal/drivers/rcar_gen3: Move Tj_T storage to shared private data
+v6.10     / soc: renesas: Enable TMU support on R-Car Gen2
+v6.10     / soc: renesas: Add identification support for RZ/V2H SoC
+v6.7      / soc: renesas: Identify RZ/G3S SoC
+v6.9      / soc: renesas: Identify R-Car V4M
+v6.9      / soc: renesas: Introduce ARCH_RCAR_GEN4
+v6.9      / thermal/drivers/rcar_gen3: Add support for R-Car V4M
+v6.7      / rswitch: Add PM ops
+v6.7      / rswitch: Use unsigned int for port related array index
+v6.8      / dt-bindings: net: renesas,ethertsn: Add Ethernet TSN
+v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Break out to module
+v6.7      / net: ethernet: renesas: group entries in Makefile
+v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Get clock increment from clock rate
+v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Prepare for shared register layout
+v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Fail on unknown register layout
+v6.8      / PCI: rcar-host: Add support for optional regulators
+v6.9      / pinctrl: renesas: r8a779h0: Add Audio pins, groups, functions
+v6.9      / pinctrl: renesas: r8a779h0: Add PCIe pins, groups, functions
+v6.9      / pinctrl: renesas: r8a779h0: Add CANFD pins, groups, functions
+v6.9      / pinctrl: renesas: r8a779h0: Add PWM/TPU pins, groups, functions
+v6.9      / pinctrl: renesas: r8a779h0: Add MSIOF pins, groups, functions
+v6.9      / pinctrl: renesas: r8a779h0: Add I2C pins, groups, functions
+v6.9      / pinctrl: renesas: r8a779h0: Add HSCIF pins, groups, functions
+v6.9      / pinctrl: renesas: r8a779h0: Add SCIF_CLK pins, groups, functions
+v6.9      / pinctrl: renesas: r8a779h0: Add SCIF pins, groups, functions
+v6.9      / pinctrl: renesas: r8a779h0: Add QSPI pins, groups, functions
+v6.9      / pinctrl: renesas: r8a779h0: Add SD/MMC pins, groups, functions
+v6.9      / pinctrl: renesas: r8a779h0: Add Ethernet AVB pins, groups, functions
+v6.9      / pinctrl: renesas: Initial R8A779H0 (R-Car V4M) PFC support
+v6.9      / arm64: defconfig: Enable R8A779H0 SoC
+v6.9      / clk: renesas: r8a779h0: Add RPC-IF clock
+v6.9      / clk: renesas: r8a779h0: Add SYS-DMAC clocks
+v6.9      / clk: renesas: r8a779h0: Add SDHI clock
+v6.9      / clk: renesas: r8a779h0: Add EtherAVB clocks
+v6.9      / clk: renesas: r8a779h0: Add I2C clocks
+v6.9      / clk: renesas: r8a779h0: Add watchdog clock
+v6.9      / clk: renesas: r8a779h0: Add PFC/GPIO clocks
+v6.9      / clk: renesas: cpg-mssr: Add support for R-Car V4M
+v6.9      / arm64: dts: renesas: r8a779h0: Add RPC node
+v6.9      / arm64: dts: renesas: r8a779h0: Add DMA support
+v6.9      / arm64: dts: renesas: r8a779h0: Add SD/MMC node
+v6.9      / arm64: dts: renesas: r8a779h0: Add Ethernet-AVB support
+v6.9      / arm64: dts: renesas: r8a779h0: Add CA76 operating points
+v6.9      / arm64: dts: renesas: r8a779h0: Add CPU core clocks
+v6.9      / arm64: dts: renesas: r8a779h0: Add CPUIdle support
+v6.9      / arm64: dts: renesas: r8a779h0: Add secondary CA76 CPU cores
+v6.9      / arm64: dts: renesas: r8a779h0: Add L3 cache controller
+v6.9      / arm64: dts: renesas: r8a779h0: Add GPIO nodes
+v6.9      / arm64: dts: renesas: r8a779h0: Add I2C nodes
+v6.9      / arm64: dts: renesas: r8a779h0: Add pinctrl device node
+v6.9      / arm64: dts: renesas: r8a779h0: Add RWDT node
+v6.9      / arm64: dts: renesas: Add Renesas R8A779H0 SoC support
+v6.9      / dt-bindings: clock: Add R8A779H0 V4M CPG Core Clock Definitions
+v6.10     / ASoC: dt-bindings: renesas,rsnd: add missing renesas,rcar_sound-gen4
+v6.10     / ASoC: dt-bindings: renesas: add R8A779H0 V4M
+v6.9      / dt-bindings: serial: renesas,hscif: Document r8a779h0 bindings
+v6.9      / dt-bindings: net: renesas,etheravb: Add support for R-Car V4M
+v6.9      / soc: renesas: rcar-rst: Add support for R-Car V4M
+v6.7      / arm64: dts: renesas: r8a779f0: spider: Enable PCIe Host ch0
+v6.10     / dt-bindings: PCI: rcar-gen4-pci-ep: Add R-Car V4H compatible
+v6.10     / dt-bindings: PCI: rcar-gen4-pci-host: Add R-Car V4H compatible
+v6.7      / dt-bindings: PCI: dwc: Update maxItems of reg and reg-names
+v6.7      / PCI: rcar-gen4: Add endpoint mode support
+v6.7      / PCI: rcar-gen4: Add R-Car Gen4 PCIe controller support for host mode
+v6.7      / PCI: dwc: endpoint: Introduce .pre_init() and .deinit()
+v6.7      / PCI: dwc: Expose dw_pcie_write_dbi2() to module
+v6.7      / PCI: dwc: Add EDMA_UNROLL capability flag
+v6.7      / PCI: dwc: endpoint: Add multiple PFs support for dbi2
+v6.8      / i2c: rcar: add FastMode+ support for Gen4
+v6.7      / i2c: rcar: improve accuracy for R-Car Gen3+
+v6.7      / i2c: rcar: remove open coded DIV_ROUND_CLOSEST
+v6.7      / i2c: rcar: calculate divider instead of brute-forcing it
+v6.7      / i2c: rcar: properly format a debug output
+v6.7      / i2c: rcar: avoid non-standard use of goto
+v6.8      / arm64: dts: renesas: draak: Make HDMI the default video input
+v6.8      / ASoC: rcar: adg: correct TIMSEL setting for SSI9
+v6.9      / pmdomain: renesas: Adjust the waiting time to cover the worst case
+v6.9      / clk: renesas: cpg-mssr: Ignore all clocks assigned to non-Linux system
+v6.9      / of: Add for_each_reserved_child_of_node()
+v6.9      / of: Add of_get_next_status_child() and makes more generic of_get_next
+v6.9      / of: Add __of_device_is_status() and makes more generic status check
+v6.7      / dt-bindings: PCI: renesas: Add R-Car Gen4 PCIe Host
+v6.7      / dt-bindings: PCI: renesas: Add R-Car Gen4 PCIe Endpoint
+v6.7      / PCI: dwc: Expose dw_pcie_ep_exit() to module
+v6.7      / MAINTAINERS: Update PCI DRIVER FOR RENESAS R-CAR for R-Car Gen4
+v6.7      / arm64: dts: renesas: r8a779f0: Add PCIe Host and Endpoint nodes
