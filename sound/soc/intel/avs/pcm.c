@@ -1562,7 +1562,7 @@ static int avs_component_hda_open(struct snd_soc_component *component,
 			struct snd_pcm_substream *be_substream;
 
 			be = dpcm->be;
-			if (be->dpcm[dir].users == 1)
+			if (snd_soc_rtd_stream_active(be, dir) == 1)
 				break;
 
 			be_substream = snd_soc_dpcm_get_substream(be, dir);
