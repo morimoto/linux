@@ -114,7 +114,7 @@ int meson_codec_glue_output_startup(struct snd_pcm_substream *substream,
 	rtd->dai_link->c2c_params = &in_data->params;
 	rtd->dai_link->num_c2c_params = 1;
 
-	return snd_soc_runtime_set_dai_fmt(rtd, in_data->fmt);
+	return snd_soc_rtd_set_dai_fmt(rtd, in_data->fmt);
 }
 EXPORT_SYMBOL_GPL(meson_codec_glue_output_startup);
 

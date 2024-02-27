@@ -285,7 +285,7 @@ static int mop500_ab8500_hw_params(struct snd_pcm_substream *substream,
 			SND_SOC_DAIFMT_GATED;
 	}
 
-	ret = snd_soc_runtime_set_dai_fmt(rtd, fmt);
+	ret = snd_soc_rtd_set_dai_fmt(rtd, fmt);
 	if (ret)
 		return ret;
 

@@ -1250,7 +1250,7 @@ int snd_soc_add_pcm_runtimes(struct snd_soc_card *card,
 }
 EXPORT_SYMBOL_GPL(snd_soc_add_pcm_runtimes);
 
-static void snd_soc_runtime_get_dai_fmt(struct snd_soc_pcm_runtime *rtd)
+static void snd_soc_rtd_get_dai_fmt(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai_link *dai_link = rtd->dai_link;
 	struct snd_soc_dai *dai, *not_used;
@@ -1408,7 +1408,7 @@ found:
 }
 
 /**
- * snd_soc_runtime_set_dai_fmt() - Change DAI link format for a ASoC runtime
+ * snd_soc_rtd_set_dai_fmt() - Change DAI link format for a ASoC runtime
  * @rtd: The runtime for which the DAI link format should be changed
  * @dai_fmt: The new DAI link format
  *
@@ -1420,8 +1420,7 @@ found:
  *
  * Returns 0 on success, otherwise a negative error code.
  */
-int snd_soc_runtime_set_dai_fmt(struct snd_soc_pcm_runtime *rtd,
-				unsigned int dai_fmt)
+int snd_soc_rtd_set_dai_fmt(struct snd_soc_pcm_runtime *rtd, unsigned int dai_fmt)
 {
 	struct snd_soc_dai *cpu_dai;
 	struct snd_soc_dai *codec_dai;
@@ -1448,7 +1447,7 @@ int snd_soc_runtime_set_dai_fmt(struct snd_soc_pcm_runtime *rtd,
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(snd_soc_runtime_set_dai_fmt);
+EXPORT_SYMBOL_GPL(snd_soc_rtd_set_dai_fmt);
 
 static int soc_init_pcm_runtime(struct snd_soc_card *card,
 				struct snd_soc_pcm_runtime *rtd)
@@ -1463,8 +1462,8 @@ static int soc_init_pcm_runtime(struct snd_soc_card *card,
 	if (ret < 0)
 		return ret;
 
-	snd_soc_runtime_get_dai_fmt(rtd);
-	ret = snd_soc_runtime_set_dai_fmt(rtd, dai_link->dai_fmt);
+	snd_soc_rtd_get_dai_fmt(rtd);
+	ret = snd_soc_rtd_set_dai_fmt(rtd, dai_link->dai_fmt);
 	if (ret)
 		goto err;
 
