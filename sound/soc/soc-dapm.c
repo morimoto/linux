@@ -4493,7 +4493,16 @@ void snd_soc_dapm_stream_event(struct snd_soc_pcm_runtime *rtd, int stream,
 	struct snd_soc_card *card = rtd->card;
 
 	snd_soc_dapm_mutex_lock(card);
+
+	/*
+	 * Ignore if not last user on STOP
+	 */
+	if ((event == SND_SOC_DAPM_STREAM_STOP) &&
+	    (snd_soc_rtd_stream_active(rtd, stream) > 1))
+		goto ignore;
+
 	soc_dapm_stream_event(rtd, stream, event);
+ignore:
 	snd_soc_dapm_mutex_unlock(card);
 }
 
