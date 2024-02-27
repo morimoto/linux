@@ -581,7 +581,7 @@ static int simple_init_for_codec2codec(struct snd_soc_pcm_runtime *rtd,
 
 	/* Assumes the capabilities are the same for all supported streams */
 	for_each_pcm_streams(stream) {
-		ret = snd_soc_runtime_calc_hw(rtd, &hw, stream);
+		ret = snd_soc_rtd_calc_hw(rtd, &hw, stream);
 		if (ret == 0)
 			break;
 	}

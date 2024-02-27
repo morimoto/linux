@@ -47,7 +47,7 @@
  "format" property is no longer needed on DT if both CPU/Codec drivers are
  supporting snd_soc_dai_ops :: .auto_selectable_formats.
  see
-	snd_soc_runtime_get_dai_fmt()
+	snd_soc_rtd_get_dai_fmt()
 
 	sample driver
 		linux/sound/soc/sh/rcar/core.c

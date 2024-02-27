@@ -40,7 +40,7 @@ struct snd_compr_stream;
 /*
  * use SND_SOC_DAI_FORMAT_xx as eash shift.
  * see
- *	snd_soc_runtime_get_dai_fmt()
+ *	snd_soc_rtd_get_dai_fmt()
  */
 #define SND_SOC_POSSIBLE_DAIFMT_FORMAT_SHIFT	0
 #define SND_SOC_POSSIBLE_DAIFMT_FORMAT_MASK	(0xFFFF << SND_SOC_POSSIBLE_DAIFMT_FORMAT_SHIFT)
@@ -65,7 +65,7 @@ struct snd_compr_stream;
 /*
  * define GATED -> CONT. GATED will be selected if both are selected.
  * see
- *	snd_soc_runtime_get_dai_fmt()
+ *	snd_soc_rtd_get_dai_fmt()
  */
 #define SND_SOC_POSSIBLE_DAIFMT_CLOCK_SHIFT	16
 #define SND_SOC_POSSIBLE_DAIFMT_CLOCK_MASK	(0xFFFF	<< SND_SOC_POSSIBLE_DAIFMT_CLOCK_SHIFT)

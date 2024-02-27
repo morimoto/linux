@@ -479,26 +479,19 @@ void snd_soc_disconnect_sync(struct device *dev);
 struct snd_soc_pcm_runtime *snd_soc_get_pcm_runtime(struct snd_soc_card *card,
 				struct snd_soc_dai_link *dai_link);
 
-bool snd_soc_runtime_ignore_pmdown_time(struct snd_soc_pcm_runtime *rtd);
+bool snd_soc_rtd_ignore_pmdown_time(struct snd_soc_pcm_runtime *rtd);
+void snd_soc_rtd_action(struct snd_soc_pcm_runtime *rtd, int stream, int action);
+int snd_soc_rtd_calc_hw(struct snd_soc_pcm_runtime *rtd, struct snd_pcm_hardware *hw, int stream);
+int snd_soc_rtd_set_dai_fmt(struct snd_soc_pcm_runtime *rtd, unsigned int dai_fmt);
 
-void snd_soc_runtime_action(struct snd_soc_pcm_runtime *rtd,
-			    int stream, int action);
-static inline void snd_soc_runtime_activate(struct snd_soc_pcm_runtime *rtd,
-				     int stream)
+static inline void snd_soc_rtd_activate(struct snd_soc_pcm_runtime *rtd, int stream)
 {
-	snd_soc_runtime_action(rtd, stream, 1);
+	snd_soc_rtd_action(rtd, stream, 1);
 }
-static inline void snd_soc_runtime_deactivate(struct snd_soc_pcm_runtime *rtd,
-				       int stream)
+static inline void snd_soc_rtd_deactivate(struct snd_soc_pcm_runtime *rtd, int stream)
 {
-	snd_soc_runtime_action(rtd, stream, -1);
+	snd_soc_rtd_action(rtd, stream, -1);
 }
-
-int snd_soc_runtime_calc_hw(struct snd_soc_pcm_runtime *rtd,
-			    struct snd_pcm_hardware *hw, int stream);
-
-int snd_soc_runtime_set_dai_fmt(struct snd_soc_pcm_runtime *rtd,
-	unsigned int dai_fmt);
 
 #ifdef CONFIG_DMI
 int snd_soc_set_dmi_name(struct snd_soc_card *card, const char *flavour);

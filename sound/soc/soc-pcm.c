@@ -277,7 +277,7 @@ static void dpcm_set_be_update_state(struct snd_soc_pcm_runtime *be,
 }
 
 /**
- * snd_soc_runtime_action() - Increment/Decrement active count for
+ * snd_soc_rtd_action() - Increment/Decrement active count for
  * PCM runtime components
  * @rtd: ASoC PCM runtime that is activated
  * @stream: Direction of the PCM stream
@@ -289,8 +289,7 @@ static void dpcm_set_be_update_state(struct snd_soc_pcm_runtime *be,
  *
  * Must be called with the rtd->card->pcm_mutex being held
  */
-void snd_soc_runtime_action(struct snd_soc_pcm_runtime *rtd,
-			    int stream, int action)
+void snd_soc_rtd_action(struct snd_soc_pcm_runtime *rtd, int stream, int action)
 {
 	struct snd_soc_component *component;
 	struct snd_soc_dai *dai;
@@ -308,10 +307,10 @@ void snd_soc_runtime_action(struct snd_soc_pcm_runtime *rtd,
 		component->active += action;
 	}
 }
-EXPORT_SYMBOL_GPL(snd_soc_runtime_action);
+EXPORT_SYMBOL_GPL(snd_soc_rtd_action);
 
 /**
- * snd_soc_runtime_ignore_pmdown_time() - Check whether to ignore the power down delay
+ * snd_soc_rtd_ignore_pmdown_time() - Check whether to ignore the power down delay
  * @rtd: The ASoC PCM runtime that should be checked.
  *
  * This function checks whether the power down delay should be ignored for a
@@ -319,7 +318,7 @@ EXPORT_SYMBOL_GPL(snd_soc_runtime_action);
  * been configured to ignore the delay, or if none of the components benefits
  * from having the delay.
  */
-bool snd_soc_runtime_ignore_pmdown_time(struct snd_soc_pcm_runtime *rtd)
+bool snd_soc_rtd_ignore_pmdown_time(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_component *component;
 	bool ignore = true;
@@ -569,7 +568,7 @@ static void soc_pcm_hw_update_subformat(struct snd_pcm_hardware *hw,
 }
 
 /**
- * snd_soc_runtime_calc_hw() - Calculate hw limits for a PCM stream
+ * snd_soc_rtd_calc_hw() - Calculate hw limits for a PCM stream
  * @rtd: ASoC PCM runtime
  * @hw: PCM hardware parameters (output)
  * @stream: Direction of the PCM stream
@@ -577,8 +576,8 @@ static void soc_pcm_hw_update_subformat(struct snd_pcm_hardware *hw,
  * Calculates the subset of stream parameters supported by all DAIs
  * associated with the PCM stream.
  */
-int snd_soc_runtime_calc_hw(struct snd_soc_pcm_runtime *rtd,
-			    struct snd_pcm_hardware *hw, int stream)
+int snd_soc_rtd_calc_hw(struct snd_soc_pcm_runtime *rtd,
+			struct snd_pcm_hardware *hw, int stream)
 {
 	struct snd_soc_dai *codec_dai;
 	struct snd_soc_dai *cpu_dai;
@@ -647,7 +646,7 @@ int snd_soc_runtime_calc_hw(struct snd_soc_pcm_runtime *rtd,
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(snd_soc_runtime_calc_hw);
+EXPORT_SYMBOL_GPL(snd_soc_rtd_calc_hw);
 
 static void soc_pcm_init_runtime_hw(struct snd_pcm_substream *substream)
 {
@@ -660,7 +659,7 @@ static void soc_pcm_init_runtime_hw(struct snd_pcm_substream *substream)
 	 * have bailed out on a higher level, since there would be no CPU or
 	 * CODEC to support the transfer direction in that case.
 	 */
-	snd_soc_runtime_calc_hw(rtd, hw, substream->stream);
+	snd_soc_rtd_calc_hw(rtd, hw, substream->stream);
 
 	if (formats)
 		hw->formats &= formats;
@@ -713,7 +712,7 @@ static int soc_pcm_clean(struct snd_soc_pcm_runtime *rtd,
 	snd_soc_dpcm_mutex_assert_held(rtd);
 
 	if (!rollback) {
-		snd_soc_runtime_deactivate(rtd, substream->stream);
+		snd_soc_rtd_deactivate(rtd, substream->stream);
 
 		/* Make sure DAI parameters cleared if the DAI becomes inactive */
 		for_each_rtd_dais(rtd, i, dai) {
@@ -857,7 +856,7 @@ static int __soc_pcm_open(struct snd_soc_pcm_runtime *rtd,
 			goto err;
 	}
 dynamic:
-	snd_soc_runtime_activate(rtd, substream->stream);
+	snd_soc_rtd_activate(rtd, substream->stream);
 	ret = 0;
 err:
 	if (ret < 0)

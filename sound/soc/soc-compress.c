@@ -64,7 +64,7 @@ static int soc_compr_clean(struct snd_compr_stream *cstream, int rollback)
 	snd_soc_dpcm_mutex_lock(rtd);
 
 	if (!rollback)
-		snd_soc_runtime_deactivate(rtd, stream);
+		snd_soc_rtd_deactivate(rtd, stream);
 
 	snd_soc_dai_digital_mute(codec_dai, 1, stream);
 
@@ -120,7 +120,7 @@ static int soc_compr_open(struct snd_compr_stream *cstream)
 	if (ret < 0)
 		goto err;
 
-	snd_soc_runtime_activate(rtd, stream);
+	snd_soc_rtd_activate(rtd, stream);
 err:
 	snd_soc_dpcm_mutex_unlock(rtd);
 err_no_lock:
@@ -180,7 +180,7 @@ static int soc_compr_open_fe(struct snd_compr_stream *cstream)
 	fe->dpcm[stream].state = SND_SOC_DPCM_STATE_OPEN;
 	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_NO;
 
-	snd_soc_runtime_activate(fe, stream);
+	snd_soc_rtd_activate(fe, stream);
 	snd_soc_dpcm_mutex_unlock(fe);
 
 	snd_soc_card_mutex_unlock(fe->card);
@@ -210,7 +210,7 @@ static int soc_compr_free_fe(struct snd_compr_stream *cstream)
 	snd_soc_card_mutex_lock(fe->card);
 
 	snd_soc_dpcm_mutex_lock(fe);
-	snd_soc_runtime_deactivate(fe, stream);
+	snd_soc_rtd_deactivate(fe, stream);
 
 	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_FE;
 
