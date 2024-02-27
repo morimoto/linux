@@ -90,7 +90,6 @@ struct snd_soc_dpcm_runtime {
 	struct list_head be_clients;
 	struct list_head fe_clients;
 
-	int users;
 	struct snd_pcm_hw_params hw_params;
 
 	/* state and update */
