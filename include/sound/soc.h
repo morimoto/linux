@@ -1137,6 +1137,8 @@ struct snd_soc_pcm_runtime {
 	struct snd_soc_dai_link *dai_link;
 	struct snd_pcm_ops ops;
 
+	unsigned int active[SNDRV_PCM_STREAM_LAST + 1];
+
 	unsigned int c2c_params_select; /* currently selected c2c_param for dai link */
 
 	/* Dynamic PCM BE runtime data */
@@ -1188,6 +1190,12 @@ struct snd_soc_pcm_runtime {
 #define snd_soc_rtd_to_codec(rtd, n) (rtd)->dais[n + (rtd)->dai_link->num_cpus]
 #define snd_soc_substream_to_rtd(substream) \
 	(struct snd_soc_pcm_runtime *)snd_pcm_substream_chip(substream)
+
+static inline unsigned int snd_soc_rtd_stream_active(struct snd_soc_pcm_runtime *rtd, int stream)
+{
+	/* see snd_soc_rtd_action() for setup */
+	return rtd->active[stream];
+}
 
 #define for_each_rtd_components(rtd, i, component)			\
 	for ((i) = 0, component = NULL;					\
