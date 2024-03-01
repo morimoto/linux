@@ -693,15 +693,18 @@ EXPORT_SYMBOL(of_graph_get_next_port_endpoint);
  * @parent: pointer to the parent device node
  * @id: id of the port
  *
- * Return: A 'port' node pointer with refcount incremented. The caller
- * has to use of_node_put() on it when done.
+ * Return: A 'port' node pointer with refcount incremented. id is ignored when
+ * it was < 0. The caller has to use of_node_put() on it when done.
  */
-struct device_node *of_graph_get_port_by_id(struct device_node *parent, u32 id)
+struct device_node *of_graph_get_port_by_id(struct device_node *parent, int id)
 {
 	struct device_node *port;
 
 	for_each_of_graph_port(parent, port) {
 		u32 port_id = 0;
+
+		if (id < 0)
+			break;
 
 		of_property_read_u32(port, "reg", &port_id);
 		if (id == port_id)
