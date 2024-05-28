@@ -606,16 +606,11 @@ EXPORT_SYMBOL(of_graph_parse_endpoint);
  */
 struct device_node *of_graph_get_port_by_id(struct device_node *parent, u32 id)
 {
-	struct device_node *node __free(device_node) = of_get_child_by_name(parent, "ports");
+	struct device_node *port;
 
-	if (node)
-		parent = node;
-
-	for_each_child_of_node_scoped(parent, port) {
+	for_each_of_graph_port(parent, port) {
 		u32 port_id = 0;
 
-		if (!of_node_name_eq(port, "port"))
-			continue;
 		of_property_read_u32(port, "reg", &port_id);
 		if (id == port_id)
 			return_ptr(port);
