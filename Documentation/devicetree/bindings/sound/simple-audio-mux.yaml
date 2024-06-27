@@ -24,6 +24,10 @@ properties:
     description: |
       GPIOs used to select the input line.
 
+  state-labels:
+    description: |
+      State of input line. default is "Input 1", "Input 2"
+
   sound-name-prefix: true
 
 required:
