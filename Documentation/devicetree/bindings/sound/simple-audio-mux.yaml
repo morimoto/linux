@@ -24,6 +24,10 @@ properties:
     description: |
       GPIOs used to select the input line.
 
+  mux-names:
+    description: |
+      Name of multiplexers. default is "Input 1", "Input 2"
+
   sound-name-prefix: true
 
 required:
