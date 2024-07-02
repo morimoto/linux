@@ -37,7 +37,6 @@ v6.8      / dt-bindings: mmc: renesas,sdhi: Document RZ/Five SoC
 v6.7      / dt-bindings: mmc: renesas,sdhi: Document RZ/G3S support
 v6.3      / dt-bindings: mmc: renesas,sdhi: Fix RZ/V2M clock description
 v6.3      / dt-bindings: mmc: renesas,sdhi: Document RZ/V2M support
-Local     / ASoC: dt-bindings: renesas: Fix R-Car Gen4 SoC-specific compatibles
 v6.2      / dt-bindings: net: renesas: Document Renesas Ethernet Switch
 v6.2      / dt-bindings: phy: renesas: Document Renesas Ethernet SERDES
 Local     / pmdomain: renesas: rcar-sysc: Add R-Car M3-W power-off delay quirk
@@ -124,8 +123,6 @@ v6.9      / arm64: dts: renesas: r8a779h0: Add pinctrl device node
 v6.9      / arm64: dts: renesas: r8a779h0: Add RWDT node
 v6.9      / arm64: dts: renesas: Add Renesas R8A779H0 SoC support
 v6.9      / dt-bindings: clock: Add R8A779H0 V4M CPG Core Clock Definitions
-Local     / ASoC: dt-bindings: renesas,rsnd: add missing renesas,rcar_sound-gen4
-Local     / ASoC: dt-bindings: renesas: add R8A779H0 V4M
 v6.9      / dt-bindings: serial: renesas,hscif: Document r8a779h0 bindings
 v6.9      / dt-bindings: net: renesas,etheravb: Add support for R-Car V4M
 v6.9      / soc: renesas: rcar-rst: Add support for R-Car V4M
@@ -474,16 +471,6 @@ v6.3      / media: renesas: vsp1: Add V4H SoC version
 v6.3      / media: renesas: vsp1: Change V3U to be gen4
 v6.3      / media: Add Y210, Y212 and Y216 formats
 v6.3      / media: Add 2-10-10-10 RGB formats
-v6.3      / ASoC: dt-bindings: renesas: add R8A779G0 V4H
-v6.4      / ASoC: dt-bindings: renesas: rsnd: correct comments syntax
-v6.4      / ASoC: dt-bindings: renesas,rsnd.yaml: add R-Car Gen4 support
-v6.3      / ASoC: dt-bindings: renesas,rsnd.yaml: drop "dmas/dma-names" from "rcar_sound,ssi"
-v6.3      / ASoC: dt-bindings: renesas,rsnd: #sound-dai-cells is not mandatory
-v6.3      / ASoC: dt-bindings: renesas,rsnd: tidyup rcar_sound,src
-v6.3      / ASoC: dt-bindings: renesas,rsnd: add missing playback/capture
-v6.2      / dt-bindings: Add missing start and/or end of line regex anchors
-v6.2      / ASoC: dt-bindings: Reference common DAI properties
-v6.3      / ASoC: dt-bindings: renesas,rsnd: simplify list of compatibles
 v6.3      / arm64: defconfig: Enable RZ/G2L MIPI CSI-2 and CRU support
 v6.3      / ARM: shmobile: defconfig: Refresh for v6.1-rc5
 v6.3      / arm64: defconfig: Enable Renesas RZ/G2L MIPI DSI driver
@@ -707,3 +694,36 @@ v6.2      / clk: renesas: r8a779g0: Add SYS-DMAC clocks
 v6.2      / clk: renesas: r8a779f0: Add Ethernet Switch clocks
 v6.2      / clk: renesas: rzg2l: Fix typo in function name
 v6.2      / clk: renesas: rzg2l: Support sd clk mux round operation
+Local     / ASoC: dt-bindings: renesas: Fix R-Car Gen4 SoC-specific compatibles
+Local     / ASoC: dt-bindings: renesas,rsnd: add missing renesas,rcar_sound-gen4
+Local     / ASoC: dt-bindings: renesas: add R8A779H0 V4M
+v6.9      / ASoC: dt-bindings: audio-graph-port: Drop type from "clocks"
+v6.8      / ASoC: dt-bindings: audio-graph-port: Document new DAI link flags playback-only/capture-only
+v6.8      / ASoC: dt-bindings: Simplify port schema
+v6.7      / ASoC: dt-bindings: Simplify referencing dai-params.yaml
+v6.6      / ASoC: dt-bindings: renesas,rsnd.yaml: enable multi ports for multi Component support
+v6.6      / ASoC: dt-bindings: renesas,rsnd.yaml: add common port-def
+v6.6      / ASoC: dt-bindings: audio-graph-card2: Drop incomplete example
+v6.6      / ASoC: dt-bindings: simple-card: Add additional-devs subnode
+v6.5      / ASoC: dt-bindings: audio-graph-card: Expand 'widgets' documentation
+v6.4      / ASoC: dt-bindings: Drop unneeded quotes
+v6.4      / ASoC: dt-bindings: renesas: rsnd: Update example
+v6.4      / ASoC: dt-bindings: renesas,rsnd.yaml: add R-Car Gen4 support
+v6.3      / ASoC: dt-bindings: renesas,rsnd.yaml: drop "dmas/dma-names" from "rcar_sound,ssi"
+v6.3      / ASoC: dt-bindings: renesas,rsnd.yaml: tidyup reg/reg-name
+v6.3      / ASoC: dt-bindings: renesas: add R8A779G0 V4H
+v6.3      / ASoC: dt-bindings: simple-card: add missing #address-cells/#size-cells
+v6.3      / ASoC: dt-bindings: renesas,rsnd: #sound-dai-cells is not mandatory
+v6.3      / ASoC: dt-bindings: renesas,rsnd: tidyup rcar_sound,src
+v6.3      / ASoC: dt-bindings: renesas,rsnd: add missing playback/capture
+v6.3      / ASoC: dt-bindings: audio-graph-port: remove prefix
+v6.3      / ASoC: dt-bindings: audio-graph-port: add clocks on endpoint
+v6.3      / ASoC: dt-bindings: audio-graph-port: add missing mclk-fs
+v6.3      / ASoC: dt-bindings: audio-graph-port: add definitions/ports
+v6.3      / ASoC: dt-bindings: audio-graph-port: use definitions for port/endpoint
+v6.3      / ASoC: dt-bindings: renesas,rsnd: simplify list of compatibles
+v6.3      / ASoC: dt-bindings: simple-card: Document simple-audio-card,plat
+v6.3      / ASoC: dt-bindings: simple-card: correct DAI subnodes pattern
+v6.2      / dt-bindings: Add missing start and/or end of line regex anchors
+v6.2      / ASoC: dt-bindings: Reference common DAI properties
+v6.2      / ASoC: dt-bindings: Extend name-prefix.yaml into common DAI properties
