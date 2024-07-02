@@ -1,3 +1,19 @@
+* v6.6.36-2024-07-02
+
+	* Below patches are backported
+
+		commit 01dffdcaa094858a03e3694694815f1a4915940c
+		("ASoC: dt-bindings: audio-graph-port: Drop type from "clocks"")
+
+		commit af29e51bee8223d8b26e574489d2433b88cdeb2f
+		("ASoC: dt-bindings: audio-graph-port: Document new DAI link flags playback-only/capture-only")
+
+		commit 6d02f355c3d2fe86f503793e4df09898e9f9e703
+		("ASoC: dt-bindings: Simplify port schema")
+
+		commit 967dad97757057dcd72ec27cdb3c14c1774f606c
+		("ASoC: dt-bindings: Simplify referencing dai-params.yaml")
+
 * v6.6.36-2024-06-28
 
 	* Merge/Rebase v6.6.36

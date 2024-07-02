@@ -1,3 +1,7 @@
+v6.9      / ASoC: dt-bindings: audio-graph-port: Drop type from "clocks"
+v6.8      / ASoC: dt-bindings: audio-graph-port: Document new DAI link flags playback-only/capture-only
+v6.8      / ASoC: dt-bindings: Simplify port schema
+v6.7      / ASoC: dt-bindings: Simplify referencing dai-params.yaml
 Local     / dt-bindings: interrupt-controller: renesas,irqc: Add r8a779g0 support
 Local     / spi: renesas,sh-msiof: Add r8a779h0 support
 Local     / dt-bindings: timer: renesas,cmt: Add R-Car V4M support
