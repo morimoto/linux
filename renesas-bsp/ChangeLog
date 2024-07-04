@@ -1,3 +1,28 @@
+* v6.1.96-2024-07-05
+
+	* RISCV related backports are reverted
+
+	To avoid RISCV related compile test error, RISCV is not BSP terget for now.
+
+		soc: renesas: Make RZ/Five depend on !DMA_DIRECT_REMAP
+		soc: renesas: ARCH_R9A07G043 depends on !RISCV_ISA_ZICBOM
+		soc: renesas: Make ARCH_R9A07G043 depend on required options
+		soc: renesas: Make ARCH_R9A07G043 (riscv version) depend on NONPORTABLE
+		riscv: dts: renesas: Clean up dtbs_check W=1 warning due to empty phy node
+		MAINTAINERS: renesas: Add "renesas," file contents pattern
+		riscv: dts: renesas: rzfive-smarc-som: Drop PHY interrupt support for ETH{0,1}
+		riscv: dts: renesas: rzfive-smarc-som: Enable OSTM nodes
+		riscv: dts: renesas: rzfive-smarc-som: Enable WDT
+		riscv: dts: renesas: rzfive-smarc: Enable CANFD/I2C
+		riscv: dts: renesas: r9a07g043f/rzfive-smarc-som: Enable ADC/OPP/Thermal Zones/TSU
+		riscv: configs: defconfig: Enable Renesas RZ/Five SoC
+		MAINTAINERS: Add entry for Renesas RISC-V
+		riscv: dts: renesas: Add minimal DTS for Renesas RZ/Five SMARC EVK
+		riscv: dts: renesas: Add initial devicetree for Renesas RZ/Five SoC
+		riscv: Kconfig.socs: Add ARCH_RENESAS kconfig option
+		dt-bindings: riscv: Add Andes AX45MP core to the list
+		dt-bindings: riscv: Sort the CPU core list alphabetically
+
 * v6.1.96-2024-07-04
 
 	* Below patches are backported

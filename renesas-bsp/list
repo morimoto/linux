@@ -134,10 +134,6 @@ Local     / soc: renesas: Enable TMU support on R-Car Gen2
 Local     / soc: renesas: Add identification support for RZ/V2H SoC
 v6.9      / soc: renesas: Identify R-Car V4M
 v6.9      / soc: renesas: Introduce ARCH_RCAR_GEN4
-v6.8      / soc: renesas: Make RZ/Five depend on !DMA_DIRECT_REMAP
-v6.6      / soc: renesas: ARCH_R9A07G043 depends on !RISCV_ISA_ZICBOM
-v6.6      / soc: renesas: Make ARCH_R9A07G043 depend on required options
-v6.6      / soc: renesas: Make ARCH_R9A07G043 (riscv version) depend on NONPORTABLE
 v6.7      / soc: renesas: Identify RZ/G3S SoC
 v6.6      / soc: renesas: Kconfig: For ARCH_R9A07G043 select the required configs if dependencies are met
 v6.6      / soc: renesas: Kconfig: Select the required configs for RZ/Five SoC
@@ -169,7 +165,6 @@ v6.6      / arm64: dts: renesas: r9a07g043: Add MTU3a node
 v6.6      / ARM dts: renesas: armadillo800eva: Switch to enable-gpios
 v6.6      / arm64: dts: renesas: rzg2lc-smarc-som: Enable PMIC and built-in RTC
 v6.6      / arm64: dts: renesas: rzg2lc-smarc-som: Add PHY interrupt support for ETH0
-v6.6      / riscv: dts: renesas: Clean up dtbs_check W=1 warning due to empty phy node
 v6.6      / arm64: dts: renesas: rzg2lc-smarc: Add support for enabling MTU3
 v6.6      / arm64: dts: renesas: rzg2l-smarc: Add support for enabling MTU3
 v6.6      / arm64: dts: renesas: Add missing space before {
@@ -255,7 +250,6 @@ v6.4      / ARM: dts: marzen: Add slide switches
 v6.4      / ARM: dts: r8a7779: Add PWM support
 v6.4      / dt-bindings: clock: r8a7779: Add PWM module clock
 v6.4      / arm64: dts: renesas: rzg2l: Add clock-names and reset-names to DMAC nodes
-v6.4      / MAINTAINERS: renesas: Add "renesas," file contents pattern
 v6.4      / arm64: dts: renesas: r8a779a0: Update CAN-FD to R-Car Gen4 compatible value
 v6.4      / arm64: dts: renesas: ulcb: Add I2C EEPROM for PMIC
 v6.4      / arm64: dts: renesas: condor: Add I2C EEPROM for PMIC
@@ -494,19 +488,16 @@ v6.3      / arm64: dts: renesas: eagle: Add SCIF_CLK support
 v6.3      / ARM: dts: r9a06g032: Add the USBF controller node
 v6.3      / arm64: dts: renesas: rzg2ul-smarc-som: Add PHY interrupt support for ETH{0/1}
 v6.3      / arm64: dts: renesas: r9a07g043u: Update pinctrl node to handle GPIO interrupts
-v6.3      / riscv: dts: renesas: rzfive-smarc-som: Drop PHY interrupt support for ETH{0,1}
 v6.3      / arm64: dts: renesas: r8a779g0: Add Cortex-A76 1.8 GHz opp
 v6.3      / ARM: dts: renesas: Use new media bus type macros
 v6.2      / media: dt-bindings: media: Add macros for video interface bus types
 v6.3      / arm64: dts: renesas: condor-i: add HS400 support for eMMC
 v6.3      / arm64: boot: dts: r8a774[a/b/e]1-beacon: Consolidate sound clocks
-v6.3      / riscv: dts: renesas: rzfive-smarc-som: Enable OSTM nodes
 v6.3      / arm64: dts: renesas: ulcb-kf: Fix pca9548 i2c-mux node names
 v6.3      / arm64: dts: renesas: r9a09g011: Add eMMC and SDHI support
 v6.3      / arm64: dts: renesas: white-hawk-cpu: Add DP output support
 v6.3      / arm64: dts: renesas: r8a779g0: Add display related nodes
 v6.3      / arm64: dts: renesas: r8a779f0: Add CA55 operating points
-v6.3      / riscv: dts: renesas: rzfive-smarc-som: Enable WDT
 v6.3      / pinctrl: renesas: r8a77950: Add VIN[45] pins, groups, and functions
 v6.3      / pinctrl: renesas: rzg2l: Add BUILD_BUG_ON() checks
 v6.3      / pinctrl: renesas: r8a779g0: Fix alignment in GPSR[678]_* macros
@@ -620,8 +611,6 @@ v6.2      / arm64: defconfig: Enable Renesas R-Car S4-8 Spider Ethernet devices
 v6.2      / arm64: dts: renesas: spider-ethernet: Enable Ethernet Switch and SERDES
 v6.2      / arm64: dts: renesas: r8a779f0: Add Ethernet Switch and SERDES nodes
 v6.2      / pinctrl: renesas: gpio: Use dynamic GPIO base if no function GPIOs
-v6.2      / riscv: dts: renesas: rzfive-smarc: Enable CANFD/I2C
-v6.2      / riscv: dts: renesas: r9a07g043f/rzfive-smarc-som: Enable ADC/OPP/Thermal Zones/TSU
 v6.2      / arm64: dts: renesas: r9a09g011: Add system controller node
 v6.2      / arm64: dts: renesas: r8a779g0: Add CA76 operating points
 v6.2      / arm64: dts: renesas: r8a779g0: Add CPU core clocks
@@ -638,13 +627,6 @@ v6.2      / arm64: dts: renesas: r9a09g011: Add L2 Cache node
 v6.2      / arm64: dts: renesas: rzv2mevk2: Enable watchdog
 v6.2      / arm64: dts: renesas: r9a09g011: Add watchdog node
 v6.2      / arm64: dts: renesas: spider-cpu: Switch from SCIF3 to HSCIF0
-v6.2      / riscv: configs: defconfig: Enable Renesas RZ/Five SoC
-v6.2      / MAINTAINERS: Add entry for Renesas RISC-V
-v6.2      / riscv: dts: renesas: Add minimal DTS for Renesas RZ/Five SMARC EVK
-v6.2      / riscv: dts: renesas: Add initial devicetree for Renesas RZ/Five SoC
-v6.2      / riscv: Kconfig.socs: Add ARCH_RENESAS kconfig option
-v6.2      / dt-bindings: riscv: Add Andes AX45MP core to the list
-v6.2      / dt-bindings: riscv: Sort the CPU core list alphabetically
 v6.2      / arm64: dts: renesas: rzg2l: Drop #address-cells from pinctrl nodes
 v6.2      / arm64: dts: renesas: rzg2l: Add missing cache-level properties
 v6.2      / arm64: dts: renesas: r8a779g0: Add CMT node
