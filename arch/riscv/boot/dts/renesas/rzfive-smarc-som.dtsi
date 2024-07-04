@@ -41,3 +41,7 @@
 &sdhi0 {
 	status = "disabled";
 };
+
+&wdt0 {
+	status = "disabled";
+};
