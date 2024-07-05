@@ -23,6 +23,51 @@
 		dt-bindings: riscv: Add Andes AX45MP core to the list
 		dt-bindings: riscv: Sort the CPU core list alphabetically
 
+	* Local patch from BSP are reverted
+
+	To avoid dtbs_check error, etc
+
+		arm64: dts: renesas: r8a779g0: white-hawk: Enable PCIe Host ch0
+		arm64: dts: renesas: r8a779g0: Add PCIe Host and Endpoint nodes
+		misc: pci_endpoint_test: Add Device ID for R-Car V4H PCIe controller
+		media: rcar-vin: Add support for RAW10 on V3U
+		dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility
+
+	* Below patches are backported
+
+		commit 078a5babf2bc92eba04b8f9162e5fea7afc2749e
+		("dt-bindings: timer: renesas,rz-mtu3: Document RZ/{G2UL,Five} SoCs")
+
+		commit b121e7881b8975cf8dc24d9bd71a5af81ed8a6b1
+		("dt-bindings: timer: renesas,rz-mtu3: Improve documentation")
+
+		commit b7a8f1f7a8a25e09aaefebb6251a77f44cda638b
+		("dt-bindings: timer: renesas,rz-mtu3: Fix overflow/underflow interrupt names")
+
+		commit 0a9d6b54297e216199cbfd08c5e6a35cce152477
+		("dt-bindings: timer: Document RZ/G2L MTU3a bindings")
+
+		commit 2c5502a4dc9ffb9145ef80e642be0f1f03c037e8
+		("dt-bindings: usb: renesas,usb3-peri: Document RZ/V2MA bindings")
+
+		commit 29218d6ce4da741f8a1a86974999e8790683c23b
+		("dt-bindings: usb: renesas,usb3-peri: Update reset, clock-name and interrupts properties")
+
+		commit 7d562ac331ddc4f798e6185a858bc98c22ee7d1b
+		("ASoC: dt-bindings: renesas,rz-ssi: Document RZ/Five SoC")
+
+		commit 56a3840486ae22c42176828e25d4073712837bfd
+		("ASoC: dt-bindings: renesas,rz-ssi: Update interrupts and interrupt-names properties")
+
+		commit 56d02cfa3fbfca7466ccd68f4db78b0297f5c01f
+		("dt-bindings: dma: rz-dmac: Document RZ/Five SoC")
+
+		commit 5aaf9079d740ebe57f10dfefb1850011d6bb7b2a
+		("dt-bindings: dma: rz-dmac: Document clock-names and reset-names")
+
+		commit 10cafa2d458855873ceb91c79c4f2cbcb8419283
+		("dt-bindings: dma: drop unneeded quotes")
+
 * v6.1.96-2024-07-04
 
 	* Below patches are backported
