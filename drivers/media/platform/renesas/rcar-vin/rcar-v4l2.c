@@ -86,10 +86,6 @@ static const struct rvin_video_format rvin_formats[] = {
 		.fourcc			= V4L2_PIX_FMT_GREY,
 		.bpp			= 1,
 	},
-	{
-		.fourcc			= V4L2_PIX_FMT_Y10,
-		.bpp			= 4,
-	},
 };
 
 const struct rvin_video_format *rvin_format_from_pixel(struct rvin_dev *vin,
@@ -108,10 +104,6 @@ const struct rvin_video_format *rvin_format_from_pixel(struct rvin_dev *vin,
 		 * 5, 8, 9, 12 and 13.
 		 */
 		if (!vin->info->nv12 || !(BIT(vin->id) & 0x3333))
-			return NULL;
-		break;
-	case V4L2_PIX_FMT_Y10:
-		if (!vin->info->raw10)
 			return NULL;
 		break;
 	default:
