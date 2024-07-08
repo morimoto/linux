@@ -1,3 +1,9 @@
+v6.8      / dt-bindings: dma: rz-dmac: Document RZ/Five SoC
+v6.8      / ASoC: dt-bindings: renesas,rz-ssi: Document RZ/Five SoC
+v6.7      / spi: renesas,rzv2m-csi: Add CSI (SPI) target related property
+v6.7      / dt-bindings: timer: renesas,rz-mtu3: Document RZ/{G2UL,Five} SoCs
+v6.7      / dt-bindings: timer: renesas,rz-mtu3: Improve documentation
+v6.7      / ASoC: dt-bindings: Add missing (unevaluated|additional)Properties on child node schemas
 v6.9      / ASoC: dt-bindings: audio-graph-port: Drop type from "clocks"
 v6.8      / ASoC: dt-bindings: audio-graph-port: Document new DAI link flags playback-only/capture-only
 v6.8      / ASoC: dt-bindings: Simplify port schema
@@ -29,7 +35,6 @@ v6.7      / dt-bindings: soc: renesas: Document R-Car S4 Starter Kit
 v6.7      / dt-bindings: soc: renesas: Document SMARC Carrier-II EVK
 v6.7      / dt-bindings: soc: renesas: Document RZ/G3S SMARC SoM
 v6.7      / dt-bindings: soc: renesas: Document Renesas RZ/G3S SoC variants
-Local     / dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility
 Local     / dt-bindings: mmc: renesas,sdhi: Group single const value items into an enum list
 v6.9      / dt-bindings: mmc: renesas,sdhi: Document R-Car V4M support
 v6.8      / dt-bindings: mmc: renesas,sdhi: Document RZ/Five SoC
@@ -74,7 +79,6 @@ Local     / soc: renesas: Add identification support for RZ/V2H SoC
 v6.7      / soc: renesas: Identify RZ/G3S SoC
 v6.9      / soc: renesas: Identify R-Car V4M
 v6.9      / soc: renesas: Introduce ARCH_RCAR_GEN4
-v6.8      / soc: renesas: Make RZ/Five depend on !DMA_DIRECT_REMAP
 v6.9      / thermal/drivers/rcar_gen3: Add support for R-Car V4M
 v6.7      / rswitch: Add PM ops
 v6.7      / rswitch: Use unsigned int for port related array index
@@ -127,14 +131,10 @@ Local     / ASoC: dt-bindings: renesas: add R8A779H0 V4M
 v6.9      / dt-bindings: serial: renesas,hscif: Document r8a779h0 bindings
 v6.9      / dt-bindings: net: renesas,etheravb: Add support for R-Car V4M
 v6.9      / soc: renesas: rcar-rst: Add support for R-Car V4M
-Local     / arm64: dts: renesas: r8a779g0: white-hawk: Enable PCIe Host ch0
-Local     / arm64: dts: renesas: r8a779g0: Add PCIe Host and Endpoint nodes
 v6.7      / arm64: dts: renesas: r8a779f0: spider: Enable PCIe Host ch0
 Local     / dt-bindings: PCI: rcar-gen4-pci-ep: Add R-Car V4H compatible
 Local     / dt-bindings: PCI: rcar-gen4-pci-host: Add R-Car V4H compatible
 v6.7      / dt-bindings: PCI: dwc: Update maxItems of reg and reg-names
-Local     / misc: pci_endpoint_test: Add Device ID for R-Car V4H PCIe controller
-Local     / media: rcar-vin: Add support for RAW10 on V3U
 v6.7      / PCI: rcar-gen4: Add endpoint mode support
 v6.7      / PCI: rcar-gen4: Add R-Car Gen4 PCIe controller support for host mode
 v6.7      / PCI: dwc: endpoint: Introduce .pre_init() and .deinit()
