@@ -1,3 +1,9 @@
+v6.3      / dt-bindings: usb: renesas,usb-xhci: Document RZ/V2M support
+v6.3      / dt-bindings: usb: Add RZ/V2M USB3DRD binding
+v6.7      / spi: renesas,rzv2m-csi: Add CSI (SPI) target related property
+v6.5      / spi: dt-bindings: Add bindings for RZ/V2M CSI
+v6.5      / regulator: dt-bindings: Add Renesas RAA215300 PMIC bindings
+v6.7      / ASoC: dt-bindings: Add missing (unevaluated|additional)Properties on child node schemas
 v6.7      / dt-bindings: timer: renesas,rz-mtu3: Document RZ/{G2UL,Five} SoCs
 v6.7      / dt-bindings: timer: renesas,rz-mtu3: Improve documentation
 v6.7      / dt-bindings: timer: renesas,rz-mtu3: Fix overflow/underflow interrupt names
