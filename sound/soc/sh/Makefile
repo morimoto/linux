@@ -16,6 +16,10 @@ obj-$(CONFIG_SND_SOC_SH4_SIU)	+= snd-soc-siu.o
 ## audio units for R-Car
 obj-$(CONFIG_SND_SOC_RCAR)	+= rcar/
 
+## msiof
+snd-soc-msiof-y			:= msiof.o
+obj-$(CONFIG_SND_SOC_MSIOF)	+= snd-soc-msiof.o
+
 ## boards
 snd-soc-sh7760-ac97-y		:= sh7760-ac97.o
 snd-soc-migor-y			:= migor.o

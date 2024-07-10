@@ -24,6 +24,34 @@
 		device_type = "memory";
 		reg = <0x6 0x00000000 0x0 0x40000000>;
 	};
+
+	msiof_sound: msiof_sound {
+		compatible = "audio-graph-card2";
+		links = <&msiof_snd>;
+	};
+
+	dummy {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "test-codec";
+		port {
+			dummy: endpoint {
+				remote-endpoint = <&msiof>;
+			};
+		};
+	};
+};
+
+&msiof0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	msiof_snd: port {
+		msiof: endpoint {
+			remote-endpoint = <&dummy>;
+			bitclock-master;
+			frame-master;
+		};
+	};
 };
 
 &du {
