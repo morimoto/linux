@@ -1578,6 +1578,24 @@
 			status = "disabled";
 		};
 
+		msiof0_snd: sound@e6e90000 {
+			compatible = "renesas,msiof_sound-r8a7795",
+				     "renesas,msiof_sound-gen3";
+			reg = <0 0xe6e90000 0 0x0064>;
+			interrupts = <GIC_SPI 156 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&cpg CPG_MOD 211>;
+			dmas = <&dmac1 0x41>, <&dmac1 0x40>,
+			       <&dmac2 0x41>, <&dmac2 0x40>;
+			dma-names = "tx", "rx", "tx", "rx";
+			power-domains = <&sysc R8A7795_PD_ALWAYS_ON>;
+			resets = <&cpg 211>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+//			status = "disabled";
+/* --------- */
+			status = "okay";
+		};
+
 		msiof1: spi@e6ea0000 {
 			compatible = "renesas,msiof-r8a7795",
 				     "renesas,rcar-gen3-msiof";
