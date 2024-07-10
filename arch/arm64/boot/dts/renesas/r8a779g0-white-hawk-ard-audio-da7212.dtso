@@ -133,11 +133,10 @@
 		clocks = <&rcar_sound>;
 		clock-names = "mclk";
 
-		dlg,micbias1-lvl = <2500>;
-		dlg,micbias2-lvl = <2500>;
-		dlg,dmic-data-sel = "lrise_rfall";
-		dlg,dmic-samplephase = "between_clkedge";
-		dlg,dmic-clkrate = <3000000>;
+		dlg,micbias1-lvl = <2500>; // 多分いらない
+		dlg,micbias2-lvl = <2500>; // 多分いらない
+		dlg,dmic-samplephase = "between_clkedge"; // 多分いらない
+		dlg,dmic-clkrate = <3000000>;// いらない
 
 		VDDA-supply   = <&reg_1p8v>;
 		VDDMIC-supply = <&reg_3p3v>;
