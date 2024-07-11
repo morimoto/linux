@@ -34,12 +34,18 @@
 #define SIRFDR		0x60
 
 /* SICTR */
-#define TSCKE		(1 << 15)	/* Transmit Serial Clock Output Enable */
-#define TFSE		(1 << 14)	/* Transmit Frame Sync Signal Output Enable */
-#define TXE		(1 << 9)	/* Transmit Enable */
-#define RXE		(1 << 8)	/* Receive Enable */
-#define TXRST		(1 << 1)	/* Transmit Reset */
-#define RXRST		(1 << 0)	/* Receive Reset */
+#define TSCKE		BIT(15)	/* Transmit Serial Clock Output Enable */
+#define TFSE		BIT(14)	/* Transmit Frame Sync Signal Output Enable */
+#define TXE		BIT(9)	/* Transmit Enable */
+#define RXE		BIT(8)	/* Receive Enable */
+#define TXRST		BIT(1)	/* Transmit Reset */
+#define RXRST		BIT(0)	/* Receive Reset */
+
+/* SIIER */
+#define TDMAE		BIT(31)	/* Transmit Data DMA Transfer Req. Enable */
+#define TDREQE		BIT(28)	/* Transmit Data Transfer Request Enable */
+#define RDMAE		BIT(15)	/* Receive Data DMA Transfer Req. Enable */
+#define RDREQE		BIT(12)	/* Receive Data Transfer Request Enable */
 
 /* spec */
 #define MSIOF_RATES	SNDRV_PCM_RATE_8000_192000
@@ -100,6 +106,7 @@ static int msiof_hw_start(struct snd_soc_component *component, struct snd_pcm_su
 	 */
 	if (is_provider)
 		snd_soc_component_update_and_wait(component, SICTR, TSCKE, TSCKE, TSCKE);
+// FIXME
 	if (is_provider || is_play)
 		snd_soc_component_update_and_wait(component, SICTR, TXE,   TXE,   TXE);
 	if (!is_play)
@@ -107,6 +114,12 @@ static int msiof_hw_start(struct snd_soc_component *component, struct snd_pcm_su
 	if (is_provider)
 		snd_soc_component_update_and_wait(component, SICTR, TFSE,  TFSE,  TFSE);
 
+// FIXME
+	if (is_provider || is_play)
+		val = TDREQE | TDMAE;
+	if (!is_play)
+		val = RDREQE | RDMAE;
+	snd_soc_component_update_bits(component, SIIER, val, val);
 
 	return 0;
 }
@@ -116,6 +129,14 @@ static int msiof_hw_stop(struct snd_soc_component *component, struct snd_pcm_sub
 	struct msiof_priv *priv = snd_soc_component_get_drvdata(component);
 	int is_play = msiof_is_play(substream);
 	int is_provider = msiof_flag_has(priv, MSIOF_FLAG_CLK_PROVIDER);
+	u32 val;
+
+// FIXME working check ?
+	if (is_provider || is_play)
+		val = TDREQE | TDMAE;
+	if (!is_play)
+		val = RDREQE | RDMAE;
+	snd_soc_component_update_bits(component, SIIER, val, 0);
 
 	/*
 	 * see
@@ -145,6 +166,14 @@ static int msiof_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		break;
 	case SND_SOC_DAIFMT_BC_FC:
 		msiof_flag_del(priv, MSIOF_FLAG_CLK_PROVIDER); /* consumer */
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
+	case SND_SOC_DAIFMT_I2S:
+		/* it supports I2S only */
 		break;
 	default:
 		return -EINVAL;
@@ -247,10 +276,7 @@ static int msiof_trigger(struct snd_soc_component *component,
 	}
 
 	ret = snd_dmaengine_pcm_trigger(substream, cmd);
-	if (ret < 0)
-		goto trigger_out;
 
-trigger_out:
 	spin_unlock_irqrestore(&priv->lock, flags);
 
 	return ret;
