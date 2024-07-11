@@ -35,6 +35,11 @@
 
 /* SICTR */
 #define TSCKE		(1 << 15)	/* Transmit Serial Clock Output Enable */
+#define TFSE		(1 << 14)	/* Transmit Frame Sync Signal Output Enable */
+#define TXE		(1 << 9)	/* Transmit Enable */
+#define RXE		(1 << 8)	/* Receive Enable */
+#define TXRST		(1 << 1)	/* Transmit Reset */
+#define RXRST		(1 << 0)	/* Receive Reset */
 
 /* spec */
 #define MSIOF_RATES	SNDRV_PCM_RATE_8000_192000
@@ -60,14 +65,14 @@ static int msiof_is_play(struct snd_pcm_substream *substream)
 }
 
 static void snd_soc_component_update_and_wait(struct snd_soc_component *component, unsigned int reg,
-					      unsigned int mask, unsigned int val)
+					      u32 mask, u32 val, u32 expect)
 {
 	struct msiof_priv *priv = snd_soc_component_get_drvdata(component);
 
 	snd_soc_component_update_bits(component, reg, mask, val);
 
 	for (int i = 0; i < 128; i++) {
-		if ((snd_soc_component_read(component, reg) & mask) == val)
+		if ((snd_soc_component_read(component, reg) & mask) == expect)
 			return;
 		udelay(NSEC_PER_USEC);
 	}
@@ -78,14 +83,54 @@ static void snd_soc_component_update_and_wait(struct snd_soc_component *componen
 static int msiof_hw_start(struct snd_soc_component *component, struct snd_pcm_substream *substream)
 {
 	struct msiof_priv *priv = snd_soc_component_get_drvdata(component);
-//	int is_play = msiof_is_play(substream);
+	int is_play = msiof_is_play(substream);
+	int is_provider = msiof_flag_has(priv, MSIOF_FLAG_CLK_PROVIDER);
+	u32 val;
+
+// FIXME working check ?
+	val = is_play ? TXRST : RXRST;
+	snd_soc_component_update_and_wait(component, SICTR, val, val, 0);
+
+// SIFCTR
+
+	/*
+	 * see
+	 *	Datasheet 59.3.6 [Transmit and Receive Procedures]
+	 *	SICTR :: TSCKE
+	 */
+	if (is_provider)
+		snd_soc_component_update_and_wait(component, SICTR, TSCKE, TSCKE, TSCKE);
+	if (is_provider || is_play)
+		snd_soc_component_update_and_wait(component, SICTR, TXE,   TXE,   TXE);
+	if (!is_play)
+		snd_soc_component_update_and_wait(component, SICTR, RXE,   RXE,   RXE);
+	if (is_provider)
+		snd_soc_component_update_and_wait(component, SICTR, TFSE,  TFSE,  TFSE);
+
+
+	return 0;
+}
+
+static int msiof_hw_stop(struct snd_soc_component *component, struct snd_pcm_substream *substream)
+{
+	struct msiof_priv *priv = snd_soc_component_get_drvdata(component);
+	int is_play = msiof_is_play(substream);
 	int is_provider = msiof_flag_has(priv, MSIOF_FLAG_CLK_PROVIDER);
 
 	/*
-	 * Datasheet 59.3.6 [Transmit and Receive Procedures]
+	 * see
+	 *	Datasheet 59.3.6 [Transmit and Receive Procedures]
+	 *	SICTR :: TSCKE
 	 */
+// FIXME working check ?
 	if (is_provider)
-		snd_soc_component_update_and_wait(component, SICTR, TSCKE, TSCKE);
+		snd_soc_component_update_and_wait(component, SICTR, TFSE,  0, 0);
+	if (is_provider || is_play)
+		snd_soc_component_update_and_wait(component, SICTR, TXE,   0, 0);
+	if (!is_play)
+		snd_soc_component_update_and_wait(component, SICTR, RXE,   0, 0);
+	if (is_provider)
+		snd_soc_component_update_and_wait(component, SICTR, TSCKE, 0, 0);
 
 	return 0;
 }
@@ -198,6 +243,7 @@ static int msiof_trigger(struct snd_soc_component *component,
 		break;
 	case SNDRV_PCM_TRIGGER_STOP:
 	case SNDRV_PCM_TRIGGER_SUSPEND:
+		msiof_hw_stop(component, substream);
 	}
 
 	ret = snd_dmaengine_pcm_trigger(substream, cmd);
