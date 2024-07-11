@@ -50,6 +50,7 @@ config SND_SOC_MSIOF
 	tristate "R-Car series MSOIF support"
 	depends on COMMON_CLK
 	depends on OF
+	select SND_DMAENGINE_PCM
 	help
 	  This option enables R-Car MSIOF I2S sound support
 
