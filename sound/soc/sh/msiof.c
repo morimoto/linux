@@ -76,6 +76,7 @@ struct msiof_priv {
 	spinlock_t lock;
 	void __iomem *base;
 	resource_size_t phy_addr;
+	int fifo_size[SNDRV_PCM_STREAM_LAST + 1];
 	u32 flag;
 #define MSIOF_FLAG_CLK_PROVIDER		(1 << 0)
 };
@@ -130,6 +131,8 @@ static int msiof_hw_start(struct snd_soc_component *component, struct snd_pcm_su
 		snd_soc_component_write(component, SIRMDR1, val);
 	}
 
+// SITMDR2
+//	priv->fifo_size[x]
 
 // SIFCTR
 
@@ -427,8 +430,15 @@ static int msiof_probe(struct platform_device *pdev)
 
 	priv->dev	= dev;
 	priv->phy_addr	= res->start;
+	priv->fifo_size[SNDRV_PCM_STREAM_PLAYBACK] = 64; /* default */
+	priv->fifo_size[SNDRV_PCM_STREAM_CAPTURE]  = 64; /* default */
 	spin_lock_init(&priv->lock);
 	platform_set_drvdata(pdev, priv);
+
+	of_property_read_u32(dev->of_node, "renesas,tx-fifo-size",
+			     &priv->fifo_size[SNDRV_PCM_STREAM_PLAYBACK]);
+	of_property_read_u32(dev->of_node, "renesas,rx-fifo-size",
+			     &priv->fifo_size[SNDRV_PCM_STREAM_CAPTURE]);
 
 	devm_pm_runtime_enable(dev);
 
