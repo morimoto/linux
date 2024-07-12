@@ -10,6 +10,14 @@
 // Referenced to mca.c
 // Copyright (C) The Asahi Linux Contributors
 
+/* FIXME
+ * Note
+ *
+ * MSIOF is used as SPI or I2S (Sound), and because of it, Datasheet indicates
+ * "It supports Provider (= Master) Mode". But RX (= Capture) can't provide clock/frame.
+ * This driver support Consumer Mode only.
+ */
+
 #include <linux/module.h>
 #include <linux/of.h>
 #include <linux/of_dma.h>
@@ -33,19 +41,30 @@
 #define SITFDR		0x50
 #define SIRFDR		0x60
 
+/* SITMDR1/ SIRMDR1 */
+#define TRMD		(1 << 31)	/* Transfer Mode (1 = Master mode) */
+#define PCON		(1 << 30)	/* Transfer Signal Connection */
+#define SYNCMD_SPI	(2 << 28)	/* Level mode/SPI */
+#define SYNCMD_LR	(3 << 28)	/* L/R mode */
+#define SYNCAC		(1 << 25)	/* Sync Polarity (Active-low) */
+#define DTDL_1		(1 << 20)	/* 1-clock-cycle delay */
+#define TXSTP		(1 <<  0)	/* Transmission/Reception Stop on FIFO */
+
 /* SICTR */
-#define TSCKE		BIT(15)	/* Transmit Serial Clock Output Enable */
-#define TFSE		BIT(14)	/* Transmit Frame Sync Signal Output Enable */
-#define TXE		BIT(9)	/* Transmit Enable */
-#define RXE		BIT(8)	/* Receive Enable */
-#define TXRST		BIT(1)	/* Transmit Reset */
-#define RXRST		BIT(0)	/* Receive Reset */
+#define TEDG		(1 << 27)	/* Transmit Timing (1 = falling edge) */
+#define REDG		(1 << 26)	/* Receive  Timing (1 = rising  edge) */
+#define TSCKE		(1 << 15)	/* Transmit Serial Clock Output Enable */
+#define TFSE		(1 << 14)	/* Transmit Frame Sync Signal Output Enable */
+#define TXE		(1 <<  9)	/* Transmit Enable */
+#define RXE		(1 <<  8)	/* Receive Enable */
+#define TXRST		(1 <<  1)	/* Transmit Reset */
+#define RXRST		(1 <<  0)	/* Receive Reset */
 
 /* SIIER */
-#define TDMAE		BIT(31)	/* Transmit Data DMA Transfer Req. Enable */
-#define TDREQE		BIT(28)	/* Transmit Data Transfer Request Enable */
-#define RDMAE		BIT(15)	/* Receive Data DMA Transfer Req. Enable */
-#define RDREQE		BIT(12)	/* Receive Data Transfer Request Enable */
+#define TDMAE		(1 << 31)	/* Transmit Data DMA Transfer Req. Enable */
+#define TDREQE		(1 << 28)	/* Transmit Data Transfer Request Enable */
+#define RDMAE		(1 << 15)	/* Receive Data DMA Transfer Req. Enable */
+#define RDREQE		(1 << 12)	/* Receive Data Transfer Request Enable */
 
 /* spec */
 #define MSIOF_RATES	SNDRV_PCM_RATE_8000_192000
@@ -94,10 +113,32 @@ static int msiof_hw_start(struct snd_soc_component *component, struct snd_pcm_su
 	u32 val;
 
 // FIXME working check ?
+	/* SICTR reset */
 	val = is_play ? TXRST : RXRST;
 	snd_soc_component_update_and_wait(component, SICTR, val, val, 0);
 
+	/* SITMDR1 */
+	if (is_play) {
+		val = PCON | SYNCMD_LR | SYNCAC | DTDL_1 | TXSTP;
+		if (is_provider)
+			val |= TRMD;
+		snd_soc_component_write(component, SITMDR1, val);
+	}
+	/* SIRMDR1 */
+	else {
+		val = SYNCMD_LR | SYNCAC | DTDL_1;
+		snd_soc_component_write(component, SIRMDR1, val);
+	}
+
+
 // SIFCTR
+
+// FIXME
+	if (is_provider || is_play)
+		val = TDREQE | TDMAE;
+	if (!is_play)
+		val = RDREQE | RDMAE;
+	snd_soc_component_update_bits(component, SIIER, val, val);
 
 	/*
 	 * see
@@ -107,19 +148,18 @@ static int msiof_hw_start(struct snd_soc_component *component, struct snd_pcm_su
 	if (is_provider)
 		snd_soc_component_update_and_wait(component, SICTR, TSCKE, TSCKE, TSCKE);
 // FIXME
-	if (is_provider || is_play)
-		snd_soc_component_update_and_wait(component, SICTR, TXE,   TXE,   TXE);
-	if (!is_play)
-		snd_soc_component_update_and_wait(component, SICTR, RXE,   RXE,   RXE);
+// 多分 TXE/RXE はラストに書けばいい
+// チェック不要 stop も同様
+	if (is_provider || is_play) {
+		val = TEDG | TXE;
+		snd_soc_component_update_and_wait(component, SICTR, val,   val,   val);
+	}
+	if (!is_play) {
+		val = REDG | RXE;
+		snd_soc_component_update_and_wait(component, SICTR, val,   val,   val);
+	}
 	if (is_provider)
 		snd_soc_component_update_and_wait(component, SICTR, TFSE,  TFSE,  TFSE);
-
-// FIXME
-	if (is_provider || is_play)
-		val = TDREQE | TDMAE;
-	if (!is_play)
-		val = RDREQE | RDMAE;
-	snd_soc_component_update_bits(component, SIIER, val, val);
 
 	return 0;
 }
@@ -171,6 +211,14 @@ static int msiof_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
+	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
+	case SND_SOC_DAIFMT_NB_NF:
+		/* it supports NB_NF only */
+		break;
+	default:
+		return -EINVAL;
+	}
+
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
 		/* it supports I2S only */
@@ -182,7 +230,7 @@ static int msiof_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	return 0;
 }
 
-/*
+/* FIXME
  * Select below from Sound Card, not auto
  *	SND_SOC_DAIFMT_CBC_CFC
  *	SND_SOC_DAIFMT_CBP_CFP
@@ -314,6 +362,7 @@ static unsigned int msiof_read(struct snd_soc_component *component, unsigned int
 {
 	struct msiof_priv *priv = dev_get_drvdata(component->dev);
 
+// FIXME SITSCR is not needed ?
 	if (reg == SITSCR)
 		return ioread16(priv->base + reg);
 	else
@@ -323,7 +372,7 @@ static unsigned int msiof_read(struct snd_soc_component *component, unsigned int
 static int msiof_write(struct snd_soc_component *component, unsigned int reg, unsigned int val)
 {
 	struct msiof_priv *priv = dev_get_drvdata(component->dev);
-
+// FIXME SITSCR is not needed ?
 	if (reg == SITSCR)
 		iowrite16(val, priv->base + reg);
 	else
