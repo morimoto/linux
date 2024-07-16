@@ -18,6 +18,7 @@
  * This driver support Consumer Mode only.
  */
 
+#include <linux/clk.h>
 #include <linux/module.h>
 #include <linux/of.h>
 #include <linux/of_dma.h>
@@ -50,6 +51,9 @@
 #define DTDL_1		(1 << 20)	/* 1-clock-cycle delay */
 #define TXSTP		(1 <<  0)	/* Transmission/Reception Stop on FIFO */
 
+/* SITSCR */
+#define SITSCR_V(p, d)	((p << 8) + d)
+
 /* SICTR */
 #define TEDG		(1 << 27)	/* Transmit Timing (1 = falling edge) */
 #define REDG		(1 << 26)	/* Receive  Timing (1 = rising  edge) */
@@ -66,13 +70,19 @@
 #define RDMAE		(1 << 15)	/* Receive Data DMA Transfer Req. Enable */
 #define RDREQE		(1 << 12)	/* Receive Data Transfer Request Enable */
 
-/* spec */
+/*
+ * spec
+ *
+ * Because there is no data swap feature on DMAC/MSIOF, it can't handle 8/16 bit data,
+ * support 24/32 bit only.
+ */
 #define MSIOF_RATES	SNDRV_PCM_RATE_8000_192000
 #define MSIOF_FMTS	(SNDRV_PCM_FMTBIT_S24_LE |\
 			 SNDRV_PCM_FMTBIT_S32_LE)
 
 struct msiof_priv {
 	struct device *dev;
+	struct clk *clk;
 	spinlock_t lock;
 	void __iomem *base;
 	resource_size_t phy_addr;
@@ -107,6 +117,41 @@ static void snd_soc_component_update_and_wait(struct snd_soc_component *componen
 	dev_warn(priv->dev, "write timeout [%02x] = %08x\n", reg, val);
 }
 
+static int msiof_calc_sitscr(struct snd_soc_component *component, struct snd_pcm_substream *substream)
+{
+	struct msiof_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_pcm_runtime *runtime = substream->runtime;
+	u32 mrate = clk_get_rate(priv->clk);
+	u32 brps, brdv, div;
+	u32 rate = runtime->rate *
+		   runtime->channels *
+		   snd_pcm_format_physical_width(runtime->format);
+
+	div = DIV_ROUND_CLOSEST_ULL(mrate, rate);
+	if (div > 1024)
+		return -EINVAL;
+
+	if (div == 2) {
+		brps = 0x1; /* fixed */
+		brdv = 0x7; /* fixed */
+	} else {
+		u32 min = ~0;
+		for (u32 p = 0; p < 32; p++) {
+			for (u32 d = 0; d < 5; d++) {
+				u32 t = min(mrate, rate * (p + 1) * (1 << (d + 1)));
+
+				if (min > t) {
+					min  = t;
+					brps = p;
+					brdv = d;
+				}
+			}
+		}
+	}
+
+	return SITSCR_V(brps, brdv);
+}
+
 static int msiof_hw_start(struct snd_soc_component *component, struct snd_pcm_substream *substream)
 {
 	struct msiof_priv *priv = snd_soc_component_get_drvdata(component);
@@ -138,6 +183,10 @@ static int msiof_hw_start(struct snd_soc_component *component, struct snd_pcm_su
 
 // SITMDR2
 //	priv->fifo_size[x]
+
+// SITSCR
+	val = msiof_calc_sitscr(component, substream);
+	snd_soc_component_write(component, SITSCR, val);
 
 // SIFCTR
 
@@ -465,6 +514,10 @@ static int msiof_probe(struct platform_device *pdev)
 	priv->fifo_size[SNDRV_PCM_STREAM_CAPTURE]  = 64; /* default */
 	spin_lock_init(&priv->lock);
 	platform_set_drvdata(pdev, priv);
+
+	priv->clk = devm_clk_get(dev, NULL);
+	if (IS_ERR(priv->clk))
+		return PTR_ERR(priv->clk);
 
 	of_property_read_u32(dev->of_node, "renesas,tx-fifo-size",
 			     &priv->fifo_size[SNDRV_PCM_STREAM_PLAYBACK]);
