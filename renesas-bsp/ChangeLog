@@ -1,3 +1,9 @@
+* v6.6.40-2024-07-16
+
+	* Merge/Rebase v6.6.40
+
+	* update CVE
+
 * v6.6.39-2024-07-16
 
 	* Merge/Rebase v6.6.39
@@ -328,87 +334,3 @@
 
 		commit 209516caff7b0dd715e551b21d7236f73427a936
 		("dt-bindings: iommu: renesas,ipmmu-vmsa: add r8a779h0 support")
-
-* v6.6.30-2024-05-17
-
-	* Below patches are backported
-
-		commit 3d2db954d2d922a8193654f2aa09c1bdee47818a
-		("soc: renesas: Enable TMU support on R-Car Gen2")
-
-		commit 0be9a322307994443e854efd6a05b129c26ce287
-		("soc: renesas: Add identification support for RZ/V2H SoC")
-
-		commit 0b9729cdb895a477ba3551cd2102baee2e697cbb
-		("soc: renesas: Identify RZ/G3S SoC")
-
-		commit ae286bd7e9ed889b7284aa8bdb321a9938cc89ca
-		("soc: renesas: Introduce ARCH_RCAR_GEN4")
-
-		commit 31b2daea07643d8b83d62c670c76d95acca84f06
-		("soc: renesas: Make RZ/Five depend on !DMA_DIRECT_REMAP")
-
-* v6.6.30-2024-05-16
-
-	* Below patches are backported
-
-		commit 8923149ffc77eefa16d5412e30cf0e9cf26a01ba
-		("dt-bindings: power: Add r8a779h0 SYSC power domain definitions")
-
-		commit ce816e0baceaa3a734a54f47e9423cb6c41fe8ec
-		("pmdomain: renesas: r8a779h0-sysc: Add r8a779h0 support")
-
-		commit 1fa8924a488a46b2709f1babd7176193fa077a93
-		("dt-bindings: power: renesas,rcar-sysc: Document R-Car V4M support")
-
-		commit e4caa0ba29e235c00090083c8570022c40bef508
-		("arm64: dts: renesas: r8a779h0: Add thermal nodes")
-
-		commit 63d23fb78140a882e268201ff730453cd8b4f8e8
-		("thermal/drivers/rcar_gen3: Update temperature approximation calculation")
-
-		commit 566e0ea7d02ff596d7bcd81ca547e91b5074032f
-		("thermal/drivers/rcar_gen3: Move Tj_T storage to shared private data")
-
-		commit 1828c1c17bb2adf3a3f26abc69cb3fe971eac0e4
-		("thermal/drivers/rcar_gen3: Add support for R-Car V4M")
-
-	* Enable R8A779H0 on renesas_defconfig
-
-* v6.6.30-2024-05-13
-
-	* Below patches are backported
-
-		commit 35b78409e1c7fff0f209f0aed7297e9fca13351d
-		("rswitch: Add PM ops")
-
-		commit 1bf55630694e0a87be529801ad064daed36f25f3
-		("rswitch: Use unsigned int for port related array index")
-
-* v6.6.30-2024-05-09
-
-	* Below patches are backported
-
-		commit c5b9f4792ea6b9abfcfb9486ba256f55e296aaa7
-		("dt-bindings: net: renesas,ethertsn: Add Ethernet TSN")
-
-		commit 8c1c66235e0354fbe8c2159656947fad048d374d
-		("net: ethernet: renesas: rcar_gen4_ptp: Break out to module")
-
-		commit de0ad34b56de71824a8a4a4760bfc49c2bccb420
-		("net: ethernet: renesas: group entries in Makefile")
-
-		commit be5f81d37f7971abbad8547624453a1d4f033457
-		("net: ethernet: renesas: rcar_gen4_ptp: Get clock increment from clock rate")
-
-		commit 46c361a04635a9f431fec56a75076cbb5262fb93
-		("net: ethernet: renesas: rcar_gen4_ptp: Prepare for shared register layout")
-
-		commit 9f3995707e355a2f9b2da06f6dee685cca974fc4
-		("net: ethernet: renesas: rcar_gen4_ptp: Fail on unknown register layout")
-
-* v6.6.30-2024-05-07
-
-	* Merge/Rebase v6.6.30
-
-	* update CVE
