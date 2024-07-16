@@ -68,8 +68,8 @@
 
 /* spec */
 #define MSIOF_RATES	SNDRV_PCM_RATE_8000_192000
-#define MSIOF_FMTS	(SNDRV_PCM_FMTBIT_S16_LE |\
-			 SNDRV_PCM_FMTBIT_S24_LE)
+#define MSIOF_FMTS	(SNDRV_PCM_FMTBIT_S24_LE |\
+			 SNDRV_PCM_FMTBIT_S32_LE)
 
 struct msiof_priv {
 	struct device *dev;
@@ -79,6 +79,7 @@ struct msiof_priv {
 	int fifo_size[SNDRV_PCM_STREAM_LAST + 1];
 	u32 flag;
 #define MSIOF_FLAG_CLK_PROVIDER		(1 << 0)
+#define MSIOF_FLAG_DATA_DELAY		(1 << 1)
 };
 
 #define msiof_flag_set(p, f) ((p)->flag |=  (f))
@@ -120,14 +121,18 @@ static int msiof_hw_start(struct snd_soc_component *component, struct snd_pcm_su
 
 	/* SITMDR1 */
 	if (is_play) {
-		val = PCON | SYNCMD_LR | SYNCAC | DTDL_1 | TXSTP;
+		val = PCON | SYNCMD_LR | SYNCAC | TXSTP;
 		if (is_provider)
 			val |= TRMD;
+		if (msiof_flag_has(priv, MSIOF_FLAG_DATA_DELAY))
+			val |= DTDL_1;
 		snd_soc_component_write(component, SITMDR1, val);
 	}
 	/* SIRMDR1 */
 	else {
-		val = SYNCMD_LR | SYNCAC | DTDL_1;
+		val = SYNCMD_LR | SYNCAC;
+		if (msiof_flag_has(priv, MSIOF_FLAG_DATA_DELAY))
+			val |= DTDL_1;
 		snd_soc_component_write(component, SIRMDR1, val);
 	}
 
@@ -224,7 +229,10 @@ static int msiof_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
-		/* it supports I2S only */
+		msiof_flag_set(priv, MSIOF_FLAG_DATA_DELAY);
+		break;
+	case SND_SOC_DAIFMT_LEFT_J:
+		msiof_flag_del(priv, MSIOF_FLAG_DATA_DELAY);
 		break;
 	default:
 		return -EINVAL;
@@ -239,6 +247,7 @@ static int msiof_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
  *	SND_SOC_DAIFMT_CBP_CFP
  */
 static const u64 msiof_dai_formats = SND_SOC_POSSIBLE_DAIFMT_I2S	|
+				     SND_SOC_POSSIBLE_DAIFMT_LEFT_J	|
 				     SND_SOC_POSSIBLE_DAIFMT_NB_NF;
 
 static const struct snd_soc_dai_ops msiof_dai_ops = {
@@ -264,6 +273,18 @@ static struct snd_soc_dai_driver msiof_dai_driver = {
 	.ops = &msiof_dai_ops,
 };
 
+static struct snd_pcm_hardware msiof_pcm_hardware = {
+	.info =	SNDRV_PCM_INFO_INTERLEAVED	|
+		SNDRV_PCM_INFO_MMAP		|
+		SNDRV_PCM_INFO_MMAP_VALID,
+	.buffer_bytes_max	= 64 * 1024,
+	.period_bytes_min	= 32,
+	.period_bytes_max	= 8192,
+	.periods_min		= 1,
+	.periods_max		= 32,
+	.fifo_size		= 64,
+};
+
 static int msiof_open(struct snd_soc_component *component,
 		      struct snd_pcm_substream *substream)
 {
@@ -277,7 +298,17 @@ static int msiof_open(struct snd_soc_component *component,
 	if (IS_ERR_OR_NULL(chan))
 		return PTR_ERR(chan);
 
+// snd_pcm_hw_constraint_list()
+
 	ret = snd_dmaengine_pcm_open(substream, chan);
+	if (ret < 0)
+		goto open_err_dma;
+
+	snd_soc_set_runtime_hwparams(substream, &msiof_pcm_hardware);
+
+	ret = snd_pcm_hw_constraint_integer(substream->runtime, SNDRV_PCM_HW_PARAM_PERIODS);
+
+open_err_dma:
 	if (ret < 0)
 		dma_release_channel(chan);
 
