@@ -17,7 +17,7 @@
  * "It supports Provider (= Master) Mode". But RX (= Capture) can't provide clock/frame.
  * This driver support Consumer Mode only.
  */
-
+#define DEBUG
 #include <linux/clk.h>
 #include <linux/module.h>
 #include <linux/of.h>
@@ -123,32 +123,39 @@ static int msiof_calc_sitscr(struct snd_soc_component *component, struct snd_pcm
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	u32 mrate = clk_get_rate(priv->clk);
 	u32 brps, brdv, div;
-	u32 rate = runtime->rate *
-		   runtime->channels *
-		   snd_pcm_format_physical_width(runtime->format);
+	int phy_width = snd_pcm_format_physical_width(runtime->format);
+	u32 min = ~0;
+	u32 rate = runtime->rate * runtime->channels * phy_width;
 
 	div = DIV_ROUND_CLOSEST_ULL(mrate, rate);
-	if (div > 1024)
+
+	/* see Note of [SITSCR :: BRDV] */
+	if (div > 1024 || div < 2)
 		return -EINVAL;
 
+	/* see Note of [SITSCR :: BRDV] */
 	if (div == 2) {
-		brps = 0x1; /* fixed */
-		brdv = 0x7; /* fixed */
-	} else {
-		u32 min = ~0;
-		for (u32 p = 0; p < 32; p++) {
-			for (u32 d = 0; d < 5; d++) {
-				u32 t = min(mrate, rate * (p + 1) * (1 << (d + 1)));
-
-				if (min > t) {
-					min  = t;
-					brps = p;
-					brdv = d;
-				}
-			}
-		}
+		brps = 0x1;
+		brdv = 0x7;
+		goto calc_end;
 	}
 
+	/* find most closest brps/brdv pair */
+	for (u32 p = 0; p < 32; p++)
+		for (u32 d = 0; d < 5; d++) {
+			u32 t = abs(rate - (mrate / ((p + 1) * (1 << (d + 1)))));
+
+			if (min > t) {
+				min  = t;
+				brps = p;
+				brdv = d;
+			}
+		}
+
+	dev_dbg(priv->dev, "%dHz x %dch x %dbit = %d (%d)\n",
+		runtime->rate, runtime->channels, phy_width, rate, mrate / ((brps + 1) * (1 << (brdv + 1))));
+
+calc_end:
 	return SITSCR_V(brps, brdv);
 }
 
@@ -159,6 +166,7 @@ static int msiof_hw_start(struct snd_soc_component *component, struct snd_pcm_su
 	int is_provider = msiof_flag_has(priv, MSIOF_FLAG_CLK_PROVIDER);
 	u32 val;
 
+printk("------%d\n", __LINE__);
 // FIXME working check ?
 	/* SICTR reset */
 	val = is_play ? TXRST : RXRST;
