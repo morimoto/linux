@@ -500,7 +500,7 @@ struct snd_pcm_substream {
 };
 
 #define SUBSTREAM_BUSY(substream) ((substream)->ref_count > 0)
-
+#define snd_pcm_substream_is_play(substream) substream->stream == SNDRV_PCM_STREAM_PLAYBACK
 
 struct snd_pcm_str {
 	int stream;				/* stream (direction) */
