@@ -500,7 +500,9 @@ struct snd_pcm_substream {
 };
 
 #define SUBSTREAM_BUSY(substream) ((substream)->ref_count > 0)
-#define snd_pcm_substream_is_play(substream) substream->stream == SNDRV_PCM_STREAM_PLAYBACK
+
+#define snd_stream_is_play(stream) (stream == SNDRV_PCM_STREAM_PLAYBACK)
+#define snd_pcm_substream_is_play(substream) snd_stream_is_play(substream->stream)
 
 struct snd_pcm_str {
 	int stream;				/* stream (direction) */
@@ -704,7 +706,7 @@ static inline int snd_pcm_running(struct snd_pcm_substream *substream)
 {
 	return (substream->runtime->state == SNDRV_PCM_STATE_RUNNING ||
 		(substream->runtime->state == SNDRV_PCM_STATE_DRAINING &&
-		 substream->stream == SNDRV_PCM_STREAM_PLAYBACK));
+		 snd_pcm_substream_is_play(substream)));
 }
 
 /**
