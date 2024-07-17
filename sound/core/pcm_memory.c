@@ -63,7 +63,7 @@ static int do_alloc_pages(struct snd_card *card, int type, struct device *dev,
 		__update_allocated_size(card, size);
 	}
 
-	if (str == SNDRV_PCM_STREAM_PLAYBACK)
+	if (snd_stream_is_play(str))
 		dir = DMA_TO_DEVICE;
 	else
 		dir = DMA_FROM_DEVICE;

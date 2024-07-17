@@ -497,7 +497,7 @@ static int snd_pcm_stream_proc_init(struct snd_pcm_str *pstr)
 	char name[16];
 
 	sprintf(name, "pcm%i%c", pcm->device, 
-		pstr->stream == SNDRV_PCM_STREAM_PLAYBACK ? 'p' : 'c');
+		snd_stream_is_play(pstr->stream) ? 'p' : 'c');
 	entry = snd_info_create_card_entry(pcm->card, name,
 					   pcm->card->proc_root);
 	if (!entry)
@@ -642,7 +642,7 @@ int snd_pcm_new_stream(struct snd_pcm *pcm, int stream, int substream_count)
 	if (err < 0)
 		return err;
 	dev_set_name(pstr->dev, "pcmC%iD%i%c", pcm->card->number, pcm->device,
-		     stream == SNDRV_PCM_STREAM_PLAYBACK ? 'p' : 'c');
+		     snd_stream_is_play(stream) ? 'p' : 'c');
 	pstr->dev->groups = pcm_dev_attr_groups;
 	pstr->dev->type = &pcm_dev_type;
 	dev_set_drvdata(pstr->dev, pstr);

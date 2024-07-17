@@ -253,7 +253,7 @@ static void update_audio_tstamp(struct snd_pcm_substream *substream,
 		audio_frames = runtime->hw_ptr_wrap + runtime->status->hw_ptr;
 
 		if (runtime->audio_tstamp_config.report_delay) {
-			if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
+			if (snd_pcm_substream_is_play(substream))
 				audio_frames -=  runtime->delay;
 			else
 				audio_frames +=  runtime->delay;
@@ -464,7 +464,7 @@ static int snd_pcm_update_hw_ptr0(struct snd_pcm_substream *substream,
 		return 0;
 	}
 
-	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK &&
+	if (snd_pcm_substream_is_play(substream) &&
 	    runtime->silence_size > 0)
 		snd_pcm_playback_silence(substream, new_hw_ptr);
 
@@ -1916,7 +1916,7 @@ static int wait_for_avail(struct snd_pcm_substream *substream,
 			      snd_pcm_uframes_t *availp)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	int is_playback = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
+	int is_playback = snd_pcm_substream_is_play(substream);
 	wait_queue_entry_t wait;
 	int err = 0;
 	snd_pcm_uframes_t avail = 0;
@@ -2038,7 +2038,7 @@ static int fill_silence(struct snd_pcm_substream *substream, int channel,
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 
-	if (substream->stream != SNDRV_PCM_STREAM_PLAYBACK)
+	if (!snd_pcm_substream_is_play(substream))
 		return 0;
 	if (substream->ops->fill_silence)
 		return substream->ops->fill_silence(substream, channel,
@@ -2069,7 +2069,7 @@ static int do_transfer(struct snd_pcm_substream *substream, int c,
 	struct iov_iter iter;
 	int err, type;
 
-	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
+	if (snd_pcm_substream_is_play(substream))
 		type = ITER_SOURCE;
 	else
 		type = ITER_DEST;
@@ -2252,7 +2252,7 @@ snd_pcm_sframes_t __snd_pcm_lib_xfer(struct snd_pcm_substream *substream,
 	if (err < 0)
 		return err;
 
-	is_playback = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
+	is_playback = snd_pcm_substream_is_play(substream);
 	if (interleaved) {
 		if (runtime->access != SNDRV_PCM_ACCESS_RW_INTERLEAVED &&
 		    runtime->channels > 1)
@@ -2573,7 +2573,7 @@ int snd_pcm_add_chmap_ctls(struct snd_pcm *pcm, int stream,
 	info->stream = stream;
 	info->chmap = chmap;
 	info->max_channels = max_channels;
-	if (stream == SNDRV_PCM_STREAM_PLAYBACK)
+	if (snd_stream_is_play(stream))
 		knew.name = "Playback Channel Map";
 	else
 		knew.name = "Capture Channel Map";
