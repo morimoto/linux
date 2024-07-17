@@ -101,20 +101,43 @@ static int msiof_is_play(struct snd_pcm_substream *substream)
 	return substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 }
 
-static void snd_soc_component_update_and_wait(struct snd_soc_component *component, unsigned int reg,
-					      u32 mask, u32 val, u32 expect)
+static u32 msiof_read(struct msiof_priv *priv, u32 reg)
 {
-	struct msiof_priv *priv = snd_soc_component_get_drvdata(component);
+	if (reg == SITSCR)
+		return ioread16(priv->base + reg);
+	else
+		return ioread32(priv->base + reg);
+}
 
-	snd_soc_component_update_bits(component, reg, mask, val);
+static void msiof_write(struct msiof_priv *priv, u32 reg, u32 val)
+{
+	if (reg == SITSCR)
+		iowrite16(val, priv->base + reg);
+	else
+		iowrite32(val, priv->base + reg);
+}
+
+static void msiof_update(struct msiof_priv *priv, u32 reg, u32 mask, u32 val)
+{
+	u32 old = msiof_read(priv, reg);
+	u32 new = (old & ~mask) | (val & mask);
+
+	if (old != new)
+		msiof_write(priv, reg, new);
+}
+
+static void msiof_update_and_wait(struct msiof_priv *priv, u32 reg, u32 mask, u32 val, u32 expect)
+{
+	msiof_update(priv, reg, mask, val);
 
 	for (int i = 0; i < 128; i++) {
-		if ((snd_soc_component_read(component, reg) & mask) == expect)
+		if ((msiof_read(priv, reg) & mask) == expect)
 			return;
 		udelay(NSEC_PER_USEC);
 	}
 
-	dev_warn(priv->dev, "write timeout [%02x] = %08x\n", reg, val);
+	dev_warn(priv->dev, "write timeout [0x%02x] 0x%08x / 0x%08x\n",
+		 reg, msiof_read(priv, reg), expect);
 }
 
 static int msiof_calc_sitscr(struct snd_soc_component *component, struct snd_pcm_substream *substream)
@@ -159,7 +182,8 @@ calc_end:
 	return SITSCR_V(brps, brdv);
 }
 
-static int msiof_hw_start(struct snd_soc_component *component, struct snd_pcm_substream *substream)
+static int msiof_hw_start(struct snd_soc_component *component,
+			  struct snd_pcm_substream *substream, int cmd)
 {
 	struct msiof_priv *priv = snd_soc_component_get_drvdata(component);
 	int is_play = msiof_is_play(substream);
@@ -170,7 +194,7 @@ printk("------%d\n", __LINE__);
 // FIXME working check ?
 	/* SICTR reset */
 	val = is_play ? TXRST : RXRST;
-	snd_soc_component_update_and_wait(component, SICTR, val, val, 0);
+	msiof_update_and_wait(priv, SICTR, val, val, 0);
 
 	/* SITMDR1 */
 	if (is_play) {
@@ -179,14 +203,14 @@ printk("------%d\n", __LINE__);
 			val |= TRMD;
 		if (msiof_flag_has(priv, MSIOF_FLAG_DATA_DELAY))
 			val |= DTDL_1;
-		snd_soc_component_write(component, SITMDR1, val);
+		msiof_write(priv, SITMDR1, val);
 	}
 	/* SIRMDR1 */
 	else {
 		val = SYNCMD_LR | SYNCAC;
 		if (msiof_flag_has(priv, MSIOF_FLAG_DATA_DELAY))
 			val |= DTDL_1;
-		snd_soc_component_write(component, SIRMDR1, val);
+		msiof_write(priv, SIRMDR1, val);
 	}
 
 // SITMDR2
@@ -194,7 +218,7 @@ printk("------%d\n", __LINE__);
 
 // SITSCR
 	val = msiof_calc_sitscr(component, substream);
-	snd_soc_component_write(component, SITSCR, val);
+	msiof_write(priv, SITSCR, val);
 
 // SIFCTR
 
@@ -203,7 +227,10 @@ printk("------%d\n", __LINE__);
 		val = TDREQE | TDMAE;
 	if (!is_play)
 		val = RDREQE | RDMAE;
-	snd_soc_component_update_bits(component, SIIER, val, val);
+	msiof_update(priv, SIIER, val, val);
+
+
+	snd_dmaengine_pcm_trigger(substream, cmd);
 
 	/*
 	 * see
@@ -211,25 +238,28 @@ printk("------%d\n", __LINE__);
 	 *	SICTR :: TSCKE
 	 */
 	if (is_provider)
-		snd_soc_component_update_and_wait(component, SICTR, TSCKE, TSCKE, TSCKE);
+		msiof_update_and_wait(priv, SICTR, TSCKE, TSCKE, TSCKE);
 // FIXME
 // 多分 TXE/RXE はラストに書けばいい
 // チェック不要 stop も同様
 	if (is_provider || is_play) {
 		val = TEDG | TXE;
-		snd_soc_component_update_and_wait(component, SICTR, val,   val,   val);
+//		val = TXE;
+		msiof_update_and_wait(priv, SICTR, val,   val,   val);
 	}
 	if (!is_play) {
 		val = REDG | RXE;
-		snd_soc_component_update_and_wait(component, SICTR, val,   val,   val);
+//		val = RXE;
+		msiof_update_and_wait(priv, SICTR, val,   val,   val);
 	}
 	if (is_provider)
-		snd_soc_component_update_and_wait(component, SICTR, TFSE,  TFSE,  TFSE);
+		msiof_update_and_wait(priv, SICTR, TFSE,  TFSE,  TFSE);
 
 	return 0;
 }
 
-static int msiof_hw_stop(struct snd_soc_component *component, struct snd_pcm_substream *substream)
+static int msiof_hw_stop(struct snd_soc_component *component,
+			 struct snd_pcm_substream *substream, int cmd)
 {
 	struct msiof_priv *priv = snd_soc_component_get_drvdata(component);
 	int is_play = msiof_is_play(substream);
@@ -241,7 +271,9 @@ static int msiof_hw_stop(struct snd_soc_component *component, struct snd_pcm_sub
 		val = TDREQE | TDMAE;
 	if (!is_play)
 		val = RDREQE | RDMAE;
-	snd_soc_component_update_bits(component, SIIER, val, 0);
+	msiof_update(priv, SIIER, val, 0);
+
+	snd_dmaengine_pcm_trigger(substream, cmd);
 
 	/*
 	 * see
@@ -250,13 +282,13 @@ static int msiof_hw_stop(struct snd_soc_component *component, struct snd_pcm_sub
 	 */
 // FIXME working check ?
 	if (is_provider)
-		snd_soc_component_update_and_wait(component, SICTR, TFSE,  0, 0);
+		msiof_update_and_wait(priv, SICTR, TFSE,  0, 0);
 	if (is_provider || is_play)
-		snd_soc_component_update_and_wait(component, SICTR, TXE,   0, 0);
+		msiof_update_and_wait(priv, SICTR, TXE,   0, 0);
 	if (!is_play)
-		snd_soc_component_update_and_wait(component, SICTR, RXE,   0, 0);
+		msiof_update_and_wait(priv, SICTR, RXE,   0, 0);
 	if (is_provider)
-		snd_soc_component_update_and_wait(component, SICTR, TSCKE, 0, 0);
+		msiof_update_and_wait(priv, SICTR, TSCKE, 0, 0);
 
 	return 0;
 }
@@ -400,21 +432,19 @@ static int msiof_trigger(struct snd_soc_component *component,
 {
 	struct msiof_priv *priv = dev_get_drvdata(component->dev);
 	unsigned long flags;
-	int ret;
+	int ret = -EINVAL;
 
 	spin_lock_irqsave(&priv->lock, flags);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 	case SNDRV_PCM_TRIGGER_RESUME:
-		msiof_hw_start(component, substream);
+		ret = msiof_hw_start(component, substream, cmd);
 		break;
 	case SNDRV_PCM_TRIGGER_STOP:
 	case SNDRV_PCM_TRIGGER_SUSPEND:
-		msiof_hw_stop(component, substream);
+		ret = msiof_hw_stop(component, substream, cmd);
 	}
-
-	ret = snd_dmaengine_pcm_trigger(substream, cmd);
 
 	spin_unlock_irqrestore(&priv->lock, flags);
 
@@ -449,29 +479,6 @@ hw_params_out:
 	return ret;
 }
 
-static unsigned int msiof_read(struct snd_soc_component *component, unsigned int reg)
-{
-	struct msiof_priv *priv = dev_get_drvdata(component->dev);
-
-// FIXME SITSCR is not needed ?
-	if (reg == SITSCR)
-		return ioread16(priv->base + reg);
-	else
-		return ioread32(priv->base + reg);
-}
-
-static int msiof_write(struct snd_soc_component *component, unsigned int reg, unsigned int val)
-{
-	struct msiof_priv *priv = dev_get_drvdata(component->dev);
-// FIXME SITSCR is not needed ?
-	if (reg == SITSCR)
-		iowrite16(val, priv->base + reg);
-	else
-		iowrite32(val, priv->base + reg);
-
-	return 0;
-}
-
 static const struct snd_soc_component_driver msiof_component_driver = {
 	.name			= "msiof",
 	.open			= msiof_open,
@@ -480,8 +487,6 @@ static const struct snd_soc_component_driver msiof_component_driver = {
 	.pcm_construct		= msiof_new,
 	.trigger		= msiof_trigger,
 	.hw_params		= msiof_hw_params,
-	.write			= msiof_write,
-	.read			= msiof_read,
 };
 
 static irqreturn_t msiof_interrupt(int irq, void *data)
