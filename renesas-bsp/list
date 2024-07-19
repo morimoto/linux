@@ -143,10 +143,7 @@ v6.7      / PCI: dwc: Add EDMA_UNROLL capability flag
 v6.7      / PCI: dwc: endpoint: Add multiple PFs support for dbi2
 v6.7      / PCI: Add T_PVPERL macro
 v6.8      / i2c: rcar: add FastMode+ support for Gen4
-v6.8      / i2c: rcar: introduce Gen4 devices
-v6.7      / i2c: rcar: fix error code in probe()
 v6.7      / i2c: rcar: improve accuracy for R-Car Gen3+
-v6.7      / i2c: rcar: reset controller is mandatory for Gen3+
 v6.7      / i2c: rcar: remove open coded DIV_ROUND_CLOSEST
 v6.7      / i2c: rcar: calculate divider instead of brute-forcing it
 v6.7      / i2c: rcar: properly format a debug output
