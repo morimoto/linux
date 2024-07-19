@@ -143,8 +143,6 @@ v6.9      / dt-bindings: serial: renesas,hscif: Document r8a779h0 bindings
 v6.9      / dt-bindings: net: renesas,etheravb: Add support for R-Car V4M
 v6.9      / soc: renesas: rcar-rst: Add support for R-Car V4M
 v6.8      / i2c: rcar: add FastMode+ support for Gen4
-v6.8      / i2c: rcar: introduce Gen4 devices
-v6.7      / i2c: rcar: fix error code in probe()
 v6.8      / ASoC: rcar: adg: correct TIMSEL setting for SSI9
 v6.10     / soc: renesas: Enable TMU support on R-Car Gen2
 v6.10     / soc: renesas: Add identification support for RZ/V2H SoC
@@ -611,7 +609,6 @@ v6.2      / pinctrl: renesas: Add missing header(s)
 v6.2      / media: arm64: dts: renesas: aistarvision-mipi-adapter-2.1: Drop clock-names property
 v6.2      / media: i2c: ov5645: Drop fetching the clk reference by name
 v6.7      / i2c: rcar: improve accuracy for R-Car Gen3+
-v6.7      / i2c: rcar: reset controller is mandatory for Gen3+
 v6.7      / i2c: rcar: remove open coded DIV_ROUND_CLOSEST
 v6.7      / i2c: rcar: calculate divider instead of brute-forcing it
 v6.7      / i2c: rcar: properly format a debug output
