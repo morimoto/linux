@@ -710,7 +710,6 @@ rsnd_ssi_interrupt_out:
 
 	if (stop)
 		snd_pcm_stop_xrun(io->substream);
-
 }
 
 static irqreturn_t rsnd_ssi_interrupt(int irq, void *data)
