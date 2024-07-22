@@ -56,6 +56,14 @@ static u32 cpg_mode __initdata;
 #define CPG_PLLxCR0_NI8		GENMASK(27, 20)	/* Integer mult. factor */
 #define CPG_PLLxCR1_NF25	GENMASK(24, 0)	/* Fractional mult. factor */
 
+#define CPG_PLLxCR_STC		GENMASK(30, 24)	/* R_Car V3U PLLxCR */
+
+#define CPG_RPCCKCR		0x874	/* RPC Clock Freq. Control Register */
+
+#define CPG_SD0CKCR1		0x8a4	/* SD-IF0 Clock Freq. Control Reg. 1 */
+
+#define CPG_SD0CKCR1_SDSRC_SEL	GENMASK(30, 29)	/* SDSRC clock freq. select */
+
 /* PLL Clocks */
 struct cpg_pll_clk {
 	struct clk_hw hw;
@@ -442,7 +450,7 @@ struct clk * __init rcar_gen4_cpg_clk_register(struct device *dev,
 
 	case CLK_TYPE_GEN4_PLL2X_3X:
 		value = readl(base + core->offset);
-		mult = (((value >> 24) & 0x7f) + 1) * 2;
+		mult = (FIELD_GET(CPG_PLLxCR_STC, value) + 1) * 2;
 		break;
 
 	case CLK_TYPE_GEN4_PLL_F8_25:
@@ -460,7 +468,8 @@ struct clk * __init rcar_gen4_cpg_clk_register(struct device *dev,
 					  base, core->div, core->offset);
 
 	case CLK_TYPE_GEN4_SDSRC:
-		div = ((readl(base + SD0CKCR1) >> 29) & 0x03) + 4;
+		value = readl(base + CPG_SD0CKCR1);
+		div = FIELD_GET(CPG_SD0CKCR1_SDSRC_SEL, value) + 4;
 		break;
 
 	case CLK_TYPE_GEN4_SDH:
