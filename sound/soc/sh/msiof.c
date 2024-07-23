@@ -52,6 +52,11 @@
 #define DTDL_1		(1 << 20)	/* 1-clock-cycle delay */
 #define TXSTP		(1 <<  0)	/* Transmission/Reception Stop on FIFO */
 
+/* SITMDR2 and SIRMDR2 */
+#define BITLEN1(x)	(((x) - 1) << 24) /* Data Size (8-32 bits) */
+#define WDLEN1(x)	(((x) - 1) << 16) /* Word Count (1-64/256 (SH, A1))) */
+#define GRP		(1 << 30)	/* Group count */
+
 /* SITSCR */
 #define SITSCR_V(p, d)	((p << 8) + d)
 
@@ -114,10 +119,12 @@ static int msiof_is_play(struct snd_pcm_substream *substream)
 	return substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 }
 
+#if 0
 static u32 msiof_read16(struct msiof_priv *priv, u32 reg)
 {
 	return ioread16(priv->base + reg);
 }
+#endif
 
 static void msiof_write16(struct msiof_priv *priv, u32 reg, u32 val)
 {
@@ -209,7 +216,9 @@ static int msiof_hw_start(struct snd_soc_component *component,
 			  struct snd_pcm_substream *substream, int cmd)
 {
 	struct msiof_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_pcm_runtime *runtime = substream->runtime;
 	int is_play = msiof_is_play(substream);
+	int width = snd_pcm_format_width(runtime->format);
 	u32 val;
 
 printk("------%d\n", __LINE__);
@@ -218,25 +227,36 @@ printk("------%d\n", __LINE__);
 	val = is_play ? TXRST : RXRST;
 	msiof_update_and_wait(priv, SICTR, val, val, 0);
 
-	/* SITMDR1 */
+	/* SITMDRx */
 	if (is_play) {
 		val = PCON | SYNCMD_LR | SYNCAC | TXSTP;
 		if (priv->is_provider)
 			val |= TRMD;
 		if (priv->need_delay)
 			val |= DTDL_1;
+// Care SICTR
 		msiof_write(priv, SITMDR1, val);
+
+		val = BITLEN1(width) | WDLEN1(priv->fifo_size[SNDRV_PCM_STREAM_PLAYBACK]);
+// Care SICTR
+		msiof_write(priv, SITMDR2, val | GRP);
+		msiof_write(priv, SITMDR3, val);
+
 	}
-	/* SIRMDR1 */
+	/* SIRMDRx */
 	else {
 		val = SYNCMD_LR | SYNCAC;
 		if (priv->need_delay)
 			val |= DTDL_1;
+// Care SICTR
 		msiof_write(priv, SIRMDR1, val);
-	}
 
-// SITMDR2
-//	priv->fifo_size[x]
+		val = BITLEN1(width) | WDLEN1(priv->fifo_size[SNDRV_PCM_STREAM_CAPTURE]);
+
+// Care SICTR
+		msiof_write(priv, SIRMDR2, val | GRP);
+		msiof_write(priv, SIRMDR3, val);
+	}
 
 // SITSCR
 	val = msiof_calc_sitscr(component, substream);
@@ -454,21 +474,21 @@ static int msiof_trigger(struct snd_soc_component *component,
 	struct device *dev = component->dev;
 	struct msiof_priv *priv = dev_get_drvdata(dev);
 	unsigned long flags;
-	int is_play = msiof_is_play(substream);
 	int ret = -EINVAL;
+	int stop = 0;
 
 	spin_lock_irqsave(&priv->lock, flags);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
-		priv->substream[is_play] = substream;
-		/* fallthrough */
+		priv->substream[substream->stream] = substream;
+		fallthrough;
 	case SNDRV_PCM_TRIGGER_RESUME:
 		ret = msiof_hw_start(component, substream, cmd);
 		break;
 	case SNDRV_PCM_TRIGGER_STOP:
 		stop = 1;
-		/* fallthrough */
+		fallthrough;
 	case SNDRV_PCM_TRIGGER_SUSPEND:
 		ret = msiof_hw_stop(component, substream, cmd);
 		break;
@@ -479,9 +499,9 @@ static int msiof_trigger(struct snd_soc_component *component,
 
 		/* indicate error status if exist */
 		if (sistr)
-			dev_warn(dev, "SISTR = %08x\n");
+			dev_warn(dev, "SISTR = %08x\n", sistr);
 
-		priv->substream[is_play] = NULL;
+		priv->substream[substream->stream] = NULL;
 	}
 
 	spin_unlock_irqrestore(&priv->lock, flags);
@@ -557,7 +577,7 @@ static int msiof_probe(struct platform_device *pdev)
 	struct msiof_priv *priv;
 	struct device *dev = &pdev->dev;
 	struct resource *res;
-	int irq, ret;
+	int stream, irq, ret;
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!res)
@@ -594,6 +614,9 @@ static int msiof_probe(struct platform_device *pdev)
 			     &priv->fifo_size[SNDRV_PCM_STREAM_PLAYBACK]);
 	of_property_read_u32(dev->of_node, "renesas,rx-fifo-size",
 			     &priv->fifo_size[SNDRV_PCM_STREAM_CAPTURE]);
+	for_each_pcm_streams(stream)
+		if (priv->fifo_size[stream] > 64)
+			return -EINVAL;
 
 	devm_pm_runtime_enable(dev);
 
