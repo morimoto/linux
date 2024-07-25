@@ -1,3 +1,5 @@
+# upstream: 200cba84b6a9e6b16f5c2a61ef231b199222028b arm64: dts: renesas: gray-hawk-single: Add aliases for I2C buses
+157f14a1041f arm64: dts: renesas: Add alias for I2C on R-Car V4M SoC.
 # Same as BSP commit f96f80b3a67a62346829fe21c89615d21bb27387
 e0c20b948e7f arm64: dts: renesas: r8a779g0: Add a new property for Resizable BAR of PCIe
 # Same as BSP commit e93070510f2241098990228ec7229afefefe5759

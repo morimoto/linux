@@ -63,8 +63,6 @@ cda3dd982572 arm64: defconfig: Updated for RCAR_GEN4 PCIe driver
 #
 # Minor stuff
 #
-# lore: 20240515091925.24353-2-wsa+renesas@sang-engineering.com
-157f14a1041f arm64: dts: renesas: Add alias for I2C on R-Car V4M SoC.
 # MSIOF FIFO sizes to be investigated (Geert)
 f7f0636f4392 spi: spi-sh-msiof: Add generic structural data for MSIOF on R-Car Gen4.
 # more information needed from Renesas (Geert)
@@ -97,10 +95,14 @@ a4b78a81b5a9 dt-bindings: can: renesas,rcar-canfd: Document R-Car V4M support
 905813c180f4 can: rcar_canfd: Add secondary sample point
 e9ba9ac6fe77 can: rcar_canfd: Configure receive rules
 #
-# PWM patches (Wolfram)
+# PWM patches (to be tested by Geert)
 #
+# lore: 20240725194906.14644-10-wsa+renesas@sang-engineering.com
 32397139103a clk: renesas: r8a779h0: Add TPU clock
+# lore: 20240725194906.14644-9-wsa+renesas@sang-engineering.com
 9800531f0188 clk: renesas: r8a779h0: Add PWM clock
+# lore: 20240725194906.14644-11-wsa+renesas@sang-engineering.com
+# lore: 20240725194906.14644-12-wsa+renesas@sang-engineering.com
 fd446b2b77ff arm64: dts: renesas: Add node to support PWM on R-Car V4M
 #
 # VIN related patches (Niklas)
