@@ -329,6 +329,8 @@ I2C
 	The use-case for continuous DMA is unclear. Further information has been requested but no answer.
 	Continuous DMA has been disabled in DT in later BSP releases.
 
+		a76a43a5525d arm64: dts: renesas: add fix to disable running DMA continuous mode by default
+		262717c0ac30 i2c: rcar: add fix for condition checking to run DMA continuous mode
 		bc7a3426fc67 i2c:rcar: add DMA continuous support
 		9e88120780ae arm64: dts: renesas: add DMA continuous mode for I2C driver on R-Car V4H
 

@@ -1,3 +1,5 @@
+# upstream: d9a9657a1343a7eef7bcbf6e974bf4cea75121a5 dt-bindings: i2c: renesas,rcar-i2c: Add r8a779h0 support
+3959f0f5f6fb dt-bindings: i2c: rcar: Document r8a779h0 support
 # upstream: b0d3969d2b4db82602492cad576b8de494a12ddf net: ethernet: rtsn: Add support for Renesas Ethernet-TSN
 1e34ab549764 net: ethernet: renesas: Add Renesas Ethernet-TSN driver
 # upstream: b0d3969d2b4db82602492cad576b8de494a12ddf net: ethernet: rtsn: Add support for Renesas Ethernet-TSN
