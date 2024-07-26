@@ -72,16 +72,8 @@ e1d847bfd3ca dmaengine: rcar-dmac: Add repeat mode support
 # Sound patches (Morimoto-san)
 #
 caff53d84cb9 arm64: dts: renesas: r8a779h0: Correct compatible string for Audio on R-Car V4M
-9caf04f15267 clk: renesas: r8a779h0: Add Audio clocks
 61cf5c9632b3 arm64: dts: renesas: r8a779h0: grayhawk: Add R-Car Sound support
 973e01582372 arm64: defconfig: Enable AK4619 codec support
-7c1c5987ef41 ASoC: ak4619: Fix spelling, spacing and indentation errors
-b8ca63b496f2 ASoC: ak4619: Add hw_constraint rule for Sampling Rate
-e6fc262fa0e3 ASoC: ak4619: Fix bit clock polarity setting
-89ac4358ab25 ASoC: ak4619: Correct the setting for SND_SOC_DAIFMT_DSP_B
-4ba8444c28a3 ASoC: ak4619: Separate playback and capture formats
-b0aa2c59d513 ASoC: ak4619: Add some missing supported sampling rates
-5fed936874d8 ASoC: Add ak4619 codec support
 #
 # CAN patches (Geert)
 #
