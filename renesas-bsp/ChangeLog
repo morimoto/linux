@@ -1,3 +1,58 @@
+* v6.1.101-2024-07-26
+
+	* Merge/Rebase v6.1.101
+
+	* update CVE
+
+	* update list
+
+	* Below patches are backported
+
+		commit 6ade6513832d21599bdcaca59c715f23dde026a8
+		("arm64: dts: renesas: r8a779h0: R-Car Sound support")
+
+		commit 8f3a0069fb2555a60841a15c523aaa110b8e9fb3
+		("arm64: dts: renesas: r8a779g0: Tidy up sound DT settings")
+
+		commit 1f5ed3ae020a0624c9f51ed9720f8279bb0cae60
+		("clk: renesas: r8a779h0: Add Audio clocks")
+
+		commit 6469267afed4ffb9d16ce8c44a2b518b9b31c215
+		("ASoC: dt-bindings: ak4619: Add initial DT binding")
+
+		commit 9337f15f4fd6ebd35d911225c4a88ec82d27b2a2
+		("ASoC: dt-bindings: simple-audio-mux: add state-labels property")
+
+		commit 7109f10ca4225c4a7e47dee5eab0d8d72edbf324
+		("ASoC: dt-bindings: audio-graph-card2: add support for aux devices")
+
+		commit ca73d314363d6682b6c736ea45e3a4ca551923a6
+		("ASoC: Add ak4619 codec support")
+
+		commit 3913ecb38833e8926467a17f1f1679ccd25a7230
+		("ASoC: simple-audio-mux: enable to select MUX names")
+
+		commit f7d97cb564a2ac5517ee7cc933de729e533d659a
+		("ASoC: simple-mux: add read function")
+
+		commit 195815c2755d70df92f46e6d737cd677db7adeef
+		("ASoC: audio-graph-card2: add support for aux devices")
+
+		commit d640af49b65c6d260a5154dfb822e8371b502707
+		("dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility")
+
+		commit 200cba84b6a9e6b16f5c2a61ef231b199222028b
+		("arm64: dts: renesas: gray-hawk-single: Add aliases for I2C buses")
+
+		commit 046084b5e1426efbf08913830bdb101dcbb06be5
+		("arm64: dts: renesas: rzg2l: Update fallback string for SDHI nodes")
+
+		commit 1731ab2f8b62f0be2073de581ffef6db1196ad4f
+		("arm64: dts: renesas: r9a07g043: Move interrupt-parent property to common DTSI")
+
+		commit 3bfe384f6f4f7433103ffcc36e7a7106f7e70c4e
+		("arm64: dts: renesas: r9a07g0{43,44,54}: Update RZ/G2L family compatible")
+
 * v6.1.100-2024-07-19
 
 	* Merge/Rebase v6.1.100
@@ -426,93 +481,3 @@
 	* update CVE
 
 	* update ignored/remaining
-
-* v6.1.91-2024-05-21
-
-	* Below patches are backported
-
-		commit c16f166229d2a8301b3000d99d6a08120d15696c
-		("arm64: dts: renesas: gray-hawk-single: Enable nfsroot")
-
-		commit 20f4b85a26a58258611dcffe81bef99ce306bbbc
-		("arm64: dts: renesas: gray-hawk-single: Add second debug serial port")
-
-		commit b52e015aa6b62fce0d72929344afde2793b20b19
-		("arm64: dts: renesas: gray-hawk-single: Add QSPI FLASH support")
-
-		commit 81f1919b4f5e3d9151e9da597d6dcf5823590583
-		("arm64: dts: renesas: gray-hawk-single: Add eMMC support")
-
-		commit 63275d848a6e883c6d37843cfed2504013cc6f0b
-		("arm64: dts: renesas: gray-hawk-single: Add Ethernet support")
-
-		commit 74a9d17af7db7fea0c041c536d2dc80ddc7e95ee
-		("arm64: dts: renesas: gray-hawk-single: Add I2C0 and EEPROMs")
-
-		commit 4b232e29cba7c8bd3d92d337b2daeca72da6be36
-		("arm64: dts: renesas: gray-hawk-single: Add serial console pin control")
-
-		commit 785b3c25761a828c5e22b3361541c50fd3b92fde
-		("arm64: dts: renesas: gray-hawk-single: Enable watchdog timer")
-
-		commit 0c7a8cbbcee00631aa643b54e67f7245a98f6f8e
-		("arm64: dts: renesas: Add Gray Hawk Single board support")
-
-		commit 8e85d550c127d8c559d94c8a2bb7b48e1d75432d
-		("can: rcar_canfd: rcar_canfd_probe(): fix plain integer in transceivers[] init")
-
-		commit 33eced402b184b5f2127f45531099c265d34e269
-		("can: rcar_canfd: Improve error messages")
-
-* v6.1.91-2024-05-20
-
-	* Merge/Rebase v6.1.91
-
-	* update CVE
-
-	* Below patches are backported
-
-		commit f026b6426603d25d2c8a8c517925c7b243cf223d
-		("arm64: dts: renesas: r8a779h0: Link IOMMU consumers")
-
-		commit 5bd21a0009697011ea90ccccc9ff4b90696dbca9
-		("arm64: dts: renesas: r8a779h0: Add IPMMU nodes")
-
-		commit d28970ddd1b89ebd2ec7117a007de72ec94e3d4d
-		("arm64: dts: renesas: r8a779h0: Add INTC-EX node")
-
-		commit a6e140f174366e1644c626c7feebfc5d6c48d6db
-		("arm64: dts: renesas: r8a779h0: Add MSIOF nodes")
-
-		commit fdaf6a67806d14a8fd9b0f79416398b59e417861
-		("arm64: dts: renesas: r8a779h0: Add TMU nodes")
-
-		commit 1552e6ab5ee5e689efe7b35e9305c7bcf95d22f8
-		("arm64: dts: renesas: r8a779h0: Add CMT nodes")
-
-		commit 0833ec2fc4b1f01a82a83967a6386a0579a85898
-		("arm64: dts: renesas: r8a779h0: Add SCIF nodes")
-
-		commit 3cdce0b531fbf6ad1d06b52c49b191a5b18d59ea
-		("arm64: dts: renesas: r8a779h0: Add remaining HSCIF nodes")
-
-		commit b464199eaae81f51de8c7b07605643195645c663
-		("dt-bindings: serial: renesas,scif: Document r8a779h0 bindings")
-
-		commit ef9916d0e28297410583f89c329a8ba3940dd8fa
-		("clk: renesas: r8a779h0: Add INTC-EX clock")
-
-		commit 50f0cbd5cc433bf7b22633b4f37b08de64dbfba5
-		("clk: renesas: r8a779h0: Add MSIOF clocks")
-
-		commit c0516eb4cf04ac61b6fe1f86cc15b2f5f024ee78
-		("clk: renesas: r8a779h0: Add timer clocks")
-
-		commit 9c85158585214770a232ff2efdbdb0e75704743f
-		("clk: renesas: r8a779h0: Add SCIF clocks")
-
-		commit c69fe2ae2e7f203bbfbd6dd1757d3b290bce8509
-		("clk: renesas: r8a779h0: Add thermal clock")
-
-		commit 209516caff7b0dd715e551b21d7236f73427a936
-		("dt-bindings: iommu: renesas,ipmmu-vmsa: add r8a779h0 support")

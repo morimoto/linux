@@ -1,3 +1,18 @@
+Local     / arm64: dts: renesas: r8a779h0: R-Car Sound support
+Local     / arm64: dts: renesas: r8a779g0: Tidy up sound DT settings
+Local     / clk: renesas: r8a779h0: Add Audio clocks
+Local     / ASoC: dt-bindings: ak4619: Add initial DT binding
+Local     / ASoC: dt-bindings: simple-audio-mux: add state-labels property
+Local     / ASoC: dt-bindings: audio-graph-card2: add support for aux devices
+Local     / ASoC: Add ak4619 codec support
+Local     / ASoC: simple-audio-mux: enable to select MUX names
+v6.2      / ASoC: simple-mux: add read function
+Local     / ASoC: audio-graph-card2: add support for aux devices
+v6.10     / dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility
+Local     / arm64: dts: renesas: gray-hawk-single: Add aliases for I2C buses
+Local     / arm64: dts: renesas: rzg2l: Update fallback string for SDHI nodes
+v6.10     / arm64: dts: renesas: r9a07g043: Move interrupt-parent property to common DTSI
+v6.10     / arm64: dts: renesas: r9a07g0{43,44,54}: Update RZ/G2L family compatible
 v6.3      / dt-bindings: usb: renesas,usb-xhci: Document RZ/V2M support
 v6.3      / dt-bindings: usb: Add RZ/V2M USB3DRD binding
 v6.7      / spi: renesas,rzv2m-csi: Add CSI (SPI) target related property
