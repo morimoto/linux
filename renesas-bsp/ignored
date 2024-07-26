@@ -128,6 +128,8 @@ Clock
 		22fcdce314a2 clk: renesas: r8a77{96, 965, 990}: Add ADG clock
 		c0ba44fdd4d9 clk: renesas: r8a7795: Add ADG clock
 		f75384dbb2de clk: renesas: r8a77990: Add FDP1 clock
+		0e93fff415ee clk: renesas: r8a779g0-cpg-mssr: Update IMR device clock source
+		ffc555579511 clk: renesas: r8a779h0-cpg-mssr: Update IMR dievice clock source
 
 	MSTPCR registers beyond MSTPCR14 are not documented
 		eebc4189c612 clk: renesas: r8a779a0: Extend number of supported module clocks
@@ -329,11 +331,14 @@ I2C
 	The use-case for continuous DMA is unclear. Further information has been requested but no answer.
 	Continuous DMA has been disabled in DT in later BSP releases.
 
+		a76a43a5525d arm64: dts: renesas: add fix to disable running DMA continuous mode by default
+		262717c0ac30 i2c: rcar: add fix for condition checking to run DMA continuous mode
 		bc7a3426fc67 i2c:rcar: add DMA continuous support
 		9e88120780ae arm64: dts: renesas: add DMA continuous mode for I2C driver on R-Car V4H
 
 IMP
 	IMP is not intended for upstream
+		6c0788e6ef2c arm64: dts: renesas: r8a77970: Update IO range for IMP UIO devices
 		c9f097ef9ba0 clk: renesas: r8a779g0: Fix IMP clocks
 		4600b00624b0 arm64: dts: renesas: r8a779h0-uio: Add VDSP UIO devices (IMP)
 		539830e1b2ad arm64: dts: renesas: r8a779h0-uio: Update power domain for IMP UIO
@@ -404,6 +409,12 @@ ISP
 		3d505e7e548f arm64: dts: renesas: Update ISP UIO devices
 		5469d592fc58 arm64: dts: renesas: Update ISP UIO module to avoid conflict for UIO devices
 
+iVCP1E
+	iVCP1E is not intended for upstream
+
+	This patch have incorrect patch subject, the patch acts on "ivcp1e" clock
+		e5c8088e2751 clk: renesas: r8a779g0: Fix ISPCS clocks
+
 iVDP1C
 	iVDP1C is not intended for upstream
 
@@ -412,12 +423,6 @@ iVDP1C
 		0b1537a0251b clk: renesas: r8a7796: Add iVDP1C clock
 		d7c9cc6e1a2a clk: renesas: r8a7795: Add iVDP1C clocks to ES1.x
 		93b461eca6d1 arm64: dts: renesas: r8a7795: Fix clock, reset and power domain for iVDP1C
-
-iVCP1E
-	iVCP1E is not intended for upstream
-
-	This patch have incorrect patch subject, the patch acts on "ivcp1e" clock
-		e5c8088e2751 clk: renesas: r8a779g0: Fix ISPCS clocks
 
 Media
 	Panels should be supported via DT overlays
@@ -743,6 +748,15 @@ TSN
 UIO/OSAL
 	UIO/OSAL is not intended for upstream
 
+		7013aecefe75 arm64: dts: renesas: r8a779h0-gray-hawk-uio: Add VSP1 UIO device
+		142d5953f4cd arm64: dts: renesas: r8a779h0-gray-hawk-uio: Enable CSI UIO devices
+		ff785370630e arm64: dts: renesas: r8a779h0-gray-hawk-uio: Enable VIN UIO devices
+		4a083402d1cc arm64: dts: renesas: r8a779h0: Remove name of UIO in Native devices
+		5c02f72f976f arch: arm64: dts: renesas: r8a779h0-uio: Update disable native devices
+		8bd325dfb46e arch: arm64: dts: renesas: r8a779h0-uio: Update IPMMU UIO
+		16f35ca99877 arch: arm64: dts: renesas: r8a779h0-uio: Update VIN UIO devices
+		909a5e9b9907 arch: arm64: dts: renesas: r8a779h0: Remove UIO compatible in Native device tree
+		d7628f1293e9 arch: arm64: dts: renesas: r8a779h0: Remove compatible of UIO driver
 		b0cfb2f3bf96 arm64: dts: renesas: Disable CSI native driver
 		5b328d015d20 arm64: dts: renesas: r8a77980: Add UIO system_ram device on V3H1
 		03c58f3acc28 arm64: dts: renesas: r8a779h0-gray-hawk-uio: Disable native devices

@@ -1,3 +1,240 @@
+* v6.1.102-2024-07-30
+
+	* Merge/Rebase v6.1.102
+
+	* update CVE
+
+	* update list
+
+	* Below patch is reverted to avoid compile error.
+	  By now this tree doesn't support both RZ/xx and RISCV
+
+		"arm64: dts: renesas: r9a07g043: Move interrupt-parent property to common DTSI"
+
+	* Below patches are backported
+
+		commit 9a0c28efeec6383ef22e97437616b920e7320b67
+		("net: rswitch: Avoid use-after-free in rswitch_poll()")
+
+		commit 65c482bc226ab25a7884ee6fd1cc09bb08cbd1be
+		("net: ravb: Use NAPI threaded mode on 1-core CPUs with GbEth IP")
+
+		commit 7b39c1814ce3bcdf95d026bbb27322218840a27d
+		("net: ravb: Enable SW IRQ Coalescing for GbEth")
+
+		commit d93607082e982223cf92750f2d9039ff365b9d24
+		("net: add netdev_sw_irq_coalesce_default_on()")
+
+		commit 3ee43f09cb2cd7643d5a4bfbc78a9f75f6a563af
+		("net: ravb: Refactor GbEth RX code path")
+
+		commit 37a01c12e9e89fe2545657d7b42ca2de9c780c45
+		("net: ravb: Refactor RX ring refill")
+
+		commit b0e0e20dc60e9e37b7e5bc71f0c912f66ad75529
+		("net: ravb: Align poll function with NAPI docs")
+
+		commit 118e640af30c1355cfea1eeaa2960dc9331ee3db
+		("net: ravb: Simplify poll & receive functions")
+
+		commit 0c81ea5a8e231fa120e3f76aa9ea99fa3950cc59
+		("net: ravb: Fix registered interrupt names")
+
+		commit 2e36c9fbc476f95a1b19e3fa0a2cdf408475ff56
+		("net: ravb: Fix RX byte accounting for jumbo packets")
+
+		commit c7c449502b51c5b5de79f97a42be750b28f6ecee
+		("net: ravb: Fix GbEth jumbo packet RX checksum handling")
+
+		commit a892493a343494bd6bab9d098593932077ff3c43
+		("net: ravb: Allow RX loop to move past DMA mapping errors")
+
+		commit def52db470df28d6f43cacbd21137f03b9502073
+		("net: ravb: Count packets instead of descriptors in R-Car RX path")
+
+		commit 2c60c4c008d4b05b9b65bf88f784556208029333
+		("ravb: Add support for an optional MDIO mode")
+
+		commit a290d4cb892da3e9e163a40d0ab70ed1531cdc58
+		("ravb: Correct buffer size to map for R-Car Rx")
+
+		commit 644d037b2c44692cf81a27b79f9824ae0a8055b3
+		("ravb: Unify Rx ring maintenance code paths")
+
+		commit 555419b2259b96b5259ea207a6b6d2e45c2d6eb3
+		("ravb: Move maximum Rx descriptor data usage to info struct")
+
+		commit 496863388136bcba95298ab7dacaf55489af2b02
+		("ravb: Use the max frame size from hardware info for RZ/G2L")
+
+		commit cfbad64706c1c9d555fba5dbb545967262bd9f17
+		("ravb: Create helper to allocate skb and align it")
+
+		commit e82700b8662ce5470ebefebc4dc40949f6b14627
+		("ravb: Make it clear the information relates to maximum frame size")
+
+		commit 4123c3fbf8632e5c553222bf1c10b3a3e0a8dc06
+		("ravb: Group descriptor types used in Rx ring")
+
+		commit 48f894ab07c444b9b26a0913d2032de663f4aecb
+		("net: ravb: Add runtime PM support")
+
+		commit a71a50e391bf00fdc88bb13a867620c59ad744da
+		("net: ravb: Do not apply features to hardware if the interface is down")
+
+		commit 7bddccc9911cdff377e16b9a5a386721279b4438
+		("net: ravb: Move the update of ndev->features to ravb_set_features()")
+
+		commit bbf2345fa6582c5292bc5c537e7a29aad918be0c
+		("net: ravb: Return cached statistics if the interface is down")
+
+		commit a5f149a97d09cc9340d8fb4e22a3074a7bc1e02d
+		("net: ravb: Keep the reverse order of operations in ravb_close()")
+
+		commit a260f080660ef8bac97404dd0b9ddbe35a608426
+		("net: ravb: Get rid of the temporary variable irq")
+
+		commit ed4adc07207d9165a4b3b36199231a22e9f51a55
+		("net: ravb: Count packets instead of descriptors in GbEth RX path")
+
+		commit 6c8e2803ef36d3c0c20c7019a19c668c3b0ac1d1
+		("ravb: Add Tx checksum offload support for GbEth")
+
+		commit c2da9408579d52fdf9b0ec494534d6ac66d4511e
+		("ravb: Add Rx checksum offload support for GbEth")
+
+		commit e95273fe4d02a6096ba5fe8287bcd9513396ec71
+		("net: ravb: Simplify ravb_resume()")
+
+		commit b07bc55cbb1cf88a527d687fccd4a12bac744486
+		("net: ravb: Simplify ravb_suspend()")
+
+		commit 76fd52c1007785fcea1d3405907cec940d44f403
+		("net: ravb: Set config mode in ndo_open and reset mode in ndo_close")
+
+		commit a6a85ba36fd0d3e5595a4fcf57e0811826254ff7
+		("net: ravb: Move PTP initialization in the driver's ndo_open API for ccc_gac platorms")
+
+		commit cd1fb46e02de3c70d6379b00c0e860ca44954574
+		("net: ravb: Move DBAT configuration to the driver's ndo_open API")
+
+		commit 23698a9abb629009b42ef419072e567b43ca6866
+		("net: ravb: Move delay mode set in the driver's ndo_open API")
+
+		commit f384ab481cab6ad71afdf9c80a8b407a70a8624c
+		("net: ravb: Split GTI computation and set operations")
+
+		commit 32f012b8c01ca9fd26a28134cc2165ead93c22d0
+		("net: ravb: Move getting/requesting IRQs in the probe() method")
+
+		commit a654f6e875b753d11643840e266f7fd75e5ee1fa
+		("net: ravb: Move reference clock enable/disable on runtime PM APIs")
+
+		commit c5c0714e29508fd748ee5df09ae242476bf2e451
+		("net: ravb: Assert/de-assert reset on suspend/resume")
+
+		commit 7493bb4c400ce5e36cdc962349d7987d0bc1ccd2
+		("net: ravb: Use tabs instead of spaces")
+
+		commit 6ccc22a5afcbac46d55866d72eaba22f43491c00
+		("net: ravb: Switch to SYSTEM_SLEEP_PM_OPS()/RUNTIME_PM_OPS() and pm_ptr()")
+
+		commit b1768e3dc47792ac5876643604be25bc8ed17cd4
+		("net: ravb: Make reset controller support mandatory")
+
+		commit e1da043f2b2d956818728ca74c8eacd17feccf5c
+		("net: ravb: Rely on PM domain to enable gptp_clk")
+
+		commit c71517fe7353d2cbfbf2e305b282bf23c1750e29
+		("net: rswitch: Allow jumbo frames")
+
+		commit d2c96b9d5f83e4327cf044d00d7f713edd7fecfd
+		("net: rswitch: Add jumbo frames handling for TX")
+
+		commit 933416cc59b18ef82ea7895c4ca58be3d92d3b3c
+		("net: rswitch: Add jumbo frames handling for RX")
+
+		commit 9c90316a1170dd6ee1e620d28f6101f85bbaaa10
+		("net: rswitch: Set GWMDNC register")
+
+		commit fcff581ee43078cf23216aa7079012e935a6a078
+		("net: rswitch: Add a setting ext descriptor function")
+
+		commit 271e015b91535dd87fd0f5df0cc3b906c2eddef9
+		("net: rswitch: Add unmap_addrs instead of dma address in each desc")
+
+		commit 6a203cb5165d2257e8d54193b69afdb480a17f6f
+		("net: rswitch: Use build_skb() for RX")
+
+		commit 8857034184538ca92b0e029f6f56e5e04f518ad2
+		("net: rswitch: Use unsigned int for desc related array index")
+
+		commit c7e0022390d43788f63c7021ad441c1f8d9acf5f
+		("net: rswitch: Drop unused argument/return value")
+
+		commit 078e07570359b77655d7e54a05153873f1d20648
+		("net: ethernet: renesas: rcar_gen4_ptp: Depend on PTP_1588_CLOCK")
+
+		commit 782486af9b5b76493012711413c141509ac45dec
+		("net: rswitch: Fix missing dev_kfree_skb_any() in error path")
+
+		commit 1aaef8634a20b322c82e84f12a9b6aec1e2fd4fa
+		("net: rswitch: Fix return value in rswitch_start_xmit()")
+
+		commit 109b25d13e0054337860d44841b990d11b32d262
+		("net: rswitch: Fix type of ret in rswitch_start_xmit()")
+
+		commit 659c0b4444b24c872ab19e5fa4b96d32043a0a6c
+		("arm64: dts: renesas: Add interrupt-names to arch timer nodes")
+
+		commit f3acb237a17962349b61eed813f62dddf7aead29
+		("arm64: dts: renesas: r8a779h0: Drop "opp-shared" from opp-table-0")
+
+		commit 2bb78d9fb7c997f13309838600eead88cc99e96b
+		("arm64: dts: renesas: r8a779h0: Add video capture nodes")
+
+		commit 362951fef4f9e0eaddfdad637474ed67d66ea60b
+		("clk: renesas: r8a779h0: Fix PLL2/PLL4 multipliers in comments")
+
+		commit f92d44a00bd559f411b2c70b677afbc7c4723019
+		("clk: renesas: r8a779h0: Add VIN clocks")
+
+		commit 7c8730df594e32d46d6728c07f89ea75c5e6a71d
+		("clk: renesas: r8a779h0: Add CSI-2 clocks")
+
+		commit babc0ea4e6813819ba55cefad8f68598a847e7e6
+		("clk: renesas: r8a779h0: Add ISPCS clocks")
+
+		commit 35eea0defb6e46b26e286066e0e77ac5d53e7fba
+		("mmc: renesas_sdhi: Add compatible string for RZ/G2L family, RZ/G3S, and RZ/V2M SoCs")
+
+		commit 08e03039e0000a7ec7ba13dc18bddc6afd32cb27
+		("mmc: renesas_sdhi: Add RZ/V2M compatible string")
+
+		commit c4f426460febadd10002248f579ee69374a4ef99
+		("dt-bindings: usb: renesas,usbhs: Document RZ/G2L family compatible")
+
+		commit d990e227741692079872a8336d961ef4ab9e8aaf
+		("dt-bindings: usb: renesas,usbhs: Document RZ/Five SoC")
+
+		commit bd2cd796d2859c1a7cee326d7a9c0f77c6b95c71
+		("usb: renesas_usbhs: Remove renesas_usbhs_get_info() wrapper")
+
+		commit de9700f44d41d5ebdcbc0c5b5e1ffe7861eaffb1
+		("usb: renesas_usbhs: Remove trailing comma in the terminator entry for OF table")
+
+		commit caf8fa1120c2fd9206cc1dfd58b8b55e0817238e
+		("usb: renesas_usbhs: Update usbhs pipe configuration for RZ/G2L family")
+
+		commit 790effae39cf368a9ff029406b8033ab6618ff90
+		("usb: renesas_usbhs: Improve usbhsc_default_pipe[] for isochronous transfers")
+
+		commit a79c5b6f675634387de8e88b0c85a053b9952970
+		("usb: renesas_usbhs: Simplify obtaining device data")
+
+		commit 94d1957fc361bb7efa76c25f3c78296c3c9f867f
+		("usb: renesas_usbhs: drop of_match_ptr for ID table")
+
 * v6.1.101-2024-07-26
 
 	* Merge/Rebase v6.1.101
@@ -462,22 +699,3 @@
 	* Merge/Rebase v6.1.93
 
 	* update CVE
-
-* v6.1.92-2024-05-31
-* v6.1.92-2024-05-29
-
-	* update remains
-
-* v6.1.92-2024-05-28
-
-	* update remains
-
-	* update defconfig / renesas_defconfig
-
-* v6.1.92-2024-05-27
-
-	* Merge/Rebase v6.1.92
-
-	* update CVE
-
-	* update ignored/remaining
