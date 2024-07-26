@@ -334,6 +334,7 @@ I2C
 
 IMP
 	IMP is not intended for upstream
+		6c0788e6ef2c arm64: dts: renesas: r8a77970: Update IO range for IMP UIO devices
 		c9f097ef9ba0 clk: renesas: r8a779g0: Fix IMP clocks
 		4600b00624b0 arm64: dts: renesas: r8a779h0-uio: Add VDSP UIO devices (IMP)
 		539830e1b2ad arm64: dts: renesas: r8a779h0-uio: Update power domain for IMP UIO
@@ -743,6 +744,15 @@ TSN
 UIO/OSAL
 	UIO/OSAL is not intended for upstream
 
+		7013aecefe75 arm64: dts: renesas: r8a779h0-gray-hawk-uio: Add VSP1 UIO device
+		142d5953f4cd arm64: dts: renesas: r8a779h0-gray-hawk-uio: Enable CSI UIO devices
+		ff785370630e arm64: dts: renesas: r8a779h0-gray-hawk-uio: Enable VIN UIO devices
+		4a083402d1cc arm64: dts: renesas: r8a779h0: Remove name of UIO in Native devices
+		5c02f72f976f arch: arm64: dts: renesas: r8a779h0-uio: Update disable native devices
+		8bd325dfb46e arch: arm64: dts: renesas: r8a779h0-uio: Update IPMMU UIO
+		16f35ca99877 arch: arm64: dts: renesas: r8a779h0-uio: Update VIN UIO devices
+		909a5e9b9907 arch: arm64: dts: renesas: r8a779h0: Remove UIO compatible in Native device tree
+		d7628f1293e9 arch: arm64: dts: renesas: r8a779h0: Remove compatible of UIO driver
 		b0cfb2f3bf96 arm64: dts: renesas: Disable CSI native driver
 		5b328d015d20 arm64: dts: renesas: r8a77980: Add UIO system_ram device on V3H1
 		03c58f3acc28 arm64: dts: renesas: r8a779h0-gray-hawk-uio: Disable native devices
