@@ -1,3 +1,6 @@
+# upstream: 466c8c46b4ba763435b2a787b7824d9f0fd3e76e ASoC: dt-bindings: renesas: Fix R-Car Gen4 SoC-specific compatibles
+# upstream: 48d8f82baf3200d358d1cef5c2eb50b46e8b5668 ASoC: dt-bindings: renesas,rsnd: add missing renesas,rcar_sound-gen4
+119c31b2c6dc dt-bindings: rsnd: Add r8a779h0 support
 # upstream: ca73d314363d6682b6c736ea45e3a4ca551923a6 ASoC: Add ak4619 codec support
 7c1c5987ef41 ASoC: ak4619: Fix spelling, spacing and indentation errors
 b8ca63b496f2 ASoC: ak4619: Add hw_constraint rule for Sampling Rate
