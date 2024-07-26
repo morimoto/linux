@@ -404,6 +404,12 @@ ISP
 		3d505e7e548f arm64: dts: renesas: Update ISP UIO devices
 		5469d592fc58 arm64: dts: renesas: Update ISP UIO module to avoid conflict for UIO devices
 
+iVCP1E
+	iVCP1E is not intended for upstream
+
+	This patch have incorrect patch subject, the patch acts on "ivcp1e" clock
+		e5c8088e2751 clk: renesas: r8a779g0: Fix ISPCS clocks
+
 iVDP1C
 	iVDP1C is not intended for upstream
 
@@ -412,12 +418,6 @@ iVDP1C
 		0b1537a0251b clk: renesas: r8a7796: Add iVDP1C clock
 		d7c9cc6e1a2a clk: renesas: r8a7795: Add iVDP1C clocks to ES1.x
 		93b461eca6d1 arm64: dts: renesas: r8a7795: Fix clock, reset and power domain for iVDP1C
-
-iVCP1E
-	iVCP1E is not intended for upstream
-
-	This patch have incorrect patch subject, the patch acts on "ivcp1e" clock
-		e5c8088e2751 clk: renesas: r8a779g0: Fix ISPCS clocks
 
 Media
 	Panels should be supported via DT overlays
