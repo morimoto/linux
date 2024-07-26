@@ -4,8 +4,6 @@
 79b45ffb90e7 media: i2c: max96712: Fix horizontal nosie issue when running 4 cameras on R-Car V4M
 45fd1264d613 arm64: dts: renesas: gray-hawk-csi-dsi: Disable polarity inversion function of MAX96724 MIPI PHY1
 3959f0f5f6fb dt-bindings: i2c: rcar: Document r8a779h0 support
-c27e8001fccf dt-bindings: pwm: tpu: Add support for V4M
-65b908e6f515 dt-bindings: pwm: Add support for V4M
 4405b13d3317 clk: renesas: r8a779h0-cpg-mssr: Update VSP clock
 a76a43a5525d arm64: dts: renesas: add fix to disable running DMA continuous mode by default
 262717c0ac30 i2c: rcar: add fix for condition checking to run DMA continuous mode
@@ -102,6 +100,10 @@ e9ba9ac6fe77 can: rcar_canfd: Configure receive rules
 #
 # PWM patches (to be tested by Geert)
 #
+# lore: 20240725193803.14130-6-wsa+renesas@sang-engineering.com
+c27e8001fccf dt-bindings: pwm: tpu: Add support for V4M
+# lore: 20240725193803.14130-5-wsa+renesas@sang-engineering.com
+65b908e6f515 dt-bindings: pwm: Add support for V4M
 # lore: 20240725194906.14644-10-wsa+renesas@sang-engineering.com
 32397139103a clk: renesas: r8a779h0: Add TPU clock
 # lore: 20240725194906.14644-9-wsa+renesas@sang-engineering.com
