@@ -151,12 +151,6 @@ b879ce6ca34a arm64: dts: renesas: r8a779g0-whitehawk: Add specific CSI-2 informa
 #
 # Add RTSN driver and wire it up - In progress (Niklas)
 #
-# lore: 20240509210903.3738334-1-niklas.soderlund+renesas@ragnatech.se
-1e34ab549764 net: ethernet: renesas: Add Renesas Ethernet-TSN driver
-# lore: 20240509210903.3738334-1-niklas.soderlund+renesas@ragnatech.se
-8c977b4d6d61 net: ethernet: renesas: rtsn: Fix setting wrong PHY address
-# lore: 20240509210903.3738334-1-niklas.soderlund+renesas@ragnatech.se
-b4da13817cb8 net: ethernet: renesas: rtsn: Fix the lack of unregistering PTP device
 60db06c0df93 arm64: defconfig: Enable Renesas Ethernet-TSN
 00244fb8f94a arm64: dts: renesas: r8a779g0: Add Ethernet-TSN support
 d387cc45dbbd arm64: dts: renesas: r8a779g0: Update Ethernet-TSN0 device node
