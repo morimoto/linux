@@ -128,6 +128,8 @@ Clock
 		22fcdce314a2 clk: renesas: r8a77{96, 965, 990}: Add ADG clock
 		c0ba44fdd4d9 clk: renesas: r8a7795: Add ADG clock
 		f75384dbb2de clk: renesas: r8a77990: Add FDP1 clock
+		0e93fff415ee clk: renesas: r8a779g0-cpg-mssr: Update IMR device clock source
+		ffc555579511 clk: renesas: r8a779h0-cpg-mssr: Update IMR dievice clock source
 
 	MSTPCR registers beyond MSTPCR14 are not documented
 		eebc4189c612 clk: renesas: r8a779a0: Extend number of supported module clocks
