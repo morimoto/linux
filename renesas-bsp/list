@@ -1,3 +1,77 @@
+v6.10     / net: rswitch: Avoid use-after-free in rswitch_poll()
+Local     / net: ravb: Use NAPI threaded mode on 1-core CPUs with GbEth IP
+Local     / net: ravb: Enable SW IRQ Coalescing for GbEth
+v6.2      / net: add netdev_sw_irq_coalesce_default_on()
+Local     / net: ravb: Refactor GbEth RX code path
+Local     / net: ravb: Refactor RX ring refill
+Local     / net: ravb: Align poll function with NAPI docs
+Local     / net: ravb: Simplify poll & receive functions
+v6.9      / net: ravb: Fix registered interrupt names
+v6.9      / net: ravb: Fix RX byte accounting for jumbo packets
+v6.9      / net: ravb: Fix GbEth jumbo packet RX checksum handling
+v6.9      / net: ravb: Allow RX loop to move past DMA mapping errors
+v6.9      / net: ravb: Count packets instead of descriptors in R-Car RX path
+v6.10     / ravb: Add support for an optional MDIO mode
+v6.9      / ravb: Correct buffer size to map for R-Car Rx
+v6.9      / ravb: Unify Rx ring maintenance code paths
+v6.9      / ravb: Move maximum Rx descriptor data usage to info struct
+v6.9      / ravb: Use the max frame size from hardware info for RZ/G2L
+v6.9      / ravb: Create helper to allocate skb and align it
+v6.9      / ravb: Make it clear the information relates to maximum frame size
+v6.9      / ravb: Group descriptor types used in Rx ring
+v6.9      / net: ravb: Add runtime PM support
+v6.9      / net: ravb: Do not apply features to hardware if the interface is down
+v6.9      / net: ravb: Move the update of ndev->features to ravb_set_features()
+v6.9      / net: ravb: Return cached statistics if the interface is down
+v6.9      / net: ravb: Keep the reverse order of operations in ravb_close()
+v6.9      / net: ravb: Get rid of the temporary variable irq
+v6.8      / net: ravb: Count packets instead of descriptors in GbEth RX path
+v6.9      / ravb: Add Tx checksum offload support for GbEth
+v6.9      / ravb: Add Rx checksum offload support for GbEth
+v6.9      / net: ravb: Simplify ravb_resume()
+v6.9      / net: ravb: Simplify ravb_suspend()
+v6.9      / net: ravb: Set config mode in ndo_open and reset mode in ndo_close
+v6.9      / net: ravb: Move PTP initialization in the driver's ndo_open API for ccc_gac platorms
+v6.9      / net: ravb: Move DBAT configuration to the driver's ndo_open API
+v6.9      / net: ravb: Move delay mode set in the driver's ndo_open API
+v6.9      / net: ravb: Split GTI computation and set operations
+v6.9      / net: ravb: Move getting/requesting IRQs in the probe() method
+v6.9      / net: ravb: Move reference clock enable/disable on runtime PM APIs
+v6.9      / net: ravb: Assert/de-assert reset on suspend/resume
+v6.9      / net: ravb: Use tabs instead of spaces
+v6.9      / net: ravb: Switch to SYSTEM_SLEEP_PM_OPS()/RUNTIME_PM_OPS() and pm_ptr()
+v6.9      / net: ravb: Make reset controller support mandatory
+v6.9      / net: ravb: Rely on PM domain to enable gptp_clk
+v6.8      / net: rswitch: Allow jumbo frames
+v6.8      / net: rswitch: Add jumbo frames handling for TX
+v6.8      / net: rswitch: Add jumbo frames handling for RX
+v6.8      / net: rswitch: Set GWMDNC register
+v6.8      / net: rswitch: Add a setting ext descriptor function
+v6.8      / net: rswitch: Add unmap_addrs instead of dma address in each desc
+v6.8      / net: rswitch: Use build_skb() for RX
+v6.8      / net: rswitch: Use unsigned int for desc related array index
+v6.8      / net: rswitch: Drop unused argument/return value
+v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Depend on PTP_1588_CLOCK
+v6.7      / net: rswitch: Fix missing dev_kfree_skb_any() in error path
+v6.7      / net: rswitch: Fix return value in rswitch_start_xmit()
+v6.7      / net: rswitch: Fix type of ret in rswitch_start_xmit()
+Local     / arm64: dts: renesas: Add interrupt-names to arch timer nodes
+Local     / arm64: dts: renesas: r8a779h0: Drop "opp-shared" from opp-table-0
+Local     / arm64: dts: renesas: r8a779h0: Add video capture nodes
+Local     / clk: renesas: r8a779h0: Fix PLL2/PLL4 multipliers in comments
+Local     / clk: renesas: r8a779h0: Add VIN clocks
+Local     / clk: renesas: r8a779h0: Add CSI-2 clocks
+Local     / clk: renesas: r8a779h0: Add ISPCS clocks
+v6.10     / mmc: renesas_sdhi: Add compatible string for RZ/G2L family, RZ/G3S, and RZ/V2M SoCs
+v6.3      / mmc: renesas_sdhi: Add RZ/V2M compatible string
+v6.10     / dt-bindings: usb: renesas,usbhs: Document RZ/G2L family compatible
+v6.8      / dt-bindings: usb: renesas,usbhs: Document RZ/Five SoC
+v6.10     / usb: renesas_usbhs: Remove renesas_usbhs_get_info() wrapper
+v6.10     / usb: renesas_usbhs: Remove trailing comma in the terminator entry for OF table
+v6.10     / usb: renesas_usbhs: Update usbhs pipe configuration for RZ/G2L family
+v6.10     / usb: renesas_usbhs: Improve usbhsc_default_pipe[] for isochronous transfers
+v6.10     / usb: renesas_usbhs: Simplify obtaining device data
+v6.4      / usb: renesas_usbhs: drop of_match_ptr for ID table
 Local     / arm64: dts: renesas: r8a779h0: R-Car Sound support
 Local     / arm64: dts: renesas: r8a779g0: Tidy up sound DT settings
 Local     / clk: renesas: r8a779h0: Add Audio clocks
@@ -11,7 +85,6 @@ Local     / ASoC: audio-graph-card2: add support for aux devices
 v6.10     / dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility
 Local     / arm64: dts: renesas: gray-hawk-single: Add aliases for I2C buses
 Local     / arm64: dts: renesas: rzg2l: Update fallback string for SDHI nodes
-v6.10     / arm64: dts: renesas: r9a07g043: Move interrupt-parent property to common DTSI
 v6.10     / arm64: dts: renesas: r9a07g0{43,44,54}: Update RZ/G2L family compatible
 v6.3      / dt-bindings: usb: renesas,usb-xhci: Document RZ/V2M support
 v6.3      / dt-bindings: usb: Add RZ/V2M USB3DRD binding
