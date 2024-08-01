@@ -1,11 +1,5 @@
 # upstream: d9a9657a1343a7eef7bcbf6e974bf4cea75121a5 dt-bindings: i2c: renesas,rcar-i2c: Add r8a779h0 support
 3959f0f5f6fb dt-bindings: i2c: rcar: Document r8a779h0 support
-# upstream: b0d3969d2b4db82602492cad576b8de494a12ddf net: ethernet: rtsn: Add support for Renesas Ethernet-TSN
-1e34ab549764 net: ethernet: renesas: Add Renesas Ethernet-TSN driver
-# upstream: b0d3969d2b4db82602492cad576b8de494a12ddf net: ethernet: rtsn: Add support for Renesas Ethernet-TSN
-8c977b4d6d61 net: ethernet: renesas: rtsn: Fix setting wrong PHY address
-# upstream: b0d3969d2b4db82602492cad576b8de494a12ddf net: ethernet: rtsn: Add support for Renesas Ethernet-TSN
-b4da13817cb8 net: ethernet: renesas: rtsn: Fix the lack of unregistering PTP device
 # upstream: 2bb78d9fb7c997f13309838600eead88cc99e96b arm64: dts: renesas: r8a779h0: Add video capture nodes
 43cf6cea9838 arm64: dts: renesas: r8a779h0: Add VIN driver nodes
 # upstream: f92d44a00bd559f411b2c70b677afbc7c4723019 clk: renesas: r8a779h0: Add VIN clocks

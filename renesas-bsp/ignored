@@ -742,6 +742,14 @@ Thermal
 		2952a9503e49 arm64: dts: renesas: r8a779{51, 60, 61, 65}: Enable interrupt mode for THS by default
 
 TSN
+	Upstream supports TSN since v6.11 (commit b0d3969d2b4db82602492cad576b8de494a12ddf
+	net: ethernet: rtsn: Add support for Renesas Ethernet-TSN), but this tree will ignore it
+	because there is big gap between v6.1 vs v6.11 around Net-FW. v6.6 rebase can handle it.
+	But it is easy to use this upstream TSN driver on v6.1 with changing IOCTL stuff.
+	Please let us know if you need it.
+		1e34ab549764 net: ethernet: renesas: Add Renesas Ethernet-TSN driver
+		8c977b4d6d61 net: ethernet: renesas: rtsn: Fix setting wrong PHY address
+		b4da13817cb8 net: ethernet: renesas: rtsn: Fix the lack of unregistering PTP device
 	This is a temporary hack in the BSP to disbale TSN for a while, do not upstream
 		55dee8f01bfc arm64: dts: renesas: r8a779g0-whitehawk: Disable rtsn0
 
