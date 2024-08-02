@@ -567,6 +567,37 @@ NVME
 		0453069bec94 nvme: Workaround Samsung 970 Pro power state issues
 
 PCIe for R-Car Gen4
+	Upstream supports V4H PCI since v6.11 (commit faf5a975ee3b94aac7c8a8054456a85d99a1b7ad
+	PCI: rcar-gen4: Add support for R-Car V4H), but framework has unsolvable big gap between
+	v6.11 and v6.1. We can't backport it into v6.1. So this tree can't support PCI for V4H.
+		9fdeed193dce arm64: dts: renesas: r8a779h0: Add PCIe support
+		0cf550f4b998 PCI: pci-epf-test: Added WQ_UNBOUND flag to alloc_workqueue()
+		f408cb16a854 arm64: dts: renesas: r8a779g0: Expand the addr_space region of PCIe Endpoint
+		a1fd5deedc01 PCI: pci-epf-test: Change target code for calculating transfer performance
+		e9ee03a5a60e misc: pci-endpoint-test: A transfer size of 4 Mbytes or more can be specified.
+		6ad9d598947d PCI: pci-epf-test: A transfer size of 4 Mbytes or more can be specified
+		f96f80b3a67a arm64: dts: renesas: r8a779g0: Add a new property for Resizable BAR of PCIe
+		e93070510f22 arm64: dts: renesas: r8a779g0: Add PCIe1 clock to PCIe0 node for 4lane
+		31a47e8dd8b4 arm64: dts: renesas: r8a779g0: PCIE channels and lanes are selectable.
+		c8b7ea3d8000 arm64: dts: renesas: r8a779g0: Add PCIe-ch1 phy access.
+		d66e491f398a PCI: dwc: rcar-gen4: Add support for Resizable BAR
+		c8f625bc2254 PCI: dwc: rcar-gen4: Set up BAR to work with 64-bit
+		50c884de7a00 PCI: dwc: rcar-gen4: Add pcie firmware update
+		c02a5e045e06 PCI: dwc: rcar-gen4: Change the power operation method for 4lane.
+		6fa7fc93f2b2 arm64: dts: renesas: r8a779g0: Add PCIe nodes for ch0 endpoint and ch1
+		42fe03cf3d04 arm64: dts: renesas: r8a779g0: Adding Phy ranges in PCIe node
+		638b5616ce65 arm64: dts: renesas: r8a779g0: Fix PCIe node max link speed
+		fbeeac1cc8ca arm64: dts: renesas: r8a779g0: Fix PCIe node interrupt settings
+		850f6f7ae044 arm64: dts: renesas: r8a779g0: white-hawk: Enable PCIe Host ch0
+		e150973fa985 arm64: dts: renesas: r8a779g0: Add PCIe Host and Endpoint nodes
+		efd1efab854c PCI: dwc: rcar-gen4: Update the initial setting for PCIe
+		cda3dd982572 arm64: defconfig: Updated for RCAR_GEN4 PCIe driver
+		46fef5911f11 arm64: defconfig: Enable RCAR_GEN4 PCIe driver
+		0a0d7acbb5f7 PCI: dwc: rcar-gen4: Add support for PCIe x4 lanes
+		9cc98db499af PCI: dwc: rcar-gen4: Add workaround for V4H
+		819b9bfdf349 PCI: dwc: Add support for triggering legacy IRQs
+		20ea0dc95135 PCI: Add PCI_EXP_LNKCAP_MLW macros
+
 	registers sharing by "shared" is not acceptable for upstream.
 
 		5232175003e2 arch: arm64: dts: renesas: r8a779g0: Add shared address ranges and shared clock for pcie node
