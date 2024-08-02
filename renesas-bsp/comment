@@ -21,7 +21,9 @@ Media
 	- All panel DTS additions have been ignored. Panels must be supported upstream via DT overlays.
 
 RISC-V
-	- This tree includes latest RISC-V support for Renesas RZ/Five.
+RZ/xx
+	- This tree doesn't support RISC-V (RZ/Five)
+	- This tree doesn't support RZ/xx
 
 RPC-IF
 	- enabling 'burst read' has been dropped from the BSP (1b212c753d0c memory: renesas-rpc-if: Use burst read operation).
