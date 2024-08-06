@@ -1,3 +1,17 @@
+Local     / arm64: dts: renesas: white-hawk-cpu: Add aliases for I2C buses
+Local     / arm64: dts: renesas: r8a779g0: Use MDIO node for all AVB devices
+v6.9      / arm64: dts: renesas: Improve TMU interrupt descriptions
+v6.9      / arm64: dts: renesas: white-hawk: Factor out common parts
+v6.9      / arm64: dts: renesas: white-hawk-cpu: Factor out common parts
+v6.9      / arm64: dts: renesas: white-hawk: Add SoC name to top-level comment
+v6.9      / arm64: dts: renesas: white-hawk: Drop SoC parts from sub boards
+v6.9      / arm64: dts: renesas: white-hawk-cpu: Restore sort order
+v6.9      / arm64: dts: renesas: r8a779g0: Add standalone White Hawk CPU support
+Local     / arm64: dts: renesas: s4sk: Add aliases for I2C buses
+v6.10     / arm64: dts: renesas: s4sk: Fix ethernet0 alias
+v6.7      / arm64: dts: renesas: Add R-Car S4 Starter Kit support
+v6.7      / arm64: dts: renesas: Add Renesas R8A779F4 SoC support
+v6.8      / PCI: rcar-gen4: Fix -Wvoid-pointer-to-enum-cast error
 Local     / net: ethernet: rtsn: Add support for Renesas Ethernet-TSN
 v6.10     / net: rswitch: Avoid use-after-free in rswitch_poll()
 Local     / net: ravb: Use NAPI threaded mode on 1-core CPUs with GbEth IP

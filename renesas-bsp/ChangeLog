@@ -1,3 +1,55 @@
+* v6.6.44-2024-08-06
+
+	* Merge/Rebase v6.6.44
+
+	* update CVE
+
+	* update list
+
+	* Below patches are backported
+
+		commit e9e6ed5a220f59a298db39b861500a6aea66e528
+		("arm64: dts: renesas: white-hawk-cpu: Add aliases for I2C buses")
+
+		commit 54bf0c27380b95a220b94ea835b5e8bf58baded9
+		("arm64: dts: renesas: r8a779g0: Use MDIO node for all AVB devices")
+
+		commit c53866cb27fb3a051cb5b6bbeb2e4967bf51c923
+		("arm64: dts: renesas: Improve TMU interrupt descriptions")
+
+		commit 874dca5d211559e6124d422809687381e2534cfe
+		("arm64: dts: renesas: white-hawk: Factor out common parts")
+
+		commit b84bd2230a58e5c208ac3ebe75047179e7441866
+		("arm64: dts: renesas: white-hawk-cpu: Factor out common parts")
+
+		commit a9baf0b42d2048984027ab456f30ee3e93815893
+		("arm64: dts: renesas: white-hawk: Add SoC name to top-level comment")
+
+		commit 1b940d036d5a2235323851c579100d1d835d1474
+		("arm64: dts: renesas: white-hawk: Drop SoC parts from sub boards")
+
+		commit 48683d4a88ddf08f5582655c651736c0887618b9
+		("arm64: dts: renesas: white-hawk-cpu: Restore sort order")
+
+		commit c90efc452ac121c11ea4dcd5a235f66fc2b5b46b
+		("arm64: dts: renesas: r8a779g0: Add standalone White Hawk CPU support")
+
+		commit fefa929e898cc472ca2b225552659cabfa90d4e2
+		("arm64: dts: renesas: s4sk: Add aliases for I2C buses")
+
+		commit 412f2224b3b63f3d553aa82b54f762245acd4398
+		("arm64: dts: renesas: s4sk: Fix ethernet0 alias")
+
+		commit 93be50c7ff8e8087d5a3ff5a4ff2ffc5dbb1c9b2
+		("arm64: dts: renesas: Add R-Car S4 Starter Kit support")
+
+		commit 92c4f314065a3b63ea6c2d6ac44e867e34031cd0
+		("arm64: dts: renesas: Add Renesas R8A779F4 SoC support")
+
+		commit 7682f19c3c8c709ff4ef0e1d475f00907ade868f
+		("PCI: rcar-gen4: Fix -Wvoid-pointer-to-enum-cast error")
+
 * v6.6.43-2024-08-01
 
 	* Merge/Rebase v6.6.43
@@ -438,73 +490,3 @@
 
 		commit 9c57c4a9a45c04c19f38986c73847b756ceae237
 		("dt-bindings: soc: renesas: Document Renesas RZ/G3S SoC variants")
-
-* v6.6.34-2024-06-20
-
-	* Add backport list
-
-	* update remains / handled
-
-		Below patches are goes to remains
-
-		net: phy: workaround 'resume' regression with Micrel PHYs
-		mmc: core: mmc_ops: Enable stop command
-		mmc: core: Issue power off notification in mmc_remove()
-
-	* Below patches are backported
-
-		commit d640af49b65c6d260a5154dfb822e8371b502707
-		("dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility")
-
-		commit 493d2b2969d477802310e8e215cf1924f95a7284
-		("dt-bindings: mmc: renesas,sdhi: Group single const value items into an enum list")
-
-		commit 4aee14527e4fd92d4a7487c430b54d099b99b4d1
-		("dt-bindings: mmc: renesas,sdhi: Document R-Car V4M support")
-
-		commit 3e3ce6314fc0eaa91d4cf7a663f6f3a793b4988c
-		("dt-bindings: mmc: renesas,sdhi: Document RZ/Five SoC")
-
-		commit 3b7eee6aae0b3212183fa63a4ae7887924218987
-		("dt-bindings: mmc: renesas,sdhi: Document RZ/G3S support")
-
-		commit 466c8c46b4ba763435b2a787b7824d9f0fd3e76e
-		("ASoC: dt-bindings: renesas: Fix R-Car Gen4 SoC-specific compatibles")
-
-*v6.6.34-2024-06-19
-
-	* Below patches are backported
-
-		commit fdea114ac26ce0eae4e248e6194d39e4e7536f7a
-		("pmdomain: renesas: rcar-sysc: Add R-Car M3-W power-off delay quirk")
-
-		commit c8d87704444a8ac731249ca43b6b2039c2949218
-		("pmdomain: renesas: rcar-sysc: Remove rcar_sysc_nullify() helper")
-
-		commit 43fefaea066b9522ab56a7ab095f86865ca39c2f
-		("pmdomain: renesas: rcar-sysc: Split R-Car M3-W and M3-W+ sub-drivers")
-
-		commit ce5e83925c99ff43cc0b9bebe53d9dcba8e7c08b
-		("pmdomain: renesas: rcar-sysc: Absorb rcar_sysc_ch into rcar_sysc_pd")
-
-		commit c588e1c9846b32182fd5a0ceb637b983810e7100
-		("arm64: dts: renesas: r8a779f0: spider: Enable PCIe Host ch0")
-
-* v6.6.34-2024-06-18
-
-	* Below patches are backported
-
-		commit 713240877a26f3cc035d6531795bd819dfaa633c
-		("pmdomain: renesas: Adjust the waiting time to cover the worst case")
-
-		commit c037263db4ce4b63b7f56732a46da257ae27c00d
-		("dt-bindings: PCI: rcar-gen4-pci-ep: Add R-Car V4H compatible")
-
-		commit  5220b11a5beb941a0bf882e4f39b7693df093231
-		("dt-bindings: PCI: rcar-gen4-pci-host: Add R-Car V4H compatible")
-
-* v6.6.34-2024-06-17
-
-	* Merge/Rebase v6.6.34
-
-	* update CVE
