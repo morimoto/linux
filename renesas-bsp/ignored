@@ -781,6 +781,10 @@ TSN
 		1e34ab549764 net: ethernet: renesas: Add Renesas Ethernet-TSN driver
 		8c977b4d6d61 net: ethernet: renesas: rtsn: Fix setting wrong PHY address
 		b4da13817cb8 net: ethernet: renesas: rtsn: Fix the lack of unregistering PTP device
+		60db06c0df93 arm64: defconfig: Enable Renesas Ethernet-TSN
+		00244fb8f94a arm64: dts: renesas: r8a779g0: Add Ethernet-TSN support
+		d387cc45dbbd arm64: dts: renesas: r8a779g0: Update Ethernet-TSN0 device node
+
 	This is a temporary hack in the BSP to disbale TSN for a while, do not upstream
 		55dee8f01bfc arm64: dts: renesas: r8a779g0-whitehawk: Disable rtsn0
 

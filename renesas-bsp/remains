@@ -107,9 +107,3 @@ c4427579e253 media: rcar-vin: rcar-csi2: Add compatible string for R8A779H0 SoC
 73be8101dbbe dt-bindings: media: Add specific CSI-2 information for R-Car V4H
 6346917cdaa4 media: rcar-csi2: Add interface for C-PHY Analog pin swap on R-Car V4H
 b879ce6ca34a arm64: dts: renesas: r8a779g0-whitehawk: Add specific CSI-2 information for R-Car V4H
-#
-# Add RTSN driver and wire it up - In progress (Niklas)
-#
-60db06c0df93 arm64: defconfig: Enable Renesas Ethernet-TSN
-00244fb8f94a arm64: dts: renesas: r8a779g0: Add Ethernet-TSN support
-d387cc45dbbd arm64: dts: renesas: r8a779g0: Update Ethernet-TSN0 device node
