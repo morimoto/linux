@@ -35,6 +35,7 @@ eae72e77117c net: ethernet: renesas: ravb: Add gPTP support on R-Car V4H
 #
 # PCI
 #
+# next: 23319333146fb856f6e767f419830f6d7114eefc # clk: renesas: r8a779h0: Add PCIe clock
 b8ec226fcba2 clk: renesas: r8a779h0: Add PCIe clock
 #
 # Minor stuff
@@ -67,15 +68,15 @@ e9ba9ac6fe77 can: rcar_canfd: Configure receive rules
 #
 # PWM patches (to be tested by Geert)
 #
-# lore: 20240725193803.14130-6-wsa+renesas@sang-engineering.com
+# next: 362b3204e5509e3810d6ef3ed5a8187755d09fbf # dt-bindings: pwm: renesas,tpu: Add r8a779h0 support
 c27e8001fccf dt-bindings: pwm: tpu: Add support for V4M
-# lore: 20240725193803.14130-5-wsa+renesas@sang-engineering.com
+# next: 5cab32997e6ed7269eb7c0549190740c4b42caa7 # dt-bindings: pwm: renesas,pwm-rcar: Add r8a779h0 support
 65b908e6f515 dt-bindings: pwm: Add support for V4M
 # lore: 20240725194906.14644-10-wsa+renesas@sang-engineering.com
 32397139103a clk: renesas: r8a779h0: Add TPU clock
-# lore: 20240725194906.14644-9-wsa+renesas@sang-engineering.com
+# next: ab52dd821f89abd3165f5b39936cc08ef2f9169e # clk: renesas: r8a779h0: Add PWM clock
 9800531f0188 clk: renesas: r8a779h0: Add PWM clock
-# lore: 20240725194906.14644-11-wsa+renesas@sang-engineering.com
+# next: ca999750b95caf4829dbd89ecff5c673107d257c # arm64: dts: renesas: r8a779h0: Add PWM device nodes
 # lore: 20240725194906.14644-12-wsa+renesas@sang-engineering.com
 fd446b2b77ff arm64: dts: renesas: Add node to support PWM on R-Car V4M
 #
