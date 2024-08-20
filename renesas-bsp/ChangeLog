@@ -1,3 +1,8 @@
+* v6.1.104-2024-08-21
+	* Merge/Rebase v6.1.104
+
+	* update CVE
+
 * v6.1.103-2024-08-08
 
 	* update remains / handled
@@ -669,88 +674,3 @@
 
 		commit 9c57c4a9a45c04c19f38986c73847b756ceae237
 		("dt-bindings: soc: renesas: Document Renesas RZ/G3S SoC variants")
-
-* v6.1.94-2024-06-20
-
-	* Add backport list
-
-	* update remains / handled
-
-		Below patches are goes to remains
-
-		net: phy: workaround 'resume' regression with Micrel PHYs
-		mmc: core: mmc_ops: Enable stop command
-		mmc: core: Issue power off notification in mmc_remove()
-
-	* Below patches are backported
-
-		commit d640af49b65c6d260a5154dfb822e8371b502707
-		("dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility")
-
-		commit 493d2b2969d477802310e8e215cf1924f95a7284
-		("dt-bindings: mmc: renesas,sdhi: Group single const value items into an enum list")
-
-		commit 4aee14527e4fd92d4a7487c430b54d099b99b4d1
-		("dt-bindings: mmc: renesas,sdhi: Document R-Car V4M support")
-
-		commit 3e3ce6314fc0eaa91d4cf7a663f6f3a793b4988c
-		("dt-bindings: mmc: renesas,sdhi: Document RZ/Five SoC")
-
-		commit 3b7eee6aae0b3212183fa63a4ae7887924218987
-		("dt-bindings: mmc: renesas,sdhi: Document RZ/G3S support")
-
-		commit 883e5ac6ee82c55b2f69099399a4d26cc456c5af
-		("dt-bindings: mmc: renesas,sdhi: Fix RZ/V2M clock description")
-
-		commit c9dc89944b66abf9aa0ad57aa45e4edf030e2441
-		("dt-bindings: mmc: renesas,sdhi: Document RZ/V2M support")
-
-		commit 466c8c46b4ba763435b2a787b7824d9f0fd3e76e
-		("ASoC: dt-bindings: renesas: Fix R-Car Gen4 SoC-specific compatibles")
-
-* v6.1.94-2024-06-19
-
-	* Below patches are backported
-
-		commit fdea114ac26ce0eae4e248e6194d39e4e7536f7a
-		("pmdomain: renesas: rcar-sysc: Add R-Car M3-W power-off delay quirk")
-
-		commit c8d87704444a8ac731249ca43b6b2039c2949218
-		("pmdomain: renesas: rcar-sysc: Remove rcar_sysc_nullify() helper")
-
-		commit 43fefaea066b9522ab56a7ab095f86865ca39c2f
-		("pmdomain: renesas: rcar-sysc: Split R-Car M3-W and M3-W+ sub-drivers")
-
-		commit ce5e83925c99ff43cc0b9bebe53d9dcba8e7c08b
-		("pmdomain: renesas: rcar-sysc: Absorb rcar_sysc_ch into rcar_sysc_pd")
-
-		commit d7abac084536b6d7efcc0c1edc7d9035c34314d9
-		("dt-bindings: phy: renesas: Document Renesas Ethernet SERDES")
-
-		commit f9edd82774c0c8dde1ce26637a9e29f9bba92fef
-		("dt-bindings: net: renesas: Document Renesas Ethernet Switch")
-
-* v6.1.94-2024-06-18
-
-	* Below patches are backported
-
-		commit e332003bb216a9f91e08004b9e2de0745f321290
-		("iommu: Make IPMMU_VMSA dependencies more strict")
-
-		commit d286a58bc8f4d5cf3246481b4e38e4c0c65550ac
-		("iommu: Tidy up io-pgtable dependencies")
-
-		commit c037263db4ce4b63b7f56732a46da257ae27c00d
-		("dt-bindings: PCI: rcar-gen4-pci-ep: Add R-Car V4H compatible")
-
-		commit  5220b11a5beb941a0bf882e4f39b7693df093231
-		("dt-bindings: PCI: rcar-gen4-pci-host: Add R-Car V4H compatible")
-
-		commit c588e1c9846b32182fd5a0ceb637b983810e7100
-		("arm64: dts: renesas: r8a779f0: spider: Enable PCIe Host ch0")
-
-* v6.1.94-2024-06-17
-
-	* Merge/Rebase v6.1.94
-
-	* update CVE
