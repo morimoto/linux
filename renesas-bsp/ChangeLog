@@ -1,3 +1,9 @@
+* v6.6.47-2024-08-21
+
+	* Merge/Rebase v6.6.47
+
+	* update CVE
+
 * v6.6.46-2024-08-21
 
 	* Merge/Rebase v6.6.46
@@ -353,41 +359,3 @@
 * v6.6.38-2024-07-10
 
 	* Merge/Rebase v6.6.38
-
-* v6.6.37-2024-07-08
-
-	* RISCV related backports are reverted
-
-	To avoid RISCV related compile test error, RISCV is not BSP terget for now.
-
-		soc: renesas: Make RZ/Five depend on !DMA_DIRECT_REMAP
-
-	* Local patch from BSP are reverted
-
-	To avoid dtbs_check error, etc
-
-		arm64: dts: renesas: r8a779g0: Add PCIe Host and Endpoint nodes
-		arm64: dts: renesas: r8a779g0: white-hawk: Enable PCIe Host ch0
-		media: rcar-vin: Add support for RAW10 on V3U
-		dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility
-		misc: pci_endpoint_test: Add Device ID for R-Car V4H PCIe controller
-
-	* Below patches are backported
-
-		commit 56d02cfa3fbfca7466ccd68f4db78b0297f5c01f
-		("dt-bindings: dma: rz-dmac: Document RZ/Five SoC")
-
-		commit 7d562ac331ddc4f798e6185a858bc98c22ee7d1b
-		("ASoC: dt-bindings: renesas,rz-ssi: Document RZ/Five SoC")
-
-		commit 4056d88866e5941ebd15fb2523119f0ddc5186da
-		("spi: renesas,rzv2m-csi: Add CSI (SPI) target related property")
-
-		commit 078a5babf2bc92eba04b8f9162e5fea7afc2749e
-		("dt-bindings: timer: renesas,rz-mtu3: Document RZ/{G2UL,Five} SoCs")
-
-		commit b121e7881b8975cf8dc24d9bd71a5af81ed8a6b1
-		("dt-bindings: timer: renesas,rz-mtu3: Improve documentation")
-
-		commit 7b71da59122c3ab82908910abf78db1fd6340cac
-		("ASoC: dt-bindings: Add missing (unevaluated|additional)Properties on child node schemas")
