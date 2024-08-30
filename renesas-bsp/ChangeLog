@@ -1,3 +1,16 @@
+* v6.1.107-2024-08-21
+
+	* Merge/Rebase v6.1.107
+
+	* update CVE
+
+	* update list
+
+	* Below patche is backported
+
+		commit 061505a1a61169bd25dd908f95ba22f33dffdd69
+		("ASoC: Remove unneeded semicolon")
+
 * v6.1.106-2024-08-21
 	* Merge/Rebase v6.1.106
 
@@ -381,30 +394,3 @@
 	* update CVE
 
 	* update list
-
-* v6.1.97-2024-07-08
-
-	* ignore non Renesas code of this patch
-
-		commit 7621aabdae410cfc0c28358baab7ae13c551aa7c
-		("dt-bindings: Add missing start and/or end of line regex anchors")
-
-	* Below patches are backported
-
-		commit e696d70f600abbe2b7fe81008bcb24d239a74672
-		("dt-bindings: usb: renesas,usb-xhci: Document RZ/V2M support")
-
-		commit 9486e56c49be7dc771ecae9bf67b1034cd440d10
-		("dt-bindings: usb: Add RZ/V2M USB3DRD binding")
-
-		commit 4056d88866e5941ebd15fb2523119f0ddc5186da
-		("spi: renesas,rzv2m-csi: Add CSI (SPI) target related property")
-
-		commit 14dde0746e67588524d8dd464ac5e4afd3478bb3
-		("spi: dt-bindings: Add bindings for RZ/V2M CSI")
-
-		commit fff8f6b0723159f09eb2c067e626fb96402c0e53
-		("regulator: dt-bindings: Add Renesas RAA215300 PMIC bindings")
-
-		commit 7b71da59122c3ab82908910abf78db1fd6340cac
-		("ASoC: dt-bindings: Add missing (unevaluated|additional)Properties on child node schemas")
