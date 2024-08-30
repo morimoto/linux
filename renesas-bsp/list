@@ -1,3 +1,4 @@
+Local     / ASoC: Remove unneeded semicolon
 Local     / arm64: dts: renesas: white-hawk-cpu: Add aliases for I2C buses
 Local     / arm64: dts: renesas: r8a779g0: Use MDIO node for all AVB devices
 v6.9      / arm64: dts: renesas: Improve TMU interrupt descriptions
