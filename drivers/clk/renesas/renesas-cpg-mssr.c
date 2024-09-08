@@ -40,7 +40,6 @@
 #define WARN_DEBUG(x)	do { } while (0)
 #endif
 
-
 /*
  * Module Standby and Software Reset register offets.
  *
@@ -719,7 +718,6 @@ static inline int cpg_mssr_reset_controller_register(struct cpg_mssr_priv *priv)
 	return 0;
 }
 #endif /* !CONFIG_RESET_CONTROLLER */
-
 
 static const struct of_device_id cpg_mssr_match[] = {
 #ifdef CONFIG_CLK_R7S9210
