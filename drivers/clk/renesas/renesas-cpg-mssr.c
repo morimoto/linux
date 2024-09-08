@@ -892,7 +892,6 @@ static inline int cpg_mssr_reset_controller_register(struct cpg_mssr_priv *priv)
 }
 #endif /* !CONFIG_RESET_CONTROLLER */
 
-
 static const struct of_device_id cpg_mssr_match[] = {
 #ifdef CONFIG_CLK_R7S9210
 	{
