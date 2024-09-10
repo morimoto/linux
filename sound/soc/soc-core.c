@@ -1564,6 +1564,20 @@ static void soc_remove_component(struct snd_soc_component *component,
 	snd_soc_component_module_put_when_remove(component);
 }
 
+int snd_soc_dapm_add_routes_with_card(struct snd_soc_card *card,
+				      struct snd_soc_dapm_context *dapm,
+				      const struct snd_soc_dapm_route *routes, int num)
+{
+	int ret = snd_soc_dapm_add_routes(dapm, routes, num);
+
+	if (ret < 0 && card->disable_route_checks) {
+		dev_info(card->dev, "disable_route_checks set, ignoring errors on add_routes\n");
+		ret = 0;
+	}
+
+	return ret;
+}
+
 static int soc_probe_component(struct snd_soc_card *card,
 			       struct snd_soc_component *component)
 {
@@ -1641,14 +1655,9 @@ static int soc_probe_component(struct snd_soc_card *card,
 	if (ret < 0)
 		goto err_probe;
 
-	ret = snd_soc_dapm_add_routes(dapm,
-				      component->driver->dapm_routes,
-				      component->driver->num_dapm_routes);
-	if (ret < 0 && card->disable_route_checks) {
-		dev_info(card->dev,
-			 "%s: disable_route_checks set, ignoring errors on add_routes\n", __func__);
-		ret = 0;
-	}
+	ret = snd_soc_dapm_add_routes_with_card(card, dapm,
+				  component->driver->dapm_routes,
+				  component->driver->num_dapm_routes);
 	if (ret < 0)
 		goto err_probe;
 
@@ -2227,18 +2236,13 @@ static int snd_soc_bind_card(struct snd_soc_card *card)
 	if (ret < 0)
 		goto probe_end;
 
-	ret = snd_soc_dapm_add_routes(&card->dapm, card->dapm_routes,
-				      card->num_dapm_routes);
-	if (ret < 0 && card->disable_route_checks) {
-		dev_info(card->dev,
-			 "%s: disable_route_checks set, ignoring errors on add_routes\n", __func__);
-		ret = 0;
-	}
+	ret = snd_soc_dapm_add_routes_with_card(card, &card->dapm,
+				  card->dapm_routes, card->num_dapm_routes);
 	if (ret < 0)
 		goto probe_end;
 
-	ret = snd_soc_dapm_add_routes(&card->dapm, card->of_dapm_routes,
-				      card->num_of_dapm_routes);
+	ret = snd_soc_dapm_add_routes_with_card(card, &card->dapm,
+				  card->of_dapm_routes, card->num_of_dapm_routes);
 	if (ret < 0)
 		goto probe_end;
 
