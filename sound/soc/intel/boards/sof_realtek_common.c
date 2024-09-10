@@ -185,11 +185,8 @@ static int rt1011_init(struct snd_soc_pcm_runtime *rtd)
 		if (!soc_intel_is_cml()) {
 			ret = snd_soc_dapm_new_controls(&card->dapm, realtek_2spk_widgets,
 							ARRAY_SIZE(realtek_2spk_widgets));
-			if (ret) {
-				dev_err(rtd->dev, "fail to add rt1011 widgets, ret %d\n",
-					ret);
+			if (ret)
 				return ret;
-			}
 
 			ret = snd_soc_add_card_controls(card, realtek_2spk_kcontrols,
 							ARRAY_SIZE(realtek_2spk_kcontrols));
@@ -212,11 +209,8 @@ static int rt1011_init(struct snd_soc_pcm_runtime *rtd)
 	case 4:
 		ret = snd_soc_dapm_new_controls(&card->dapm, realtek_4spk_widgets,
 						num_codecs);
-		if (ret) {
-			dev_err(rtd->dev, "fail to add rt1011 widgets, ret %d\n",
-				ret);
+		if (ret)
 			return ret;
-		}
 
 		ret = snd_soc_add_card_controls(card, realtek_4spk_kcontrols,
 						num_codecs);
@@ -328,10 +322,8 @@ static int rt1015p_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, realtek_2spk_widgets,
 					ARRAY_SIZE(realtek_2spk_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "fail to add rt1015p widgets, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_add_card_controls(card, realtek_2spk_kcontrols,
 					ARRAY_SIZE(realtek_2spk_kcontrols));
@@ -457,11 +449,8 @@ static int speaker_codec_init_lr(struct snd_soc_pcm_runtime *rtd)
 	case 2:
 		ret = snd_soc_dapm_new_controls(&card->dapm, realtek_2spk_widgets,
 						ARRAY_SIZE(realtek_2spk_widgets));
-		if (ret) {
-			dev_err(rtd->dev, "fail to add rt1015 widgets, ret %d\n",
-				ret);
+		if (ret)
 			return ret;
-		}
 
 		ret = snd_soc_add_card_controls(card, realtek_2spk_kcontrols,
 						ARRAY_SIZE(realtek_2spk_kcontrols));
@@ -529,10 +518,8 @@ static int rt1308_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, rt1308_dapm_widgets,
 					ARRAY_SIZE(rt1308_dapm_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "fail to add dapm controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_add_card_controls(card, rt1308_kcontrols,
 					ARRAY_SIZE(rt1308_kcontrols));
@@ -608,10 +595,8 @@ static int rt1019p_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, realtek_2spk_widgets,
 					ARRAY_SIZE(realtek_2spk_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "fail to add rt1019p widgets, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_add_card_controls(card, realtek_2spk_kcontrols,
 					ARRAY_SIZE(realtek_2spk_kcontrols));

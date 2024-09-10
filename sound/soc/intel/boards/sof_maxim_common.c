@@ -244,11 +244,8 @@ static int max_98373_spk_codec_init(struct snd_soc_pcm_runtime *rtd)
 	case 2:
 		ret = snd_soc_dapm_new_controls(&card->dapm, maxim_2spk_widgets,
 						ARRAY_SIZE(maxim_2spk_widgets));
-		if (ret) {
-			dev_err(rtd->dev, "fail to add max98373 widgets, ret %d\n",
-				ret);
+		if (ret)
 			return ret;
-		}
 
 		ret = snd_soc_add_card_controls(card, maxim_2spk_kcontrols,
 						ARRAY_SIZE(maxim_2spk_kcontrols));
@@ -415,12 +412,8 @@ static int max_98390_init(struct snd_soc_pcm_runtime *rtd)
 		/* add widgets/controls/dapm for tweeter speakers */
 		ret = snd_soc_dapm_new_controls(&card->dapm, max_98390_tt_dapm_widgets,
 						ARRAY_SIZE(max_98390_tt_dapm_widgets));
-		if (ret) {
-			dev_err(rtd->dev, "unable to add tweeter dapm widgets, ret %d\n",
-				ret);
-			/* Don't need to add routes if widget addition failed */
-			return ret;
-		}
+		if (ret)
+			return ret; /* Don't need to add routes if widget addition failed */
 
 		ret = snd_soc_add_card_controls(card, max_98390_tt_kcontrols,
 						ARRAY_SIZE(max_98390_tt_kcontrols));
@@ -437,11 +430,8 @@ static int max_98390_init(struct snd_soc_pcm_runtime *rtd)
 		/* add regular speakers dapm route */
 		ret = snd_soc_dapm_new_controls(&card->dapm, maxim_2spk_widgets,
 						ARRAY_SIZE(maxim_2spk_widgets));
-		if (ret) {
-			dev_err(rtd->dev, "fail to add max98390 woofer widgets, ret %d\n",
-				ret);
+		if (ret)
 			return ret;
-		}
 
 		ret = snd_soc_add_card_controls(card, maxim_2spk_kcontrols,
 						ARRAY_SIZE(maxim_2spk_kcontrols));
@@ -548,11 +538,8 @@ static int max_98357a_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, max_98357a_dapm_widgets,
 					ARRAY_SIZE(max_98357a_dapm_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add dapm controls, ret %d\n", ret);
-		/* Don't need to add routes if widget addition failed */
-		return ret;
-	}
+	if (ret)
+		return ret; /* Don't need to add routes if widget addition failed */
 
 	ret = snd_soc_add_card_controls(card, max_98357a_kcontrols,
 					ARRAY_SIZE(max_98357a_kcontrols));

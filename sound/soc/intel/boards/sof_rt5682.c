@@ -447,11 +447,8 @@ static int rt5650_spk_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, rt5650_spk_widgets,
 					ARRAY_SIZE(rt5650_spk_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "fail to add rt5650 spk widgets, ret %d\n",
-			ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_add_card_controls(card, rt5650_spk_kcontrols,
 					ARRAY_SIZE(rt5650_spk_kcontrols));
