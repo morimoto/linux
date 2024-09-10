@@ -2561,10 +2561,8 @@ static int wcd937x_soc_codec_probe(struct snd_soc_component *component)
 	if (chipid == CHIPID_WCD9375) {
 		ret = snd_soc_dapm_new_controls(dapm, wcd9375_dapm_widgets,
 						ARRAY_SIZE(wcd9375_dapm_widgets));
-		if (ret < 0) {
-			dev_err(component->dev, "Failed to add snd_ctls\n");
+		if (ret < 0)
 			return ret;
-		}
 
 		ret = snd_soc_dapm_add_routes(dapm, wcd9375_audio_map,
 					      ARRAY_SIZE(wcd9375_audio_map));
