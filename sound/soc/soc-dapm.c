@@ -4276,6 +4276,7 @@ int snd_soc_dapm_new_dai_widgets(struct snd_soc_dapm_context *dapm,
 {
 	struct snd_soc_dapm_widget template;
 	struct snd_soc_dapm_widget *w;
+	int ret = 0;
 
 	WARN_ON(dapm->dev != dai->dev);
 
@@ -4291,8 +4292,10 @@ int snd_soc_dapm_new_dai_widgets(struct snd_soc_dapm_context *dapm,
 			template.name);
 
 		w = snd_soc_dapm_new_control_unlocked(dapm, &template);
-		if (IS_ERR(w))
-			return PTR_ERR(w);
+		if (IS_ERR(w)) {
+			ret = PTR_ERR(w);
+			goto end;
+		}
 
 		w->priv = dai;
 		snd_soc_dai_set_widget_playback(dai, w);
@@ -4307,14 +4310,17 @@ int snd_soc_dapm_new_dai_widgets(struct snd_soc_dapm_context *dapm,
 			template.name);
 
 		w = snd_soc_dapm_new_control_unlocked(dapm, &template);
-		if (IS_ERR(w))
-			return PTR_ERR(w);
+		if (IS_ERR(w)) {
+			ret = PTR_ERR(w);
+			goto end;
+		}
 
 		w->priv = dai;
 		snd_soc_dai_set_widget_capture(dai, w);
 	}
-
-	return 0;
+end:
+	return snd_soc_ret(dai->dev, ret,
+			   "Failed to create DAI widgets\n");
 }
 EXPORT_SYMBOL_GPL(snd_soc_dapm_new_dai_widgets);
 
