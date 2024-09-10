@@ -109,7 +109,6 @@ static int hda_codec_register_dais(struct hda_codec *codec, struct snd_soc_compo
 
 		ret = snd_soc_dapm_new_dai_widgets(dapm, dai);
 		if (ret < 0) {
-			dev_err(component->dev, "create widgets failed: %d\n", ret);
 			snd_soc_unregister_dai(dai);
 			return ret;
 		}

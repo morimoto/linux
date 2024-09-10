@@ -1561,11 +1561,8 @@ static int avs_component_hda_probe(struct snd_soc_component *component)
 		}
 
 		ret = snd_soc_dapm_new_dai_widgets(dapm, dai);
-		if (ret < 0) {
-			dev_err(component->dev, "create widgets failed: %d\n",
-				ret);
+		if (ret < 0)
 			goto exit;
-		}
 	}
 
 	ret = avs_component_probe(component);

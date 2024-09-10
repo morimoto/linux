@@ -1446,7 +1446,6 @@ static int soc_tplg_dai_create(struct soc_tplg *tplg,
 	/* Create the DAI widgets here */
 	ret = snd_soc_dapm_new_dai_widgets(dapm, dai);
 	if (ret != 0) {
-		dev_err(dai->dev, "Failed to create DAI widgets %d\n", ret);
 		snd_soc_unregister_dai(dai);
 		return ret;
 	}

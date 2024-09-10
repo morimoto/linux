@@ -1623,11 +1623,8 @@ static int soc_probe_component(struct snd_soc_card *card,
 
 	for_each_component_dais(component, dai) {
 		ret = snd_soc_dapm_new_dai_widgets(dapm, dai);
-		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to create DAI widgets %d\n", ret);
+		if (ret)
 			goto err_probe;
-		}
 	}
 
 	ret = snd_soc_component_probe(component);
