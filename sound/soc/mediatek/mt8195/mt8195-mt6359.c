@@ -525,11 +525,8 @@ static int mt8195_rt1011_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, mt8195_dual_speaker_widgets,
 					ARRAY_SIZE(mt8195_dual_speaker_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add dapm controls, ret %d\n", ret);
-		/* Don't need to add routes if widget addition failed */
-		return ret;
-	}
+	if (ret)
+		return ret; /* Don't need to add routes if widget addition failed */
 
 	ret = snd_soc_add_card_controls(card, mt8195_dual_speaker_controls,
 					ARRAY_SIZE(mt8195_dual_speaker_controls));
@@ -549,11 +546,8 @@ static int mt8195_dumb_amp_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, mt8195_speaker_widgets,
 					ARRAY_SIZE(mt8195_speaker_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add dapm controls, ret %d\n", ret);
-		/* Don't need to add routes if widget addition failed */
-		return ret;
-	}
+	if (ret)
+		return ret; /* Don't need to add routes if widget addition failed */
 
 	ret = snd_soc_add_card_controls(card, mt8195_speaker_controls,
 					ARRAY_SIZE(mt8195_speaker_controls));
@@ -583,11 +577,8 @@ static int mt8195_max98390_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, mt8195_dual_speaker_widgets,
 					ARRAY_SIZE(mt8195_dual_speaker_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add dapm controls, ret %d\n", ret);
-		/* Don't need to add routes if widget addition failed */
-		return ret;
-	}
+	if (ret)
+		return ret; /* Don't need to add routes if widget addition failed */
 
 	ret = snd_soc_add_card_controls(card, mt8195_dual_speaker_controls,
 					ARRAY_SIZE(mt8195_dual_speaker_controls));

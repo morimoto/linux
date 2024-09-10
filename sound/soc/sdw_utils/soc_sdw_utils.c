@@ -724,11 +724,8 @@ int asoc_sdw_rtd_init(struct snd_soc_pcm_runtime *rtd)
 			ret = snd_soc_dapm_new_controls(&card->dapm,
 							codec_info->dais[dai_index].widgets,
 							codec_info->dais[dai_index].num_widgets);
-			if (ret) {
-				dev_err(card->dev, "%#x widgets addition failed: %d\n",
-					codec_info->part_id, ret);
+			if (ret)
 				return ret;
-			}
 		}
 
 skip_add_controls_widgets:

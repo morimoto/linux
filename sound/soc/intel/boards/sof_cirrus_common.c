@@ -52,10 +52,8 @@ static int cs35l41_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, cs35l41_dapm_widgets,
 					ARRAY_SIZE(cs35l41_dapm_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "fail to add dapm controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_add_card_controls(card, cs35l41_kcontrols,
 					ARRAY_SIZE(cs35l41_kcontrols));

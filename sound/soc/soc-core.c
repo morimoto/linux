@@ -1614,12 +1614,8 @@ static int soc_probe_component(struct snd_soc_card *card,
 	ret = snd_soc_dapm_new_controls(dapm,
 					component->driver->dapm_widgets,
 					component->driver->num_dapm_widgets);
-
-	if (ret != 0) {
-		dev_err(component->dev,
-			"Failed to create new controls %d\n", ret);
+	if (ret)
 		goto err_probe;
-	}
 
 	for_each_component_dais(component, dai) {
 		ret = snd_soc_dapm_new_dai_widgets(dapm, dai);

@@ -2089,10 +2089,8 @@ static int tx_macro_component_extend(struct snd_soc_component *comp)
 	if (tx->data->extra_widgets_num) {
 		ret = snd_soc_dapm_new_controls(dapm, tx->data->extra_widgets,
 						tx->data->extra_widgets_num);
-		if (ret) {
-			dev_err(tx->dev, "failed to add extra widgets: %d\n", ret);
+		if (ret)
 			return ret;
-		}
 	}
 
 	if (tx->data->extra_routes_num) {

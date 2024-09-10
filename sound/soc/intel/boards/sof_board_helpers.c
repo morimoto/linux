@@ -55,10 +55,8 @@ static int dmic_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, dmic_widgets,
 					ARRAY_SIZE(dmic_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "fail to add dmic widgets, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dapm_add_routes(&card->dapm, dmic_routes,
 				      ARRAY_SIZE(dmic_routes));

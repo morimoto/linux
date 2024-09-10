@@ -112,10 +112,8 @@ static int es7134_component_probe(struct snd_soc_component *c)
 	if (chip->extra_widget_num) {
 		ret = snd_soc_dapm_new_controls(dapm, chip->extra_widgets,
 						chip->extra_widget_num);
-		if (ret) {
-			dev_err(c->dev, "failed to add extra widgets\n");
+		if (ret)
 			return ret;
-		}
 	}
 
 	if (chip->extra_route_num) {
