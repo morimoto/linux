@@ -3872,6 +3872,10 @@ int snd_soc_dapm_new_controls(struct snd_soc_dapm_context *dapm,
 		widget++;
 	}
 	snd_soc_dapm_mutex_unlock(dapm);
+
+	if (ret)
+		dev_err(dapm->dev, "Failed to add widget controls %d\n", ret);
+
 	return ret;
 }
 EXPORT_SYMBOL_GPL(snd_soc_dapm_new_controls);

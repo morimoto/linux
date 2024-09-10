@@ -47,10 +47,8 @@ static int asoc_sdw_bridge_cs35l56_asp_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, bridge_widgets,
 					ARRAY_SIZE(bridge_widgets));
-	if (ret) {
-		dev_err(card->dev, "widgets addition failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dapm_add_routes(&card->dapm, bridge_map, ARRAY_SIZE(bridge_map));
 	if (ret) {
