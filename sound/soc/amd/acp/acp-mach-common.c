@@ -131,10 +131,8 @@ static int acp_card_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, rt5682_widgets,
 					ARRAY_SIZE(rt5682_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add widget dapm controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_add_card_controls(card, rt5682_controls,
 					ARRAY_SIZE(rt5682_controls));
@@ -374,10 +372,8 @@ static int acp_card_rt5682s_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, rt5682s_widgets,
 					ARRAY_SIZE(rt5682s_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add widget dapm controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_add_card_controls(card, rt5682s_controls,
 					ARRAY_SIZE(rt5682s_controls));
@@ -589,10 +585,8 @@ static int acp_card_rt1019_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, rt1019_widgets,
 					ARRAY_SIZE(rt1019_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add widget dapm controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_add_card_controls(card, rt1019_controls,
 					ARRAY_SIZE(rt1019_controls));
@@ -754,10 +748,8 @@ static int acp_card_maxim_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, max98360a_widgets,
 					ARRAY_SIZE(max98360a_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add widget dapm controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_add_card_controls(card, max98360a_controls,
 					ARRAY_SIZE(max98360a_controls));
@@ -891,11 +883,8 @@ static int acp_card_max98388_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_dapm_new_controls(&card->dapm, max98388_widgets,
 					ARRAY_SIZE(max98388_widgets));
 
-	if (ret) {
-		dev_err(rtd->dev, "unable to add widget dapm controls, ret %d\n", ret);
-		/* Don't need to add routes if widget addition failed */
-		return ret;
-	}
+	if (ret)
+		return ret; /* Don't need to add routes if widget addition failed */
 
 	ret = snd_soc_add_card_controls(card, max98388_controls,
 					ARRAY_SIZE(max98388_controls));
@@ -978,10 +967,8 @@ static int acp_card_nau8825_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, nau8825_widgets,
 					ARRAY_SIZE(nau8825_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add widget dapm controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_add_card_controls(card, nau8825_controls,
 					ARRAY_SIZE(nau8825_controls));
@@ -1189,11 +1176,8 @@ static int acp_8821_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, nau8821_widgets,
 					ARRAY_SIZE(nau8821_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add widget dapm controls, ret %d\n", ret);
-		// Don't need to add routes if widget addition failed
-		return ret;
-	}
+	if (ret)
+		return ret; /* Don't need to add routes if widget addition failed */
 
 	ret = snd_soc_add_card_controls(card, nau8821_controls,
 					ARRAY_SIZE(nau8821_controls));

@@ -638,10 +638,8 @@ static int mt8188_dumb_amp_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, mt8188_dumb_spk_widgets,
 					ARRAY_SIZE(mt8188_dumb_spk_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add Dumb Speaker dapm, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_add_card_controls(card, mt8188_dumb_spk_controls,
 					ARRAY_SIZE(mt8188_dumb_spk_controls));
@@ -692,10 +690,8 @@ static int mt8188_max98390_codec_init(struct snd_soc_pcm_runtime *rtd)
 	/* add regular speakers dapm route */
 	ret = snd_soc_dapm_new_controls(&card->dapm, mt8188_dual_spk_widgets,
 					ARRAY_SIZE(mt8188_dual_spk_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add Left/Right Speaker widget, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_add_card_controls(card, mt8188_dual_spk_controls,
 					ARRAY_SIZE(mt8188_dual_spk_controls));
@@ -710,11 +706,8 @@ static int mt8188_max98390_codec_init(struct snd_soc_pcm_runtime *rtd)
 	/* add widgets/controls/dapm for rear speakers */
 	ret = snd_soc_dapm_new_controls(&card->dapm, mt8188_rear_spk_widgets,
 					ARRAY_SIZE(mt8188_rear_spk_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add Rear Speaker widget, ret %d\n", ret);
-		/* Don't need to add routes if widget addition failed */
-		return ret;
-	}
+	if (ret)
+		return ret; /* Don't need to add routes if widget addition failed */
 
 	ret = snd_soc_add_card_controls(card, mt8188_rear_spk_controls,
 					ARRAY_SIZE(mt8188_rear_spk_controls));
@@ -737,10 +730,8 @@ static int mt8188_headset_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_new_controls(&card->dapm, mt8188_nau8825_widgets,
 					ARRAY_SIZE(mt8188_nau8825_widgets));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add nau8825 card widget, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_add_card_controls(card, mt8188_nau8825_controls,
 					ARRAY_SIZE(mt8188_nau8825_controls));
