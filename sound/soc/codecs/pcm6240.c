@@ -1399,9 +1399,6 @@ static int pcmdev_gain_ctrl_add(struct pcmdevice_priv *pcm_dev,
 	}
 
 	ret = snd_soc_add_component_controls(comp, pcmdev_controls, mix_index);
-	if (ret)
-		dev_err(pcm_dev->dev, "%s: add_controls err = %d\n",
-			__func__, ret);
 out:
 	return ret;
 }
@@ -1434,9 +1431,6 @@ static int pcmdev_profile_ctrl_add(struct pcmdevice_priv *pcm_dev)
 	pcmdev_ctrl->put = pcmdevice_set_profile_id;
 
 	ret = snd_soc_add_component_controls(comp, pcmdev_ctrl, 1);
-	if (ret)
-		dev_err(pcm_dev->dev, "%s: add_controls err = %d\n",
-			__func__, ret);
 
 	return ret;
 }
