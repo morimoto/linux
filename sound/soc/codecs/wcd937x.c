@@ -2568,10 +2568,8 @@ static int wcd937x_soc_codec_probe(struct snd_soc_component *component)
 
 		ret = snd_soc_dapm_add_routes(dapm, wcd9375_audio_map,
 					      ARRAY_SIZE(wcd9375_audio_map));
-		if (ret < 0) {
-			dev_err(component->dev, "Failed to add routes\n");
+		if (ret < 0)
 			return ret;
-		}
 	}
 
 	ret = wcd937x_mbhc_init(component);
