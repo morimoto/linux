@@ -74,10 +74,8 @@ static int at91sam9g20ek_wm8731_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, WM8731_SYSCLK_MCLK,
 				     MCLK_RATE, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(dev, "Failed to set WM8731 SYSCLK: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 #ifndef ENABLE_MIC_INPUT
 	snd_soc_dapm_nc_pin(&rtd->card->dapm, "Int Mic");
