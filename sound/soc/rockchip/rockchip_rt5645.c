@@ -90,17 +90,11 @@ static int rk_aif1_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_dai_set_sysclk(cpu_dai, 0, mclk,
 				     SND_SOC_CLOCK_OUT);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "Can't set codec clock %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, mclk,
 				     SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "Can't set codec clock %d\n", ret);
-		return ret;
-	}
 
 	return ret;
 }
@@ -118,10 +112,8 @@ static int rk_init(struct snd_soc_pcm_runtime *runtime)
 					 &headset_jack,
 					 headset_jack_pins,
 					 ARRAY_SIZE(headset_jack_pins));
-	if (ret) {
-		dev_err(card->dev, "New Headset Jack failed! (%d)\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return rt5645_set_jack_detect(snd_soc_rtd_to_codec(runtime, 0)->component,
 				     &headset_jack,
