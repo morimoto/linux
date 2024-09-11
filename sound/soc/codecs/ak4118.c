@@ -307,11 +307,8 @@ static int ak4118_probe(struct snd_soc_component *component)
 
 	ret = snd_soc_add_component_controls(component, ak4118_iec958_controls,
 					 ARRAY_SIZE(ak4118_iec958_controls));
-	if (ret) {
-		dev_err(component->dev,
-			"failed to add component kcontrols: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return 0;
 }
