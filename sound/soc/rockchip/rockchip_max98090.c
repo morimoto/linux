@@ -169,10 +169,8 @@ static int rk_aif1_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_dai_set_sysclk(cpu_dai, 0, mclk,
 				     SND_SOC_CLOCK_OUT);
-	if (ret) {
-		dev_err(cpu_dai->dev, "Can't set cpu dai clock %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, mclk,
 				     SND_SOC_CLOCK_IN);
@@ -180,11 +178,6 @@ static int rk_aif1_hw_params(struct snd_pcm_substream *substream,
 	/* HDMI codec dai does not need to set sysclk. */
 	if (!strcmp(rtd->dai_link->name, "HDMI"))
 		return 0;
-
-	if (ret) {
-		dev_err(codec_dai->dev, "Can't set codec dai clock %d\n", ret);
-		return ret;
-	}
 
 	return ret;
 }
@@ -230,10 +223,8 @@ static int rk_hdmi_init(struct snd_soc_pcm_runtime *runtime)
 	/* enable jack detection */
 	ret = snd_soc_card_jack_new(card, "HDMI Jack", SND_JACK_LINEOUT,
 				    &rk_hdmi_jack);
-	if (ret) {
-		dev_err(card->dev, "Can't new HDMI Jack %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return snd_soc_component_set_jack(component, &rk_hdmi_jack, NULL);
 }
