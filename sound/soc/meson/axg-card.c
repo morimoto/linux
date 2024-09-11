@@ -65,11 +65,8 @@ static int axg_card_tdm_dai_init(struct snd_soc_pcm_runtime *rtd)
 					       be->codec_masks[i].tx,
 					       be->codec_masks[i].rx,
 					       be->slots, be->slot_width);
-		if (ret && ret != -ENOTSUPP) {
-			dev_err(codec_dai->dev,
-				"setting tdm link slots failed\n");
+		if (ret && ret != -ENOTSUPP)
 			return ret;
-		}
 	}
 
 	ret = axg_tdm_set_tdm_slots(snd_soc_rtd_to_cpu(rtd, 0), be->tx_mask, be->rx_mask,
