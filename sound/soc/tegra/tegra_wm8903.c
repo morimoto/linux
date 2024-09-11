@@ -84,10 +84,8 @@ static int tegra_wm8903_init(struct snd_soc_pcm_runtime *rtd)
 						 machine->mic_jack,
 						 tegra_wm8903_mic_jack_pins,
 						 ARRAY_SIZE(tegra_wm8903_mic_jack_pins));
-		if (err) {
-			dev_err(rtd->dev, "Mic Jack creation failed: %d\n", err);
+		if (err)
 			return err;
-		}
 
 		if (of_property_read_bool(card->dev->of_node, "nvidia,headset"))
 			shrt = SND_JACK_MICROPHONE;
