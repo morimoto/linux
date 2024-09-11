@@ -68,14 +68,10 @@ static int avs_rt5514_hw_params(struct snd_pcm_substream *substream,
 	int ret;
 
 	ret = snd_soc_dai_set_tdm_slot(codec_dai, 0xF, 0, 8, 16);
-	if (ret < 0) {
-		dev_err(rtd->dev, "set TDM slot err:%d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5514_SCLK_S_MCLK, 24576000, SND_SOC_CLOCK_IN);
-	if (ret < 0)
-		dev_err(rtd->dev, "set sysclk err: %d\n", ret);
 
 	return ret;
 }

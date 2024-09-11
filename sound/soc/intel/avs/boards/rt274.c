@@ -39,10 +39,8 @@ avs_rt274_clock_control(struct snd_soc_dapm_widget *w, struct snd_kcontrol *cont
 	/* Codec needs clock for Jack detection and button press */
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT274_SCLK_S_PLL2, AVS_RT274_FREQ_OUT,
 				     SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "set codec sysclk failed: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	if (SND_SOC_DAPM_EVENT_ON(event)) {
 		int ratio = 100;
@@ -51,10 +49,8 @@ avs_rt274_clock_control(struct snd_soc_dapm_widget *w, struct snd_kcontrol *cont
 
 		ret = snd_soc_dai_set_pll(codec_dai, 0, RT274_PLL2_S_BCLK,
 					  AVS_RT274_BE_FIXUP_RATE * ratio, AVS_RT274_FREQ_OUT);
-		if (ret) {
-			dev_err(codec_dai->dev, "failed to enable PLL2: %d\n", ret);
+		if (ret)
 			return ret;
-		}
 	}
 
 	return 0;
@@ -111,10 +107,8 @@ static int avs_rt274_codec_init(struct snd_soc_pcm_runtime *runtime)
 
 	/* TDM 4 slots 24 bit, set Rx & Tx bitmask to 4 active slots */
 	ret = snd_soc_dai_set_tdm_slot(codec_dai, 0xF, 0xF, 4, 24);
-	if (ret < 0) {
-		dev_err(card->dev, "can't set codec pcm format %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	card->dapm.idle_bias_off = true;
 
