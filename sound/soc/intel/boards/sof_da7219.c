@@ -48,15 +48,11 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 	if (SND_SOC_DAPM_EVENT_OFF(event)) {
 		ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_MCLK,
 					  0, 0);
-		if (ret)
-			dev_err(card->dev, "failed to stop PLL: %d\n", ret);
 	} else if (SND_SOC_DAPM_EVENT_ON(event)) {
 		dev_dbg(card->dev, "pll srm mode\n");
 
 		ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_PLL_SRM,
 					  0, DA7219_PLL_FREQ_OUT_98304);
-		if (ret)
-			dev_err(card->dev, "failed to start PLL: %d\n", ret);
 	}
 
 	return ret;
@@ -120,10 +116,8 @@ static int da7219_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, DA7219_CLKSRC_MCLK, mclk_rate,
 				     SND_SOC_CLOCK_IN);
-	if (ret) {
-		dev_err(rtd->dev, "fail to set sysclk, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	/*
 	 * Use PLL bypass mode if MCLK is available, be sure to set the
@@ -135,10 +129,8 @@ static int da7219_codec_init(struct snd_soc_pcm_runtime *rtd)
 		dev_dbg(rtd->dev, "pll bypass mode, mclk rate %d\n", mclk_rate);
 
 		ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_MCLK, 0, 0);
-		if (ret) {
-			dev_err(rtd->dev, "fail to set pll, ret %d\n", ret);
+		if (ret)
 			return ret;
-		}
 
 		ctx->da7219.pll_bypass = true;
 	}
@@ -152,10 +144,8 @@ static int da7219_codec_init(struct snd_soc_pcm_runtime *rtd)
 					 SND_JACK_BTN_1 | SND_JACK_BTN_2 |
 					 SND_JACK_BTN_3 | SND_JACK_LINEOUT,
 					 jack, jack_pins, ARRAY_SIZE(jack_pins));
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack creation failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_1, KEY_VOLUMEUP);
@@ -163,10 +153,6 @@ static int da7219_codec_init(struct snd_soc_pcm_runtime *rtd)
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_3, KEY_VOICECOMMAND);
 
 	ret = snd_soc_component_set_jack(component, jack, NULL);
-	if (ret) {
-		dev_err(rtd->dev, "fail to set component jack, ret %d\n", ret);
-		return ret;
-	}
 
 	return ret;
 }

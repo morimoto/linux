@@ -117,17 +117,13 @@ static int rt5660_hw_params(struct snd_pcm_substream *substream,
 				     RT5660_SCLK_S_PLL1,
 				     params_rate(params) * 512,
 				     SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(rtd->dev, "snd_soc_dai_set_sysclk err = %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, 0,
 				  RT5660_PLL1_S_BCLK,
 				  params_rate(params) * 50,
 				  params_rate(params) * 512);
-	if (ret < 0)
-		dev_err(codec_dai->dev, "can't set codec pll: %d\n", ret);
 
 	return ret;
 }

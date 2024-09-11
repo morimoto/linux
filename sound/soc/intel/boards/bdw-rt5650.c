@@ -112,10 +112,8 @@ static int bdw_rt5650_hw_params(struct snd_pcm_substream *substream,
 	 */
 	ret = snd_soc_dai_set_pll(codec_dai, 0, RT5645_PLL1_S_MCLK,
 		24000000, 19200000);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec pll: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	/* The actual MCLK freq is 24MHz. The codec is told that MCLK is
 	 * 24.576MHz to satisfy the requirement of rl6231_get_clk_info.
@@ -123,10 +121,6 @@ static int bdw_rt5650_hw_params(struct snd_pcm_substream *substream,
 	 */
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5645_SCLK_S_PLL1, 24576000,
 		SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec sysclk configuration\n");
-		return ret;
-	}
 
 	return ret;
 }
@@ -186,23 +180,17 @@ static int bdw_rt5650_init(struct snd_soc_pcm_runtime *rtd)
 	/* TDM 4 slots 24 bit, set Rx & Tx bitmask to 4 active slots */
 	ret = snd_soc_dai_set_tdm_slot(codec_dai, 0xF, 0xF, 4, 24);
 
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec TDM slot %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	/* Create and initialize headphone jack */
-	if (snd_soc_card_jack_new_pins(rtd->card, "Headphone Jack",
-			SND_JACK_HEADPHONE, &headphone_jack,
-			&headphone_jack_pin, 1)) {
-		dev_err(component->dev, "Can't create headphone jack\n");
-	}
+	snd_soc_card_jack_new_pins(rtd->card, "Headphone Jack",
+				   SND_JACK_HEADPHONE, &headphone_jack,
+				   &headphone_jack_pin, 1);
 
 	/* Create and initialize mic jack */
-	if (snd_soc_card_jack_new_pins(rtd->card, "Mic Jack",
-			SND_JACK_MICROPHONE, &mic_jack, &mic_jack_pin, 1)) {
-		dev_err(component->dev, "Can't create mic jack\n");
-	}
+	snd_soc_card_jack_new_pins(rtd->card, "Mic Jack",
+				   SND_JACK_MICROPHONE, &mic_jack, &mic_jack_pin, 1);
 
 	rt5645_set_jack_detect(component, &headphone_jack, &mic_jack, NULL);
 

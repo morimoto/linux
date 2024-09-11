@@ -124,27 +124,18 @@ static int byt_wm5102_prepare_and_enable_pll1(struct snd_soc_dai *codec_dai, int
 	/* Configure the FLL1 PLL before selecting it */
 	ret = snd_soc_dai_set_pll(codec_dai, WM5102_FLL1, ARIZONA_CLK_SRC_MCLK1,
 				  priv->mclk_freq, rate * sr_mult);
-	if (ret) {
-		dev_err(codec_component->dev, "Error setting PLL: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_component_set_sysclk(codec_component, ARIZONA_CLK_SYSCLK,
 					   ARIZONA_CLK_SRC_FLL1, rate * sr_mult,
 					   SND_SOC_CLOCK_IN);
-	if (ret) {
-		dev_err(codec_component->dev, "Error setting SYSCLK: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, ARIZONA_CLK_SYSCLK,
 				     rate * 512, SND_SOC_CLOCK_IN);
-	if (ret) {
-		dev_err(codec_component->dev, "Error setting clock: %d\n", ret);
-		return ret;
-	}
-
-	return 0;
+	return ret;
 }
 
 static int platform_clock_control(struct snd_soc_dapm_widget *w,
@@ -292,10 +283,8 @@ static int byt_wm5102_init(struct snd_soc_pcm_runtime *runtime)
 
 	ret = snd_soc_add_card_controls(card, byt_wm5102_controls,
 					ARRAY_SIZE(byt_wm5102_controls));
-	if (ret) {
-		dev_err(card->dev, "Error adding card controls: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	switch (quirk & BYT_WM5102_IN_MAP) {
 	case BYT_WM5102_INTMIC_IN3L_HSMIC_IN1L:
@@ -364,10 +353,8 @@ static int byt_wm5102_init(struct snd_soc_pcm_runtime *runtime)
 	ret = snd_soc_card_jack_new_pins(card, "Headset", jack_type,
 					 &priv->jack, byt_wm5102_pins,
 					 ARRAY_SIZE(byt_wm5102_pins));
-	if (ret) {
-		dev_err(card->dev, "Error creating jack: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_soc_component_set_jack(component, &priv->jack, NULL);
 
@@ -408,18 +395,12 @@ static int byt_wm5102_codec_fixup(struct snd_soc_pcm_runtime *rtd,
 				  SND_SOC_DAIFMT_I2S     |
 				  SND_SOC_DAIFMT_NB_NF   |
 				  SND_SOC_DAIFMT_BP_FP);
-	if (ret) {
-		dev_err(rtd->dev, "Error setting format to I2S: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_tdm_slot(snd_soc_rtd_to_cpu(rtd, 0), 0x3, 0x3, 2, bits);
-	if (ret) {
-		dev_err(rtd->dev, "Error setting I2S config: %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int byt_wm5102_aif1_startup(struct snd_pcm_substream *substream)

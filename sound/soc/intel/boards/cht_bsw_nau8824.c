@@ -78,18 +78,13 @@ static int cht_aif1_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, NAU8824_CLK_FLL_FS, 0,
 		SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set FS clock %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
+
 	ret = snd_soc_dai_set_pll(codec_dai, 0, 0, params_rate(params),
 		params_rate(params) * 256);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set FLL: %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int cht_codec_init(struct snd_soc_pcm_runtime *runtime)
@@ -110,11 +105,9 @@ static int cht_codec_init(struct snd_soc_pcm_runtime *runtime)
 		SND_JACK_BTN_2 | SND_JACK_BTN_3;
 	ret = snd_soc_card_jack_new_pins(runtime->card, "Headset", jack_type,
 		jack, cht_bsw_jack_pins, ARRAY_SIZE(cht_bsw_jack_pins));
-	if (ret) {
-		dev_err(runtime->dev,
-			"Headset Jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
+
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_1, KEY_VOICECOMMAND);
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_2, KEY_VOLUMEUP);
@@ -146,12 +139,8 @@ static int cht_codec_fixup(struct snd_soc_pcm_runtime *rtd,
 
 	/* TDM 4 slots 24 bit, set Rx & Tx bitmask to 4 active slots */
 	ret = snd_soc_dai_set_tdm_slot(snd_soc_rtd_to_codec(rtd, 0), 0xf, 0x1, 4, 24);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec TDM slot %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int cht_aif1_startup(struct snd_pcm_substream *substream)

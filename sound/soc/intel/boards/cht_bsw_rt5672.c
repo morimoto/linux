@@ -75,18 +75,14 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 		/* set codec PLL source to the 19.2MHz platform clock (MCLK) */
 		ret = snd_soc_dai_set_pll(codec_dai, 0, RT5670_PLL1_S_MCLK,
 				CHT_PLAT_CLK_3_HZ, 48000 * 512);
-		if (ret < 0) {
-			dev_err(card->dev, "can't set codec pll: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 
 		/* set codec sysclk source to PLL */
 		ret = snd_soc_dai_set_sysclk(codec_dai, RT5670_SCLK_S_PLL1,
 			48000 * 512, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(card->dev, "can't set codec sysclk: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 	} else {
 		/* Set codec sysclk source to its internal clock because codec
 		 * PLL will be off when idle and MCLK will also be off by ACPI
@@ -95,10 +91,8 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 		 */
 		ret = snd_soc_dai_set_sysclk(codec_dai, RT5670_SCLK_S_RCCLK,
 					     48000 * 512, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(card->dev, "failed to set codec sysclk: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 
 		if (ctx->mclk)
 			clk_disable_unprepare(ctx->mclk);
@@ -166,20 +160,15 @@ static int cht_aif1_hw_params(struct snd_pcm_substream *substream,
 	/* set codec PLL source to the 19.2MHz platform clock (MCLK) */
 	ret = snd_soc_dai_set_pll(codec_dai, 0, RT5670_PLL1_S_MCLK,
 				  CHT_PLAT_CLK_3_HZ, params_rate(params) * 512);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec pll: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	/* set codec sysclk source to PLL */
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5670_SCLK_S_PLL1,
 				     params_rate(params) * 512,
 				     SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec sysclk: %d\n", ret);
-		return ret;
-	}
-	return 0;
+
+	return ret;
 }
 
 static const struct acpi_gpio_params headset_gpios = { 0, 0, false };
@@ -305,18 +294,12 @@ static int cht_codec_fixup(struct snd_soc_pcm_runtime *rtd,
 				  SND_SOC_DAIFMT_I2S     |
 				  SND_SOC_DAIFMT_NB_NF   |
 				  SND_SOC_DAIFMT_BP_FP);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set format to I2S, err %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_tdm_slot(snd_soc_rtd_to_cpu(rtd, 0), 0x3, 0x3, 2, bits);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set I2S config, err %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int cht_aif1_startup(struct snd_pcm_substream *substream)

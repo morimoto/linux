@@ -173,11 +173,9 @@ static int max_98373_hw_params(struct snd_pcm_substream *substream,
 						       max_98373_tdm_mask[i].rx,
 						       tdm_slots,
 						       params_width(params));
-			if (ret < 0) {
-				dev_err(codec_dai->dev, "fail to set tdm slot, ret %d\n",
-					ret);
+			if (ret < 0)
 				return ret;
-			}
+
 			break;
 		default:
 			dev_dbg(codec_dai->dev, "codec is in I2S mode\n");
@@ -254,19 +252,14 @@ static int max_98373_spk_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 		ret = snd_soc_add_card_controls(card, maxim_2spk_kcontrols,
 						ARRAY_SIZE(maxim_2spk_kcontrols));
-		if (ret) {
-			dev_err(rtd->dev, "fail to add max98373 kcontrols, ret %d\n",
-				ret);
+		if (ret)
 			return ret;
-		}
 
 		ret = snd_soc_dapm_add_routes(&card->dapm, max_98373_dapm_routes,
 					      ARRAY_SIZE(max_98373_dapm_routes));
-		if (ret) {
-			dev_err(rtd->dev, "fail to add max98373 routes, ret %d\n",
-				ret);
+		if (ret)
 			return ret;
-		}
+
 		break;
 	default:
 		dev_err(rtd->dev, "max98373: invalid num_codecs %d\n", num_codecs);
@@ -399,11 +392,9 @@ static int max_98390_hw_params(struct snd_pcm_substream *substream,
 						       max_98390_tdm_mask[i].rx,
 						       4,
 						       params_width(params));
-			if (ret < 0) {
-				dev_err(codec_dai->dev, "fail to set tdm slot, ret %d\n",
-					ret);
+			if (ret < 0)
 				return ret;
-			}
+
 			break;
 		default:
 			dev_dbg(codec_dai->dev, "codec is in I2S mode\n");
@@ -433,19 +424,13 @@ static int max_98390_init(struct snd_soc_pcm_runtime *rtd)
 
 		ret = snd_soc_add_card_controls(card, max_98390_tt_kcontrols,
 						ARRAY_SIZE(max_98390_tt_kcontrols));
-		if (ret) {
-			dev_err(rtd->dev, "unable to add tweeter controls, ret %d\n",
-				ret);
+		if (ret)
 			return ret;
-		}
 
 		ret = snd_soc_dapm_add_routes(&card->dapm, max_98390_tt_dapm_routes,
 					      ARRAY_SIZE(max_98390_tt_dapm_routes));
-		if (ret) {
-			dev_err(rtd->dev, "unable to add tweeter dapm routes, ret %d\n",
-				ret);
+		if (ret)
 			return ret;
-		}
 
 		fallthrough;
 	case 2:
@@ -460,19 +445,14 @@ static int max_98390_init(struct snd_soc_pcm_runtime *rtd)
 
 		ret = snd_soc_add_card_controls(card, maxim_2spk_kcontrols,
 						ARRAY_SIZE(maxim_2spk_kcontrols));
-		if (ret) {
-			dev_err(rtd->dev, "fail to add max98390 woofer kcontrols, ret %d\n",
-				ret);
+		if (ret)
 			return ret;
-		}
 
 		ret = snd_soc_dapm_add_routes(&card->dapm, max_98390_dapm_routes,
 					      ARRAY_SIZE(max_98390_dapm_routes));
-		if (ret) {
-			dev_err(rtd->dev, "unable to add dapm routes, ret %d\n",
-				ret);
+		if (ret)
 			return ret;
-		}
+
 		break;
 	default:
 		dev_err(rtd->dev, "invalid codec number %d\n", num_codecs);
@@ -576,16 +556,11 @@ static int max_98357a_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, max_98357a_kcontrols,
 					ARRAY_SIZE(max_98357a_kcontrols));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dapm_add_routes(&card->dapm, max_98357a_dapm_routes,
 				      ARRAY_SIZE(max_98357a_dapm_routes));
-
-	if (ret)
-		dev_err(rtd->dev, "unable to add dapm routes, ret %d\n", ret);
 
 	return ret;
 }
