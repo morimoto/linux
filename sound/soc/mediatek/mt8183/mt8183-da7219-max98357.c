@@ -73,8 +73,6 @@ static int mt8183_da7219_i2s_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_dai_set_sysclk(snd_soc_rtd_to_cpu(rtd, 0), 0,
 				     mclk_fs, SND_SOC_CLOCK_OUT);
-	if (ret < 0)
-		dev_err(rtd->dev, "failed to set cpu dai sysclk\n");
 
 	for_each_rtd_codec_dais(rtd, j, codec_dai) {
 		if (!strcmp(codec_dai->component->name, DA7219_DEV_NAME)) {
@@ -82,8 +80,6 @@ static int mt8183_da7219_i2s_hw_params(struct snd_pcm_substream *substream,
 						     DA7219_CLKSRC_MCLK,
 						     mclk_fs,
 						     SND_SOC_CLOCK_IN);
-			if (ret < 0)
-				dev_err(rtd->dev, "failed to set sysclk\n");
 
 			if ((rate % 8000) == 0)
 				freq = DA7219_PLL_FREQ_OUT_98304;
@@ -93,9 +89,6 @@ static int mt8183_da7219_i2s_hw_params(struct snd_pcm_substream *substream,
 			ret = snd_soc_dai_set_pll(codec_dai, 0,
 						  DA7219_SYSCLK_PLL_SRM,
 						  0, freq);
-			if (ret)
-				dev_err(rtd->dev, "failed to start PLL: %d\n",
-					ret);
 		}
 	}
 
@@ -112,11 +105,8 @@ static int mt8183_da7219_hw_free(struct snd_pcm_substream *substream)
 		if (!strcmp(codec_dai->component->name, DA7219_DEV_NAME)) {
 			ret = snd_soc_dai_set_pll(codec_dai,
 						  0, DA7219_SYSCLK_MCLK, 0, 0);
-			if (ret < 0) {
-				dev_err(rtd->dev, "failed to stop PLL: %d\n",
-					ret);
+			if (ret < 0)
 				break;
-			}
 		}
 	}
 
@@ -143,19 +133,15 @@ mt8183_da7219_rt1015_i2s_hw_params(struct snd_pcm_substream *substream,
 			ret = snd_soc_dai_set_pll(codec_dai, 0,
 						  RT1015_PLL_S_BCLK,
 						  rate * 64, rate * 256);
-			if (ret) {
-				dev_err(rtd->dev, "failed to set pll\n");
+			if (ret)
 				return ret;
-			}
 
 			ret = snd_soc_dai_set_sysclk(codec_dai,
 						     RT1015_SCLK_S_PLL,
 						     rate * 256,
 						     SND_SOC_CLOCK_IN);
-			if (ret) {
-				dev_err(rtd->dev, "failed to set sysclk\n");
+			if (ret)
 				return ret;
-			}
 		}
 	}
 

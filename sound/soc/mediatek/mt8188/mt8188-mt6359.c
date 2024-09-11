@@ -593,19 +593,12 @@ static int mt8188_hdmi_codec_init(struct snd_soc_pcm_runtime *rtd)
 					 SND_JACK_LINEOUT, jack,
 					 mt8188_hdmi_jack_pins,
 					 ARRAY_SIZE(mt8188_hdmi_jack_pins));
-	if (ret) {
-		dev_err(rtd->dev, "%s, new jack failed: %d\n", __func__, ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_component_set_jack(component, jack, NULL);
-	if (ret) {
-		dev_err(rtd->dev, "%s, set jack failed on %s (ret=%d)\n",
-			__func__, component->name, ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int mt8188_dptx_codec_init(struct snd_soc_pcm_runtime *rtd)
@@ -618,19 +611,12 @@ static int mt8188_dptx_codec_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_card_jack_new_pins(rtd->card, "DP Jack", SND_JACK_LINEOUT,
 					 jack, mt8188_dp_jack_pins,
 					 ARRAY_SIZE(mt8188_dp_jack_pins));
-	if (ret) {
-		dev_err(rtd->dev, "%s, new jack failed: %d\n", __func__, ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_component_set_jack(component, jack, NULL);
-	if (ret) {
-		dev_err(rtd->dev, "%s, set jack failed on %s (ret=%d)\n",
-			__func__, component->name, ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int mt8188_dumb_amp_init(struct snd_soc_pcm_runtime *rtd)
@@ -647,10 +633,8 @@ static int mt8188_dumb_amp_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, mt8188_dumb_spk_controls,
 					ARRAY_SIZE(mt8188_dumb_spk_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add Dumb card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return 0;
 }
@@ -701,10 +685,8 @@ static int mt8188_max98390_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, mt8188_dual_spk_controls,
 					ARRAY_SIZE(mt8188_dual_spk_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add Left/Right card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	if (rtd->dai_link->num_codecs <= 2)
 		return 0;
@@ -720,10 +702,8 @@ static int mt8188_max98390_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, mt8188_rear_spk_controls,
 					ARRAY_SIZE(mt8188_rear_spk_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add Rear card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return 0;
 }
@@ -746,10 +726,8 @@ static int mt8188_headset_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, mt8188_nau8825_controls,
 					ARRAY_SIZE(mt8188_nau8825_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add nau8825 card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_card_jack_new_pins(rtd->card, "Headset Jack",
 					 SND_JACK_HEADSET | SND_JACK_BTN_0 |
@@ -758,10 +736,8 @@ static int mt8188_headset_codec_init(struct snd_soc_pcm_runtime *rtd)
 					 jack,
 					 nau8825_jack_pins,
 					 ARRAY_SIZE(nau8825_jack_pins));
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack creation failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	if (card_data->flags & ES8326_HS_PRESENT) {
 		snd_jack_set_key(jack->jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
@@ -777,12 +753,7 @@ static int mt8188_headset_codec_init(struct snd_soc_pcm_runtime *rtd)
 	
 	ret = snd_soc_component_set_jack(component, jack, NULL);
 
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack call-back failed: %d\n", ret);
-		return ret;
-	}
-
-	return 0;
+	return ret;
 };
 
 static void mt8188_headset_codec_exit(struct snd_soc_pcm_runtime *rtd)
@@ -807,20 +778,14 @@ static int mt8188_nau8825_hw_params(struct snd_pcm_substream *substream,
 	/* Configure clock for codec */
 	ret = snd_soc_dai_set_sysclk(codec_dai, NAU8825_CLK_FLL_BLK, 0,
 				     SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set BCLK clock %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	/* Configure pll for codec */
 	ret = snd_soc_dai_set_pll(codec_dai, 0, 0, clk_freq,
 				  params_rate(params) * 256);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set BCLK: %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static const struct snd_soc_ops mt8188_nau8825_ops = {
@@ -845,24 +810,18 @@ static int mt8188_rt5682s_i2s_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x00, 0x0, 0x2, bitwidth);
-	if (ret) {
-		dev_err(card->dev, "failed to set tdm slot\n");
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, RT5682_PLL1, RT5682_PLL1_S_BCLK1,
 				  rate * 32, rate * 512);
-	if (ret) {
-		dev_err(card->dev, "failed to set pll\n");
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5682_SCLK_S_PLL1,
 				     rate * 512, SND_SOC_CLOCK_IN);
-	if (ret) {
-		dev_err(card->dev, "failed to set sysclk\n");
+	if (ret)
 		return ret;
-	}
 
 	return snd_soc_dai_set_sysclk(cpu_dai, 0, rate * 128,
 				      SND_SOC_CLOCK_OUT);
@@ -909,10 +868,8 @@ static int mt8188_es8326_hw_params(struct snd_pcm_substream *substream,
 
 	/* Configure MCLK for codec */
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, rate * 256, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set MCLK %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	/* Configure MCLK for cpu */
 	return snd_soc_dai_set_sysclk(cpu_dai, 0, rate * 256, SND_SOC_CLOCK_OUT);

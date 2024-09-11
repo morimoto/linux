@@ -409,24 +409,18 @@ static int mt8195_rt5682_etdm_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x00, 0x0, 0x2, bitwidth);
-	if (ret) {
-		dev_err(card->dev, "failed to set tdm slot\n");
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, RT5682_PLL1, RT5682_PLL1_S_MCLK,
 				  rate * 256, rate * 512);
-	if (ret) {
-		dev_err(card->dev, "failed to set pll\n");
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5682_SCLK_S_PLL1,
 				     rate * 512, SND_SOC_CLOCK_IN);
-	if (ret) {
-		dev_err(card->dev, "failed to set sysclk\n");
+	if (ret)
 		return ret;
-	}
 
 	return snd_soc_dai_set_sysclk(cpu_dai, 0, rate * 256,
 				      SND_SOC_CLOCK_OUT);
@@ -457,10 +451,8 @@ static int mt8195_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 				    SND_JACK_BTN_3,
 				    jack, mt8195_jack_pins,
 				    ARRAY_SIZE(mt8195_jack_pins));
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack creation failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_1, KEY_VOICECOMMAND);
@@ -468,12 +460,8 @@ static int mt8195_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_3, KEY_VOLUMEDOWN);
 
 	ret = snd_soc_component_set_jack(cmpnt_codec, jack, NULL);
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack set failed: %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 };
 
 static int mt8195_rt1011_etdm_hw_params(struct snd_pcm_substream *substream,
@@ -481,7 +469,6 @@ static int mt8195_rt1011_etdm_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai;
-	struct snd_soc_card *card = rtd->card;
 	int srate, i, ret;
 
 	srate = params_rate(params);
@@ -489,18 +476,14 @@ static int mt8195_rt1011_etdm_hw_params(struct snd_pcm_substream *substream,
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
 		ret = snd_soc_dai_set_pll(codec_dai, 0, RT1011_PLL1_S_BCLK,
 					  64 * srate, 256 * srate);
-		if (ret < 0) {
-			dev_err(card->dev, "codec_dai clock not set\n");
+		if (ret < 0)
 			return ret;
-		}
 
 		ret = snd_soc_dai_set_sysclk(codec_dai,
 					     RT1011_FS_SYS_PRE_S_PLL1,
 					     256 * srate, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(card->dev, "codec_dai clock not set\n");
+		if (ret < 0)
 			return ret;
-		}
 	}
 	return 0;
 }
@@ -550,15 +533,11 @@ static int mt8195_rt1011_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, mt8195_dual_speaker_controls,
 					ARRAY_SIZE(mt8195_dual_speaker_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dapm_add_routes(&card->dapm, mt8195_rt1011_routes,
 				      ARRAY_SIZE(mt8195_rt1011_routes));
-	if (ret)
-		dev_err(rtd->dev, "unable to add dapm routes, ret %d\n", ret);
 
 	return ret;
 }
@@ -578,12 +557,8 @@ static int mt8195_dumb_amp_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, mt8195_speaker_controls,
 					ARRAY_SIZE(mt8195_speaker_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int mt8195_rt1019_init(struct snd_soc_pcm_runtime *rtd)
@@ -597,8 +572,6 @@ static int mt8195_rt1019_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dapm_add_routes(&card->dapm, mt8195_rt1019_routes,
 				      ARRAY_SIZE(mt8195_rt1019_routes));
-	if (ret)
-		dev_err(rtd->dev, "unable to add dapm routes, ret %d\n", ret);
 
 	return ret;
 }
@@ -618,15 +591,11 @@ static int mt8195_max98390_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, mt8195_dual_speaker_controls,
 					ARRAY_SIZE(mt8195_dual_speaker_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dapm_add_routes(&card->dapm, mt8195_max98390_routes,
 				      ARRAY_SIZE(mt8195_max98390_routes));
-	if (ret)
-		dev_err(rtd->dev, "unable to add dapm routes, ret %d\n", ret);
 
 	return ret;
 }

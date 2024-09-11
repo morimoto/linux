@@ -62,7 +62,6 @@ static int mt8192_rt1015_i2s_hw_params(struct snd_pcm_substream *substream,
 				       struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai;
 	unsigned int rate = params_rate(params);
@@ -75,19 +74,15 @@ static int mt8192_rt1015_i2s_hw_params(struct snd_pcm_substream *substream,
 					  RT1015_PLL_S_BCLK,
 					  params_rate(params) * 64,
 					  params_rate(params) * 256);
-		if (ret) {
-			dev_err(card->dev, "failed to set pll\n");
+		if (ret)
 			return ret;
-		}
 
 		ret = snd_soc_dai_set_sysclk(codec_dai,
 					     RT1015_SCLK_S_PLL,
 					     params_rate(params) * 256,
 					     SND_SOC_CLOCK_IN);
-		if (ret) {
-			dev_err(card->dev, "failed to set sysclk\n");
+		if (ret)
 			return ret;
-		}
 	}
 
 	return snd_soc_dai_set_sysclk(cpu_dai, 0, mclk_fs, SND_SOC_CLOCK_OUT);
@@ -113,28 +108,22 @@ static int mt8192_rt5682x_i2s_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x00, 0x0, 0x2, bitwidth);
-	if (ret) {
-		dev_err(card->dev, "failed to set tdm slot\n");
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, RT5682_PLL1,
 				  RT5682_PLL1_S_BCLK1,
 				  params_rate(params) * 64,
 				  params_rate(params) * 512);
-	if (ret) {
-		dev_err(card->dev, "failed to set pll\n");
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai,
 				     RT5682_SCLK_S_PLL1,
 				     params_rate(params) * 512,
 				     SND_SOC_CLOCK_IN);
-	if (ret) {
-		dev_err(card->dev, "failed to set sysclk\n");
+	if (ret)
 		return ret;
-	}
 
 	return snd_soc_dai_set_sysclk(cpu_dai, 0, mclk_fs, SND_SOC_CLOCK_OUT);
 }
@@ -347,10 +336,8 @@ static int mt8192_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 				    SND_JACK_BTN_3,
 				    jack, mt8192_jack_pins,
 				    ARRAY_SIZE(mt8192_jack_pins));
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack creation failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_1, KEY_VOICECOMMAND);
@@ -369,10 +356,8 @@ static int mt8192_mt6359_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 	int ret;
 
 	ret = snd_soc_card_jack_new(rtd->card, "HDMI Jack", SND_JACK_LINEOUT, jack);
-	if (ret) {
-		dev_err(rtd->dev, "HDMI Jack creation failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return snd_soc_component_set_jack(cmpnt_codec, jack, NULL);
 }

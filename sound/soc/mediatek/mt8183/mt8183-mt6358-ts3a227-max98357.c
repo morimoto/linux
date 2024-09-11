@@ -64,24 +64,19 @@ mt8183_mt6358_rt1015_i2s_hw_params(struct snd_pcm_substream *substream,
 	unsigned int rate = params_rate(params);
 	unsigned int mclk_fs_ratio = 128;
 	unsigned int mclk_fs = rate * mclk_fs_ratio;
-	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *codec_dai;
 	int ret, i;
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
 		ret = snd_soc_dai_set_pll(codec_dai, 0, RT1015_PLL_S_BCLK,
 				rate * 64, rate * 256);
-		if (ret < 0) {
-			dev_err(card->dev, "failed to set pll\n");
+		if (ret < 0)
 			return ret;
-		}
 
 		ret = snd_soc_dai_set_sysclk(codec_dai, RT1015_SCLK_S_PLL,
 				rate * 256, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(card->dev, "failed to set sysclk\n");
+		if (ret < 0)
 			return ret;
-		}
 	}
 
 	return snd_soc_dai_set_sysclk(snd_soc_rtd_to_cpu(rtd, 0),
