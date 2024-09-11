@@ -74,17 +74,13 @@ static int avs_max98373_hw_params(struct snd_pcm_substream *substream,
 	for_each_rtd_codec_dais(runtime, i, codec_dai) {
 		if (!strcmp(codec_dai->component->name, MAX98373_DEV0_NAME)) {
 			ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x30, 3, 8, 16);
-			if (ret < 0) {
-				dev_err(runtime->dev, "DEV0 TDM slot err:%d\n", ret);
+			if (ret < 0)
 				return ret;
-			}
 		}
 		if (!strcmp(codec_dai->component->name, MAX98373_DEV1_NAME)) {
 			ret = snd_soc_dai_set_tdm_slot(codec_dai, 0xC0, 3, 8, 16);
-			if (ret < 0) {
-				dev_err(runtime->dev, "DEV1 TDM slot err:%d\n", ret);
+			if (ret < 0)
 				return ret;
-			}
 		}
 	}
 

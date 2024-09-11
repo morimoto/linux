@@ -117,10 +117,8 @@ static int avs_rt5682_codec_init(struct snd_soc_pcm_runtime *runtime)
 	ret = snd_soc_card_jack_new_pins(card, "Headset Jack", SND_JACK_HEADSET | SND_JACK_BTN_0 |
 					 SND_JACK_BTN_1 | SND_JACK_BTN_2 | SND_JACK_BTN_3, jack,
 					 pins, num_pins);
-	if (ret) {
-		dev_err(card->dev, "Headset Jack creation failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_1, KEY_VOICECOMMAND);
@@ -128,12 +126,8 @@ static int avs_rt5682_codec_init(struct snd_soc_pcm_runtime *runtime)
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_3, KEY_VOLUMEDOWN);
 
 	ret = snd_soc_component_set_jack(component, jack, NULL);
-	if (ret) {
-		dev_err(card->dev, "Headset Jack call-back failed: %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 };
 
 static void avs_rt5682_codec_exit(struct snd_soc_pcm_runtime *rtd)
@@ -163,17 +157,11 @@ avs_rt5682_hw_params(struct snd_pcm_substream *substream, struct snd_pcm_hw_para
 	freq_out = params_rate(params) * 512;
 
 	ret = snd_soc_dai_set_pll(codec_dai, RT5682_PLL1, pll_source, freq_in, freq_out);
-	if (ret < 0)
-		dev_err(runtime->dev, "Set PLL failed: %d\n", ret);
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5682_SCLK_S_PLL1, freq_out, SND_SOC_CLOCK_IN);
-	if (ret < 0)
-		dev_err(runtime->dev, "Set sysclk failed: %d\n", ret);
 
 	/* slot_width should be equal or larger than data length. */
 	ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x0, 0x0, 2, params_width(params));
-	if (ret < 0)
-		dev_err(runtime->dev, "Set TDM slot failed: %d\n", ret);
 
 	return ret;
 }

@@ -39,8 +39,6 @@ avs_nau8825_clock_control(struct snd_soc_dapm_widget *w, struct snd_kcontrol *co
 					     SND_SOC_CLOCK_IN);
 	else
 		ret = snd_soc_dai_set_sysclk(codec_dai, NAU8825_CLK_INTERNAL, 0, SND_SOC_CLOCK_IN);
-	if (ret < 0)
-		dev_err(card->dev, "Set sysclk failed: %d\n", ret);
 
 	return ret;
 }
@@ -146,20 +144,14 @@ static int avs_nau8825_trigger(struct snd_pcm_substream *substream, int cmd)
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 		ret = snd_soc_dai_set_sysclk(codec_dai, NAU8825_CLK_FLL_FS, 0, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(codec_dai->dev, "can't set FS clock %d\n", ret);
+		if (ret < 0)
 			break;
-		}
 
 		ret = snd_soc_dai_set_pll(codec_dai, 0, 0, runtime->rate, runtime->rate * 256);
-		if (ret < 0)
-			dev_err(codec_dai->dev, "can't set FLL: %d\n", ret);
 		break;
 
 	case SNDRV_PCM_TRIGGER_RESUME:
 		ret = snd_soc_dai_set_pll(codec_dai, 0, 0, runtime->rate, runtime->rate * 256);
-		if (ret < 0)
-			dev_err(codec_dai->dev, "can't set FLL: %d\n", ret);
 		break;
 	}
 

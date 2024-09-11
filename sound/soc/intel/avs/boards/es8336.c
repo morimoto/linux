@@ -151,7 +151,6 @@ static int avs_es8336_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(runtime, 0);
 	int clk_freq;
-	int ret;
 
 	switch (boot_cpu_data.x86_vfm) {
 	case INTEL_KABYLAKE_L:
@@ -163,11 +162,7 @@ static int avs_es8336_hw_params(struct snd_pcm_substream *substream,
 		break;
 	}
 
-	ret = snd_soc_dai_set_sysclk(codec_dai, 1, clk_freq, SND_SOC_CLOCK_OUT);
-	if (ret < 0)
-		dev_err(runtime->dev, "Set codec sysclk failed: %d\n", ret);
-
-	return ret;
+	return snd_soc_dai_set_sysclk(codec_dai, 1, clk_freq, SND_SOC_CLOCK_OUT);
 }
 
 static const struct snd_soc_ops avs_es8336_ops = {
