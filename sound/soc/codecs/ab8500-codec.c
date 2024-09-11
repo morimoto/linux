@@ -1970,12 +1970,8 @@ static int ab8500_audio_setup_mics(struct snd_soc_component *component,
 		amic_micbias_str(amics->mic2_micbias));
 	route = &ab8500_dapm_routes_mic2_vamicx[amics->mic2_micbias];
 	status |= snd_soc_dapm_add_routes(dapm, route, 1);
-	if (status < 0) {
-		dev_err(component->dev,
-			"%s: Failed to add AMic-regulator DAPM-routes (%d).\n",
-			__func__, status);
+	if (status < 0)
 		return status;
-	}
 
 	/* Set AMic-configuration */
 	dev_dbg(component->dev, "%s: Mic 1 mic-type: %s\n", __func__,
@@ -2489,12 +2485,9 @@ static int ab8500_codec_probe(struct snd_soc_component *component)
 	/* Add filter controls */
 	status = snd_soc_add_component_controls(component, ab8500_filter_controls,
 				ARRAY_SIZE(ab8500_filter_controls));
-	if (status < 0) {
-		dev_err(dev,
-			"%s: failed to add ab8500 filter controls (%d).\n",
-			__func__, status);
+	if (status < 0)
 		return status;
-	}
+
 	fc = (struct filter_control *)
 		&ab8500_filter_controls[AB8500_FILTER_ANC_FIR].private_value;
 	drvdata->anc_fir_values = (long *)fc->value;
