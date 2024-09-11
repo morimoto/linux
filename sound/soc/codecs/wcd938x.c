@@ -3123,22 +3123,16 @@ static int wcd938x_soc_codec_probe(struct snd_soc_component *component)
 	case WCD9380:
 		ret = snd_soc_add_component_controls(component, wcd9380_snd_controls,
 					ARRAY_SIZE(wcd9380_snd_controls));
-		if (ret < 0) {
-			dev_err(component->dev,
-				"%s: Failed to add snd ctrls for variant: %d\n",
-				__func__, wcd938x->variant);
+		if (ret < 0)
 			goto err_free_aux_pdm_wd_int;
-		}
+
 		break;
 	case WCD9385:
 		ret = snd_soc_add_component_controls(component, wcd9385_snd_controls,
 					ARRAY_SIZE(wcd9385_snd_controls));
-		if (ret < 0) {
-			dev_err(component->dev,
-				"%s: Failed to add snd ctrls for variant: %d\n",
-				__func__, wcd938x->variant);
+		if (ret < 0)
 			goto err_free_aux_pdm_wd_int;
-		}
+
 		break;
 	default:
 		break;
