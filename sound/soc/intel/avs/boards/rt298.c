@@ -113,18 +113,13 @@ avs_rt298_hw_params(struct snd_pcm_substream *substream, struct snd_pcm_hw_param
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	unsigned int clk_freq;
-	int ret;
 
 	if (dmi_first_match(kblr_dmi_table))
 		clk_freq = 24000000;
 	else
 		clk_freq = 19200000;
 
-	ret = snd_soc_dai_set_sysclk(codec_dai, RT298_SCLK_S_PLL, clk_freq, SND_SOC_CLOCK_IN);
-	if (ret < 0)
-		dev_err(rtd->dev, "Set codec sysclk failed: %d\n", ret);
-
-	return ret;
+	return snd_soc_dai_set_sysclk(codec_dai, RT298_SCLK_S_PLL, clk_freq, SND_SOC_CLOCK_IN);
 }
 
 static const struct snd_soc_ops avs_rt298_ops = {

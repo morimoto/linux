@@ -40,16 +40,11 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 		return -EIO;
 	}
 
-	if (SND_SOC_DAPM_EVENT_OFF(event)) {
+	if (SND_SOC_DAPM_EVENT_OFF(event))
 		ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_MCLK, 0, 0);
-		if (ret)
-			dev_err(card->dev, "failed to stop PLL: %d\n", ret);
-	} else if (SND_SOC_DAPM_EVENT_ON(event)) {
+	else if (SND_SOC_DAPM_EVENT_ON(event))
 		ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_PLL_SRM,
 					  0, DA7219_PLL_FREQ_OUT_98304);
-		if (ret)
-			dev_err(card->dev, "failed to start PLL: %d\n", ret);
-	}
 
 	return ret;
 }
@@ -107,10 +102,8 @@ static int avs_da7219_codec_init(struct snd_soc_pcm_runtime *runtime)
 		clk_freq = 24576000;
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, DA7219_CLKSRC_MCLK, clk_freq, SND_SOC_CLOCK_IN);
-	if (ret) {
-		dev_err(card->dev, "can't set codec sysclk configuration\n");
+	if (ret)
 		return ret;
-	}
 
 	num_pins = ARRAY_SIZE(card_headset_pins);
 	pins = devm_kmemdup(card->dev, card_headset_pins, sizeof(*pins) * num_pins, GFP_KERNEL);
@@ -126,10 +119,8 @@ static int avs_da7219_codec_init(struct snd_soc_pcm_runtime *runtime)
 					 SND_JACK_BTN_1 | SND_JACK_BTN_2 |
 					 SND_JACK_BTN_3 | SND_JACK_LINEOUT,
 					 jack, pins, num_pins);
-	if (ret) {
-		dev_err(card->dev, "Headset Jack creation failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_1, KEY_VOLUMEUP);
