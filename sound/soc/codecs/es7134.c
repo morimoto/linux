@@ -121,10 +121,8 @@ static int es7134_component_probe(struct snd_soc_component *c)
 	if (chip->extra_route_num) {
 		ret = snd_soc_dapm_add_routes(dapm, chip->extra_routes,
 					      chip->extra_route_num);
-		if (ret) {
-			dev_err(c->dev, "failed to add extra routes\n");
+		if (ret)
 			return ret;
-		}
 	}
 
 	return 0;
