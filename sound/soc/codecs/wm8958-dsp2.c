@@ -899,7 +899,7 @@ void wm8958_dsp2_init(struct snd_soc_component *component)
 	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
 	struct wm8994 *control = wm8994->wm8994;
 	struct wm8994_pdata *pdata = &control->pdata;
-	int ret, i;
+	int i;
 
 	wm8994->dsp_active = -1;
 
@@ -941,11 +941,8 @@ void wm8958_dsp2_init(struct snd_soc_component *component)
 		wm8994->mbc_enum.items = pdata->num_mbc_cfgs;
 		wm8994->mbc_enum.texts = wm8994->mbc_texts;
 
-		ret = snd_soc_add_component_controls(wm8994->hubs.component,
+		snd_soc_add_component_controls(wm8994->hubs.component,
 						 mbc_control, 1);
-		if (ret != 0)
-			dev_err(wm8994->hubs.component->dev,
-				"Failed to add MBC mode controls: %d\n", ret);
 	}
 
 	if (pdata->num_vss_cfgs) {
@@ -967,11 +964,8 @@ void wm8958_dsp2_init(struct snd_soc_component *component)
 		wm8994->vss_enum.items = pdata->num_vss_cfgs;
 		wm8994->vss_enum.texts = wm8994->vss_texts;
 
-		ret = snd_soc_add_component_controls(wm8994->hubs.component,
+		snd_soc_add_component_controls(wm8994->hubs.component,
 						 vss_control, 1);
-		if (ret != 0)
-			dev_err(wm8994->hubs.component->dev,
-				"Failed to add VSS mode controls: %d\n", ret);
 	}
 
 	if (pdata->num_vss_hpf_cfgs) {
@@ -994,12 +988,8 @@ void wm8958_dsp2_init(struct snd_soc_component *component)
 		wm8994->vss_hpf_enum.items = pdata->num_vss_hpf_cfgs;
 		wm8994->vss_hpf_enum.texts = wm8994->vss_hpf_texts;
 
-		ret = snd_soc_add_component_controls(wm8994->hubs.component,
+		snd_soc_add_component_controls(wm8994->hubs.component,
 						 hpf_control, 1);
-		if (ret != 0)
-			dev_err(wm8994->hubs.component->dev,
-				"Failed to add VSS HPFmode controls: %d\n",
-				ret);
 	}
 
 	if (pdata->num_enh_eq_cfgs) {
@@ -1022,11 +1012,7 @@ void wm8958_dsp2_init(struct snd_soc_component *component)
 		wm8994->enh_eq_enum.items = pdata->num_enh_eq_cfgs;
 		wm8994->enh_eq_enum.texts = wm8994->enh_eq_texts;
 
-		ret = snd_soc_add_component_controls(wm8994->hubs.component,
+		snd_soc_add_component_controls(wm8994->hubs.component,
 						 eq_control, 1);
-		if (ret != 0)
-			dev_err(wm8994->hubs.component->dev,
-				"Failed to add enhanced EQ controls: %d\n",
-				ret);
 	}
 }
