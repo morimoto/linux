@@ -82,10 +82,8 @@ static int byt_cht_cx2072x_init(struct snd_soc_pcm_runtime *rtd)
 	/* set the default PLL rate, the clock is handled by the codec driver */
 	ret = snd_soc_dai_set_sysclk(snd_soc_rtd_to_codec(rtd, 0), CX2072X_MCLK_EXTERNAL_PLL,
 				     19200000, SND_SOC_CLOCK_IN);
-	if (ret) {
-		dev_err(rtd->dev, "Could not set sysclk\n");
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_card_jack_new_pins(card, "Headset",
 					 SND_JACK_HEADSET | SND_JACK_BTN_0,
@@ -127,18 +125,12 @@ static int byt_cht_cx2072x_fixup(struct snd_soc_pcm_runtime *rtd,
 				SND_SOC_DAIFMT_I2S     |
 				SND_SOC_DAIFMT_NB_NF   |
 				SND_SOC_DAIFMT_BP_FP);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set format to I2S, err %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_tdm_slot(snd_soc_rtd_to_cpu(rtd, 0), 0x3, 0x3, 2, 24);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set I2S config, err %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int byt_cht_cx2072x_aif1_startup(struct snd_pcm_substream *substream)
