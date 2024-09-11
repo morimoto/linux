@@ -2098,10 +2098,8 @@ static int tx_macro_component_extend(struct snd_soc_component *comp)
 	if (tx->data->extra_routes_num) {
 		ret = snd_soc_dapm_add_routes(dapm, tx->data->extra_routes,
 					      tx->data->extra_routes_num);
-		if (ret) {
-			dev_err(tx->dev, "failed to add extra routes: %d\n", ret);
+		if (ret)
 			return ret;
-		}
 	}
 
 	return 0;
