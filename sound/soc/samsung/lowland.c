@@ -42,18 +42,14 @@ static int lowland_wm5100_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_component_set_sysclk(component, WM5100_CLK_SYSCLK,
 				       WM5100_CLKSRC_MCLK1, MCLK1_RATE,
 				       SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		pr_err("Failed to set SYSCLK clock source: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	/* Clock OPCLK, used by the other audio components. */
 	ret = snd_soc_component_set_sysclk(component, WM5100_CLK_OPCLK, 0,
 				       CLKOUT_RATE, 0);
-	if (ret < 0) {
-		pr_err("Failed to set OPCLK rate: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_card_jack_new_pins(rtd->card, "Headset",
 					 SND_JACK_LINEOUT | SND_JACK_HEADSET |

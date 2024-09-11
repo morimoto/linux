@@ -38,19 +38,15 @@ static int littlemill_set_bias_level(struct snd_soc_card *card,
 			ret = snd_soc_dai_set_pll(aif1_dai, WM8994_FLL1,
 						  WM8994_FLL_SRC_MCLK2, 32768,
 						  sample_rate * 512);
-			if (ret < 0) {
-				pr_err("Failed to start FLL: %d\n", ret);
+			if (ret < 0)
 				return ret;
-			}
 
 			ret = snd_soc_dai_set_sysclk(aif1_dai,
 						     WM8994_SYSCLK_FLL1,
 						     sample_rate * 512,
 						     SND_SOC_CLOCK_IN);
-			if (ret < 0) {
-				pr_err("Failed to set SYSCLK: %d\n", ret);
+			if (ret < 0)
 				return ret;
-			}
 		}
 		break;
 
@@ -79,17 +75,14 @@ static int littlemill_set_bias_level_post(struct snd_soc_card *card,
 	case SND_SOC_BIAS_STANDBY:
 		ret = snd_soc_dai_set_sysclk(aif1_dai, WM8994_SYSCLK_MCLK2,
 					     32768, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			pr_err("Failed to switch away from FLL1: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 
 		ret = snd_soc_dai_set_pll(aif1_dai, WM8994_FLL1,
 					  0, 0, 0);
-		if (ret < 0) {
-			pr_err("Failed to stop FLL1: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
+
 		break;
 
 	default:
@@ -113,19 +106,15 @@ static int littlemill_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_pll(codec_dai, WM8994_FLL1,
 				  WM8994_FLL_SRC_MCLK2, 32768,
 				  sample_rate * 512);
-	if (ret < 0) {
-		pr_err("Failed to start FLL: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai,
 				     WM8994_SYSCLK_FLL1,
 				     sample_rate * 512,
 				     SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		pr_err("Failed to set SYSCLK: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	return 0;
 }
@@ -189,33 +178,27 @@ static int bbclk_ev(struct snd_soc_dapm_widget *w,
 		ret = snd_soc_dai_set_pll(aif2_dai, WM8994_FLL2,
 					  WM8994_FLL_SRC_BCLK, 64 * 8000,
 					  8000 * 256);
-		if (ret < 0) {
-			pr_err("Failed to start FLL: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 
 		ret = snd_soc_dai_set_sysclk(aif2_dai, WM8994_SYSCLK_FLL2,
 					     8000 * 256,
 					     SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			pr_err("Failed to set SYSCLK: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
+
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		ret = snd_soc_dai_set_sysclk(aif2_dai, WM8994_SYSCLK_MCLK2,
 					     32768, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			pr_err("Failed to switch away from FLL2: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 
 		ret = snd_soc_dai_set_pll(aif2_dai, WM8994_FLL2,
 					  0, 0, 0);
-		if (ret < 0) {
-			pr_err("Failed to stop FLL2: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
+
 		break;
 	default:
 		return -EINVAL;

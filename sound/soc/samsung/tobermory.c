@@ -34,15 +34,12 @@ static int tobermory_set_bias_level(struct snd_soc_card *card,
 			ret = snd_soc_dai_set_pll(codec_dai, WM8962_FLL,
 						  WM8962_FLL_MCLK, 32768,
 						  sample_rate * 512);
-			if (ret < 0)
-				pr_err("Failed to start FLL: %d\n", ret);
 
 			ret = snd_soc_dai_set_sysclk(codec_dai,
 						     WM8962_SYSCLK_FLL,
 						     sample_rate * 512,
 						     SND_SOC_CLOCK_IN);
 			if (ret < 0) {
-				pr_err("Failed to set SYSCLK: %d\n", ret);
 				snd_soc_dai_set_pll(codec_dai, WM8962_FLL,
 						    0, 0, 0);
 				return ret;
@@ -75,17 +72,14 @@ static int tobermory_set_bias_level_post(struct snd_soc_card *card,
 	case SND_SOC_BIAS_STANDBY:
 		ret = snd_soc_dai_set_sysclk(codec_dai, WM8962_SYSCLK_MCLK,
 					     32768, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			pr_err("Failed to switch away from FLL: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 
 		ret = snd_soc_dai_set_pll(codec_dai, WM8962_FLL,
 					  0, 0, 0);
-		if (ret < 0) {
-			pr_err("Failed to stop FLL: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
+
 		break;
 
 	default:

@@ -39,10 +39,8 @@ static int speyside_set_bias_level(struct snd_soc_card *card,
 
 		ret = snd_soc_dai_set_pll(codec_dai, WM8996_FLL_MCLK2,
 					  0, 0, 0);
-		if (ret < 0) {
-			pr_err("Failed to stop FLL\n");
+		if (ret < 0)
 			return ret;
-		}
 		break;
 
 	default:
@@ -72,10 +70,8 @@ static int speyside_set_bias_level_post(struct snd_soc_card *card,
 			ret = snd_soc_dai_set_pll(codec_dai, 0,
 						  WM8996_FLL_MCLK2,
 						  32768, MCLK_AUDIO_RATE);
-			if (ret < 0) {
-				pr_err("Failed to start FLL\n");
+			if (ret < 0)
 				return ret;
-			}
 
 			ret = snd_soc_dai_set_sysclk(codec_dai,
 						     WM8996_SYSCLK_FLL,

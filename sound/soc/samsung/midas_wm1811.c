@@ -181,35 +181,26 @@ static int midas_start_fll1(struct snd_soc_pcm_runtime *rtd, unsigned int rate)
 		/* while reconfiguring, switch to MCLK2 for SYSCLK */
 		ret = snd_soc_dai_set_sysclk(aif1_dai, WM8994_SYSCLK_MCLK2,
 					     MCLK2_RATE, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(card->dev, "Unable to switch to MCLK2: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 	}
 
 	ret = snd_soc_dai_set_pll(aif1_dai, WM8994_FLL1, WM8994_FLL_SRC_MCLK1,
 				  MCLK1_RATE, rate);
-	if (ret < 0) {
-		dev_err(card->dev, "Failed to set FLL1 rate: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
+
 	priv->fll1_rate = rate;
 
 	ret = snd_soc_dai_set_sysclk(aif1_dai, WM8994_SYSCLK_FLL1,
 				     priv->fll1_rate, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(card->dev, "Failed to set SYSCLK source: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(cpu_dai, SAMSUNG_I2S_OPCLK, 0,
 				     SAMSUNG_I2S_OPCLK_PCLK);
-	if (ret < 0) {
-		dev_err(card->dev, "Failed to set OPCLK source: %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int midas_stop_fll1(struct snd_soc_pcm_runtime *rtd)
@@ -221,16 +212,12 @@ static int midas_stop_fll1(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dai_set_sysclk(aif1_dai, WM8994_SYSCLK_MCLK2,
 				     MCLK2_RATE, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(card->dev, "Unable to switch to MCLK2: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_pll(aif1_dai, WM8994_FLL1, 0, 0, 0);
-	if (ret < 0) {
-		dev_err(card->dev, "Unable to stop FLL1: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	priv->fll1_rate = 0;
 
@@ -402,10 +389,8 @@ static int midas_late_probe(struct snd_soc_card *card)
 	/* Use MCLK2 as SYSCLK for boot */
 	ret = snd_soc_dai_set_sysclk(aif1_dai, WM8994_SYSCLK_MCLK2, MCLK2_RATE,
 				     SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(aif1_dai->dev, "Failed to switch to MCLK2: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	if (!priv->gpio_headset_detect) {
 		ret = snd_soc_card_jack_new_pins(card, "Headset",
@@ -429,11 +414,8 @@ static int midas_late_probe(struct snd_soc_card *card)
 				&priv->headset_jack,
 				headset_jack_pins,
 				ARRAY_SIZE(headset_jack_pins));
-		if (ret) {
-			dev_err(card->dev,
-				"Failed to set up headset pins: %d\n", ret);
+		if (ret)
 			return ret;
-		}
 
 		ret = snd_soc_jack_add_zones(&priv->headset_jack,
 				ARRAY_SIZE(headset_jack_zones),
