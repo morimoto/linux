@@ -61,17 +61,13 @@ static int cz_da7219_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, DA7219_CLKSRC_MCLK,
 				     CZ_PLAT_CLK, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec sysclk: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_PLL,
 				  CZ_PLAT_CLK, DA7219_PLL_FREQ_OUT_98304);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec pll: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	da7219_dai_wclk = devm_clk_get(component->dev, "da7219-dai-wclk");
 	if (IS_ERR(da7219_dai_wclk))
@@ -88,10 +84,8 @@ static int cz_da7219_init(struct snd_soc_pcm_runtime *rtd)
 					 &cz_jack,
 					 cz_jack_pins,
 					 ARRAY_SIZE(cz_jack_pins));
-	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(cz_jack.jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(cz_jack.jack, SND_JACK_BTN_1, KEY_VOLUMEUP);
@@ -142,18 +136,14 @@ static int cz_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 	/* Set codec sysclk */
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5682_SCLK_S_PLL2,
 				     RT5682_PLL_FREQ, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(codec_dai->dev,
-			"Failed to set rt5682 SYSCLK: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
+
 	/* set codec PLL */
 	ret = snd_soc_dai_set_pll(codec_dai, RT5682_PLL2, RT5682_PLL2_S_MCLK,
 				  CZ_PLAT_CLK, RT5682_PLL_FREQ);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set rt5682 PLL: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	rt5682_dai_wclk = devm_clk_get(component->dev, "rt5682-dai-wclk");
 	if (IS_ERR(rt5682_dai_wclk))
@@ -170,10 +160,8 @@ static int cz_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 					 &cz_jack,
 					 cz_jack_pins,
 					 ARRAY_SIZE(cz_jack_pins));
-	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(cz_jack.jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(cz_jack.jack, SND_JACK_BTN_1, KEY_VOLUMEUP);
@@ -181,11 +169,8 @@ static int cz_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 	snd_jack_set_key(cz_jack.jack, SND_JACK_BTN_3, KEY_VOICECOMMAND);
 
 	ret = snd_soc_component_set_jack(component, &cz_jack, NULL);
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack call-back failed: %d\n", ret);
-		return ret;
-	}
-	return 0;
+
+	return ret;
 }
 
 static int rt5682_clk_enable(struct snd_pcm_substream *substream)

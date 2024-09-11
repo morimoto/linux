@@ -138,10 +138,8 @@ static int acp_card_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, rt5682_controls,
 					ARRAY_SIZE(rt5682_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_card_jack_new_pins(card, "Headset Jack",
 					 SND_JACK_HEADSET | SND_JACK_LINEOUT |
@@ -150,10 +148,8 @@ static int acp_card_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 					 &rt5682_jack,
 					 rt5682_jack_pins,
 					 ARRAY_SIZE(rt5682_jack_pins));
-	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(rt5682_jack.jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(rt5682_jack.jack, SND_JACK_BTN_1, KEY_VOICECOMMAND);
@@ -161,10 +157,8 @@ static int acp_card_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 	snd_jack_set_key(rt5682_jack.jack, SND_JACK_BTN_3, KEY_VOLUMEDOWN);
 
 	ret = snd_soc_component_set_jack(component, &rt5682_jack, NULL);
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack call-back failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return snd_soc_dapm_add_routes(&rtd->card->dapm, rt5682_map, ARRAY_SIZE(rt5682_map));
 }
@@ -190,10 +184,8 @@ static int acp_card_hs_startup(struct snd_pcm_substream *substream)
 		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
 
 	ret =  snd_soc_dai_set_fmt(codec_dai, fmt);
-	if (ret < 0) {
-		dev_err(rtd->card->dev, "Failed to set dai fmt: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	runtime->hw.channels_max = DUAL_CHANNEL;
 	snd_pcm_hw_constraint_list(runtime, 0, SNDRV_PCM_HW_PARAM_CHANNELS,
@@ -240,70 +232,52 @@ static int acp_card_rt5682_hw_params(struct snd_pcm_substream *substream,
 		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
 
 	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(rtd->dev, "Failed to set dai fmt: %d\n", ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
 
 	ret =  snd_soc_dai_set_fmt(codec_dai, fmt);
-	if (ret < 0) {
-		dev_err(rtd->card->dev, "Failed to set dai fmt: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	if (drvdata->tdm_mode) {
 		/**
 		 * As codec supports slot 0 and slot 1 for playback and capture.
 		 */
 		ret = snd_soc_dai_set_tdm_slot(cpu_dai, 0x3, 0x3, 8, 16);
-		if (ret && ret != -ENOTSUPP) {
-			dev_err(rtd->dev, "set TDM slot err: %d\n", ret);
+		if (ret && ret != -ENOTSUPP)
 			return ret;
-		}
 
 		ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x3, 0x3, 8, 16);
-		if (ret < 0) {
-			dev_warn(rtd->dev, "set TDM slot err:%d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, RT5682_PLL2, RT5682_PLL2_S_MCLK,
 				  PCO_PLAT_CLK, RT5682_PLL_FREQ);
-	if (ret < 0) {
-		dev_err(rtd->dev, "Failed to set codec PLL: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5682_SCLK_S_PLL2,
 				     RT5682_PLL_FREQ, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(rtd->dev, "Failed to set codec SYSCLK: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	if (drvdata->tdm_mode) {
 		ret = snd_soc_dai_set_pll(codec_dai, RT5682S_PLL1, RT5682S_PLL_S_BCLK1,
 					  6144000, 49152000);
-		if (ret < 0) {
-			dev_err(rtd->dev, "Failed to set codec PLL: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 
 		ret = snd_soc_dai_set_sysclk(codec_dai, RT5682S_SCLK_S_PLL1,
 					     49152000, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(rtd->dev, "Failed to set codec SYSCLK: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 	}
 
 	/* Set tdm/i2s1 master bclk ratio */
 	ret = snd_soc_dai_set_bclk_ratio(codec_dai, ch * format);
-	if (ret < 0) {
-		dev_err(rtd->dev, "Failed to set rt5682 tdm bclk ratio: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	if (!drvdata->soc_mclk) {
 		ret = acp_clk_enable(drvdata, srate, ch * format);
@@ -381,10 +355,8 @@ static int acp_card_rt5682s_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, rt5682s_controls,
 					ARRAY_SIZE(rt5682s_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_card_jack_new_pins(card, "Headset Jack",
 					 SND_JACK_HEADSET | SND_JACK_LINEOUT |
@@ -393,10 +365,8 @@ static int acp_card_rt5682s_init(struct snd_soc_pcm_runtime *rtd)
 					 &rt5682s_jack,
 					 rt5682s_jack_pins,
 					 ARRAY_SIZE(rt5682s_jack_pins));
-	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(rt5682s_jack.jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(rt5682s_jack.jack, SND_JACK_BTN_1, KEY_VOICECOMMAND);
@@ -404,10 +374,8 @@ static int acp_card_rt5682s_init(struct snd_soc_pcm_runtime *rtd)
 	snd_jack_set_key(rt5682s_jack.jack, SND_JACK_BTN_3, KEY_VOLUMEDOWN);
 
 	ret = snd_soc_component_set_jack(component, &rt5682s_jack, NULL);
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack call-back failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return snd_soc_dapm_add_routes(&rtd->card->dapm, rt5682s_map, ARRAY_SIZE(rt5682s_map));
 }
@@ -438,70 +406,52 @@ static int acp_card_rt5682s_hw_params(struct snd_pcm_substream *substream,
 		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
 
 	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(rtd->dev, "Failed to set dai fmt: %d\n", ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
 
 	ret =  snd_soc_dai_set_fmt(codec_dai, fmt);
-	if (ret < 0) {
-		dev_err(rtd->card->dev, "Failed to set dai fmt: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	if (drvdata->tdm_mode) {
 		/**
 		 * As codec supports slot 0 and slot 1 for playback and capture.
 		 */
 		ret = snd_soc_dai_set_tdm_slot(cpu_dai, 0x3, 0x3, 8, 16);
-		if (ret && ret != -ENOTSUPP) {
-			dev_err(rtd->dev, "set TDM slot err: %d\n", ret);
+		if (ret && ret != -ENOTSUPP)
 			return ret;
-		}
 
 		ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x3, 0x3, 8, 16);
-		if (ret < 0) {
-			dev_warn(rtd->dev, "set TDM slot err:%d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, RT5682S_PLL2, RT5682S_PLL_S_MCLK,
 				  PCO_PLAT_CLK, RT5682_PLL_FREQ);
-	if (ret < 0) {
-		dev_err(rtd->dev, "Failed to set codec PLL: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5682S_SCLK_S_PLL2,
 				     RT5682_PLL_FREQ, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(rtd->dev, "Failed to set codec SYSCLK: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	if (drvdata->tdm_mode) {
 		ret = snd_soc_dai_set_pll(codec_dai, RT5682S_PLL1, RT5682S_PLL_S_BCLK1,
 					  6144000, 49152000);
-		if (ret < 0) {
-			dev_err(rtd->dev, "Failed to set codec PLL: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 
 		ret = snd_soc_dai_set_sysclk(codec_dai, RT5682S_SCLK_S_PLL1,
 					     49152000, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(rtd->dev, "Failed to set codec SYSCLK: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 	}
 
 	/* Set tdm/i2s1 master bclk ratio */
 	ret = snd_soc_dai_set_bclk_ratio(codec_dai, ch * format);
-	if (ret < 0) {
-		dev_err(rtd->dev, "Failed to set rt5682 tdm bclk ratio: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	clk_set_rate(drvdata->wclk, srate);
 	clk_set_rate(drvdata->bclk, srate * ch * format);
@@ -596,10 +546,8 @@ static int acp_card_rt1019_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, rt1019_controls,
 					ARRAY_SIZE(rt1019_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return snd_soc_dapm_add_routes(&rtd->card->dapm, rt1019_map_lr,
 				       ARRAY_SIZE(rt1019_map_lr));
@@ -634,20 +582,16 @@ static int acp_card_rt1019_hw_params(struct snd_pcm_substream *substream,
 		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
 
 	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(rtd->dev, "Failed to set dai fmt: %d\n", ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
 
 	if (drvdata->tdm_mode) {
 		/**
 		 * As codec supports slot 2 and slot 3 for playback.
 		 */
 		ret = snd_soc_dai_set_tdm_slot(cpu_dai, 0xC, 0, 8, 16);
-		if (ret && ret != -ENOTSUPP) {
-			dev_err(rtd->dev, "set TDM slot err: %d\n", ret);
+		if (ret && ret != -ENOTSUPP)
 			return ret;
-		}
 	}
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
@@ -672,10 +616,8 @@ static int acp_card_rt1019_hw_params(struct snd_pcm_substream *substream,
 		if (drvdata->tdm_mode) {
 			ret = snd_soc_dai_set_fmt(codec_dai, SND_SOC_DAIFMT_DSP_A
 							| SND_SOC_DAIFMT_NB_NF);
-			if (ret < 0) {
-				dev_err(rtd->card->dev, "Failed to set dai fmt: %d\n", ret);
+			if (ret < 0)
 				return ret;
-			}
 
 			/**
 			 * As codec supports slot 2 for left channel playback.
@@ -761,10 +703,8 @@ static int acp_card_maxim_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, max98360a_controls,
 					ARRAY_SIZE(max98360a_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return snd_soc_dapm_add_routes(&rtd->card->dapm, max98360a_map,
 				       ARRAY_SIZE(max98360a_map));
@@ -795,20 +735,16 @@ static int acp_card_maxim_hw_params(struct snd_pcm_substream *substream,
 		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
 
 	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(rtd->dev, "Failed to set dai fmt: %d\n", ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
 
 	if (drvdata->tdm_mode) {
 		/**
 		 * As codec supports slot 2 and slot 3 for playback.
 		 */
 		ret = snd_soc_dai_set_tdm_slot(cpu_dai, 0xC, 0, 8, 16);
-		if (ret && ret != -ENOTSUPP) {
-			dev_err(rtd->dev, "set TDM slot err: %d\n", ret);
+		if (ret && ret != -ENOTSUPP)
 			return ret;
-		}
 	}
 
 	if (!drvdata->soc_mclk) {
@@ -899,10 +835,8 @@ static int acp_card_max98388_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, max98388_controls,
 					ARRAY_SIZE(max98388_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return snd_soc_dapm_add_routes(&rtd->card->dapm, max98388_map,
 				       ARRAY_SIZE(max98388_map));
@@ -985,10 +919,8 @@ static int acp_card_nau8825_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, nau8825_controls,
 					ARRAY_SIZE(nau8825_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_card_jack_new_pins(card, "Headset Jack",
 					 SND_JACK_HEADSET | SND_JACK_LINEOUT |
@@ -997,10 +929,8 @@ static int acp_card_nau8825_init(struct snd_soc_pcm_runtime *rtd)
 					 &nau8825_jack,
 					 nau8825_jack_pins,
 					 ARRAY_SIZE(nau8825_jack_pins));
-	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(nau8825_jack.jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(nau8825_jack.jack, SND_JACK_BTN_1, KEY_VOICECOMMAND);
@@ -1008,10 +938,8 @@ static int acp_card_nau8825_init(struct snd_soc_pcm_runtime *rtd)
 	snd_jack_set_key(nau8825_jack.jack, SND_JACK_BTN_3, KEY_VOLUMEDOWN);
 
 	ret = snd_soc_component_set_jack(component, &nau8825_jack, NULL);
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack call-back failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return snd_soc_dapm_add_routes(&rtd->card->dapm, nau8825_map, ARRAY_SIZE(nau8825_map));
 }
@@ -1029,15 +957,11 @@ static int acp_nau8825_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, NAU8825_CLK_FLL_FS,
 				     (48000 * 256), SND_SOC_CLOCK_IN);
-	if (ret < 0)
-		dev_err(rtd->dev, "snd_soc_dai_set_sysclk err = %d\n", ret);
 
 	ret = snd_soc_dai_set_pll(codec_dai, 0, 0, params_rate(params),
 				  params_rate(params) * 256);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set FLL: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	if (drvdata->tdm_mode)
 		fmt = SND_SOC_DAIFMT_DSP_A;
@@ -1050,32 +974,24 @@ static int acp_nau8825_hw_params(struct snd_pcm_substream *substream,
 		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
 
 	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(rtd->dev, "Failed to set dai fmt: %d\n", ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
 
 	ret =  snd_soc_dai_set_fmt(codec_dai, fmt);
-	if (ret < 0) {
-		dev_err(rtd->card->dev, "Failed to set dai fmt: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	if (drvdata->tdm_mode) {
 		/**
 		 * As codec supports slot 4 and slot 5 for playback and slot 6 for capture.
 		 */
 		ret = snd_soc_dai_set_tdm_slot(cpu_dai, 0x30, 0xC0, 8, 16);
-		if (ret && ret != -ENOTSUPP) {
-			dev_err(rtd->dev, "set TDM slot err: %d\n", ret);
+		if (ret && ret != -ENOTSUPP)
 			return ret;
-		}
 
 		ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x40, 0x30, 8, 16);
-		if (ret < 0) {
-			dev_warn(rtd->dev, "set TDM slot err:%d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 	}
 	return ret;
 }
@@ -1116,19 +1032,14 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 	if (SND_SOC_DAPM_EVENT_OFF(event)) {
 		ret = snd_soc_dai_set_sysclk(codec_dai, NAU8821_CLK_INTERNAL,
 					     0, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(card->dev, "set sysclk err = %d\n", ret);
+		if (ret < 0)
 			return -EIO;
-		}
 	} else {
 		ret = snd_soc_dai_set_sysclk(codec_dai, NAU8821_CLK_FLL_BLK, 0,
 					     SND_SOC_CLOCK_IN);
-		if (ret < 0)
-			dev_err(codec_dai->dev, "can't set FS clock %d\n", ret);
+
 		ret = snd_soc_dai_set_pll(codec_dai, 0, 0, NAU8821_BCLK,
 					  NAU8821_FREQ_OUT);
-		if (ret < 0)
-			dev_err(codec_dai->dev, "can't set FLL: %d\n", ret);
 	}
 	return ret;
 }
@@ -1197,10 +1108,8 @@ static int acp_8821_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, nau8821_controls,
 					ARRAY_SIZE(nau8821_controls));
-	if (ret) {
-		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_card_jack_new_pins(card, "Headset Jack",
 					 SND_JACK_HEADSET | SND_JACK_LINEOUT |
@@ -1209,10 +1118,8 @@ static int acp_8821_init(struct snd_soc_pcm_runtime *rtd)
 					 &nau8821_jack,
 					 nau8821_jack_pins,
 					 ARRAY_SIZE(nau8821_jack_pins));
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(nau8821_jack.jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(nau8821_jack.jack, SND_JACK_BTN_1, KEY_VOICECOMMAND);
@@ -1256,19 +1163,14 @@ static int acp_nau8821_hw_params(struct snd_pcm_substream *substream,
 		fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
 
 	ret =  snd_soc_dai_set_fmt(codec_dai, fmt);
-	if (ret < 0) {
-		dev_err(rtd->card->dev, "Failed to set dai fmt: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, NAU8821_CLK_FLL_BLK, 0,
 				     SND_SOC_CLOCK_IN);
-	if (ret < 0)
-		dev_err(card->dev, "can't set FS clock %d\n", ret);
+
 	ret = snd_soc_dai_set_pll(codec_dai, 0, 0, snd_soc_params_to_bclk(params),
 				  params_rate(params) * 256);
-	if (ret < 0)
-		dev_err(card->dev, "can't set FLL: %d\n", ret);
 
 	return ret;
 }
