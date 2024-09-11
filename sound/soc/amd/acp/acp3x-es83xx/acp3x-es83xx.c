@@ -82,10 +82,8 @@ static int acp3x_es83xx_codec_startup(struct snd_pcm_substream *substream)
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, freq, SND_SOC_CLOCK_OUT);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec sysclk: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	runtime->hw.channels_max = DUAL_CHANNEL;
 	snd_pcm_hw_constraint_list(runtime, 0, SNDRV_PCM_HW_PARAM_CHANNELS,
@@ -281,10 +279,8 @@ static int acp3x_es83xx_init(struct snd_soc_pcm_runtime *runtime)
 					 SND_JACK_HEADSET | SND_JACK_BTN_0,
 					 &es83xx_jack, es83xx_jack_pins,
 					 ARRAY_SIZE(es83xx_jack_pins));
-	if (ret) {
-		dev_err(card->dev, "jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(es83xx_jack.jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 

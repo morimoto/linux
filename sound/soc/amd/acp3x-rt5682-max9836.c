@@ -63,36 +63,25 @@ static int acp3x_5682_init(struct snd_soc_pcm_runtime *rtd)
 	ret =  snd_soc_dai_set_fmt(codec_dai, SND_SOC_DAIFMT_I2S
 			| SND_SOC_DAIFMT_NB_NF
 			| SND_SOC_DAIFMT_CBP_CFP);
-	if (ret < 0) {
-		dev_err(rtd->card->dev,
-				"Failed to set rt5682 dai fmt: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	/* set codec PLL */
 	ret = snd_soc_dai_set_pll(codec_dai, RT5682_PLL2, RT5682_PLL2_S_MCLK,
 				  PCO_PLAT_CLK, RT5682_PLL_FREQ);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set rt5682 PLL: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	/* Set codec sysclk */
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5682_SCLK_S_PLL2,
 			RT5682_PLL_FREQ, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(rtd->dev,
-			"Failed to set rt5682 SYSCLK: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	/* Set tdm/i2s1 master bclk ratio */
 	ret = snd_soc_dai_set_bclk_ratio(codec_dai, 64);
-	if (ret < 0) {
-		dev_err(rtd->dev,
-			"Failed to set rt5682 tdm bclk ratio: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	rt5682_dai_wclk = clk_get(component->dev, "rt5682-dai-wclk");
 	rt5682_dai_bclk = clk_get(component->dev, "rt5682-dai-bclk");
@@ -104,10 +93,8 @@ static int acp3x_5682_init(struct snd_soc_pcm_runtime *rtd)
 					 &pco_jack,
 					 pco_jack_pins,
 					 ARRAY_SIZE(pco_jack_pins));
-	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(pco_jack.jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(pco_jack.jack, SND_JACK_BTN_1, KEY_VOICECOMMAND);
@@ -115,10 +102,8 @@ static int acp3x_5682_init(struct snd_soc_pcm_runtime *rtd)
 	snd_jack_set_key(pco_jack.jack, SND_JACK_BTN_3, KEY_VOLUMEDOWN);
 
 	ret = snd_soc_component_set_jack(component, &pco_jack, NULL);
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack call-back failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return ret;
 }

@@ -62,17 +62,11 @@ static int cz_aif1_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_dai_set_pll(codec_dai, 0, RT5645_PLL1_S_MCLK,
 				  CZ_PLAT_CLK, params_rate(params) * 512);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec pll: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5645_SCLK_S_PLL1,
 				params_rate(params) * 512, SND_SOC_CLOCK_OUT);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec sysclk: %d\n", ret);
-		return ret;
-	}
 
 	return ret;
 }
@@ -93,10 +87,8 @@ static int cz_init(struct snd_soc_pcm_runtime *rtd)
 					 &cz_jack,
 					 cz_jack_pins,
 					 ARRAY_SIZE(cz_jack_pins));
-	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	rt5645_set_jack_detect(codec, &cz_jack, &cz_jack, &cz_jack);
 
