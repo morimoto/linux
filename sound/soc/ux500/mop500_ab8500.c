@@ -400,11 +400,8 @@ int mop500_ab8500_machine_init(struct snd_soc_pcm_runtime *rtd)
 	/* Add controls */
 	ret = snd_soc_add_card_controls(rtd->card, mop500_ab8500_ctrls,
 			ARRAY_SIZE(mop500_ab8500_ctrls));
-	if (ret < 0) {
-		pr_err("%s: Failed to add machine-controls (%d)!\n",
-				__func__, ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dapm_disable_pin(dapm, "Earpiece");
 	ret |= snd_soc_dapm_disable_pin(dapm, "Speaker Left");
