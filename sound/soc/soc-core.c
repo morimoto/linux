@@ -58,6 +58,12 @@ static LIST_HEAD(unbind_card_list);
 struct snd_soc_dai_link_component null_dailink_component[0];
 EXPORT_SYMBOL_GPL(null_dailink_component);
 
+#define soc_core_ret(dev, ret) _soc_core_ret(dev, __func__, ret)
+static inline int _soc_core_ret(const struct device *dev, const char *func, int ret)
+{
+	return snd_soc_ret(dev, ret, "at %s()\n", func);
+}
+
 /*
  * This is a timeout to do a DAPM powerdown after a stream is closed().
  * It can be used to eliminate pops between different playback streams, e.g.
@@ -1687,11 +1693,11 @@ static int soc_probe_link_dais(struct snd_soc_card *card)
 			/* probe all rtd connected DAIs in good order */
 			ret = snd_soc_pcm_dai_probe(rtd, order);
 			if (ret)
-				return ret;
+				goto out;
 		}
 	}
-
-	return 0;
+out:
+	return soc_core_ret(card->dev, ret);
 }
 
 static void soc_remove_link_components(struct snd_soc_card *card)
@@ -1726,12 +1732,12 @@ static int soc_probe_link_components(struct snd_soc_card *card)
 
 				ret = soc_probe_component(card, component);
 				if (ret < 0)
-					return ret;
+					goto out;
 			}
 		}
 	}
-
-	return 0;
+out:
+	return soc_core_ret(card->dev, ret);
 }
 
 static void soc_unbind_aux_dev(struct snd_soc_card *card)
@@ -1778,11 +1784,11 @@ static int soc_probe_aux_devices(struct snd_soc_card *card)
 
 			ret = soc_probe_component(card,	component);
 			if (ret < 0)
-				return ret;
+				goto out;
 		}
 	}
-
-	return 0;
+out:
+	return soc_core_ret(card->dev, ret);
 }
 
 static void soc_remove_aux_devices(struct snd_soc_card *card)
@@ -2191,29 +2197,18 @@ static int snd_soc_bind_card(struct snd_soc_card *card)
 
 	/* probe all components used by DAI links on this card */
 	ret = soc_probe_link_components(card);
-	if (ret < 0) {
-		if (ret != -EPROBE_DEFER) {
-			dev_err(card->dev,
-				"ASoC: failed to instantiate card %d\n", ret);
-		}
+	if (ret < 0)
 		goto probe_end;
-	}
 
 	/* probe auxiliary components */
 	ret = soc_probe_aux_devices(card);
-	if (ret < 0) {
-		dev_err(card->dev,
-			"ASoC: failed to probe aux component %d\n", ret);
+	if (ret < 0)
 		goto probe_end;
-	}
 
 	/* probe all DAI links on this card */
 	ret = soc_probe_link_dais(card);
-	if (ret < 0) {
-		dev_err(card->dev,
-			"ASoC: failed to instantiate card %d\n", ret);
+	if (ret < 0)
 		goto probe_end;
-	}
 
 	for_each_card_rtds(card, rtd) {
 		ret = soc_init_pcm_runtime(card, rtd);
@@ -2699,7 +2694,7 @@ static int snd_soc_register_dais(struct snd_soc_component *component,
 err:
 	snd_soc_unregister_dais(component);
 
-	return ret;
+	return soc_core_ret(component->dev, ret);
 }
 
 #define ENDIANNESS_MAP(name) \
@@ -2805,11 +2800,8 @@ int snd_soc_add_component(struct snd_soc_component *component,
 	}
 
 	ret = snd_soc_register_dais(component, dai_drv, num_dai);
-	if (ret < 0) {
-		dev_err(component->dev, "ASoC: Failed to register DAIs: %d\n",
-			ret);
+	if (ret < 0)
 		goto err_cleanup;
-	}
 
 	if (!component->driver->write && !component->driver->read) {
 		if (!component->regmap)
