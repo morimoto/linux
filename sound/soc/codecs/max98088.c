@@ -1553,7 +1553,7 @@ static void max98088_handle_eq_pdata(struct snd_soc_component *component)
        unsigned int cfgcnt;
        int i, j;
        const char **t;
-       int ret;
+
        struct snd_kcontrol_new controls[] = {
                SOC_ENUM_EXT((char *)eq_mode_name[0],
                        max98088->eq_enum,
@@ -1600,9 +1600,7 @@ static void max98088_handle_eq_pdata(struct snd_soc_component *component)
        max98088->eq_enum.texts = max98088->eq_texts;
        max98088->eq_enum.items = max98088->eq_textcnt;
 
-       ret = snd_soc_add_component_controls(component, controls, ARRAY_SIZE(controls));
-       if (ret != 0)
-               dev_err(component->dev, "Failed to add EQ control: %d\n", ret);
+       snd_soc_add_component_controls(component, controls, ARRAY_SIZE(controls));
 }
 
 static void max98088_handle_pdata(struct snd_soc_component *component)
