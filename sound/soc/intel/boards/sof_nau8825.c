@@ -56,10 +56,8 @@ static int sof_nau8825_codec_init(struct snd_soc_pcm_runtime *rtd)
 					 jack,
 					 jack_pins,
 					 ARRAY_SIZE(jack_pins));
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack creation failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_1, KEY_VOICECOMMAND);
@@ -67,10 +65,6 @@ static int sof_nau8825_codec_init(struct snd_soc_pcm_runtime *rtd)
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_3, KEY_VOLUMEDOWN);
 
 	ret = snd_soc_component_set_jack(component, jack, NULL);
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack call-back failed: %d\n", ret);
-		return ret;
-	}
 
 	return ret;
 };
@@ -99,18 +93,12 @@ static int sof_nau8825_hw_params(struct snd_pcm_substream *substream,
 	/* Configure clock for codec */
 	ret = snd_soc_dai_set_sysclk(codec_dai, NAU8825_CLK_FLL_BLK, 0,
 				     SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set BCLK clock %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	/* Configure pll for codec */
 	ret = snd_soc_dai_set_pll(codec_dai, 0, 0, clk_freq,
 				  params_rate(params) * 256);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set BCLK: %d\n", ret);
-		return ret;
-	}
 
 	return ret;
 }

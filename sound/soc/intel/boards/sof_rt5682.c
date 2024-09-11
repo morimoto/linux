@@ -220,10 +220,8 @@ static int sof_rt5682_codec_init(struct snd_soc_pcm_runtime *rtd)
 					 jack,
 					 jack_pins,
 					 ARRAY_SIZE(jack_pins));
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack creation failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_1, KEY_VOICECOMMAND);
@@ -235,11 +233,6 @@ static int sof_rt5682_codec_init(struct snd_soc_pcm_runtime *rtd)
 		ret = snd_soc_component_set_jack(component, jack, &extra_jack_data);
 	} else
 		ret = snd_soc_component_set_jack(component, jack, NULL);
-
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack call-back failed: %d\n", ret);
-		return ret;
-	}
 
 	return ret;
 };
@@ -373,15 +366,11 @@ static int sof_rt5682_hw_params(struct snd_pcm_substream *substream,
 		/* Configure pll for codec */
 		ret = snd_soc_dai_set_pll(codec_dai, pll_id, pll_source, pll_in,
 					  pll_out);
-		if (ret < 0)
-			dev_err(rtd->dev, "snd_soc_dai_set_pll err = %d\n", ret);
 	}
 
 	/* Configure sysclk for codec */
 	ret = snd_soc_dai_set_sysclk(codec_dai, clk_id,
 				     pll_out, SND_SOC_CLOCK_IN);
-	if (ret < 0)
-		dev_err(rtd->dev, "snd_soc_dai_set_sysclk err = %d\n", ret);
 
 	/*
 	 * slot_width should equal or large than data length, set them
@@ -389,10 +378,6 @@ static int sof_rt5682_hw_params(struct snd_pcm_substream *substream,
 	 */
 	ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x0, 0x0, 2,
 				       params_width(params));
-	if (ret < 0) {
-		dev_err(rtd->dev, "set TDM slot err:%d\n", ret);
-		return ret;
-	}
 
 	return ret;
 }
@@ -470,16 +455,11 @@ static int rt5650_spk_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, rt5650_spk_kcontrols,
 					ARRAY_SIZE(rt5650_spk_kcontrols));
-	if (ret) {
-		dev_err(rtd->dev, "fail to add rt5650 spk kcontrols, ret %d\n",
-			ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dapm_add_routes(&card->dapm, rt5650_spk_dapm_routes,
 				      ARRAY_SIZE(rt5650_spk_dapm_routes));
-	if (ret)
-		dev_err(rtd->dev, "fail to add dapm routes, ret=%d\n", ret);
 
 	return ret;
 }

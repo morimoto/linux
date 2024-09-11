@@ -190,9 +190,6 @@ static int dmic_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_dapm_add_routes(&card->dapm, dmic_map,
 				      ARRAY_SIZE(dmic_map));
 
-	if (ret)
-		dev_err(card->dev, "DMic map addition failed: %d\n", ret);
-
 	return ret;
 }
 

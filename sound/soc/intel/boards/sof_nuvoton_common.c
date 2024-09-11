@@ -45,18 +45,14 @@ static int nau8318_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, nau8318_kcontrols,
 					ARRAY_SIZE(nau8318_kcontrols));
-	if (ret) {
-		dev_err(rtd->dev, "fail to add nau8318 kcontrols, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dapm_add_routes(&card->dapm, nau8318_routes,
 				      ARRAY_SIZE(nau8318_routes));
 
-	if (ret) {
-		dev_err(rtd->dev, "fail to add nau8318 routes, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return ret;
 }

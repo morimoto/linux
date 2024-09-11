@@ -114,16 +114,9 @@ static int cht_aif1_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	int ret;
 
-	ret = snd_soc_dai_set_sysclk(codec_dai, M98090_REG_SYSTEM_CLOCK,
+	return snd_soc_dai_set_sysclk(codec_dai, M98090_REG_SYSTEM_CLOCK,
 				     CHT_PLAT_CLK_3_HZ, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec sysclk: %d\n", ret);
-		return ret;
-	}
-
-	return 0;
 }
 
 static int cht_ti_jack_event(struct notifier_block *nb,
@@ -205,10 +198,8 @@ static int cht_codec_init(struct snd_soc_pcm_runtime *runtime)
 					 jack_type, jack,
 					 hs_jack_pins,
 					 ARRAY_SIZE(hs_jack_pins));
-	if (ret) {
-		dev_err(runtime->dev, "Headset Jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_jack_add_gpiods(runtime->card->dev->parent, jack,
 				      ARRAY_SIZE(hs_jack_gpios),
@@ -259,18 +250,14 @@ static int cht_codec_fixup(struct snd_soc_pcm_runtime *rtd,
 	unsigned int fmt = 0;
 
 	ret = snd_soc_dai_set_tdm_slot(snd_soc_rtd_to_cpu(rtd, 0), 0x3, 0x3, 2, 16);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set cpu_dai slot fmt: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BP_FP;
 
 	ret = snd_soc_dai_set_fmt(snd_soc_rtd_to_cpu(rtd, 0), fmt);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set cpu_dai set fmt: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	/* The DSP will convert the FE rate to 48k, stereo, 24bits */
 	rate->min = rate->max = 48000;
@@ -307,10 +294,8 @@ static int cht_max98090_headset_init(struct snd_soc_component *component)
 		    SND_JACK_BTN_2 | SND_JACK_BTN_3;
 
 	ret = snd_soc_card_jack_new(card, "Headset Jack", jack_type, jack);
-	if (ret) {
-		dev_err(card->dev, "Headset Jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return ts3a227e_enable_jack_detect(component, jack);
 }

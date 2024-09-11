@@ -82,18 +82,12 @@ static int codec_fixup(struct snd_soc_pcm_runtime *rtd,
 				  SND_SOC_DAIFMT_I2S     |
 				  SND_SOC_DAIFMT_NB_NF   |
 				  SND_SOC_DAIFMT_BP_FP);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set format to I2S, err %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_tdm_slot(snd_soc_rtd_to_cpu(rtd, 0), 0x3, 0x3, 2, 24);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set I2S config, err %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int aif1_startup(struct snd_pcm_substream *substream)
@@ -111,15 +105,11 @@ static int aif1_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, DA7213_CLKSRC_MCLK,
 				     19200000, SND_SOC_CLOCK_IN);
-	if (ret < 0)
-		dev_err(codec_dai->dev, "can't set codec sysclk configuration\n");
 
 	ret = snd_soc_dai_set_pll(codec_dai, 0,
 			DA7213_SYSCLK_PLL_SRM, 0, DA7213_PLL_FREQ_OUT_98304000);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "failed to start PLL: %d\n", ret);
+	if (ret < 0)
 		return -EIO;
-	}
 
 	return ret;
 }
@@ -132,10 +122,8 @@ static int aif1_hw_free(struct snd_pcm_substream *substream)
 
 	ret = snd_soc_dai_set_pll(codec_dai, 0,
 				  DA7213_SYSCLK_MCLK, 0, 0);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "failed to stop PLL: %d\n", ret);
+	if (ret < 0)
 		return -EIO;
-	}
 
 	return ret;
 }

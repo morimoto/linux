@@ -59,10 +59,8 @@ static int cs35l41_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_add_card_controls(card, cs35l41_kcontrols,
 					ARRAY_SIZE(cs35l41_kcontrols));
-	if (ret) {
-		dev_err(rtd->dev, "fail to add card controls, ret %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dapm_add_routes(&card->dapm, cs35l41_dapm_routes,
 				      ARRAY_SIZE(cs35l41_dapm_routes));
@@ -106,31 +104,22 @@ static int cs35l41_hw_params(struct snd_pcm_substream *substream,
 		/* call dai driver's set_sysclk() callback */
 		ret = snd_soc_dai_set_sysclk(codec_dai, CS35L41_CLKID_SCLK,
 					     clk_freq, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(codec_dai->dev, "fail to set sysclk, ret %d\n",
-				ret);
+		if (ret < 0)
 			return ret;
-		}
 
 		/* call component driver's set_sysclk() callback */
 		ret = snd_soc_component_set_sysclk(codec_dai->component,
 						   CS35L41_CLKID_SCLK, 0,
 						   clk_freq, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(codec_dai->dev, "fail to set component sysclk, ret %d\n",
-				ret);
+		if (ret < 0)
 			return ret;
-		}
 
 		/* setup channel map */
 		ret = snd_soc_dai_set_channel_map(codec_dai, 0, NULL,
 						  ARRAY_SIZE(cs35l41_channel_map[i].rx),
 						  (unsigned int *)cs35l41_channel_map[i].rx);
-		if (ret < 0) {
-			dev_err(codec_dai->dev, "fail to set channel map, ret %d\n",
-				ret);
+		if (ret < 0)
 			return ret;
-		}
 	}
 
 	return 0;

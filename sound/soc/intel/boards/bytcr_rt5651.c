@@ -154,19 +154,13 @@ static int byt_rt5651_prepare_and_enable_pll1(struct snd_soc_dai *codec_dai,
 			clk_freq = 19200000;
 	}
 	ret = snd_soc_dai_set_pll(codec_dai, 0, clk_id, clk_freq, rate * 512);
-	if (ret < 0) {
-		dev_err(codec_dai->component->dev, "can't set pll: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5651_SCLK_S_PLL1,
 				     rate * 512, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(codec_dai->component->dev, "can't set clock %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int platform_clock_control(struct snd_soc_dapm_widget *w,
@@ -620,10 +614,8 @@ static int byt_rt5651_init(struct snd_soc_pcm_runtime *runtime)
 
 	ret = snd_soc_add_card_controls(card, byt_rt5651_controls,
 					ARRAY_SIZE(byt_rt5651_controls));
-	if (ret) {
-		dev_err(card->dev, "unable to add card controls\n");
+	if (ret)
 		return ret;
-	}
 
 	/*
 	 * The firmware might enable the clock at boot (this information
@@ -656,10 +648,8 @@ static int byt_rt5651_init(struct snd_soc_pcm_runtime *runtime)
 						 report, &priv->jack,
 						 bytcr_jack_pins,
 						 ARRAY_SIZE(bytcr_jack_pins));
-		if (ret) {
-			dev_err(runtime->dev, "jack creation failed %d\n", ret);
+		if (ret)
 			return ret;
-		}
 
 		if (report & SND_JACK_BTN_0)
 			snd_jack_set_key(priv->jack.jack, SND_JACK_BTN_0,
@@ -709,18 +699,12 @@ static int byt_rt5651_codec_fixup(struct snd_soc_pcm_runtime *rtd,
 				  SND_SOC_DAIFMT_BP_FP
 				  );
 
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set format to I2S, err %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_tdm_slot(snd_soc_rtd_to_cpu(rtd, 0), 0x3, 0x3, 2, bits);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set I2S config, err %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static const unsigned int rates_48000[] = {

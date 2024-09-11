@@ -159,10 +159,6 @@ static int bdw_rt5677_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5677_SCLK_S_MCLK, 24576000,
 		SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec sysclk configuration\n");
-		return ret;
-	}
 
 	return ret;
 }
@@ -176,18 +172,13 @@ static int bdw_rt5677_dsp_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5677_SCLK_S_PLL1, 24576000,
 		SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec sysclk configuration\n");
+	if (ret < 0)
 		return ret;
-	}
+
 	ret = snd_soc_dai_set_pll(codec_dai, 0, RT5677_PLL1_S_MCLK,
 		24000000, 24576000);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec pll configuration\n");
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static const struct snd_soc_ops bdw_rt5677_ops = {
@@ -263,8 +254,6 @@ static int bdw_rt5677_init(struct snd_soc_pcm_runtime *rtd)
 		if (snd_soc_jack_add_gpios(&headphone_jack, 1,
 				&headphone_jack_gpio))
 			dev_err(component->dev, "Can't add headphone jack gpio\n");
-	} else {
-		dev_err(component->dev, "Can't create headphone jack\n");
 	}
 
 	/* Create and initialize mic jack */
@@ -274,8 +263,6 @@ static int bdw_rt5677_init(struct snd_soc_pcm_runtime *rtd)
 		mic_jack_gpio.gpiod_dev = component->dev;
 		if (snd_soc_jack_add_gpios(&mic_jack, 1, &mic_jack_gpio))
 			dev_err(component->dev, "Can't add mic jack gpio\n");
-	} else {
-		dev_err(component->dev, "Can't create mic jack\n");
 	}
 	bdw_rt5677->component = component;
 

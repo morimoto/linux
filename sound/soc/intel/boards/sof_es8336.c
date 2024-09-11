@@ -242,8 +242,6 @@ static int dmic_init(struct snd_soc_pcm_runtime *runtime)
 
 	ret = snd_soc_dapm_add_routes(&card->dapm, dmic_map,
 				      ARRAY_SIZE(dmic_map));
-	if (ret)
-		dev_err(card->dev, "DMic map addition failed: %d\n", ret);
 
 	return ret;
 }
@@ -294,10 +292,8 @@ static int sof_es8316_init(struct snd_soc_pcm_runtime *runtime)
 					 SND_JACK_HEADSET | SND_JACK_BTN_0,
 					 &priv->jack, sof_es8316_jack_pins,
 					 ARRAY_SIZE(sof_es8316_jack_pins));
-	if (ret) {
-		dev_err(card->dev, "jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(priv->jack.jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 
@@ -358,16 +354,8 @@ static int sof_es8336_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	const int sysclk = 19200000;
-	int ret;
 
-	ret = snd_soc_dai_set_sysclk(codec_dai, 1, sysclk, SND_SOC_CLOCK_OUT);
-	if (ret < 0) {
-		dev_err(rtd->dev, "%s, Failed to set ES8336 SYSCLK: %d\n",
-			__func__, ret);
-		return ret;
-	}
-
-	return 0;
+	return snd_soc_dai_set_sysclk(codec_dai, 1, sysclk, SND_SOC_CLOCK_OUT);
 }
 
 /* machine stream operations */

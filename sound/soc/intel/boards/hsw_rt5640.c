@@ -52,10 +52,8 @@ static int codec_link_hw_params(struct snd_pcm_substream *substream,
 	int ret;
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5640_SCLK_S_MCLK, 12288000, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(rtd->dev, "set codec sysclk failed: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	/* Set correct codec filter for DAI format and clock config. */
 	snd_soc_component_update_bits(codec_dai->component, 0x83, 0xffff, 0x8000);
