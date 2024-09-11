@@ -112,10 +112,8 @@ static int apq8016_dai_init(struct snd_soc_pcm_runtime *rtd, int mi2s)
 						  apq8016_sbc_jack_pins,
 						  ARRAY_SIZE(apq8016_sbc_jack_pins));
 
-		if (rval < 0) {
-			dev_err(card->dev, "Unable to add Headphone Jack\n");
+		if (rval < 0)
 			return rval;
-		}
 
 		jack = pdata->jack.jack;
 
@@ -132,15 +130,12 @@ static int apq8016_dai_init(struct snd_soc_pcm_runtime *rtd, int mi2s)
 		/* Set default mclk for internal codec */
 		rval = snd_soc_component_set_sysclk(component, 0, 0, DEFAULT_MCLK_RATE,
 				       SND_SOC_CLOCK_IN);
-		if (rval != 0 && rval != -ENOTSUPP) {
-			dev_warn(card->dev, "Failed to set mclk: %d\n", rval);
+		if (rval != 0 && rval != -ENOTSUPP)
 			return rval;
-		}
+
 		rval = snd_soc_component_set_jack(component, &pdata->jack, NULL);
-		if (rval != 0 && rval != -ENOTSUPP) {
-			dev_warn(card->dev, "Failed to set jack: %d\n", rval);
+		if (rval != 0 && rval != -ENOTSUPP)
 			return rval;
-		}
 	}
 
 	return 0;
@@ -196,7 +191,7 @@ static int msm8916_qdsp6_startup(struct snd_pcm_substream *substream)
 	struct snd_soc_card *card = rtd->card;
 	struct apq8016_sbc_data *data = snd_soc_card_get_drvdata(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	int mi2s, ret;
+	int mi2s;
 
 	mi2s = qdsp6_dai_get_lpass_id(cpu_dai);
 	if (mi2s < 0)
@@ -205,10 +200,7 @@ static int msm8916_qdsp6_startup(struct snd_pcm_substream *substream)
 	if (++data->mi2s_clk_count[mi2s] > 1)
 		return 0;
 
-	ret = snd_soc_dai_set_sysclk(cpu_dai, LPAIF_BIT_CLK, MI2S_BCLK_RATE, 0);
-	if (ret)
-		dev_err(card->dev, "Failed to enable LPAIF bit clk: %d\n", ret);
-	return ret;
+	return snd_soc_dai_set_sysclk(cpu_dai, LPAIF_BIT_CLK, MI2S_BCLK_RATE, 0);
 }
 
 static void msm8916_qdsp6_shutdown(struct snd_pcm_substream *substream)
@@ -217,7 +209,7 @@ static void msm8916_qdsp6_shutdown(struct snd_pcm_substream *substream)
 	struct snd_soc_card *card = rtd->card;
 	struct apq8016_sbc_data *data = snd_soc_card_get_drvdata(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	int mi2s, ret;
+	int mi2s;
 
 	mi2s = qdsp6_dai_get_lpass_id(cpu_dai);
 	if (mi2s < 0)
@@ -226,9 +218,7 @@ static void msm8916_qdsp6_shutdown(struct snd_pcm_substream *substream)
 	if (--data->mi2s_clk_count[mi2s] > 0)
 		return;
 
-	ret = snd_soc_dai_set_sysclk(cpu_dai, LPAIF_BIT_CLK, 0, 0);
-	if (ret)
-		dev_err(card->dev, "Failed to disable LPAIF bit clk: %d\n", ret);
+	snd_soc_dai_set_sysclk(cpu_dai, LPAIF_BIT_CLK, 0, 0);
 }
 
 static const struct snd_soc_ops msm8916_qdsp6_be_ops = {
