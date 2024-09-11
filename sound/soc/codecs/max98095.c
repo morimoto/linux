@@ -1568,7 +1568,6 @@ static void max98095_handle_eq_pdata(struct snd_soc_component *component)
 	unsigned int cfgcnt;
 	int i, j;
 	const char **t;
-	int ret;
 
 	struct snd_kcontrol_new controls[] = {
 		SOC_ENUM_EXT("EQ1 Mode",
@@ -1615,9 +1614,7 @@ static void max98095_handle_eq_pdata(struct snd_soc_component *component)
 	max98095->eq_enum.texts = max98095->eq_texts;
 	max98095->eq_enum.items = max98095->eq_textcnt;
 
-	ret = snd_soc_add_component_controls(component, controls, ARRAY_SIZE(controls));
-	if (ret != 0)
-		dev_err(component->dev, "Failed to add EQ control: %d\n", ret);
+	snd_soc_add_component_controls(component, controls, ARRAY_SIZE(controls));
 }
 
 static const char *bq_mode_name[] = {"Biquad1 Mode", "Biquad2 Mode"};
@@ -1719,7 +1716,6 @@ static void max98095_handle_bq_pdata(struct snd_soc_component *component)
 	unsigned int cfgcnt;
 	int i, j;
 	const char **t;
-	int ret;
 
 	struct snd_kcontrol_new controls[] = {
 		SOC_ENUM_EXT((char *)bq_mode_name[0],
@@ -1767,9 +1763,7 @@ static void max98095_handle_bq_pdata(struct snd_soc_component *component)
 	max98095->bq_enum.texts = max98095->bq_texts;
 	max98095->bq_enum.items = max98095->bq_textcnt;
 
-	ret = snd_soc_add_component_controls(component, controls, ARRAY_SIZE(controls));
-	if (ret != 0)
-		dev_err(component->dev, "Failed to add Biquad control: %d\n", ret);
+	snd_soc_add_component_controls(component, controls, ARRAY_SIZE(controls));
 }
 
 static void max98095_handle_pdata(struct snd_soc_component *component)
