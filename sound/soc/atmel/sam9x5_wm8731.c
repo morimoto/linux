@@ -42,19 +42,12 @@ static int sam9x5_wm8731_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct device *dev = rtd->dev;
-	int ret;
 
 	dev_dbg(dev, "%s called\n", __func__);
 
 	/* set the codec system clock for DAC and ADC */
-	ret = snd_soc_dai_set_sysclk(codec_dai, WM8731_SYSCLK_XTAL,
+	return snd_soc_dai_set_sysclk(codec_dai, WM8731_SYSCLK_XTAL,
 				     MCLK_RATE, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(dev, "Failed to set WM8731 SYSCLK: %d\n", ret);
-		return ret;
-	}
-
-	return 0;
 }
 
 /*
