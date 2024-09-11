@@ -320,10 +320,8 @@ static int framer_component_probe(struct snd_soc_component *component)
 	ret = snd_soc_card_jack_new(component->card, name, FRAMER_JACK_MASK, &framer->jack);
 	if (component->name_prefix)
 		kfree(name); /* A copy is done by snd_soc_card_jack_new */
-	if (ret) {
-		dev_err(component->dev, "Cannot create jack\n");
+	if (ret)
 		return ret;
-	}
 
 	ret = framer_init(framer->framer);
 	if (ret) {
