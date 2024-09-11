@@ -41,30 +41,22 @@ static int tm2_start_sysclk(struct snd_soc_card *card)
 				    ARIZONA_FLL_SRC_MCLK1,
 				    MCLK_RATE,
 				    priv->sysclk_rate);
-	if (ret < 0) {
-		dev_err(component->dev, "Failed to set FLL1 source: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_component_set_pll(component, WM5110_FLL1,
 				    ARIZONA_FLL_SRC_MCLK1,
 				    MCLK_RATE,
 				    priv->sysclk_rate);
-	if (ret < 0) {
-		dev_err(component->dev, "Failed to start FLL1: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_component_set_sysclk(component, ARIZONA_CLK_SYSCLK,
 				       ARIZONA_CLK_SRC_FLL1,
 				       priv->sysclk_rate,
 				       SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(component->dev, "Failed to set SYSCLK source: %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int tm2_stop_sysclk(struct snd_soc_card *card)
@@ -74,19 +66,13 @@ static int tm2_stop_sysclk(struct snd_soc_card *card)
 	int ret;
 
 	ret = snd_soc_component_set_pll(component, WM5110_FLL1, 0, 0, 0);
-	if (ret < 0) {
-		dev_err(component->dev, "Failed to stop FLL1: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_component_set_sysclk(component, ARIZONA_CLK_SYSCLK,
 				       ARIZONA_CLK_SRC_FLL1, 0, 0);
-	if (ret < 0) {
-		dev_err(component->dev, "Failed to stop SYSCLK: %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int tm2_aif1_hw_params(struct snd_pcm_substream *substream,
@@ -159,45 +145,31 @@ static int tm2_aif2_hw_params(struct snd_pcm_substream *substream,
 				    ARIZONA_FLL_SRC_MCLK1,
 				    MCLK_RATE,
 				    asyncclk_rate);
-	if (ret < 0) {
-		dev_err(component->dev, "Failed to set FLL2 source: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_component_set_pll(component, WM5110_FLL2,
 				    ARIZONA_FLL_SRC_MCLK1,
 				    MCLK_RATE,
 				    asyncclk_rate);
-	if (ret < 0) {
-		dev_err(component->dev, "Failed to start FLL2: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_component_set_sysclk(component, ARIZONA_CLK_ASYNCCLK,
 				       ARIZONA_CLK_SRC_FLL2,
 				       asyncclk_rate,
 				       SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(component->dev, "Failed to set ASYNCCLK source: %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int tm2_aif2_hw_free(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
-	int ret;
 
 	/* disable FLL2 */
-	ret = snd_soc_component_set_pll(component, WM5110_FLL2, ARIZONA_FLL_SRC_MCLK1,
-				    0, 0);
-	if (ret < 0)
-		dev_err(component->dev, "Failed to stop FLL2: %d\n", ret);
-
-	return ret;
+	return snd_soc_component_set_pll(component, WM5110_FLL2, ARIZONA_FLL_SRC_MCLK1, 0, 0);
 }
 
 static const struct snd_soc_ops tm2_aif2_ops = {
@@ -319,19 +291,15 @@ static int tm2_late_probe(struct snd_soc_card *card)
 	priv->component = snd_soc_rtd_to_codec(rtd, 0)->component;
 
 	ret = snd_soc_dai_set_sysclk(aif1_dai, ARIZONA_CLK_SYSCLK, 0, 0);
-	if (ret < 0) {
-		dev_err(aif1_dai->dev, "Failed to set SYSCLK: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[TM2_DAI_AIF2]);
 	aif2_dai = snd_soc_rtd_to_codec(rtd, 0);
 
 	ret = snd_soc_dai_set_sysclk(aif2_dai, ARIZONA_CLK_ASYNCCLK, 0, 0);
-	if (ret < 0) {
-		dev_err(aif2_dai->dev, "Failed to set ASYNCCLK: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	amp_pdm_dai = snd_soc_find_dai(&tm2_speaker_amp_dev.dlc);
 	if (!amp_pdm_dai)
