@@ -1548,11 +1548,8 @@ static int tasdevice_codec_probe(struct snd_soc_component *codec)
 	}
 
 	rc = snd_soc_add_component_controls(codec, p, size);
-	if (rc < 0) {
-		dev_err(tas_priv->dev, "%s: Add control err rc = %d",
-			__func__, rc);
+	if (rc < 0)
 		return rc;
-	}
 
 	tas_priv->name_prefix = codec->name_prefix;
 	return tascodec_init(tas_priv, codec, THIS_MODULE, tasdevice_fw_ready);
