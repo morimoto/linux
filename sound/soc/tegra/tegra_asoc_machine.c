@@ -154,11 +154,8 @@ int tegra_asoc_machine_init(struct snd_soc_pcm_runtime *rtd)
 						 &tegra_machine_hp_jack,
 						 tegra_machine_hp_jack_pins,
 						 ARRAY_SIZE(tegra_machine_hp_jack_pins));
-		if (err) {
-			dev_err(rtd->dev,
-				"Headphones Jack creation failed: %d\n", err);
+		if (err)
 			return err;
-		}
 
 		tegra_machine_hp_jack_gpio.desc = machine->gpiod_hp_det;
 
@@ -174,11 +171,8 @@ int tegra_asoc_machine_init(struct snd_soc_pcm_runtime *rtd)
 						 &tegra_machine_headset_jack,
 						 tegra_machine_headset_jack_pins,
 						 ARRAY_SIZE(tegra_machine_headset_jack_pins));
-		if (err) {
-			dev_err(rtd->dev,
-				"Headset Jack creation failed: %d\n", err);
+		if (err)
 			return err;
-		}
 
 		tegra_machine_headset_jack_gpio.desc = machine->gpiod_hp_det;
 
@@ -194,10 +188,8 @@ int tegra_asoc_machine_init(struct snd_soc_pcm_runtime *rtd)
 						 &tegra_machine_mic_jack,
 						 tegra_machine_mic_jack_pins,
 						 ARRAY_SIZE(tegra_machine_mic_jack_pins));
-		if (err) {
-			dev_err(rtd->dev, "Mic Jack creation failed: %d\n", err);
+		if (err)
 			return err;
-		}
 
 		tegra_machine_mic_jack_gpio.data = machine;
 		tegra_machine_mic_jack_gpio.desc = machine->gpiod_mic_det;
@@ -362,12 +354,8 @@ static int tegra_machine_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	err = snd_soc_dai_set_sysclk(codec_dai, clk_id, mclk, SND_SOC_CLOCK_IN);
-	if (err < 0) {
-		dev_err(card->dev, "codec_dai clock not set: %d\n", err);
-		return err;
-	}
 
-	return 0;
+	return err;
 }
 
 static const struct snd_soc_ops tegra_machine_snd_ops = {
