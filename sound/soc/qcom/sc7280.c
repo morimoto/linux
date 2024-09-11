@@ -78,10 +78,8 @@ static int sc7280_headset_init(struct snd_soc_pcm_runtime *rtd)
 						  sc7280_jack_pins,
 						  ARRAY_SIZE(sc7280_jack_pins));
 
-		if (rval < 0) {
-			dev_err(card->dev, "Unable to add Headset Jack\n");
+		if (rval < 0)
 			return rval;
-		}
 
 		jack = pdata->hs_jack.jack;
 
@@ -101,10 +99,8 @@ static int sc7280_headset_init(struct snd_soc_pcm_runtime *rtd)
 	case TX_CODEC_DMA_TX_3:
 		for_each_rtd_codec_dais(rtd, i, codec_dai) {
 			rval = snd_soc_component_set_jack(component, &pdata->hs_jack, NULL);
-			if (rval != 0 && rval != -ENOTSUPP) {
-				dev_err(card->dev, "Failed to set jack: %d\n", rval);
+			if (rval != 0 && rval != -ENOTSUPP)
 				return rval;
-			}
 		}
 		break;
 	default:
@@ -126,10 +122,8 @@ static int sc7280_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 	rval = snd_soc_card_jack_new(card, "HDMI Jack",	SND_JACK_LINEOUT,
 				     &pdata->hdmi_jack);
 
-	if (rval < 0) {
-		dev_err(card->dev, "Unable to add HDMI Jack\n");
+	if (rval < 0)
 		return rval;
-	}
 
 	jack = pdata->hdmi_jack.jack;
 	jack->private_data = component;
@@ -159,22 +153,14 @@ static int sc7280_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 
 	ret = snd_soc_dai_set_pll(codec_dai, RT5682S_PLL2, RT5682S_PLL_S_MCLK,
 					DEFAULT_MCLK_RATE, RT5682_PLL_FREQ);
-	if (ret) {
-		dev_err(rtd->dev, "can't set codec pll: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5682S_SCLK_S_PLL2,
 					RT5682_PLL_FREQ,
 					SND_SOC_CLOCK_IN);
 
-	if (ret) {
-		dev_err(rtd->dev, "snd_soc_dai_set_sysclk err = %d\n",
-			ret);
-		return ret;
-	}
-
-	return 0;
+	return ret;
 }
 
 static int sc7280_init(struct snd_soc_pcm_runtime *rtd)
