@@ -431,10 +431,8 @@ static int simple_set_tdm(struct snd_soc_dai *dai,
 				       simple_dai->rx_slot_mask,
 				       slot_count,
 				       slot_width);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(dai->dev, "simple-card: set_tdm_slot error: %d\n", ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
 
 	return 0;
 }
@@ -547,10 +545,8 @@ static int simple_init_dai(struct snd_soc_dai *dai, struct simple_util_dai *simp
 	if (simple_dai->sysclk) {
 		ret = snd_soc_dai_set_sysclk(dai, 0, simple_dai->sysclk,
 					     simple_dai->clk_direction);
-		if (ret && ret != -ENOTSUPP) {
-			dev_err(dai->dev, "simple-card: set_sysclk error\n");
+		if (ret && ret != -ENOTSUPP)
 			return ret;
-		}
 	}
 
 	if (simple_dai->slots) {
@@ -559,10 +555,8 @@ static int simple_init_dai(struct snd_soc_dai *dai, struct simple_util_dai *simp
 					       simple_dai->rx_slot_mask,
 					       simple_dai->slots,
 					       simple_dai->slot_width);
-		if (ret && ret != -ENOTSUPP) {
-			dev_err(dai->dev, "simple-card: set_tdm_slot error\n");
+		if (ret && ret != -ENOTSUPP)
 			return ret;
-		}
 	}
 
 	return 0;
