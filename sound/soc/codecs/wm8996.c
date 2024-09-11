@@ -2549,7 +2549,7 @@ static void wm8996_retune_mobile_pdata(struct snd_soc_component *component)
 			     wm8996_get_retune_mobile_enum,
 			     wm8996_put_retune_mobile_enum),
 	};
-	int ret, i, j;
+	int i, j;
 	const char **t;
 
 	/* We need an array of texts for the enum API but the number
@@ -2591,10 +2591,7 @@ static void wm8996_retune_mobile_pdata(struct snd_soc_component *component)
 	wm8996->retune_mobile_enum.items = wm8996->num_retune_mobile_texts;
 	wm8996->retune_mobile_enum.texts = wm8996->retune_mobile_texts;
 
-	ret = snd_soc_add_component_controls(component, controls, ARRAY_SIZE(controls));
-	if (ret != 0)
-		dev_err(component->dev,
-			"Failed to add ReTune Mobile controls: %d\n", ret);
+	snd_soc_add_component_controls(component, controls, ARRAY_SIZE(controls));
 }
 
 static const struct regmap_config wm8996_regmap = {

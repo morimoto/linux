@@ -2002,7 +2002,7 @@ static void wm8904_handle_retune_mobile_pdata(struct snd_soc_component *componen
 			     wm8904->retune_mobile_enum,
 			     wm8904_get_retune_mobile_enum,
 			     wm8904_put_retune_mobile_enum);
-	int ret, i, j;
+	int i, j;
 	const char **t;
 
 	/* We need an array of texts for the enum API but the number
@@ -2044,17 +2044,14 @@ static void wm8904_handle_retune_mobile_pdata(struct snd_soc_component *componen
 	wm8904->retune_mobile_enum.items = wm8904->num_retune_mobile_texts;
 	wm8904->retune_mobile_enum.texts = wm8904->retune_mobile_texts;
 
-	ret = snd_soc_add_component_controls(component, &control, 1);
-	if (ret != 0)
-		dev_err(component->dev,
-			"Failed to add ReTune Mobile control: %d\n", ret);
+	snd_soc_add_component_controls(component, &control, 1);
 }
 
 static void wm8904_handle_pdata(struct snd_soc_component *component)
 {
 	struct wm8904_priv *wm8904 = snd_soc_component_get_drvdata(component);
 	struct wm8904_pdata *pdata = wm8904->pdata;
-	int ret, i;
+	int i;
 
 	if (!pdata) {
 		snd_soc_add_component_controls(component, wm8904_eq_controls,
@@ -2082,10 +2079,7 @@ static void wm8904_handle_pdata(struct snd_soc_component *component)
 		wm8904->drc_enum.items = pdata->num_drc_cfgs;
 		wm8904->drc_enum.texts = wm8904->drc_texts;
 
-		ret = snd_soc_add_component_controls(component, &control, 1);
-		if (ret != 0)
-			dev_err(component->dev,
-				"Failed to add DRC mode control: %d\n", ret);
+		snd_soc_add_component_controls(component, &control, 1);
 
 		wm8904_set_drc(component);
 	}

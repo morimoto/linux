@@ -3331,7 +3331,7 @@ static void wm8994_handle_retune_mobile_pdata(struct wm8994_priv *wm8994)
 			     wm8994_get_retune_mobile_enum,
 			     wm8994_put_retune_mobile_enum),
 	};
-	int ret, i, j;
+	int i, j;
 	const char **t;
 
 	/* We need an array of texts for the enum API but the number
@@ -3373,11 +3373,8 @@ static void wm8994_handle_retune_mobile_pdata(struct wm8994_priv *wm8994)
 	wm8994->retune_mobile_enum.items = wm8994->num_retune_mobile_texts;
 	wm8994->retune_mobile_enum.texts = wm8994->retune_mobile_texts;
 
-	ret = snd_soc_add_component_controls(wm8994->hubs.component, controls,
+	snd_soc_add_component_controls(wm8994->hubs.component, controls,
 				   ARRAY_SIZE(controls));
-	if (ret != 0)
-		dev_err(wm8994->hubs.component->dev,
-			"Failed to add ReTune Mobile controls: %d\n", ret);
 }
 
 static void wm8994_handle_pdata(struct wm8994_priv *wm8994)
