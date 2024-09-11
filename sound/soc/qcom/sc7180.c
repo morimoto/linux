@@ -72,10 +72,8 @@ static int sc7180_headset_init(struct snd_soc_pcm_runtime *rtd)
 					  sc7180_jack_pins,
 					  ARRAY_SIZE(sc7180_jack_pins));
 
-	if (rval < 0) {
-		dev_err(card->dev, "Unable to add Headset Jack\n");
+	if (rval < 0)
 		return rval;
-	}
 
 	jack = pdata->hs_jack.jack;
 
@@ -104,10 +102,8 @@ static int sc7180_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 			SND_JACK_LINEOUT,
 			&pdata->hdmi_jack);
 
-	if (rval < 0) {
-		dev_err(card->dev, "Unable to add HDMI Jack\n");
+	if (rval < 0)
 		return rval;
-	}
 
 	jack = pdata->hdmi_jack.jack;
 	jack->private_data = component;
@@ -183,17 +179,12 @@ static int sc7180_startup_realtek_codec(struct snd_soc_pcm_runtime *rtd)
 	/* Configure PLL1 for codec */
 	ret = snd_soc_dai_set_pll(codec_dai, pll_id, pll_source,
 				  pll_in, pll_out);
-	if (ret) {
-		dev_err(rtd->dev, "can't set codec pll: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	/* Configure sysclk for codec */
 	ret = snd_soc_dai_set_sysclk(codec_dai, clk_id, pll_out,
 				     SND_SOC_CLOCK_IN);
-	if (ret)
-		dev_err(rtd->dev, "snd_soc_dai_set_sysclk err = %d\n",
-			ret);
 
 	return ret;
 }

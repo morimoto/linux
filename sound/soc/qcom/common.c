@@ -213,10 +213,8 @@ int qcom_snd_wcd_jack_setup(struct snd_soc_pcm_runtime *rtd,
 					     jack, qcom_headset_jack_pins,
 					     ARRAY_SIZE(qcom_headset_jack_pins));
 
-		if (rval < 0) {
-			dev_err(card->dev, "Unable to add Headphone Jack\n");
+		if (rval < 0)
 			return rval;
-		}
 
 		snd_jack_set_key(jack->jack, SND_JACK_BTN_0, KEY_MEDIA);
 		snd_jack_set_key(jack->jack, SND_JACK_BTN_1, KEY_VOICECOMMAND);
@@ -233,10 +231,8 @@ int qcom_snd_wcd_jack_setup(struct snd_soc_pcm_runtime *rtd,
 		for_each_rtd_codec_dais(rtd, i, codec_dai) {
 			rval = snd_soc_component_set_jack(codec_dai->component,
 							  jack, NULL);
-			if (rval != 0 && rval != -ENOTSUPP) {
-				dev_warn(card->dev, "Failed to set jack: %d\n", rval);
+			if (rval != 0 && rval != -ENOTSUPP)
 				return rval;
-			}
 		}
 
 		break;
@@ -264,10 +260,8 @@ int qcom_snd_dp_jack_setup(struct snd_soc_pcm_runtime *rtd,
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
 		rval = snd_soc_component_set_jack(codec_dai->component, dp_jack, NULL);
-		if (rval != 0 && rval != -ENOTSUPP) {
-			dev_warn(card->dev, "Failed to set jack: %d\n", rval);
+		if (rval != 0 && rval != -ENOTSUPP)
 			return rval;
-		}
 	}
 
 	return 0;

@@ -119,35 +119,23 @@ static int sdm845_tdm_snd_hw_params(struct snd_pcm_substream *substream,
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		ret = snd_soc_dai_set_tdm_slot(cpu_dai, 0, 0x3,
 				8, slot_width);
-		if (ret < 0) {
-			dev_err(rtd->dev, "%s: failed to set tdm slot, err:%d\n",
-					__func__, ret);
+		if (ret < 0)
 			goto end;
-		}
 
 		ret = snd_soc_dai_set_channel_map(cpu_dai, 0, NULL,
 				channels, tdm_slot_offset);
-		if (ret < 0) {
-			dev_err(rtd->dev, "%s: failed to set channel map, err:%d\n",
-					__func__, ret);
+		if (ret < 0)
 			goto end;
-		}
 	} else {
 		ret = snd_soc_dai_set_tdm_slot(cpu_dai, 0xf, 0,
 				8, slot_width);
-		if (ret < 0) {
-			dev_err(rtd->dev, "%s: failed to set tdm slot, err:%d\n",
-					__func__, ret);
+		if (ret < 0)
 			goto end;
-		}
 
 		ret = snd_soc_dai_set_channel_map(cpu_dai, channels,
 				tdm_slot_offset, 0, NULL);
-		if (ret < 0) {
-			dev_err(rtd->dev, "%s: failed to set channel map, err:%d\n",
-					__func__, ret);
+		if (ret < 0)
 			goto end;
-		}
 	}
 
 	for_each_rtd_codec_dais(rtd, j, codec_dai) {
@@ -157,11 +145,8 @@ static int sdm845_tdm_snd_hw_params(struct snd_pcm_substream *substream,
 					codec_dai, LEFT_SPK_TDM_TX_MASK,
 					SPK_TDM_RX_MASK, NUM_TDM_SLOTS,
 					slot_width);
-			if (ret < 0) {
-				dev_err(rtd->dev,
-					"DEV0 TDM slot err:%d\n", ret);
+			if (ret < 0)
 				return ret;
-			}
 		}
 
 		if (!strcmp(codec_dai->component->name_prefix, "Right")) {
@@ -169,11 +154,8 @@ static int sdm845_tdm_snd_hw_params(struct snd_pcm_substream *substream,
 					codec_dai, RIGHT_SPK_TDM_TX_MASK,
 					SPK_TDM_RX_MASK, NUM_TDM_SLOTS,
 					slot_width);
-			if (ret < 0) {
-				dev_err(rtd->dev,
-					"DEV1 TDM slot err:%d\n", ret);
+			if (ret < 0)
 				return ret;
-			}
 		}
 	}
 
@@ -203,9 +185,6 @@ static int sdm845_snd_hw_params(struct snd_pcm_substream *substream,
 		ret = snd_soc_dai_set_sysclk(
 			codec_dai, RT5663_SCLK_S_MCLK, DEFAULT_MCLK_RATE,
 			SND_SOC_CLOCK_IN);
-		if (ret < 0)
-			dev_err(rtd->dev,
-				"snd_soc_dai_set_sysclk err = %d\n", ret);
 		break;
 	case QUATERNARY_TDM_RX_0:
 	case QUATERNARY_TDM_TX_0:
@@ -263,10 +242,8 @@ static int sdm845_dai_init(struct snd_soc_pcm_runtime *rtd)
 						  sdm845_jack_pins,
 						  ARRAY_SIZE(sdm845_jack_pins));
 
-		if (rval < 0) {
-			dev_err(card->dev, "Unable to add Headphone Jack\n");
+		if (rval < 0)
 			return rval;
-		}
 
 		jack = pdata->jack.jack;
 
@@ -286,10 +263,9 @@ static int sdm845_dai_init(struct snd_soc_pcm_runtime *rtd)
 		jack->private_free = sdm845_jack_free;
 		rval = snd_soc_component_set_jack(component,
 						  &pdata->jack, NULL);
-		if (rval != 0 && rval != -ENOTSUPP) {
-			dev_warn(card->dev, "Failed to set jack: %d\n", rval);
+		if (rval != 0 && rval != -ENOTSUPP)
 			return rval;
-		}
+
 		break;
 	case SLIMBUS_0_RX...SLIMBUS_6_TX:
 		/* setting up wcd multiple times for slim port is redundant */
@@ -311,10 +287,8 @@ static int sdm845_dai_init(struct snd_soc_pcm_runtime *rtd)
 
 			rval = snd_soc_component_set_jack(codec_dai->component,
 							  &pdata->jack, NULL);
-			if (rval != 0 && rval != -ENOTSUPP) {
-				dev_warn(card->dev, "Failed to set jack: %d\n", rval);
+			if (rval != 0 && rval != -ENOTSUPP)
 				return rval;
-			}
 		}
 
 		pdata->slim_port_setup = true;
@@ -391,22 +365,16 @@ static int sdm845_snd_startup(struct snd_pcm_substream *substream)
 				    "Left")) {
 				ret = snd_soc_dai_set_fmt(
 						codec_dai, codec_dai_fmt);
-				if (ret < 0) {
-					dev_err(rtd->dev,
-						"Left TDM fmt err:%d\n", ret);
+				if (ret < 0)
 					return ret;
-				}
 			}
 
 			if (!strcmp(codec_dai->component->name_prefix,
 				    "Right")) {
 				ret = snd_soc_dai_set_fmt(
 						codec_dai, codec_dai_fmt);
-				if (ret < 0) {
-					dev_err(rtd->dev,
-						"Right TDM slot err:%d\n", ret);
+				if (ret < 0)
 					return ret;
-				}
 			}
 		}
 		break;

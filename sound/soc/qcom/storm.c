@@ -24,7 +24,7 @@ static int storm_ops_hw_params(struct snd_pcm_substream *substream,
 	snd_pcm_format_t format = params_format(params);
 	unsigned int rate = params_rate(params);
 	unsigned int sysclk_freq;
-	int bitwidth, ret;
+	int bitwidth;
 
 	bitwidth = snd_pcm_format_width(format);
 	if (bitwidth < 0) {
@@ -39,14 +39,7 @@ static int storm_ops_hw_params(struct snd_pcm_substream *substream,
 	 */
 	sysclk_freq = rate * bitwidth * 2 * STORM_SYSCLK_MULT;
 
-	ret = snd_soc_dai_set_sysclk(snd_soc_rtd_to_cpu(soc_runtime, 0), 0, sysclk_freq, 0);
-	if (ret) {
-		dev_err(card->dev, "error setting sysclk to %u: %d\n",
-			sysclk_freq, ret);
-		return ret;
-	}
-
-	return 0;
+	return snd_soc_dai_set_sysclk(snd_soc_rtd_to_cpu(soc_runtime, 0), 0, sysclk_freq, 0);
 }
 
 static const struct snd_soc_ops storm_soc_ops = {
