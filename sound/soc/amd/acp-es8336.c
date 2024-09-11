@@ -68,17 +68,13 @@ static int st_es8336_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_card_jack_new_pins(card, "Headset", SND_JACK_HEADSET | SND_JACK_BTN_0,
 					 &st_jack, st_es8316_jack_pins,
 					 ARRAY_SIZE(st_es8316_jack_pins));
-	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
+
 	snd_jack_set_key(st_jack.jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	ret = snd_soc_component_set_jack(codec, &st_jack, NULL);
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack call-back failed: %d\n", ret);
-		return ret;
-	}
-	return 0;
+
+	return ret;
 }
 
 static const unsigned int st_channels[] = {
@@ -116,10 +112,9 @@ static int st_es8336_codec_startup(struct snd_pcm_substream *substream)
 	machine = snd_soc_card_get_drvdata(card);
 	codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, ES8336_PLL_FREQ, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(rtd->dev, "can't set codec sysclk: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
+
 	runtime->hw.channels_max = DUAL_CHANNEL;
 	snd_pcm_hw_constraint_list(runtime, 0, SNDRV_PCM_HW_PARAM_CHANNELS,
 				   &st_constraints_channels);

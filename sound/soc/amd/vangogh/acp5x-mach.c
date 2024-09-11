@@ -74,17 +74,12 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 
 	if (SND_SOC_DAPM_EVENT_OFF(event)) {
 		ret = snd_soc_dai_set_sysclk(dai, NAU8821_CLK_INTERNAL, 0, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(card->dev, "set sysclk err = %d\n", ret);
+		if (ret < 0)
 			return -EIO;
-		}
 	} else {
 		ret = snd_soc_dai_set_sysclk(dai, NAU8821_CLK_FLL_BLK, 0, SND_SOC_CLOCK_IN);
-		if (ret < 0)
-			dev_err(dai->dev, "can't set BLK clock %d\n", ret);
+
 		ret = snd_soc_dai_set_pll(dai, 0, 0, ACP5X_NAU8821_BCLK, ACP5X_NAU8821_FREQ_OUT);
-		if (ret < 0)
-			dev_err(dai->dev, "can't set FLL: %d\n", ret);
 	}
 
 	return ret;
@@ -103,10 +98,8 @@ static int acp5x_8821_init(struct snd_soc_pcm_runtime *rtd)
 					 SND_JACK_HEADSET | SND_JACK_BTN_0,
 					 &vg_headset, acp5x_nau8821_jack_pins,
 					 ARRAY_SIZE(acp5x_nau8821_jack_pins));
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack creation failed %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	snd_jack_set_key(vg_headset.jack, SND_JACK_BTN_0, KEY_MEDIA);
 	nau8821_enable_jack_detect(component, &vg_headset);
@@ -174,8 +167,6 @@ static int acp5x_nau8821_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 
 	ret = snd_soc_dai_set_sysclk(dai, NAU8821_CLK_FLL_BLK, 0, SND_SOC_CLOCK_IN);
-	if (ret < 0)
-		dev_err(card->dev, "can't set FS clock %d\n", ret);
 
 	bclk = snd_soc_params_to_bclk(params);
 	if (bclk < 0) {
@@ -184,8 +175,6 @@ static int acp5x_nau8821_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	ret = snd_soc_dai_set_pll(dai, 0, 0, bclk, params_rate(params) * 256);
-	if (ret < 0)
-		dev_err(card->dev, "can't set FLL: %d\n", ret);
 
 	return ret;
 }
@@ -238,10 +227,8 @@ static int acp5x_cs35l41_hw_params(struct snd_pcm_substream *substream,
 			}
 
 			ret = snd_soc_component_set_sysclk(comp, 0, 0, bclk, SND_SOC_CLOCK_IN);
-			if (ret) {
-				dev_err(comp->dev, "failed to set SYSCLK: %d\n", ret);
+			if (ret)
 				return ret;
-			}
 		}
 	}
 
