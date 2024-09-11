@@ -709,10 +709,8 @@ static int gbaudio_init_jack(struct gbaudio_module_info *module,
 	ret = snd_soc_card_jack_new_pins(card, module->jack_name,
 					 module->jack_mask,
 					 &module->headset.jack, headset, 1);
-	if (ret) {
-		dev_err(module->dev, "Failed to create new jack\n");
+	if (ret)
 		return ret;
-	}
 
 	/* Add to module's jack list */
 	list_add(&module->headset.list, &module->jack_list);
@@ -734,10 +732,8 @@ static int gbaudio_init_jack(struct gbaudio_module_info *module,
 					 module->button_mask,
 					 &module->button.jack,
 					 button, 1);
-	if (ret) {
-		dev_err(module->dev, "Failed to create button jack\n");
+	if (ret)
 		goto free_jacks;
-	}
 
 	/* Add to module's jack list */
 	list_add(&module->button.list, &module->jack_list);
