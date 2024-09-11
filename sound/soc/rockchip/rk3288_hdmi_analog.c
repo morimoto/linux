@@ -92,17 +92,13 @@ static int rk_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_sysclk(cpu_dai, 0, mclk,
 				     SND_SOC_CLOCK_OUT);
 
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(codec_dai->dev, "Can't set cpu clock %d\n", ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, mclk,
 				     SND_SOC_CLOCK_IN);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(codec_dai->dev, "Can't set codec clock %d\n", ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
 
 	return 0;
 }
