@@ -73,10 +73,8 @@ static int mt8173_max98090_init(struct snd_soc_pcm_runtime *runtime)
 					 &mt8173_max98090_jack,
 					 mt8173_max98090_jack_pins,
 					 ARRAY_SIZE(mt8173_max98090_jack_pins));
-	if (ret) {
-		dev_err(card->dev, "Can't create a new Jack %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return max98090_mic_detect(component, &mt8173_max98090_jack);
 }

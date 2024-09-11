@@ -98,10 +98,8 @@ static int mt8173_rt5650_rt5514_init(struct snd_soc_pcm_runtime *runtime)
 					 &mt8173_rt5650_rt5514_jack,
 					 mt8173_rt5650_rt5514_jack_pins,
 					 ARRAY_SIZE(mt8173_rt5650_rt5514_jack_pins));
-	if (ret) {
-		dev_err(card->dev, "Can't new Headset Jack %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return rt5645_set_jack_detect(component,
 				      &mt8173_rt5650_rt5514_jack,

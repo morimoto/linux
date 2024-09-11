@@ -167,9 +167,6 @@ static int primary_codec_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_dapm_add_routes(&card->dapm, dmic_map,
 				      ARRAY_SIZE(dmic_map));
 
-	if (ret)
-		dev_err(card->dev, "DMic map addition failed: %d\n", ret);
-
 	return ret;
 }
 
@@ -205,10 +202,8 @@ static int mt8186_headset_codec_init(struct snd_soc_pcm_runtime *rtd)
 				    SND_JACK_BTN_3,
 				    jack, mt8186_jack_pins,
 				    ARRAY_SIZE(mt8186_jack_pins));
-	if (ret) {
-		dev_err(rtd->dev, "Headset Jack creation failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	if (soc_card_data->card_data->flags & DA7219_CODEC_PRESENT)
 		hs_keys = hs_keys_da7219;
@@ -237,10 +232,8 @@ static int mt8186_da7219_i2s_hw_params(struct snd_pcm_substream *substream,
 	int ret, j;
 
 	ret = snd_soc_dai_set_sysclk(cpu_dai, 0, mclk_fs, SND_SOC_CLOCK_OUT);
-	if (ret < 0) {
-		dev_err(rtd->dev, "failed to set cpu dai sysclk: %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
 
 	for_each_rtd_codec_dais(rtd, j, codec_dai) {
 		if (strcmp(codec_dai->component->name, DA7219_DEV_NAME))
@@ -248,10 +241,8 @@ static int mt8186_da7219_i2s_hw_params(struct snd_pcm_substream *substream,
 
 		ret = snd_soc_dai_set_sysclk(codec_dai, DA7219_CLKSRC_MCLK,
 					     mclk_fs, SND_SOC_CLOCK_IN);
-		if (ret < 0) {
-			dev_err(rtd->dev, "failed to set sysclk: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 
 		if ((rate % 8000) == 0)
 			freq = DA7219_PLL_FREQ_OUT_98304;
@@ -260,10 +251,8 @@ static int mt8186_da7219_i2s_hw_params(struct snd_pcm_substream *substream,
 
 		ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_PLL_SRM,
 					  0, freq);
-		if (ret) {
-			dev_err(rtd->dev, "failed to start PLL: %d\n", ret);
+		if (ret)
 			return ret;
-		}
 	}
 
 	return 0;
@@ -280,10 +269,8 @@ static int mt8186_da7219_i2s_hw_free(struct snd_pcm_substream *substream)
 			continue;
 
 		ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_MCLK, 0, 0);
-		if (ret < 0) {
-			dev_err(rtd->dev, "failed to stop PLL: %d\n", ret);
+		if (ret < 0)
 			return ret;
-		}
 	}
 
 	return 0;
@@ -314,28 +301,22 @@ static int mt8186_rt5682s_i2s_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x00, 0x0, 0x2, bitwidth);
-	if (ret) {
-		dev_err(card->dev, "failed to set tdm slot\n");
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, RT5682_PLL1,
 				  RT5682_PLL1_S_BCLK1,
 				  params_rate(params) * 64,
 				  params_rate(params) * 512);
-	if (ret) {
-		dev_err(card->dev, "failed to set pll\n");
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai,
 				     RT5682_SCLK_S_PLL1,
 				     params_rate(params) * 512,
 				     SND_SOC_CLOCK_IN);
-	if (ret) {
-		dev_err(card->dev, "failed to set sysclk\n");
+	if (ret)
 		return ret;
-	}
 
 	return snd_soc_dai_set_sysclk(cpu_dai, 0, mclk_fs, SND_SOC_CLOCK_OUT);
 }
@@ -363,10 +344,8 @@ static int mt8186_mt6366_rt1019_rt5682s_hdmi_init(struct snd_soc_pcm_runtime *rt
 	}
 
 	ret = snd_soc_card_jack_new(rtd->card, "HDMI Jack", SND_JACK_LINEOUT, jack);
-	if (ret) {
-		dev_err(rtd->dev, "HDMI Jack creation failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	return snd_soc_component_set_jack(cmpnt_codec, jack, NULL);
 }
