@@ -397,10 +397,8 @@ static int sun8i_codec_add_headphone(struct snd_soc_component *cmpnt)
 	ret = snd_soc_add_component_controls(cmpnt,
 					     sun8i_codec_headphone_controls,
 					     ARRAY_SIZE(sun8i_codec_headphone_controls));
-	if (ret) {
-		dev_err(dev, "Failed to add Headphone controls: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dapm_new_controls(dapm, sun8i_codec_headphone_widgets,
 					ARRAY_SIZE(sun8i_codec_headphone_widgets));
@@ -411,12 +409,8 @@ static int sun8i_codec_add_headphone(struct snd_soc_component *cmpnt)
 
 	ret = snd_soc_dapm_add_routes(dapm, sun8i_codec_headphone_routes,
 				      ARRAY_SIZE(sun8i_codec_headphone_routes));
-	if (ret) {
-		dev_err(dev, "Failed to add Headphone DAPM routes: %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 /* mbias specific widget */
@@ -493,10 +487,8 @@ static int sun8i_codec_add_linein(struct snd_soc_component *cmpnt)
 	ret = snd_soc_add_component_controls(cmpnt,
 					     sun8i_codec_linein_controls,
 					     ARRAY_SIZE(sun8i_codec_linein_controls));
-	if (ret) {
-		dev_err(dev, "Failed to add Line In controls: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dapm_new_controls(dapm, sun8i_codec_linein_widgets,
 					ARRAY_SIZE(sun8i_codec_linein_widgets));
@@ -507,12 +499,8 @@ static int sun8i_codec_add_linein(struct snd_soc_component *cmpnt)
 
 	ret = snd_soc_dapm_add_routes(dapm, sun8i_codec_linein_routes,
 				      ARRAY_SIZE(sun8i_codec_linein_routes));
-	if (ret) {
-		dev_err(dev, "Failed to add Line In DAPM routes: %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 
@@ -574,10 +562,8 @@ static int sun8i_codec_add_lineout(struct snd_soc_component *cmpnt)
 	ret = snd_soc_add_component_controls(cmpnt,
 					     sun8i_codec_lineout_controls,
 					     ARRAY_SIZE(sun8i_codec_lineout_controls));
-	if (ret) {
-		dev_err(dev, "Failed to add Line Out controls: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dapm_new_controls(dapm, sun8i_codec_lineout_widgets,
 					ARRAY_SIZE(sun8i_codec_lineout_widgets));
@@ -588,12 +574,8 @@ static int sun8i_codec_add_lineout(struct snd_soc_component *cmpnt)
 
 	ret = snd_soc_dapm_add_routes(dapm, sun8i_codec_lineout_routes,
 				      ARRAY_SIZE(sun8i_codec_lineout_routes));
-	if (ret) {
-		dev_err(dev, "Failed to add Line Out DAPM routes: %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 /* mic2 specific controls, widgets and routes */
@@ -639,10 +621,8 @@ static int sun8i_codec_add_mic2(struct snd_soc_component *cmpnt)
 	ret = snd_soc_add_component_controls(cmpnt,
 					     sun8i_codec_mic2_controls,
 					     ARRAY_SIZE(sun8i_codec_mic2_controls));
-	if (ret) {
-		dev_err(dev, "Failed to add MIC2 controls: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dapm_new_controls(dapm, sun8i_codec_mic2_widgets,
 					ARRAY_SIZE(sun8i_codec_mic2_widgets));
@@ -653,12 +633,8 @@ static int sun8i_codec_add_mic2(struct snd_soc_component *cmpnt)
 
 	ret = snd_soc_dapm_add_routes(dapm, sun8i_codec_mic2_routes,
 				      ARRAY_SIZE(sun8i_codec_mic2_routes));
-	if (ret) {
-		dev_err(dev, "Failed to add MIC2 DAPM routes: %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 struct sun8i_codec_analog_quirks {
@@ -719,12 +695,7 @@ static int sun8i_codec_analog_add_mixer(struct snd_soc_component *cmpnt,
 
 	ret = snd_soc_dapm_add_routes(dapm, sun8i_codec_mixer_routes,
 				      ARRAY_SIZE(sun8i_codec_mixer_routes));
-	if (ret) {
-		dev_err(dev, "Failed to add Mixer DAPM routes: %d\n", ret);
-		return ret;
-	}
-
-	return 0;
+	return ret;
 }
 
 static const struct sun8i_codec_analog_quirks sun8i_v3s_quirks = {
