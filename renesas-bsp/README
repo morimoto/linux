@@ -7,8 +7,8 @@
 
 * About BSP rebase
 
-	Upstream team rebased BSP v5.2.0-rcX (Linux Kernel v5.10.147 base)
-	to Linux Kernel v6.1.X. Rebased BSP structure is like below.
+	Upstream team rebases BSP kernel to Linux Kernel v6.1.X.
+	Rebased BSP structure is like below.
 
 		(C) xxxxx BSP rebase work on v6.1.X
 		 ^  xxxxx ...
@@ -30,14 +30,60 @@
 
 		${LINUX}/renesas-bsp
 
-* Original BSP commits
+* About git repository/branch/tag
 
-	It has list of target BSP commits since v5.10.147 kernel.
-	BSP team need to handle the commits by themself which was added on top
-	of it *after* Upstream's rebase work if exist.
-	Please see below
+	You can find BSP rebase repository at
 
+		Github
+		https://github.com/renesas-rcar/upstream_bsp
+
+	You can clone it by
+
+		git clone https://github.com/renesas-rcar/upstream_bsp.git
+
+	You can find 2 type of branch/tag
+
+	branch
+		(A) renesas-bsp/v6.1-dev
+		(B) renesas-bsp/v6.1.xxx-yyyy-mm-dd
+
+	tag
+		(A) renesas-dev-v6.1.xxx
+		(B) renesas-bsp-v6.1.xxx
+
+	(A) is using "git merge". Pros is you can use "git merge" for it. Cons is it is difficult
+	to know what kind of patch was backported from upstream.
+
+	(B) is using "git rebase". Pros is it is easy to know what kind of patch was backported from
+	upstream. Cons is you need to use "git rebase" for it, can't use "git merge".
+
+* files
+
+	You can find some files on ${LINUX}/renesas-bsp/
+
+	Original BSP local patches
 		${LINUX}/renesas-bsp/full
+
+	See below
+		${LINUX}/renesas-bsp/comment
+		${LINUX}/renesas-bsp/handled
+		${LINUX}/renesas-bsp/remains
+		${LINUX}/renesas-bsp/ignored
+
+	Supported CVE, by using CIP project (*)
+		${LINUX}/renesas-bsp/cve
+
+	Backported patch list
+		${LINUX}/renesas-bsp/list
+
+	Others
+		${LINUX}/renesas-bsp/ChangeLog
+		${LINUX}/renesas-bsp/README
+		${LINUX}/renesas-bsp/comment
+
+	(*) cip-kernel-sec
+
+		https://gitlab.com/cip-project/cip-kernel/cip-kernel-sec
 
 * Handled commits / ignored commits
 
@@ -55,7 +101,6 @@
 	We backported (2) patches into this rebased BSP. Each commit has
 	"cherry picked from" tag.
 	We are trying to upport (3) patches, thus it is not yet included.
-	you can see which one was so in "remains" file.
 
 	But, we ignored (4) patches, because these are..
 
@@ -74,19 +119,6 @@
 		${LINUX}/renesas-bsp/handled : (1)/(2)
 		${LINUX}/renesas-bsp/remains : (3)
 		${LINUX}/renesas-bsp/ignored : (4)
-
-* About handled CVE
-
-	Upstream team knows that sometimes BSP team is asked about supported CVE from
-	customer. Rebase BSP has support CVE list to support BSP team.
-	It comes from CIP project.
-
-		cip-kernel-sec
-		https://gitlab.com/cip-project/cip-kernel/cip-kernel-sec
-
-	Please see below
-
-		 ${LINUX}/renesas-bsp/cve
 
 * defconfig vs renesas_defconfig
 

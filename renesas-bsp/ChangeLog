@@ -1,3 +1,11 @@
+* v6.1.110-2024-09-13
+
+	* Merge/Rebase v6.1.110
+
+	* update CVE
+
+	* add README
+
 * v6.1.109-2024-09-09
 
 	* Merge/Rebase v6.1.109
@@ -390,7 +398,3 @@
 
 		commit 3bfe384f6f4f7433103ffcc36e7a7106f7e70c4e
 		("arm64: dts: renesas: r9a07g0{43,44,54}: Update RZ/G2L family compatible")
-
-* v6.1.100-2024-07-19
-
-	* Merge/Rebase v6.1.100
