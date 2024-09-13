@@ -7407,10 +7407,8 @@ static int __init volume_create_alsa_mixer(void)
 	rc = snd_card_new(&tpacpi_pdev->dev,
 			  alsa_index, alsa_id, THIS_MODULE,
 			  sizeof(struct tpacpi_alsa_data), &card);
-	if (rc < 0 || !card) {
-		pr_err("Failed to create ALSA card structures: %d\n", rc);
+	if (rc < 0 || !card)
 		return -ENODEV;
-	}
 
 	BUG_ON(!card->private_data);
 	data = card->private_data;
