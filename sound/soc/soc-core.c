@@ -1507,11 +1507,8 @@ static int soc_init_pcm_runtime(struct snd_soc_card *card,
 
 	/* create the pcm */
 	ret = soc_new_pcm(rtd);
-	if (ret < 0) {
-		dev_err(card->dev, "ASoC: can't create pcm %s :%d\n",
-			dai_link->stream_name, ret);
+	if (ret < 0)
 		goto err;
-	}
 
 	ret = snd_soc_pcm_dai_new(rtd);
 	if (ret < 0)
