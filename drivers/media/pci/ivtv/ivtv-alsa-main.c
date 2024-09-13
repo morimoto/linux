@@ -126,11 +126,8 @@ static int snd_ivtv_init(struct v4l2_device *v4l2_dev)
 			   idx,
 			   SNDRV_DEFAULT_STR1, /* xid from end of shortname*/
 			   THIS_MODULE, 0, &sc);
-	if (ret) {
-		IVTV_ALSA_ERR("%s: snd_card_new() failed with err %d\n",
-			      __func__, ret);
+	if (ret)
 		goto err_exit;
-	}
 
 	/* (3) Create a main component */
 	ret = snd_ivtv_card_create(v4l2_dev, sc, &itvsc);
