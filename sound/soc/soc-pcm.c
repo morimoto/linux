@@ -38,7 +38,6 @@ static inline int _soc_pcm_ret(struct snd_soc_pcm_runtime *rtd,
 	switch (ret) {
 	case -EPROBE_DEFER:
 	case -ENOTSUPP:
-	case -EINVAL:
 		break;
 	default:
 		dev_err(rtd->dev,
@@ -2560,8 +2559,8 @@ static int dpcm_fe_dai_prepare(struct snd_pcm_substream *substream)
 			     fe->dai_link->name);
 		dev_dbg(fe->dev, "ASoC: no backend DAIs enabled for %s\n",
 			fe->dai_link->name);
-		ret = -EINVAL;
-		goto out;
+		/* don't use soc_pcm_ret() to lower error log severity */
+		return -EINVAL;
 	}
 
 	ret = dpcm_be_dai_prepare(fe, stream);
