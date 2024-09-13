@@ -2952,11 +2952,11 @@ int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
 
 	ret = soc_get_playback_capture(rtd, &playback, &capture);
 	if (ret < 0)
-		return ret;
+		goto out;
 
 	ret = soc_create_pcm(&pcm, rtd, playback, capture);
 	if (ret < 0)
-		return ret;
+		goto out;
 
 	/* DAPM dai link stream work */
 	/*
@@ -3024,12 +3024,13 @@ int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
 		snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_CAPTURE, &rtd->ops);
 
 	ret = snd_soc_pcm_component_new(rtd);
-	if (ret < 0)
-		return ret;
 out:
-	dev_dbg(rtd->card->dev, "%s <-> %s mapping ok\n",
-		soc_codec_dai_name(rtd), soc_cpu_dai_name(rtd));
-	return ret;
+	if (ret == 0)
+		dev_dbg(rtd->card->dev, "%s <-> %s mapping ok\n",
+			soc_codec_dai_name(rtd), soc_cpu_dai_name(rtd));
+
+	return snd_soc_ret(rtd->card->dev, ret,
+			   "can't create pcm (%s)\n", rtd->dai_link->stream_name);
 }
 
 /* get the substream for this BE */
