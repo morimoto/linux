@@ -346,10 +346,8 @@ static int snd_sh_dac_probe(struct platform_device *devptr)
 	int err;
 
 	err = snd_card_new(&devptr->dev, index, id, THIS_MODULE, 0, &card);
-	if (err < 0) {
-		dev_err(&devptr->dev, "cannot allocate the card\n");
+	if (err < 0)
 		return err;
-	}
 
 	err = snd_sh_dac_create(card, devptr, &chip);
 	if (err < 0)

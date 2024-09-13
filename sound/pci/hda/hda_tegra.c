@@ -492,10 +492,8 @@ static int hda_tegra_probe(struct platform_device *pdev)
 
 	err = snd_card_new(&pdev->dev, SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1,
 			   THIS_MODULE, 0, &card);
-	if (err < 0) {
-		dev_err(&pdev->dev, "Error creating card!\n");
+	if (err < 0)
 		return err;
-	}
 
 	hda->resets[hda->nresets++].id = "hda";
 
