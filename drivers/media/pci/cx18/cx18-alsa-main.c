@@ -127,11 +127,8 @@ static int snd_cx18_init(struct v4l2_device *v4l2_dev)
 			   SNDRV_DEFAULT_IDX1, /* use first available id */
 			   SNDRV_DEFAULT_STR1, /* xid from end of shortname*/
 			   THIS_MODULE, 0, &sc);
-	if (ret) {
-		CX18_ALSA_ERR("%s: snd_card_new() failed with err %d\n",
-			      __func__, ret);
+	if (ret)
 		goto err_exit;
-	}
 
 	/* (3) Create a main component */
 	ret = snd_cx18_card_create(v4l2_dev, sc, &cxsc);

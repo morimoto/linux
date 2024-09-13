@@ -58,10 +58,8 @@ static int hiface_chip_create(struct usb_interface *intf,
 	/* if we are here, card can be registered in alsa. */
 	ret = snd_card_new(&intf->dev, index[idx], id[idx], THIS_MODULE,
 			   sizeof(*chip), &card);
-	if (ret < 0) {
-		dev_err(&device->dev, "cannot create alsa card.\n");
+	if (ret < 0)
 		return ret;
-	}
 
 	strscpy(card->driver, DRIVER_NAME, sizeof(card->driver));
 

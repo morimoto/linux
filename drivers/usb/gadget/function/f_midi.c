@@ -807,10 +807,9 @@ static int f_midi_register_card(struct f_midi *midi)
 
 	err = snd_card_new(&midi->gadget->dev, midi->index, midi->id,
 			   THIS_MODULE, 0, &card);
-	if (err < 0) {
-		ERROR(midi, "snd_card_new() failed\n");
+	if (err < 0)
 		goto fail;
-	}
+
 	midi->card = card;
 
 	err = snd_device_new(card, SNDRV_DEV_LOWLEVEL, midi, &ops);

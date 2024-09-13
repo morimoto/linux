@@ -2166,12 +2166,8 @@ static int snd_soc_bind_card(struct snd_soc_card *card)
 	/* card bind complete so register a sound card */
 	ret = snd_card_new(card->dev, SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1,
 			card->owner, 0, &card->snd_card);
-	if (ret < 0) {
-		dev_err(card->dev,
-			"ASoC: can't create sound card for card %s: %d\n",
-			card->name, ret);
+	if (ret < 0)
 		goto probe_end;
-	}
 
 	soc_init_card_debugfs(card);
 

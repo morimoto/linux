@@ -175,22 +175,31 @@ int snd_card_new(struct device *parent, int idx, const char *xid,
 	struct snd_card *card;
 	int err;
 
-	if (snd_BUG_ON(!card_ret))
-		return -EINVAL;
+	if (snd_BUG_ON(!card_ret)) {
+		err = -EINVAL;
+		goto err;
+	}
+
 	*card_ret = NULL;
 
 	if (extra_size < 0)
 		extra_size = 0;
 	card = kzalloc(sizeof(*card) + extra_size, GFP_KERNEL);
-	if (!card)
-		return -ENOMEM;
+	if (!card) {
+		err = -ENOMEM;
+		goto err;
+	}
 
 	err = snd_card_init(card, parent, idx, xid, module, extra_size);
 	if (err < 0)
-		return err; /* card is freed by error handler */
+		goto err; /* card is freed by error handler */
 
 	*card_ret = card;
-	return 0;
+err:
+	if (err < 0)
+		dev_err(parent, "%s() failed with err %d\n", __func__, err);
+
+	return err;
 }
 EXPORT_SYMBOL(snd_card_new);
 

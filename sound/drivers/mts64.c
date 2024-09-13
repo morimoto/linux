@@ -925,10 +925,9 @@ static int snd_mts64_probe(struct platform_device *pdev)
 
 	err = snd_card_new(&pdev->dev, index[dev], id[dev], THIS_MODULE,
 			   0, &card);
-	if (err < 0) {
-		dev_dbg(&pdev->dev, "Cannot create card\n");
+	if (err < 0)
 		return err;
-	}
+
 	strcpy(card->driver, DRIVER_NAME);
 	strcpy(card->shortname, "ESI " CARD_NAME);
 	sprintf(card->longname,  "%s at 0x%lx, irq %i", 

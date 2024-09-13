@@ -1325,7 +1325,6 @@ static int snd_mixart_probe(struct pci_dev *pci,
 				   0, &card);
 
 		if (err < 0) {
-			dev_err(&pci->dev, "cannot allocate the card %d\n", i);
 			snd_mixart_free(mgr);
 			return err;
 		}

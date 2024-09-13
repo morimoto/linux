@@ -632,10 +632,8 @@ static int snd_usb_audio_create(struct usb_interface *intf,
 
 	err = snd_card_new(&intf->dev, index[idx], id[idx], THIS_MODULE,
 			   sizeof(*chip), &card);
-	if (err < 0) {
-		dev_err(&dev->dev, "cannot create card instance %d\n", idx);
+	if (err < 0)
 		return err;
-	}
 
 	chip = card->private_data;
 	mutex_init(&chip->mutex);
