@@ -732,10 +732,8 @@ static int atmel_ac97c_probe(struct platform_device *pdev)
 	retval = snd_card_new(&pdev->dev, SNDRV_DEFAULT_IDX1,
 			      SNDRV_DEFAULT_STR1, THIS_MODULE,
 			      sizeof(struct atmel_ac97c), &card);
-	if (retval) {
-		dev_dbg(&pdev->dev, "could not create sound card device\n");
+	if (retval)
 		goto err_snd_card_new;
-	}
 
 	chip = get_chip(card);
 

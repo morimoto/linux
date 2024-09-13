@@ -2106,10 +2106,8 @@ static int azx_probe(struct pci_dev *pci,
 
 	err = snd_card_new(&pci->dev, index[dev], id[dev], THIS_MODULE,
 			   0, &card);
-	if (err < 0) {
-		dev_err(&pci->dev, "Error creating card!\n");
+	if (err < 0)
 		return err;
-	}
 
 	err = azx_create(card, pci, dev, pci_id->driver_data, &chip);
 	if (err < 0)

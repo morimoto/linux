@@ -615,7 +615,6 @@ static int pcmidi_snd_initialise(struct pcmidi_snd *pm)
 	err = snd_card_new(&pm->hdev->dev, index[dev], id[dev],
 			   THIS_MODULE, 0, &card);
 	if (err < 0) {
-		pk_error("failed to create pc-midi sound card\n");
 		err = -ENOMEM;
 		goto fail;
 	}

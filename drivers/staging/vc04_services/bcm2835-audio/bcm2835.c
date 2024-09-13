@@ -143,10 +143,8 @@ static int snd_add_child_device(struct device *dev,
 	int err;
 
 	err = snd_card_new(dev, -1, NULL, THIS_MODULE, sizeof(*chip), &card);
-	if (err < 0) {
-		dev_err(dev, "Failed to create card");
+	if (err < 0)
 		return err;
-	}
 
 	chip = card->private_data;
 	chip->card = card;
