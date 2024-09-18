@@ -1039,6 +1039,7 @@ int snd_component_add(struct snd_card *card, const char *component)
 {
 	char *ptr;
 	int len = strlen(component);
+	int ret = 0;
 
 	ptr = strstr(card->components, component);
 	if (ptr != NULL) {
@@ -1047,12 +1048,19 @@ int snd_component_add(struct snd_card *card, const char *component)
 	}
 	if (strlen(card->components) + 1 + len + 1 > sizeof(card->components)) {
 		snd_BUG();
-		return -ENOMEM;
+		ret = -ENOMEM;
+		goto out;
 	}
 	if (card->components[0] != '\0')
 		strcat(card->components, " ");
 	strcat(card->components, component);
-	return 0;
+out:
+	if (ret < 0)
+		dev_err(card->dev, "ALSA: %s/%s snd_component_add() failed: %d\n",
+			card->shortname, component, ret);
+
+	return ret;
+
 }
 EXPORT_SYMBOL(snd_component_add);
 
