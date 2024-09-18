@@ -158,8 +158,6 @@ static int snd_cx18_init(struct v4l2_device *v4l2_dev)
 	ret = snd_card_register(sc);
 	if (ret) {
 		cx->alsa = NULL;
-		CX18_ALSA_ERR("%s: snd_card_register() failed with err %d\n",
-			      __func__, ret);
 		goto err_exit_free;
 	}
 

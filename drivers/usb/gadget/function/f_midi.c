@@ -849,10 +849,8 @@ static int f_midi_register_card(struct f_midi *midi)
 
 	/* register it - we're ready to go */
 	err = snd_card_register(card);
-	if (err < 0) {
-		ERROR(midi, "snd_card_register() failed\n");
+	if (err < 0)
 		goto fail;
-	}
 
 	VDBG(midi, "%s() finished ok\n", __func__);
 	return 0;

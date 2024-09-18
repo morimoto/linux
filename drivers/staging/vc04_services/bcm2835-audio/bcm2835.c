@@ -177,10 +177,8 @@ static int snd_add_child_device(struct device *dev,
 	}
 
 	err = snd_card_register(card);
-	if (err) {
-		dev_err(dev, "Failed to register card, error %d\n", err);
+	if (err)
 		goto error;
-	}
 
 	dev_set_drvdata(dev, chip);
 

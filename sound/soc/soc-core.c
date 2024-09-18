@@ -2255,11 +2255,8 @@ static int snd_soc_bind_card(struct snd_soc_card *card)
 	snd_soc_card_fixup_controls(card);
 
 	ret = snd_card_register(card->snd_card);
-	if (ret < 0) {
-		dev_err(card->dev, "ASoC: failed to register soundcard %d\n",
-				ret);
+	if (ret < 0)
 		goto probe_end;
-	}
 
 	card->instantiated = 1;
 	dapm_mark_endpoints_dirty(card);

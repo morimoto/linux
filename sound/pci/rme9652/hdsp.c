@@ -5116,11 +5116,9 @@ static int snd_hdsp_create_alsa_devices(struct snd_card *card, struct hdsp *hdsp
 			hdsp->port, hdsp->irq);
 
 		err = snd_card_register(card);
-		if (err < 0) {
-			dev_err(card->dev,
-				"error registering card\n");
+		if (err < 0)
 			return err;
-		}
+
 		hdsp->state |= HDSP_InitializationComplete;
 	}
 
