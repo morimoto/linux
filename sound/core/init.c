@@ -888,7 +888,7 @@ int snd_card_register(struct snd_card *card)
 	if (!card->registered) {
 		err = device_add(&card->card_dev);
 		if (err < 0)
-			return err;
+			goto err;
 		card->registered = true;
 	} else {
 		if (card->managed)
@@ -898,12 +898,12 @@ int snd_card_register(struct snd_card *card)
 	if (card->managed) {
 		err = devm_add_action(card->dev, trigger_card_free, card);
 		if (err < 0)
-			return err;
+			goto err;
 	}
 
 	err = snd_device_register_all(card);
 	if (err < 0)
-		return err;
+		goto err;
 	scoped_guard(mutex, &snd_card_mutex) {
 		if (snd_cards[card->number]) {
 			/* already registered */
@@ -927,13 +927,17 @@ int snd_card_register(struct snd_card *card)
 	}
 	err = snd_info_card_register(card);
 	if (err < 0)
-		return err;
+		goto err;
 
 #if IS_ENABLED(CONFIG_SND_MIXER_OSS)
 	if (snd_mixer_oss_notify_callback)
 		snd_mixer_oss_notify_callback(card, SND_MIXER_OSS_NOTIFY_REGISTER);
 #endif
-	return 0;
+err:
+	if (err < 0)
+		dev_err(card->dev, "ALSA: %s snd_card_register() failed: %d\n", card->shortname, err);
+
+	return err;
 }
 EXPORT_SYMBOL(snd_card_register);
 

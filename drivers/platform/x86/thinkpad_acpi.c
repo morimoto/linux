@@ -7454,10 +7454,8 @@ static int __init volume_create_alsa_mixer(void)
 	data->ctl_mute_id = &ctl_mute->id;
 
 	rc = snd_card_register(card);
-	if (rc < 0) {
-		pr_err("Failed to register ALSA card: %d\n", rc);
+	if (rc < 0)
 		goto err_exit;
-	}
 
 	alsa_card = card;
 	return 0;

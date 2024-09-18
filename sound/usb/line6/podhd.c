@@ -231,8 +231,7 @@ static void podhd_startup(struct usb_line6 *line6)
 
 	podhd_dev_start(pod);
 	line6_read_serial_number(&pod->line6, &pod->serial_number);
-	if (snd_card_register(line6->card))
-		dev_err(line6->ifcdev, "Failed to register POD HD card.\n");
+	snd_card_register(line6->card);
 }
 
 static void podhd_disconnect(struct usb_line6 *line6)

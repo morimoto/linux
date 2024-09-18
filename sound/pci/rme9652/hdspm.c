@@ -6488,10 +6488,8 @@ static int snd_hdspm_create_alsa_devices(struct snd_card *card,
 	dev_dbg(card->dev, "Initializing complete?\n");
 
 	err = snd_card_register(card);
-	if (err < 0) {
-		dev_err(card->dev, "error registering card\n");
+	if (err < 0)
 		return err;
-	}
 
 	dev_dbg(card->dev, "... yes now\n");
 

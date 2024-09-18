@@ -78,10 +78,8 @@ static int snd_adlib_probe(struct device *dev, unsigned int n)
 	}
 
 	error = snd_card_register(card);
-	if (error < 0) {
-		dev_err(dev, "could not register card\n");
+	if (error < 0)
 		return error;
-	}
 
 	dev_set_drvdata(dev, card);
 	return 0;

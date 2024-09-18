@@ -120,10 +120,8 @@ static int hiface_chip_probe(struct usb_interface *intf,
 		goto err_chip_destroy;
 
 	ret = snd_card_register(chip->card);
-	if (ret < 0) {
-		dev_err(&device->dev, "cannot register " CARD_NAME " card\n");
+	if (ret < 0)
 		goto err_chip_destroy;
-	}
 
 	mutex_unlock(&register_mutex);
 

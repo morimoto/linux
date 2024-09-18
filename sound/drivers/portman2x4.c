@@ -765,10 +765,8 @@ static int snd_portman_probe(struct platform_device *pdev)
 
 	/* At this point card will be usable */
 	err = snd_card_register(card);
-	if (err < 0) {
-		dev_dbg(card->dev, "Cannot register card\n");
+	if (err < 0)
 		goto __err;
-	}
 
 	dev_info(card->dev, "Portman 2x4 on 0x%lx\n", p->base);
 	return 0;
