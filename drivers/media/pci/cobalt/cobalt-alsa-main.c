@@ -124,7 +124,6 @@ int cobalt_alsa_init(struct cobalt_stream *s)
 	ret = snd_card_register(sc);
 	if (ret) {
 		s->alsa = NULL;
-		cobalt_err("snd_card_register() failed with err %d\n", ret);
 		goto err_exit_free;
 	}
 

@@ -34,7 +34,6 @@ int aoa_alsa_init(char *name, struct module *mod, struct device *dev)
 	strscpy(alsa_card->mixername, name, sizeof(alsa_card->mixername));
 	err = snd_card_register(aoa_card->alsa_card);
 	if (err < 0) {
-		printk(KERN_ERR "snd-aoa: couldn't register alsa card\n");
 		snd_card_free(aoa_card->alsa_card);
 		aoa_card = NULL;
 		return err;

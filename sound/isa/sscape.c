@@ -1139,10 +1139,9 @@ static int snd_sscape_probe(struct device *pdev, unsigned int dev)
 		return ret;
 
 	ret = snd_card_register(card);
-	if (ret < 0) {
-		dev_err(pdev, "sscape: Failed to register sound card\n");
+	if (ret < 0)
 		return ret;
-	}
+
 	dev_set_drvdata(pdev, card);
 	return 0;
 }
@@ -1239,10 +1238,8 @@ static int sscape_pnp_detect(struct pnp_card_link *pcard,
 		return ret;
 
 	ret = snd_card_register(card);
-	if (ret < 0) {
-		dev_err(card->dev, "sscape: Failed to register sound card\n");
+	if (ret < 0)
 		return ret;
-	}
 
 	pnp_set_card_drvdata(pcard, card);
 	++idx;

@@ -684,11 +684,8 @@ static int pcmidi_snd_initialise(struct pcmidi_snd *pm)
 
 	/* register it */
 	err = snd_card_register(card);
-	if (err < 0) {
-		pk_error("failed to register pc-midi sound card: error %d\n",
-			 err);
+	if (err < 0)
 		goto fail_register;
-	}
 
 	dbg_hid("pcmidi_snd_initialise finished ok\n");
 	return 0;
