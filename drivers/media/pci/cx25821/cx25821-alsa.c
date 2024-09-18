@@ -750,11 +750,8 @@ static int cx25821_audio_initdev(struct cx25821_dev *dev)
 		devno);
 
 	err = snd_card_register(card);
-	if (err < 0) {
-		pr_info("DEBUG ERROR: cannot register sound card %s\n",
-			__func__);
+	if (err < 0)
 		goto error;
-	}
 
 	dev->card = card;
 	devno++;

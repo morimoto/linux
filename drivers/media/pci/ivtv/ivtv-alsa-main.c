@@ -157,8 +157,6 @@ static int snd_ivtv_init(struct v4l2_device *v4l2_dev)
 	ret = snd_card_register(sc);
 	if (ret) {
 		itv->alsa = NULL;
-		IVTV_ALSA_ERR("%s: snd_card_register() failed with err %d\n",
-			      __func__, ret);
 		goto err_exit_free;
 	}
 

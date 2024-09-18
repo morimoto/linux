@@ -154,10 +154,9 @@ static int usb6fire_chip_probe(struct usb_interface *intf,
 		goto destroy_chip;
 
 	ret = snd_card_register(card);
-	if (ret < 0) {
-		dev_err(&intf->dev, "cannot register card.");
+	if (ret < 0)
 		goto destroy_chip;
-	}
+
 	usb_set_intfdata(intf, chip);
 	return 0;
 

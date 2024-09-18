@@ -366,10 +366,8 @@ static void setup_card(struct snd_usb_caiaqdev *cdev)
 
 	/* finally, register the card and all its sub-instances */
 	ret = snd_card_register(cdev->chip.card);
-	if (ret < 0) {
-		dev_err(dev, "snd_card_register() returned %d\n", ret);
+	if (ret < 0)
 		snd_card_free(cdev->chip.card);
-	}
 
 	ret = snd_usb_caiaq_control_init(cdev);
 	if (ret < 0)

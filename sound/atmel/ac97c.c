@@ -790,10 +790,8 @@ static int atmel_ac97c_probe(struct platform_device *pdev)
 	}
 
 	retval = snd_card_register(card);
-	if (retval) {
-		dev_dbg(&pdev->dev, "could not register sound card\n");
+	if (retval)
 		goto err_ac97_bus;
-	}
 
 	platform_set_drvdata(pdev, card);
 
