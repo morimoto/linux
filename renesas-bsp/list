@@ -1,6 +1,6 @@
-Local     / ASoC: Remove unneeded semicolon
-Local     / arm64: dts: renesas: white-hawk-cpu: Add aliases for I2C buses
-Local     / arm64: dts: renesas: r8a779g0: Use MDIO node for all AVB devices
+v6.11     / ASoC: Remove unneeded semicolon
+v6.11     / arm64: dts: renesas: white-hawk-cpu: Add aliases for I2C buses
+v6.11     / arm64: dts: renesas: r8a779g0: Use MDIO node for all AVB devices
 v6.9      / arm64: dts: renesas: Improve TMU interrupt descriptions
 v6.9      / arm64: dts: renesas: white-hawk: Factor out common parts
 v6.9      / arm64: dts: renesas: white-hawk-cpu: Factor out common parts
@@ -8,19 +8,19 @@ v6.9      / arm64: dts: renesas: white-hawk: Add SoC name to top-level comment
 v6.9      / arm64: dts: renesas: white-hawk: Drop SoC parts from sub boards
 v6.9      / arm64: dts: renesas: white-hawk-cpu: Restore sort order
 v6.9      / arm64: dts: renesas: r8a779g0: Add standalone White Hawk CPU support
-Local     / arm64: dts: renesas: s4sk: Add aliases for I2C buses
+v6.11     / arm64: dts: renesas: s4sk: Add aliases for I2C buses
 v6.10     / arm64: dts: renesas: s4sk: Fix ethernet0 alias
 v6.7      / arm64: dts: renesas: Add R-Car S4 Starter Kit support
 v6.7      / arm64: dts: renesas: Add Renesas R8A779F4 SoC support
 v6.8      / PCI: rcar-gen4: Fix -Wvoid-pointer-to-enum-cast error
-Local     / net: ethernet: rtsn: Add support for Renesas Ethernet-TSN
+v6.11     / net: ethernet: rtsn: Add support for Renesas Ethernet-TSN
 v6.10     / net: rswitch: Avoid use-after-free in rswitch_poll()
-Local     / net: ravb: Use NAPI threaded mode on 1-core CPUs with GbEth IP
-Local     / net: ravb: Enable SW IRQ Coalescing for GbEth
-Local     / net: ravb: Refactor GbEth RX code path
-Local     / net: ravb: Refactor RX ring refill
-Local     / net: ravb: Align poll function with NAPI docs
-Local     / net: ravb: Simplify poll & receive functions
+v6.11     / net: ravb: Use NAPI threaded mode on 1-core CPUs with GbEth IP
+v6.11     / net: ravb: Enable SW IRQ Coalescing for GbEth
+v6.11     / net: ravb: Refactor GbEth RX code path
+v6.11     / net: ravb: Refactor RX ring refill
+v6.11     / net: ravb: Align poll function with NAPI docs
+v6.11     / net: ravb: Simplify poll & receive functions
 v6.9      / net: ravb: Fix registered interrupt names
 v6.9      / net: ravb: Fix RX byte accounting for jumbo packets
 v6.9      / net: ravb: Fix GbEth jumbo packet RX checksum handling
@@ -67,13 +67,13 @@ v6.8      / net: rswitch: Use build_skb() for RX
 v6.8      / net: rswitch: Use unsigned int for desc related array index
 v6.8      / net: rswitch: Drop unused argument/return value
 v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Depend on PTP_1588_CLOCK
-Local     / arm64: dts: renesas: Add interrupt-names to arch timer nodes
-Local     / arm64: dts: renesas: r8a779h0: Drop "opp-shared" from opp-table-0
-Local     / arm64: dts: renesas: r8a779h0: Add video capture nodes
-Local     / clk: renesas: r8a779h0: Fix PLL2/PLL4 multipliers in comments
-Local     / clk: renesas: r8a779h0: Add VIN clocks
-Local     / clk: renesas: r8a779h0: Add CSI-2 clocks
-Local     / clk: renesas: r8a779h0: Add ISPCS clocks
+v6.11     / arm64: dts: renesas: Add interrupt-names to arch timer nodes
+v6.11     / arm64: dts: renesas: r8a779h0: Drop "opp-shared" from opp-table-0
+v6.11     / arm64: dts: renesas: r8a779h0: Add video capture nodes
+v6.11     / clk: renesas: r8a779h0: Fix PLL2/PLL4 multipliers in comments
+v6.11     / clk: renesas: r8a779h0: Add VIN clocks
+v6.11     / clk: renesas: r8a779h0: Add CSI-2 clocks
+v6.11     / clk: renesas: r8a779h0: Add ISPCS clocks
 v6.10     / mmc: renesas_sdhi: Add compatible string for RZ/G2L family, RZ/G3S, and RZ/V2M SoCs
 v6.10     / dt-bindings: usb: renesas,usbhs: Document RZ/G2L family compatible
 v6.8      / dt-bindings: usb: renesas,usbhs: Document RZ/Five SoC
@@ -82,18 +82,18 @@ v6.10     / usb: renesas_usbhs: Remove trailing comma in the terminator entry fo
 v6.10     / usb: renesas_usbhs: Update usbhs pipe configuration for RZ/G2L family
 v6.10     / usb: renesas_usbhs: Improve usbhsc_default_pipe[] for isochronous transfers
 v6.10     / usb: renesas_usbhs: Simplify obtaining device data
-Local     / arm64: dts: renesas: r8a779h0: R-Car Sound support
-Local     / arm64: dts: renesas: r8a779g0: Tidy up sound DT settings
-Local     / clk: renesas: r8a779h0: Add Audio clocks
-Local     / ASoC: dt-bindings: ak4619: Add initial DT binding
-Local     / ASoC: dt-bindings: simple-audio-mux: add state-labels property
-Local     / ASoC: dt-bindings: audio-graph-card2: add support for aux devices
-Local     / ASoC: Add ak4619 codec support
-Local     / ASoC: simple-audio-mux: enable to select MUX names
-Local     / ASoC: audio-graph-card2: add support for aux devices
+v6.11     / arm64: dts: renesas: r8a779h0: R-Car Sound support
+v6.11     / arm64: dts: renesas: r8a779g0: Tidy up sound DT settings
+v6.11     / clk: renesas: r8a779h0: Add Audio clocks
+v6.11     / ASoC: dt-bindings: ak4619: Add initial DT binding
+v6.11     / ASoC: dt-bindings: simple-audio-mux: add state-labels property
+v6.11     / ASoC: dt-bindings: audio-graph-card2: add support for aux devices
+v6.11     / ASoC: Add ak4619 codec support
+v6.11     / ASoC: simple-audio-mux: enable to select MUX names
+v6.11     / ASoC: audio-graph-card2: add support for aux devices
 v6.10     / dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility
-Local     / arm64: dts: renesas: gray-hawk-single: Add aliases for I2C buses
-Local     / arm64: dts: renesas: rzg2l: Update fallback string for SDHI nodes
+v6.11     / arm64: dts: renesas: gray-hawk-single: Add aliases for I2C buses
+v6.11     / arm64: dts: renesas: rzg2l: Update fallback string for SDHI nodes
 v6.10     / arm64: dts: renesas: r9a07g043: Move interrupt-parent property to common DTSI
 v6.10     / arm64: dts: renesas: r9a07g0{43,44,54}: Update RZ/G2L family compatible
 v6.8      / dt-bindings: dma: rz-dmac: Document RZ/Five SoC
