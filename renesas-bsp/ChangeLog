@@ -1,3 +1,12 @@
+* v6.1.111-2024-09-20
+
+	* Merge/Rebase v6.1.111
+
+	* update CVE
+
+	* update list
+		sync with v6.11
+
 * v6.1.110-2024-09-13
 
 	* Merge/Rebase v6.1.110
@@ -343,58 +352,3 @@
 
 		commit 94d1957fc361bb7efa76c25f3c78296c3c9f867f
 		("usb: renesas_usbhs: drop of_match_ptr for ID table")
-
-* v6.1.101-2024-07-26
-
-	* Merge/Rebase v6.1.101
-
-	* update CVE
-
-	* update list
-
-	* Below patches are backported
-
-		commit 6ade6513832d21599bdcaca59c715f23dde026a8
-		("arm64: dts: renesas: r8a779h0: R-Car Sound support")
-
-		commit 8f3a0069fb2555a60841a15c523aaa110b8e9fb3
-		("arm64: dts: renesas: r8a779g0: Tidy up sound DT settings")
-
-		commit 1f5ed3ae020a0624c9f51ed9720f8279bb0cae60
-		("clk: renesas: r8a779h0: Add Audio clocks")
-
-		commit 6469267afed4ffb9d16ce8c44a2b518b9b31c215
-		("ASoC: dt-bindings: ak4619: Add initial DT binding")
-
-		commit 9337f15f4fd6ebd35d911225c4a88ec82d27b2a2
-		("ASoC: dt-bindings: simple-audio-mux: add state-labels property")
-
-		commit 7109f10ca4225c4a7e47dee5eab0d8d72edbf324
-		("ASoC: dt-bindings: audio-graph-card2: add support for aux devices")
-
-		commit ca73d314363d6682b6c736ea45e3a4ca551923a6
-		("ASoC: Add ak4619 codec support")
-
-		commit 3913ecb38833e8926467a17f1f1679ccd25a7230
-		("ASoC: simple-audio-mux: enable to select MUX names")
-
-		commit f7d97cb564a2ac5517ee7cc933de729e533d659a
-		("ASoC: simple-mux: add read function")
-
-		commit 195815c2755d70df92f46e6d737cd677db7adeef
-		("ASoC: audio-graph-card2: add support for aux devices")
-
-		commit d640af49b65c6d260a5154dfb822e8371b502707
-		("dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility")
-
-		commit 200cba84b6a9e6b16f5c2a61ef231b199222028b
-		("arm64: dts: renesas: gray-hawk-single: Add aliases for I2C buses")
-
-		commit 046084b5e1426efbf08913830bdb101dcbb06be5
-		("arm64: dts: renesas: rzg2l: Update fallback string for SDHI nodes")
-
-		commit 1731ab2f8b62f0be2073de581ffef6db1196ad4f
-		("arm64: dts: renesas: r9a07g043: Move interrupt-parent property to common DTSI")
-
-		commit 3bfe384f6f4f7433103ffcc36e7a7106f7e70c4e
-		("arm64: dts: renesas: r9a07g0{43,44,54}: Update RZ/G2L family compatible")
