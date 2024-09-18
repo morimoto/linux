@@ -2243,11 +2243,8 @@ static int snd_soc_bind_card(struct snd_soc_card *card)
 		/* but the string collision (identical string) check might */
 		/* not work correctly */
 		ret = snd_component_add(card->snd_card, card->components);
-		if (ret < 0) {
-			dev_err(card->dev, "ASoC: %s snd_component_add() failed: %d\n",
-				card->name, ret);
+		if (ret < 0)
 			goto probe_end;
-		}
 	}
 
 	ret = snd_soc_card_late_probe(card);
