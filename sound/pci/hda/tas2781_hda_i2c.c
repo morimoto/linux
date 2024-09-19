@@ -664,23 +664,15 @@ static void tasdev_fw_ready(const struct firmware *fmw, void *context)
 
 	tas_hda->prof_ctl = snd_ctl_new1(&tas2781_prof_ctrl, tas_priv);
 	ret = snd_ctl_add(codec->card, tas_hda->prof_ctl);
-	if (ret) {
-		dev_err(tas_priv->dev,
-			"Failed to add KControl %s = %d\n",
-			tas2781_prof_ctrl.name, ret);
+	if (ret)
 		goto out;
-	}
 
 	for (i = 0; i < ARRAY_SIZE(tas2781_snd_controls); i++) {
 		tas_hda->snd_ctls[i] = snd_ctl_new1(&tas2781_snd_controls[i],
 			tas_priv);
 		ret = snd_ctl_add(codec->card, tas_hda->snd_ctls[i]);
-		if (ret) {
-			dev_err(tas_priv->dev,
-				"Failed to add KControl %s = %d\n",
-				tas2781_snd_controls[i].name, ret);
+		if (ret)
 			goto out;
-		}
 	}
 
 	tasdevice_dsp_remove(tas_priv);
@@ -716,22 +708,14 @@ static void tasdev_fw_ready(const struct firmware *fmw, void *context)
 	tas_hda->dsp_prog_ctl = snd_ctl_new1(&tas2781_dsp_prog_ctrl,
 		tas_priv);
 	ret = snd_ctl_add(codec->card, tas_hda->dsp_prog_ctl);
-	if (ret) {
-		dev_err(tas_priv->dev,
-			"Failed to add KControl %s = %d\n",
-			tas2781_dsp_prog_ctrl.name, ret);
+	if (ret)
 		goto out;
-	}
 
 	tas_hda->dsp_conf_ctl = snd_ctl_new1(&tas2781_dsp_conf_ctrl,
 		tas_priv);
 	ret = snd_ctl_add(codec->card, tas_hda->dsp_conf_ctl);
-	if (ret) {
-		dev_err(tas_priv->dev,
-			"Failed to add KControl %s = %d\n",
-			tas2781_dsp_conf_ctrl.name, ret);
+	if (ret)
 		goto out;
-	}
 
 	tas_priv->fw_state = TASDEVICE_DSP_FW_ALL_OK;
 	tasdevice_prmg_load(tas_priv, 0);
