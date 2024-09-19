@@ -598,10 +598,8 @@ static int snd_aw2_new_pcm(struct aw2 *chip)
 
 	/* Create control */
 	err = snd_ctl_add(chip->card, snd_ctl_new1(&aw2_control, chip));
-	if (err < 0) {
-		dev_err(chip->card->dev, "snd_ctl_add error (0x%X)\n", err);
+	if (err < 0)
 		return err;
-	}
 
 	return 0;
 }

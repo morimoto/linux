@@ -596,11 +596,9 @@ int snd_usb_mixer_add_list(struct usb_mixer_elem_list *list,
 	while (snd_ctl_find_id(mixer->chip->card, &kctl->id))
 		kctl->id.index++;
 	err = snd_ctl_add(mixer->chip->card, kctl);
-	if (err < 0) {
-		usb_audio_dbg(mixer->chip, "cannot add control (err = %d)\n",
-			      err);
+	if (err < 0)
 		return err;
-	}
+
 	list->kctl = kctl;
 	list->is_std_info = is_std_info;
 	list->next_id_elem = mixer->id_elems[list->id];
