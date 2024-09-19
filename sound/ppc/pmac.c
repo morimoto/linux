@@ -1117,11 +1117,9 @@ int snd_pmac_add_automute(struct snd_pmac *chip)
 	int err;
 	chip->auto_mute = 1;
 	err = snd_ctl_add(chip->card, snd_ctl_new1(&auto_mute_controls[0], chip));
-	if (err < 0) {
-		dev_err(chip->card->dev,
-			"snd-powermac: Failed to add automute control\n");
+	if (err < 0)
 		return err;
-	}
+
 	chip->hp_detect_ctl = snd_ctl_new1(&auto_mute_controls[1], chip);
 	return snd_ctl_add(chip->card, chip->hp_detect_ctl);
 }

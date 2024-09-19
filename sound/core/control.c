@@ -545,7 +545,12 @@ static int snd_ctl_add_replace(struct snd_card *card,
  */
 int snd_ctl_add(struct snd_card *card, struct snd_kcontrol *kcontrol)
 {
-	return snd_ctl_add_replace(card, kcontrol, CTL_ADD_EXCLUSIVE);
+	int ret = snd_ctl_add_replace(card, kcontrol, CTL_ADD_EXCLUSIVE);
+
+	if (ret < 0)
+		dev_err(card->dev, "ALSA: snd_ctl_add() failed: %d: %s: %s\n",
+			ret, card->shortname, kcontrol->id.name);
+	return ret;
 }
 EXPORT_SYMBOL(snd_ctl_add);
 
@@ -566,8 +571,13 @@ EXPORT_SYMBOL(snd_ctl_add);
 int snd_ctl_replace(struct snd_card *card, struct snd_kcontrol *kcontrol,
 		    bool add_on_replace)
 {
-	return snd_ctl_add_replace(card, kcontrol,
+	int ret = snd_ctl_add_replace(card, kcontrol,
 				   add_on_replace ? CTL_ADD_ON_REPLACE : CTL_REPLACE);
+
+	if (ret < 0)
+		dev_err(card->dev, "ALSA: snd_ctl_replace() failed: %d: %s: %s\n",
+			ret, card->shortname, kcontrol->id.name);
+	return ret;
 }
 EXPORT_SYMBOL(snd_ctl_replace);
 
