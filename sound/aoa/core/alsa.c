@@ -84,14 +84,12 @@ EXPORT_SYMBOL_GPL(aoa_snd_device_new);
 
 int aoa_snd_ctl_add(struct snd_kcontrol* control)
 {
-	int err;
+	int err = -ENODEV;
 
-	if (!aoa_card) return -ENODEV;
-
-	err = snd_ctl_add(aoa_card->alsa_card, control);
-	if (err)
-		printk(KERN_ERR "snd-aoa: failed to add alsa control (%d)\n",
-		       err);
+	if (aoa_card)
+		err = snd_ctl_add(aoa_card->alsa_card, control);
+	if (err < 0)
+		printk(KERN_ERR "snd-aoa: failed to add alsa control (%d)\n", err);
 	return err;
 }
 EXPORT_SYMBOL_GPL(aoa_snd_ctl_add);

@@ -893,11 +893,8 @@ static int create_ad1845(struct snd_card *card, unsigned port,
 		if (sscape->type != SSCAPE_VIVO) {
 			err = snd_ctl_add(card,
 					  snd_ctl_new1(&midi_mixer_ctl, chip));
-			if (err < 0) {
-				dev_err(card->dev,
-					"sscape: Could not create MIDI mixer control\n");
+			if (err < 0)
 				goto _error;
-			}
 		}
 
 		sscape->chip = chip;

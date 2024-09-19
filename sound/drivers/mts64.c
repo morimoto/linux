@@ -651,11 +651,8 @@ static int snd_mts64_ctl_create(struct snd_card *card,
 
 	for (i = 0; control[i]; ++i) {
 		err = snd_ctl_add(card, snd_ctl_new1(control[i], mts));
-		if (err < 0) {
-			dev_dbg(card->dev, "Cannot create control: %s\n",
-				control[i]->name);
+		if (err < 0)
 			return err;
-		}
 	}
 
 	return 0;

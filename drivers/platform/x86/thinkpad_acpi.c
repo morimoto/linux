@@ -7437,20 +7437,17 @@ static int __init volume_create_alsa_mixer(void)
 	if (!tp_features.mixer_no_level_control) {
 		ctl_vol = snd_ctl_new1(&volume_alsa_control_vol, NULL);
 		rc = snd_ctl_add(card, ctl_vol);
-		if (rc < 0) {
-			pr_err("Failed to create ALSA volume control: %d\n",
-			       rc);
+		if (rc < 0)
 			goto err_exit;
-		}
+
 		data->ctl_vol_id = &ctl_vol->id;
 	}
 
 	ctl_mute = snd_ctl_new1(&volume_alsa_control_mute, NULL);
 	rc = snd_ctl_add(card, ctl_mute);
-	if (rc < 0) {
-		pr_err("Failed to create ALSA mute control: %d\n", rc);
+	if (rc < 0)
 		goto err_exit;
-	}
+
 	data->ctl_mute_id = &ctl_mute->id;
 
 	rc = snd_card_register(card);

@@ -2395,11 +2395,8 @@ static int snd_soc_add_controls(struct snd_card *card, struct device *dev,
 		const struct snd_kcontrol_new *control = &controls[i];
 		int err = snd_ctl_add(card, snd_soc_cnew(control, data,
 							 control->name, prefix));
-		if (err < 0) {
-			dev_err(dev, "ASoC: Failed to add %s: %d\n",
-				control->name, err);
+		if (err < 0)
 			return err;
-		}
 	}
 
 	return 0;
