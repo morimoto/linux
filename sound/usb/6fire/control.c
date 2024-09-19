@@ -597,7 +597,6 @@ int usb6fire_control_init(struct sfire_chip *chip)
 		ret = snd_ctl_add(chip->card, snd_ctl_new1(&elements[i], rt));
 		if (ret < 0) {
 			kfree(rt);
-			dev_err(&chip->dev->dev, "cannot add control.\n");
 			return ret;
 		}
 		i++;

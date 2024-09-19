@@ -137,10 +137,8 @@ static void hda_cs_dsp_add_kcontrol(struct cs_dsp_coeff_ctl *cs_ctl,
 	/* snd_ctl_add() calls our private_free on error, which will kfree(ctl) */
 	cs_ctl->priv = no_free_ptr(ctl);
 	ret = snd_ctl_add(info->card, kctl);
-	if (ret) {
-		dev_err(cs_ctl->dsp->dev, "Failed to add KControl %s = %d\n", kcontrol.name, ret);
+	if (ret)
 		return;
-	}
 
 	dev_dbg(cs_ctl->dsp->dev, "Added KControl: %s\n", kcontrol.name);
 }

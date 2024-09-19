@@ -451,7 +451,6 @@ int siu_init_port(int port, struct siu_port **port_info, struct snd_card *card)
 {
 	struct device *dev = card->dev;
 	struct snd_kcontrol *kctrl;
-	int ret;
 
 	*port_info = kzalloc(sizeof(**port_info), GFP_KERNEL);
 	if (!*port_info)
@@ -469,18 +468,10 @@ int siu_init_port(int port, struct siu_port **port_info, struct snd_card *card)
 	 * In error case we continue without controls.
 	 */
 	kctrl = snd_ctl_new1(&playback_controls, *port_info);
-	ret = snd_ctl_add(card, kctrl);
-	if (ret < 0)
-		dev_err(dev,
-			"failed to add playback controls %p port=%d err=%d\n",
-			kctrl, port, ret);
+	snd_ctl_add(card, kctrl);
 
 	kctrl = snd_ctl_new1(&capture_controls, *port_info);
-	ret = snd_ctl_add(card, kctrl);
-	if (ret < 0)
-		dev_err(dev,
-			"failed to add capture controls %p port=%d err=%d\n",
-			kctrl, port, ret);
+	snd_ctl_add(card, kctrl);
 
 	return 0;
 }

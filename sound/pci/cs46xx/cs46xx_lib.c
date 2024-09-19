@@ -3488,12 +3488,8 @@ static void hercules_mixer_init (struct snd_cs46xx *chip)
 
 		kctl = snd_ctl_new1(&snd_hercules_controls[idx], chip);
 		err = snd_ctl_add(card, kctl);
-		if (err < 0) {
-			dev_err(card->dev,
-				"failed to initialize Hercules mixer (%d)\n",
-				err);
+		if (err < 0)
 			break;
-		}
 	}
 #endif
 }

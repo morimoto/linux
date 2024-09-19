@@ -1329,27 +1329,20 @@ static int cs35l41_create_controls(struct cs35l41_hda *cs35l41)
 		  cs35l41->amp_name);
 
 	ret = snd_ctl_add(cs35l41->codec->card, snd_ctl_new1(&fw_type_ctl, cs35l41));
-	if (ret) {
-		dev_err(cs35l41->dev, "Failed to add KControl %s = %d\n", fw_type_ctl.name, ret);
+	if (ret)
 		return ret;
-	}
 
 	dev_dbg(cs35l41->dev, "Added Control %s\n", fw_type_ctl.name);
 
 	ret = snd_ctl_add(cs35l41->codec->card, snd_ctl_new1(&fw_load_ctl, cs35l41));
-	if (ret) {
-		dev_err(cs35l41->dev, "Failed to add KControl %s = %d\n", fw_load_ctl.name, ret);
+	if (ret)
 		return ret;
-	}
 
 	dev_dbg(cs35l41->dev, "Added Control %s\n", fw_load_ctl.name);
 
 	ret = snd_ctl_add(cs35l41->codec->card, snd_ctl_new1(&mute_override_ctl, cs35l41));
-	if (ret) {
-		dev_err(cs35l41->dev, "Failed to add KControl %s = %d\n", mute_override_ctl.name,
-			ret);
+	if (ret)
 		return ret;
-	}
 
 	dev_dbg(cs35l41->dev, "Added Control %s\n", mute_override_ctl.name);
 
