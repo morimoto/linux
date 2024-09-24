@@ -1,3 +1,8 @@
+# upstream 4200161c564da91eefe8eeea1151a537290319c7 arm64: defconfig: Enable AK4619 codec support
+973e01582372 arm64: defconfig: Enable AK4619 codec support
+# upstream ebeb40c77b3c3d19a96b92e067dd8161916a56d6 arm64: dts: renesas: gray-hawk-single: Add Sound support
+caff53d84cb9 arm64: dts: renesas: r8a779h0: Correct compatible string for Audio on R-Car V4M
+61cf5c9632b3 arm64: dts: renesas: r8a779h0: grayhawk: Add R-Car Sound support
 # upstream: d9a9657a1343a7eef7bcbf6e974bf4cea75121a5 dt-bindings: i2c: renesas,rcar-i2c: Add r8a779h0 support
 3959f0f5f6fb dt-bindings: i2c: rcar: Document r8a779h0 support
 # upstream: 2bb78d9fb7c997f13309838600eead88cc99e96b arm64: dts: renesas: r8a779h0: Add video capture nodes

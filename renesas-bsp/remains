@@ -46,14 +46,6 @@ f7f0636f4392 spi: spi-sh-msiof: Add generic structural data for MSIOF on R-Car G
 e1d847bfd3ca dmaengine: rcar-dmac: Add repeat mode support
 3df1d5f023b1 soc: renesas: r8a779g0-sysc: Always-on A3IR, A2CN0, A1CNN0
 #
-# Sound patches (Morimoto-san)
-#
-# upstream v6.12: ebeb40c77b3c3 arm64: dts: renesas: gray-hawk-single: Add Sound support
-caff53d84cb9 arm64: dts: renesas: r8a779h0: Correct compatible string for Audio on R-Car V4M
-61cf5c9632b3 arm64: dts: renesas: r8a779h0: grayhawk: Add R-Car Sound support
-# upstream v6.12: 4200161c564da arm64: defconfig: Enable AK4619 codec support
-973e01582372 arm64: defconfig: Enable AK4619 codec support
-#
 # CAN patches (Geert)
 #
 # V4M upstreaming in progress
