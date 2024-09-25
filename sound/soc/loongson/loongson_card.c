@@ -34,16 +34,12 @@ static int loongson_card_hw_params(struct snd_pcm_substream *substream,
 
 	mclk = ls_card->mclk_fs * params_rate(params);
 	ret = snd_soc_dai_set_sysclk(cpu_dai, 0, mclk, SND_SOC_CLOCK_OUT);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "cpu_dai clock not set\n");
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, mclk, SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		dev_err(codec_dai->dev, "codec_dai clock not set\n");
+	if (ret < 0)
 		return ret;
-	}
 
 	return 0;
 }
