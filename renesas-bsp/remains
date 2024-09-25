@@ -32,11 +32,6 @@ eae72e77117c net: ethernet: renesas: ravb: Add gPTP support on R-Car V4H
 # Workaround added to 6.1 (2451a288fe93). Task created for further investigation
 20dbf63e6809 Revert "net: phy: consider that suspend2ram may cut off PHY power"
 #
-# PCI
-#
-# next: 23319333146fb856f6e767f419830f6d7114eefc # clk: renesas: r8a779h0: Add PCIe clock
-b8ec226fcba2 clk: renesas: r8a779h0: Add PCIe clock
-#
 # Minor stuff
 #
 # MSIOF FIFO sizes to be investigated (Geert)
