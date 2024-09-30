@@ -1,3 +1,9 @@
+# upstream: ab52dd821f89abd3165f5b39936cc08ef2f9169e clk: renesas: r8a779h0: Add PWM clock
+9800531f0188 clk: renesas: r8a779h0: Add PWM clock
+# upstream: 9407f23d14edd42d372cefee023302bd95c9bca6 dt-bindings: pwm: renesas,tpu: Add r8a779h0 support
+c27e8001fccf dt-bindings: pwm: tpu: Add support for V4M
+# upstream: 24e529c5fbcad9a480607bb05128c61ba908a926 dt-bindings: pwm: renesas,pwm-rcar: Add r8a779h0 support
+65b908e6f515 dt-bindings: pwm: Add support for V4M
 # upstream 23319333146fb856f6e767f419830f6d7114eefc clk: renesas: r8a779h0: Add PCIe clock
 b8ec226fcba2 clk: renesas: r8a779h0: Add PCIe clock
 # upstream 4200161c564da91eefe8eeea1151a537290319c7 arm64: defconfig: Enable AK4619 codec support
