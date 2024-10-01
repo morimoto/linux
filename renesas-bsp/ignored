@@ -673,16 +673,19 @@ QoS
 		31633efaaf13 arm64: dts: renesas: Add QoS device node for Gen3 devices
 
 RAVB
+	These changes are not needed with upstream 88Q2110 PHY driver
+		61d5400cf3cf ravb: Disable Link Signal Change Interrupt for AVB1/AVB2
+		bdafe4d861f6 net: ethernet: ravb: Support AVB1/AVB2
+		e37c8d37dd3c ravb: Remove TX internal delay setting
+		3d545d5e0463 net: ethernet: renesas: ravb: Disable Link Signal Change Interrupt for AVB0
+
 	Needs proper 88Q2110 PHY driver but we don't have documentation
 		2a1f07d0e722 net: phy: mv88q2110: Initial PHY Marvel 88Q2110 support
 		e5540b8157bc arm64: defconfig: Enable Marvell PHY 88Q2110
 		d276493fd6c2 ravb: Issue gpio reset to AVB1/AVB2 PHYs
-		61d5400cf3cf ravb: Disable Link Signal Change Interrupt for AVB1/AVB2
 		c0cbae905c8a arm64: dts: renesas: whitehawk: Add AVB1/AVB2 support
 		68c8cf248f51 arm64: dts: renesas: whitehawk: Add phy-reset-gpios to reset PHYs before initialization
 		667534413db9 arm64: dts: renesas: r8a779a0-falcon: Add missing Ethernet-AVB in Falcon board
-		bdafe4d861f6 net: ethernet: ravb: Support AVB1/AVB2
-		e37c8d37dd3c ravb: Remove TX internal delay setting
 
 RPC-IF
 	RPC-IF works on White-Hawk with current firmware.  If it must be
