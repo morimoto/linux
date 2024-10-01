@@ -17,20 +17,23 @@ bc75d8c5907a mmc: core: Issue power off notification in mmc_remove()
 #
 # Network
 #
-675bcc5d8cbb net: ethernet: renesas: ravb: Returns an error value when gPTP is not used
 47e1a870dd58 arm64: dts: renesas: Add node to support AVB1/2
+f5f257bbef94 arm64: dts: renesas: r8a779g0-whitehawk: Add power-source setting for ethernet
+611328f8fc4a net: ethernet: renesas: ravb: Fix initialization failed in module state on channel 1/2
+846d4ecfc9f9 net: ethernet: renesas: rcar_gen4_ptp: Add a function to unregister the PTP device
+3d545d5e0463 net: ethernet: renesas: ravb: Disable Link Signal Change Interrupt for AVB0
+# Workaround added to 6.1 (2451a288fe93). Task created for further investigation
+20dbf63e6809 Revert "net: phy: consider that suspend2ram may cut off PHY power"
+#
+# Enable RAVB gPTP for Gen4
+#
+675bcc5d8cbb net: ethernet: renesas: ravb: Returns an error value when gPTP is not used
 3a2d955daaab net: ethernet: renesas: ravb: Remove PTP initialize in ravb_open()
 fa8a15271377 net: ethernet: renesas: ravb: Fix Null pointer when getting parameters with ethtool
 31968a5bf2b7 ravb: Support ravb driver for R-Car V4M
-f5f257bbef94 arm64: dts: renesas: r8a779g0-whitehawk: Add power-source setting for ethernet
-611328f8fc4a net: ethernet: renesas: ravb: Fix initialization failed in module state on channel 1/2
 cd6678e10496 net: ethernet: renesas: ravb: Fix Deadlock warning related to EthernetAVB
-846d4ecfc9f9 net: ethernet: renesas: rcar_gen4_ptp: Add a function to unregister the PTP device
 d785d96b2961 net: ethernet: renesas: ravb: Fix missing MDIO bus with channel 1/2
-3d545d5e0463 net: ethernet: renesas: ravb: Disable Link Signal Change Interrupt for AVB0
 eae72e77117c net: ethernet: renesas: ravb: Add gPTP support on R-Car V4H
-# Workaround added to 6.1 (2451a288fe93). Task created for further investigation
-20dbf63e6809 Revert "net: phy: consider that suspend2ram may cut off PHY power"
 #
 # Minor stuff
 #
