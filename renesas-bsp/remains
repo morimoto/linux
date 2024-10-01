@@ -44,10 +44,6 @@ e1d847bfd3ca dmaengine: rcar-dmac: Add repeat mode support
 #
 # V4M upstreaming in progress
 82035924e9ca can: rcar_canfd: Add support for V4M SoC
-a4b78a81b5a9 dt-bindings: can: renesas,rcar-canfd: Document R-Car V4M support
-478beadd7760 clk: renesas: r8a779h0: Add CANFD clock
-6c2f3189955b arm64: dts: renesas: grayhawk: Add CANFD support
-1542b2a6219a arm64: dts: renesas: r8a779h0: Add CAN-FD node
 # to be investigated
 905813c180f4 can: rcar_canfd: Add secondary sample point
 e9ba9ac6fe77 can: rcar_canfd: Configure receive rules

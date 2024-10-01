@@ -1,3 +1,11 @@
+# upstream: ab7d885a33a7ef328a97ccae0d1340b68c3db9ad arm64: dts: renesas: gray-hawk-single: Add CAN-FD support
+6c2f3189955b arm64: dts: renesas: grayhawk: Add CANFD support
+# upstream: b3749d434ea48cca473afd440771f048d0860a2e arm64: dts: renesas: r8a779h0: Add CAN-FD node
+1542b2a6219a arm64: dts: renesas: r8a779h0: Add CAN-FD node
+# upstream: ced52c6ed257315c922dc870aafbc64dc8bd746d dt-bindings: can: renesas,rcar-canfd: Document R-Car V4M support
+a4b78a81b5a9 dt-bindings: can: renesas,rcar-canfd: Document R-Car V4M support
+# upstream: 120c2833b72f4bdbd67ea2cf70b9d96d1c235717 clk: renesas: r8a779h0: Add CANFD clock
+478beadd7760 clk: renesas: r8a779h0: Add CANFD clock
 # upstream: ab52dd821f89abd3165f5b39936cc08ef2f9169e clk: renesas: r8a779h0: Add PWM clock
 9800531f0188 clk: renesas: r8a779h0: Add PWM clock
 # upstream: 9407f23d14edd42d372cefee023302bd95c9bca6 dt-bindings: pwm: renesas,tpu: Add r8a779h0 support
