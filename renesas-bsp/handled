@@ -1,3 +1,5 @@
+# upstream: 6c6fa1a00ad3df994c96af9468cc83f225df9df4 net: ethernet: renesas: rswitch: Add R-Car Gen4 gPTP support
+846d4ecfc9f9 net: ethernet: renesas: rcar_gen4_ptp: Add a function to unregister the PTP device
 # upstream: ab7d885a33a7ef328a97ccae0d1340b68c3db9ad arm64: dts: renesas: gray-hawk-single: Add CAN-FD support
 6c2f3189955b arm64: dts: renesas: grayhawk: Add CANFD support
 # upstream: b3749d434ea48cca473afd440771f048d0860a2e arm64: dts: renesas: r8a779h0: Add CAN-FD node
