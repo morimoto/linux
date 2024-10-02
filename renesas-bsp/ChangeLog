@@ -1,3 +1,139 @@
+* v6.6.53-2024-09-20
+
+	* Merge/Rebase v6.6.53
+
+	* update CVE
+
+	* update list
+
+	* Below patches were backported
+
+		commit 41ee62317087f249fca0eda56217de69cd399da5
+		("net: renesas: rswitch: Remove setting of RX software timestamp")
+
+		commit d73dcff9eb0d30956e9caa86d0d94d4c8e402037
+		("net: ethernet: renesas: rcar_gen4_ptp: Remove incorrect comment")
+
+		commit 4b45a978b25da1d4de051ed8e91e669e3701d780
+		("arm64: defconfig: Enable Marvell 88Q2XXX PHY support")
+
+		commit b4944dc7b7935a022be7f777d5cf47e0c1becc96
+		("arm64: dts: renesas: white-hawk: ethernet: Describe AVB1 and AVB2")
+
+		commit ced52c6ed257315c922dc870aafbc64dc8bd746d
+		("dt-bindings: can: renesas,rcar-canfd: Document R-Car V4M support")
+
+		commit b3749d434ea48cca473afd440771f048d0860a2e
+		("arm64: dts: renesas: r8a779h0: Add CAN-FD node")
+
+		commit ca999750b95caf4829dbd89ecff5c673107d257c
+		("arm64: dts: renesas: r8a779h0: Add PWM device nodes")
+
+		commit cd0a847aa6c8a08ba948db4ff0dd6d5f94da998d
+		("arm64: dts: renesas: r8a779h0: Add missing iommus properties")
+
+		commit 120c2833b72f4bdbd67ea2cf70b9d96d1c235717
+		("clk: renesas: r8a779h0: Add CANFD clock")
+
+		commit ab52dd821f89abd3165f5b39936cc08ef2f9169e
+		("clk: renesas: r8a779h0: Add PWM clock")
+
+		commit 93d46d465f7dfbcf55096821565f04402088b09d
+		("clk: renesas: rcar-gen4: Remove unused default PLL2/3/4/6 configs")
+
+		commit bd721d922c87a025fe458cc70f7ce5ce72c70e78
+		("clk: renesas: r8a779a0: cpg_pll_configs should be __initconst")
+
+		commit f7444f0fde1f51229c5a4c796730b5caaae0bb6d
+		("clk: renesas: rcar-gen4: Remove unused fixed PLL clock types")
+
+		commit ccdf745bd10f0682bfd87ba5612fabdf57ff1d5b
+		("clk: renesas: rcar-gen4: Remove unused variable PLL2 clock type")
+
+		commit 732a6108ef5eb5fe6b961295d91d80991d724c06
+		("clk: renesas: rcar-gen4: Add support for fractional 9.24 PLLs")
+
+		commit 3284ffb74c75cde0fbad41ab4a7736f56d570bd7
+		("clk: renesas: rcar-gen4: Add support for fixed variable PLLs")
+
+		commit 724620bd711364f352d13563d48ade7b5c5ea297
+		("clk: renesas: rcar-gen4: Add support for variable fractional PLLs")
+
+		commit dd82ab4fdf402461fb768e31f687c7b8ec4eb91f
+		("clk: renesas: rcar-gen4: Use defines for common CPG registers")
+
+		commit 1b131e08e7f2b2271a32361bb0ae466d6cc50fbd
+		("clk: renesas: rcar-gen4: Add support for fractional multiplication")
+
+		commit f719e598439db26f63293ae5992e654ca110af1f
+		("clk: renesas: rcar-gen4: Use FIELD_GET()")
+
+		commit 9edc5c209d3e192baed2230af90591a6dad51607
+		("clk: renesas: rcar-gen4: Clarify custom PLL clock support")
+
+		commit 4897930debb4abb98317b4a18c4f20bad1f71b9f
+		("clk: renesas: rcar-gen4: Removed unused SSMODE_* definitions")
+
+		commit 3b2f834dd3f952a0c69c0dacef68172742acacbc
+		("clk: renesas: cpg-lib: Use DEFINE_SPINLOCK() for global spinlock")
+
+		commit ad3393fefd6427999de8d93accb8ea31e1339fa0
+		("clk: renesas: rcar-gen4: Add support for FRQCRC1")
+
+		commit e1924c6cd148f49b3e3c7085906272b966163bc4
+		("clk: renesas: r8a779g0: Model PLL1/3/4/6 as fractional PLLs")
+
+		commit e4915fc7ded539cc9197fe35da25003cd66533db
+		("clk: renesas: r8a779f0: Model PLL1/2/3/6 as fractional PLLs")
+
+		commit 4c63e9a13560fef7fd42b45f58687b400b958e3c
+		("clk: renesas: r8a779a0: Use defines for PLL control registers")
+
+		commit 2cf316b4c54e8411c91a901a11a3d78db7fd10b7
+		("clk: renesas: r8a779h0: Model PLL1/2/3/4/6 as fractional PLLs")
+
+		commit 898b5bc482b4db4dad8c4cc95f235fb7b88c8e35
+		("clk: renesas: r8a779g0: cpg_pll_configs should be __initconst")
+
+		commit 096311157d2a6bb8f06e28e1143e2a5de6a0183b
+		("clk: renesas: r8a779g0: Fix PCIe clock name")
+
+		commit 5ab16198b431ca4885dbcc3433527fdf5b66be3c
+		("clk: renesas: r8a779g0: Add PCIe clocks")
+
+		commit f154ef08ca637c26178cb7a5c8e7b75952a47ab1
+		("clk: renesas: r8a779g0: Add EtherTSN clock")
+
+		commit 7d5c73d960a94e8c5b5c6eab569c5c8e57709013
+		("clk: renesas: r8a779f0: cpg_pll_configs should be __initconst")
+
+		commit 588d55aba025eeeb9c905401e636a7efc1c54730
+		("clk: renesas: r8a779h0: Initial clock descriptions should be __initconst")
+
+		commit 9407f23d14edd42d372cefee023302bd95c9bca6
+		("dt-bindings: pwm: renesas,tpu: Add r8a779h0 support")
+
+		commit 24e529c5fbcad9a480607bb05128c61ba908a926
+		("dt-bindings: pwm: renesas,pwm-rcar: Add r8a779h0 support")
+
+		commit 4200161c564da91eefe8eeea1151a537290319c7
+		("arm64: defconfig: Enable AK4619 codec support")
+
+		commit ab7d885a33a7ef328a97ccae0d1340b68c3db9ad
+		("arm64: dts: renesas: gray-hawk-single: Add CAN-FD support")
+
+		commit 1200525fbc958a045e71e986ee7542739542d767
+		("arm64: dts: renesas: gray-hawk-single: Add GP LEDs")
+
+		commit d4d9a2fbeaa0efdca0a4cf779aaeff931949c703
+		("arm64: dts: renesas: gray-hawk-single: Add push switches")
+
+		commit ebeb40c77b3c3d19a96b92e067dd8161916a56d6
+		("arm64: dts: renesas: gray-hawk-single: Add Sound support")
+
+		commit 23319333146fb856f6e767f419830f6d7114eefc
+		("clk: renesas: r8a779h0: Add PCIe clock")
+
 * v6.6.52-2024-09-20
 
 	* Merge/Rebase v6.6.52
@@ -323,57 +459,3 @@
 
 		commit a79c5b6f675634387de8e88b0c85a053b9952970
 		("usb: renesas_usbhs: Simplify obtaining device data")
-
-* v6.6.42-2024-07-26
-
-	* Merge/Rebase v6.6.42
-
-	* update CVE
-
-	* update list
-
-	* Below patches are backported
-		commit 6ade6513832d21599bdcaca59c715f23dde026a8
-		("arm64: dts: renesas: r8a779h0: R-Car Sound support")
-
-		commit 8f3a0069fb2555a60841a15c523aaa110b8e9fb3
-		("arm64: dts: renesas: r8a779g0: Tidy up sound DT settings")
-
-		commit 1f5ed3ae020a0624c9f51ed9720f8279bb0cae60
-		("clk: renesas: r8a779h0: Add Audio clocks")
-
-		commit 6469267afed4ffb9d16ce8c44a2b518b9b31c215
-		("ASoC: dt-bindings: ak4619: Add initial DT binding")
-
-		commit 9337f15f4fd6ebd35d911225c4a88ec82d27b2a2
-		("ASoC: dt-bindings: simple-audio-mux: add state-labels property")
-
-		commit 7109f10ca4225c4a7e47dee5eab0d8d72edbf324
-		("ASoC: dt-bindings: audio-graph-card2: add support for aux devices")
-
-		commit ca73d314363d6682b6c736ea45e3a4ca551923a6
-		("ASoC: Add ak4619 codec support")
-
-		commit 3913ecb38833e8926467a17f1f1679ccd25a7230
-		("ASoC: simple-audio-mux: enable to select MUX names")
-
-		commit f7d97cb564a2ac5517ee7cc933de729e533d659a
-		("ASoC: simple-mux: add read function")
-
-		commit 195815c2755d70df92f46e6d737cd677db7adeef
-		("ASoC: audio-graph-card2: add support for aux devices")
-
-		commit d640af49b65c6d260a5154dfb822e8371b502707
-		("dt-bindings: mmc: renesas,sdhi: Document RZ/G2L family compatibility")
-
-		commit 200cba84b6a9e6b16f5c2a61ef231b199222028b
-		("arm64: dts: renesas: gray-hawk-single: Add aliases for I2C buses")
-
-		commit 046084b5e1426efbf08913830bdb101dcbb06be5
-		("arm64: dts: renesas: rzg2l: Update fallback string for SDHI nodes")
-
-		commit 1731ab2f8b62f0be2073de581ffef6db1196ad4f
-		("arm64: dts: renesas: r9a07g043: Move interrupt-parent property to common DTSI")
-
-		commit 3bfe384f6f4f7433103ffcc36e7a7106f7e70c4e
-		("arm64: dts: renesas: r9a07g0{43,44,54}: Update RZ/G2L family compatible")

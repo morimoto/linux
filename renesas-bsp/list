@@ -1,3 +1,44 @@
+Local     / net: renesas: rswitch: Remove setting of RX software timestamp
+v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Remove incorrect comment
+v6.11     / arm64: defconfig: Enable Marvell 88Q2XXX PHY support
+v6.11     / arm64: dts: renesas: white-hawk: ethernet: Describe AVB1 and AVB2
+Local     / dt-bindings: can: renesas,rcar-canfd: Document R-Car V4M support
+Local     / arm64: dts: renesas: r8a779h0: Add CAN-FD node
+Local     / arm64: dts: renesas: r8a779h0: Add PWM device nodes
+Local     / arm64: dts: renesas: r8a779h0: Add missing iommus properties
+Local     / clk: renesas: r8a779h0: Add CANFD clock
+Local     / clk: renesas: r8a779h0: Add PWM clock
+Local     / clk: renesas: rcar-gen4: Remove unused default PLL2/3/4/6 configs
+Local     / clk: renesas: r8a779a0: cpg_pll_configs should be __initconst
+Local     / clk: renesas: rcar-gen4: Remove unused fixed PLL clock types
+Local     / clk: renesas: rcar-gen4: Remove unused variable PLL2 clock type
+Local     / clk: renesas: rcar-gen4: Add support for fractional 9.24 PLLs
+Local     / clk: renesas: rcar-gen4: Add support for fixed variable PLLs
+Local     / clk: renesas: rcar-gen4: Add support for variable fractional PLLs
+Local     / clk: renesas: rcar-gen4: Use defines for common CPG registers
+Local     / clk: renesas: rcar-gen4: Add support for fractional multiplication
+Local     / clk: renesas: rcar-gen4: Use FIELD_GET()
+Local     / clk: renesas: rcar-gen4: Clarify custom PLL clock support
+Local     / clk: renesas: rcar-gen4: Removed unused SSMODE_* definitions
+v6.11     / clk: renesas: cpg-lib: Use DEFINE_SPINLOCK() for global spinlock
+v6.9      / clk: renesas: rcar-gen4: Add support for FRQCRC1
+Local     / clk: renesas: r8a779g0: Model PLL1/3/4/6 as fractional PLLs
+Local     / clk: renesas: r8a779f0: Model PLL1/2/3/6 as fractional PLLs
+Local     / clk: renesas: r8a779a0: Use defines for PLL control registers
+Local     / clk: renesas: r8a779h0: Model PLL1/2/3/4/6 as fractional PLLs
+Local     / clk: renesas: r8a779g0: cpg_pll_configs should be __initconst
+v6.9      / clk: renesas: r8a779g0: Fix PCIe clock name
+v6.8      / clk: renesas: r8a779g0: Add PCIe clocks
+v6.8      / clk: renesas: r8a779g0: Add EtherTSN clock
+Local     / clk: renesas: r8a779f0: cpg_pll_configs should be __initconst
+Local     / clk: renesas: r8a779h0: Initial clock descriptions should be __initconst
+Local     / dt-bindings: pwm: renesas,tpu: Add r8a779h0 support
+Local     / dt-bindings: pwm: renesas,pwm-rcar: Add r8a779h0 support
+Local     / arm64: dts: renesas: gray-hawk-single: Add CAN-FD support
+Local     / arm64: dts: renesas: gray-hawk-single: Add GP LEDs
+Local     / arm64: dts: renesas: gray-hawk-single: Add push switches
+Local     / arm64: dts: renesas: gray-hawk-single: Add Sound support
+Local     / clk: renesas: r8a779h0: Add PCIe clock
 v6.11     / ASoC: Remove unneeded semicolon
 v6.11     / arm64: dts: renesas: white-hawk-cpu: Add aliases for I2C buses
 v6.11     / arm64: dts: renesas: r8a779g0: Use MDIO node for all AVB devices
