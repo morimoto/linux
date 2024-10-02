@@ -680,8 +680,6 @@ RAVB
 		3d545d5e0463 net: ethernet: renesas: ravb: Disable Link Signal Change Interrupt for AVB0
 
 	Needs proper 88Q2110 PHY driver but we don't have documentation
-		2a1f07d0e722 net: phy: mv88q2110: Initial PHY Marvel 88Q2110 support
-		e5540b8157bc arm64: defconfig: Enable Marvell PHY 88Q2110
 		c0cbae905c8a arm64: dts: renesas: whitehawk: Add AVB1/AVB2 support
 		667534413db9 arm64: dts: renesas: r8a779a0-falcon: Add missing Ethernet-AVB in Falcon board
 
