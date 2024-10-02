@@ -1,3 +1,9 @@
+# upstream: b4944dc7b7935a022be7f777d5cf47e0c1becc96 arm64: dts: renesas: white-hawk: ethernet: Describe AVB1 and AVB2
+68c8cf248f51 arm64: dts: renesas: whitehawk: Add phy-reset-gpios to reset PHYs before initialization
+# upstream: 2c60c4c008d4b05b9b65bf88f784556208029333 ravb: Add support for an optional MDIO mode
+611328f8fc4a net: ethernet: renesas: ravb: Fix initialization failed in module state on channel 1/2
+# upstream: 2c60c4c008d4b05b9b65bf88f784556208029333 ravb: Add support for an optional MDIO mode
+d276493fd6c2 ravb: Issue gpio reset to AVB1/AVB2 PHYs
 # upstream: 6c6fa1a00ad3df994c96af9468cc83f225df9df4 net: ethernet: renesas: rswitch: Add R-Car Gen4 gPTP support
 846d4ecfc9f9 net: ethernet: renesas: rcar_gen4_ptp: Add a function to unregister the PTP device
 # upstream: ab7d885a33a7ef328a97ccae0d1340b68c3db9ad arm64: dts: renesas: gray-hawk-single: Add CAN-FD support
