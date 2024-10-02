@@ -43,8 +43,6 @@ e1d847bfd3ca dmaengine: rcar-dmac: Add repeat mode support
 #
 # CAN patches (Geert)
 #
-# V4M upstreaming in progress
-82035924e9ca can: rcar_canfd: Add support for V4M SoC
 # to be investigated
 905813c180f4 can: rcar_canfd: Add secondary sample point
 e9ba9ac6fe77 can: rcar_canfd: Configure receive rules

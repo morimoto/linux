@@ -1,3 +1,5 @@
+# upstream: 8716e6e79a148f58852a393340326ad72fd62a00 can: rcar_canfd: Add support for R-Car Gen4
+82035924e9ca can: rcar_canfd: Add support for V4M SoC
 # upstream: b4944dc7b7935a022be7f777d5cf47e0c1becc96 arm64: dts: renesas: white-hawk: ethernet: Describe AVB1 and AVB2
 c0cbae905c8a arm64: dts: renesas: whitehawk: Add AVB1/AVB2 support
 # upstream: 4b45a978b25da1d4de051ed8e91e669e3701d780 arm64: defconfig: Enable Marvell 88Q2XXX PHY support
