@@ -679,10 +679,6 @@ RAVB
 		e37c8d37dd3c ravb: Remove TX internal delay setting
 		3d545d5e0463 net: ethernet: renesas: ravb: Disable Link Signal Change Interrupt for AVB0
 
-	Needs proper 88Q2110 PHY driver but we don't have documentation
-		c0cbae905c8a arm64: dts: renesas: whitehawk: Add AVB1/AVB2 support
-		667534413db9 arm64: dts: renesas: r8a779a0-falcon: Add missing Ethernet-AVB in Falcon board
-
 RPC-IF
 	RPC-IF works on White-Hawk with current firmware.  If it must be
 	accessed only by the Cortex-R52, it should be handled like on e.g.
