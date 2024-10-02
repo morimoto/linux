@@ -1,3 +1,44 @@
+v6.11     / arm64: defconfig: Enable Marvell 88Q2XXX PHY support
+v6.6      / net: phy: marvell-88q2xxx: add driver for the Marvell 88Q2110 PHY
+v6.11     / arm64: dts: renesas: white-hawk: ethernet: Describe AVB1 and AVB2
+Local     / dt-bindings: can: renesas,rcar-canfd: Document R-Car V4M support
+Local     / arm64: dts: renesas: r8a779h0: Add CAN-FD node
+Local     / arm64: dts: renesas: r8a779h0: Add PWM device nodes
+Local     / arm64: dts: renesas: r8a779h0: Add missing iommus properties
+Local     / clk: renesas: r8a779h0: Add CANFD clock
+Local     / clk: renesas: r8a779h0: Add PWM clock
+Local     / clk: renesas: rcar-gen4: Remove unused default PLL2/3/4/6 configs
+Local     / clk: renesas: r8a779a0: cpg_pll_configs should be __initconst
+Local     / clk: renesas: rcar-gen4: Remove unused fixed PLL clock types
+Local     / clk: renesas: rcar-gen4: Remove unused variable PLL2 clock type
+Local     / clk: renesas: rcar-gen4: Add support for fractional 9.24 PLLs
+Local     / clk: renesas: rcar-gen4: Add support for fixed variable PLLs
+Local     / clk: renesas: rcar-gen4: Add support for variable fractional PLLs
+Local     / clk: renesas: rcar-gen4: Use defines for common CPG registers
+Local     / clk: renesas: rcar-gen4: Add support for fractional multiplication
+Local     / clk: renesas: rcar-gen4: Use FIELD_GET()
+Local     / clk: renesas: rcar-gen4: Clarify custom PLL clock support
+Local     / clk: renesas: rcar-gen4: Removed unused SSMODE_* definitions
+v6.11     / clk: renesas: cpg-lib: Use DEFINE_SPINLOCK() for global spinlock
+v6.9      / clk: renesas: rcar-gen4: Add support for FRQCRC1
+Local     / clk: renesas: r8a779g0: Model PLL1/3/4/6 as fractional PLLs
+Local     / clk: renesas: r8a779f0: Model PLL1/2/3/6 as fractional PLLs
+Local     / clk: renesas: r8a779a0: Use defines for PLL control registers
+Local     / clk: renesas: r8a779h0: Model PLL1/2/3/4/6 as fractional PLLs
+Local     / clk: renesas: r8a779g0: cpg_pll_configs should be __initconst
+v6.9      / clk: renesas: r8a779g0: Fix PCIe clock name
+v6.8      / clk: renesas: r8a779g0: Add PCIe clocks
+v6.8      / clk: renesas: r8a779g0: Add EtherTSN clock
+Local     / clk: renesas: r8a779f0: cpg_pll_configs should be __initconst
+Local     / clk: renesas: r8a779h0: Initial clock descriptions should be __initconst
+Local     / dt-bindings: pwm: renesas,tpu: Add r8a779h0 support
+Local     / dt-bindings: pwm: renesas,pwm-rcar: Add r8a779h0 support
+Local     / arm64: defconfig: Enable AK4619 codec support
+Local     / arm64: dts: renesas: gray-hawk-single: Add CAN-FD support
+Local     / arm64: dts: renesas: gray-hawk-single: Add GP LEDs
+Local     / arm64: dts: renesas: gray-hawk-single: Add push switches
+Local     / arm64: dts: renesas: gray-hawk-single: Add Sound support
+Local     / clk: renesas: r8a779h0: Add PCIe clock
 v6.11     / ASoC: Remove unneeded semicolon
 v6.11     / arm64: dts: renesas: white-hawk-cpu: Add aliases for I2C buses
 v6.11     / arm64: dts: renesas: r8a779g0: Use MDIO node for all AVB devices
@@ -15,7 +56,6 @@ v6.10     / arm64: dts: renesas: s4sk: Fix ethernet0 alias
 v6.7      / arm64: dts: renesas: Add R-Car S4 Starter Kit support
 v6.7      / arm64: dts: renesas: Add Renesas R8A779F4 SoC support
 v6.8      / PCI: rcar-gen4: Fix -Wvoid-pointer-to-enum-cast error
-v6.10     / net: rswitch: Avoid use-after-free in rswitch_poll()
 v6.11     / net: ravb: Use NAPI threaded mode on 1-core CPUs with GbEth IP
 v6.11     / net: ravb: Enable SW IRQ Coalescing for GbEth
 v6.2      / net: add netdev_sw_irq_coalesce_default_on()
@@ -59,19 +99,7 @@ v6.9      / net: ravb: Use tabs instead of spaces
 v6.9      / net: ravb: Switch to SYSTEM_SLEEP_PM_OPS()/RUNTIME_PM_OPS() and pm_ptr()
 v6.9      / net: ravb: Make reset controller support mandatory
 v6.9      / net: ravb: Rely on PM domain to enable gptp_clk
-v6.8      / net: rswitch: Allow jumbo frames
-v6.8      / net: rswitch: Add jumbo frames handling for TX
-v6.8      / net: rswitch: Add jumbo frames handling for RX
-v6.8      / net: rswitch: Set GWMDNC register
-v6.8      / net: rswitch: Add a setting ext descriptor function
-v6.8      / net: rswitch: Add unmap_addrs instead of dma address in each desc
-v6.8      / net: rswitch: Use build_skb() for RX
-v6.8      / net: rswitch: Use unsigned int for desc related array index
-v6.8      / net: rswitch: Drop unused argument/return value
 v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Depend on PTP_1588_CLOCK
-v6.7      / net: rswitch: Fix missing dev_kfree_skb_any() in error path
-v6.7      / net: rswitch: Fix return value in rswitch_start_xmit()
-v6.7      / net: rswitch: Fix type of ret in rswitch_start_xmit()
 v6.11     / arm64: dts: renesas: Add interrupt-names to arch timer nodes
 v6.11     / arm64: dts: renesas: r8a779h0: Drop "opp-shared" from opp-table-0
 v6.11     / arm64: dts: renesas: r8a779h0: Add video capture nodes
@@ -197,11 +225,6 @@ v6.9      / pmdomain: renesas: r8a779h0-sysc: Add r8a779h0 support
 v6.9      / dt-bindings: power: renesas,rcar-sysc: Document R-Car V4M support
 v6.10     / arm64: dts: renesas: r8a779h0: Add thermal nodes
 v6.8      / dt-bindings: net: renesas,ethertsn: Add Ethernet TSN
-v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Break out to module
-v6.7      / net: ethernet: renesas: group entries in Makefile
-v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Get clock increment from clock rate
-v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Prepare for shared register layout
-v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Fail on unknown register layout
 v6.8      / PCI: rcar-host: Add support for optional regulators
 v6.5      / PCI: rcar: Use correct product family name for Renesas R-Car
 v6.5      / PCI: rcar-host: Remove unused static pcie_base and pcie_dev
@@ -507,6 +530,26 @@ v6.3      / thermal/drivers/rcar_gen3_thermal: Fix device initialization
 v6.3      / thermal/drivers/rcar_gen3_thermal: Create device local ops struct
 v6.3      / thermal/drivers/rcar_gen3_thermal: Do not call set_trips() when resuming
 v6.3      / thermal/drivers/rcar_gen3: Add support for R-Car V4H
+Local     / net: renesas: rswitch: Remove setting of RX software timestamp
+v6.10     / net: rswitch: Avoid use-after-free in rswitch_poll()
+v6.8      / net: rswitch: Allow jumbo frames
+v6.8      / net: rswitch: Add jumbo frames handling for TX
+v6.8      / net: rswitch: Add jumbo frames handling for RX
+v6.8      / net: rswitch: Set GWMDNC register
+v6.8      / net: rswitch: Add a setting ext descriptor function
+v6.8      / net: rswitch: Add unmap_addrs instead of dma address in each desc
+v6.8      / net: rswitch: Use build_skb() for RX
+v6.8      / net: rswitch: Use unsigned int for desc related array index
+v6.8      / net: rswitch: Drop unused argument/return value
+v6.7      / net: rswitch: Fix missing dev_kfree_skb_any() in error path
+v6.7      / net: rswitch: Fix return value in rswitch_start_xmit()
+v6.7      / net: rswitch: Fix type of ret in rswitch_start_xmit()
+v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Break out to module
+v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Get clock increment from clock rate
+v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Prepare for shared register layout
+v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Fail on unknown register layout
+v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Remove incorrect comment
+v6.7      / net: ethernet: renesas: group entries in Makefile
 v6.7      / rswitch: Add PM ops
 v6.7      / rswitch: Use unsigned int for port related array index
 v6.6      / rswitch: Fix imbalance phy_power_off() calling
@@ -520,6 +563,7 @@ v6.5      / net: renesas: rswitch: Use hardware pause features
 v6.5      / net: renesas: rswitch: Use napi_gro_receive() in RX
 v6.4      / net: renesas: rswitch: Fix timestamp feature after all descriptors are used
 v6.4      / net: renesas: rswitch: Fix return value in error path of xmit
+v6.4      / ethernet: remove superfluous clearing of phydev
 v6.3      / net: renesas: rswitch: Fix GWTSDIE register handling
 v6.3      / net: renesas: rswitch: Fix the output value of quote from rswitch_rx()
 v6.3      / net: renesas: rswitch: Improve TX timestamp accuracy
