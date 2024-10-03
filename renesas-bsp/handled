@@ -1,3 +1,34 @@
+# upstream: c037263db4ce4b63b7f56732a46da257ae27c00d dt-bindings: PCI: rcar-gen4-pci-ep: Add R-Car V4H compatible
+# upstream: 05a01639b8f5fa42fb28f58cb1142bf11917d3c2 dt-bindings: PCI: rcar-gen4-pci-ep: Add R-Car V4M compatible
+e86f2fdf1d48 dt-bindings: pci: renesas: Document the r8a779g0 and r8a779h0 bindings
+# upstream: cd508bba82e4e0f405f593d7ada8067ebba289cb dt-bindings: reset: renesas,rst: Document R-Car V4M support
+63192c84ab1a dt-bindings: reset: renesas,rst: Document r8a779h0 reset module
+# upstream: 8ff93be3259fda0f7b7667ee1717b1dc9c4c8d07 dt-bindings: reset: renesas,rst: Document r8a779g0 reset module
+6d0cbc194c1f dt-bindings: reset: renesas,rst: Document r8a779g0 reset module
+# upstream: 06bd71cd2ebd98bb177fc7c35c10fed855781b82 dt-bindings: reset: renesas,rst: Document r8a779f0 reset module
+4cfee699f317 dt-bindings: reset: renesas,rst: Document r8a779f0 reset module
+# upstream: fdb88a1453d212ac52bbacfbaa9a950c626bfd1e dt-bindings: memory: renesas,rpc-if: Document R-Car V4M support
+cf044a4b0012 dt-bindings: memory: Add r8a779h0 support
+# upstream: fad9489abf932ff01ca2b9a9bf41a11311bdc8d5 dt-bindings: memory: renesas,rpc-if: Document R-Car V4H support
+0b0602b7d2da dt-bindings: memory: Add r8a779g0 support
+# upstream: 4aee14527e4fd92d4a7487c430b54d099b99b4d1 dt-bindings: mmc: renesas,sdhi: Document R-Car V4M support
+b36c727afb96 dt-bindings: mmc: renesas,sdhi: Add r8a779h0 support
+# upstream: 75a7d8146ac90849a6239c0d029e8b089e7ec6bf dt-bindings: pinctrl: renesas,pfc: Document R-Car V4M support
+5f694291d80e dt-bindings: pinctrl: renesas,pfc: Document R-Car V4M support
+# upstream: 1929683e5b94d64ea2717b38c034a6d06f8b488e dt-bindings: pinctrl: renesas,pfc: Document r8a779g0 support
+69fa187b4293 dt-bindings: pinctrl: renesas,pfc: Document r8a779g0 support
+# upstream: 2a8998479328a6eb6a2b07a68c7a756fe717b9e2 dt-bindings: clock: renesas,cpg-mssr: Document R-Car V4M support
+1eed9d49008a dt-bindings: clock: renesas,cpg-mssr: Document R-Car V4M support
+# upstream: 13b4d179c6641f66f3385c5ed6f2715f5b99f003 dt-bindings: clock: renesas,cpg-mssr: Document r8a779g0
+0bba1b2e2308 dt-bindings: clock: renesas,cpg-mssr: Document r8a779g0
+# upstream: ff3d9bfa25fabc4bf014d4e350ded1dc12b0a44a dt-bindings: gpio: renesas,rcar-gpio: Add r8a779h0 support
+0d62a7e3726e dt-bindings: gpio: renesas, rcar-gpio: Add r8a779h0 support
+# upstream: 58d4b25c883192377bf6255a46d46d0589e6f4ca dt-bindings: timer: renesas,tmu: Add R-Car V4M support
+2f6d2fd74873 dt-bindings: timer: renesas, tmu: Document r8a779h0 TMU support
+# upstream: ed53d391b6401d624172d1c97458d115893c6e0b dt-bindings: timer: renesas,cmt: Add R-Car V4M support
+86bb20f2dcad dt-bindings: timer: renesas, cmt: Document r8a779h0 CMT support
+# upstream: 1f48cbd6f00f2d1442ac8757ae8c32b672073927 spi: renesas,sh-msiof: Add r8a779h0 support
+8cc3558e4db8 dt-binding: spi: renesas,sh-msiof: Add support for R-Car V4M
 # upstream: 8716e6e79a148f58852a393340326ad72fd62a00 can: rcar_canfd: Add support for R-Car Gen4
 82035924e9ca can: rcar_canfd: Add support for V4M SoC
 # upstream: b4944dc7b7935a022be7f777d5cf47e0c1becc96 arm64: dts: renesas: white-hawk: ethernet: Describe AVB1 and AVB2
