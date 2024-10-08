@@ -12,7 +12,6 @@ f41c5d4f227a clk: renesas: r8a779h0-cpg-mssr: Update CA76 Frequency Control
 1a1becca92ff PCI: dwc: rcar-gen4: Update the initial setting to align with V4H HWUM v0.81
 952468543edf media: rcar-vin: rcar-csi2: Update D-PHY Start-up sequence to align with R-Car V4M HWUM v0.70
 a4793f2edbaa net: ethernet: renesas: ravb: Kernel panic when performing S2RAM on R-Car Gen4
-992fb5fbce1b dt-bindings: memory: Add r8a779f0 support
 #
 # Media
 #

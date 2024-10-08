@@ -79,6 +79,12 @@ ARM/SoC/DT
 		a2d17d3b1576 soc: renesas: rcar-topology: Add missing device for rcar topology
 		0846e66813ab soc: renesas: rcar-topology: Add support for R-Car capacity awareness
 
+	Because we were explicitly asked to *not* upstream RPC support for S8,
+	there is no node in the upstream.
+	commit 92e6619c6bdd ("arm64: dts: renesas: spider-cpu: Disable SPI flash via RPC") says
+	that RPC access is handled by OP-TEE on that SoC.
+		992fb5fbce1b dt-bindings: memory: Add r8a779f0 support
+
 AVS
 	AVS is not intended for upstream
 
