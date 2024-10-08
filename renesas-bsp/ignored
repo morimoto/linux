@@ -679,6 +679,14 @@ RAVB
 		e37c8d37dd3c ravb: Remove TX internal delay setting
 		3d545d5e0463 net: ethernet: renesas: ravb: Disable Link Signal Change Interrupt for AVB0
 
+	88Q2110 PHY driver is upstreamed, but it needs too many freamework backport on v6.1 kernel
+	Let's ignore on it.
+
+		# upstream: 00f11ac71708d2e5e434aa2ef9249f95b5e7e313 net: phy: marvell-88q2xxx: add driver for the Marvell 88Q2110 PHY
+		2a1f07d0e722 net: phy: mv88q2110: Initial PHY Marvel 88Q2110 support
+		# upstream: 4b45a978b25da1d4de051ed8e91e669e3701d780 arm64: defconfig: Enable Marvell 88Q2XXX PHY support
+		e5540b8157bc arm64: defconfig: Enable Marvell PHY 88Q2110
+
 RPC-IF
 	RPC-IF works on White-Hawk with current firmware.  If it must be
 	accessed only by the Cortex-R52, it should be handled like on e.g.

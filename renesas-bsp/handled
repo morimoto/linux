@@ -33,10 +33,6 @@ b36c727afb96 dt-bindings: mmc: renesas,sdhi: Add r8a779h0 support
 82035924e9ca can: rcar_canfd: Add support for V4M SoC
 # upstream: b4944dc7b7935a022be7f777d5cf47e0c1becc96 arm64: dts: renesas: white-hawk: ethernet: Describe AVB1 and AVB2
 c0cbae905c8a arm64: dts: renesas: whitehawk: Add AVB1/AVB2 support
-# upstream: 4b45a978b25da1d4de051ed8e91e669e3701d780 arm64: defconfig: Enable Marvell 88Q2XXX PHY support
-e5540b8157bc arm64: defconfig: Enable Marvell PHY 88Q2110
-# upstream: 00f11ac71708d2e5e434aa2ef9249f95b5e7e313 net: phy: marvell-88q2xxx: add driver for the Marvell 88Q2110 PHY
-2a1f07d0e722 net: phy: mv88q2110: Initial PHY Marvel 88Q2110 support
 # upstream: b4944dc7b7935a022be7f777d5cf47e0c1becc96 arm64: dts: renesas: white-hawk: ethernet: Describe AVB1 and AVB2
 68c8cf248f51 arm64: dts: renesas: whitehawk: Add phy-reset-gpios to reset PHYs before initialization
 # upstream: 2c60c4c008d4b05b9b65bf88f784556208029333 ravb: Add support for an optional MDIO mode
