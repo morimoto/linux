@@ -1,5 +1,3 @@
-v6.11     / arm64: defconfig: Enable Marvell 88Q2XXX PHY support
-v6.6      / net: phy: marvell-88q2xxx: add driver for the Marvell 88Q2110 PHY
 v6.11     / arm64: dts: renesas: white-hawk: ethernet: Describe AVB1 and AVB2
 Local     / dt-bindings: can: renesas,rcar-canfd: Document R-Car V4M support
 Local     / arm64: dts: renesas: r8a779h0: Add CAN-FD node
