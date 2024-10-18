@@ -1,3 +1,4 @@
+v6.10     / riscv: dts: renesas: r9a07g043f: Add IRQC node to RZ/Five SoC DTSI
 Local     / net: renesas: rswitch: Remove setting of RX software timestamp
 v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Remove incorrect comment
 v6.11     / arm64: defconfig: Enable Marvell 88Q2XXX PHY support

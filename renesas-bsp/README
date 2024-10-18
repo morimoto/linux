@@ -73,7 +73,12 @@
 
 		https://gitlab.com/cip-project/cip-kernel/cip-kernel-sec
 
-* defconfig vs renesas_defconfig
+* about defconfig
 
-	Upstream team recommend to use "renesas_defconfig" instead of customized defconfig.
-	"renesas_defconfig" doesn't have unrelated configs, and is using "=y" for all configs.
+** renesas_defconfig
+
+	Upstream team recommend to defconfig
+
+** rcar_bsp_defconfig
+
+	BSP team handled shrink version of defconfig
