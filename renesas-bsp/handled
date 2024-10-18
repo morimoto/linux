@@ -1,3 +1,7 @@
+# upstream: 9a73e931308f89bfecf18787af29a21a92470fa8 media: rcar-vin: Add family compatible for R-Car Gen4 family
+df19a197a11a media: rcar-vin: Add support for R-Car R8A779H0 SoC
+# upstream: 89dd679303f4b4a76204c2269a7724b545cd84df dt-bindings: media: renesas,vin: Add binding for V4
+8471c5bb3f14 dt-bindings: media: rcar-vin: Document R8A779H0 bindings
 # upstream: c037263db4ce4b63b7f56732a46da257ae27c00d dt-bindings: PCI: rcar-gen4-pci-ep: Add R-Car V4H compatible
 # upstream: 05a01639b8f5fa42fb28f58cb1142bf11917d3c2 dt-bindings: PCI: rcar-gen4-pci-ep: Add R-Car V4M compatible
 e86f2fdf1d48 dt-bindings: pci: renesas: Document the r8a779g0 and r8a779h0 bindings

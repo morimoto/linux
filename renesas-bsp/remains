@@ -72,10 +72,6 @@ fd446b2b77ff arm64: dts: renesas: Add node to support PWM on R-Car V4M
 # VIN related patches (Niklas)
 #
 # Enable video capture pipleine on V4M - In progress
-# lore: 20240527131849.1678877-1-niklas.soderlund+renesas@ragnatech.se
-8471c5bb3f14 dt-bindings: media: rcar-vin: Document R8A779H0 bindings
-# lore: 20240527132429.1683547-1-niklas.soderlund+renesas@ragnatech.se
-df19a197a11a media: rcar-vin: Add support for R-Car R8A779H0 SoC
 # lore: 20240527132513.1684232-1-niklas.soderlund+renesas@ragnatech.se
 a2d284f9c799 media: rcar-vin: rcar-isp: Add support for R8A779H0 SoC
 # lore: 20240527133221.1688830-1-niklas.soderlund+renesas@ragnatech.se
