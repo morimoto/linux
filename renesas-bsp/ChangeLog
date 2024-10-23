@@ -1,3 +1,22 @@
+* v6.6.55-2024-10-23
+
+	* Merge/Rebase v6.6.55
+
+	* update CVE
+
+	* update list
+
+	* Below patches were backported
+
+		commit 89dd679303f4b4a76204c2269a7724b545cd84df
+		("dt-bindings: media: renesas,vin: Add binding for V4M")
+
+		commit 9fba8eb8d55ddd8bb779fee3e36b7d8a6a2924b0
+		("dt-bindings: media: renesas,vin: Add Gen4 family fallback")
+
+		commit 9a73e931308f89bfecf18787af29a21a92470fa8
+		("media: rcar-vin: Add family compatible for R-Car Gen4 family")
+
 * v6.6.54-2024-10-18
 
 	* Merge/Rebase v6.6.54
@@ -208,55 +227,3 @@
 	* Merge/Rebase v6.6.45
 
 	* update CVE
-
-* v6.6.44-2024-08-06
-
-	* Merge/Rebase v6.6.44
-
-	* update CVE
-
-	* update list
-
-	* Below patches are backported
-
-		commit e9e6ed5a220f59a298db39b861500a6aea66e528
-		("arm64: dts: renesas: white-hawk-cpu: Add aliases for I2C buses")
-
-		commit 54bf0c27380b95a220b94ea835b5e8bf58baded9
-		("arm64: dts: renesas: r8a779g0: Use MDIO node for all AVB devices")
-
-		commit c53866cb27fb3a051cb5b6bbeb2e4967bf51c923
-		("arm64: dts: renesas: Improve TMU interrupt descriptions")
-
-		commit 874dca5d211559e6124d422809687381e2534cfe
-		("arm64: dts: renesas: white-hawk: Factor out common parts")
-
-		commit b84bd2230a58e5c208ac3ebe75047179e7441866
-		("arm64: dts: renesas: white-hawk-cpu: Factor out common parts")
-
-		commit a9baf0b42d2048984027ab456f30ee3e93815893
-		("arm64: dts: renesas: white-hawk: Add SoC name to top-level comment")
-
-		commit 1b940d036d5a2235323851c579100d1d835d1474
-		("arm64: dts: renesas: white-hawk: Drop SoC parts from sub boards")
-
-		commit 48683d4a88ddf08f5582655c651736c0887618b9
-		("arm64: dts: renesas: white-hawk-cpu: Restore sort order")
-
-		commit c90efc452ac121c11ea4dcd5a235f66fc2b5b46b
-		("arm64: dts: renesas: r8a779g0: Add standalone White Hawk CPU support")
-
-		commit fefa929e898cc472ca2b225552659cabfa90d4e2
-		("arm64: dts: renesas: s4sk: Add aliases for I2C buses")
-
-		commit 412f2224b3b63f3d553aa82b54f762245acd4398
-		("arm64: dts: renesas: s4sk: Fix ethernet0 alias")
-
-		commit 93be50c7ff8e8087d5a3ff5a4ff2ffc5dbb1c9b2
-		("arm64: dts: renesas: Add R-Car S4 Starter Kit support")
-
-		commit 92c4f314065a3b63ea6c2d6ac44e867e34031cd0
-		("arm64: dts: renesas: Add Renesas R8A779F4 SoC support")
-
-		commit 7682f19c3c8c709ff4ef0e1d475f00907ade868f
-		("PCI: rcar-gen4: Fix -Wvoid-pointer-to-enum-cast error")
