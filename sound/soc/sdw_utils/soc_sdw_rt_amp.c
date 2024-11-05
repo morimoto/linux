@@ -216,7 +216,6 @@ static int rt1308_i2s_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	int clk_id, clk_freq, pll_out;
 	int err;
@@ -228,20 +227,13 @@ static int rt1308_i2s_hw_params(struct snd_pcm_substream *substream,
 
 	/* Set rt1308 pll */
 	err = snd_soc_dai_set_pll(codec_dai, 0, clk_id, clk_freq, pll_out);
-	if (err < 0) {
-		dev_err(card->dev, "Failed to set RT1308 PLL: %d\n", err);
+	if (err < 0)
 		return err;
-	}
 
 	/* Set rt1308 sysclk */
 	err = snd_soc_dai_set_sysclk(codec_dai, RT1308_FS_SYS_S_PLL, pll_out,
 				     SND_SOC_CLOCK_IN);
-	if (err < 0) {
-		dev_err(card->dev, "Failed to set RT1308 SYSCLK: %d\n", err);
-		return err;
-	}
-
-	return 0;
+	return err;
 }
 
 /* machine stream operations */

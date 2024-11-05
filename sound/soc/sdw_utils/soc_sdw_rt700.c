@@ -52,11 +52,8 @@ int asoc_sdw_rt700_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_dai 
 
 	ret = snd_soc_dapm_add_routes(&card->dapm, rt700_map,
 				      ARRAY_SIZE(rt700_map));
-
-	if (ret) {
-		dev_err(card->dev, "rt700 map addition failed: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_card_jack_new_pins(rtd->card, "Headset Jack",
 					 SND_JACK_HEADSET | SND_JACK_BTN_0 |
@@ -65,11 +62,8 @@ int asoc_sdw_rt700_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_dai 
 					 &ctx->sdw_headset,
 					 rt700_jack_pins,
 					 ARRAY_SIZE(rt700_jack_pins));
-	if (ret) {
-		dev_err(rtd->card->dev, "Headset Jack creation failed: %d\n",
-			ret);
+	if (ret)
 		return ret;
-	}
 
 	jack = &ctx->sdw_headset;
 
@@ -79,9 +73,6 @@ int asoc_sdw_rt700_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_dai 
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_3, KEY_VOLUMEDOWN);
 
 	ret = snd_soc_component_set_jack(component, jack, NULL);
-	if (ret)
-		dev_err(rtd->card->dev, "Headset Jack call-back failed: %d\n",
-			ret);
 
 	return ret;
 }
