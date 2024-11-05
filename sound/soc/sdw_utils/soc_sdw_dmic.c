@@ -37,9 +37,6 @@ int asoc_sdw_dmic_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_dapm_add_routes(&card->dapm, dmic_map,
 				      ARRAY_SIZE(dmic_map));
 
-	if (ret)
-		dev_err(card->dev, "DMic map addition failed: %d\n", ret);
-
 	return ret;
 }
 EXPORT_SYMBOL_NS(asoc_sdw_dmic_init, "SND_SOC_SDW_UTILS");
