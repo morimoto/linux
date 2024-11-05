@@ -347,26 +347,6 @@ static int pxa_ssp_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai,
 	return 0;
 }
 
-/*
- * Tristate the SSP DAI lines
- */
-static int pxa_ssp_set_dai_tristate(struct snd_soc_dai *cpu_dai,
-	int tristate)
-{
-	struct ssp_priv *priv = snd_soc_dai_get_drvdata(cpu_dai);
-	struct ssp_device *ssp = priv->ssp;
-	u32 sscr1;
-
-	sscr1 = pxa_ssp_read_reg(ssp, SSCR1);
-	if (tristate)
-		sscr1 &= ~SSCR1_TTE;
-	else
-		sscr1 |= SSCR1_TTE;
-	pxa_ssp_write_reg(ssp, SSCR1, sscr1);
-
-	return 0;
-}
-
 static int pxa_ssp_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 			       unsigned int fmt)
 {
@@ -822,7 +802,6 @@ static const struct snd_soc_dai_ops pxa_ssp_dai_ops = {
 	.set_sysclk	= pxa_ssp_set_dai_sysclk,
 	.set_fmt	= pxa_ssp_set_dai_fmt,
 	.set_tdm_slot	= pxa_ssp_set_dai_tdm_slot,
-	.set_tristate	= pxa_ssp_set_dai_tristate,
 };
 
 static struct snd_soc_dai_driver pxa_ssp_dai = {
