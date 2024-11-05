@@ -36,7 +36,6 @@ static int imx_rpmsg_late_probe(struct snd_soc_card *card)
 	struct snd_soc_pcm_runtime *rtd = list_first_entry(&card->rtd_list,
 							   struct snd_soc_pcm_runtime, list);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct device *dev = card->dev;
 	int ret;
 
 	if (data->lpa) {
@@ -95,12 +94,8 @@ static int imx_rpmsg_late_probe(struct snd_soc_card *card)
 		return 0;
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, data->sysclk, SND_SOC_CLOCK_IN);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(dev, "failed to set sysclk in %s\n", __func__);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int imx_rpmsg_probe(struct platform_device *pdev)

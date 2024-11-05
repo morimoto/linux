@@ -73,7 +73,6 @@ static int imx_audmix_fe_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct device *dev = rtd->card->dev;
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	unsigned int fmt = SND_SOC_DAIFMT_DSP_A | SND_SOC_DAIFMT_NB_NF;
 	u32 channels = params_channels(params);
@@ -85,16 +84,12 @@ static int imx_audmix_fe_hw_params(struct snd_pcm_substream *substream,
 
 	/* set DAI configuration */
 	ret = snd_soc_dai_set_fmt(snd_soc_rtd_to_cpu(rtd, 0), fmt);
-	if (ret) {
-		dev_err(dev, "failed to set cpu dai fmt: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_sysclk(snd_soc_rtd_to_cpu(rtd, 0), FSL_SAI_CLK_MAST1, 0, dir);
-	if (ret) {
-		dev_err(dev, "failed to set cpu sysclk: %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	/*
 	 * Per datasheet, AUDMIX expects 8 slots and 32 bits
@@ -102,8 +97,6 @@ static int imx_audmix_fe_hw_params(struct snd_pcm_substream *substream,
 	 */
 	ret = snd_soc_dai_set_tdm_slot(snd_soc_rtd_to_cpu(rtd, 0), BIT(channels) - 1,
 				       BIT(channels) - 1, 8, 32);
-	if (ret)
-		dev_err(dev, "failed to set cpu dai tdm slot: %d\n", ret);
 
 	return ret;
 }
@@ -112,7 +105,6 @@ static int imx_audmix_be_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct device *dev = rtd->card->dev;
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	unsigned int fmt = SND_SOC_DAIFMT_DSP_A | SND_SOC_DAIFMT_NB_NF;
 	int ret;
@@ -125,8 +117,6 @@ static int imx_audmix_be_hw_params(struct snd_pcm_substream *substream,
 
 	/* set AUDMIX DAI configuration */
 	ret = snd_soc_dai_set_fmt(snd_soc_rtd_to_cpu(rtd, 0), fmt);
-	if (ret)
-		dev_err(dev, "failed to set AUDMIX DAI fmt: %d\n", ret);
 
 	return ret;
 }
