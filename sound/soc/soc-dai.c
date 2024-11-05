@@ -342,25 +342,6 @@ int snd_soc_dai_get_channel_map(const struct snd_soc_dai *dai,
 EXPORT_SYMBOL_GPL(snd_soc_dai_get_channel_map);
 
 /**
- * snd_soc_dai_set_tristate - configure DAI system or master clock.
- * @dai: DAI
- * @tristate: tristate enable
- *
- * Tristates the DAI so that others can use it.
- */
-int snd_soc_dai_set_tristate(struct snd_soc_dai *dai, int tristate)
-{
-	int ret = -EINVAL;
-
-	if (dai->driver->ops &&
-	    dai->driver->ops->set_tristate)
-		ret = dai->driver->ops->set_tristate(dai, tristate);
-
-	return soc_dai_ret(dai, ret);
-}
-EXPORT_SYMBOL_GPL(snd_soc_dai_set_tristate);
-
-/**
  * snd_soc_dai_digital_mute - configure DAI system or master clock.
  * @dai: DAI
  * @mute: mute enable
