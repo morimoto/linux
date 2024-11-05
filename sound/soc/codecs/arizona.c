@@ -1953,22 +1953,6 @@ static int arizona_dai_set_sysclk(struct snd_soc_dai *dai,
 	return snd_soc_dapm_sync(dapm);
 }
 
-static int arizona_set_tristate(struct snd_soc_dai *dai, int tristate)
-{
-	struct snd_soc_component *component = dai->component;
-	int base = dai->driver->base;
-	unsigned int reg;
-
-	if (tristate)
-		reg = ARIZONA_AIF1_TRI;
-	else
-		reg = 0;
-
-	return snd_soc_component_update_bits(component,
-					     base + ARIZONA_AIF_RATE_CTRL,
-					     ARIZONA_AIF1_TRI, reg);
-}
-
 static void arizona_set_channels_to_mask(struct snd_soc_dai *dai,
 					 unsigned int base,
 					 int channels, unsigned int mask)
@@ -2028,7 +2012,6 @@ const struct snd_soc_dai_ops arizona_dai_ops = {
 	.set_tdm_slot = arizona_set_tdm_slot,
 	.hw_params = arizona_hw_params,
 	.set_sysclk = arizona_dai_set_sysclk,
-	.set_tristate = arizona_set_tristate,
 };
 EXPORT_SYMBOL_GPL(arizona_dai_ops);
 
