@@ -36,8 +36,6 @@ static int imx_hdmi_hw_params(struct snd_pcm_substream *substream,
 	struct imx_hdmi_data *data = snd_soc_card_get_drvdata(rtd->card);
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct snd_soc_card *card = rtd->card;
-	struct device *dev = card->dev;
 	u32 slot_width = data->cpu_priv.slot_width;
 	int ret;
 
@@ -45,16 +43,12 @@ static int imx_hdmi_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_sysclk(cpu_dai, data->cpu_priv.sysclk_id[tx],
 				     8 * slot_width * params_rate(params),
 				     tx ? SND_SOC_CLOCK_OUT : SND_SOC_CLOCK_IN);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(dev, "failed to set cpu sysclk: %d\n", ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_tdm_slot(cpu_dai, 0, 0, 2, slot_width);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(dev, "failed to set cpu dai tdm slot: %d\n", ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
 
 	return 0;
 }
@@ -81,18 +75,12 @@ static int imx_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_card_jack_new_pins(card, "HDMI Jack", SND_JACK_LINEOUT,
 					 &data->hdmi_jack,
 					 &data->hdmi_jack_pin, 1);
-	if (ret) {
-		dev_err(card->dev, "Can't new HDMI Jack %d\n", ret);
+	if (ret)
 		return ret;
-	}
 
 	ret = snd_soc_component_set_jack(component, &data->hdmi_jack, NULL);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(card->dev, "Can't set HDMI Jack %d\n", ret);
-		return ret;
-	}
 
-	return 0;
+	return ret;
 };
 
 static int imx_hdmi_probe(struct platform_device *pdev)
