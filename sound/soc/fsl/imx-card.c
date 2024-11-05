@@ -315,7 +315,6 @@ static int imx_aif_hw_params(struct snd_pcm_substream *substream,
 	struct imx_card_data *data = snd_soc_card_get_drvdata(card);
 	struct dai_link_data *link_data = &data->link_data[rtd->id];
 	struct imx_card_plat_data *plat_data = data->plat_data;
-	struct device *dev = card->dev;
 	struct snd_soc_dai *codec_dai;
 	unsigned long mclk_freq;
 	unsigned int fmt = rtd->dai_link->dai_fmt;
@@ -340,35 +339,28 @@ static int imx_aif_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	ret = snd_soc_dai_set_fmt(cpu_dai, snd_soc_daifmt_clock_provider_flipped(fmt));
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(dev, "failed to set cpu dai fmt: %d\n", ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
+
 	ret = snd_soc_dai_set_tdm_slot(cpu_dai,
 				       BIT(slots) - 1,
 				       BIT(slots) - 1,
 				       slots, slot_width);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(dev, "failed to set cpu dai tdm slot: %d\n", ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
 		ret = snd_soc_dai_set_fmt(codec_dai, fmt);
-		if (ret && ret != -ENOTSUPP) {
-			dev_err(dev, "failed to set codec dai[%d] fmt: %d\n", i, ret);
+		if (ret && ret != -ENOTSUPP)
 			return ret;
-		}
 
 		if (format_is_tdm(link_data)) {
 			ret = snd_soc_dai_set_tdm_slot(codec_dai,
 						       BIT(slots) - 1,
 						       BIT(slots) - 1,
 						       slots, slot_width);
-			if (ret && ret != -ENOTSUPP) {
-				dev_err(dev, "failed to set codec dai[%d] tdm slot: %d\n", i, ret);
+			if (ret && ret != -ENOTSUPP)
 				return ret;
-			}
 		}
 	}
 
@@ -388,15 +380,12 @@ static int imx_aif_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_dai_set_sysclk(cpu_dai, link_data->cpu_sysclk_id, mclk_freq,
 				     SND_SOC_CLOCK_OUT);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(dev, "failed to set cpui dai mclk1 rate (%lu): %d\n", mclk_freq, ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
+
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, mclk_freq, SND_SOC_CLOCK_IN);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(dev, "failed to set codec dai mclk rate (%lu): %d\n", mclk_freq, ret);
+	if (ret && ret != -ENOTSUPP)
 		return ret;
-	}
 
 	return 0;
 }

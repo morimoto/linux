@@ -129,10 +129,8 @@ static int p1022_ds_startup(struct snd_pcm_substream *substream)
 
 	/* Tell the codec driver what the serial protocol is. */
 	ret = snd_soc_dai_set_fmt(snd_soc_rtd_to_codec(rtd, 0), mdata->dai_format);
-	if (ret < 0) {
-		dev_err(dev, "could not set codec driver audio format\n");
+	if (ret < 0)
 		return ret;
-	}
 
 	/*
 	 * Tell the codec driver what the MCLK frequency is, and whether it's
@@ -140,12 +138,8 @@ static int p1022_ds_startup(struct snd_pcm_substream *substream)
 	 */
 	ret = snd_soc_dai_set_sysclk(snd_soc_rtd_to_codec(rtd, 0), 0, mdata->clk_frequency,
 				     mdata->codec_clk_direction);
-	if (ret < 0) {
-		dev_err(dev, "could not set codec driver clock params\n");
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 /**

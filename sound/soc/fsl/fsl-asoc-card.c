@@ -175,7 +175,6 @@ static int fsl_asoc_card_hw_params(struct snd_pcm_substream *substream,
 	struct codec_priv *codec_priv;
 	struct snd_soc_dai *codec_dai;
 	struct cpu_priv *cpu_priv = &priv->cpu_priv;
-	struct device *dev = rtd->card->dev;
 	unsigned int pll_out;
 	int codec_idx;
 	int ret;
@@ -191,10 +190,8 @@ static int fsl_asoc_card_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_sysclk(snd_soc_rtd_to_cpu(rtd, 0), cpu_priv->sysclk_id[tx],
 				     cpu_priv->sysclk_freq[tx],
 				     cpu_priv->sysclk_dir[tx]);
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(dev, "failed to set sysclk for cpu dai\n");
+	if (ret && ret != -ENOTSUPP)
 		goto fail;
-	}
 
 	if (cpu_priv->slot_width) {
 		if (!cpu_priv->slot_num)
@@ -203,10 +200,8 @@ static int fsl_asoc_card_hw_params(struct snd_pcm_substream *substream,
 		ret = snd_soc_dai_set_tdm_slot(snd_soc_rtd_to_cpu(rtd, 0), 0x3, 0x3,
 					       cpu_priv->slot_num,
 					       cpu_priv->slot_width);
-		if (ret && ret != -ENOTSUPP) {
-			dev_err(dev, "failed to set TDM slot for cpu dai\n");
+		if (ret && ret != -ENOTSUPP)
 			goto fail;
-		}
 	}
 
 	/* Specific configuration for PLL */
@@ -223,19 +218,15 @@ static int fsl_asoc_card_hw_params(struct snd_pcm_substream *substream,
 						codec_priv->pll_id,
 						codec_priv->mclk_id,
 						codec_priv->mclk_freq, pll_out);
-			if (ret) {
-				dev_err(dev, "failed to start FLL: %d\n", ret);
+			if (ret)
 				goto fail;
-			}
 
 			ret = snd_soc_dai_set_sysclk(codec_dai,
 						codec_priv->fll_id,
 						pll_out, SND_SOC_CLOCK_IN);
 
-			if (ret && ret != -ENOTSUPP) {
-				dev_err(dev, "failed to set SYSCLK: %d\n", ret);
+			if (ret && ret != -ENOTSUPP)
 				goto fail;
-			}
 		}
 	}
 
@@ -252,7 +243,6 @@ static int fsl_asoc_card_hw_free(struct snd_pcm_substream *substream)
 	struct fsl_asoc_card_priv *priv = snd_soc_card_get_drvdata(rtd->card);
 	struct codec_priv *codec_priv;
 	struct snd_soc_dai *codec_dai;
-	struct device *dev = rtd->card->dev;
 	int codec_idx;
 	int ret;
 
@@ -267,17 +257,13 @@ static int fsl_asoc_card_hw_free(struct snd_pcm_substream *substream)
 						codec_priv->mclk_id,
 						codec_priv->free_freq,
 						SND_SOC_CLOCK_IN);
-			if (ret) {
-				dev_err(dev, "failed to switch away from FLL: %d\n", ret);
+			if (ret)
 				return ret;
-			}
 
 			ret = snd_soc_dai_set_pll(codec_dai,
 						codec_priv->pll_id, 0, 0, 0);
-			if (ret && ret != -ENOTSUPP) {
-				dev_err(dev, "failed to stop FLL: %d\n", ret);
+			if (ret && ret != -ENOTSUPP)
 				return ret;
-			}
 		}
 	}
 
@@ -566,7 +552,6 @@ static int fsl_asoc_card_late_probe(struct snd_soc_card *card)
 			&card->rtd_list, struct snd_soc_pcm_runtime, list);
 	struct snd_soc_dai *codec_dai;
 	struct codec_priv *codec_priv;
-	struct device *dev = card->dev;
 	int codec_idx;
 	int ret;
 
@@ -592,10 +577,8 @@ static int fsl_asoc_card_late_probe(struct snd_soc_card *card)
 
 		ret = snd_soc_dai_set_sysclk(codec_dai, codec_priv->mclk_id,
 					codec_priv->mclk_freq, SND_SOC_CLOCK_IN);
-		if (ret && ret != -ENOTSUPP) {
-			dev_err(dev, "failed to set sysclk in %s\n", __func__);
+		if (ret && ret != -ENOTSUPP)
 			return ret;
-		}
 
 		if (!IS_ERR_OR_NULL(codec_priv->mclk))
 			clk_prepare_enable(codec_priv->mclk);

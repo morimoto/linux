@@ -27,17 +27,9 @@ struct imx_sgtl5000_data {
 static int imx_sgtl5000_dai_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct imx_sgtl5000_data *data = snd_soc_card_get_drvdata(rtd->card);
-	struct device *dev = rtd->card->dev;
-	int ret;
 
-	ret = snd_soc_dai_set_sysclk(snd_soc_rtd_to_codec(rtd, 0), SGTL5000_SYSCLK,
+	return snd_soc_dai_set_sysclk(snd_soc_rtd_to_codec(rtd, 0), SGTL5000_SYSCLK,
 				     data->clk_frequency, SND_SOC_CLOCK_IN);
-	if (ret) {
-		dev_err(dev, "could not set codec driver clock params\n");
-		return ret;
-	}
-
-	return 0;
 }
 
 static const struct snd_soc_dapm_widget imx_sgtl5000_dapm_widgets[] = {
