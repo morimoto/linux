@@ -191,8 +191,6 @@ int snd_soc_dai_set_channel_map(struct snd_soc_dai *dai,
 	unsigned int tx_num, const unsigned int *tx_slot,
 	unsigned int rx_num, const unsigned int *rx_slot);
 
-int snd_soc_dai_set_tristate(struct snd_soc_dai *dai, int tristate);
-
 /* Digital Audio Interface mute */
 int snd_soc_dai_digital_mute(struct snd_soc_dai *dai, int mute,
 			     int direction);
@@ -306,7 +304,6 @@ struct snd_soc_dai_ops {
 	int (*get_channel_map)(const struct snd_soc_dai *dai,
 			unsigned int *tx_num, unsigned int *tx_slot,
 			unsigned int *rx_num, unsigned int *rx_slot);
-	int (*set_tristate)(struct snd_soc_dai *dai, int tristate);
 
 	int (*set_stream)(struct snd_soc_dai *dai,
 			  void *stream, int direction);
