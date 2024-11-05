@@ -3285,27 +3285,6 @@ static int madera_dai_set_sysclk(struct snd_soc_dai *dai,
 	return snd_soc_dapm_sync(dapm);
 }
 
-static int madera_set_tristate(struct snd_soc_dai *dai, int tristate)
-{
-	struct snd_soc_component *component = dai->component;
-	int base = dai->driver->base;
-	unsigned int reg;
-	int ret;
-
-	if (tristate)
-		reg = MADERA_AIF1_TRI;
-	else
-		reg = 0;
-
-	ret = snd_soc_component_update_bits(component,
-					    base + MADERA_AIF_RATE_CTRL,
-					    MADERA_AIF1_TRI, reg);
-	if (ret < 0)
-		return ret;
-	else
-		return 0;
-}
-
 static void madera_set_channels_to_mask(struct snd_soc_dai *dai,
 					unsigned int base,
 					int channels, unsigned int mask)
@@ -3364,7 +3343,6 @@ const struct snd_soc_dai_ops madera_dai_ops = {
 	.set_tdm_slot = &madera_set_tdm_slot,
 	.hw_params = &madera_hw_params,
 	.set_sysclk = &madera_dai_set_sysclk,
-	.set_tristate = &madera_set_tristate,
 };
 EXPORT_SYMBOL_GPL(madera_dai_ops);
 
