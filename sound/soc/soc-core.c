@@ -2257,12 +2257,9 @@ static int snd_soc_bind_card(struct snd_soc_card *card)
 	/* try to set some sane longname if DMI is available */
 	snd_soc_set_dmi_name(card);
 
-	soc_setup_card_name(card, card->snd_card->shortname,
-			    card->name, NULL);
-	soc_setup_card_name(card, card->snd_card->longname,
-			    card->long_name, card->name);
-	soc_setup_card_name(card, card->snd_card->driver,
-			    card->driver_name, card->name);
+	soc_setup_card_name(card, card->snd_card->shortname,	card->name,		NULL);
+	soc_setup_card_name(card, card->snd_card->longname,	card->long_name,	card->name);
+	soc_setup_card_name(card, card->snd_card->driver,	card->driver_name,	card->name);
 
 	if (card->components) {
 		/* the current implementation of snd_component_add() accepts */
