@@ -519,7 +519,7 @@ int snd_soc_pcm_dai_remove(struct snd_soc_pcm_runtime *rtd, int order)
 		dai->probed = 0;
 	}
 
-	return ret;
+	return snd_soc_ret(rtd->dev, ret, "%s() failed\n", __func__);
 }
 
 int snd_soc_pcm_dai_new(struct snd_soc_pcm_runtime *rtd)
@@ -613,7 +613,7 @@ int snd_soc_pcm_dai_trigger(struct snd_pcm_substream *substream,
 		}
 	}
 
-	return ret;
+	return snd_soc_ret(rtd->dev, ret, "%s() failed\n", __func__);
 }
 
 void snd_soc_pcm_dai_delay(struct snd_pcm_substream *substream,
