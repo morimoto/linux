@@ -246,7 +246,7 @@ static ssize_t dpcm_state_read_file(struct file *file, char __user *user_buf,
 
 	buf = kmalloc(out_count, GFP_KERNEL);
 	if (!buf)
-		return -ENOMEM;
+		return soc_pcm_ret(fe, -ENOMEM);
 
 	snd_soc_dpcm_mutex_lock(fe);
 	for_each_pcm_streams(stream)
@@ -259,7 +259,8 @@ static ssize_t dpcm_state_read_file(struct file *file, char __user *user_buf,
 	ret = simple_read_from_buffer(user_buf, count, ppos, buf, offset);
 
 	kfree(buf);
-	return ret;
+
+	return soc_pcm_ret(fe, ret);
 }
 
 static const struct file_operations dpcm_state_fops = {
@@ -686,7 +687,7 @@ int snd_soc_runtime_calc_hw(struct snd_soc_pcm_runtime *rtd,
 
 	/* Verify both a valid CPU DAI and a valid CODEC DAI were found */
 	if (!hw->channels_min)
-		return -EINVAL;
+		return soc_pcm_ret(rtd, -EINVAL);
 
 	/*
 	 * chan min/max cannot be enforced if there are multiple CODEC DAIs
@@ -735,7 +736,7 @@ static int soc_pcm_components_open(struct snd_pcm_substream *substream)
 			break;
 	}
 
-	return ret;
+	return soc_pcm_ret(rtd, ret);
 }
 
 static void soc_pcm_components_close(struct snd_pcm_substream *substream,
@@ -925,7 +926,8 @@ static int soc_pcm_open(struct snd_pcm_substream *substream)
 	snd_soc_dpcm_mutex_lock(rtd);
 	ret = __soc_pcm_open(rtd, substream);
 	snd_soc_dpcm_mutex_unlock(rtd);
-	return ret;
+
+	return soc_pcm_ret(rtd, ret);
 }
 
 /*
@@ -981,7 +983,8 @@ static int soc_pcm_prepare(struct snd_pcm_substream *substream)
 	snd_soc_dpcm_mutex_lock(rtd);
 	ret = __soc_pcm_prepare(rtd, substream);
 	snd_soc_dpcm_mutex_unlock(rtd);
-	return ret;
+
+	return soc_pcm_ret(rtd, ret);
 }
 
 static void soc_pcm_codec_params_fixup(struct snd_pcm_hw_params *params,
@@ -1168,7 +1171,8 @@ static int soc_pcm_hw_params(struct snd_pcm_substream *substream,
 	snd_soc_dpcm_mutex_lock(rtd);
 	ret = __soc_pcm_hw_params(rtd, substream, params);
 	snd_soc_dpcm_mutex_unlock(rtd);
-	return ret;
+
+	return soc_pcm_ret(rtd, ret);
 }
 
 #define TRIGGER_MAX 3
@@ -1209,7 +1213,7 @@ static int soc_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
 
 	if (start < 0 || start >= SND_SOC_TRIGGER_ORDER_MAX ||
 	    stop  < 0 || stop  >= SND_SOC_TRIGGER_ORDER_MAX)
-		return -EINVAL;
+		return soc_pcm_ret(rtd, -EINVAL);
 
 	/*
 	 * START
@@ -1259,7 +1263,7 @@ static int soc_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
 		}
 	}
 
-	return ret;
+	return soc_pcm_ret(rtd, ret);
 }
 
 /*
@@ -1315,7 +1319,7 @@ static int dpcm_be_connect(struct snd_soc_pcm_runtime *fe,
 
 	dpcm = kzalloc(sizeof(struct snd_soc_dpcm), GFP_KERNEL);
 	if (!dpcm)
-		return -ENOMEM;
+		return soc_pcm_ret(fe, -ENOMEM);
 
 	dpcm->be = be;
 	dpcm->fe = fe;
@@ -2153,7 +2157,7 @@ unwind:
 		__soc_pcm_hw_free(be, be_substream);
 	}
 
-	return ret;
+	return soc_pcm_ret(fe, ret);
 }
 
 static int dpcm_fe_dai_hw_params(struct snd_pcm_substream *substream,
@@ -2770,7 +2774,8 @@ static int dpcm_fe_dai_close(struct snd_pcm_substream *fe_substream)
 	dpcm_fe_dai_cleanup(fe_substream);
 
 	snd_soc_dpcm_mutex_unlock(fe);
-	return ret;
+
+	return soc_pcm_ret(fe, ret);
 }
 
 static int dpcm_fe_dai_open(struct snd_pcm_substream *fe_substream)
@@ -2797,7 +2802,8 @@ static int dpcm_fe_dai_open(struct snd_pcm_substream *fe_substream)
 	dpcm_path_put(&list);
 open_end:
 	snd_soc_dpcm_mutex_unlock(fe);
-	return ret;
+
+	return soc_pcm_ret(fe, ret);
 }
 
 static int soc_get_playback_capture(struct snd_soc_pcm_runtime *rtd,
