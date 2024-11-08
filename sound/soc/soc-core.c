@@ -1181,7 +1181,7 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 	 */
 	ret = snd_soc_card_add_dai_link(card, dai_link);
 	if (ret < 0)
-		return ret;
+		goto _err;
 
 	if (dai_link->ignore)
 		return 0;
@@ -1190,11 +1190,13 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 
 	ret = soc_dai_link_sanity_check(card, dai_link);
 	if (ret < 0)
-		return ret;
+		goto _err;
 
 	rtd = soc_new_pcm_runtime(card, dai_link);
-	if (!rtd)
-		return -ENOMEM;
+	if (!rtd) {
+		ret = -ENOMEM;
+		goto _err;
+	}
 
 	for_each_link_cpus(dai_link, i, cpu) {
 		snd_soc_rtd_to_cpu(rtd, i) = snd_soc_find_dai(cpu);
@@ -1258,25 +1260,29 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 _err_defer:
 	snd_soc_remove_pcm_runtime(card, rtd);
 	return -EPROBE_DEFER;
+
+_err:
+	return soc_core_ret(card->dev, ret);
 }
 
 int snd_soc_add_pcm_runtimes(struct snd_soc_card *card,
 			     struct snd_soc_dai_link *dai_link,
 			     int num_dai_link)
 {
+	int ret = 0;
+
 	for (int i = 0; i < num_dai_link; i++) {
-		int ret;
 
 		ret = snd_soc_compensate_channel_connection_map(card, dai_link + i);
 		if (ret < 0)
-			return ret;
+			break;
 
 		ret = snd_soc_add_pcm_runtime(card, dai_link + i);
 		if (ret < 0)
-			return ret;
+			break;
 	}
 
-	return 0;
+	return soc_core_ret(card->dev, ret);
 }
 EXPORT_SYMBOL_GPL(snd_soc_add_pcm_runtimes);
 
@@ -1464,7 +1470,7 @@ int snd_soc_runtime_set_dai_fmt(struct snd_soc_pcm_runtime *rtd,
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
 		ret = snd_soc_dai_set_fmt(codec_dai, dai_fmt);
 		if (ret != 0 && ret != -ENOTSUPP)
-			return ret;
+			return soc_core_ret(rtd->dev, ret);
 	}
 
 	/* Flip the polarity for the "CPU" end of link */
@@ -1473,7 +1479,7 @@ int snd_soc_runtime_set_dai_fmt(struct snd_soc_pcm_runtime *rtd,
 	for_each_rtd_cpu_dais(rtd, i, cpu_dai) {
 		ret = snd_soc_dai_set_fmt(cpu_dai, dai_fmt);
 		if (ret != 0 && ret != -ENOTSUPP)
-			return ret;
+			return soc_core_ret(rtd->dev, ret);
 	}
 
 	return 0;
@@ -1490,7 +1496,7 @@ static int soc_init_pcm_runtime(struct snd_soc_card *card,
 	/* do machine specific initialization */
 	ret = snd_soc_link_init(rtd);
 	if (ret < 0)
-		return ret;
+		goto end;
 
 	snd_soc_runtime_get_dai_fmt(rtd);
 	ret = snd_soc_runtime_set_dai_fmt(rtd, dai_link->dai_fmt);
@@ -1519,7 +1525,8 @@ static int soc_init_pcm_runtime(struct snd_soc_card *card,
 	return 0;
 err:
 	snd_soc_link_exit(rtd);
-	return ret;
+end:
+	return soc_core_ret(card->dev, ret);
 }
 
 static void soc_set_name_prefix(struct snd_soc_card *card,
@@ -1578,7 +1585,7 @@ int snd_soc_dapm_add_routes_with_card(struct snd_soc_card *card,
 		ret = 0;
 	}
 
-	return ret;
+	return soc_core_ret(card->dev, ret);
 }
 
 static int soc_probe_component(struct snd_soc_card *card,
@@ -1664,7 +1671,7 @@ err_probe:
 	if (ret < 0)
 		soc_remove_component(component, probed);
 
-	return ret;
+	return soc_core_ret(card->dev, ret);
 }
 
 static void soc_remove_link_dais(struct snd_soc_card *card)
@@ -2274,7 +2281,7 @@ probe_end:
 	snd_soc_card_mutex_unlock(card);
 	mutex_unlock(&client_mutex);
 
-	return ret;
+	return soc_core_ret(card->dev, ret);
 }
 
 /* probes a new socdev */
@@ -2287,7 +2294,7 @@ static int soc_probe(struct platform_device *pdev)
 	 * we should not be here in that case so ret error
 	 */
 	if (!card)
-		return -EINVAL;
+		return soc_core_ret(&pdev->dev, -EINVAL);
 
 	dev_warn(&pdev->dev,
 		 "ASoC: machine %s should use snd_soc_register_card()\n",
