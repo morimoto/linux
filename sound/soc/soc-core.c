@@ -1023,24 +1023,23 @@ static int soc_dai_link_sanity_check(struct snd_soc_card *card,
 	return 0;
 
 component_invalid:
-	dev_err(card->dev, "ASoC: Both Component name/of_node are set for %s\n", link->name);
-	return -EINVAL;
+	return snd_soc_ret(card->dev, -EINVAL,
+			"Both Component name/of_node are set for %s\n", link->name);
 
 component_empty:
-	dev_err(card->dev, "ASoC: Neither Component name/of_node are set for %s\n", link->name);
-	return -EINVAL;
+	return snd_soc_ret(card->dev, -EINVAL,
+			"Neither Component name/of_node are set for %s\n", link->name);
 
 component_not_found:
 	dev_dbg(card->dev, "ASoC: Component %s not found for link %s\n", dlc->name, link->name);
 	return -EPROBE_DEFER;
 
 dai_empty:
-	dev_err(card->dev, "ASoC: DAI name is not set for %s\n", link->name);
-	return -EINVAL;
+	return snd_soc_ret(card->dev, -EINVAL, "DAI name is not set for %s\n", link->name);
 
 component_dai_empty:
-	dev_err(card->dev, "ASoC: Neither DAI/Component name/of_node are set for %s\n", link->name);
-	return -EINVAL;
+	return snd_soc_ret(card->dev, -EINVAL,
+			"Neither DAI/Component name/of_node are set for %s\n", link->name);
 }
 
 #define MAX_DEFAULT_CH_MAP_SIZE 8
@@ -1089,11 +1088,9 @@ static int snd_soc_compensate_channel_connection_map(struct snd_soc_card *card,
 
 	/* it should have ch_maps if connection was N:M */
 	if (dai_link->num_cpus > 1 && dai_link->num_codecs > 1 &&
-	    dai_link->num_cpus != dai_link->num_codecs && !dai_link->ch_maps) {
-		dev_err(card->dev, "need to have ch_maps when N:M connection (%s)",
-			dai_link->name);
-		return -EINVAL;
-	}
+	    dai_link->num_cpus != dai_link->num_codecs && !dai_link->ch_maps)
+		return snd_soc_ret(card->dev, -EINVAL,
+				"need to have ch_maps when N:M connection (%s)", dai_link->name);
 
 	/* do nothing if it has own maps */
 	if (dai_link->ch_maps)
@@ -1101,10 +1098,9 @@ static int snd_soc_compensate_channel_connection_map(struct snd_soc_card *card,
 
 	/* check default map size */
 	if (dai_link->num_cpus   > MAX_DEFAULT_CH_MAP_SIZE ||
-	    dai_link->num_codecs > MAX_DEFAULT_CH_MAP_SIZE) {
-		dev_err(card->dev, "soc-core.c needs update default_connection_maps");
-		return -EINVAL;
-	}
+	    dai_link->num_codecs > MAX_DEFAULT_CH_MAP_SIZE)
+		return snd_soc_ret(card->dev, -EINVAL,
+				"soc-core.c needs update default_connection_maps");
 
 	/* Compensate missing map for ... */
 	if (dai_link->num_cpus == dai_link->num_codecs)
@@ -1118,14 +1114,12 @@ sanity_check:
 	dev_dbg(card->dev, "dai_link %s\n", dai_link->stream_name);
 	for_each_link_ch_maps(dai_link, i, ch_maps) {
 		if ((ch_maps->cpu   >= dai_link->num_cpus) ||
-		    (ch_maps->codec >= dai_link->num_codecs)) {
-			dev_err(card->dev,
+		    (ch_maps->codec >= dai_link->num_codecs))
+			return snd_soc_ret(card->dev, -EINVAL,
 				"unexpected dai_link->ch_maps[%d] index (cpu(%d/%d) codec(%d/%d))",
 				i,
 				ch_maps->cpu,	dai_link->num_cpus,
 				ch_maps->codec,	dai_link->num_codecs);
-			return -EINVAL;
-		}
 
 		dev_dbg(card->dev, "  [%d] cpu%d <-> codec%d\n",
 			i, ch_maps->cpu, ch_maps->codec);
@@ -1601,12 +1595,10 @@ static int soc_probe_component(struct snd_soc_card *card,
 		return 0;
 
 	if (component->card) {
-		if (component->card != card) {
-			dev_err(component->dev,
+		if (component->card != card)
+			return snd_soc_ret(component->dev, -ENODEV,
 				"Trying to bind component \"%s\" to card \"%s\" but is already bound to card \"%s\"\n",
 				component->name, card->name, component->card->name);
-			return -ENODEV;
-		}
 		return 0;
 	}
 
