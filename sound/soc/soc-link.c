@@ -164,7 +164,7 @@ int snd_soc_link_trigger(struct snd_pcm_substream *substream, int cmd,
 		soc_link_mark_pop(rtd, startup);
 	}
 
-	return ret;
+	return soc_link_ret(rtd, ret);
 }
 
 int snd_soc_link_compr_startup(struct snd_compr_stream *cstream)
