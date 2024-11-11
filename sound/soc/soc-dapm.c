@@ -3953,14 +3953,10 @@ snd_soc_dai_link_event_pre_pmu(struct snd_soc_dapm_widget *w,
 	fmt = ffs(config->formats) - 1;
 
 	snd_mask_set(hw_param_mask(params, SNDRV_PCM_HW_PARAM_FORMAT), fmt);
-	hw_param_interval(params, SNDRV_PCM_HW_PARAM_RATE)->min =
-		config->rate_min;
-	hw_param_interval(params, SNDRV_PCM_HW_PARAM_RATE)->max =
-		config->rate_max;
-	hw_param_interval(params, SNDRV_PCM_HW_PARAM_CHANNELS)->min
-		= config->channels_min;
-	hw_param_interval(params, SNDRV_PCM_HW_PARAM_CHANNELS)->max
-		= config->channels_max;
+	hw_param_interval(params, SNDRV_PCM_HW_PARAM_RATE)->min		= config->rate_min;
+	hw_param_interval(params, SNDRV_PCM_HW_PARAM_RATE)->max		= config->rate_max;
+	hw_param_interval(params, SNDRV_PCM_HW_PARAM_CHANNELS)->min	= config->channels_min;
+	hw_param_interval(params, SNDRV_PCM_HW_PARAM_CHANNELS)->max	= config->channels_max;
 
 	substream->stream = SNDRV_PCM_STREAM_CAPTURE;
 	snd_soc_dapm_widget_for_each_source_path(w, path) {
