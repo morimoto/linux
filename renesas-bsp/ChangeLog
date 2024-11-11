@@ -1,3 +1,9 @@
+* v6.1.116-2024-11-11
+
+	* Merge/Rebase v6.1.116
+
+	* update CVE
+
 * v6.1.115-2024-11-05
 
 	* Merge/Rebase v6.1.115
@@ -225,8 +231,3 @@
 
 		commit 061505a1a61169bd25dd908f95ba22f33dffdd69
 		("ASoC: Remove unneeded semicolon")
-
-* v6.1.106-2024-08-21
-	* Merge/Rebase v6.1.106
-
-	* update CVE
