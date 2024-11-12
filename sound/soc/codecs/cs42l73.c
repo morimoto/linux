@@ -1128,15 +1128,6 @@ static int cs42l73_set_bias_level(struct snd_soc_component *component,
 	return 0;
 }
 
-static int cs42l73_set_tristate(struct snd_soc_dai *dai, int tristate)
-{
-	struct snd_soc_component *component = dai->component;
-	int id = dai->id;
-
-	return snd_soc_component_update_bits(component, CS42L73_SPC(id), CS42L73_SP_3ST,
-				   tristate << 7);
-}
-
 static const struct snd_pcm_hw_constraint_list constraints_12_24 = {
 	.count  = ARRAY_SIZE(cs42l73_asrc_rates),
 	.list   = cs42l73_asrc_rates,
@@ -1160,7 +1151,6 @@ static const struct snd_soc_dai_ops cs42l73_ops = {
 	.hw_params = cs42l73_pcm_hw_params,
 	.set_fmt = cs42l73_set_dai_fmt,
 	.set_sysclk = cs42l73_set_sysclk,
-	.set_tristate = cs42l73_set_tristate,
 };
 
 static struct snd_soc_dai_driver cs42l73_dai[] = {
