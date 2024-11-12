@@ -39,18 +39,9 @@ static int osk_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	int err;
 
 	/* Set the codec system clock for DAC and ADC */
-	err =
-	    snd_soc_dai_set_sysclk(codec_dai, 0, CODEC_CLOCK, SND_SOC_CLOCK_IN);
-
-	if (err < 0) {
-		printk(KERN_ERR "can't set codec system clock\n");
-		return err;
-	}
-
-	return err;
+	return snd_soc_dai_set_sysclk(codec_dai, 0, CODEC_CLOCK, SND_SOC_CLOCK_IN);
 }
 
 static const struct snd_soc_ops osk_ops = {
