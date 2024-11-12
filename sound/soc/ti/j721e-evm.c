@@ -350,21 +350,14 @@ static int j721e_audio_hw_params(struct snd_pcm_substream *substream,
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
 		ret = snd_soc_dai_set_sysclk(codec_dai, 0, sysclk_rate,
 					     SND_SOC_CLOCK_IN);
-		if (ret && ret != -ENOTSUPP) {
-			dev_err(priv->dev,
-				"codec set_sysclk failed for %u Hz\n",
-				sysclk_rate);
+		if (ret && ret != -ENOTSUPP)
 			goto out;
-		}
 	}
 
 	ret = snd_soc_dai_set_sysclk(cpu_dai, MCASP_CLK_HCLK_AUXCLK,
 				     sysclk_rate, SND_SOC_CLOCK_IN);
 
-	if (ret && ret != -ENOTSUPP) {
-		dev_err(priv->dev, "mcasp set_sysclk failed for %u Hz\n",
-			sysclk_rate);
-	} else {
+	if (ret == 0 || ret == -ENOTSUPP) {
 		domain->rate = params_rate(params);
 		ret = 0;
 	}
