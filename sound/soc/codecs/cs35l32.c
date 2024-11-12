@@ -169,17 +169,8 @@ static int cs35l32_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	return 0;
 }
 
-static int cs35l32_set_tristate(struct snd_soc_dai *dai, int tristate)
-{
-	struct snd_soc_component *component = dai->component;
-
-	return snd_soc_component_update_bits(component, CS35L32_PWRCTL2,
-					CS35L32_SDOUT_3ST, tristate << 3);
-}
-
 static const struct snd_soc_dai_ops cs35l32_ops = {
 	.set_fmt = cs35l32_set_dai_fmt,
-	.set_tristate = cs35l32_set_tristate,
 };
 
 static struct snd_soc_dai_driver cs35l32_dai[] = {
