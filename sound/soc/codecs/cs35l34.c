@@ -562,20 +562,6 @@ static int cs35l34_pcm_hw_params(struct snd_pcm_substream *substream,
 	return ret;
 }
 
-static int cs35l34_set_tristate(struct snd_soc_dai *dai, int tristate)
-{
-
-	struct snd_soc_component *component = dai->component;
-
-	if (tristate)
-		snd_soc_component_update_bits(component, CS35L34_PWRCTL3,
-					CS35L34_PDN_SDOUT, CS35L34_PDN_SDOUT);
-	else
-		snd_soc_component_update_bits(component, CS35L34_PWRCTL3,
-					CS35L34_PDN_SDOUT, 0);
-	return 0;
-}
-
 static int cs35l34_dai_set_sysclk(struct snd_soc_dai *dai,
 				int clk_id, unsigned int freq, int dir)
 {
@@ -619,7 +605,6 @@ static int cs35l34_dai_set_sysclk(struct snd_soc_dai *dai,
 }
 
 static const struct snd_soc_dai_ops cs35l34_ops = {
-	.set_tristate = cs35l34_set_tristate,
 	.set_fmt = cs35l34_set_dai_fmt,
 	.hw_params = cs35l34_pcm_hw_params,
 	.set_sysclk = cs35l34_dai_set_sysclk,
