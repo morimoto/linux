@@ -726,27 +726,12 @@ static int adau1977_startup(struct snd_pcm_substream *substream,
 	return 0;
 }
 
-static int adau1977_set_tristate(struct snd_soc_dai *dai, int tristate)
-{
-	struct adau1977 *adau1977 = snd_soc_component_get_drvdata(dai->component);
-	unsigned int val;
-
-	if (tristate)
-		val = ADAU1977_SAI_OVERTEMP_DRV_HIZ;
-	else
-		val = 0;
-
-	return regmap_update_bits(adau1977->regmap, ADAU1977_REG_SAI_OVERTEMP,
-		ADAU1977_SAI_OVERTEMP_DRV_HIZ, val);
-}
-
 static const struct snd_soc_dai_ops adau1977_dai_ops = {
 	.startup	= adau1977_startup,
 	.hw_params	= adau1977_hw_params,
 	.mute_stream	= adau1977_mute,
 	.set_fmt	= adau1977_set_dai_fmt,
 	.set_tdm_slot	= adau1977_set_tdm_slot,
-	.set_tristate	= adau1977_set_tristate,
 };
 
 static struct snd_soc_dai_driver adau1977_dai = {
