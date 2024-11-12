@@ -3158,32 +3158,6 @@ static int wm8994_aif_mute(struct snd_soc_dai *codec_dai, int mute,
 	return 0;
 }
 
-static int wm8994_set_tristate(struct snd_soc_dai *codec_dai, int tristate)
-{
-	struct snd_soc_component *component = codec_dai->component;
-	int reg, val, mask;
-
-	switch (codec_dai->id) {
-	case 1:
-		reg = WM8994_AIF1_MASTER_SLAVE;
-		mask = WM8994_AIF1_TRI;
-		break;
-	case 2:
-		reg = WM8994_AIF2_MASTER_SLAVE;
-		mask = WM8994_AIF2_TRI;
-		break;
-	default:
-		return -EINVAL;
-	}
-
-	if (tristate)
-		val = mask;
-	else
-		val = 0;
-
-	return snd_soc_component_update_bits(component, reg, mask, val);
-}
-
 static int wm8994_aif2_probe(struct snd_soc_dai *dai)
 {
 	struct snd_soc_component *component = dai->component;
@@ -3210,7 +3184,6 @@ static const struct snd_soc_dai_ops wm8994_aif1_dai_ops = {
 	.hw_params	= wm8994_hw_params,
 	.mute_stream	= wm8994_aif_mute,
 	.set_pll	= wm8994_set_fll,
-	.set_tristate	= wm8994_set_tristate,
 	.no_capture_mute = 1,
 };
 
@@ -3221,7 +3194,6 @@ static const struct snd_soc_dai_ops wm8994_aif2_dai_ops = {
 	.hw_params	= wm8994_hw_params,
 	.mute_stream	= wm8994_aif_mute,
 	.set_pll	= wm8994_set_fll,
-	.set_tristate	= wm8994_set_tristate,
 	.no_capture_mute = 1,
 };
 
