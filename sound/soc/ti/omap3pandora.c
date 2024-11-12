@@ -38,27 +38,19 @@ static int omap3pandora_hw_params(struct snd_pcm_substream *substream,
 	/* Set the codec system clock for DAC and ADC */
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, 26000000,
 					    SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		pr_err(PREFIX "can't set codec system clock\n");
+	if (ret < 0)
 		return ret;
-	}
 
 	/* Set McBSP clock to external */
 	ret = snd_soc_dai_set_sysclk(cpu_dai, OMAP_MCBSP_SYSCLK_CLKS_EXT,
 				     256 * params_rate(params),
 				     SND_SOC_CLOCK_IN);
-	if (ret < 0) {
-		pr_err(PREFIX "can't set cpu system clock\n");
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = snd_soc_dai_set_clkdiv(cpu_dai, OMAP_MCBSP_CLKGDV, 8);
-	if (ret < 0) {
-		pr_err(PREFIX "can't set SRG clock divider\n");
-		return ret;
-	}
 
-	return 0;
+	return ret;
 }
 
 static int omap3pandora_dac_event(struct snd_soc_dapm_widget *w,
