@@ -1678,36 +1678,6 @@ static int wm8995_hw_params(struct snd_pcm_substream *substream,
 	return 0;
 }
 
-static int wm8995_set_tristate(struct snd_soc_dai *codec_dai, int tristate)
-{
-	struct snd_soc_component *component = codec_dai->component;
-	int reg, val, mask;
-
-	switch (codec_dai->id) {
-	case 0:
-		reg = WM8995_AIF1_MASTER_SLAVE;
-		mask = WM8995_AIF1_TRI;
-		break;
-	case 1:
-		reg = WM8995_AIF2_MASTER_SLAVE;
-		mask = WM8995_AIF2_TRI;
-		break;
-	case 2:
-		reg = WM8995_POWER_MANAGEMENT_5;
-		mask = WM8995_AIF3_TRI;
-		break;
-	default:
-		return -EINVAL;
-	}
-
-	if (tristate)
-		val = mask;
-	else
-		val = 0;
-
-	return snd_soc_component_update_bits(component, reg, mask, val);
-}
-
 /* The size in bits of the FLL divide multiplied by 10
  * to allow rounding later */
 #define FIXED_FLL_SIZE ((1 << 16) * 10)
@@ -2096,7 +2066,6 @@ static const struct snd_soc_dai_ops wm8995_aif1_dai_ops = {
 	.hw_params = wm8995_hw_params,
 	.mute_stream = wm8995_aif_mute,
 	.set_pll = wm8995_set_fll,
-	.set_tristate = wm8995_set_tristate,
 	.no_capture_mute = 1,
 };
 
@@ -2106,12 +2075,10 @@ static const struct snd_soc_dai_ops wm8995_aif2_dai_ops = {
 	.hw_params = wm8995_hw_params,
 	.mute_stream = wm8995_aif_mute,
 	.set_pll = wm8995_set_fll,
-	.set_tristate = wm8995_set_tristate,
 	.no_capture_mute = 1,
 };
 
 static const struct snd_soc_dai_ops wm8995_aif3_dai_ops = {
-	.set_tristate = wm8995_set_tristate,
 };
 
 static struct snd_soc_dai_driver wm8995_dai[] = {
