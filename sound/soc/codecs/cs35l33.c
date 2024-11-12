@@ -523,26 +523,6 @@ static int cs35l33_pcm_startup(struct snd_pcm_substream *substream,
 	return 0;
 }
 
-static int cs35l33_set_tristate(struct snd_soc_dai *dai, int tristate)
-{
-	struct snd_soc_component *component = dai->component;
-	struct cs35l33_private *priv = snd_soc_component_get_drvdata(component);
-
-	if (tristate) {
-		regmap_update_bits(priv->regmap, CS35L33_PWRCTL2,
-			CS35L33_SDOUT_3ST_I2S, CS35L33_SDOUT_3ST_I2S);
-		regmap_update_bits(priv->regmap, CS35L33_CLK_CTL,
-			CS35L33_SDOUT_3ST_TDM, CS35L33_SDOUT_3ST_TDM);
-	} else {
-		regmap_update_bits(priv->regmap, CS35L33_PWRCTL2,
-			CS35L33_SDOUT_3ST_I2S, 0);
-		regmap_update_bits(priv->regmap, CS35L33_CLK_CTL,
-			CS35L33_SDOUT_3ST_TDM, 0);
-	}
-
-	return 0;
-}
-
 static int cs35l33_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				unsigned int rx_mask, int slots, int slot_width)
 {
@@ -664,7 +644,6 @@ static int cs35l33_component_set_sysclk(struct snd_soc_component *component,
 
 static const struct snd_soc_dai_ops cs35l33_ops = {
 	.startup = cs35l33_pcm_startup,
-	.set_tristate = cs35l33_set_tristate,
 	.set_fmt = cs35l33_set_dai_fmt,
 	.hw_params = cs35l33_pcm_hw_params,
 	.set_tdm_slot = cs35l33_set_tdm_slot,
