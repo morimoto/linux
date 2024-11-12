@@ -738,7 +738,7 @@ static int soc_pcm_components_open(struct snd_pcm_substream *substream)
 	return ret;
 }
 
-static int soc_pcm_components_close(struct snd_pcm_substream *substream,
+static void soc_pcm_components_close(struct snd_pcm_substream *substream,
 				    int rollback)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
@@ -752,8 +752,6 @@ static int soc_pcm_components_close(struct snd_pcm_substream *substream,
 
 		snd_soc_component_module_put_when_close(component, substream, rollback);
 	}
-
-	return ret;
 }
 
 static int soc_pcm_clean(struct snd_soc_pcm_runtime *rtd,
