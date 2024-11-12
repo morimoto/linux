@@ -739,19 +739,6 @@ static int adau1372_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	return 0;
 }
 
-static int adau1372_set_tristate(struct snd_soc_dai *dai, int tristate)
-{
-	struct adau1372 *adau1372 = snd_soc_dai_get_drvdata(dai);
-	unsigned int sai1;
-
-	if (tristate)
-		sai1 = ADAU1372_SAI1_TDM_TS;
-	else
-		sai1 = 0;
-
-	return regmap_update_bits(adau1372->regmap, ADAU1372_REG_SAI1, ADAU1372_SAI1_TDM_TS, sai1);
-}
-
 static int adau1372_startup(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
 	struct adau1372 *adau1372 = snd_soc_dai_get_drvdata(dai);
@@ -866,7 +853,6 @@ static const struct snd_soc_component_driver adau1372_driver = {
 static const struct snd_soc_dai_ops adau1372_dai_ops = {
 	.set_fmt = adau1372_set_dai_fmt,
 	.set_tdm_slot = adau1372_set_tdm_slot,
-	.set_tristate = adau1372_set_tristate,
 	.hw_params = adau1372_hw_params,
 	.startup = adau1372_startup,
 };
