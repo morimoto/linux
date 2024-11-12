@@ -880,22 +880,6 @@ static int wm9713_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 }
 
 /*
- * Tristate the PCM DAI lines, tristate can be disabled by calling
- * wm9713_set_dai_fmt()
- */
-static int wm9713_set_dai_tristate(struct snd_soc_dai *codec_dai,
-	int tristate)
-{
-	struct snd_soc_component *component = codec_dai->component;
-
-	if (tristate)
-		snd_soc_component_update_bits(component, AC97_CENTER_LFE_MASTER,
-				    0x6000, 0x0000);
-
-	return 0;
-}
-
-/*
  * Configure WM9713 clock dividers.
  * Voice DAC needs 256 FS
  */
@@ -1089,7 +1073,6 @@ static const struct snd_soc_dai_ops wm9713_dai_ops_voice = {
 	.set_clkdiv	= wm9713_set_dai_clkdiv,
 	.set_pll	= wm9713_set_dai_pll,
 	.set_fmt	= wm9713_set_dai_fmt,
-	.set_tristate	= wm9713_set_dai_tristate,
 };
 
 static struct snd_soc_dai_driver wm9713_dai[] = {
