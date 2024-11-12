@@ -730,15 +730,6 @@ static int cs53l30_set_bias_level(struct snd_soc_component *component,
 	return 0;
 }
 
-static int cs53l30_set_tristate(struct snd_soc_dai *dai, int tristate)
-{
-	struct cs53l30_private *priv = snd_soc_component_get_drvdata(dai->component);
-	u8 val = tristate ? CS53L30_ASP_3ST : 0;
-
-	return regmap_update_bits(priv->regmap, CS53L30_ASP_CTL1,
-				  CS53L30_ASP_3ST_MASK, val);
-}
-
 /*
  * Note: CS53L30 counts the slot number per byte while ASoC counts the slot
  * number per slot_width. So there is a difference between the slots of ASoC
@@ -836,7 +827,6 @@ static const struct snd_soc_dai_ops cs53l30_ops = {
 	.hw_params = cs53l30_pcm_hw_params,
 	.set_fmt = cs53l30_set_dai_fmt,
 	.set_sysclk = cs53l30_set_sysclk,
-	.set_tristate = cs53l30_set_tristate,
 	.set_tdm_slot = cs53l30_set_dai_tdm_slot,
 	.mute_stream = cs53l30_mute_stream,
 };
