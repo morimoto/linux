@@ -275,10 +275,8 @@ static int rx51_aic34_init(struct snd_soc_pcm_runtime *rtd)
 	err = snd_soc_card_jack_new(rtd->card, "AV Jack",
 				    SND_JACK_HEADSET | SND_JACK_VIDEOOUT,
 				    &rx51_av_jack);
-	if (err) {
-		dev_err(card->dev, "Failed to add AV Jack\n");
+	if (err)
 		return err;
-	}
 
 	rx51_av_jack_gpios[0].gpiod_dev = card->dev;
 	/* Name is assigned in the struct */
