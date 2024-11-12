@@ -685,19 +685,6 @@ static int wm8961_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	return snd_soc_component_write(component, WM8961_AUDIO_INTERFACE_0, aif);
 }
 
-static int wm8961_set_tristate(struct snd_soc_dai *dai, int tristate)
-{
-	struct snd_soc_component *component = dai->component;
-	u16 reg = snd_soc_component_read(component, WM8961_ADDITIONAL_CONTROL_2);
-
-	if (tristate)
-		reg |= WM8961_TRIS;
-	else
-		reg &= ~WM8961_TRIS;
-
-	return snd_soc_component_write(component, WM8961_ADDITIONAL_CONTROL_2, reg);
-}
-
 static int wm8961_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
 	struct snd_soc_component *component = dai->component;
@@ -807,7 +794,6 @@ static const struct snd_soc_dai_ops wm8961_dai_ops = {
 	.set_sysclk = wm8961_set_sysclk,
 	.set_fmt = wm8961_set_fmt,
 	.mute_stream = wm8961_mute,
-	.set_tristate = wm8961_set_tristate,
 	.set_clkdiv = wm8961_set_clkdiv,
 	.no_capture_mute = 1,
 };
