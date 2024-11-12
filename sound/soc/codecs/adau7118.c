@@ -207,24 +207,6 @@ static int adau7118_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	return 0;
 }
 
-static int adau7118_set_tristate(struct snd_soc_dai *dai, int tristate)
-{
-	struct adau7118_data *st =
-		snd_soc_component_get_drvdata(dai->component);
-	int ret;
-
-	dev_dbg(st->dev, "Set tristate, %d\n", tristate);
-
-	ret = snd_soc_component_update_bits(dai->component,
-					    ADAU7118_REG_SPT_CTRL1,
-					    ADAU7118_TRISTATE_MASK,
-					    ADAU7118_TRISTATE(tristate));
-	if (ret < 0)
-		return ret;
-
-	return 0;
-}
-
 static int adau7118_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				 unsigned int rx_mask, int slots,
 				 int slot_width)
@@ -418,7 +400,6 @@ static const struct snd_soc_dai_ops adau7118_ops = {
 	.set_channel_map = adau7118_set_channel_map,
 	.set_fmt = adau7118_set_fmt,
 	.set_tdm_slot = adau7118_set_tdm_slot,
-	.set_tristate = adau7118_set_tristate,
 };
 
 static struct snd_soc_dai_driver adau7118_dai = {
