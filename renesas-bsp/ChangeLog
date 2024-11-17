@@ -1,3 +1,9 @@
+* v6.6.62-2024-11-18
+
+	* Merge/Rebase v6.6.62
+
+	* update CVE
+
 * v6.6.61-2024-11-18
 
 	* Merge/Rebase v6.6.61
@@ -203,12 +209,3 @@
 
 		commit 23319333146fb856f6e767f419830f6d7114eefc
 		("clk: renesas: r8a779h0: Add PCIe clock")
-
-* v6.6.52-2024-09-20
-
-	* Merge/Rebase v6.6.52
-
-	* update CVE
-
-	* update list
-		sync with v6.11
