@@ -57,6 +57,11 @@
 	(B) is using "git rebase". Pros is it is easy to know what kind of patch was backported from
 	upstream. Cons is you need to use "git rebase" for it, can't use "git merge".
 
+	You can't check/fetch above tag by normal ways.  You need to do...
+
+		> git ls-remote --tags renesas-rcar
+		> git fetch renesas-rcar refs/tags/renesas-xxx-v6.1.xxx
+
 * files
 
 	You can find some files on ${LINUX}/renesas-bsp/
