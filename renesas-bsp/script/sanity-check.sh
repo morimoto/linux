@@ -15,7 +15,7 @@ grep -v '^#' ${TOP}/handled			>> ${TMP}
 
 cat ${TMP} | sort | uniq -d
 
-cat ${TOP}/full					>> ${TMP}
+grep -v '^#' ${TOP}/full			>> ${TMP}
 
 cat ${TMP} | sort | uniq -u
 
