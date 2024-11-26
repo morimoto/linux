@@ -1,3 +1,36 @@
+* v6.1.119-2024-11-26
+
+	* new full2/ignored2/handled2/remain2 are added
+
+	* Below patches were backported
+
+		commit 1a5361189b7acac15b9b086b2300a11b7aa84c06
+		("phy: renesas: r8a779f0-ether-serdes: Add .exit() ops")
+
+		commit aa4c0bbf820ddb9dd8105a403aa12df57b9e5129
+		("phy: renesas: r8a779f0-ether-serdes: Reset in .init()")
+
+		commit d746f127ea5b1d631d48977d1e599c312cbb05c2
+		("phy: renesas: r8a779f0-ether-serdes: Convert to devm_platform_ioremap_resource()")
+
+		commit 89ec686a17914a6b663b11b8bdaf3f966546da32
+		("uio: Constify struct kobj_type")
+
+		commit 6392194470575de1ac0cb7223ff3bf30da94bbea
+		("uio: add missing MODULE_DESCRIPTION() macros")
+
+		commit ebbc1a4789c666846b9854ef845a37a64879e5f9
+		("uio: update kerneldoc comments for interrupt functions")
+
+		commit f8a27dfa4b82d442af1c0645a5acc70cc97c67f6
+		("uio: use threaded interrupts")
+
+		commit 95331514d95fae22a13df955275038d531cf85a0)
+		("net: ethernet: renesas: rswitch: C45 only transactions")
+
+		commit 4e4aafcddbbfcdd6eed5780e190fcbfac8b4685a
+		("net: mdio: Add dedicated C45 API to MDIO bus drivers")
+
 * v6.1.119-2024-11-25
 
 	* Merge/Rebase v6.1.119
