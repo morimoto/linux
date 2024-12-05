@@ -5,22 +5,12 @@
 9b6ca899736a0 arm64: dts: renesas: Add Renesas R8A779H2 SoC support
 371850fbc4649 arm64: dts: renesas: gray-hawk-cpu: Factor out common parts
 b4264f977baa8 arm64: dts: renesas: gray-hawk: Factor out common parts
-8597879476735 arm64: dts: renesas: r8a779g5: Add White Hawk V4H-3 sound support
-0a1fcf2cf47b9 arm64: dts: renesas: r8a779g4: Add White Hawk V4H-5 sound support
 099f46961bdb3 arm64: dts: renesas: r8a779g3: Add White Hawk V4H-7 sound support
-67b568a7aa4b4 arm64: dts: renesas: r8a779g5: Add White Hawk V4H-3 support
-be17a91e4d768 arm64: dts: renesas: Add Renesas R8A779G5 SoC support
-1bc77df262c0f arm64: dts: renesas: r8a779g4: Add White Hawk V4H-5 support
-a27e59d23e7c8 arm64: dts: renesas: Add Renesas R8A779G4 SoC support
 bf946ad8ccb36 arm64: dts: renesas: r8a779g3: Add White Hawk V4H-7 support
 94447be9085b3 arm64: dts: renesas: Add Renesas R8A779G3 SoC support
 3e71992bbc55f arm64: dts: renesas: white-hawk-sound: Factor out common parts
 96874b1963ed8 arm64: dts: renesas: white-hawk-cpu: Factor out common parts
 324ac3b29faa0 arm64: dts: renesas: white-hawk: Factor out common parts
-a4e1d3b52c8d arm64: dts: renesas: r8a779g5: Add White Hawk support
-3d65454bace4 arm64: dts: renesas: Add Renesas R8A779G5 SoC support
-579779849453 arm64: dts: renesas: r8a779g4: Add White Hawk support
-9ec935be9aba arm64: dts: renesas: Add Renesas R8A779G4 SoC support
 dcc78f472661 arm64: dts: renesas: r8a779g3: Add White Hawk support
 57f8fb543b7c arm64: dts: renesas: Add Renesas R8A779G3 SoC support
 #

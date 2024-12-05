@@ -85,6 +85,18 @@ ARM/SoC/DT
 	that RPC access is handled by OP-TEE on that SoC.
 		992fb5fbce1b dt-bindings: memory: Add r8a779f0 support
 
+	These SoCs will not be public chips
+		8597879476735 arm64: dts: renesas: r8a779g5: Add White Hawk V4H-3 sound support
+		0a1fcf2cf47b9 arm64: dts: renesas: r8a779g4: Add White Hawk V4H-5 sound support
+		67b568a7aa4b4 arm64: dts: renesas: r8a779g5: Add White Hawk V4H-3 support
+		be17a91e4d768 arm64: dts: renesas: Add Renesas R8A779G5 SoC support
+		1bc77df262c0f arm64: dts: renesas: r8a779g4: Add White Hawk V4H-5 support
+		a27e59d23e7c8 arm64: dts: renesas: Add Renesas R8A779G4 SoC support
+		a4e1d3b52c8d arm64: dts: renesas: r8a779g5: Add White Hawk support
+		3d65454bace4 arm64: dts: renesas: Add Renesas R8A779G5 SoC support
+		579779849453 arm64: dts: renesas: r8a779g4: Add White Hawk support
+		9ec935be9aba arm64: dts: renesas: Add Renesas R8A779G4 SoC support
+
 AVS
 	AVS is not intended for upstream
 
