@@ -81,12 +81,6 @@ fd446b2b77ff arm64: dts: renesas: Add node to support PWM on R-Car V4M
 # VIN related patches (Niklas)
 #
 # Enable video capture pipleine on V4M - In progress
-# lore: 20240527132513.1684232-1-niklas.soderlund+renesas@ragnatech.se
-a2d284f9c799 media: rcar-vin: rcar-isp: Add support for R8A779H0 SoC
-# lore: 20240527133221.1688830-1-niklas.soderlund+renesas@ragnatech.se
-2a031845abb3 media: rcar-vin: rcar-csi2: Add D-PHY setting for R8A779H0 SoC
-# lore: 20240527133221.1688830-1-niklas.soderlund+renesas@ragnatech.se
-c4427579e253 media: rcar-vin: rcar-csi2: Add compatible string for R8A779H0 SoC
 # lore: 20240527134129.1695450-3-niklas.soderlund+renesas@ragnatech.se
 479990bf87e1 arm64: dts: renesas: gray-hawk: Add CSI/DSI sub-board
 # lore:  20240527134129.1695450-4-niklas.soderlund+renesas@ragnatech.se
@@ -95,9 +89,6 @@ c4427579e253 media: rcar-vin: rcar-csi2: Add compatible string for R8A779H0 SoC
 45fd1264d613 arm64: dts: renesas: gray-hawk-csi-dsi: Disable polarity inversion function of MAX96724 MIPI PHY1
 # lore: 20240527134129.1695450-4-niklas.soderlund+renesas@ragnatech.se
 3bdc50fa6840 arm64: dts: renesas: gray-hawk-csi-dsi: Change support to Max96724 Deserializer
-# lore: 20240527132216.1681903-1-niklas.soderlund+renesas@ragnatech.se
-# lore: 20240527133410.1690169-1-niklas.soderlund+renesas@ragnatech.se
-36a34468fc43 media: max96712: Add compatible string for Max96724 Deserializer
 952468543edf media: rcar-vin: rcar-csi2: Update D-PHY Start-up sequence to align with R-Car V4M HWUM v0.70
 #
 # Add C-PHY pin ordering - In progress (Niklas)
