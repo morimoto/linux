@@ -1,3 +1,5 @@
+# upstream: 92850bed9d4d334ee502a035ed5750285faccbea clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks
+f41c5d4f227a clk: renesas: r8a779h0-cpg-mssr: Update CA76 Frequency Control
 # upstream: 9a73e931308f89bfecf18787af29a21a92470fa8 media: rcar-vin: Add family compatible for R-Car Gen4 family
 df19a197a11a media: rcar-vin: Add support for R-Car R8A779H0 SoC
 # upstream: 89dd679303f4b4a76204c2269a7724b545cd84df dt-bindings: media: renesas,vin: Add binding for V4

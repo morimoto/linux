@@ -26,7 +26,6 @@ a4e1d3b52c8d arm64: dts: renesas: r8a779g5: Add White Hawk support
 9ec935be9aba arm64: dts: renesas: Add Renesas R8A779G4 SoC support
 dcc78f472661 arm64: dts: renesas: r8a779g3: Add White Hawk support
 57f8fb543b7c arm64: dts: renesas: Add Renesas R8A779G3 SoC support
-f41c5d4f227a clk: renesas: r8a779h0-cpg-mssr: Update CA76 Frequency Control
 #
 # Media
 #
