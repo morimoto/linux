@@ -7,4 +7,4 @@
 #===============================
 TOP=`readlink -f "$0" | xargs dirname | xargs dirname`
 
-egrep "^\s*[0-9a-f]{12} " ${TOP}/ignored | sed -e "s/^\t\t//g"
+egrep "^\s*[0-9a-f]{12,16} " ${TOP}/ignored | sed -e "s/^\t\t//g"

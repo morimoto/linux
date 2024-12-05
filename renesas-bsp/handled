@@ -1,3 +1,9 @@
+# upstream: 27d23cecf33a0d4d95e91dc3524dda4dc3815b06 dt-bindings: media: renesas,isp: Add binding for V4M
+# upstream: 59ba2cd33196d848646d6838d463760e4b78c5dd media: rcar-isp: Add family compatible for R-Car Gen4 family
+# upstream: f367e313d2dc91afa578b5adb3d6356b0642cb66 dt-bindings: media: renesas,isp: Add Gen4 family fallback
+a2d284f9c799 media: rcar-vin: rcar-isp: Add support for R8A779H0 SoC
+# upstream: 92850bed9d4d334ee502a035ed5750285faccbea clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks
+f41c5d4f227a clk: renesas: r8a779h0-cpg-mssr: Update CA76 Frequency Control
 # upstream: 9a73e931308f89bfecf18787af29a21a92470fa8 media: rcar-vin: Add family compatible for R-Car Gen4 family
 df19a197a11a media: rcar-vin: Add support for R-Car R8A779H0 SoC
 # upstream: 89dd679303f4b4a76204c2269a7724b545cd84df dt-bindings: media: renesas,vin: Add binding for V4
