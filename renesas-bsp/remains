@@ -1,9 +1,6 @@
 #
 # SoC
 #
-059af2c469fbc arm64: dts: renesas: Add Renesas R8A779H2 SoC support UIO
-370ea1aecb42f arm64: dts: renesas: Update Renesas R8A779H0 SoC support UIO
-fb5aa5562c84f arm64: dts: renesas: gray-hawk-uio: Factor out common parts
 124986c8255c9 arm64: dts: renesas: r8a779h2: Add Gray Hawk V4M-7 support
 9b6ca899736a0 arm64: dts: renesas: Add Renesas R8A779H2 SoC support
 371850fbc4649 arm64: dts: renesas: gray-hawk-cpu: Factor out common parts

@@ -800,6 +800,9 @@ TSN
 UIO/OSAL
 	UIO/OSAL is not intended for upstream
 
+		059af2c469fbc arm64: dts: renesas: Add Renesas R8A779H2 SoC support UIO
+		370ea1aecb42f arm64: dts: renesas: Update Renesas R8A779H0 SoC support UIO
+		fb5aa5562c84f arm64: dts: renesas: gray-hawk-uio: Factor out common parts
 		7013aecefe75 arm64: dts: renesas: r8a779h0-gray-hawk-uio: Add VSP1 UIO device
 		142d5953f4cd arm64: dts: renesas: r8a779h0-gray-hawk-uio: Enable CSI UIO devices
 		ff785370630e arm64: dts: renesas: r8a779h0-gray-hawk-uio: Enable VIN UIO devices
