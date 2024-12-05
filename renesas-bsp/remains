@@ -5,12 +5,16 @@
 9b6ca899736a0 arm64: dts: renesas: Add Renesas R8A779H2 SoC support
 371850fbc4649 arm64: dts: renesas: gray-hawk-cpu: Factor out common parts
 b4264f977baa8 arm64: dts: renesas: gray-hawk: Factor out common parts
-099f46961bdb3 arm64: dts: renesas: r8a779g3: Add White Hawk V4H-7 sound support
-bf946ad8ccb36 arm64: dts: renesas: r8a779g3: Add White Hawk V4H-7 support
-94447be9085b3 arm64: dts: renesas: Add Renesas R8A779G3 SoC support
 3e71992bbc55f arm64: dts: renesas: white-hawk-sound: Factor out common parts
 96874b1963ed8 arm64: dts: renesas: white-hawk-cpu: Factor out common parts
 324ac3b29faa0 arm64: dts: renesas: white-hawk: Factor out common parts
+#
+# R8A779G3
+#
+099f46961bdb3 arm64: dts: renesas: r8a779g3: Add White Hawk V4H-7 sound support
+# lore: cover.1733156661.git.geert+renesas@glider.be
+bf946ad8ccb36 arm64: dts: renesas: r8a779g3: Add White Hawk V4H-7 support
+94447be9085b3 arm64: dts: renesas: Add Renesas R8A779G3 SoC support
 dcc78f472661 arm64: dts: renesas: r8a779g3: Add White Hawk support
 57f8fb543b7c arm64: dts: renesas: Add Renesas R8A779G3 SoC support
 #
