@@ -1,3 +1,53 @@
+* v6.6.63-2024-12-06
+	* update list
+
+	* Below patches were backported
+
+		commit 6c872b782aeaec31042643e57d6aedba1464d0b9
+		("media: staging: max96712: Add support for MAX96724")
+
+		commit 9350219aa3570ae89cd3cad59d3d00ecf44e7f48
+		("media: staging: max96712: Document the DEBUG_EXTRA register")
+
+		commit 2536a0715f0e5441c3daa377cc2f859cd14d8f28
+		("media: staging: max96712: Move link frequency setting to device struct")
+
+		commit aa1e8e1842662f8d095099d4b47b8a25d66f84bf
+		("media: staging: max96712: Remove device id check")
+
+		commit ce44dc1feab5f038edb39dc443b32eae3ac1234d
+		("media: staging: max96712: Store format in subdev active state")
+
+		commit a1c6d22421501fc1016b99ac8570a1030714c70f
+		("media: staging: max96712: fix copy-paste error")
+
+		commit 5ba5bda6b62e81a1e2e6a41b5e7102a77134ae5a
+		("dt-bindings: media: renesas,csi2: Add binding for V4M")
+
+		commit 27d23cecf33a0d4d95e91dc3524dda4dc3815b06
+		("dt-bindings: media: renesas,isp: Add binding for V4M")
+
+		commit f367e313d2dc91afa578b5adb3d6356b0642cb66
+		("dt-bindings: media: renesas,isp: Add Gen4 family fallback")
+
+		commit 59ba2cd33196d848646d6838d463760e4b78c5dd
+		("media: rcar-isp: Add family compatible for R-Car Gen4 family")
+
+		commit b14257abe7057def6127f6fb2f14f9adc8acabdb
+		("media: rcar-isp: Disallow unbind of devices")
+
+		commit 8cdd708f11655d5f28fca1ab2fa0dbe5424f274c
+		("media: use sizeof() instead of V4L2_SUBDEV_NAME_SIZE")
+
+		commit d9d432af1415b358d76b110c9e37e4f07d2e1c7b
+		("media: v4l2-subdev.h: increase struct v4l2_subdev name size")
+
+		commit 92850bed9d4d334ee502a035ed5750285faccbea
+		("clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks")
+
+		commit f8da001ae7af0abd9f6250c02c01a1121074ca60
+		("ASoC: audio-graph-card2: Purge absent supplies for device tree nodes")
+
 * v6.6.63-2024-11-25
 
 	* Merge/Rebase v6.6.63
