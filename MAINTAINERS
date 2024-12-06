@@ -2911,7 +2911,9 @@ F:	arch/arm/configs/shmobile_defconfig
 F:	arch/arm/include/debug/renesas-scif.S
 F:	arch/arm/mach-shmobile/
 F:	arch/arm64/boot/dts/renesas/
+F:	arch/arm64/configs/renesas_defconfig
 F:	arch/riscv/boot/dts/renesas/
+F:	arch/riscv/configs/rzfive_defconfig
 F:	drivers/nvmem/rcar-efuse.c
 F:	drivers/pmdomain/renesas/
 F:	drivers/soc/renesas/
@@ -3331,6 +3333,7 @@ F:	Documentation/arch/arm64/
 F:	arch/arm64/
 F:	tools/testing/selftests/arm64/
 X:	arch/arm64/boot/dts/
+X:	arch/arm64/configs/renesas_defconfig
 
 ARROW SPEEDCHIPS XRS7000 SERIES ETHERNET SWITCH DRIVER
 M:	George McCollister <george.mccollister@gmail.com>
@@ -19839,6 +19842,7 @@ C:	irc://irc.libera.chat/riscv
 P:	Documentation/arch/riscv/patch-acceptance.rst
 T:	git git://git.kernel.org/pub/scm/linux/kernel/git/riscv/linux.git
 F:	arch/riscv/
+X:	arch/riscv/configs/rzfive_defconfig
 N:	riscv
 K:	riscv
 
@@ -25708,3 +25712,5 @@ S:	Buried alive in reporters
 T:	git git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
 F:	*
 F:	*/
+X:	arch/arm64/configs/renesas_defconfig
+X:	arch/riscv/configs/rzfive_defconfig
