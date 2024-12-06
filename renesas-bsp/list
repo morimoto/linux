@@ -1,3 +1,16 @@
+Local     / media: rcar-vin: Add support for RAW10
+v6.7      / phy: renesas: r8a779f0-ether-serdes: Reset in .init()
+v6.7      / phy: renesas: r8a779f0-ether-serdes: Add .exit() ops
+v6.10     / media: staging: max96712: fix copy-paste error
+Local     / dt-bindings: media: renesas,csi2: Add binding for V4M
+Local     / dt-bindings: media: renesas,isp: Add binding for V4M
+Local     / dt-bindings: media: renesas,isp: Add Gen4 family fallback
+Local     / media: rcar-isp: Add family compatible for R-Car Gen4 family
+v6.9      / media: rcar-isp: Disallow unbind of devices
+v6.7      / media: use sizeof() instead of V4L2_SUBDEV_NAME_SIZE
+v6.7      / media: v4l2-subdev.h: increase struct v4l2_subdev name size
+Local     / clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks
+v6.12     / ASoC: audio-graph-card2: Purge absent supplies for device tree nodes
 v6.12     / dt-bindings: media: renesas,vin: Add binding for V4M
 v6.12     / dt-bindings: media: renesas,vin: Add Gen4 family fallback
 v6.12     / media: rcar-vin: Add family compatible for R-Car Gen4 family
