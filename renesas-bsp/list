@@ -1,3 +1,18 @@
+Local     / media: staging: max96712: Add support for MAX96724
+Local     / media: staging: max96712: Document the DEBUG_EXTRA register
+Local     / media: staging: max96712: Move link frequency setting to device struct
+Local     / media: staging: max96712: Remove device id check
+v6.11     / media: staging: max96712: Store format in subdev active state
+v6.10     / media: staging: max96712: fix copy-paste error
+Local     / dt-bindings: media: renesas,csi2: Add binding for V4M
+Local     / dt-bindings: media: renesas,isp: Add binding for V4M
+Local     / dt-bindings: media: renesas,isp: Add Gen4 family fallback
+Local     / media: rcar-isp: Add family compatible for R-Car Gen4 family
+v6.9      / media: rcar-isp: Disallow unbind of devices
+v6.7      / media: use sizeof() instead of V4L2_SUBDEV_NAME_SIZE
+v6.7      / media: v4l2-subdev.h: increase struct v4l2_subdev name size
+Local     / clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks
+v6.12     / ASoC: audio-graph-card2: Purge absent supplies for device tree nodes
 v6.12     / dt-bindings: media: renesas,vin: Add binding for V4M
 v6.12     / dt-bindings: media: renesas,vin: Add Gen4 family fallback
 v6.12     / media: rcar-vin: Add family compatible for R-Car Gen4 family
