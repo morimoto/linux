@@ -1,3 +1,7 @@
+* v6.6.65-2024-12-12
+
+	* Merge/Rebase v6.6.65
+
 * v6.6.64-2024-12-12
 
 	* Merge/Rebase v6.6.64
@@ -107,22 +111,3 @@
 	* Merge/Rebase v6.6.56
 
 	* update CVE
-
-* v6.6.55-2024-10-23
-
-	* Merge/Rebase v6.6.55
-
-	* update CVE
-
-	* update list
-
-	* Below patches were backported
-
-		commit 89dd679303f4b4a76204c2269a7724b545cd84df
-		("dt-bindings: media: renesas,vin: Add binding for V4M")
-
-		commit 9fba8eb8d55ddd8bb779fee3e36b7d8a6a2924b0
-		("dt-bindings: media: renesas,vin: Add Gen4 family fallback")
-
-		commit 9a73e931308f89bfecf18787af29a21a92470fa8
-		("media: rcar-vin: Add family compatible for R-Car Gen4 family")
