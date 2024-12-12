@@ -1545,6 +1545,10 @@ static inline void _snd_soc_dapm_mutex_assert_held_d(struct snd_soc_dapm_context
 	struct snd_soc_card * :		_snd_soc_dapm_mutex_assert_held_c, \
 	struct snd_soc_dapm_context * :	_snd_soc_dapm_mutex_assert_held_d)(x)
 
+int snd_soc_dapm_add_routes_with_card(struct snd_soc_card *card,
+				      struct snd_soc_dapm_context *dapm,
+				      const struct snd_soc_dapm_route *routes, int num);
+
 /*
  *	PCM helper functions
  */
