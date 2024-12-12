@@ -1,3 +1,11 @@
+* v6.6.64-2024-12-12
+
+	* Merge/Rebase v6.6.64
+
+	* update CVE
+
+	* update list
+
 * v6.6.63-2024-12-06
 	* update list
 
@@ -118,18 +126,3 @@
 
 		commit 9a73e931308f89bfecf18787af29a21a92470fa8
 		("media: rcar-vin: Add family compatible for R-Car Gen4 family")
-
-* v6.6.54-2024-10-18
-
-	* Merge/Rebase v6.6.54
-
-	* update CVE
-
-	* update list
-
-	* Below patches was backported
-
-		808852fa3a5e11c8d2bf0aef3695aaf930bd4fa9
-		("riscv: dts: renesas: r9a07g043f: Add IRQC node to RZ/Five SoC DTSI")
-
-	* add rcar_bsp_defconfig

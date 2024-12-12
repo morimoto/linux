@@ -10,7 +10,6 @@ v6.9      / media: rcar-isp: Disallow unbind of devices
 v6.7      / media: use sizeof() instead of V4L2_SUBDEV_NAME_SIZE
 v6.7      / media: v4l2-subdev.h: increase struct v4l2_subdev name size
 Local     / clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks
-v6.12     / ASoC: audio-graph-card2: Purge absent supplies for device tree nodes
 v6.12     / dt-bindings: media: renesas,vin: Add binding for V4M
 v6.12     / dt-bindings: media: renesas,vin: Add Gen4 family fallback
 v6.12     / media: rcar-vin: Add family compatible for R-Car Gen4 family
@@ -297,7 +296,6 @@ v6.7      / PCI: dwc: endpoint: Introduce .pre_init() and .deinit()
 v6.7      / PCI: dwc: Expose dw_pcie_write_dbi2() to module
 v6.7      / PCI: dwc: Add EDMA_UNROLL capability flag
 v6.7      / PCI: dwc: endpoint: Add multiple PFs support for dbi2
-v6.7      / PCI: Add T_PVPERL macro
 v6.8      / i2c: rcar: add FastMode+ support for Gen4
 v6.7      / i2c: rcar: improve accuracy for R-Car Gen3+
 v6.7      / i2c: rcar: remove open coded DIV_ROUND_CLOSEST
