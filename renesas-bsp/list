@@ -7,7 +7,6 @@ Local     / dt-bindings: media: renesas,isp: Add Gen4 family fallback
 Local     / media: rcar-isp: Add family compatible for R-Car Gen4 family
 v6.9      / media: rcar-isp: Disallow unbind of devices
 Local     / clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks
-v6.12     / ASoC: audio-graph-card2: Purge absent supplies for device tree nodes
 v6.7      / phy: renesas: r8a779f0-ether-serdes: Add .exit() ops
 v6.7      / phy: renesas: r8a779f0-ether-serdes: Reset in .init()
 v6.6      / phy: renesas: r8a779f0-ether-serdes: Convert to devm_platform_ioremap_resource()
@@ -703,7 +702,6 @@ v6.2      / media: rcar-vin: Add support for Gen3 UDS (Up Down Scaler)
 v6.2      / media: rcar-vin: Store scaler in a function pointer
 v6.2      / media: rcar-vin: Do not cache remote rectangle
 v6.5      / memory: renesas-rpc-if: Fix PHYCNT.STRTIM setting
-v6.3      / memory: renesas-rpc-if: Improve Runtime PM handling
 v6.3      / memory: renesas-rpc-if: Remove redundant division of dummy
 v6.2      / mmc: renesas_sdhi: use new convenience macro from MMC core
 v6.2      / mmc: renesas_sdhi: add helper to access quirks

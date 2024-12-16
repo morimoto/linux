@@ -1,3 +1,11 @@
+* v6.1.120-2024-12-16
+
+	* Merge/Rebase v6.1.120
+
+	* update list
+
+	* update CVE
+
 * v6.1.119-2024-12-06
 
 	* update list
@@ -286,11 +294,3 @@
 
 	* update list
 		sync with v6.11
-
-* v6.1.110-2024-09-13
-
-	* Merge/Rebase v6.1.110
-
-	* update CVE
-
-	* add README
