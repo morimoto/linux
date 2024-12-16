@@ -658,8 +658,7 @@ static int graph_parse_node(struct simple_util_priv *priv,
 		return graph_parse_node_single(priv, gtype, port, li, is_cpu);
 }
 
-static void graph_parse_daifmt(struct device_node *node,
-			       unsigned int *daifmt, unsigned int *bit_frame)
+static void graph_parse_daifmt(struct device_node *node, unsigned int *daifmt)
 {
 	unsigned int fmt;
 
@@ -684,16 +683,6 @@ static void graph_parse_daifmt(struct device_node *node,
 	 * };
 	 */
 
-	/*
-	 * clock_provider:
-	 *
-	 * It can be judged it is provider
-	 * if (A) or (B) or (C) has bitclock-master / frame-master flag.
-	 *
-	 * use "or"
-	 */
-	*bit_frame |= snd_soc_daifmt_parse_clock_provider_as_bitmap(node, NULL);
-
 #define update_daifmt(name)					\
 	if (!(*daifmt & SND_SOC_DAIFMT_##name##_MASK) &&	\
 		 (fmt & SND_SOC_DAIFMT_##name##_MASK))		\
@@ -711,6 +700,17 @@ static void graph_parse_daifmt(struct device_node *node,
 	update_daifmt(INV);
 }
 
+static unsigned int graph_parse_bitframe(struct device_node *ep)
+{
+	struct device_node *port  __free(device_node) = ep_to_port(ep);
+	struct device_node *ports __free(device_node) = port_to_ports(port);
+
+	return	snd_soc_daifmt_clock_provider_from_bitmap(
+			snd_soc_daifmt_parse_clock_provider_as_bitmap(ep,    NULL) |
+			snd_soc_daifmt_parse_clock_provider_as_bitmap(port,  NULL) |
+			snd_soc_daifmt_parse_clock_provider_as_bitmap(ports, NULL));
+}
+
 static void graph_link_init(struct simple_util_priv *priv,
 			    struct device_node *lnk,
 			    struct device_node *port_cpu,
@@ -721,15 +721,18 @@ static void graph_link_init(struct simple_util_priv *priv,
 	struct snd_soc_dai_link *dai_link = simple_priv_to_link(priv, li->link);
 	struct simple_dai_props *dai_props = simple_priv_to_props(priv, li->link);
 	struct device_node *ep_cpu, *ep_codec;
-	unsigned int daifmt = 0, daiclk = 0;
+	struct device_node *multi_cpu_ports = NULL, *multi_codec_ports = NULL;
+	struct snd_soc_dai_link_component *dlc;
+	unsigned int daifmt = 0;
 	bool playback_only = 0, capture_only = 0;
 	enum snd_soc_trigger_order trigger_start = SND_SOC_TRIGGER_ORDER_DEFAULT;
 	enum snd_soc_trigger_order trigger_stop  = SND_SOC_TRIGGER_ORDER_DEFAULT;
-	unsigned int bit_frame = 0;
+	int i;
 
 	of_node_get(port_cpu);
 	if (graph_lnk_is_multi(port_cpu)) {
-		ep_cpu = graph_get_next_multi_ep(&port_cpu);
+		multi_cpu_ports = port_cpu;
+		ep_cpu = graph_get_next_multi_ep(&multi_cpu_ports);
 		of_node_put(port_cpu);
 		port_cpu = ep_to_port(ep_cpu);
 	} else {
@@ -739,7 +742,8 @@ static void graph_link_init(struct simple_util_priv *priv,
 
 	of_node_get(port_codec);
 	if (graph_lnk_is_multi(port_codec)) {
-		ep_codec = graph_get_next_multi_ep(&port_codec);
+		multi_codec_ports = port_codec;
+		ep_codec = graph_get_next_multi_ep(&multi_codec_ports);
 		of_node_put(port_cpu);
 		port_codec = ep_to_port(ep_codec);
 	} else {
@@ -747,13 +751,13 @@ static void graph_link_init(struct simple_util_priv *priv,
 	}
 	struct device_node *ports_codec __free(device_node) = port_to_ports(port_codec);
 
-	graph_parse_daifmt(ep_cpu,	&daifmt, &bit_frame);
-	graph_parse_daifmt(ep_codec,	&daifmt, &bit_frame);
-	graph_parse_daifmt(port_cpu,	&daifmt, &bit_frame);
-	graph_parse_daifmt(port_codec,	&daifmt, &bit_frame);
-	graph_parse_daifmt(ports_cpu,	&daifmt, &bit_frame);
-	graph_parse_daifmt(ports_codec,	&daifmt, &bit_frame);
-	graph_parse_daifmt(lnk,		&daifmt, &bit_frame);
+	graph_parse_daifmt(ep_cpu,	&daifmt);
+	graph_parse_daifmt(ep_codec,	&daifmt);
+	graph_parse_daifmt(port_cpu,	&daifmt);
+	graph_parse_daifmt(port_codec,	&daifmt);
+	graph_parse_daifmt(ports_cpu,	&daifmt);
+	graph_parse_daifmt(ports_codec,	&daifmt);
+	graph_parse_daifmt(lnk,		&daifmt);
 
 	graph_util_parse_link_direction(lnk,		&playback_only, &capture_only);
 	graph_util_parse_link_direction(ports_cpu,	&playback_only, &capture_only);
@@ -779,14 +783,21 @@ static void graph_link_init(struct simple_util_priv *priv,
 	graph_util_parse_trigger_order(priv, ep_cpu,		&trigger_start, &trigger_stop);
 	graph_util_parse_trigger_order(priv, ep_codec,		&trigger_start, &trigger_stop);
 
-	/*
-	 * convert bit_frame
-	 * We need to flip clock_provider if it was CPU node,
-	 * because it is Codec base.
-	 */
-	daiclk = snd_soc_daifmt_clock_provider_from_bitmap(bit_frame);
-	if (is_cpu_node)
-		daiclk = snd_soc_daifmt_clock_provider_flipped(daiclk);
+	for_each_link_cpus(dai_link, i, dlc) {
+		dlc->ext_fmt = graph_parse_bitframe(ep_cpu);
+
+		if (multi_cpu_ports)
+			ep_cpu = graph_get_next_multi_ep(&multi_cpu_ports);
+	}
+
+	for_each_link_codecs(dai_link, i, dlc) {
+		dlc->ext_fmt = graph_parse_bitframe(ep_codec);
+
+		if (multi_codec_ports)
+			ep_codec = graph_get_next_multi_ep(&multi_codec_ports);
+	}
+
+	/*** Don't use port_cpu / port_codec after here ***/
 
 	dai_link->playback_only	= playback_only;
 	dai_link->capture_only	= capture_only;
@@ -794,7 +805,7 @@ static void graph_link_init(struct simple_util_priv *priv,
 	dai_link->trigger_start	= trigger_start;
 	dai_link->trigger_stop	= trigger_stop;
 
-	dai_link->dai_fmt	= daifmt | daiclk;
+	dai_link->dai_fmt	= daifmt;
 	dai_link->init		= simple_util_dai_init;
 	dai_link->ops		= &graph_ops;
 	if (priv->ops)
