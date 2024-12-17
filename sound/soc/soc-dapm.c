@@ -3189,6 +3189,21 @@ int snd_soc_dapm_add_routes(struct snd_soc_dapm_context *dapm,
 }
 EXPORT_SYMBOL_GPL(snd_soc_dapm_add_routes);
 
+int snd_soc_dapm_add_routes_with_card(struct snd_soc_card *card,
+				      struct snd_soc_dapm_context *dapm,
+				      const struct snd_soc_dapm_route *routes, int num)
+{
+	int ret = snd_soc_dapm_add_routes(dapm, routes, num);
+
+	if (ret < 0 && card->disable_route_checks) {
+		dev_info(card->dev, "disable_route_checks set, ignoring errors on add_routes\n");
+		ret = 0;
+	}
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(snd_soc_dapm_add_routes_with_card);
+
 /**
  * snd_soc_dapm_del_routes - Remove routes between DAPM widgets
  * @dapm: DAPM context
