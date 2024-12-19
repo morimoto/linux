@@ -78,6 +78,15 @@
 
 		https://gitlab.com/cip-project/cip-kernel/cip-kernel-sec
 
+* ignored backport
+
+	Below features has been ignored, because it needs new framework and
+	it difficult to backport.
+
+	- PCIe
+	- max96712
+	- rcar-csi2 for V4M
+
 * about defconfig
 
 ** renesas_defconfig
