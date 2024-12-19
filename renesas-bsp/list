@@ -71,7 +71,6 @@ v6.7      / arm64: dts: renesas: Add R-Car S4 Starter Kit support
 v6.7      / arm64: dts: renesas: Add Renesas R8A779F4 SoC support
 v6.8      / PCI: rcar-gen4: Fix -Wvoid-pointer-to-enum-cast error
 v6.11     / net: ethernet: rtsn: Add support for Renesas Ethernet-TSN
-v6.10     / net: rswitch: Avoid use-after-free in rswitch_poll()
 v6.11     / net: ravb: Use NAPI threaded mode on 1-core CPUs with GbEth IP
 v6.11     / net: ravb: Enable SW IRQ Coalescing for GbEth
 v6.11     / net: ravb: Refactor GbEth RX code path
@@ -115,14 +114,8 @@ v6.9      / net: ravb: Switch to SYSTEM_SLEEP_PM_OPS()/RUNTIME_PM_OPS() and pm_p
 v6.9      / net: ravb: Make reset controller support mandatory
 v6.9      / net: ravb: Rely on PM domain to enable gptp_clk
 v6.8      / net: rswitch: Allow jumbo frames
-v6.8      / net: rswitch: Add jumbo frames handling for TX
 v6.8      / net: rswitch: Add jumbo frames handling for RX
 v6.8      / net: rswitch: Set GWMDNC register
-v6.8      / net: rswitch: Add a setting ext descriptor function
-v6.8      / net: rswitch: Add unmap_addrs instead of dma address in each desc
-v6.8      / net: rswitch: Use build_skb() for RX
-v6.8      / net: rswitch: Use unsigned int for desc related array index
-v6.8      / net: rswitch: Drop unused argument/return value
 v6.8      / net: ethernet: renesas: rcar_gen4_ptp: Depend on PTP_1588_CLOCK
 v6.11     / arm64: dts: renesas: Add interrupt-names to arch timer nodes
 v6.11     / arm64: dts: renesas: r8a779h0: Drop "opp-shared" from opp-table-0

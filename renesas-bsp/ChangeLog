@@ -1,3 +1,11 @@
+* v6.6.67-2024-12-23
+
+	* Merge/Rebase v6.6.67
+
+	* update CVE
+
+	* update list
+
 * v6.6.66-2024-12-16
 
 	* Merge/Rebase v6.6.66
@@ -103,11 +111,5 @@
 * v6.6.58-2024-11-01
 
 	* Merge/Rebase v6.6.58
-
-	* update CVE
-
-* v6.6.57-2024-11-01
-
-	* Merge/Rebase v6.6.57
 
 	* update CVE
