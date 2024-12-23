@@ -763,19 +763,20 @@ err:
 	return 0;
 }
 
-static void rswitch_tx_free(struct net_device *ndev)
+static int rswitch_tx_free(struct net_device *ndev, bool free_txed_only)
 {
 	struct rswitch_device *rdev = netdev_priv(ndev);
 	struct rswitch_gwca_queue *gq = rdev->tx_queue;
 	struct rswitch_ext_desc *desc;
 	dma_addr_t dma_addr;
 	struct sk_buff *skb;
+	int free_num = 0;
 	int size;
 
 	for (; rswitch_get_num_cur_queues(gq) > 0;
 	     gq->dirty = rswitch_next_queue_index(gq, false, 1)) {
 		desc = &gq->tx_ring[gq->dirty];
-		if ((desc->desc.die_dt & DT_MASK) != DT_FEMPTY)
+		if (free_txed_only && (desc->desc.die_dt & DT_MASK) != DT_FEMPTY)
 			break;
 
 		dma_rmb();
@@ -787,11 +788,14 @@ static void rswitch_tx_free(struct net_device *ndev)
 					 size, DMA_TO_DEVICE);
 			dev_kfree_skb_any(gq->skbs[gq->dirty]);
 			gq->skbs[gq->dirty] = NULL;
+			free_num++;
 		}
 		desc->desc.die_dt = DT_EEMPTY;
 		rdev->ndev->stats.tx_packets++;
 		rdev->ndev->stats.tx_bytes += size;
 	}
+
+	return free_num;
 }
 
 static int rswitch_poll(struct napi_struct *napi, int budget)
@@ -806,7 +810,7 @@ static int rswitch_poll(struct napi_struct *napi, int budget)
 	priv = rdev->priv;
 
 retry:
-	rswitch_tx_free(ndev);
+	rswitch_tx_free(ndev, true);
 
 	if (rswitch_rx(ndev, &quota))
 		goto out;
