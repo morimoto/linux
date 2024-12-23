@@ -961,7 +961,6 @@ struct rswitch_gwca_queue {
 		/* For TX */
 		struct {
 			struct sk_buff **skbs;
-			dma_addr_t *unmap_addrs;
 		};
 		/* For RX */
 		struct {
