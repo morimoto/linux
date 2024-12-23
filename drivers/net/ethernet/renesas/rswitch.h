@@ -29,13 +29,8 @@
 #define RX_RING_SIZE		1024
 #define TS_RING_SIZE		(TX_RING_SIZE * RSWITCH_NUM_PORTS)
 
-#define RSWITCH_HEADROOM	(NET_SKB_PAD + NET_IP_ALIGN)
-#define RSWITCH_DESC_BUF_SIZE	2048
-#define RSWITCH_TAILROOM	SKB_DATA_ALIGN(sizeof(struct skb_shared_info))
+#define PKT_BUF_SZ		1584
 #define RSWITCH_ALIGN		128
-#define RSWITCH_BUF_SIZE	(RSWITCH_HEADROOM + RSWITCH_DESC_BUF_SIZE + \
-				 RSWITCH_TAILROOM + RSWITCH_ALIGN)
-#define RSWITCH_MAP_BUF_SIZE	(RSWITCH_BUF_SIZE - RSWITCH_HEADROOM)
 #define RSWITCH_MAX_CTAG_PCP	7
 
 #define RSWITCH_TIMEOUT_US	100000
@@ -954,18 +949,8 @@ struct rswitch_gwca_queue {
 	/* For [rt]x_ring */
 	unsigned int index;
 	bool dir_tx;
+	struct sk_buff **skbs;
 	struct net_device *ndev;	/* queue to ndev for irq */
-
-	union {
-		/* For TX */
-		struct {
-			struct sk_buff **skbs;
-		};
-		/* For RX */
-		struct {
-			void **rx_bufs;
-		};
-	};
 };
 
 struct rswitch_gwca_ts_info {
