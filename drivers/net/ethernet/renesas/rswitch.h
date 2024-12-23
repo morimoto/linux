@@ -964,8 +964,6 @@ struct rswitch_gwca_queue {
 		/* For RX */
 		struct {
 			void **rx_bufs;
-			struct sk_buff *skb_fstart;
-			u16 pkt_len;
 		};
 	};
 };
