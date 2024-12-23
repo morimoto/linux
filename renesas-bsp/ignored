@@ -811,6 +811,14 @@ Thermal
 	The thermal core always pulls the driver, (optinal) interrupts are used to quickly trigger trip-points
 		2952a9503e49 arm64: dts: renesas: r8a779{51, 60, 61, 65}: Enable interrupt mode for THS by default
 
+TPU
+	We cannot test this. Pins on GrayHawk are tied low.
+		# lore: 20240725194906.14644-10-wsa+renesas@sang-engineering.com
+		32397139103a clk: renesas: r8a779h0: Add TPU clock
+		# upstream: ca999750b95caf4829dbd89ecff5c673107d257c arm64: dts: renesas: r8a779h0: Add PWM device nodes
+		# lore: 20240725194906.14644-12-wsa+renesas@sang-engineering.com
+		fd446b2b77ff arm64: dts: renesas: Add node to support PWM on R-Car V4M
+
 TSN
 	Upstream supports TSN since v6.11 (commit b0d3969d2b4db82602492cad576b8de494a12ddf
 	net: ethernet: rtsn: Add support for Renesas Ethernet-TSN), but this tree will ignore it

@@ -70,14 +70,6 @@ e1d847bfd3ca dmaengine: rcar-dmac: Add repeat mode support
 905813c180f4 can: rcar_canfd: Add secondary sample point
 e9ba9ac6fe77 can: rcar_canfd: Configure receive rules
 #
-# TPU patches (impossible to test?)
-#
-# lore: 20240725194906.14644-10-wsa+renesas@sang-engineering.com
-32397139103a clk: renesas: r8a779h0: Add TPU clock
-# upstream: ca999750b95caf4829dbd89ecff5c673107d257c arm64: dts: renesas: r8a779h0: Add PWM device nodes
-# lore: 20240725194906.14644-12-wsa+renesas@sang-engineering.com
-fd446b2b77ff arm64: dts: renesas: Add node to support PWM on R-Car V4M
-#
 # VIN related patches (Niklas)
 #
 # Enable video capture pipleine on V4M - In progress

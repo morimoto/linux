@@ -125,6 +125,17 @@
 		${LINUX}/renesas-bsp/remains : (3)
 		${LINUX}/renesas-bsp/ignored : (4)
 
+* ignored backport
+
+	Below features has been ignored, because it needs new framework and
+	it difficult to backport.
+
+	- Ethernet-TSN
+	- PCIe
+	- 88Q2110 PHY
+	- max96712
+	- rcar-csi2 for V4M
+
 * about defconfig
 
 ** renesas_defconfig
