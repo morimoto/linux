@@ -1,3 +1,9 @@
+* v6.1.124-2025-01-10
+
+	* Merge/Rebase v6.1.124
+
+	* update CVE
+
 * v6.1.123-2025-01-08
 
 	* Merge/Rebase v6.1.123
@@ -123,25 +129,3 @@
 	* Merge/Rebase v6.1.115
 
 	* update CVE
-
-* v6.1.114-2024-10-23
-
-	* Merge/Rebase v6.1.114
-
-	* update CVE
-
-	* update list
-
-	* Below patches were backported
-
-		commit 89dd679303f4b4a76204c2269a7724b545cd84df
-		("dt-bindings: media: renesas,vin: Add binding for V4M")
-
-		commit 9fba8eb8d55ddd8bb779fee3e36b7d8a6a2924b0
-		("dt-bindings: media: renesas,vin: Add Gen4 family fallback")
-
-		commit cee66375b7f4c03cd944dcc9e0a15eb78edbb24d
-		("dt-bindings: media: renesas,vin: Fix field-even-active spelling")
-
-		commit 9a73e931308f89bfecf18787af29a21a92470fa8
-		("media: rcar-vin: Add family compatible for R-Car Gen4 family")
