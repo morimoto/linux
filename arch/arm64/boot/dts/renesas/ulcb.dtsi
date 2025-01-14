@@ -507,3 +507,5 @@
  * #include "ulcb-audio-graph-card2-mix+split.dtsi"
  */
 #include "ulcb-audio-graph-card2.dtsi"
+#include "../../../../../sound/soc/generic/audio-graph-card2-custom-sample1.dtsi"
+#include "../../../../../sound/soc/generic/audio-graph-card2-custom-sample2.dtsi"
