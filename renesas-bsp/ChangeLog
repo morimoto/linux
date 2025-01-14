@@ -1,3 +1,13 @@
+* v6.1.124-2025-01-14
+
+	* Because it will be error, revert these commits
+
+		commit 95331514d95fae22a13df955275038d531cf85a0)
+		("net: ethernet: renesas: rswitch: C45 only transactions")
+
+		commit 4e4aafcddbbfcdd6eed5780e190fcbfac8b4685a
+		("net: mdio: Add dedicated C45 API to MDIO bus drivers")
+
 * v6.1.124-2025-01-10
 
 	* Merge/Rebase v6.1.124
