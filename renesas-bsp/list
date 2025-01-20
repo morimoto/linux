@@ -1,12 +1,12 @@
 v6.7      / media: v4l2-subdev.h: increase struct v4l2_subdev name size
-Local     / media: rcar-vin: Add support for RAW10
+v6.13     / media: rcar-vin: Add support for RAW10
 v6.10     / media: staging: max96712: fix copy-paste error
-Local     / dt-bindings: media: renesas,csi2: Add binding for V4M
-Local     / dt-bindings: media: renesas,isp: Add binding for V4M
-Local     / dt-bindings: media: renesas,isp: Add Gen4 family fallback
-Local     / media: rcar-isp: Add family compatible for R-Car Gen4 family
+v6.13     / dt-bindings: media: renesas,csi2: Add binding for V4M
+v6.13     / dt-bindings: media: renesas,isp: Add binding for V4M
+v6.13     / dt-bindings: media: renesas,isp: Add Gen4 family fallback
+v6.13     / media: rcar-isp: Add family compatible for R-Car Gen4 family
 v6.9      / media: rcar-isp: Disallow unbind of devices
-Local     / clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks
+v6.13     / clk: renesas: r8a779h0: Drop CLK_PLL2_DIV2 to clarify ZCn clocks
 v6.7      / phy: renesas: r8a779f0-ether-serdes: Add .exit() ops
 v6.7      / phy: renesas: r8a779f0-ether-serdes: Reset in .init()
 v6.6      / phy: renesas: r8a779f0-ether-serdes: Convert to devm_platform_ioremap_resource()
@@ -594,8 +594,6 @@ v6.3      / net: renesas: rswitch: Add host_interfaces setting
 v6.3      / net: renesas: rswitch: Convert to phy_device
 v6.3      / net: renesas: rswitch: Simplify struct phy * handling
 v6.2      / net: ethernet: renesas: rswitch: Fix ethernet-ports handling
-v6.3      / net: ethernet: renesas: rswitch: C45 only transactions
-v6.3      / net: mdio: Add dedicated C45 API to MDIO bus drivers
 v6.2      / net: ethernet: renesas: rswitch: Fix getting mac address from device tree
 v6.2      / net: ethernet: renesas: rswitch: Fix error path in renesas_eth_sw_probe()
 v6.3      / phy: renesas: r8a779f0-eth-serdes: Remove retry code in .init()
