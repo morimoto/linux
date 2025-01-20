@@ -28,7 +28,7 @@
 
 	(C) is including below
 
-		${LINUX}/renesas-bsp
+		${LINUX}/renesas-lts
 
 * About git repository/branch/tag
 
@@ -44,12 +44,12 @@
 	You can find 2 type of branch/tag
 
 	branch
-		(A) renesas-bsp/v6.6-dev
-		(B) renesas-bsp/v6.6.xxx-yyyy-mm-dd
+		(A) renesas-lts/v6.6-dev
+		(B) renesas-lts/v6.6.xxx-yyyy-mm-dd
 
 	tag
 		(A) renesas-dev-v6.6.xxx
-		(B) renesas-bsp-v6.6.xxx
+		(B) renesas-lts-v6.6.xxx
 
 	(A) is using "git merge". Pros is you can use "git merge" for it. Cons is it is difficult
 	to know what kind of patch was backported from upstream.
@@ -65,14 +65,14 @@
 * files
 
 	Supported CVE, by using CIP project (*)
-		${LINUX}/renesas-bsp/cve
+		${LINUX}/renesas-lts/cve
 
 	Backported patch list
-		${LINUX}/renesas-bsp/list
+		${LINUX}/renesas-lts/list
 
 	Others
-		${LINUX}/renesas-bsp/ChangeLog
-		${LINUX}/renesas-bsp/README
+		${LINUX}/renesas-lts/ChangeLog
+		${LINUX}/renesas-lts/README
 
 	(*) cip-kernel-sec
 
