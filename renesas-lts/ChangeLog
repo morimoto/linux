@@ -1,3 +1,11 @@
+* v6.6.74-2025-01-24
+
+	* Merge/Rebase v6.6.74
+
+	* update CVE
+
+	* Rename "renesas-bsp-defconfig" to "renesas-lts-defconfig"
+
 * v6.6.73-2025-01-22
 
 	* Merge/Rebase v6.6.73
@@ -57,11 +65,3 @@
 * v6.6.65-2024-12-12
 
 	* Merge/Rebase v6.6.65
-
-* v6.6.64-2024-12-12
-
-	* Merge/Rebase v6.6.64
-
-	* update CVE
-
-	* update list
