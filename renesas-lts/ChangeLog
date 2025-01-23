@@ -1,3 +1,19 @@
+v6.12.11-2025-01-24
+
+	* Merge/Rebase v6.12.11
+
+	* update CVE
+
+	* Disable CONFIG_PROVE_LOCKING on renesas_defconfig
+
+		It has effect to the performance.
+
+	* Rename "renesas-bsp" to "renesas-lts"
+
+		It was confusable nameing. rename it
+
+	* Add missing explanation for tag fetch on README
+
 v6.12.10-2025-01-20
 
 	* Merge/Rebase v6.12.10
