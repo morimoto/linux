@@ -1,3 +1,17 @@
+* v6.1.127-2025-01-24
+
+	* Merge/Rebase v6.1.127
+
+	* update CVE
+
+	* Disable CONFIG_PROVE_LOCKING on renesas_defconfig
+
+		It has effect to the performance.
+
+	* Rename renesas-bsp to renesas-lts
+
+		It was confusable nameing. rename it
+
 * v6.1.126-2025-01-20
 
 	* Merge/Rebase v6.1.126
@@ -131,11 +145,5 @@
 * v6.1.118-2024-11-11
 
 	* Merge/Rebase v6.1.118
-
-	* update CVE
-
-* v6.1.117-2024-11-18
-
-	* Merge/Rebase v6.1.117
 
 	* update CVE
