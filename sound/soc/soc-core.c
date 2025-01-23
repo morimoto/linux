@@ -3117,14 +3117,10 @@ int snd_soc_of_parse_tdm_slot(struct device_node *np,
 		snd_soc_of_get_slot_mask(np, "dai-tdm-slot-rx-mask", rx_mask);
 
 	ret = of_property_read_u32(np, "dai-tdm-slot-num", &val);
-	if (ret && ret != -EINVAL)
-		return ret;
 	if (!ret && slots)
 		*slots = val;
 
 	ret = of_property_read_u32(np, "dai-tdm-slot-width", &val);
-	if (ret && ret != -EINVAL)
-		return ret;
 	if (!ret && slot_width)
 		*slot_width = val;
 
