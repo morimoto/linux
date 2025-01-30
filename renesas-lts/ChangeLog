@@ -1,3 +1,25 @@
+* v6.6.74-2025-01-30
+
+	* update list
+
+	* Below patches were backported
+
+		commit da75ba93e3383fc10af71e5029b5a57378a57576
+		("net: renesas: rswitch: use FIELD_PREP for remaining MPIC register fields")
+
+		commit 206112fa65790221ca3ebbc43092911bb8836a19
+		("net: renesas: rswitch: do not write to MPSM register at init time")
+
+		commit 54d3970548bd9de40f921c95f8c31e1b1b2382cb
+		("net: renesas: rswitch: enable only used MFWD features")
+
+		commit 32fd46f5b69e9a2e1206d576359e533e5b7c4694
+		("net: renesas: rswitch: remove speed from gwca structure")
+
+		commit 070927427d82debf5797e60c96165f2666c0bc42
+		("net: renesas: rswitch: do not deinit disabled ports")
+
+
 * v6.6.74-2025-01-24
 
 	* Merge/Rebase v6.6.74
