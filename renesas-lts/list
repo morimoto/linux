@@ -1,3 +1,15 @@
+Local     / net: renesas: rswitch: use FIELD_PREP for remaining MPIC register fields
+Local     / net: renesas: rswitch: do not write to MPSM register at init time
+v6.13     / net: renesas: rswitch: rework ts tags management
+v6.13     / net: renesas: rswitch: fix initial MPIC register setting
+Local     / net: renesas: rswitch: enable only used MFWD features
+v6.13     / net: renesas: rswitch: handle stop vs interrupt race
+v6.13     / net: renesas: rswitch: avoid use-after-put for a device tree node
+v6.13     / net: renesas: rswitch: fix leaked pointer on error path
+v6.13     / net: renesas: rswitch: fix race window between tx start and complete
+v6.13     / net: renesas: rswitch: fix possible early skb release
+Local     / net: renesas: rswitch: remove speed from gwca structure
+Local     / net: renesas: rswitch: do not deinit disabled ports
 v6.7      / media: v4l2-subdev.h: increase struct v4l2_subdev name size
 v6.13     / media: rcar-vin: Add support for RAW10
 v6.10     / media: staging: max96712: fix copy-paste error

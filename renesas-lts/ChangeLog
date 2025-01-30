@@ -1,3 +1,45 @@
+* v6.1.127-2025-01-30
+
+	* update list
+
+	* Below patches were backported
+
+		commit da75ba93e3383fc10af71e5029b5a57378a57576
+		("net: renesas: rswitch: use FIELD_PREP for remaining MPIC register fields")
+
+		commit 206112fa65790221ca3ebbc43092911bb8836a19
+		("net: renesas: rswitch: do not write to MPSM register at init time")
+
+		commit 922b4b955a03d19fea98938f33ef0e62d01f5159
+		("net: renesas: rswitch: rework ts tags management")
+
+		commit fb9e6039c325cc205a368046dc03c56c87df2310
+		("net: renesas: rswitch: fix initial MPIC register setting")
+
+		commit 54d3970548bd9de40f921c95f8c31e1b1b2382cb
+		("net: renesas: rswitch: enable only used MFWD features")
+
+		commit 3dd002f20098b9569f8fd7f8703f364571e2e975
+		("net: renesas: rswitch: handle stop vs interrupt race")
+
+		commit 66b7e9f85b8459c823b11e9af69dbf4be5eb6be8
+		("net: renesas: rswitch: avoid use-after-put for a device tree node")
+
+		commit bb617328bafa1023d8e9c25a25345a564c66c14f
+		("net: renesas: rswitch: fix leaked pointer on error path")
+
+		commit 0c9547e6ccf40455b0574cf589be3b152a3edf5b
+		("net: renesas: rswitch: fix race window between tx start and complete")
+
+		commit 5cb099902b6b6292b3a85ffa1bb844e0ba195945
+		("net: renesas: rswitch: fix possible early skb release")
+
+		commit 32fd46f5b69e9a2e1206d576359e533e5b7c4694
+		("net: renesas: rswitch: remove speed from gwca structure")
+
+		commit 070927427d82debf5797e60c96165f2666c0bc42
+		("net: renesas: rswitch: do not deinit disabled ports")
+
 * v6.1.127-2025-01-24
 
 	* Merge/Rebase v6.1.127
