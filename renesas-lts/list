@@ -1,3 +1,8 @@
+Local     / net: renesas: rswitch: use FIELD_PREP for remaining MPIC register fields
+Local     / net: renesas: rswitch: do not write to MPSM register at init time
+Local     / net: renesas: rswitch: enable only used MFWD features
+Local     / net: renesas: rswitch: remove speed from gwca structure
+Local     / net: renesas: rswitch: do not deinit disabled ports
 v6.13     / media: rcar-vin: Add support for RAW10
 v6.7      / phy: renesas: r8a779f0-ether-serdes: Reset in .init()
 v6.7      / phy: renesas: r8a779f0-ether-serdes: Add .exit() ops
