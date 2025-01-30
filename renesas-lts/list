@@ -1,3 +1,8 @@
+Local     / net: renesas: rswitch: use FIELD_PREP for remaining MPIC register fields
+Local     / net: renesas: rswitch: do not write to MPSM register at init time
+Local     / net: renesas: rswitch: enable only used MFWD features
+Local     / net: renesas: rswitch: remove speed from gwca structure
+Local     / net: renesas: rswitch: do not deinit disabled ports
 v6.13     / media: staging: max96712: Add support for MAX96724
 v6.13     / media: staging: max96712: Document the DEBUG_EXTRA register
 v6.13     / media: staging: max96712: Move link frequency setting to device struct
