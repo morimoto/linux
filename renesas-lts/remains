@@ -39,7 +39,6 @@ bc75d8c5907a mmc: core: Issue power off notification in mmc_remove()
 #
 47e1a870dd58 arm64: dts: renesas: Add node to support AVB1/2
 f5f257bbef94 arm64: dts: renesas: r8a779g0-whitehawk: Add power-source setting for ethernet
-667534413db9 arm64: dts: renesas: r8a779a0-falcon: Add missing Ethernet-AVB in Falcon board
 # Workaround added to 6.1 (2451a288fe93). Task created for further investigation
 20dbf63e6809 Revert "net: phy: consider that suspend2ram may cut off PHY power"
 #
