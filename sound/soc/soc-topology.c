@@ -1267,7 +1267,8 @@ widget:
 	return 0;
 
 ready_err:
-	soc_tplg_remove_widget(widget->dapm->component, &widget->dobj, SOC_TPLG_PASS_WIDGET);
+	soc_tplg_remove_widget(snd_soc_dapm_to_component(widget->dapm),
+			       &widget->dobj, SOC_TPLG_PASS_WIDGET);
 	snd_soc_dapm_free_widget(widget);
 hdr_err:
 	kfree(template.sname);
