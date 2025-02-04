@@ -805,8 +805,8 @@ static int sma1307_dapm_aif_in_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm =
 	    snd_soc_dapm_kcontrol_dapm(kcontrol);
-	struct sma1307_priv *sma1307 =
-	    snd_soc_component_get_drvdata(dapm->component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
 
 	ucontrol->value.enumerated.item[0] = (unsigned int)sma1307->dapm_aif_in;
 	snd_soc_dapm_put_enum_double(kcontrol, ucontrol);
@@ -819,8 +819,8 @@ static int sma1307_dapm_aif_in_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm =
 	    snd_soc_dapm_kcontrol_dapm(kcontrol);
-	struct sma1307_priv *sma1307 =
-	    snd_soc_component_get_drvdata(dapm->component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
 	int val = (int)ucontrol->value.enumerated.item[0];
 	bool change;
 
@@ -845,8 +845,8 @@ static int sma1307_dapm_sdo_setting_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm =
 	    snd_soc_dapm_kcontrol_dapm(kcontrol);
-	struct sma1307_priv *sma1307 =
-	    snd_soc_component_get_drvdata(dapm->component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
 
 	ucontrol->value.enumerated.item[0] =
 	    (unsigned int)sma1307->dapm_sdo_setting;
@@ -860,8 +860,8 @@ static int sma1307_dapm_sdo_setting_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm =
 	    snd_soc_dapm_kcontrol_dapm(kcontrol);
-	struct sma1307_priv *sma1307 =
-	    snd_soc_component_get_drvdata(dapm->component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
 	int val = (int)ucontrol->value.enumerated.item[0];
 	bool change;
 
@@ -886,8 +886,8 @@ static int sma1307_dapm_aif_out_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm =
 	    snd_soc_dapm_kcontrol_dapm(kcontrol);
-	struct sma1307_priv *sma1307 =
-	    snd_soc_component_get_drvdata(dapm->component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
 	unsigned int val = 0;
 
 	if (!strcmp(kcontrol->id.name, SMA1307_AIF_OUT0_NAME)) {
@@ -910,8 +910,8 @@ static int sma1307_dapm_aif_out_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm =
 	    snd_soc_dapm_kcontrol_dapm(kcontrol);
-	struct sma1307_priv *sma1307 =
-	    snd_soc_component_get_drvdata(dapm->component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
 	int val = (int)ucontrol->value.enumerated.item[0];
 	bool change;
 
@@ -948,8 +948,8 @@ static int sma1307_dapm_sdo_enable_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm =
 	    snd_soc_dapm_kcontrol_dapm(kcontrol);
-	struct sma1307_priv *sma1307 =
-	    snd_soc_component_get_drvdata(dapm->component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
 
 	ucontrol->value.integer.value[0] = (long)sma1307->dapm_sdo_en;
 	snd_soc_dapm_put_volsw(kcontrol, ucontrol);
@@ -962,8 +962,8 @@ static int sma1307_dapm_sdo_enable_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm =
 	    snd_soc_dapm_kcontrol_dapm(kcontrol);
-	struct sma1307_priv *sma1307 =
-	    snd_soc_component_get_drvdata(dapm->component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
 	int val = (int)ucontrol->value.integer.value[0];
 	bool change;
 
