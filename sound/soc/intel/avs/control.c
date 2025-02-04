@@ -18,7 +18,7 @@ static struct avs_dev *avs_get_kcontrol_adev(struct snd_kcontrol *kcontrol)
 
 	w = snd_soc_dapm_kcontrol_widget(kcontrol);
 
-	return to_avs_dev(w->dapm->component->dev);
+	return to_avs_dev(snd_soc_dapm_to_component(w->dapm)->dev);
 }
 
 static struct avs_path_module *avs_get_volume_module(struct avs_dev *adev, u32 id)
