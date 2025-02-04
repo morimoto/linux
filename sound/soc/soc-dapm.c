@@ -621,39 +621,52 @@ static void dapm_reset(struct snd_soc_card *card)
 
 static const char *soc_dapm_prefix(struct snd_soc_dapm_context *dapm)
 {
-	if (!dapm->component)
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+
+	if (!component)
 		return NULL;
-	return dapm->component->name_prefix;
+
+	return component->name_prefix;
 }
 
 static unsigned int soc_dapm_read(struct snd_soc_dapm_context *dapm, int reg)
 {
-	if (!dapm->component)
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+
+	if (!component)
 		return -EIO;
-	return  snd_soc_component_read(dapm->component, reg);
+
+	return  snd_soc_component_read(component, reg);
 }
 
 static int soc_dapm_update_bits(struct snd_soc_dapm_context *dapm,
 	int reg, unsigned int mask, unsigned int value)
 {
-	if (!dapm->component)
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+
+	if (!component)
 		return -EIO;
-	return snd_soc_component_update_bits(dapm->component, reg,
-					     mask, value);
+
+	return snd_soc_component_update_bits(component, reg, mask, value);
 }
 
 static int soc_dapm_test_bits(struct snd_soc_dapm_context *dapm,
 	int reg, unsigned int mask, unsigned int value)
 {
-	if (!dapm->component)
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+
+	if (!component)
 		return -EIO;
-	return snd_soc_component_test_bits(dapm->component, reg, mask, value);
+
+	return snd_soc_component_test_bits(component, reg, mask, value);
 }
 
 static void soc_dapm_async_complete(struct snd_soc_dapm_context *dapm)
 {
-	if (dapm->component)
-		snd_soc_component_async_complete(dapm->component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+
+	if (component)
+		snd_soc_component_async_complete(component);
 }
 
 static struct snd_soc_dapm_widget *
@@ -696,10 +709,11 @@ dapm_wcache_lookup(struct snd_soc_dapm_widget *w, const char *name)
 int snd_soc_dapm_force_bias_level(struct snd_soc_dapm_context *dapm,
 	enum snd_soc_bias_level level)
 {
+	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
 	int ret = 0;
 
-	if (dapm->component)
-		ret = snd_soc_component_set_bias_level(dapm->component, level);
+	if (component)
+		ret = snd_soc_component_set_bias_level(component, level);
 
 	if (ret == 0)
 		dapm->bias_level = level;
@@ -1653,6 +1667,7 @@ static void dapm_seq_run(struct snd_soc_card *card,
 	int cur_subseq = -1;
 	int cur_reg = SND_SOC_NOPM;
 	struct snd_soc_dapm_context *cur_dapm = NULL;
+	struct snd_soc_component *cur_component = NULL;
 	int i;
 	int *sort;
 
@@ -1667,14 +1682,15 @@ static void dapm_seq_run(struct snd_soc_card *card,
 		/* Do we need to apply any queued changes? */
 		if (sort[w->id] != cur_sort || w->reg != cur_reg ||
 		    w->dapm != cur_dapm || w->subseq != cur_subseq) {
+
 			if (!list_empty(&pending))
 				dapm_seq_run_coalesced(card, &pending);
 
-			if (cur_dapm && cur_dapm->component) {
+			if (cur_dapm && cur_component) {
 				for (i = 0; i < ARRAY_SIZE(dapm_up_seq); i++)
 					if (sort[i] == cur_sort)
 						snd_soc_component_seq_notifier(
-							cur_dapm->component,
+							cur_component,
 							i, cur_subseq);
 			}
 
@@ -1686,6 +1702,7 @@ static void dapm_seq_run(struct snd_soc_card *card,
 			cur_subseq = INT_MIN;
 			cur_reg = SND_SOC_NOPM;
 			cur_dapm = NULL;
+			cur_component = NULL;
 		}
 
 		switch (w->id) {
@@ -1719,6 +1736,7 @@ static void dapm_seq_run(struct snd_soc_card *card,
 			cur_subseq = w->subseq;
 			cur_reg = w->reg;
 			cur_dapm = w->dapm;
+			cur_component = snd_soc_dapm_to_component(cur_dapm);
 			list_move(&w->power_list, &pending);
 			break;
 		}
@@ -1731,11 +1749,11 @@ static void dapm_seq_run(struct snd_soc_card *card,
 	if (!list_empty(&pending))
 		dapm_seq_run_coalesced(card, &pending);
 
-	if (cur_dapm && cur_dapm->component) {
+	if (cur_dapm && cur_component) {
 		for (i = 0; i < ARRAY_SIZE(dapm_up_seq); i++)
 			if (sort[i] == cur_sort)
 				snd_soc_component_seq_notifier(
-					cur_dapm->component,
+					cur_component,
 					i, cur_subseq);
 	}
 
@@ -2193,8 +2211,9 @@ static ssize_t dapm_widget_power_read_file(struct file *file,
 			if (!p->connect)
 				continue;
 
-			c_name = p->node[rdir]->dapm->component ?
-				p->node[rdir]->dapm->component->name : NULL;
+			struct snd_soc_component *component = snd_soc_dapm_to_component(p->node[rdir]->dapm);
+
+			c_name = component ? component->name : NULL;
 			ret += scnprintf(buf + ret, PAGE_SIZE - ret,
 					" %s  \"%s\" \"%s\" \"%s\"\n",
 					(rdir == SND_SOC_DAPM_DIR_IN) ? "in" : "out",
@@ -2784,7 +2803,7 @@ int snd_soc_dapm_update_dai(struct snd_pcm_substream *substream,
 
 int snd_soc_dapm_widget_name_cmp(struct snd_soc_dapm_widget *widget, const char *s)
 {
-	struct snd_soc_component *component = widget->dapm->component;
+	struct snd_soc_component *component = snd_soc_dapm_to_component(widget->dapm);
 	const char *wname = widget->name;
 
 	if (component && component->name_prefix)
