@@ -85,6 +85,8 @@ static int add_implicit_fb_sync_ep(struct snd_usb_audio *chip,
 				   const struct usb_host_interface *alts)
 {
 	struct usb_interface *iface;
+	int direction = (ep & USB_DIR_IN) ?	SNDRV_PCM_STREAM_PLAYBACK:
+						SNDRV_PCM_STREAM_CAPTURE;
 
 	if (!alts) {
 		iface = usb_ifnum_to_if(chip->dev, ifnum);
@@ -101,7 +103,7 @@ static int add_implicit_fb_sync_ep(struct snd_usb_audio *chip,
 	usb_audio_dbg(chip,
 		      "%d:%d: added %s implicit_fb sync_ep %x, iface %d:%d\n",
 		      fmt->iface, fmt->altsetting,
-		      (ep & USB_DIR_IN) ? "playback" : "capture",
+		      snd_pcm_direction_name(direction),
 		      fmt->sync_ep, fmt->sync_iface, fmt->sync_altsetting);
 	return 1;
 }
