@@ -265,15 +265,11 @@ struct snd_soc_component {
  * snd_soc_dapm_to_component() - Casts a DAPM context to the component it is
  *  embedded in
  * @dapm: The DAPM context to cast to the component
- *
- * This function must only be used on DAPM contexts that are known to be part of
- * a component (e.g. in a component driver). Otherwise the behavior is
- * undefined.
  */
 static inline struct snd_soc_component *snd_soc_dapm_to_component(
 	struct snd_soc_dapm_context *dapm)
 {
-	return container_of(dapm, struct snd_soc_component, dapm);
+	return dapm->component;
 }
 
 /**
