@@ -88,7 +88,7 @@ static int snd_soc_dpcm_check_state(struct snd_soc_pcm_runtime *fe,
  * We can only hw_free, stop, pause or suspend a BE DAI if any of it's FE
  * are not running, paused or suspended for the specified stream direction.
  */
-static int snd_soc_dpcm_can_be_free_stop(struct snd_soc_pcm_runtime *fe,
+static int snd_soc_dpcm_be_can_free_stop(struct snd_soc_pcm_runtime *fe,
 					 struct snd_soc_pcm_runtime *be, int stream)
 {
 	const enum snd_soc_dpcm_state state[] = {
@@ -104,7 +104,7 @@ static int snd_soc_dpcm_can_be_free_stop(struct snd_soc_pcm_runtime *fe,
  * We can only change hw params a BE DAI if any of it's FE are not prepared,
  * running, paused or suspended for the specified stream direction.
  */
-static int snd_soc_dpcm_can_be_params(struct snd_soc_pcm_runtime *fe,
+static int snd_soc_dpcm_be_can_params(struct snd_soc_pcm_runtime *fe,
 				      struct snd_soc_pcm_runtime *be, int stream)
 {
 	const enum snd_soc_dpcm_state state[] = {
@@ -121,7 +121,7 @@ static int snd_soc_dpcm_can_be_params(struct snd_soc_pcm_runtime *fe,
  * We can only prepare a BE DAI if any of it's FE are not prepared,
  * running or paused for the specified stream direction.
  */
-static int snd_soc_dpcm_can_be_prepared(struct snd_soc_pcm_runtime *fe,
+static int snd_soc_dpcm_be_can_prepared(struct snd_soc_pcm_runtime *fe,
 					struct snd_soc_pcm_runtime *be, int stream)
 {
 	const enum snd_soc_dpcm_state state[] = {
@@ -2011,7 +2011,7 @@ void dpcm_be_dai_hw_free(struct snd_soc_pcm_runtime *fe, int stream)
 			continue;
 
 		/* only free hw when no longer used - check all FEs */
-		if (!snd_soc_dpcm_can_be_free_stop(fe, be, stream))
+		if (!snd_soc_dpcm_be_can_free_stop(fe, be, stream))
 				continue;
 
 		/* do not free hw if this BE is used by other FE */
@@ -2090,7 +2090,7 @@ int dpcm_be_dai_hw_params(struct snd_soc_pcm_runtime *fe, int stream)
 		       sizeof(struct snd_pcm_hw_params));
 
 		/* only allow hw_params() if no connected FEs are running */
-		if (!snd_soc_dpcm_can_be_params(fe, be, stream))
+		if (!snd_soc_dpcm_be_can_params(fe, be, stream))
 			continue;
 
 		if ((be->dpcm[stream].state != SND_SOC_DPCM_STATE_OPEN) &&
@@ -2122,7 +2122,7 @@ unwind:
 			continue;
 
 		/* only allow hw_free() if no connected FEs are running */
-		if (!snd_soc_dpcm_can_be_free_stop(fe, be, stream))
+		if (!snd_soc_dpcm_be_can_free_stop(fe, be, stream))
 			continue;
 
 		if ((be->dpcm[stream].state != SND_SOC_DPCM_STATE_OPEN) &&
@@ -2468,7 +2468,7 @@ int dpcm_be_dai_prepare(struct snd_soc_pcm_runtime *fe, int stream)
 		if (!snd_soc_dpcm_be_can_update(fe, be, stream))
 			continue;
 
-		if (!snd_soc_dpcm_can_be_prepared(fe, be, stream))
+		if (!snd_soc_dpcm_be_can_prepared(fe, be, stream))
 			continue;
 
 		if ((be->dpcm[stream].state != SND_SOC_DPCM_STATE_HW_PARAMS) &&
