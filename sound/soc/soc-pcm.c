@@ -78,29 +78,26 @@ static int _dpcm_state_is(struct snd_soc_pcm_runtime *rtd,
 	return ret;
 }
 
-static int snd_soc_dpcm_check_state(struct snd_soc_pcm_runtime *fe,
-				    struct snd_soc_pcm_runtime *be,
-				    int stream,
-				    const enum snd_soc_dpcm_state *states,
-				    int num_states)
+#define dpcm_fe_state_is(fe, be, stream, ...) _dpcm_fe_state_is(fe, be, stream, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)
+static int _dpcm_fe_state_is(struct snd_soc_pcm_runtime *fe,
+			     struct snd_soc_pcm_runtime *be,
+			     int stream, int num, ...)
 {
 	struct snd_soc_dpcm *dpcm;
-	int state;
-	int ret = 1;
-	int i;
+	va_list args;
+	int ret = 0;
 
 	for_each_dpcm_fe(be, stream, dpcm) {
 
 		if (dpcm->fe == fe)
 			continue;
 
-		state = dpcm->fe->dpcm[stream].state;
-		for (i = 0; i < num_states; i++) {
-			if (state == states[i]) {
-				ret = 0;
-				break;
-			}
-		}
+		va_start(args, num);
+		ret = __dpcm_state_is(dpcm->fe->dpcm[stream].state, num, args);
+		va_end(args);
+
+		if (ret)
+			break;
 	}
 
 	/* it's safe to do this BE DAI */
@@ -114,13 +111,10 @@ static int snd_soc_dpcm_check_state(struct snd_soc_pcm_runtime *fe,
 static int snd_soc_dpcm_be_can_free_stop(struct snd_soc_pcm_runtime *fe,
 					 struct snd_soc_pcm_runtime *be, int stream)
 {
-	const enum snd_soc_dpcm_state state[] = {
-		SND_SOC_DPCM_STATE_START,
-		SND_SOC_DPCM_STATE_PAUSED,
-		SND_SOC_DPCM_STATE_SUSPEND,
-	};
-
-	return snd_soc_dpcm_check_state(fe, be, stream, state, ARRAY_SIZE(state));
+	return !dpcm_fe_state_is(fe, be, stream,
+				SND_SOC_DPCM_STATE_START,
+				SND_SOC_DPCM_STATE_PAUSED,
+				SND_SOC_DPCM_STATE_SUSPEND);
 }
 
 /*
@@ -130,14 +124,11 @@ static int snd_soc_dpcm_be_can_free_stop(struct snd_soc_pcm_runtime *fe,
 static int snd_soc_dpcm_be_can_params(struct snd_soc_pcm_runtime *fe,
 				      struct snd_soc_pcm_runtime *be, int stream)
 {
-	const enum snd_soc_dpcm_state state[] = {
-		SND_SOC_DPCM_STATE_START,
-		SND_SOC_DPCM_STATE_PAUSED,
-		SND_SOC_DPCM_STATE_SUSPEND,
-		SND_SOC_DPCM_STATE_PREPARE,
-	};
-
-	return snd_soc_dpcm_check_state(fe, be, stream, state, ARRAY_SIZE(state));
+	return !dpcm_fe_state_is(fe, be, stream,
+				SND_SOC_DPCM_STATE_START,
+				SND_SOC_DPCM_STATE_PAUSED,
+				SND_SOC_DPCM_STATE_SUSPEND,
+				SND_SOC_DPCM_STATE_PREPARE);
 }
 
 /*
@@ -147,13 +138,10 @@ static int snd_soc_dpcm_be_can_params(struct snd_soc_pcm_runtime *fe,
 static int snd_soc_dpcm_be_can_prepared(struct snd_soc_pcm_runtime *fe,
 					struct snd_soc_pcm_runtime *be, int stream)
 {
-	const enum snd_soc_dpcm_state state[] = {
-		SND_SOC_DPCM_STATE_START,
-		SND_SOC_DPCM_STATE_PAUSED,
-		SND_SOC_DPCM_STATE_PREPARE,
-	};
-
-	return snd_soc_dpcm_check_state(fe, be, stream, state, ARRAY_SIZE(state));
+	return !dpcm_fe_state_is(fe, be, stream,
+				SND_SOC_DPCM_STATE_START,
+				SND_SOC_DPCM_STATE_PAUSED,
+				SND_SOC_DPCM_STATE_PREPARE);
 }
 
 #define DPCM_MAX_BE_USERS	8
