@@ -55,6 +55,29 @@ static int snd_soc_dpcm_be_can_update(struct snd_soc_pcm_runtime *fe,
 	return 0;
 }
 
+static int __dpcm_state_is(const enum snd_soc_dpcm_state state, int num, va_list args)
+{
+	for (int i = 0; i < num; i++)
+		if (state == va_arg(args, int))
+			return true;
+
+	return false;
+}
+
+#define dpcm_state_is(state, ...) _dpcm_state_is(state, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)
+static int _dpcm_state_is(struct snd_soc_pcm_runtime *rtd,
+			  int stream, int num, ...)
+{
+	va_list args;
+	int ret;
+
+	va_start(args, num);
+	ret = __dpcm_state_is(rtd->dpcm[stream].state, num, args);
+	va_end(args);
+
+	return ret;
+}
+
 static int snd_soc_dpcm_check_state(struct snd_soc_pcm_runtime *fe,
 				    struct snd_soc_pcm_runtime *be,
 				    int stream,
@@ -188,8 +211,10 @@ static ssize_t dpcm_show_state(struct snd_soc_pcm_runtime *fe,
 	offset += scnprintf(buf + offset, size - offset, "State: %s\n",
 			   dpcm_state_string(fe->dpcm[stream].state));
 
-	if ((fe->dpcm[stream].state >= SND_SOC_DPCM_STATE_HW_PARAMS) &&
-	    (fe->dpcm[stream].state <= SND_SOC_DPCM_STATE_STOP))
+	if (dpcm_state_is(fe, stream,	SND_SOC_DPCM_STATE_HW_PARAMS,
+					SND_SOC_DPCM_STATE_PREPARE,
+					SND_SOC_DPCM_STATE_START,
+					SND_SOC_DPCM_STATE_STOP))
 		offset += scnprintf(buf + offset, size - offset,
 				   "Hardware Params: "
 				   "Format = %s, Channels = %d, Rate = %d\n",
@@ -217,8 +242,10 @@ static ssize_t dpcm_show_state(struct snd_soc_pcm_runtime *fe,
 				   "   State: %s\n",
 				   dpcm_state_string(be->dpcm[stream].state));
 
-		if ((be->dpcm[stream].state >= SND_SOC_DPCM_STATE_HW_PARAMS) &&
-		    (be->dpcm[stream].state <= SND_SOC_DPCM_STATE_STOP))
+		if (dpcm_state_is(be, stream,	SND_SOC_DPCM_STATE_HW_PARAMS,
+						SND_SOC_DPCM_STATE_PREPARE,
+						SND_SOC_DPCM_STATE_START,
+						SND_SOC_DPCM_STATE_STOP))
 			offset += scnprintf(buf + offset, size - offset,
 					   "   Hardware Params: "
 					   "Format = %s, Channels = %d, Rate = %d\n",
@@ -1587,8 +1614,8 @@ int dpcm_add_paths(struct snd_soc_pcm_runtime *fe, int stream,
 		 * already active BE on such systems.
 		 */
 		if (fe->card->component_chaining &&
-		    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_NEW) &&
-		    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_CLOSE))
+		    !dpcm_state_is(be, stream,	SND_SOC_DPCM_STATE_NEW,
+						SND_SOC_DPCM_STATE_CLOSE))
 			continue;
 
 		/* newly connected FE and BE */
@@ -1645,11 +1672,11 @@ void dpcm_be_dai_stop(struct snd_soc_pcm_runtime *fe, int stream,
 		if (--be->dpcm[stream].users != 0)
 			continue;
 
-		if (be->dpcm[stream].state != SND_SOC_DPCM_STATE_OPEN) {
+		if (!dpcm_state_is(be, stream, SND_SOC_DPCM_STATE_OPEN)) {
 			if (!do_hw_free)
 				continue;
 
-			if (be->dpcm[stream].state != SND_SOC_DPCM_STATE_HW_FREE) {
+			if (!dpcm_state_is(be, stream, SND_SOC_DPCM_STATE_HW_FREE)) {
 				__soc_pcm_hw_free(be, be_substream);
 				be->dpcm[stream].state = SND_SOC_DPCM_STATE_HW_FREE;
 			}
@@ -1696,8 +1723,8 @@ int dpcm_be_dai_startup(struct snd_soc_pcm_runtime *fe, int stream)
 		if (be->dpcm[stream].users++ != 0)
 			continue;
 
-		if ((be->dpcm[stream].state != SND_SOC_DPCM_STATE_NEW) &&
-		    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_CLOSE))
+		if (!dpcm_state_is(be, stream,	SND_SOC_DPCM_STATE_NEW,
+						SND_SOC_DPCM_STATE_CLOSE))
 			continue;
 
 		dev_dbg(be->dev, "ASoC: open %s BE %s\n",
@@ -2018,12 +2045,10 @@ void dpcm_be_dai_hw_free(struct snd_soc_pcm_runtime *fe, int stream)
 		if (be->dpcm[stream].users > 1)
 			continue;
 
-		if ((be->dpcm[stream].state != SND_SOC_DPCM_STATE_HW_PARAMS) &&
-		    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_PREPARE) &&
-		    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_HW_FREE) &&
-		    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_PAUSED) &&
-		    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_STOP) &&
-		    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_SUSPEND))
+		if (dpcm_state_is(be, stream,	SND_SOC_DPCM_STATE_NEW,
+						SND_SOC_DPCM_STATE_OPEN,
+						SND_SOC_DPCM_STATE_START,
+						SND_SOC_DPCM_STATE_CLOSE))
 			continue;
 
 		dev_dbg(be->dev, "ASoC: hw_free BE %s\n",
@@ -2093,9 +2118,9 @@ int dpcm_be_dai_hw_params(struct snd_soc_pcm_runtime *fe, int stream)
 		if (!snd_soc_dpcm_be_can_params(fe, be, stream))
 			continue;
 
-		if ((be->dpcm[stream].state != SND_SOC_DPCM_STATE_OPEN) &&
-		    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_HW_PARAMS) &&
-		    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_HW_FREE))
+		if (!dpcm_state_is(be, stream,	SND_SOC_DPCM_STATE_OPEN,
+						SND_SOC_DPCM_STATE_HW_PARAMS,
+						SND_SOC_DPCM_STATE_HW_FREE))
 			continue;
 
 		dev_dbg(be->dev, "ASoC: hw_params BE %s\n",
@@ -2125,10 +2150,10 @@ unwind:
 		if (!snd_soc_dpcm_be_can_free_stop(fe, be, stream))
 			continue;
 
-		if ((be->dpcm[stream].state != SND_SOC_DPCM_STATE_OPEN) &&
-		   (be->dpcm[stream].state != SND_SOC_DPCM_STATE_HW_PARAMS) &&
-		   (be->dpcm[stream].state != SND_SOC_DPCM_STATE_HW_FREE) &&
-		   (be->dpcm[stream].state != SND_SOC_DPCM_STATE_STOP))
+		if (!dpcm_state_is(be, stream,	SND_SOC_DPCM_STATE_OPEN,
+						SND_SOC_DPCM_STATE_HW_PARAMS,
+						SND_SOC_DPCM_STATE_HW_FREE,
+						SND_SOC_DPCM_STATE_STOP))
 			continue;
 
 		__soc_pcm_hw_free(be, be_substream);
@@ -2197,16 +2222,16 @@ int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 		switch (cmd) {
 		case SNDRV_PCM_TRIGGER_START:
 			if (!be->dpcm[stream].be_start &&
-			    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_PREPARE) &&
-			    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_STOP) &&
-			    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_PAUSED))
+			    !dpcm_state_is(be, stream,	SND_SOC_DPCM_STATE_PREPARE,
+							SND_SOC_DPCM_STATE_STOP,
+							SND_SOC_DPCM_STATE_PAUSED))
 				goto next;
 
 			be->dpcm[stream].be_start++;
 			if (be->dpcm[stream].be_start != 1)
 				goto next;
 
-			if (be->dpcm[stream].state == SND_SOC_DPCM_STATE_PAUSED)
+			if (dpcm_state_is(be, stream, SND_SOC_DPCM_STATE_PAUSED))
 				ret = soc_pcm_trigger(be_substream,
 						      SNDRV_PCM_TRIGGER_PAUSE_RELEASE);
 			else
@@ -2220,7 +2245,7 @@ int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 			be->dpcm[stream].state = SND_SOC_DPCM_STATE_START;
 			break;
 		case SNDRV_PCM_TRIGGER_RESUME:
-			if ((be->dpcm[stream].state != SND_SOC_DPCM_STATE_SUSPEND))
+			if (!dpcm_state_is(be, stream, SND_SOC_DPCM_STATE_SUSPEND))
 				goto next;
 
 			be->dpcm[stream].be_start++;
@@ -2237,8 +2262,8 @@ int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 			break;
 		case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
 			if (!be->dpcm[stream].be_start &&
-			    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_START) &&
-			    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_PAUSED))
+			    !dpcm_state_is(be, stream,	SND_SOC_DPCM_STATE_START,
+							SND_SOC_DPCM_STATE_PAUSED))
 				goto next;
 
 			fe->dpcm[stream].fe_pause = false;
@@ -2257,11 +2282,11 @@ int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 			be->dpcm[stream].state = SND_SOC_DPCM_STATE_START;
 			break;
 		case SNDRV_PCM_TRIGGER_STOP:
-			if ((be->dpcm[stream].state != SND_SOC_DPCM_STATE_START) &&
-			    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_PAUSED))
+			if (!dpcm_state_is(be, stream,	SND_SOC_DPCM_STATE_START,
+							SND_SOC_DPCM_STATE_PAUSED))
 				goto next;
 
-			if (be->dpcm[stream].state == SND_SOC_DPCM_STATE_START)
+			if (dpcm_state_is(be, stream, SND_SOC_DPCM_STATE_START))
 				be->dpcm[stream].be_start--;
 
 			if (be->dpcm[stream].be_start != 0)
@@ -2280,7 +2305,7 @@ int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 				ret = soc_pcm_trigger(be_substream, SNDRV_PCM_TRIGGER_STOP);
 
 			if (ret) {
-				if (be->dpcm[stream].state == SND_SOC_DPCM_STATE_START)
+				if (dpcm_state_is(be, stream, SND_SOC_DPCM_STATE_START))
 					be->dpcm[stream].be_start++;
 				if (pause_stop_transition) {
 					fe->dpcm[stream].fe_pause = true;
@@ -2296,7 +2321,7 @@ int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 
 			break;
 		case SNDRV_PCM_TRIGGER_SUSPEND:
-			if (be->dpcm[stream].state != SND_SOC_DPCM_STATE_START)
+			if (!dpcm_state_is(be, stream, SND_SOC_DPCM_STATE_START))
 				goto next;
 
 			be->dpcm[stream].be_start--;
@@ -2312,7 +2337,7 @@ int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 			be->dpcm[stream].state = SND_SOC_DPCM_STATE_SUSPEND;
 			break;
 		case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-			if (be->dpcm[stream].state != SND_SOC_DPCM_STATE_START)
+			if (!dpcm_state_is(be, stream, SND_SOC_DPCM_STATE_START))
 				goto next;
 
 			fe->dpcm[stream].fe_pause = true;
@@ -2471,10 +2496,10 @@ int dpcm_be_dai_prepare(struct snd_soc_pcm_runtime *fe, int stream)
 		if (!snd_soc_dpcm_be_can_prepared(fe, be, stream))
 			continue;
 
-		if ((be->dpcm[stream].state != SND_SOC_DPCM_STATE_HW_PARAMS) &&
-		    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_STOP) &&
-		    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_SUSPEND) &&
-		    (be->dpcm[stream].state != SND_SOC_DPCM_STATE_PAUSED))
+		if (!dpcm_state_is(be, stream,	SND_SOC_DPCM_STATE_HW_PARAMS,
+						SND_SOC_DPCM_STATE_STOP,
+						SND_SOC_DPCM_STATE_SUSPEND,
+						SND_SOC_DPCM_STATE_PAUSED))
 			continue;
 
 		dev_dbg(be->dev, "ASoC: prepare BE %s\n",
@@ -2570,8 +2595,8 @@ static int dpcm_run_update_startup(struct snd_soc_pcm_runtime *fe, int stream)
 		snd_pcm_direction_name(stream), fe->dai_link->name);
 
 	/* Only start the BE if the FE is ready */
-	if (fe->dpcm[stream].state == SND_SOC_DPCM_STATE_HW_FREE ||
-		fe->dpcm[stream].state == SND_SOC_DPCM_STATE_CLOSE) {
+	if (dpcm_state_is(fe, stream,	SND_SOC_DPCM_STATE_HW_FREE,
+					SND_SOC_DPCM_STATE_CLOSE)) {
 		dev_err(fe->dev, "ASoC: FE %s is not ready %d\n",
 			fe->dai_link->name, fe->dpcm[stream].state);
 		ret = -EINVAL;
@@ -2584,7 +2609,7 @@ static int dpcm_run_update_startup(struct snd_soc_pcm_runtime *fe, int stream)
 		goto disconnect;
 
 	/* keep going if FE state is > open */
-	if (fe->dpcm[stream].state == SND_SOC_DPCM_STATE_OPEN)
+	if (dpcm_state_is(fe, stream, SND_SOC_DPCM_STATE_OPEN))
 		return 0;
 
 	ret = dpcm_be_dai_hw_params(fe, stream);
@@ -2592,7 +2617,7 @@ static int dpcm_run_update_startup(struct snd_soc_pcm_runtime *fe, int stream)
 		goto close;
 
 	/* keep going if FE state is > hw_params */
-	if (fe->dpcm[stream].state == SND_SOC_DPCM_STATE_HW_PARAMS)
+	if (dpcm_state_is(fe, stream, SND_SOC_DPCM_STATE_HW_PARAMS))
 		return 0;
 
 	ret = dpcm_be_dai_prepare(fe, stream);
@@ -2603,8 +2628,8 @@ static int dpcm_run_update_startup(struct snd_soc_pcm_runtime *fe, int stream)
 	dpcm_dapm_stream_event(fe, stream, SND_SOC_DAPM_STREAM_NOP);
 
 	/* keep going if FE state is > prepare */
-	if (fe->dpcm[stream].state == SND_SOC_DPCM_STATE_PREPARE ||
-		fe->dpcm[stream].state == SND_SOC_DPCM_STATE_STOP)
+	if (dpcm_state_is(fe, stream,	SND_SOC_DPCM_STATE_PREPARE,
+					SND_SOC_DPCM_STATE_STOP))
 		return 0;
 
 	ret = dpcm_be_dai_trigger(fe, stream, SNDRV_PCM_TRIGGER_START);
@@ -2626,8 +2651,8 @@ disconnect:
 		if (!snd_soc_dpcm_be_can_update(fe, be, stream))
 			continue;
 
-		if (be->dpcm[stream].state == SND_SOC_DPCM_STATE_CLOSE ||
-			be->dpcm[stream].state == SND_SOC_DPCM_STATE_NEW)
+		if (dpcm_state_is(be, stream,	SND_SOC_DPCM_STATE_CLOSE,
+						SND_SOC_DPCM_STATE_NEW))
 				dpcm->state = SND_SOC_DPCM_LINK_STATE_FREE;
 	}
 
