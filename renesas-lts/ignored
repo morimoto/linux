@@ -270,6 +270,9 @@ DU
 	This should work and no need to revert.
 		f6acec0867bf Revert "drm: rcar-du: Allow importing non-contiguous dma-buf with VSP"
 
+	There is only one VSPD in r8a779h0, so I don't understand this patch.
+		4405b13d3317 clk: renesas: r8a779h0-cpg-mssr: Update VSP clock
+
 EMS
 	EMS is not intended for upstream
 

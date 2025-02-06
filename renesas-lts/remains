@@ -21,14 +21,7 @@ dcc78f472661 arm64: dts: renesas: r8a779g3: Add White Hawk support
 # Media
 #
 8fb9f82e224b drm: bridge: ti-sn65dsi86: Add checking to detect bridge device connection failure
-4fa0d1c5fd0e arm64: dts: renesas: r8a779h0-gray-hawk: Add setting for Display
-8d490596fc9a clk: renesas: r8a779h0: Add FCPVD0 clock
-61b876a8fa2c drm: rcar-du: rcar_mipi_dsi: Add R8A779H0 SoC support
-f2fc3314dab2 drm: rcar-du: Add R8A779H0 SoC support
-3396171734c8 drm: rcar-du: rcar_mipi_dsi: fix PHY lock bit mistake in CLOCKSET1
-4405b13d3317 clk: renesas: r8a779h0-cpg-mssr: Update VSP clock
 79b45ffb90e7 media: i2c: max96712: Fix horizontal nosie issue when running 4 cameras on R-Car V4M
-89fed544119c dt-bindings: display: renesas: du: Document the r8a779g0 and r8a779h0 bindings
 #
 # MMC (ported as is to 6.1 but need upstream solutions)
 #
