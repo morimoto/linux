@@ -194,7 +194,7 @@ static ssize_t dpcm_show_state(struct snd_soc_pcm_runtime *fe,
 	/* FE state */
 	offset += scnprintf(buf + offset, size - offset,
 			   "[%s - %s]\n", fe->dai_link->name,
-			   stream ? "Capture" : "Playback");
+			    snd_pcm_direction_name(stream));
 
 	offset += scnprintf(buf + offset, size - offset, "State: %s\n",
 			   dpcm_state_string(fe, stream));
