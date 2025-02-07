@@ -1,3 +1,15 @@
+Local     / arm64: dts: renesas: r8a779h0: Add display support
+v6.13     / dt-bindings: fuse: Move renesas,rcar-{efuse,otp} to nvmem
+v6.13     / nvmem: Add R-Car E-FUSE driver
+v6.13     / arm64: dts: renesas: r8a779h0: Add PCIe Host and Endpoint nodes
+Local     / clk: renesas: r8a779h0: Add display clocks
+Local     / drm/rcar-du: Add support for r8a779h0
+Local     / drm/rcar-du: Write DPTSR only if the second source exists
+Local     / drm/rcar-du: dsi: Add r8a779h0 support
+Local     / drm/rcar-du: dsi: Fix PHY lock bit check
+Local     / dt-bindings: display: bridge: renesas,dsi-csi2-tx: Add r8a779h0
+Local     / dt-bindings: display: renesas,du: Add r8a779h0
+Local     / dt-bindings: display: renesas,du: Add missing constraints
 Local     / arm64: dts: renesas: falcon-ethernet: Describe PHYs connected on the breakout board
 Local     / arm64: dts: renesas: r8a779a0: Remove address- and size-cells from AVB[1-5]
 v6.13     / arm64: dts: renesas: r8a779a0: Add E-FUSE node
