@@ -1,3 +1,72 @@
+* v6.6.75-2025-02-07
+
+	* update list
+
+	* Below patches were backported
+
+		commit b1000645dc29701fafd12d0c6f22ab080de6ab43
+		("arm64: dts: renesas: gray-hawk-single: Add DisplayPort support")
+
+		commit 4fd66d72b9d0b2b343332aec309ae8861f881181
+		("arm64: dts: renesas: gray-hawk-single: Fix indentation")
+
+		commit 0f9752bacea25689271485ba0ff98ebc86c01ba5
+		("arm64: dts: renesas: r8a779h0: gray-hawk-single: Enable PCIe Host")
+
+		commit c2484af44be1ee55cc9116fcde2b4dffe9bfcf5d
+		("arm64: dts: renesas: r8a779h0: Add display support")
+
+		commit 34e5d9ff622ea5acf36d66a71cd46a1212b1f5a1
+		("arm64: dts: renesas: r8a779h0: Add OTP_MEM node")
+
+		commit 2aea0d17ff9e08e8ab50dd588c53cc37d963e016
+		("dt-bindings: fuse: Move renesas,rcar-{efuse,otp} to nvmem")
+
+		commit 8a3d2ad6129c1c43b683550802a93a9ca7f9645b
+		("dt-bindings: fuse: Document R-Car E-FUSE / OTP_MEM")
+
+		commit 2f6b62e80a9662becd22599ae553de397efacc85
+		("dt-bindings: fuse: Document R-Car E-FUSE / PFC")
+
+		commit 1530b923a514b158b91453bf5adc9291e77638f5
+		("nvmem: Add R-Car E-FUSE driver")
+
+		commit 0270dbe4f891325dffecc74cbc90a4d567b02c4d
+		("arm64: dts: renesas: r8a779h0: Add PCIe Host and Endpoint nodes")
+
+		commit cc41aa93bbafdfe4c4c9026d307adbb89c1d80fa
+		("arm64: dts: renesas: r8a779h0: Add family fallback for CSISP IP")
+
+		commit c92be7b6b3559d58b6631c15c6d3889d8eb486a5
+		("arm64: dts: renesas: r8a779h0: Add family fallback for VIN IP")
+
+		commit 548f9a3c3eb32dc4e93a947a0d8bd6331bdb8d19
+		("clk: renesas: r8a779h0: Add display clocks")
+
+		commit 7fc2adcddd929716539ad93594481799310d004b
+		("drm/rcar-du: Add support for r8a779h0")
+
+		commit bb5f268b7662469b47e9b518c2353803bc7f4ec9
+		("drm/rcar-du: Write DPTSR only if the second source exists")
+
+		commit b3fdbd60d35ce340062b5232076df2d3613b44cd
+		("drm/renesas/rcar-du: Use fbdev-dma")
+
+		commit c303814c38cde135b8e9a0696c3b505a3ef5123f
+		("drm/rcar-du: dsi: Add r8a779h0 support")
+
+		commit 6389e616fae8a101ce00068f7690461ab57b29d8
+		("drm/rcar-du: dsi: Fix PHY lock bit check")
+
+		commit a409a9058fe1feecbb123701172af0ea46b71f24
+		("dt-bindings: display: bridge: renesas,dsi-csi2-tx: Add r8a779h0")
+
+		commit 3a7c9b42b464becfec9e98776b169f38f8520d8a
+		("dt-bindings: display: renesas,du: Add r8a779h0")
+
+		commit 8fe1db6bd85072f6cae1913208400edcd92addbd
+		("dt-bindings: display: renesas,du: Add missing constraints")
+
 * v6.6.75-2025-02-03
 
 	* Merge/Rebase v6.6.75

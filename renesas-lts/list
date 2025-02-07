@@ -1,3 +1,24 @@
+Local     / arm64: dts: renesas: gray-hawk-single: Add DisplayPort support
+Local     / arm64: dts: renesas: gray-hawk-single: Fix indentation
+v6.13     / arm64: dts: renesas: r8a779h0: gray-hawk-single: Enable PCIe Host
+Local     / arm64: dts: renesas: r8a779h0: Add display support
+v6.13     / arm64: dts: renesas: r8a779h0: Add OTP_MEM node
+v6.13     / dt-bindings: fuse: Move renesas,rcar-{efuse,otp} to nvmem
+v6.11     / dt-bindings: fuse: Document R-Car E-FUSE / OTP_MEM
+v6.11     / dt-bindings: fuse: Document R-Car E-FUSE / PFC
+v6.13     / nvmem: Add R-Car E-FUSE driver
+v6.13     / arm64: dts: renesas: r8a779h0: Add PCIe Host and Endpoint nodes
+v6.12     / arm64: dts: renesas: r8a779h0: Add family fallback for CSISP IP
+v6.12     / arm64: dts: renesas: r8a779h0: Add family fallback for VIN IP
+Local     / clk: renesas: r8a779h0: Add display clocks
+Local     / drm/rcar-du: Add support for r8a779h0
+Local     / drm/rcar-du: Write DPTSR only if the second source exists
+v6.11     / drm/renesas/rcar-du: Use fbdev-dma
+Local     / drm/rcar-du: dsi: Add r8a779h0 support
+Local     / drm/rcar-du: dsi: Fix PHY lock bit check
+Local     / dt-bindings: display: bridge: renesas,dsi-csi2-tx: Add r8a779h0
+Local     / dt-bindings: display: renesas,du: Add r8a779h0
+Local     / dt-bindings: display: renesas,du: Add missing constraints
 Local     / net: renesas: rswitch: use FIELD_PREP for remaining MPIC register fields
 Local     / net: renesas: rswitch: do not write to MPSM register at init time
 Local     / net: renesas: rswitch: enable only used MFWD features
