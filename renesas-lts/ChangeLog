@@ -1,3 +1,45 @@
+* v6.12.12-2025-02-07
+
+	* update list
+
+	* Below patches were backported
+
+		commit c2484af44be1ee55cc9116fcde2b4dffe9bfcf5d
+		("arm64: dts: renesas: r8a779h0: Add display support")
+
+		commit 2aea0d17ff9e08e8ab50dd588c53cc37d963e016
+		("dt-bindings: fuse: Move renesas,rcar-{efuse,otp} to nvmem")
+
+		commit 1530b923a514b158b91453bf5adc9291e77638f5
+		("nvmem: Add R-Car E-FUSE driver")
+
+		commit 0270dbe4f891325dffecc74cbc90a4d567b02c4d
+		("arm64: dts: renesas: r8a779h0: Add PCIe Host and Endpoint nodes")
+
+		commit 548f9a3c3eb32dc4e93a947a0d8bd6331bdb8d19
+		("clk: renesas: r8a779h0: Add display clocks")
+
+		commit 7fc2adcddd929716539ad93594481799310d004b
+		("drm/rcar-du: Add support for r8a779h0")
+
+		commit bb5f268b7662469b47e9b518c2353803bc7f4ec9
+		("drm/rcar-du: Write DPTSR only if the second source exists")
+
+		commit c303814c38cde135b8e9a0696c3b505a3ef5123f
+		("drm/rcar-du: dsi: Add r8a779h0 support")
+
+		commit 6389e616fae8a101ce00068f7690461ab57b29d8
+		("drm/rcar-du: dsi: Fix PHY lock bit check")
+
+		commit a409a9058fe1feecbb123701172af0ea46b71f24
+		("dt-bindings: display: bridge: renesas,dsi-csi2-tx: Add r8a779h0")
+
+		commit 3a7c9b42b464becfec9e98776b169f38f8520d8a
+		("dt-bindings: display: renesas,du: Add r8a779h0")
+
+		commit 8fe1db6bd85072f6cae1913208400edcd92addbd
+		("dt-bindings: display: renesas,du: Add missing constraints")
+
 * v6.12.12-2025-02-04
 
 	* update list
