@@ -71,6 +71,12 @@ static inline const char *str_true_false(bool v)
 }
 #define str_false_true(v)		str_true_false(!(v))
 
+static inline const char *str_tx_rx(bool v)
+{
+	return v ? "tx" : "rx";
+}
+#define str_rx_tx(v)		str_tx_rx(!(v))
+
 static inline const char *str_up_down(bool v)
 {
 	return v ? "up" : "down";
