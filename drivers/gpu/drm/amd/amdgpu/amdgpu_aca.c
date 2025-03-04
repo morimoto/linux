@@ -884,7 +884,7 @@ static int amdgpu_aca_smu_debug_mode_set(void *data, u64 val)
 	if (ret)
 		return ret;
 
-	dev_info(adev->dev, "amdgpu set smu aca debug mode %s success\n", val ? "on" : "off");
+	dev_info(adev->dev, "amdgpu set smu aca debug mode %s success\n", str_on_off(val));
 
 	return 0;
 }

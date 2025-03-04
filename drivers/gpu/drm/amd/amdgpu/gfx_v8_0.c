@@ -6693,7 +6693,7 @@ static void gfx_v8_0_parse_sq_irq(struct amdgpu_device *adev, unsigned ih_data,
 					REG_GET_FIELD(ih_data, SQ_INTERRUPT_WORD_WAVE, SIMD_ID),
 					REG_GET_FIELD(ih_data, SQ_INTERRUPT_WORD_WAVE, WAVE_ID),
 					REG_GET_FIELD(ih_data, SQ_INTERRUPT_WORD_WAVE, VM_ID),
-					REG_GET_FIELD(ih_data, SQ_INTERRUPT_WORD_WAVE, PRIV) ? "true" : "false",
+					str_true_false(REG_GET_FIELD(ih_data, SQ_INTERRUPT_WORD_WAVE, PRIV)),
 					(sq_edc_source != -1) ? sq_edc_source_names[sq_edc_source] : "unavailable"
 				);
 			break;

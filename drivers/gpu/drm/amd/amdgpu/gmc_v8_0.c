@@ -1015,9 +1015,8 @@ static void gmc_v8_0_vm_decode_fault(struct amdgpu_device *adev, u32 status,
 
 	dev_err(adev->dev, "VM fault (0x%02x, vmid %d, pasid %d) at page %u, %s from '%s' (0x%08x) (%d)\n",
 	       protections, vmid, pasid, addr,
-	       REG_GET_FIELD(status, VM_CONTEXT1_PROTECTION_FAULT_STATUS,
-			     MEMORY_CLIENT_RW) ?
-	       "write" : "read", block, mc_client, mc_id);
+	       str_write_read(REG_GET_FIELD(status, VM_CONTEXT1_PROTECTION_FAULT_STATUS, MEMORY_CLIENT_RW)),
+	       block, mc_client, mc_id);
 }
 
 static int gmc_v8_0_convert_vram_type(int mc_seq_vram_type)
