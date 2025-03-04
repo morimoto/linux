@@ -2175,16 +2175,16 @@ static int bcm63xx_iudma_dbg_show(struct seq_file *s, void *p)
 		seq_printf(s, "IUDMA channel %d -- ", ch_idx);
 		switch (iudma_defaults[ch_idx].ep_type) {
 		case BCMEP_CTRL:
-			seq_printf(s, "control");
+			seq_printf(s, "control ");
 			break;
 		case BCMEP_BULK:
-			seq_printf(s, "bulk");
+			seq_printf(s, "bulk ");
 			break;
 		case BCMEP_INTR:
-			seq_printf(s, "interrupt");
+			seq_printf(s, "interrupt ");
 			break;
 		}
-		seq_printf(s, ch_idx & 0x01 ? " tx" : " rx");
+		seq_printf(s, str_tx_rx(ch_idx & 0x01));
 		seq_printf(s, " [ep%d]:\n",
 			   max_t(int, iudma_defaults[ch_idx].ep_num, 0));
 		seq_printf(s, "  cfg: %08x; irqstat: %08x; irqmask: %08x; maxburst: %08x\n",
