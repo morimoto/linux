@@ -708,7 +708,7 @@ static int set_queue_coalesce(struct hinic_dev *nic_dev, u16 q_id,
 	if (err)
 		netif_warn(nic_dev, drv, netdev,
 			   "Failed to set %s queue%d coalesce",
-			   set_rx_coal ? "rx" : "tx", q_id);
+			   str_rx_tx(set_rx_coal), q_id);
 
 	return err;
 }
