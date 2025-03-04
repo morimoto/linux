@@ -22,6 +22,7 @@
 #include <linux/pm_runtime.h>
 #include <linux/of.h>
 #include <linux/reset.h>
+#include <linux/string_choices.h>
 #include <linux/spi/spi.h>
 
 #include <soc/tegra/common.h>
@@ -598,7 +599,7 @@ static int tegra_slink_init_dma_param(struct tegra_slink_data *tspi,
 	int ret;
 	struct dma_slave_config dma_sconfig;
 
-	dma_chan = dma_request_chan(tspi->dev, dma_to_memory ? "rx" : "tx");
+	dma_chan = dma_request_chan(tspi->dev, str_rx_tx(dma_to_memory));
 	if (IS_ERR(dma_chan))
 		return dev_err_probe(tspi->dev, PTR_ERR(dma_chan),
 				     "Dma channel is not available\n");
