@@ -10,6 +10,7 @@
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/mman.h>
+#include <linux/string_choices.h>
 #include "dax-private.h"
 #include "bus.h"
 
@@ -245,7 +246,7 @@ static vm_fault_t dev_dax_huge_fault(struct vm_fault *vmf, unsigned int order)
 	struct dev_dax *dev_dax = filp->private_data;
 
 	dev_dbg(&dev_dax->dev, "%s: op=%s addr=%#lx order=%d\n", current->comm,
-		(vmf->flags & FAULT_FLAG_WRITE) ? "write" : "read",
+		str_write_read(vmf->flags & FAULT_FLAG_WRITE),
 		vmf->address & ~((1UL << (order + PAGE_SHIFT)) - 1), order);
 
 	id = dax_read_lock();
