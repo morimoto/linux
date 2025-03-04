@@ -49,6 +49,7 @@
 #include <linux/list.h>
 #include <linux/workqueue.h>
 #include <linux/sched/mm.h>
+#include <linux/string_choices.h>
 
 #include <xen/xen.h>
 #include <xen/xenbus.h>
@@ -993,12 +994,11 @@ static const char *flush_info(struct blkfront_info *info)
 
 static void xlvbd_flush(struct blkfront_info *info)
 {
-	pr_info("blkfront: %s: %s %s %s %s %s %s %s\n",
+	pr_info("blkfront: %s: %s persistent grants: %s; indirect descriptors: %s; bounce buffer: %s;\n",
 		info->gd->disk_name, flush_info(info),
-		"persistent grants:", info->feature_persistent ?
-		"enabled;" : "disabled;", "indirect descriptors:",
-		info->max_indirect_segments ? "enabled;" : "disabled;",
-		"bounce buffer:", info->bounce ? "enabled" : "disabled;");
+		str_enabled_disabled(info->feature_persistent),
+		str_enabled_disabled(info->max_indirect_segments),
+		str_enabled_disabled(info->bounce));
 }
 
 static int xen_translate_vdev(int vdevice, int *minor, unsigned int *offset)
