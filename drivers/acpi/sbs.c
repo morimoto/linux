@@ -21,6 +21,7 @@
 #include <linux/delay.h>
 #include <linux/power_supply.h>
 #include <linux/platform_data/x86/apple.h>
+#include <linux/string_choices.h>
 #include <acpi/battery.h>
 
 #include "sbshc.h"
@@ -587,9 +588,9 @@ static int acpi_charger_add(struct acpi_sbs *sbs)
 		result = PTR_ERR(sbs->charger);
 		sbs->charger = NULL;
 	}
-	pr_info("%s [%s]: AC Adapter [%s] (%s)\n",
+	pr_info("%s [%s]: AC Adapter [%s] (%s-line)\n",
 	       ACPI_SBS_DEVICE_NAME, acpi_device_bid(sbs->device),
-	       ACPI_AC_DIR_NAME, sbs->charger_present ? "on-line" : "off-line");
+	       ACPI_AC_DIR_NAME, str_on_off(sbs->charger_present));
 end:
 	return result;
 }
