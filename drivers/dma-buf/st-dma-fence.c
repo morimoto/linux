@@ -11,6 +11,7 @@
 #include <linux/sched/signal.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
+#include <linux/string_choices.h>
 
 #include "selftest.h"
 
@@ -505,7 +506,7 @@ static int thread_signal_callback(void *arg)
 			pr_err("Callback not seen on thread %d, pass %lu (%lu misses), signaling %s add_callback; fence signaled? %s\n",
 			       t->id, pass, miss,
 			       t->before ? "before" : "after",
-			       dma_fence_is_signaled(f2) ? "yes" : "no");
+			       str_yes_no(dma_fence_is_signaled(f2)));
 			err = -EINVAL;
 		}
 
