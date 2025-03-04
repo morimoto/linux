@@ -634,7 +634,7 @@ static int rockchip_i2s_tdm_set_sysclk(struct snd_soc_dai *cpu_dai, int stream,
 	}
 
 	dev_dbg(i2s_tdm->dev, "The target mclk_%s freq is: %d\n",
-		stream ? "rx" : "tx", freq);
+		str_rx_tx(stream), freq);
 
 	return 0;
 }
