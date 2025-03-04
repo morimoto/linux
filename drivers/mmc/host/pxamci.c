@@ -549,7 +549,7 @@ static void pxamci_dma_irq(void *param)
 		writel(BUF_PART_FULL, host->base + MMC_PRTBUF);
 	} else {
 		pr_err("%s: DMA error on %s channel\n", mmc_hostname(host->mmc),
-			host->data->flags & MMC_DATA_READ ? "rx" : "tx");
+		       str_rx_tx(host->data->flags & MMC_DATA_READ));
 		host->data->error = -EIO;
 		pxamci_data_done(host, 0);
 	}
