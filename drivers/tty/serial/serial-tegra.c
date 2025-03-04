@@ -1147,7 +1147,7 @@ static int tegra_uart_dma_channel_allocate(struct tegra_uart_port *tup,
 	int ret;
 	struct dma_slave_config dma_sconfig;
 
-	dma_chan = dma_request_chan(tup->uport.dev, dma_to_memory ? "rx" : "tx");
+	dma_chan = dma_request_chan(tup->uport.dev, str_rx_tx(dma_to_memory));
 	if (IS_ERR(dma_chan)) {
 		ret = PTR_ERR(dma_chan);
 		dev_err(tup->uport.dev,
