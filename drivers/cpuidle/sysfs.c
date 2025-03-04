@@ -15,6 +15,7 @@
 #include <linux/capability.h>
 #include <linux/device.h>
 #include <linux/kobject.h>
+#include <linux/string_choices.h>
 
 #include "cpuidle.h"
 
@@ -310,8 +311,7 @@ static ssize_t show_state_default_status(struct cpuidle_state *state,
 					  struct cpuidle_state_usage *state_usage,
 					  char *buf)
 {
-	return sprintf(buf, "%s\n",
-		       state->flags & CPUIDLE_FLAG_OFF ? "disabled" : "enabled");
+	return sprintf(buf, "%s\n", str_disabled_enabled(state->flags & CPUIDLE_FLAG_OFF));
 }
 
 define_one_state_ro(name, show_state_name);
