@@ -219,7 +219,7 @@ static int imr_dbgfs_state_show(struct seq_file *s, void *unused)
 		seq_printf(s, "imr%02i: base=%pa, end=%pa, size=0x%08zx "
 			   "rmask=0x%08x, wmask=0x%08x, %s, %s\n", i,
 			   &base, &end, size, imr.rmask, imr.wmask,
-			   imr_is_enabled(&imr) ? "enabled " : "disabled",
+			   str_enabled_disabled(imr_is_enabled(&imr)),
 			   imr.addr_lo & IMR_LOCK ? "locked" : "unlocked");
 	}
 
