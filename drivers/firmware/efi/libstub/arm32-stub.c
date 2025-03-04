@@ -28,9 +28,9 @@ efi_status_t check_platform_features(void)
 
 	get_cpu_state(&cpsr, &sctlr);
 
-	efi_info("Entering in %s mode with MMU %sabled\n",
+	efi_info("Entering in %s mode with MMU %s\n",
 		 ((cpsr & MODE_MASK) == HYP_MODE) ? "HYP" : "SVC",
-		 (sctlr & 1) ? "en" : "dis");
+		 str_enabled_disabled(sctlr & 1));
 
 	status = efi_bs_call(allocate_pool, EFI_LOADER_DATA,
 			     sizeof(*efi_entry_state),
