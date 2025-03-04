@@ -110,7 +110,7 @@ TRACE_EVENT(ath6kl_sdio,
 
 	TP_printk(
 		"%s addr 0x%x flags 0x%x len %zd\n",
-		__entry->tx ? "tx" : "rx",
+		str_tx_rx(__entry->tx),
 		__entry->addr,
 		__entry->flags,
 		__entry->buf_len
@@ -163,7 +163,7 @@ TRACE_EVENT(ath6kl_sdio_scat,
 
 	TP_printk(
 		"%s addr 0x%x flags 0x%x entries %d total_len %zd\n",
-		__entry->tx ? "tx" : "rx",
+		str_tx_rx(__entry->tx),
 		__entry->addr,
 		__entry->flags,
 		__entry->entries,
