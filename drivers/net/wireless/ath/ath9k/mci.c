@@ -609,8 +609,7 @@ void ath_mci_intr(struct ath_softc *sc)
 
 			ath_dbg(common, MCI,
 				"MCI CONT_INFO: (%s) pri = %d pwr = %d dBm\n",
-				MS(mci_hw->cont_status, AR_MCI_CONT_TXRX) ?
-				"tx" : "rx",
+				str_tx_rx(MS(mci_hw->cont_status, AR_MCI_CONT_TXRX)),
 				MS(mci_hw->cont_status, AR_MCI_CONT_PRIORITY),
 				value_dbm);
 		}
