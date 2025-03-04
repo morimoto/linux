@@ -389,7 +389,6 @@ static struct dma_chan *rsnd_ssiu_dma_req(struct rsnd_dai_stream *io,
 {
 	struct rsnd_priv *priv = rsnd_mod_to_priv(mod);
 	int is_play = rsnd_io_is_play(io);
-	char *name;
 
 	/*
 	 * It should use "rcar_sound,ssiu" on DT.
@@ -401,11 +400,8 @@ static struct dma_chan *rsnd_ssiu_dma_req(struct rsnd_dai_stream *io,
 	 *	rsnd_ssi_dma_req()
 	 *	rsnd_dma_of_path()
 	 */
-
-	name = is_play ? "rx" : "tx";
-
 	return rsnd_dma_request_channel(rsnd_ssiu_of_node(priv),
-					SSIU_NAME, mod, name);
+					SSIU_NAME, mod, str_rx_tx(is_play));
 }
 
 #ifdef CONFIG_DEBUG_FS
