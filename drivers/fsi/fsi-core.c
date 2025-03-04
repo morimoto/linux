@@ -23,6 +23,7 @@
 #include <linux/cdev.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
+#include <linux/string_choices.h>
 
 #include "fsi-master.h"
 #include "fsi-slave.h"
@@ -283,7 +284,7 @@ static int fsi_slave_handle_error(struct fsi_slave *slave, bool write,
 	id = slave->id;
 
 	dev_dbg(&slave->dev, "handling error on %s to 0x%08x[%zd]",
-			write ? "write" : "read", addr, size);
+		str_write_read(write), addr, size);
 
 	/* try a simple clear of error conditions, which may fail if we've lost
 	 * communication with the slave
