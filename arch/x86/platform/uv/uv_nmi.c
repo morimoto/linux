@@ -340,7 +340,7 @@ static void uv_nmi_setup_hubless_intr(void)
 		uv_pch_intr_now_enabled ? GPIROUTNMI : 0);
 
 	nmi_debug("UV:NMI: GPP_D_0 interrupt %s\n",
-		uv_pch_intr_now_enabled ? "enabled" : "disabled");
+		  str_enabled_disabled(uv_pch_intr_now_enabled));
 }
 
 static struct init_nmi {
