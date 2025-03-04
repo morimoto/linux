@@ -5083,8 +5083,7 @@ snd_hdspm_proc_read_aes32(struct snd_info_entry * entry,
 		    x, (unsigned long) hdspm->period_bytes);
 
 	snd_iprintf(buffer, "Line out: %s\n",
-		    (hdspm->
-		     control_register & HDSPM_LineOut) ? "on " : "off");
+		    str_on_off(hdspm->control_register & HDSPM_LineOut));
 
 	snd_iprintf(buffer,
 		    "ClearTrackMarker %s, Emphasis %s, Dolby %s\n",
