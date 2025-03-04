@@ -843,8 +843,7 @@ int qede_set_coalesce(struct net_device *dev, struct ethtool_coalesce *coal,
 	    coal->tx_coalesce_usecs > QED_COALESCE_MAX) {
 		DP_INFO(edev,
 			"Can't support requested %s coalesce value [max supported value %d]\n",
-			coal->rx_coalesce_usecs > QED_COALESCE_MAX ? "rx" :
-			"tx", QED_COALESCE_MAX);
+			str_rx_tx(coal->rx_coalesce_usecs > QED_COALESCE_MAX), QED_COALESCE_MAX);
 		return -EINVAL;
 	}
 
