@@ -476,9 +476,9 @@ static int nomadik_src_clk_debugfs_show(struct seq_file *s, void *what)
 
 		seq_printf(s, "%s  %s     %s     %s\n",
 			   src_clk_names[i],
-			   (pcksrb & mask) ? "on " : "off",
-			   (pcksr & mask) ? "on " : "off",
-			   (pckreq & mask) ? "on " : "off");
+			   str_on_off(pcksrb & mask),
+			   str_on_off(pcksr  & mask),
+			   str_on_off(pckreq & mask));
 	}
 	return 0;
 }
