@@ -606,8 +606,7 @@ static void mtip_handle_tfe(struct driver_data *dd)
 					fis->command == ATA_CMD_FPDMA_WRITE)) {
 					dev_warn(&dd->pdev->dev,
 					"  Fail: %s w/tag %d [%s].\n",
-					fis->command == ATA_CMD_FPDMA_WRITE ?
-						"write" : "read",
+					str_write_read(fis->command == ATA_CMD_FPDMA_WRITE),
 					tag,
 					fail_reason != NULL ?
 						fail_reason : "unknown");
