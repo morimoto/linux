@@ -21,6 +21,7 @@
 #include <linux/gpio/aspeed.h>
 #include <linux/mfd/syscon.h>
 #include <linux/genalloc.h>
+#include <linux/string_choices.h>
 
 #include "fsi-master.h"
 #include "cf-fsi-fw.h"
@@ -889,7 +890,7 @@ static int check_firmware_image(struct fsi_master_acf *master)
 	/* Check version and signature */
 	dev_info(master->dev, "ColdFire initialized, firmware v%d API v%d.%d (trace %s)\n",
 		 fw_vers, fw_api >> 8, fw_api & 0xff,
-		 master->trace_enabled ? "enabled" : "disabled");
+		 str_enabled_disabled(master->trace_enabled));
 
 	if ((fw_api >> 8) != API_VERSION_MAJ) {
 		dev_err(master->dev, "Unsupported coprocessor API version !\n");
