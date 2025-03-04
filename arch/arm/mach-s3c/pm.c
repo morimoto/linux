@@ -46,8 +46,7 @@ int s3c_irqext_wake(struct irq_data *data, unsigned int state)
 	if (!(s3c_irqwake_eintallow & bit))
 		return -ENOENT;
 
-	printk(KERN_INFO "wake %s for irq %d\n",
-	       state ? "enabled" : "disabled", data->irq);
+	pr_info("wake %s for irq %d\n", str_enabled_disabled(state), data->irq);
 
 	if (!state)
 		s3c_irqwake_eintmask |= bit;
