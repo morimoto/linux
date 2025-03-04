@@ -333,7 +333,7 @@ static int hix5hd2_i2c_xfer_msg(struct hix5hd2_i2c_priv *priv,
 		priv->state = HIX5I2C_STAT_RW_ERR;
 		priv->err = -ETIMEDOUT;
 		dev_warn(priv->dev, "%s timeout=%d\n",
-			 msgs->flags & I2C_M_RD ? "rx" : "tx",
+			 str_rx_tx(msgs->flags & I2C_M_RD),
 			 priv->adap.timeout);
 	}
 	ret = priv->state;
