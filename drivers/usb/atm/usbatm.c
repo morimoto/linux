@@ -1114,7 +1114,7 @@ int usbatm_usb_probe(struct usb_interface *intf, const struct usb_device_id *id,
 			&instance->tx_channel : &instance->rx_channel;
 
 		dev_dbg(dev, "%s: using %d byte buffer for %s channel 0x%p\n",
-			__func__, channel->buf_size, i ? "tx" : "rx", channel);
+			__func__, channel->buf_size, str_tx_rx(i), channel);
 	}
 
 	/* initialize urbs */
