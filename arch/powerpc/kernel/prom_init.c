@@ -1542,8 +1542,7 @@ static unsigned long __init alloc_down(unsigned long size, unsigned long align,
 {
 	unsigned long base, addr = 0;
 
-	prom_debug("%s(%lx, %lx, %s)\n", __func__, size, align,
-		   highmem ? "(high)" : "(low)");
+	prom_debug("%s(%lx, %lx, (%s))\n", __func__, size, align, str_high_low(highmem));
 	if (ram_top == 0)
 		prom_panic("alloc_down() called with mem not initialized\n");
 
