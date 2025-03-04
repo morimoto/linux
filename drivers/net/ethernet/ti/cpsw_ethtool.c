@@ -551,7 +551,7 @@ static int cpsw_update_channels_res(struct cpsw_priv *priv, int ch_num, int rx,
 			return -EINVAL;
 
 		cpsw_info(priv, ifup, "created new %d %s channel\n", *ch,
-			  (rx ? "rx" : "tx"));
+			  str_rx_tx(rx));
 		(*ch)++;
 	}
 
@@ -563,7 +563,7 @@ static int cpsw_update_channels_res(struct cpsw_priv *priv, int ch_num, int rx,
 			return ret;
 
 		cpsw_info(priv, ifup, "destroyed %d %s channel\n", *ch,
-			  (rx ? "rx" : "tx"));
+			  str_rx_tx(rx));
 	}
 
 	return 0;
