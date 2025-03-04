@@ -2106,14 +2106,14 @@ static int gaudi2_config_etf(struct hl_device *hdev, struct hl_debug_params *par
 	rc = gaudi2_coresight_timeout(hdev, base_reg + mmETF_FFCR_OFFSET, 6, false);
 	if (rc) {
 		dev_err(hdev->dev, "Failed to %s ETF on timeout, error %d\n",
-			params->enable ? "enable" : "disable", rc);
+			str_enable_disable(params->enable), rc);
 		return rc;
 	}
 
 	rc = gaudi2_coresight_timeout(hdev, base_reg + mmETF_STS_OFFSET, 2, true);
 	if (rc) {
 		dev_err(hdev->dev, "Failed to %s ETF on timeout, error %d\n",
-			params->enable ? "enable" : "disable", rc);
+			str_enable_disable(params->enable), rc);
 		return rc;
 	}
 
@@ -2215,14 +2215,14 @@ static int gaudi2_config_etr(struct hl_device *hdev, struct hl_ctx *ctx,
 	rc = gaudi2_coresight_timeout(hdev, mmPSOC_ETR_FFCR, 6, false);
 	if (rc) {
 		dev_err(hdev->dev, "Failed to %s ETR on timeout, error %d\n",
-				params->enable ? "enable" : "disable", rc);
+			str_enable_disable(params->enable), rc);
 		return rc;
 	}
 
 	rc = gaudi2_coresight_timeout(hdev, mmPSOC_ETR_STS, 2, true);
 	if (rc) {
 		dev_err(hdev->dev, "Failed to %s ETR on timeout, error %d\n",
-				params->enable ? "enable" : "disable", rc);
+			str_enable_disable(params->enable), rc);
 		return rc;
 	}
 
