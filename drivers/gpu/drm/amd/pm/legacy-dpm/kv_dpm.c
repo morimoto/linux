@@ -2871,8 +2871,8 @@ kv_dpm_debugfs_print_current_performance_level(void *handle,
 			SMU_VOLTAGE_STATUS__SMU_VOLTAGE_CURRENT_LEVEL_MASK) >>
 			SMU_VOLTAGE_STATUS__SMU_VOLTAGE_CURRENT_LEVEL__SHIFT;
 		vddc = kv_convert_8bit_index_to_voltage(adev, (u16)tmp);
-		seq_printf(m, "uvd    %sabled\n", pi->uvd_power_gated ? "dis" : "en");
-		seq_printf(m, "vce    %sabled\n", pi->vce_power_gated ? "dis" : "en");
+		seq_printf(m, "uvd    %s\n", str_disabled_enabled(pi->uvd_power_gated));
+		seq_printf(m, "vce    %s\n", str_disabled_enabled(pi->vce_power_gated));
 		seq_printf(m, "power level %d    sclk: %u vddc: %u\n",
 			   current_index, sclk, vddc);
 	}
