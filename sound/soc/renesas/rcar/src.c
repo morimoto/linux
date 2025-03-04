@@ -84,8 +84,7 @@ static struct dma_chan *rsnd_src_dma_req(struct rsnd_dai_stream *io,
 	int is_play = rsnd_io_is_play(io);
 
 	return rsnd_dma_request_channel(rsnd_src_of_node(priv),
-					SRC_NAME, mod,
-					is_play ? "rx" : "tx");
+					SRC_NAME, mod, str_rx_tx(is_play));
 }
 
 static u32 rsnd_src_convert_rate(struct rsnd_dai_stream *io,

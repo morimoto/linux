@@ -189,7 +189,7 @@ static int rsnd_dmaen_start(struct rsnd_mod *mod,
 }
 
 struct dma_chan *rsnd_dma_request_channel(struct device_node *of_node, char *name,
-					  struct rsnd_mod *mod, char *x)
+					  struct rsnd_mod *mod, const char *x)
 {
 	struct rsnd_priv *priv = rsnd_mod_to_priv(mod);
 	struct device *dev = rsnd_priv_to_dev(priv);

@@ -16,6 +16,7 @@
 #include <linux/module.h>
 #include <linux/of.h>
 #include <linux/sh_dma.h>
+#include <linux/string_choices.h>
 #include <linux/workqueue.h>
 #include <sound/soc.h>
 #include <sound/pcm_params.h>
@@ -264,7 +265,7 @@ int rsnd_dma_attach(struct rsnd_dai_stream *io,
 		    struct rsnd_mod *mod, struct rsnd_mod **dma_mod);
 int rsnd_dma_probe(struct rsnd_priv *priv);
 struct dma_chan *rsnd_dma_request_channel(struct device_node *of_node, char *name,
-					  struct rsnd_mod *mod, char *x);
+					  struct rsnd_mod *mod, const char *x);
 
 /*
  *	R-Car sound mod
