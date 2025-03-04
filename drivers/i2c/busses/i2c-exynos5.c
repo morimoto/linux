@@ -824,7 +824,7 @@ static int exynos5_i2c_xfer_msg(struct exynos5_i2c *i2c,
 		exynos5_i2c_reset(i2c);
 		if (ret == -ETIMEDOUT)
 			dev_warn(i2c->dev, "%s timeout\n",
-				 (msgs->flags & I2C_M_RD) ? "rx" : "tx");
+				 str_rx_tx(msgs->flags & I2C_M_RD));
 	}
 
 	/* Return the state as in interrupt routine */
