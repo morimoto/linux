@@ -1689,7 +1689,7 @@ TRACE_EVENT(afs_fs_probe,
 			   ),
 
 	    TP_printk("s=%08x %s pq=%x ax=%u e=%d ac=%d rtt=%d %pISpc",
-		      __entry->server, __entry->tx ? "tx" : "rx", __entry->estate,
+		      __entry->server, str_tx_rx(__entry->tx), __entry->estate,
 		      __entry->addr_index, __entry->error, __entry->abort_code, __entry->rtt_us,
 		      &__entry->srx.transport)
 	    );
@@ -1723,7 +1723,7 @@ TRACE_EVENT(afs_vl_probe,
 			   ),
 
 	    TP_printk("vl=%08x %s ax=%u e=%d ac=%d rtt=%d %pISpc",
-		      __entry->server, __entry->tx ? "tx" : "rx", __entry->addr_index,
+		      __entry->server, str_tx_rx(__entry->tx), __entry->addr_index,
 		      __entry->error, __entry->abort_code, __entry->rtt_us,
 		      &__entry->srx.transport)
 	    );
