@@ -1312,7 +1312,7 @@ static int hns_nic_init_irq(struct hns_nic_priv *priv)
 
 		snprintf(rd->ring->ring_name, RCB_RING_NAME_LEN,
 			 "%s-%s%d", priv->netdev->name,
-			 (is_tx_ring(rd->ring) ? "tx" : "rx"), rd->queue_index);
+			 str_tx_rx(is_tx_ring(rd->ring)), rd->queue_index);
 
 		rd->ring->ring_name[RCB_RING_NAME_LEN - 1] = '\0';
 
