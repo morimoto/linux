@@ -9,6 +9,7 @@
 #include <linux/fs.h>
 #include <linux/miscdevice.h>
 #include <linux/slab.h>
+#include <linux/string_choices.h>
 #include <linux/uaccess.h>
 #include <linux/module.h>
 
@@ -39,7 +40,7 @@ static int ps3flash_read_write_sectors(struct ps3_storage_device *dev,
 					     write);
 	if (res) {
 		dev_err(&dev->sbd.core, "%s:%u: %s failed 0x%llx\n", __func__,
-			__LINE__, write ? "write" : "read", res);
+			__LINE__, str_write_read(write), res);
 		return -EIO;
 	}
 	return 0;
