@@ -278,7 +278,7 @@ TRACE_EVENT(kvm_s390_enable_disable_ibs,
 		    ),
 
 	    TP_printk("%s ibs on cpu %d",
-		      __entry->state ? "enabling" : "disabling", __entry->id)
+		      str_enabling_disabling(__entry->state), __entry->id)
 	);
 
 /*
