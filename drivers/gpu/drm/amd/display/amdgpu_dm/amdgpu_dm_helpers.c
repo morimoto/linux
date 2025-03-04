@@ -1176,8 +1176,8 @@ bool dm_helpers_dmub_outbox_interrupt_control(struct dc_context *ctx, bool enabl
 
 	ret = dc_interrupt_set(ctx->dc, irq_source, enable);
 
-	DRM_DEBUG_DRIVER("Dmub trace irq %sabling: r=%d\n",
-			 enable ? "en" : "dis", ret);
+	DRM_DEBUG_DRIVER("Dmub trace irq %s: r=%d\n",
+			 str_enabling_disabling(enable), ret);
 	return ret;
 }
 
