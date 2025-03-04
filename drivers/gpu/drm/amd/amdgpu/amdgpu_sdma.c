@@ -244,7 +244,7 @@ int amdgpu_sdma_init_microcode(struct amdgpu_device *adev,
 	}
 
 	DRM_DEBUG("psp_load == '%s'\n",
-		  adev->firmware.load_type == AMDGPU_FW_LOAD_PSP ? "true" : "false");
+		  str_true_false(adev->firmware.load_type == AMDGPU_FW_LOAD_PSP));
 
 	if (adev->firmware.load_type == AMDGPU_FW_LOAD_PSP) {
 		switch (version_major) {

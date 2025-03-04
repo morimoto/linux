@@ -332,7 +332,7 @@ static int amdgpu_atif_get_notification_params(struct amdgpu_atif *atif)
 
 out:
 	DRM_DEBUG_DRIVER("Notification %s, command code = %#x\n",
-			(n->enabled ? "enabled" : "disabled"),
+			str_enabled_disabled(n->enabled),
 			n->command_code);
 	kfree(info);
 	return err;
