@@ -23,6 +23,7 @@
 #include <linux/pm_runtime.h>
 #include <linux/reset.h>
 #include <linux/sh_dma.h>
+#include <linux/string_choices.h>
 #include <linux/spi/spi.h>
 #include <linux/spinlock.h>
 
@@ -1104,7 +1105,7 @@ static struct dma_chan *rspi_request_dma_chan(struct device *dev,
 
 	chan = dma_request_slave_channel_compat(mask, shdma_chan_filter,
 				(void *)(unsigned long)id, dev,
-				dir == DMA_MEM_TO_DEV ? "tx" : "rx");
+				str_tx_rx(dir == DMA_MEM_TO_DEV));
 	if (!chan) {
 		dev_warn(dev, "dma_request_slave_channel_compat failed\n");
 		return NULL;
