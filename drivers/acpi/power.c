@@ -32,6 +32,7 @@
 #include <linux/string_choices.h>
 #include <linux/pm_runtime.h>
 #include <linux/sysfs.h>
+#include <linux/string_choices.h>
 #include <linux/acpi.h>
 #include "sleep.h"
 #include "internal.h"
