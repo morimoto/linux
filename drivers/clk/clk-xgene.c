@@ -63,7 +63,7 @@ static int xgene_clk_pll_is_enabled(struct clk_hw *hw)
 
 	data = xgene_clk_read(pllclk->reg + pllclk->pll_offset);
 	pr_debug("%s pll %s\n", clk_hw_get_name(hw),
-		data & REGSPEC_RESET_F1_MASK ? "disabled" : "enabled");
+		 str_disabled_enabled(data & REGSPEC_RESET_F1_MASK));
 
 	return data & REGSPEC_RESET_F1_MASK ? 0 : 1;
 }
