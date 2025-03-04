@@ -17,6 +17,7 @@
 #include <linux/platform_data/spi-s3c64xx.h>
 #include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
+#include <linux/string_choices.h>
 #include <linux/spi/spi.h>
 #include <linux/types.h>
 
@@ -334,7 +335,7 @@ static int s3c64xx_prepare_dma(struct s3c64xx_spi_dma_data *dma,
 				       dma->direction, DMA_PREP_INTERRUPT);
 	if (!desc) {
 		dev_err(&sdd->pdev->dev, "unable to prepare %s scatterlist",
-			dma->direction == DMA_DEV_TO_MEM ? "rx" : "tx");
+			str_rx_tx(dma->direction == DMA_DEV_TO_MEM));
 		return -ENOMEM;
 	}
 
