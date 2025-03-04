@@ -29,6 +29,7 @@
 #include <linux/module.h>
 #include <linux/of.h>
 #include <linux/regmap.h>
+#include <linux/string_choices.h>
 
 #define ALT_SDR_CTL_FPGAPORTRST_OFST		0x80
 #define ALT_SDR_CTL_FPGAPORTRST_PORTRSTN_MSK	0x00003fff
@@ -129,7 +130,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
 			dev_warn(dev, "invalid bridge-enable %u > 1\n", enable);
 		} else {
 			dev_info(dev, "%s bridge\n",
-				 (enable ? "enabling" : "disabling"));
+				 str_enabling_disabling(enable));
 			ret = _alt_fpga2sdram_enable_set(priv, enable);
 			if (ret) {
 				fpga_bridge_unregister(br);
