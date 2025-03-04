@@ -515,12 +515,10 @@ static int i82975x_probe1(struct pci_dev *pdev, int dev_idx)
 	drc[0] = readl(mch_window + I82975X_DRC_CH0M0);
 	drc[1] = readl(mch_window + I82975X_DRC_CH1M0);
 #ifdef i82975x_DEBUG_IOMEM
-	i82975x_printk(KERN_INFO, "DRC_CH0 = %0x, %s\n", drc[0],
-			((drc[0] >> 21) & 3) == 1 ?
-				"ECC enabled" : "ECC disabled");
-	i82975x_printk(KERN_INFO, "DRC_CH1 = %0x, %s\n", drc[1],
-			((drc[1] >> 21) & 3) == 1 ?
-				"ECC enabled" : "ECC disabled");
+	i82975x_printk(KERN_INFO, "DRC_CH0 = %0x, ECC %s\n", drc[0],
+		       str_enabled_disabled(((drc[0] >> 21) & 3) == 1));
+	i82975x_printk(KERN_INFO, "DRC_CH1 = %0x, ECC %s\n", drc[1],
+		       str_enabled_disabled(((drc[1] >> 21) & 3) == 1));
 
 	i82975x_printk(KERN_INFO, "C0 BNKARC = %0x\n",
 		readw(mch_window + I82975X_C0BNKARC));
