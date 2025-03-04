@@ -474,7 +474,7 @@ static struct dma_chan *sh_mobile_i2c_request_dma_chan(struct device *dev,
 {
 	struct dma_chan *chan;
 	struct dma_slave_config cfg;
-	char *chan_name = dir == DMA_MEM_TO_DEV ? "tx" : "rx";
+	const char *chan_name = str_tx_rx(dir == DMA_MEM_TO_DEV);
 	int ret;
 
 	chan = dma_request_chan(dev, chan_name);
