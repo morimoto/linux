@@ -489,7 +489,7 @@ static int cs_dsp_debugfs_read_controls_show(struct seq_file *s, void *ignored)
 			   ctl->flags & WMFW_CTL_FLAG_SYS ? 'S' : '-',
 			   ctl->flags & WMFW_CTL_FLAG_READABLE ? 'R' : '-',
 			   ctl->flags & WMFW_CTL_FLAG_WRITEABLE ? 'W' : '-',
-			   ctl->enabled ? "enabled" : "disabled",
+			   str_enabled_disabled(ctl->enabled),
 			   ctl->set ? "dirty" : "clean");
 	}
 
