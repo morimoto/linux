@@ -22,6 +22,7 @@
 #include <linux/platform_device.h>
 #include <linux/refcount.h>
 #include <linux/slab.h>
+#include <linux/string_choices.h>
 #include <linux/virtio.h>
 #include <linux/virtio_config.h>
 
@@ -859,7 +860,7 @@ static int scmi_vio_probe(struct virtio_device *vdev)
 		if (sz > MSG_TOKEN_MAX) {
 			dev_info(dev,
 				 "%s virtqueue could hold %d messages. Only %ld allowed to be pending.\n",
-				 channels[i].is_rx ? "rx" : "tx",
+				 str_rx_tx(channels[i].is_rx),
 				 sz, MSG_TOKEN_MAX);
 			sz = MSG_TOKEN_MAX;
 		}
