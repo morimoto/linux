@@ -2680,7 +2680,7 @@ static int scmi_chan_setup(struct scmi_info *info, struct device_node *of_node,
 
 	/* Create a unique name for this transport device */
 	snprintf(name, 32, "__scmi_transport_device_%s_%02X",
-		 idx ? "rx" : "tx", prot_id);
+		 str_rx_tx(idx), prot_id);
 	/* Create a uniquely named, dedicated transport device for this chan */
 	tdev = scmi_device_create(of_node, info->dev, prot_id, name);
 	if (!tdev) {
