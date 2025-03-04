@@ -439,7 +439,7 @@ static void __qla2x00_release_all_sadb(struct scsi_qla_host *vha,
 	}
 	ql_dbg(ql_dbg_edif, vha, 0x3063,
 	    "%s: %d %s keys released\n",
-	    __func__, key_cnt, pdir ? "tx" : "rx");
+	    __func__, key_cnt, str_tx_rx(pdir));
 }
 
 /* find an release all outstanding sadb sa_indicies */
