@@ -388,7 +388,7 @@ static void msg_io_conf(void *priv, int errno)
 
 	if (errno)
 		rnbd_clt_info_rl(dev, "%s I/O failed with err: %d\n",
-				 rw == READ ? "read" : "write", errno);
+				 str_read_write(rw == READ), errno);
 }
 
 static void wake_up_iu_comp(struct rnbd_iu *iu, int errno)
