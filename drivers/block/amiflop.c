@@ -1467,7 +1467,7 @@ static blk_status_t amiflop_rw_cur_segment(struct amiga_floppy_struct *floppy,
 #ifdef DEBUG
 		printk("fd: sector %ld + %d requested for %s\n",
 		       blk_rq_pos(rq), cnt,
-		       (rq_data_dir(rq) == READ) ? "read" : "write");
+		       str_read_write(rq_data_dir(rq) == READ));
 #endif
 		block = blk_rq_pos(rq) + cnt;
 		track = block / (floppy->dtype->sects * floppy->type->sect_mult);
