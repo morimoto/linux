@@ -29,6 +29,7 @@
 #include <linux/regmap.h>
 #include <linux/reset.h>
 #include <linux/spinlock.h>
+#include <linux/string_choices.h>
 
 #define ALT_L3_REMAP_OFST			0x0
 #define ALT_L3_REMAP_MPUZERO_MSK		0x00000001
@@ -166,7 +167,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
 			dev_warn(dev, "invalid bridge-enable %u > 1\n", enable);
 		} else {
 			dev_info(dev, "%s bridge\n",
-				 (enable ? "enabling" : "disabling"));
+				 str_enabling_disabling(enable));
 
 			ret = _alt_hps2fpga_enable_set(priv, enable);
 			if (ret)
