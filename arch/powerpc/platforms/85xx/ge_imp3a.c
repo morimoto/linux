@@ -186,8 +186,7 @@ static void ge_imp3a_show_cpuinfo(struct seq_file *m)
 
 	seq_printf(m, "cPCI geo. addr\t: %u\n", ge_imp3a_get_cpci_geo_addr());
 
-	seq_printf(m, "cPCI syscon\t: %s\n",
-		ge_imp3a_get_cpci_is_syscon() ? "yes" : "no");
+	seq_printf(m, "cPCI syscon\t: %s\n", str_yes_no(ge_imp3a_get_cpci_is_syscon()));
 }
 
 machine_arch_initcall(ge_imp3a, mpc85xx_common_publish_devices);
