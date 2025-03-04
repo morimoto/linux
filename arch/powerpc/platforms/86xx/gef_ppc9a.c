@@ -151,8 +151,7 @@ static void gef_ppc9a_show_cpuinfo(struct seq_file *m)
 
 	seq_printf(m, "VME geo. addr\t: %u\n", gef_ppc9a_get_vme_geo_addr());
 
-	seq_printf(m, "VME syscon\t: %s\n",
-		gef_ppc9a_get_vme_is_syscon() ? "yes" : "no");
+	seq_printf(m, "VME syscon\t: %s\n", str_yes_no(gef_ppc9a_get_vme_is_syscon()));
 }
 
 static void gef_ppc9a_nec_fixup(struct pci_dev *pdev)
