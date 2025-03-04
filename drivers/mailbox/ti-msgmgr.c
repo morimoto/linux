@@ -20,6 +20,7 @@
 #include <linux/platform_device.h>
 #include <linux/property.h>
 #include <linux/soc/ti/ti-msgmgr.h>
+#include <linux/string_choices.h>
 
 #define Q_DATA_OFFSET(proxy, queue, reg)	\
 		     ((0x10000 * (proxy)) + (0x80 * (queue)) + ((reg) * 4))
@@ -642,7 +643,7 @@ static int ti_msgmgr_queue_setup(int idx, struct device *dev,
 				 struct ti_queue_inst *qinst,
 				 struct mbox_chan *chan)
 {
-	char *dir;
+	const char *dir;
 
 	qinst->proxy_id = qd->proxy_id;
 	qinst->queue_id = qd->queue_id;
@@ -680,7 +681,7 @@ static int ti_msgmgr_queue_setup(int idx, struct device *dev,
 		    inst->queue_state_debug_region +
 		    Q_STATE_OFFSET(qinst->queue_id);
 		qinst->is_tx = qd->is_tx;
-		dir = qinst->is_tx ? "tx" : "rx";
+		dir = str_tx_rx(qinst->is_tx);
 		snprintf(qinst->name, sizeof(qinst->name), "%s %s_%03d_%03d",
 			 dev_name(dev), dir, qinst->queue_id, qinst->proxy_id);
 	}
