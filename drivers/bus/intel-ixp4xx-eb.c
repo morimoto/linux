@@ -17,6 +17,7 @@
 #include <linux/of_platform.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
+#include <linux/string_choices.h>
 
 #define IXP4XX_EXP_NUM_CS		8
 
@@ -222,7 +223,7 @@ static void ixp4xx_exp_setup_chipselect(struct ixp4xx_eb *eb,
 			else
 				cs_cfg &= ~ip->mask;
 			dev_info(eb->dev, "CS%d %s %s\n", cs_index,
-				 val ? "enabled" : "disabled",
+				 str_enabled_disabled(val),
 				 ip->prop);
 			continue;
 		}
