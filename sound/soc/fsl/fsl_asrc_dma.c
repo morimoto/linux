@@ -223,7 +223,7 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
 		tmp_chan = be_chan;
 	}
 	if (!tmp_chan) {
-		tmp_chan = dma_request_chan(dev_be, tx ? "tx" : "rx");
+		tmp_chan = dma_request_chan(dev_be, str_tx_rx(tx));
 		if (IS_ERR(tmp_chan)) {
 			dev_err(dev, "failed to request DMA channel for Back-End\n");
 			return -EINVAL;
