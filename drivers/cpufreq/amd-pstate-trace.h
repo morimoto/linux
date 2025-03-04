@@ -79,8 +79,7 @@ TRACE_EVENT(amd_pstate_perf,
 		  (unsigned long long)__entry->aperf,
 		  (unsigned long long)__entry->tsc,
 		  (unsigned int)__entry->cpu_id,
-		  (__entry->fast_switch) ? "true" : "false"
-		 )
+		  str_true_false(__entry->fast_switch))
 );
 
 TRACE_EVENT(amd_pstate_epp_perf,
