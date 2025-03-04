@@ -3089,7 +3089,7 @@ retry_write_locked:
 
 	if (!svm_fault_allowed(vma, write_fault)) {
 		pr_debug("fault addr 0x%llx no %s permission\n", addr,
-			write_fault ? "write" : "read");
+			 str_write_read(write_fault));
 		r = -EPERM;
 		goto out_unlock_range;
 	}
