@@ -335,7 +335,7 @@ DECLARE_EVENT_CLASS(musb_cppi41,
 	),
 	TP_printk("%s: %p, hwep%d ch%d%s, prog_len %d, len %d/%d",
 			__get_str(name), __entry->ch, __entry->hwep,
-			__entry->port, __entry->is_tx ? "tx" : "rx",
+			__entry->port, str_tx_rx(__entry->is_tx),
 			__entry->prog_len, __entry->xferred, __entry->len
 	)
 );
