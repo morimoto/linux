@@ -88,8 +88,8 @@ int amdgpu_dm_crtc_set_vupdate_irq(struct drm_crtc *crtc, bool enable)
 
 	rc = dc_interrupt_set(adev->dm.dc, irq_source, enable) ? 0 : -EBUSY;
 
-	DRM_DEBUG_VBL("crtc %d - vupdate irq %sabling: r=%d\n",
-		      acrtc->crtc_id, enable ? "en" : "dis", rc);
+	DRM_DEBUG_VBL("crtc %d - vupdate irq %s: r=%d\n",
+		      acrtc->crtc_id, str_enabling_disabling(enable), rc);
 	return rc;
 }
 
