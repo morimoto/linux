@@ -21,6 +21,7 @@
 #include <linux/pm_runtime.h>
 #include <linux/of.h>
 #include <linux/reset.h>
+#include <linux/string_choices.h>
 #include <linux/spi/spi.h>
 
 #define SPI_COMMAND1				0x000
@@ -664,7 +665,7 @@ static int tegra_spi_init_dma_param(struct tegra_spi_data *tspi,
 	u32 *dma_buf;
 	dma_addr_t dma_phys;
 
-	dma_chan = dma_request_chan(tspi->dev, dma_to_memory ? "rx" : "tx");
+	dma_chan = dma_request_chan(tspi->dev, str_rx_tx(dma_to_memory));
 	if (IS_ERR(dma_chan))
 		return dev_err_probe(tspi->dev, PTR_ERR(dma_chan),
 				     "Dma channel is not available\n");
