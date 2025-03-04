@@ -152,7 +152,7 @@ static const char * const ia_reg_ctx_strs[] = {
 
 static inline void print_bool(char *str, const char *pfx, u64 check, u64 bit)
 {
-	printk("%s%s: %s\n", pfx, str, (check & bit) ? "true" : "false");
+	printk("%s%s: %s\n", pfx, str, str_true_false(check & bit));
 }
 
 static void print_err_info_ms(const char *pfx, u16 validation_bits, u64 check)
