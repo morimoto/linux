@@ -42,6 +42,7 @@
 #include <linux/delay.h>
 #include <linux/freezer.h>
 #include <linux/bitmap.h>
+#include <linux/string_choices.h>
 
 #include <xen/events.h>
 #include <xen/page.h>
@@ -1383,7 +1384,7 @@ static int dispatch_rw_block_io(struct xen_blkif_ring *ring,
 
 	if (xen_vbd_translate(&preq, ring->blkif, operation) != 0) {
 		pr_debug("access denied: %s of [%llu,%llu] on dev=%04x\n",
-			 operation == REQ_OP_READ ? "read" : "write",
+			 str_read_write(operation == REQ_OP_READ),
 			 preq.sector_number,
 			 preq.sector_number + preq.nr_sects,
 			 ring->blkif->vbd.pdevice);
