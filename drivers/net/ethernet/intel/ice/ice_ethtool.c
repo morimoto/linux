@@ -4135,7 +4135,7 @@ static int
 ice_set_rc_coalesce(struct ethtool_coalesce *ec,
 		    struct ice_ring_container *rc, struct ice_vsi *vsi)
 {
-	const char *c_type_str = (rc->type == ICE_RX_CONTAINER) ? "rx" : "tx";
+	const char *c_type_str = str_rx_tx(rc->type == ICE_RX_CONTAINER);
 	u32 use_adaptive_coalesce, coalesce_usecs;
 	struct ice_pf *pf = vsi->back;
 	u16 itr_setting;
