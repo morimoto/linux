@@ -349,7 +349,7 @@ static int hpet_mmap_enabled = 0;
 static __init int hpet_mmap_enable(char *str)
 {
 	get_option(&str, &hpet_mmap_enabled);
-	pr_info("HPET mmap %s\n", hpet_mmap_enabled ? "enabled" : "disabled");
+	pr_info("HPET mmap %s\n", str_enabled_disabled(hpet_mmap_enabled));
 	return 1;
 }
 __setup("hpet_mmap=", hpet_mmap_enable);
@@ -867,7 +867,7 @@ int hpet_alloc(struct hpet_data *hdp)
 
 	printk(KERN_INFO "hpet%u: at MMIO 0x%lx, IRQ%s",
 		hpetp->hp_which, hdp->hd_phys_address,
-		hpetp->hp_ntimer > 1 ? "s" : "");
+		str_plural(hpetp->hp_ntimer));
 	for (i = 0; i < hpetp->hp_ntimer; i++)
 		printk(KERN_CONT "%s %u", i > 0 ? "," : "", hdp->hd_irq[i]);
 	printk(KERN_CONT "\n");
