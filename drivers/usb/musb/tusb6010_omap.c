@@ -109,7 +109,7 @@ static void tusb_omap_dma_cb(void *data)
 	spin_lock_irqsave(&musb->lock, flags);
 
 	dev_dbg(musb->controller, "ep%i %s dma callback\n",
-		chdat->epnum, chdat->tx ? "tx" : "rx");
+		chdat->epnum, str_tx_rx(chdat->tx));
 
 	if (chdat->tx)
 		remaining = musb_readl(ep_conf, TUSB_EP_TX_OFFSET);
@@ -121,7 +121,7 @@ static void tusb_omap_dma_cb(void *data)
 	/* HW issue #10: XFR_SIZE may get corrupt on DMA (both async & sync) */
 	if (unlikely(remaining > chdat->transfer_len)) {
 		dev_dbg(musb->controller, "Corrupt %s XFR_SIZE: 0x%08lx\n",
-			chdat->tx ? "tx" : "rx", remaining);
+			str_tx_rx(chdat->tx), remaining);
 		remaining = 0;
 	}
 
@@ -224,7 +224,7 @@ static int tusb_omap_dma_program(struct dma_channel *channel, u16 packet_sz,
 	dma_remaining = TUSB_EP_CONFIG_XFR_SIZE(dma_remaining);
 	if (dma_remaining) {
 		dev_dbg(musb->controller, "Busy %s dma, not using: %08x\n",
-			chdat->tx ? "tx" : "rx", dma_remaining);
+			str_tx_rx(chdat->tx), dma_remaining);
 		return false;
 	}
 
@@ -284,7 +284,7 @@ static int tusb_omap_dma_program(struct dma_channel *channel, u16 packet_sz,
 
 	dev_dbg(musb->controller,
 		"ep%i %s dma: %pad len: %u(%u) packet_sz: %i(%i)\n",
-		chdat->epnum, chdat->tx ? "tx" : "rx", &dma_addr,
+		chdat->epnum, str_tx_rx(chdat->tx), &dma_addr,
 		chdat->transfer_len, len, chdat->transfer_packet_sz, packet_sz);
 
 	dma_cfg.src_addr = fifo_addr;
@@ -314,7 +314,7 @@ static int tusb_omap_dma_program(struct dma_channel *channel, u16 packet_sz,
 
 	dev_dbg(musb->controller,
 		"ep%i %s using %i-bit %s dma from %pad to %pad\n",
-		chdat->epnum, chdat->tx ? "tx" : "rx",
+		chdat->epnum, str_tx_rx(chdat->tx),
 		dma_cfg.src_addr_width * 8,
 		((dma_addr & 0x3) == 0) ? "sync" : "async",
 		(dma_dir == DMA_MEM_TO_DEV) ? &dma_addr : &fifo_addr,
@@ -435,7 +435,7 @@ tusb_omap_dma_allocate(struct dma_controller *c,
 
 	/* REVISIT: Why does dmareq5 not work? */
 	if (hw_ep->epnum == 0) {
-		dev_dbg(musb->controller, "Not allowing DMA for ep0 %s\n", tx ? "tx" : "rx");
+		dev_dbg(musb->controller, "Not allowing DMA for ep0 %s\n", str_tx_rx(tx));
 		return NULL;
 	}
 
@@ -481,7 +481,7 @@ tusb_omap_dma_allocate(struct dma_controller *c,
 
 	dev_dbg(musb->controller, "ep%i %s dma: %s dmareq%i\n",
 		chdat->epnum,
-		chdat->tx ? "tx" : "rx",
+		str_tx_rx(chdat->tx),
 		tusb_dma->multichannel ? "shared" : "dedicated",
 		dma_data->dmareq);
 
