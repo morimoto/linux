@@ -839,25 +839,22 @@ static int ath10k_usb_setup_pipe_resources(struct ath10k *ar,
 		if (ATH10K_USB_IS_BULK_EP(endpoint->bmAttributes)) {
 			ath10k_dbg(ar, ATH10K_DBG_USB,
 				   "usb %s bulk ep 0x%2.2x maxpktsz %d\n",
-				   ATH10K_USB_IS_DIR_IN
-				   (endpoint->bEndpointAddress) ?
-				   "rx" : "tx", endpoint->bEndpointAddress,
+				   str_rx_tx(ATH10K_USB_IS_DIR_IN(endpoint->bEndpointAddress)),
+				   endpoint->bEndpointAddress,
 				   le16_to_cpu(endpoint->wMaxPacketSize));
 		} else if (ATH10K_USB_IS_INT_EP(endpoint->bmAttributes)) {
 			ath10k_dbg(ar, ATH10K_DBG_USB,
 				   "usb %s int ep 0x%2.2x maxpktsz %d interval %d\n",
-				   ATH10K_USB_IS_DIR_IN
-				   (endpoint->bEndpointAddress) ?
-				   "rx" : "tx", endpoint->bEndpointAddress,
+				   str_rx_tx(ATH10K_USB_IS_DIR_IN(endpoint->bEndpointAddress)),
+				   endpoint->bEndpointAddress,
 				   le16_to_cpu(endpoint->wMaxPacketSize),
 				   endpoint->bInterval);
 		} else if (ATH10K_USB_IS_ISOC_EP(endpoint->bmAttributes)) {
 			/* TODO for ISO */
 			ath10k_dbg(ar, ATH10K_DBG_USB,
 				   "usb %s isoc ep 0x%2.2x maxpktsz %d interval %d\n",
-				   ATH10K_USB_IS_DIR_IN
-				   (endpoint->bEndpointAddress) ?
-				   "rx" : "tx", endpoint->bEndpointAddress,
+				   str_rx_tx(ATH10K_USB_IS_DIR_IN(endpoint->bEndpointAddress)),
+				   endpoint->bEndpointAddress,
 				   le16_to_cpu(endpoint->wMaxPacketSize),
 				   endpoint->bInterval);
 		}
