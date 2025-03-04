@@ -9,6 +9,7 @@
 #include <linux/ata.h>
 #include <linux/blk-mq.h>
 #include <linux/slab.h>
+#include <linux/string_choices.h>
 #include <linux/module.h>
 
 #include <asm/lv1call.h>
@@ -97,7 +98,7 @@ static blk_status_t ps3disk_submit_request_sg(struct ps3_storage_device *dev,
 {
 	struct ps3disk_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
 	int write = rq_data_dir(req), res;
-	const char *op = write ? "write" : "read";
+	const char *op = str_write_read(write);
 	u64 start_sector, sectors;
 	unsigned int region_id = dev->regions[dev->region_idx].id;
 
@@ -233,7 +234,7 @@ static irqreturn_t ps3disk_interrupt(int irq, void *data)
 		op = "flush";
 	} else {
 		read = !rq_data_dir(req);
-		op = read ? "read" : "write";
+		op = str_read_write(read);
 	}
 	if (status) {
 		dev_dbg(&dev->sbd.core, "%s:%u: %s failed 0x%llx\n", __func__,
