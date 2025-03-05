@@ -3415,7 +3415,7 @@ static int bnx2x_set_rxfh_fields(struct net_device *dev,
 			bp->rss_conf_obj.udp_rss_v4 = udp_rss_requested;
 			DP(BNX2X_MSG_ETHTOOL,
 			   "rss re-configured, UDP 4-tupple %s\n",
-			   udp_rss_requested ? "enabled" : "disabled");
+			   str_enabled_disabled(udp_rss_requested));
 			if (bp->state == BNX2X_STATE_OPEN)
 				return bnx2x_rss(bp, &bp->rss_conf_obj, false,
 						 true);
@@ -3424,7 +3424,7 @@ static int bnx2x_set_rxfh_fields(struct net_device *dev,
 			bp->rss_conf_obj.udp_rss_v6 = udp_rss_requested;
 			DP(BNX2X_MSG_ETHTOOL,
 			   "rss re-configured, UDP 4-tupple %s\n",
-			   udp_rss_requested ? "enabled" : "disabled");
+			   str_enabled_disabled(udp_rss_requested));
 			if (bp->state == BNX2X_STATE_OPEN)
 				return bnx2x_rss(bp, &bp->rss_conf_obj, false,
 						 true);

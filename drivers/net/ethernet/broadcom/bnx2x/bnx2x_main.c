@@ -2348,7 +2348,7 @@ static void bnx2x_init_dropless_fc(struct bnx2x *bp)
 	}
 
 	DP(NETIF_MSG_IFUP | NETIF_MSG_LINK, "dropless_fc is %s\n",
-	   pause_enabled ? "enabled" : "disabled");
+	   str_enabled_disabled(pause_enabled));
 }
 
 int bnx2x_initial_phy_init(struct bnx2x *bp, int load_mode)
@@ -13900,7 +13900,7 @@ static int bnx2x_init_one(struct pci_dev *pdev,
 
 	BNX2X_DEV_INFO("This is a %s function\n",
 		       IS_PF(bp) ? "physical" : "virtual");
-	BNX2X_DEV_INFO("Cnic support is %s\n", CNIC_SUPPORT(bp) ? "on" : "off");
+	BNX2X_DEV_INFO("Cnic support is %s\n", str_on_off(CNIC_SUPPORT(bp)));
 	BNX2X_DEV_INFO("Max num of status blocks %d\n", max_non_def_sbs);
 	BNX2X_DEV_INFO("Allocated netdev with %d tx and %d rx queues\n",
 		       tx_count, rx_count);
