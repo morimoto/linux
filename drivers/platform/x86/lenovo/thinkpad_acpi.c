@@ -10497,7 +10497,7 @@ static int dytc_control_amt(bool enable)
 	else
 		cmd = DYTC_SET_COMMAND(DYTC_FUNCTION_AMT, DYTC_MODE_AMT_DISABLE, enable);
 
-	pr_debug("%sabling AMT (cmd 0x%x)", enable ? "en":"dis", cmd);
+	pr_debug("%s AMT (cmd 0x%x)", str_enabling_disabling(enable), cmd);
 	err = dytc_command(cmd, &dummy);
 	if (err)
 		return err;
