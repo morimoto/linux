@@ -26,6 +26,7 @@
 #include <linux/platform_device.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
+#include <linux/string_choices.h>
 #include <linux/uaccess.h>
 #include <linux/delay.h>
 #include <linux/uio.h>
@@ -456,7 +457,7 @@ static int sbefifo_wait(struct sbefifo *sbefifo, bool up,
 	u32 addr, sts = 0;
 	int rc;
 
-	dev_vdbg(dev, "Wait on %s fifo...\n", up ? "up" : "down");
+	dev_vdbg(dev, "Wait on %s fifo...\n", str_up_down(up));
 
 	addr = (up ? SBEFIFO_UP : SBEFIFO_DOWN) | SBEFIFO_STS;
 
