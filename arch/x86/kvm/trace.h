@@ -199,7 +199,7 @@ TRACE_EVENT(kvm_pio,
 	),
 
 	TP_printk("pio_%s at 0x%x size %d count %d val 0x%x %s",
-		  __entry->rw ? "write" : "read",
+		  str_write_read(__entry->rw),
 		  __entry->port, __entry->size, __entry->count, __entry->val,
 		  __entry->count > 1 ? "(...)" : "")
 );
@@ -369,7 +369,7 @@ TRACE_EVENT(kvm_apic,
 	),
 
 	TP_printk("apic_%s %s = 0x%llx",
-		  __entry->rw ? "write" : "read",
+		  str_write_read(__entry->rw),
 		  __print_symbolic(__entry->reg, kvm_trace_symbol_apic),
 		  __entry->val)
 );
@@ -543,7 +543,7 @@ TRACE_EVENT(kvm_msr,
 	),
 
 	TP_printk("msr_%s %x = 0x%llx%s",
-		  __entry->write ? "write" : "read",
+		  str_write_read(__entry->write),
 		  __entry->ecx, __entry->data,
 		  __entry->exception ? " (#GP)" : "")
 );
@@ -573,7 +573,7 @@ TRACE_EVENT(kvm_cr,
 	),
 
 	TP_printk("cr_%s %x = 0x%lx",
-		  __entry->rw ? "write" : "read",
+		  str_write_read(__entry->rw),
 		  __entry->cr, __entry->val)
 );
 
@@ -1762,7 +1762,7 @@ TRACE_EVENT(kvm_pv_tlb_flush,
 	),
 
 	TP_printk("vcpu %u need_flush_tlb %s", __entry->vcpu_id,
-		__entry->need_flush_tlb ? "true" : "false")
+		  str_true_false(__entry->need_flush_tlb))
 );
 
 /*
