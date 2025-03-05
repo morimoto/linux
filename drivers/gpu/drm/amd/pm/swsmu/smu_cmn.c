@@ -846,8 +846,7 @@ size_t smu_cmn_get_pp_feature_mask(struct smu_context *smu,
 				count++,
 				smu_get_feature_name(smu, sort_feature[feature_index]),
 				feature_index,
-				!!test_bit(feature_index, (unsigned long *)&feature_mask) ?
-				"enabled" : "disabled");
+				str_enabled_disabled(test_bit(feature_index, (unsigned long *)&feature_mask)));
 	}
 
 	return size;
