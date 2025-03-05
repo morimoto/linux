@@ -127,10 +127,10 @@ static int ths8200_log_status(struct v4l2_subdev *sd)
 
 	v4l2_info(sd, "----- Chip status -----\n");
 	v4l2_info(sd, "version: %u\n", state->chip_version);
-	v4l2_info(sd, "power: %s\n", (reg_03 & 0x0c) ? "off" : "on");
-	v4l2_info(sd, "reset: %s\n", (reg_03 & 0x01) ? "off" : "on");
+	v4l2_info(sd, "power: %s\n", str_off_on(reg_03 & 0x0c));
+	v4l2_info(sd, "reset: %s\n", str_off_on(reg_03 & 0x01));
 	v4l2_info(sd, "test pattern: %s\n",
-		  (reg_03 & 0x20) ? "enabled" : "disabled");
+		  str_enabled_disabled(reg_03 & 0x20));
 	v4l2_info(sd, "format: %ux%u\n",
 		  ths8200_read(sd, THS8200_DTG2_PIXEL_CNT_MSB) * 256 +
 		  ths8200_read(sd, THS8200_DTG2_PIXEL_CNT_LSB),
@@ -146,7 +146,7 @@ static int ths8200_s_power(struct v4l2_subdev *sd, int on)
 {
 	struct ths8200_state *state = to_state(sd);
 
-	v4l2_dbg(1, debug, sd, "%s: power %s\n", __func__, on ? "on" : "off");
+	v4l2_dbg(1, debug, sd, "%s: power %s\n", __func__, str_on_off(on));
 
 	state->power_on = on;
 
@@ -179,8 +179,8 @@ static int ths8200_s_stream(struct v4l2_subdev *sd, int enable)
 	ths8200_write_and_or(sd, THS8200_CHIP_CTL, 0xfe,
 			     (enable ? 0x01 : 0x00));
 
-	v4l2_dbg(1, debug, sd, "%s: %sable\n",
-		 __func__, (enable ? "en" : "dis"));
+	v4l2_dbg(1, debug, sd, "%s: %s\n",
+		 __func__, str_enable_disable(enable));
 
 	return 0;
 }
