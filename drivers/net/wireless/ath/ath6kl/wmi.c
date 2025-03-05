@@ -2075,7 +2075,7 @@ int ath6kl_wmi_enable_sched_scan_cmd(struct wmi *wmi, u8 if_idx, bool enable)
 		return -ENOMEM;
 
 	ath6kl_dbg(ATH6KL_DBG_WMI, "%s scheduled scan on vif %d\n",
-		   enable ? "enabling" : "disabling", if_idx);
+		   str_enabling_disabling(enable), if_idx);
 	sc = (struct wmi_enable_sched_scan_cmd *) skb->data;
 	sc->enable = enable ? 1 : 0;
 
