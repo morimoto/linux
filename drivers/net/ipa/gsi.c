@@ -1859,8 +1859,8 @@ gsi_modem_channel_flow_control(struct gsi *gsi, u32 channel_id, bool enable)
 
 	if (ret)
 		dev_err(gsi->dev,
-			"error %d %sabling mode channel %u flow control\n",
-			ret, enable ? "en" : "dis", channel_id);
+			"error %d %s mode channel %u flow control\n",
+			ret, str_enabling_disabling(enable), channel_id);
 }
 
 /* Setup function for channels */
