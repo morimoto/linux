@@ -13,6 +13,7 @@
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
+#include <linux/string_choices.h>
 #include <media/rc-core.h>
 
 #define DRIVER_NAME		"rc-loopback"
@@ -165,7 +166,7 @@ static int loop_set_carrier_report(struct rc_dev *dev, int enable)
 	struct loopback_dev *lodev = dev->priv;
 
 	if (lodev->carrierreport != enable) {
-		dev_dbg(&dev->dev, "%sabling carrier reports\n", enable ? "en" : "dis");
+		dev_dbg(&dev->dev, "%s carrier reports\n", str_enabling_disabling(enable));
 		lodev->carrierreport = !!enable;
 	}
 
