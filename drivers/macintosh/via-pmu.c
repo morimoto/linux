@@ -623,7 +623,7 @@ init_pmu(void)
 			if (req.reply[1] & PMU_PWR_WAKEUP_AC_INSERT)
 				option_server_mode = 1;
 			printk(KERN_INFO "via-pmu: Server Mode is %s\n",
-			       option_server_mode ? "enabled" : "disabled");
+			       str_enabled_disabled(option_server_mode));
 		}
 	}
 
