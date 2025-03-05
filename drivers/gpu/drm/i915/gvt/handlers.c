@@ -2075,7 +2075,7 @@ static int ring_mode_mmio_write(struct intel_vgpu *vgpu, unsigned int offset,
 		enable_execlist = !!(data & GFX_RUN_LIST_ENABLE);
 
 		gvt_dbg_core("EXECLIST %s on ring %s\n",
-			     (enable_execlist ? "enabling" : "disabling"),
+			     str_enabling_disabling(enable_execlist),
 			     engine->name);
 
 		if (!enable_execlist)
