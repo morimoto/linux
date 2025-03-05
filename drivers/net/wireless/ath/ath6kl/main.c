@@ -1190,7 +1190,7 @@ static void ath6kl_set_multicast_list(struct net_device *ndev)
 
 	/* Enable/disable "multicast-all" filter*/
 	ath6kl_dbg(ATH6KL_DBG_TRC, "%s multicast-all filter\n",
-		   mc_all_on ? "enabling" : "disabling");
+		   str_enabling_disabling(mc_all_on));
 
 	ret = ath6kl_wmi_mcast_filter_cmd(vif->ar->wmi, vif->fw_vif_idx,
 						  mc_all_on);
