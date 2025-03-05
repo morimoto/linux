@@ -12,6 +12,7 @@
 #include <linux/module.h>
 #include <linux/mutex.h>
 #include <linux/spinlock.h>
+#include <linux/string_choices.h>
 
 #include "admin-state.h"
 #include "block-map.h"
@@ -1460,8 +1461,8 @@ static int vdo_initialize(struct dm_target *ti, unsigned int instance,
 	vdo_log_debug("Physical blocks        = %llu", config->physical_blocks);
 	vdo_log_debug("Block map cache blocks = %u", config->cache_size);
 	vdo_log_debug("Block map maximum age  = %u", config->block_map_maximum_age);
-	vdo_log_debug("Deduplication          = %s", (config->deduplication ? "on" : "off"));
-	vdo_log_debug("Compression            = %s", (config->compression ? "on" : "off"));
+	vdo_log_debug("Deduplication          = %s", str_on_off(config->deduplication));
+	vdo_log_debug("Compression            = %s", str_on_off(config->compression));
 
 	vdo = vdo_find_matching(vdo_uses_device, config);
 	if (vdo != NULL) {
@@ -2396,7 +2397,7 @@ static void resume_callback(struct vdo_completion *completion)
 
 		if (enable != was_enabled)
 			WRITE_ONCE(vdo->compressing, enable);
-		vdo_log_info("compression is %s", (enable ? "enabled" : "disabled"));
+		vdo_log_info("compression is %s", str_enabled_disabled(enable));
 
 		vdo_resume_packer(vdo->packer, completion);
 		return;

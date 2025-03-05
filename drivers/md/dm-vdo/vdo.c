@@ -34,6 +34,7 @@
 #include <linux/lz4.h>
 #include <linux/mutex.h>
 #include <linux/spinlock.h>
+#include <linux/string_choices.h>
 #include <linux/types.h>
 
 #include "logger.h"
@@ -1373,7 +1374,7 @@ static void set_compression_callback(struct vdo_completion *completion)
 		}
 	}
 
-	vdo_log_info("compression is %s", (*enable ? "enabled" : "disabled"));
+	vdo_log_info("compression is %s", str_enabled_disabled(*enable));
 	*enable = was_enabled;
 	complete_synchronous_action(completion);
 }
