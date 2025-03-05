@@ -1775,11 +1775,11 @@ out:
 static void ehea_promiscuous_error(u64 hret, int enable)
 {
 	if (hret == H_AUTHORITY)
-		pr_info("Hypervisor denied %sabling promiscuous mode\n",
-			enable == 1 ? "en" : "dis");
+		pr_info("Hypervisor denied %s promiscuous mode\n",
+			str_enabling_disabling(enable));
 	else
-		pr_err("failed %sabling promiscuous mode\n",
-		       enable == 1 ? "en" : "dis");
+		pr_err("failed %s promiscuous mode\n",
+		       str_enabling_disabling(enable));
 }
 
 static void ehea_promiscuous(struct net_device *dev, int enable)
