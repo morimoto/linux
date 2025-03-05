@@ -3550,7 +3550,7 @@ static int rvu_dbg_npc_mcam_show_rules(struct seq_file *s, void *unused)
 		rvu_dbg_npc_mcam_show_action(s, iter);
 
 		enabled = is_mcam_entry_enabled(rvu, mcam, blkaddr, iter->entry);
-		seq_printf(s, "\tenabled: %s\n", enabled ? "yes" : "no");
+		seq_printf(s, "\tenabled: %s\n", str_yes_no(enabled));
 
 		if (!iter->has_cntr)
 			continue;
@@ -3663,7 +3663,7 @@ static int rvu_dbg_npc_exact_show_info(struct seq_file *s, void *unused)
 
 	seq_puts(s, "\n\tExact Table Info\n");
 	seq_printf(s, "Exact Match Feature : %s\n",
-		   rvu->hw->cap.npc_exact_match_enabled ? "enabled" : "disable");
+		   str_enabled_disabled(rvu->hw->cap.npc_exact_match_enabled));
 	if (!rvu->hw->cap.npc_exact_match_enabled)
 		return 0;
 
@@ -3673,7 +3673,7 @@ static int rvu_dbg_npc_exact_show_info(struct seq_file *s, void *unused)
 
 	seq_puts(s, "\nMcam Index\tPromisc Mode Status\n");
 	for (i = 0; i < table->num_drop_rules; i++)
-		seq_printf(s, "%d\t\t%s\n", i, table->promisc_mode[i] ? "on" : "off");
+		seq_printf(s, "%d\t\t%s\n", i, str_on_off(table->promisc_mode[i]));
 
 	seq_puts(s, "\n\tMEM Table Info\n");
 	seq_printf(s, "Ways : %d\n", table->mem_table.ways);
@@ -3717,7 +3717,7 @@ static int rvu_dbg_npc_exact_drop_cnt(struct seq_file *s, void *unused)
 				  NPC_AF_MCAMEX_BANKX_CAMX_W0(i, 0, 1));
 		chan = field->kw_mask[0] & cam1;
 
-		str = (cfg & 1) ? "enabled" : "disabled";
+		str = str_enabled_disabled(cfg & 1);
 
 		seq_printf(s, "0x%x\t%d\t\t%llu\t0x%x\t%s\n", pcifunc, i,
 			   rvu_read64(rvu, blkaddr,
