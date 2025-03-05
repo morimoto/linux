@@ -2611,7 +2611,7 @@ set:
 		dev_dbg(ocelot->dev,
 			"port %d fwd mask 0x%lx speed %d min_speed %d, %s cut-through forwarding on TC mask 0x%x\n",
 			port, mask, ocelot_port->speed, min_speed,
-			val ? "enabling" : "disabling", val);
+			str_enabling_disabling(val), val);
 
 		ocelot_write_rix(ocelot, val, ANA_CUT_THRU_CFG, port);
 	}
