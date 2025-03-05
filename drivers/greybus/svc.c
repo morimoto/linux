@@ -73,7 +73,7 @@ static ssize_t watchdog_show(struct device *dev, struct device_attribute *attr,
 	struct gb_svc *svc = to_gb_svc(dev);
 
 	return sprintf(buf, "%s\n",
-		       gb_svc_watchdog_enabled(svc) ? "enabled" : "disabled");
+		       str_enabled_disabled(gb_svc_watchdog_enabled(svc)));
 }
 
 static ssize_t watchdog_store(struct device *dev,
