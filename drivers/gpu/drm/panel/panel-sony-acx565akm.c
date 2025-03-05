@@ -24,6 +24,7 @@
 #include <linux/module.h>
 #include <linux/mutex.h>
 #include <linux/sched.h>
+#include <linux/string_choices.h>
 #include <linux/spi/spi.h>
 #include <video/mipi_display.h>
 
@@ -559,7 +560,7 @@ static int acx565akm_detect(struct acx565akm_panel *lcd)
 
 	dev_dbg(&lcd->spi->dev,
 		"LCD panel %s by bootloader (status 0x%04x)\n",
-		lcd->enabled ? "enabled" : "disabled ", status);
+		str_enabled_disabled(lcd->enabled), status);
 
 	acx565akm_read(lcd, MIPI_DCS_GET_DISPLAY_ID, lcd->display_id, 3);
 	dev_dbg(&lcd->spi->dev, "MIPI display ID: %3phN\n", lcd->display_id);
