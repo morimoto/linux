@@ -62,7 +62,7 @@ static void drm_test_dp_mst_calc_pbn_mode(struct kunit *test)
 
 static void dp_mst_calc_pbn_mode_desc(const struct drm_dp_mst_calc_pbn_mode_test *t, char *desc)
 {
-	sprintf(desc, "Clock %d BPP %d DSC %s", t->clock, t->bpp, t->dsc ? "enabled" : "disabled");
+	sprintf(desc, "Clock %d BPP %d DSC %s", t->clock, t->bpp, str_enabled_disabled(t->dsc));
 }
 
 KUNIT_ARRAY_PARAM(drm_dp_mst_calc_pbn_mode, drm_dp_mst_calc_pbn_mode_cases,
