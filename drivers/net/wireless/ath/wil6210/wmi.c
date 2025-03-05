@@ -2147,7 +2147,7 @@ int wmi_led_cfg(struct wil6210_priv *wil, bool enable)
 
 	wil_dbg_wmi(wil,
 		    "%s led %d\n",
-		    enable ? "enabling" : "disabling", led_id);
+		    str_enabling_disabling(enable), led_id);
 
 	rc = wmi_call(wil, WMI_LED_CFG_CMDID, vif->mid, &cmd, sizeof(cmd),
 		      WMI_LED_CFG_DONE_EVENTID, &reply, sizeof(reply),
