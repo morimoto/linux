@@ -388,7 +388,7 @@ int drm_dp_dual_mode_set_tmds_output(const struct drm_device *dev, enum drm_dp_d
 		if (ret) {
 			drm_dbg_kms(dev,
 				    "I2C read failed during TMDS output buffer %s (%d attempts)\n",
-				    enable ? "enabling" : "disabling", retry + 1);
+				    str_enabling_disabling(enable), retry + 1);
 			return ret;
 		}
 
@@ -397,7 +397,7 @@ int drm_dp_dual_mode_set_tmds_output(const struct drm_device *dev, enum drm_dp_d
 	}
 
 	drm_dbg_kms(dev, "I2C write value mismatch during TMDS output buffer %s\n",
-		    enable ? "enabling" : "disabling");
+		    str_enabling_disabling(enable));
 
 	return -EIO;
 }
