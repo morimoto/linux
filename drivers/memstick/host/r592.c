@@ -129,7 +129,7 @@ static int r592_wait_status(struct r592_device *dev, u32 mask, u32 wanted_mask)
 /* Enable/disable device */
 static int r592_enable_device(struct r592_device *dev, bool enable)
 {
-	dbg("%sabling the device", enable ? "en" : "dis");
+	dbg("%s the device", str_enabling_disabling(enable));
 
 	if (enable) {
 
