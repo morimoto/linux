@@ -4281,7 +4281,7 @@ static void __pci_set_master(struct pci_dev *dev, bool enable)
 		cmd = old_cmd & ~PCI_COMMAND_MASTER;
 	if (cmd != old_cmd) {
 		pci_dbg(dev, "%s bus mastering\n",
-			enable ? "enabling" : "disabling");
+			str_enabling_disabling(enable));
 		pci_write_config_word(dev, PCI_COMMAND, cmd);
 	}
 	dev->is_busmaster = enable;
