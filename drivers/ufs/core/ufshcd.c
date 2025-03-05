@@ -6137,13 +6137,13 @@ int ufshcd_wb_toggle(struct ufs_hba *hba, bool enable)
 	ret = __ufshcd_wb_toggle(hba, enable, QUERY_FLAG_IDN_WB_EN);
 	if (ret) {
 		dev_err(hba->dev, "%s: Write Booster %s failed %d\n",
-			__func__, enable ? "enabling" : "disabling", ret);
+			__func__, str_enabling_disabling(enable), ret);
 		return ret;
 	}
 
 	hba->dev_info.wb_enabled = enable;
 	dev_dbg(hba->dev, "%s: Write Booster %s\n",
-			__func__, enable ? "enabled" : "disabled");
+			__func__, str_enabled_disabled(enable));
 
 	return ret;
 }
@@ -6157,11 +6157,11 @@ static void ufshcd_wb_toggle_buf_flush_during_h8(struct ufs_hba *hba,
 			QUERY_FLAG_IDN_WB_BUFF_FLUSH_DURING_HIBERN8);
 	if (ret) {
 		dev_err(hba->dev, "%s: WB-Buf Flush during H8 %s failed %d\n",
-			__func__, enable ? "enabling" : "disabling", ret);
+			__func__, str_enabling_disabling(enable), ret);
 		return;
 	}
 	dev_dbg(hba->dev, "%s: WB-Buf Flush during H8 %s\n",
-			__func__, enable ? "enabled" : "disabled");
+			__func__, str_enabled_disabled(enable));
 }
 
 int ufshcd_wb_toggle_buf_flush(struct ufs_hba *hba, bool enable)
@@ -6175,13 +6175,13 @@ int ufshcd_wb_toggle_buf_flush(struct ufs_hba *hba, bool enable)
 	ret = __ufshcd_wb_toggle(hba, enable, QUERY_FLAG_IDN_WB_BUFF_FLUSH_EN);
 	if (ret) {
 		dev_err(hba->dev, "%s: WB-Buf Flush %s failed %d\n",
-			__func__, enable ? "enabling" : "disabling", ret);
+			__func__, str_enabling_disabling(enable), ret);
 		return ret;
 	}
 
 	hba->dev_info.wb_buf_flush_enabled = enable;
 	dev_dbg(hba->dev, "%s: WB-Buf Flush %s\n",
-			__func__, enable ? "enabled" : "disabled");
+			__func__, str_enabled_disabled(enable));
 
 	return ret;
 }
