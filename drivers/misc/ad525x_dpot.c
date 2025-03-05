@@ -419,8 +419,7 @@ static ssize_t sysfs_show_reg(struct device *dev,
 
 	if (reg & DPOT_ADDR_OTP_EN)
 		return sprintf(buf, "%s\n",
-			test_bit(DPOT_RDAC_MASK & reg, data->otp_en_mask) ?
-			"enabled" : "disabled");
+			str_enabled_disabled(test_bit(DPOT_RDAC_MASK & reg, data->otp_en_mask)));
 
 
 	mutex_lock(&data->update_lock);
