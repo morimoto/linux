@@ -188,7 +188,7 @@ static int __init tort_init(void)
 	if (pgcnt)
 		pr_info("torturing just %d pages per eraseblock\n",
 			pgcnt);
-	pr_info("write verify %s\n", check ? "enabled" : "disabled");
+	pr_info("write verify %s\n", str_enabled_disabled(check));
 
 	mtd = get_mtd_device(NULL, dev);
 	if (IS_ERR(mtd)) {
