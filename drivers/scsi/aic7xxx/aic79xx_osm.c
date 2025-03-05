@@ -2485,7 +2485,7 @@ static void ahd_linux_set_dt(struct scsi_target *starget, int dt)
 #ifdef AHD_DEBUG
 	if ((ahd_debug & AHD_SHOW_DV) != 0)
 		printk("%s: %s DT\n", ahd_name(ahd),
-		       dt ? "enabling" : "disabling");
+		       str_enabling_disabling(dt));
 #endif
 	if (dt && spi_max_width(starget)) {
 		ppr_options |= MSG_EXT_PPR_DT_REQ;
@@ -2527,7 +2527,7 @@ static void ahd_linux_set_qas(struct scsi_target *starget, int qas)
 #ifdef AHD_DEBUG
 	if ((ahd_debug & AHD_SHOW_DV) != 0)
 		printk("%s: %s QAS\n", ahd_name(ahd),
-		       qas ? "enabling" : "disabling");
+		       str_enabling_disabling(qas));
 #endif
 
 	if (qas) {
@@ -2566,7 +2566,7 @@ static void ahd_linux_set_iu(struct scsi_target *starget, int iu)
 #ifdef AHD_DEBUG
 	if ((ahd_debug & AHD_SHOW_DV) != 0)
 		printk("%s: %s IU\n", ahd_name(ahd),
-		       iu ? "enabling" : "disabling");
+		       str_enabling_disabling(iu));
 #endif
 
 	if (iu && spi_max_width(starget)) {
@@ -2606,7 +2606,7 @@ static void ahd_linux_set_rd_strm(struct scsi_target *starget, int rdstrm)
 #ifdef AHD_DEBUG
 	if ((ahd_debug & AHD_SHOW_DV) != 0)
 		printk("%s: %s Read Streaming\n", ahd_name(ahd),
-		       rdstrm  ? "enabling" : "disabling");
+		       str_enabling_disabling(rdstrm));
 #endif
 
 	if (rdstrm && spi_max_width(starget))
@@ -2642,7 +2642,7 @@ static void ahd_linux_set_wr_flow(struct scsi_target *starget, int wrflow)
 #ifdef AHD_DEBUG
 	if ((ahd_debug & AHD_SHOW_DV) != 0)
 		printk("%s: %s Write Flow Control\n", ahd_name(ahd),
-		       wrflow ? "enabling" : "disabling");
+		       str_enabling_disabling(wrflow));
 #endif
 
 	if (wrflow && spi_max_width(starget))
@@ -2686,7 +2686,7 @@ static void ahd_linux_set_rti(struct scsi_target *starget, int rti)
 #ifdef AHD_DEBUG
 	if ((ahd_debug & AHD_SHOW_DV) != 0)
 		printk("%s: %s RTI\n", ahd_name(ahd),
-		       rti ? "enabling" : "disabling");
+		       str_enabling_disabling(rti));
 #endif
 
 	if (rti && spi_max_width(starget))
