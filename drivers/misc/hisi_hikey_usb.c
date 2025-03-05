@@ -67,7 +67,7 @@ static void hub_power_ctrl(struct hisi_hikey_usb *hisi_hikey_usb, int value)
 	if (ret)
 		dev_err(hisi_hikey_usb->dev,
 			"Can't switch regulator state to %s\n",
-			value ? "enabled" : "disabled");
+			str_enabled_disabled(value));
 }
 
 static void usb_switch_ctrl(struct hisi_hikey_usb *hisi_hikey_usb,
