@@ -29,6 +29,12 @@ static inline const char *str_enabled_disabled(bool v)
 }
 #define str_disabled_enabled(v)		str_enabled_disabled(!(v))
 
+static inline const char *str_enabling_disabling(bool v)
+{
+	return v ? "enabling" : "disabling";
+}
+#define str_disabling_enabling(v)	str_enabling_disabling(!(v))
+
 static inline const char *str_hi_lo(bool v)
 {
 	return v ? "hi" : "lo";
