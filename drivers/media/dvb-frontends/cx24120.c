@@ -459,7 +459,7 @@ static int cx24120_msg_mpeg_output_global_config(struct cx24120_state *state,
 
 	state->mpeg_enabled = enable;
 	dev_dbg(&state->i2c->dev, "MPEG output %s\n",
-		enable ? "enabled" : "disabled");
+		str_enabled_disabled(enable));
 
 	return 0;
 }
