@@ -663,8 +663,8 @@ static int sunxi_mmc_oclk_onoff(struct sunxi_mmc_host *host, u32 oclk_en)
 	unsigned long expire = jiffies + msecs_to_jiffies(750);
 	u32 rval;
 
-	dev_dbg(mmc_dev(host->mmc), "%sabling the clock\n",
-		oclk_en ? "en" : "dis");
+	dev_dbg(mmc_dev(host->mmc), "%s the clock\n",
+		str_enabling_disabling(oclk_en));
 
 	rval = mmc_readl(host, REG_CLKCR);
 	rval &= ~(SDXC_CARD_CLOCK_ON | SDXC_LOW_POWER_ON | SDXC_MASK_DATA0);
