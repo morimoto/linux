@@ -325,7 +325,7 @@ static void hda_enable_hd_dacs(struct sti_hda *hda, bool enable)
 static void hda_dbg_cfg(struct seq_file *s, int val)
 {
 	seq_puts(s, "\tAWG ");
-	seq_puts(s, val & CFG_AWG_ASYNC_EN ? "enabled" : "disabled");
+	seq_puts(s, str_enabled_disabled(val & CFG_AWG_ASYNC_EN));
 }
 
 static void hda_dbg_awg_microcode(struct seq_file *s, void __iomem *reg)
@@ -346,7 +346,7 @@ static void hda_dbg_video_dacs_ctrl(struct seq_file *s, void __iomem *reg)
 
 	seq_printf(s, "\n\n  %-25s 0x%08X", "VIDEO_DACS_CONTROL", val);
 	seq_puts(s, "\tHD DACs ");
-	seq_puts(s, val & DAC_CFG_HD_HZUVW_OFF_MASK ? "disabled" : "enabled");
+	seq_puts(s, str_disabled_enabled(val & DAC_CFG_HD_HZUVW_OFF_MASK));
 }
 
 static int hda_dbg_show(struct seq_file *s, void *data)
