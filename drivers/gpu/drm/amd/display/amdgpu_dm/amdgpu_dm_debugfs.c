@@ -3995,9 +3995,9 @@ static int capabilities_show(struct seq_file *m, void *unused)
 		subvp_in_use = dc->cap_funcs.get_subvp_en(dc, dc->current_state);
 
 	seq_printf(m, "mall supported: %s, enabled: %s\n",
-			   mall_supported ? "yes" : "no", mall_in_use ? "yes" : "no");
+			   str_yes_no(mall_supported), str_yes_no(mall_in_use));
 	seq_printf(m, "sub-viewport supported: %s, enabled: %s\n",
-			   subvp_supported ? "yes" : "no", subvp_in_use ? "yes" : "no");
+			   str_yes_no(subvp_supported), str_yes_no(subvp_in_use));
 
 	return 0;
 }
