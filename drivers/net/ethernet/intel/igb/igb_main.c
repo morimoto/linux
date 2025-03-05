@@ -1836,8 +1836,8 @@ static void igb_config_tx_modes(struct igb_adapter *adapter, int queue)
 	 */
 
 	netdev_dbg(netdev, "Qav Tx mode: cbs %s, launchtime %s, queue %d idleslope %d sendslope %d hiCredit %d locredit %d\n",
-		   ring->cbs_enable ? "enabled" : "disabled",
-		   ring->launchtime_enable ? "enabled" : "disabled",
+		   str_enabled_disabled(ring->cbs_enable),
+		   str_enabled_disabled(ring->launchtime_enable),
 		   queue,
 		   ring->idleslope, ring->sendslope,
 		   ring->hicredit, ring->locredit);
@@ -1961,8 +1961,7 @@ static void igb_setup_tx_mode(struct igb_adapter *adapter)
 		wr32(E1000_I210_TQAVCTRL, val);
 	}
 
-	netdev_dbg(netdev, "FQTSS %s\n", (is_fqtss_enabled(adapter)) ?
-		   "enabled" : "disabled");
+	netdev_dbg(netdev, "FQTSS %s\n", str_enabled_disabled(is_fqtss_enabled(adapter)));
 }
 
 /**
