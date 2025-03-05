@@ -164,7 +164,7 @@ static void flexcop_pid_control(struct flexcop_device *fc,
 static int flexcop_toggle_fullts_streaming(struct flexcop_device *fc, int onoff)
 {
 	if (fc->fullts_streaming_state != onoff) {
-		deb_ts("%s full TS transfer\n",onoff ? "enabling" : "disabling");
+		deb_ts("%s full TS transfer\n", str_enabling_disabling(onoff));
 		flexcop_pid_group_filter(fc, 0, 0x1fe0 * (!onoff));
 		flexcop_pid_group_filter_ctrl(fc, onoff);
 		fc->fullts_streaming_state = onoff;
