@@ -14,6 +14,7 @@
 #include <linux/pci.h>
 #include <linux/cec.h>
 #include <linux/slab.h>
+#include <linux/string_choices.h>
 #include <linux/interrupt.h>
 #include <linux/platform_data/cros_ec_commands.h>
 #include <linux/platform_data/cros_ec_proto.h>
@@ -237,8 +238,8 @@ static int cros_ec_cec_adap_enable(struct cec_adapter *adap, bool enable)
 			  NULL, 0);
 	if (ret < 0) {
 		dev_err(cros_ec->dev,
-			"error %sabling CEC on EC: %d\n",
-			(enable ? "en" : "dis"), ret);
+			"error %s CEC on EC: %d\n",
+			str_enabling_disabling(enable), ret);
 		return ret;
 	}
 
