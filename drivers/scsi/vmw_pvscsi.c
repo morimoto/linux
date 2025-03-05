@@ -1166,8 +1166,8 @@ static bool pvscsi_setup_req_threshold(struct pvscsi_adapter *adapter,
 		struct PVSCSICmdDescSetupReqCall cmd_msg = { 0 };
 		cmd_msg.enable = enable;
 		printk(KERN_INFO
-		       "vmw_pvscsi: %sabling reqCallThreshold\n",
-			enable ? "en" : "dis");
+		       "vmw_pvscsi: %s reqCallThreshold\n",
+		       str_enabling_disabling(enable));
 		pvscsi_write_cmd_desc(adapter,
 				      PVSCSI_CMD_SETUP_REQCALLTHRESHOLD,
 				      &cmd_msg, sizeof(cmd_msg));
