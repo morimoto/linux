@@ -488,7 +488,7 @@ static int xgbe_enable_tx_flow_control(struct xgbe_prv_data *pdata)
 
 		netif_dbg(pdata, drv, pdata->netdev,
 			  "flow control %s for RXq%u\n",
-			  ehfc ? "enabled" : "disabled", i);
+			  str_enabled_disabled(ehfc), i);
 	}
 
 	/* Set MAC flow control */
