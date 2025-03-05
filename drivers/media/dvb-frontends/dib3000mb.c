@@ -710,7 +710,7 @@ static int dib3000mb_fifo_control(struct dvb_frontend *fe, int onoff)
 {
 	struct dib3000_state *state = fe->demodulator_priv;
 
-	deb_xfer("%s fifo\n",onoff ? "enabling" : "disabling");
+	deb_xfer("%s fifo\n", str_enabling_disabling(onoff));
 	if (onoff) {
 		wr(DIB3000MB_REG_FIFO, DIB3000MB_FIFO_ACTIVATE);
 	} else {
@@ -722,7 +722,7 @@ static int dib3000mb_fifo_control(struct dvb_frontend *fe, int onoff)
 static int dib3000mb_pid_parse(struct dvb_frontend *fe, int onoff)
 {
 	struct dib3000_state *state = fe->demodulator_priv;
-	deb_xfer("%s pid parsing\n",onoff ? "enabling" : "disabling");
+	deb_xfer("%s pid parsing\n", str_enabling_disabling(onoff));
 	wr(DIB3000MB_REG_PID_PARSE,onoff);
 	return 0;
 }
