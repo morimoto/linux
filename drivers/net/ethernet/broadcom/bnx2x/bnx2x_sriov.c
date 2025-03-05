@@ -2964,7 +2964,7 @@ int bnx2x_set_vf_spoofchk(struct net_device *dev, int idx, bool val)
 	vf->spoofchk = val ? 1 : 0;
 
 	DP(BNX2X_MSG_IOV, "%s spoofchk for VF %d\n",
-	   val ? "enabling" : "disabling", idx);
+	   str_enabling_disabling(val), idx);
 
 	/* is vf initialized and queue set up? */
 	if (vf->state != VF_ENABLED ||
