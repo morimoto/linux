@@ -12,7 +12,9 @@
 #include <linux/clk-provider.h>
 #include <linux/device.h>
 #include <linux/err.h>
+#include <linux/iopoll.h>
 #include <linux/kernel.h>
+#include <linux/of_address.h>
 #include <linux/soc/renesas/rcar-rst.h>
 
 #include <dt-bindings/clock/r8a779g0-cpg-mssr.h>
@@ -250,6 +252,10 @@ static const struct mssr_mod_clk r8a779g0_mod_clks[] __initconst = {
 	DEF_MOD("ssi",		2927,	R8A779G0_CLK_S0D6_PER),
 };
 
+static const unsigned int r8a779g0_crit_mod_clks[] __initconst = {
+	MOD_CLK_ID(2819),	/* DSC */
+};
+
 /*
  * CPG Clock Data
  */
@@ -273,11 +279,50 @@ static const struct rcar_gen4_cpg_pll_config cpg_pll_configs[4] __initconst = {
 	{ 2,		192,	1,	192,	1,	32,	},
 };
 
+static void __init r8a779g0_cpg_mssr_dsc_fixup_init(struct device *dev)
+{
+	struct device_node *dsi1np __free(device_node) = NULL;
+	const unsigned int mstpcr28 = 0x2d70;
+	const unsigned int mstpsr28 = 0x2e70;
+	const unsigned int dsc_bit = 19;
+	void __iomem *base0;
+	u32 value;
+	int error;
+
+	if (!of_machine_is_compatible("renesas,r8a779g0"))
+		return;
+
+	dsi1np = of_find_node_by_path("/soc/display@feb00000");
+	if (!of_device_is_available(dsi1np))
+		return;
+
+	base0 = of_iomap(dev->of_node, 0);
+	if (!base0) {
+		dev_err(dev, "Failed to remap SMSTP for DSC fixup\n");
+		return;
+	}
+
+	value = readl(base0 + mstpcr28);
+	value &= ~BIT(dsc_bit);
+	writel(value, base0 + mstpcr28);
+
+	error = readl_poll_timeout_atomic(base0 + mstpsr28,
+					  value, !(value & BIT(dsc_bit)), 0, 10);
+	if (error) {
+		dev_err(dev, "Failed to enable SMSTP %p[%d] for DSC fixup\n",
+			base0 + mstpcr28, dsc_bit);
+	}
+
+	iounmap(base0);
+}
+
 static int __init r8a779g0_cpg_mssr_init(struct device *dev)
 {
 	const struct rcar_gen4_cpg_pll_config *cpg_pll_config;
 	u32 cpg_mode;
 	int error;
+
+	r8a779g0_cpg_mssr_dsc_fixup_init(dev);
 
 	error = rcar_rst_read_mode_pins(&cpg_mode);
 	if (error)
@@ -303,6 +348,10 @@ const struct cpg_mssr_info r8a779g0_cpg_mssr_info __initconst = {
 	.mod_clks = r8a779g0_mod_clks,
 	.num_mod_clks = ARRAY_SIZE(r8a779g0_mod_clks),
 	.num_hw_mod_clks = 30 * 32,
+
+	/* Critical Module Clocks */
+	.crit_mod_clks = r8a779g0_crit_mod_clks,
+	.num_crit_mod_clks = ARRAY_SIZE(r8a779g0_crit_mod_clks),
 
 	/* Callbacks */
 	.init = r8a779g0_cpg_mssr_init,
