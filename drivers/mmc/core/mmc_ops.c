@@ -375,7 +375,7 @@ int mmc_get_ext_csd(struct mmc_card *card, u8 **new_ext_csd)
 	if (!card || !new_ext_csd)
 		return -EINVAL;
 
-	if (!mmc_can_ext_csd(card))
+	if (!mmc_card_can_ext_csd(card))
 		return -EOPNOTSUPP;
 
 	/*
@@ -936,7 +936,7 @@ out:
 	return err;
 }
 
-int mmc_can_ext_csd(struct mmc_card *card)
+bool mmc_card_can_ext_csd(struct mmc_card *card)
 {
 	return (card && card->csd.mmca_vsn > CSD_SPEC_VER_3);
 }
