@@ -6,6 +6,7 @@
  */
 
 /dts-v1/;
+#include <dt-bindings/phy/phy.h>
 #include <dt-bindings/soc/renesas,r8a78000-mfis.h>
 #include "r8a78000.dtsi"
 
@@ -335,6 +336,36 @@
 
 &mfis_scp {
 	status = "okay";
+};
+
+&gpio10 {
+	pcie40-clkreq-hog {
+		gpio-hog;
+		gpios = <12 1>;
+		output-high;
+	};
+};
+
+&mp_phy {
+	renesas,num-lanes = <4 4 0 0>;
+	renesas,phy-type = <PHY_TYPE_PCIE 0>, <PHY_TYPE_PCIE 0>,
+			   <PHY_TYPE_XPCS 2>, <PHY_TYPE_USB3 1>;
+	renesas,external-ref-clock = <1 1 1 1>;
+	renesas,output-repeat-ref-clock = <0 0 0 0>;
+	status = "okay";
+};
+
+&pcie40_clkref {
+	clock-frequency = <100000000>;
+};
+
+&pciec40 {
+	status = "okay";
+};
+
+&pciec40_rp {
+	resets = <&scmi_reset 815>; /* R8A78000_SCMI_RESET_U266_PCIE4 */
+	reset-names = "perst";
 };
 
 &pfc {
