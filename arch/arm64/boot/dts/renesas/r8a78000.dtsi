@@ -682,6 +682,20 @@
 		/* clock-frequency must be set on board */
 	};
 
+	pcie40_clkref: pcie40-clkref {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
+	};
+
+	pcie41_clkref: pcie41-clkref {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
+	};
+
 	psci {
 		compatible = "arm,psci-1.0";
 		method = "smc";
@@ -1428,6 +1442,138 @@
 				 <&scmi_reset 344>; /* R8A78000_SCMI_RESET_MPPHY02 */
 			reset-names = "mpphy01", "mpphy11", "mpphy21", "mpphy31", "mpphy02";
 			status = "disabled";
+		};
+
+		pciec40: pcie@c9000000 {
+			compatible = "renesas,r8a78000-pcie4",
+				     "renesas,rcar-gen5-pcie4";
+			reg = <0 0xc9000000 0 0x2000>, <0 0xc9002000 0 0x1000>,
+			      <0 0xc9003000 0 0x2000>, <0 0xc9005000 0 0x1000>,
+			      <0 0xc9c8e200 0 0xe00>, <1 0x00000000 0 0x10000000>;
+			reg-names = "dbi", "dbi2", "atu", "dma", "app", "config";
+			interrupts = <GIC_ESPI 236 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_ESPI 227 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_ESPI 228 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_ESPI 229 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "msi", "dma", "sft_ce", "app";
+			clocks = <&scmi_clk 345>, <&pcie40_clkref>; /* R8A78000_SCMI_CLOCK_MDLC_PCI401 */
+			clock-names = "core", "ref";
+			power-domains = <&scmi_devpd 14>; /* R8A78000_SCMI_PD_PCI4 */
+			resets = <&scmi_reset 345>; /* R8A78000_SCMI_RESET_PCI401 */
+			reset-names = "pwr";
+			max-link-speed = <4>;
+			num-lanes = <2>;
+			#address-cells = <3>;
+			#size-cells = <2>;
+			bus-range = <0x00 0xff>;
+			device_type = "pci";
+			phys = <&mp_phy 0 1>;
+			/*
+			 * The "ranges" here work according to IEEE Std 1275-1994:
+			 *
+			 *     0x03000000 - 64-bit-address Memory Space
+			 *   0 0x10000000 - 64-bit-address in PCIe address space
+			 *
+			 *   1 0x10000000 - 64-bit-address in SoC address space
+			 *
+			 *   0 0x10000000 - mapping size is 256 MiB
+			 *
+			 * This describes 256 MiB long 64-bit-address mapping
+			 * between PCIe address range 0x1000_0000..0x1fff_ffff
+			 * and SoC address range 0x1_1000_0000..0x1_1fff_ffff .
+			 *
+			 * However, the PCIe window on this SoC is 512 MiB
+			 * long. The first part of the mapping is described in
+			 * the "reg" property entry labeled as "config", which
+			 * describes PCIe config space at address range
+			 * 0x1_0000_0000..0x1_0fff_ffff .
+			 */
+			ranges = <0x03000000 0 0x10000000 1 0x10000000 0 0x10000000>;
+			dma-ranges = <0x43000000 0 0x00000000 0 0x00000000 0x100 0x00000000>;
+			#interrupt-cells = <1>;
+			interrupt-map-mask = <0 0 0 7>;
+			interrupt-map = <0 0 0 1 &gic GIC_ESPI 236 IRQ_TYPE_LEVEL_HIGH
+					 0 0 0 2 &gic GIC_ESPI 236 IRQ_TYPE_LEVEL_HIGH
+					 0 0 0 3 &gic GIC_ESPI 236 IRQ_TYPE_LEVEL_HIGH
+					 0 0 0 4 &gic GIC_ESPI 236 IRQ_TYPE_LEVEL_HIGH>;
+			snps,enable-cdm-check;
+			status = "disabled";
+
+			/* PCIe bridge, Root Port */
+			pciec40_rp: pci@0,0 {
+				#address-cells = <3>;
+				#size-cells = <2>;
+				reg = <0x0 0x0 0x0 0x0 0x0>;
+				compatible = "pciclass,0604";
+				device_type = "pci";
+				ranges;
+			};
+		};
+
+		pciec41: pcie@c9400000 {
+			compatible = "renesas,r8a78000-pcie4",
+				     "renesas,rcar-gen5-pcie4";
+			reg = <0 0xc9400000 0 0x2000>, <0 0xc9402000 0 0x1000>,
+			      <0 0xc9403000 0 0x2000>, <0 0xc9405000 0 0x1000>,
+			      <0 0xc9c8f200 0 0xe00>, <1 0x20000000 0 0x10000000>;
+			reg-names = "dbi", "dbi2", "atu", "dma", "app", "config";
+			interrupts = <GIC_ESPI 240 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_ESPI 230 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_ESPI 231 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_ESPI 232 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "msi", "dma", "sft_ce", "app";
+			clocks = <&scmi_clk 346>, <&pcie41_clkref>; /* R8A78000_SCMI_CLOCK_MDLC_PCI411 */
+			clock-names = "core", "ref";
+			power-domains = <&scmi_devpd 14>; /* R8A78000_SCMI_PD_PCI4 */
+			phys = <&mp_phy 1 1>;
+			resets = <&scmi_reset 346>; /* R8A78000_SCMI_RESET_PCI411 */
+			reset-names = "pwr";
+			max-link-speed = <4>;
+			num-lanes = <2>;
+			#address-cells = <3>;
+			#size-cells = <2>;
+			bus-range = <0x00 0xff>;
+			device_type = "pci";
+			/*
+			 * The "ranges" here work according to IEEE Std 1275-1994:
+			 *
+			 *     0x03000000 - 64-bit-address Memory Space
+			 *   0 0x30000000 - 64-bit-address in PCIe address space
+			 *
+			 *   1 0x30000000 - 64-bit-address in SoC address space
+			 *
+			 *   0 0x10000000 - mapping size is 256 MiB
+			 *
+			 * This describes 256 MiB long 64-bit-address mapping
+			 * between PCIe address range 0x3000_0000..0x3fff_ffff
+			 * and SoC address range 0x1_3000_0000..0x1_3fff_ffff .
+			 *
+			 * However, the PCIe window on this SoC is 512 MiB
+			 * long. The first part of the mapping is described in
+			 * the "reg" property entry labeled as "config", which
+			 * describes PCIe config space at address range
+			 * 0x1_2000_0000..0x1_2fff_ffff .
+			 */
+			ranges = <0x03000000 0 0x30000000 1 0x30000000 0 0x10000000>;
+			dma-ranges = <0x43000000 0 0x00000000 0 0x00000000 0x100 0x00000000>;
+			#interrupt-cells = <1>;
+			interrupt-map-mask = <0 0 0 7>;
+			interrupt-map = <0 0 0 1 &gic GIC_ESPI 240 IRQ_TYPE_LEVEL_HIGH
+					 0 0 0 2 &gic GIC_ESPI 240 IRQ_TYPE_LEVEL_HIGH
+					 0 0 0 3 &gic GIC_ESPI 240 IRQ_TYPE_LEVEL_HIGH
+					 0 0 0 4 &gic GIC_ESPI 240 IRQ_TYPE_LEVEL_HIGH>;
+			snps,enable-cdm-check;
+			status = "disabled";
+
+			/* PCIe bridge, Root Port */
+			pciec41_rp: pci@0,0 {
+				#address-cells = <3>;
+				#size-cells = <2>;
+				reg = <0x0 0x0 0x0 0x0 0x0>;
+				compatible = "pciclass,0604";
+				device_type = "pci";
+				ranges;
+			};
 		};
 	};
 
