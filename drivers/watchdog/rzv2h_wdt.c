@@ -234,17 +234,17 @@ static int rzv2h_wdt_probe(struct platform_device *pdev)
 	if (IS_ERR(priv->base))
 		return PTR_ERR(priv->base);
 
-	priv->pclk = devm_clk_get_prepared(&pdev->dev, "pclk");
+	priv->pclk = devm_clk_get_prepared(dev, "pclk");
 	if (IS_ERR(priv->pclk))
-		return dev_err_probe(&pdev->dev, PTR_ERR(priv->pclk), "no pclk");
+		return dev_err_probe(dev, PTR_ERR(priv->pclk), "no pclk");
 
-	priv->oscclk = devm_clk_get_prepared(&pdev->dev, "oscclk");
+	priv->oscclk = devm_clk_get_prepared(dev, "oscclk");
 	if (IS_ERR(priv->oscclk))
-		return dev_err_probe(&pdev->dev, PTR_ERR(priv->oscclk), "no oscclk");
+		return dev_err_probe(dev, PTR_ERR(priv->oscclk), "no oscclk");
 
-	priv->rstc = devm_reset_control_get_exclusive(&pdev->dev, NULL);
+	priv->rstc = devm_reset_control_get_exclusive(dev, NULL);
 	if (IS_ERR(priv->rstc))
-		return dev_err_probe(&pdev->dev, PTR_ERR(priv->rstc),
+		return dev_err_probe(dev, PTR_ERR(priv->rstc),
 				     "failed to get cpg reset");
 
 	switch (priv->of_data->count_source) {
@@ -266,7 +266,7 @@ static int rzv2h_wdt_probe(struct platform_device *pdev)
 					  priv->of_data->cks_div) / rate;
 	dev_dbg(dev, "max hw timeout of %dms\n", priv->wdev.max_hw_heartbeat_ms);
 
-	ret = devm_pm_runtime_enable(&pdev->dev);
+	ret = devm_pm_runtime_enable(dev);
 	if (ret)
 		return ret;
 
@@ -283,7 +283,7 @@ static int rzv2h_wdt_probe(struct platform_device *pdev)
 	if (ret)
 		dev_warn(dev, "Specified timeout invalid, using default");
 
-	return devm_watchdog_register_device(&pdev->dev, &priv->wdev);
+	return devm_watchdog_register_device(dev, &priv->wdev);
 }
 
 static const struct rzv2h_of_data rzv2h_wdt_of_data = {
