@@ -295,8 +295,6 @@ static void rsnd_adg_set_ssi_clk(struct rsnd_mod *ssi_mod, u32 val)
 
 	rsnd_mod_make_sure(ssi_mod, RSND_MOD_SSI);
 
-	val = val << shift;
-
 	/*
 	 * SSI 8 is not connected to ADG.
 	 * it works with SSI 7
@@ -304,7 +302,12 @@ static void rsnd_adg_set_ssi_clk(struct rsnd_mod *ssi_mod, u32 val)
 	if (id == 8)
 		return;
 
-	rsnd_mod_bset(adg_mod, AUDIO_CLK_SEL(id / 4), mask, val);
+	if (!rsnd_is_gen5(priv)) {
+		val = val << shift;
+		rsnd_mod_bset(adg_mod, AUDIO_CLK_SEL(id / 4), mask, val);
+	} else {
+		rsnd_mod_write(ssi_mod, SSIU_AUDIO_CLK_SEL, val);
+	}
 
 	dev_dbg(dev, "AUDIO_CLK_SEL is 0x%x\n", val);
 }

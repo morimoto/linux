@@ -23,7 +23,7 @@
 #define RSND_BASE_ADG	0
 #define RSND_BASE_SSI	1
 #define RSND_BASE_SSIU	2
-#define RSND_BASE_SCU	3	// for Gen2/Gen3
+#define RSND_BASE_SCU	3	// for Gen2/Gen3/Gen5
 #define RSND_BASE_SDMC	3	// for Gen4	reuse
 #define RSND_BASE_MAX	4
 
@@ -144,12 +144,28 @@ enum rsnd_reg {
 	AUDIO_CLK_SEL2,
 
 	/* SSIU */
+	SSIU_AUDIO_CLK_SEL,
 	SSI_MODE,
 	SSI_MODE0,
 	SSI_MODE1,
+	SSI0_MODE1,
+	SSI3_MODE1,
 	SSI_MODE2,
+	SSI0_MODE2,
+	SSI3_MODE2,
+	SSI_MODE4,
 	SSI_CONTROL,
+	SSI0_CONTROL,
+	SSI3_CONTROL,
 	SSI_CTRL,
+	SSI_CTRL0,
+	SSI_CTRL1,
+	SSI_CTRL2,
+	SSI_CTRL3,
+	SSI_CTRL4,
+	SSI_CTRL5,
+	SSI_CTRL6,
+	SSI_CTRL7,
 	SSI_BUSIF0_MODE,
 	SSI_BUSIF1_MODE,
 	SSI_BUSIF2_MODE,
@@ -191,6 +207,7 @@ enum rsnd_reg {
 	SSI_SYS_INT_ENABLE5,
 	SSI_SYS_INT_ENABLE6,
 	SSI_SYS_INT_ENABLE7,
+	SSI_STATUS,
 	HDMI0_SEL,
 	HDMI1_SEL,
 	SSI9_BUSIF0_MODE,
@@ -232,6 +249,7 @@ enum rsnd_reg {
 #define CTU_SVxxR(i, j)		(CTU_SV00R + (i * 8) + (j))
 #define DVC_VOLxR(i)		(DVC_VOL0R + (i))
 #define AUDIO_CLK_SEL(i)	(AUDIO_CLK_SEL0 + (i))
+#define SSI_CTRL(i)		(SSI_CTRL0 + (i))
 #define SSI_BUSIF_MODE(i)	(SSI_BUSIF0_MODE + (i))
 #define SSI_BUSIF_ADINR(i)	(SSI_BUSIF0_ADINR + (i))
 #define SSI_BUSIF_DALIGN(i)	(SSI_BUSIF0_DALIGN + (i))
@@ -624,6 +642,7 @@ struct rsnd_priv {
 #define RSND_GEN2	(2 << 0)
 #define RSND_GEN3	(3 << 0)
 #define RSND_GEN4	(4 << 0)
+#define RSND_GEN5	(5 << 0)
 #define RSND_SOC_MASK	(0xFF << 4)
 #define RSND_SOC_E	(1 << 4) /* E1/E2/E3 */
 
@@ -702,6 +721,7 @@ struct rsnd_priv {
 #define rsnd_is_gen2(priv)	(((priv)->flags & RSND_GEN_MASK) == RSND_GEN2)
 #define rsnd_is_gen3(priv)	(((priv)->flags & RSND_GEN_MASK) == RSND_GEN3)
 #define rsnd_is_gen4(priv)	(((priv)->flags & RSND_GEN_MASK) == RSND_GEN4)
+#define rsnd_is_gen5(priv)	(((priv)->flags & RSND_GEN_MASK) == RSND_GEN5)
 #define rsnd_is_gen3_e3(priv)	(((priv)->flags & \
 					(RSND_GEN_MASK | RSND_SOC_MASK)) == \
 					(RSND_GEN3 | RSND_SOC_E))
@@ -805,6 +825,7 @@ void rsnd_parse_connect_ssiu(struct rsnd_dai *rdai,
 			     struct device_node *capture);
 #define rsnd_ssiu_of_node(priv) rsnd_parse_of_node(priv, RSND_NODE_SSIU)
 bool rsnd_ssiu_busif_err_status_clear(struct rsnd_mod *mod);
+bool rsnd_ssiu_busif_err_status_clear_gen5(struct rsnd_mod *mod);
 
 /*
  *	R-Car SRC
