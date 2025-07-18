@@ -349,7 +349,7 @@ void siw_init_terminate(struct siw_qp *qp, enum term_elayer layer, u8 etype,
 		qp->term_info.valid = 1;
 	}
 	siw_dbg_qp(qp, "init TERM: layer %d, type %d, code %d, in tx %s\n",
-		   layer, etype, ecode, in_tx ? "yes" : "no");
+		   layer, etype, ecode, str_yes_no(in_tx));
 }
 
 /*

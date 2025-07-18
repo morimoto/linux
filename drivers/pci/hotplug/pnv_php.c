@@ -11,6 +11,7 @@
 #include <linux/pci.h>
 #include <linux/pci_hotplug.h>
 #include <linux/of_fdt.h>
+#include <linux/string_choices.h>
 
 #include <asm/opal.h>
 #include <asm/pnv-pci.h>
@@ -364,7 +365,7 @@ int pnv_php_set_slot_power_state(struct hotplug_slot *slot,
 
 error:
 	SLOT_WARN(php_slot, "Error %d powering %s\n",
-		  ret, (state == OPAL_PCI_SLOT_POWER_ON) ? "on" : "off");
+		  ret, str_on_off(state == OPAL_PCI_SLOT_POWER_ON));
 	return ret;
 }
 EXPORT_SYMBOL_GPL(pnv_php_set_slot_power_state);

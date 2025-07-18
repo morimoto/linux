@@ -3507,7 +3507,7 @@ static int rvu_dbg_npc_exact_drop_cnt(struct seq_file *s, void *unused)
 	u16 chan, pcifunc;
 	int blkaddr, i;
 	u64 cfg, cam1;
-	char *str;
+	const char *str;
 
 	blkaddr = rvu_get_blkaddr(rvu, BLKTYPE_NPC, 0);
 	table = rvu->hw->table;

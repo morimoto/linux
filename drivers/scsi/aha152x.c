@@ -796,11 +796,11 @@ struct Scsi_Host *aha152x_probe_one(struct aha152x_setup *setup)
 	       shpnt->io_port, HOSTIOPORT0, HOSTIOPORT1,
 	       shpnt->irq,
 	       shpnt->this_id,
-	       RECONNECT ? "enabled" : "disabled",
-	       PARITY ? "enabled" : "disabled",
-	       SYNCHRONOUS ? "enabled" : "disabled",
+	       str_enabled_disabled(RECONNECT),
+	       str_enabled_disabled(PARITY),
+	       str_enabled_disabled(SYNCHRONOUS),
 	       DELAY,
-	       EXT_TRANS ? "enabled" : "disabled");
+	       str_enabled_disabled(EXT_TRANS));
 
 	/* not expecting any interrupts */
 	SETPORT(SIMODE0, 0);
@@ -2867,11 +2867,11 @@ static int aha152x_show_info(struct seq_file *m, struct Scsi_Host *shpnt)
 		shpnt->io_port, shpnt->io_port + shpnt->n_io_port - 1);
 	seq_printf(m, "interrupt 0x%02x\n", shpnt->irq);
 	seq_printf(m, "disconnection/reconnection %s\n",
-		RECONNECT ? "enabled" : "disabled");
+		   str_enabled_disabled(RECONNECT));
 	seq_printf(m, "parity checking %s\n",
-		PARITY ? "enabled" : "disabled");
+		   str_enabled_disabled(PARITY));
 	seq_printf(m, "synchronous transfers %s\n",
-		SYNCHRONOUS ? "enabled" : "disabled");
+		   str_enabled_disabled(SYNCHRONOUS));
 	seq_printf(m, "%d commands currently queued\n", HOSTDATA(shpnt)->commands);
 
 	if(SYNCHRONOUS) {

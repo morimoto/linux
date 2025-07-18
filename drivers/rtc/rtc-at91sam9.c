@@ -252,7 +252,7 @@ static int at91_rtc_proc(struct device *dev, struct seq_file *seq)
 	u32 mr = rtt_readl(rtc, MR);
 
 	seq_printf(seq, "update_IRQ\t: %s\n",
-		   (mr & AT91_RTT_RTTINCIEN) ? "yes" : "no");
+		   str_yes_no(mr & AT91_RTT_RTTINCIEN));
 	return 0;
 }
 

@@ -2426,7 +2426,7 @@ struct brcmf_fws_info *brcmf_fws_attach(struct brcmf_pub *drvr)
 			BRCMF_FWS_PSQ_LEN);
 
 	brcmf_dbg(INFO, "%s bdcv2 tlv signaling [%x]\n",
-		  fws->fw_signals ? "enabled" : "disabled", tlv);
+		  str_enabled_disabled(fws->fw_signals), tlv);
 	return fws;
 
 fail:

@@ -559,8 +559,8 @@ static int smsc95xx_phy_update_flowcontrol(struct usbnet *dev)
 		}
 
 		netif_dbg(dev, link, dev->net, "rx pause %s, tx pause %s\n",
-			  rx_pause ? "enabled" : "disabled",
-			  tx_pause ? "enabled" : "disabled");
+			  str_enabled_disabled(rx_pause),
+			  str_enabled_disabled(tx_pause));
 	} else {
 		netif_dbg(dev, link, dev->net, "half duplex\n");
 		afc_cfg |= 0xF;

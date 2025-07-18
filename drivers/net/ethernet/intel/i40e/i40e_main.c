@@ -2831,7 +2831,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
 						     hw->aq.asq_last_status);
 			dev_info(&pf->pdev->dev,
 				 "Setting promiscuous %s failed on %s, err %pe aq_err %s\n",
-				 cur_promisc ? "on" : "off",
+				 str_on_off(cur_promisc),
 				 vsi_name,
 				 ERR_PTR(aq_ret),
 				 i40e_aq_str(hw, hw->aq.asq_last_status));
@@ -11100,7 +11100,7 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
 	if (ret)
 		dev_warn(&pf->pdev->dev,
 			 "Failed to restore promiscuous setting: %s, err %pe aq_err %s\n",
-			 pf->cur_promisc ? "on" : "off",
+			 str_on_off(pf->cur_promisc),
 			 ERR_PTR(ret),
 			 i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
 

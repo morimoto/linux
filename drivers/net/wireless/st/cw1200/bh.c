@@ -225,7 +225,7 @@ void cw1200_enable_powersave(struct cw1200_common *priv,
 			     bool enable)
 {
 	pr_debug("[BH] Powerave is %s.\n",
-		 enable ? "enabled" : "disabled");
+		 str_enabled_disabled(enable));
 	priv->powersave_enabled = enable;
 }
 

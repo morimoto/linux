@@ -491,7 +491,7 @@ static void tvout_dbg_vip(struct seq_file *s, int val)
 static void tvout_dbg_hd_dac_cfg(struct seq_file *s, int val)
 {
 	seq_printf(s, "\t%-24s %s", "HD DAC:",
-		   val & 1 ? "disabled" : "enabled");
+		   str_disabled_enabled(val & 1));
 }
 
 static int tvout_dbg_show(struct seq_file *s, void *data)

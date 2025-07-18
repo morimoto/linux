@@ -2054,7 +2054,7 @@ int smu_v13_0_deep_sleep_control(struct smu_context *smu,
 	if (smu_cmn_feature_is_supported(smu, SMU_FEATURE_DS_GFXCLK_BIT)) {
 		ret = smu_cmn_feature_set_enabled(smu, SMU_FEATURE_DS_GFXCLK_BIT, enablement);
 		if (ret) {
-			dev_err(adev->dev, "Failed to %s GFXCLK DS!\n", enablement ? "enable" : "disable");
+			dev_err(adev->dev, "Failed to %s GFXCLK DS!\n", str_enable_disable(enablement));
 			return ret;
 		}
 	}
@@ -2062,7 +2062,7 @@ int smu_v13_0_deep_sleep_control(struct smu_context *smu,
 	if (smu_cmn_feature_is_supported(smu, SMU_FEATURE_DS_UCLK_BIT)) {
 		ret = smu_cmn_feature_set_enabled(smu, SMU_FEATURE_DS_UCLK_BIT, enablement);
 		if (ret) {
-			dev_err(adev->dev, "Failed to %s UCLK DS!\n", enablement ? "enable" : "disable");
+			dev_err(adev->dev, "Failed to %s UCLK DS!\n", str_enable_disable(enablement));
 			return ret;
 		}
 	}
@@ -2070,7 +2070,7 @@ int smu_v13_0_deep_sleep_control(struct smu_context *smu,
 	if (smu_cmn_feature_is_supported(smu, SMU_FEATURE_DS_FCLK_BIT)) {
 		ret = smu_cmn_feature_set_enabled(smu, SMU_FEATURE_DS_FCLK_BIT, enablement);
 		if (ret) {
-			dev_err(adev->dev, "Failed to %s FCLK DS!\n", enablement ? "enable" : "disable");
+			dev_err(adev->dev, "Failed to %s FCLK DS!\n", str_enable_disable(enablement));
 			return ret;
 		}
 	}
@@ -2078,7 +2078,7 @@ int smu_v13_0_deep_sleep_control(struct smu_context *smu,
 	if (smu_cmn_feature_is_supported(smu, SMU_FEATURE_DS_SOCCLK_BIT)) {
 		ret = smu_cmn_feature_set_enabled(smu, SMU_FEATURE_DS_SOCCLK_BIT, enablement);
 		if (ret) {
-			dev_err(adev->dev, "Failed to %s SOCCLK DS!\n", enablement ? "enable" : "disable");
+			dev_err(adev->dev, "Failed to %s SOCCLK DS!\n", str_enable_disable(enablement));
 			return ret;
 		}
 	}
@@ -2086,7 +2086,7 @@ int smu_v13_0_deep_sleep_control(struct smu_context *smu,
 	if (smu_cmn_feature_is_supported(smu, SMU_FEATURE_DS_LCLK_BIT)) {
 		ret = smu_cmn_feature_set_enabled(smu, SMU_FEATURE_DS_LCLK_BIT, enablement);
 		if (ret) {
-			dev_err(adev->dev, "Failed to %s LCLK DS!\n", enablement ? "enable" : "disable");
+			dev_err(adev->dev, "Failed to %s LCLK DS!\n", str_enable_disable(enablement));
 			return ret;
 		}
 	}
@@ -2094,7 +2094,7 @@ int smu_v13_0_deep_sleep_control(struct smu_context *smu,
 	if (smu_cmn_feature_is_supported(smu, SMU_FEATURE_DS_VCN_BIT)) {
 		ret = smu_cmn_feature_set_enabled(smu, SMU_FEATURE_DS_VCN_BIT, enablement);
 		if (ret) {
-			dev_err(adev->dev, "Failed to %s VCN DS!\n", enablement ? "enable" : "disable");
+			dev_err(adev->dev, "Failed to %s VCN DS!\n", str_enable_disable(enablement));
 			return ret;
 		}
 	}
@@ -2102,7 +2102,7 @@ int smu_v13_0_deep_sleep_control(struct smu_context *smu,
 	if (smu_cmn_feature_is_supported(smu, SMU_FEATURE_DS_MP0CLK_BIT)) {
 		ret = smu_cmn_feature_set_enabled(smu, SMU_FEATURE_DS_MP0CLK_BIT, enablement);
 		if (ret) {
-			dev_err(adev->dev, "Failed to %s MP0/MPIOCLK DS!\n", enablement ? "enable" : "disable");
+			dev_err(adev->dev, "Failed to %s MP0/MPIOCLK DS!\n", str_enable_disable(enablement));
 			return ret;
 		}
 	}
@@ -2110,7 +2110,7 @@ int smu_v13_0_deep_sleep_control(struct smu_context *smu,
 	if (smu_cmn_feature_is_supported(smu, SMU_FEATURE_DS_MP1CLK_BIT)) {
 		ret = smu_cmn_feature_set_enabled(smu, SMU_FEATURE_DS_MP1CLK_BIT, enablement);
 		if (ret) {
-			dev_err(adev->dev, "Failed to %s MP1CLK DS!\n", enablement ? "enable" : "disable");
+			dev_err(adev->dev, "Failed to %s MP1CLK DS!\n", str_enable_disable(enablement));
 			return ret;
 		}
 	}

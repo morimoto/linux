@@ -21,6 +21,7 @@
 #include <linux/mtd/mtd.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
+#include <linux/string_choices.h>
 #include "mtd_test.h"
 
 #define RETRIES 3

@@ -537,7 +537,7 @@ static void myri10ge_dummy_rdma(struct myri10ge_priv *mgp, int enable)
 		msleep(1);
 	if (mgp->cmd->data != MYRI10GE_NO_CONFIRM_DATA)
 		dev_err(&mgp->pdev->dev, "dummy rdma %s failed\n",
-			(enable ? "enable" : "disable"));
+			str_enable_disable(enable));
 }
 
 static int

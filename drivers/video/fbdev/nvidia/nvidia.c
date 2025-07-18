@@ -622,7 +622,7 @@ static int nvidiafb_set_par(struct fb_info *info)
 		else
 			par->FPDither = !!(NV_RD32(par->PRAMDAC, 0x083C) & 1);
 		printk(KERN_INFO PFX "Flat panel dithering %s\n",
-		       par->FPDither ? "enabled" : "disabled");
+		       str_enabled_disabled(par->FPDither));
 	}
 
 	info->fix.visual = (info->var.bits_per_pixel == 8) ?

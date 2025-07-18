@@ -73,6 +73,7 @@
 #include <linux/kernel.h>
 #include <linux/delay.h>
 #include <linux/slab.h>
+#include <linux/string_choices.h>
 
 #include "ad525x_dpot.h"
 

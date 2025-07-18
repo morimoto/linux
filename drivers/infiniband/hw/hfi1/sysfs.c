@@ -107,7 +107,7 @@ static ssize_t cc_prescan_show(struct ib_device *ibdev, u32 port_num,
 	struct hfi1_devdata *dd = dd_from_ibdev(ibdev);
 	struct hfi1_pportdata *ppd = &dd->pport[port_num - 1];
 
-	return sysfs_emit(buf, "%s\n", ppd->cc_prescan ? "on" : "off");
+	return sysfs_emit(buf, "%s\n", str_on_off(ppd->cc_prescan));
 }
 
 static ssize_t cc_prescan_store(struct ib_device *ibdev, u32 port_num,

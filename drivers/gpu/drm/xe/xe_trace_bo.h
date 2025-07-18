@@ -80,7 +80,7 @@ TRACE_EVENT(xe_bo_move,
 		   __entry->move_lacks_source = move_lacks_source;
 		   ),
 	    TP_printk("move_lacks_source:%s, migrate object %p [size %zu] from %s to %s device_id:%s",
-		      __entry->move_lacks_source ? "yes" : "no", __entry->bo, __entry->size,
+		      str_yes_no(__entry->move_lacks_source), __entry->bo, __entry->size,
 		      __get_str(old_placement_name),
 		      __get_str(new_placement_name), __get_str(device_id))
 );

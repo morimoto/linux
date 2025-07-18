@@ -224,8 +224,8 @@ static int efi_procfs(struct device *dev, struct seq_file *seq)
 			   alm.hour, alm.minute, alm.second, alm.nanosecond,
 			   alm.year, alm.month, alm.day,
 			   alm.daylight,
-			   enabled == 1 ? "yes" : "no",
-			   pending == 1 ? "yes" : "no");
+			   str_yes_no(enabled == 1),
+			   str_yes_no(pending == 1));
 
 		if (alm.timezone == EFI_UNSPECIFIED_TIMEZONE)
 			seq_puts(seq, "Timezone\t: unspecified\n");

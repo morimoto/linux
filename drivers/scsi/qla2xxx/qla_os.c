@@ -3221,8 +3221,7 @@ qla2x00_probe_one(struct pci_dev *pdev, const struct pci_device_id *id)
 	qla2x00_config_dma_addressing(ha);
 	ql_dbg_pci(ql_dbg_init, pdev, 0x0020,
 	    "64 Bit addressing is %s.\n",
-	    ha->flags.enable_64bit_addressing ? "enable" :
-	    "disable");
+	    str_enable_disable(ha->flags.enable_64bit_addressing));
 	ret = qla2x00_mem_alloc(ha, req_length, rsp_length, &req, &rsp);
 	if (ret) {
 		ql_log_pci(ql_log_fatal, pdev, 0x0031,

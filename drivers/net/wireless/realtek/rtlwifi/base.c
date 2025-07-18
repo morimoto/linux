@@ -503,7 +503,7 @@ void rtl_init_rfkill(struct ieee80211_hw *hw)
 
 	if (valid) {
 		pr_info("rtlwifi: wireless switch is %s\n",
-			rtlpriv->rfkill.rfkill_state ? "on" : "off");
+			str_on_off(rtlpriv->rfkill.rfkill_state));
 
 		rtlpriv->rfkill.rfkill_state = radio_state;
 

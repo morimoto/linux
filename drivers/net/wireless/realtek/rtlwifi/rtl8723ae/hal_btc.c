@@ -1600,10 +1600,8 @@ static void rtl8723e_dm_bt_bt_enable_disable_check(struct ieee80211_hw *hw)
 		rtlpriv->btcoexist.cur_bt_disabled) {
 		rtl_dbg(rtlpriv, COMP_BT_COEXIST,
 			DBG_TRACE, "8723A BT is from %s to %s!!\n",
-			(rtlpriv->btcoexist.pre_bt_disabled ?
-				"disabled" : "enabled"),
-			(rtlpriv->btcoexist.cur_bt_disabled ?
-				"disabled" : "enabled"));
+			str_disabled_enabled(rtlpriv->btcoexist.pre_bt_disabled),
+			str_disabled_enabled(rtlpriv->btcoexist.cur_bt_disabled));
 		rtlpriv->btcoexist.pre_bt_disabled
 			= rtlpriv->btcoexist.cur_bt_disabled;
 	}

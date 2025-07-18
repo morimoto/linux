@@ -1149,9 +1149,8 @@ skip_ws_det:
 			ath_dbg(common, ANI,
 				"** ch %d: ofdm weak signal: %s=>%s\n",
 				chan->channel,
-				aniState->ofdmWeakSigDetect ?
-				"on" : "off",
-				on ? "on" : "off");
+				str_on_off(aniState->ofdmWeakSigDetect),
+				str_on_off(on));
 			if (on)
 				ah->stats.ast_ani_ofdmon++;
 			else
@@ -1306,8 +1305,8 @@ skip_ws_det:
 		if (is_on != aniState->mrcCCK) {
 			ath_dbg(common, ANI, "** ch %d: MRC CCK: %s=>%s\n",
 				chan->channel,
-				aniState->mrcCCK ? "on" : "off",
-				is_on ? "on" : "off");
+				str_on_off(aniState->mrcCCK),
+				str_on_off(is_on));
 			if (is_on)
 				ah->stats.ast_ani_ccklow++;
 			else
@@ -1324,9 +1323,9 @@ skip_ws_det:
 	ath_dbg(common, ANI,
 		"ANI parameters: SI=%d, ofdmWS=%s FS=%d MRCcck=%s listenTime=%d ofdmErrs=%d cckErrs=%d\n",
 		aniState->spurImmunityLevel,
-		aniState->ofdmWeakSigDetect ? "on" : "off",
+		str_on_off(aniState->ofdmWeakSigDetect),
 		aniState->firstepLevel,
-		aniState->mrcCCK ? "on" : "off",
+		str_on_off(aniState->mrcCCK),
 		aniState->listenTime,
 		aniState->ofdmPhyErrCount,
 		aniState->cckPhyErrCount);

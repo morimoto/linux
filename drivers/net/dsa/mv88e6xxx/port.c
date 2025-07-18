@@ -111,8 +111,8 @@ static int mv88e6xxx_port_set_rgmii_delay(struct mv88e6xxx_chip *chip, int port,
 		return err;
 
 	dev_dbg(chip->dev, "p%d: delay RXCLK %s, TXCLK %s\n", port,
-		reg & MV88E6XXX_PORT_MAC_CTL_RGMII_DELAY_RXCLK ? "yes" : "no",
-		reg & MV88E6XXX_PORT_MAC_CTL_RGMII_DELAY_TXCLK ? "yes" : "no");
+		str_yes_no(reg & MV88E6XXX_PORT_MAC_CTL_RGMII_DELAY_RXCLK),
+		str_yes_no(reg & MV88E6XXX_PORT_MAC_CTL_RGMII_DELAY_TXCLK));
 
 	return 0;
 }

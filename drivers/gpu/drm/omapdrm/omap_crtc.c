@@ -11,6 +11,7 @@
 #include <drm/drm_crtc.h>
 #include <drm/drm_mode.h>
 #include <drm/drm_vblank.h>
+#include <linux/string_choices.h>
 
 #include "omap_drv.h"
 
@@ -168,7 +169,7 @@ void omap_crtc_set_enabled(struct drm_crtc *crtc, bool enable)
 	ret = omap_irq_wait(dev, wait, msecs_to_jiffies(100));
 	if (ret) {
 		dev_err(dev->dev, "%s: timeout waiting for %s\n",
-				omap_crtc->name, enable ? "enable" : "disable");
+			omap_crtc->name, str_enable_disable(enable));
 	}
 
 	if (omap_crtc->channel == OMAP_DSS_CHANNEL_DIGIT) {

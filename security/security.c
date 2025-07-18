@@ -226,7 +226,7 @@ static void __init append_ordered_lsm(struct lsm_info *lsm, const char *from)
 	ordered_lsms[last_lsm++] = lsm;
 
 	init_debug("%s ordered: %s (%s)\n", from, lsm->name,
-		   is_enabled(lsm) ? "enabled" : "disabled");
+		   str_enabled_disabled(is_enabled(lsm)));
 }
 
 /* Is an LSM allowed to be initialized? */
@@ -532,7 +532,7 @@ int __init security_init(void)
 	 */
 	for (lsm = __start_early_lsm_info; lsm < __end_early_lsm_info; lsm++) {
 		init_debug("  early started: %s (%s)\n", lsm->name,
-			   is_enabled(lsm) ? "enabled" : "disabled");
+			   str_enabled_disabled(is_enabled(lsm)));
 		if (lsm->enabled)
 			lsm_append(lsm->name, &lsm_names);
 	}

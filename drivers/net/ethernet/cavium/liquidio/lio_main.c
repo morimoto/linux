@@ -2904,13 +2904,13 @@ static int liquidio_set_vf_spoofchk(struct net_device *netdev, int vfidx,
 	if (retval) {
 		netif_info(lio, drv, lio->netdev,
 			   "Failed to set VF %d spoofchk %s\n", vfidx,
-			enable ? "on" : "off");
+			   str_on_off(enable));
 		return -1;
 	}
 
 	oct->sriov_info.vf_spoofchk[vfidx] = enable;
 	netif_info(lio, drv, lio->netdev, "VF %u spoofchk is %s\n", vfidx,
-		   enable ? "on" : "off");
+		   str_on_off(enable));
 
 	return 0;
 }

@@ -1100,7 +1100,7 @@ static irqreturn_t lance_interrupt(int irq, void *dev_id)
 			if (lp->cur_tx - dirty_tx >= TX_RING_SIZE) {
 				printk("out-of-sync dirty pointer, %d vs. %d, full=%s.\n",
 					   dirty_tx, lp->cur_tx,
-					   netif_queue_stopped(dev) ? "yes" : "no");
+				       str_yes_no(netif_queue_stopped(dev)));
 				dirty_tx += TX_RING_SIZE;
 			}
 #endif

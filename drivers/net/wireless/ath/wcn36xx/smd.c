@@ -891,7 +891,7 @@ int wcn36xx_smd_start_hw_scan(struct wcn36xx *wcn, struct ieee80211_vif *vif,
 	wcn36xx_dbg(WCN36XX_DBG_HAL,
 		    "hal start hw-scan (channels: %u; ssids: %u; p2p: %s)\n",
 		    msg_body->num_channel, msg_body->num_ssid,
-		    msg_body->p2p_search ? "yes" : "no");
+		    str_yes_no(msg_body->p2p_search));
 
 	ret = wcn36xx_smd_send_and_wait(wcn, msg_body->header.len);
 	if (ret) {

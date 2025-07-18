@@ -15,6 +15,7 @@
 #include <linux/of_graph.h>
 #include <linux/platform_device.h>
 #include <linux/reset.h>
+#include <linux/string_choices.h>
 
 #include <drm/drm_atomic.h>
 #include <drm/drm_atomic_helper.h>
@@ -397,7 +398,7 @@ static void sun8i_mixer_mode_set(struct sunxi_engine *engine,
 			   SUN8I_MIXER_BLEND_OUTCTL_INTERLACED, val);
 
 	DRM_DEBUG_DRIVER("Switching display mixer interlaced mode %s\n",
-			 interlaced ? "on" : "off");
+			 str_on_off(interlaced));
 }
 
 static const struct sunxi_engine_ops sun8i_engine_ops = {

@@ -568,7 +568,7 @@ static ssize_t vbus_show(struct device *dev,
 
 	mutex_lock(&twl->lock);
 	ret = sprintf(buf, "%s\n",
-			twl->vbus_supplied ? "on" : "off");
+		      str_on_off(twl->vbus_supplied));
 	mutex_unlock(&twl->lock);
 
 	return ret;

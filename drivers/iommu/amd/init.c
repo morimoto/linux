@@ -21,6 +21,7 @@
 #include <linux/kmemleak.h>
 #include <linux/cc_platform.h>
 #include <linux/iopoll.h>
+#include <linux/string_choices.h>
 #include <asm/pci-direct.h>
 #include <asm/iommu.h>
 #include <asm/apic.h>
@@ -2743,7 +2744,7 @@ static void iommu_enable_irtcachedis(struct amd_iommu *iommu)
 		iommu->irtcachedis_enabled = true;
 	pr_info("iommu%d (%#06x) : IRT cache is %s\n",
 		iommu->index, iommu->devid,
-		iommu->irtcachedis_enabled ? "disabled" : "enabled");
+		str_disabled_enabled(iommu->irtcachedis_enabled));
 }
 
 static void iommu_enable_2k_int(struct amd_iommu *iommu)

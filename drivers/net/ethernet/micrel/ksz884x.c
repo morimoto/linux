@@ -5094,7 +5094,7 @@ static void set_media_state(struct net_device *dev, int media_state)
 	else
 		netif_carrier_off(dev);
 	netif_info(priv, link, dev, "link %s\n",
-		   media_state == priv->media_state ? "on" : "off");
+		   str_on_off(media_state == priv->media_state));
 }
 
 /**

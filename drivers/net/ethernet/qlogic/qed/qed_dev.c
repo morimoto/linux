@@ -2829,8 +2829,8 @@ qed_hw_init_pf_doorbell_bar(struct qed_hwfn *p_hwfn, struct qed_ptt *p_ptt)
 		pwm_regsize,
 		p_hwfn->dpi_size,
 		p_hwfn->dpi_count,
-		(!qed_edpm_enabled(p_hwfn)) ?
-		"disabled" : "enabled", PAGE_SIZE);
+		str_enabled_disabled(qed_edpm_enabled(p_hwfn)),
+		PAGE_SIZE);
 
 	if (rc) {
 		DP_ERR(p_hwfn,

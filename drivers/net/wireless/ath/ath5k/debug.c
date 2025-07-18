@@ -653,8 +653,7 @@ static ssize_t read_file_ani(struct file *file, char __user *user_buf,
 
 	len += scnprintf(buf + len, sizeof(buf) - len,
 			"HW has PHY error counters:\t%s\n",
-			ah->ah_capabilities.cap_has_phyerr_counters ?
-			"yes" : "no");
+			 str_yes_no(ah->ah_capabilities.cap_has_phyerr_counters));
 	len += scnprintf(buf + len, sizeof(buf) - len,
 			"HW max spur immunity level:\t%d\n",
 			as->max_spur_level);
@@ -692,10 +691,10 @@ static ssize_t read_file_ani(struct file *file, char __user *user_buf,
 			as->firstep_level);
 	len += scnprintf(buf + len, sizeof(buf) - len,
 			"OFDM weak signal detection:\t%s\n",
-			as->ofdm_weak_sig ? "on" : "off");
+			 str_on_off(as->ofdm_weak_sig));
 	len += scnprintf(buf + len, sizeof(buf) - len,
 			"CCK weak signal detection:\t%s\n",
-			as->cck_weak_sig ? "on" : "off");
+			 str_on_off(as->cck_weak_sig));
 
 	len += scnprintf(buf + len, sizeof(buf) - len,
 			"\nMIB INTERRUPTS:\t\t%u\n",

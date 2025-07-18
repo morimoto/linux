@@ -1947,7 +1947,7 @@ static u8 bnx2x_dcbnl_get_state(struct net_device *netdev)
 static u8 bnx2x_dcbnl_set_state(struct net_device *netdev, u8 state)
 {
 	struct bnx2x *bp = netdev_priv(netdev);
-	DP(BNX2X_MSG_DCB, "state = %s\n", state ? "on" : "off");
+	DP(BNX2X_MSG_DCB, "state = %s\n", str_on_off(state));
 
 	/* Fail to set state to "enabled" if dcbx is disabled in nvram */
 	if (state && ((bp->dcbx_enabled == BNX2X_DCBX_ENABLED_OFF) ||
@@ -2242,7 +2242,7 @@ static u8 bnx2x_dcbnl_get_pfc_state(struct net_device *netdev)
 static void bnx2x_dcbnl_set_pfc_state(struct net_device *netdev, u8 state)
 {
 	struct bnx2x *bp = netdev_priv(netdev);
-	DP(BNX2X_MSG_DCB, "state = %s\n", state ? "on" : "off");
+	DP(BNX2X_MSG_DCB, "state = %s\n", str_on_off(state));
 
 	if (!bnx2x_dcbnl_set_valid(bp))
 		return;

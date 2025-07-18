@@ -26,6 +26,7 @@
 #include <linux/crc32.h>
 #include <linux/delay.h>
 #include <linux/iosys-map.h>
+#include <linux/string_choices.h>
 
 #include <drm/drm_drv.h>
 #include <drm/drm_atomic.h>
@@ -368,7 +369,7 @@ static void qxl_crtc_update_monitors_config(struct drm_crtc *crtc,
 
 	DRM_DEBUG_KMS("head %d, %dx%d, at +%d+%d, %s (%s)\n",
 		      i, head.width, head.height, head.x, head.y,
-		      crtc->state->active ? "on" : "off", reason);
+		      str_on_off(crtc->state->active), reason);
 	if (oldcount != qdev->monitors_config->count)
 		DRM_DEBUG_KMS("active heads %d -> %d (%d total)\n",
 			      oldcount, qdev->monitors_config->count,

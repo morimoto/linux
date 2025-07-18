@@ -1179,7 +1179,7 @@ static void print_constraints_debug(struct regulator_dev *rdev)
 		--count;
 
 	count += scnprintf(buf + count, len - count, ", %s",
-		_regulator_is_enabled(rdev) ? "enabled" : "disabled");
+			   str_enabled_disabled(_regulator_is_enabled(rdev)));
 
 	rdev_dbg(rdev, "%s\n", buf);
 }

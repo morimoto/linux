@@ -544,8 +544,7 @@ static int __beiscsi_iface_get_param(struct beiscsi_hba *phba,
 		break;
 	case ISCSI_NET_PARAM_VLAN_ENABLED:
 		len = sprintf(buf, "%s\n",
-			      (if_info->vlan_priority == BEISCSI_VLAN_DISABLE) ?
-			      "disable" : "enable");
+			      str_disable_enable(if_info->vlan_priority == BEISCSI_VLAN_DISABLE));
 		break;
 	case ISCSI_NET_PARAM_VLAN_ID:
 		if (if_info->vlan_priority == BEISCSI_VLAN_DISABLE)
@@ -601,10 +600,10 @@ int beiscsi_iface_get_param(struct iscsi_iface *iface,
 	case ISCSI_NET_PARAM_IFACE_ENABLE:
 		if (iface->iface_type == ISCSI_IFACE_TYPE_IPV4)
 			len = sprintf(buf, "%s\n",
-				      phba->ipv4_iface ? "enable" : "disable");
+				      str_enable_disable(phba->ipv4_iface));
 		else if (iface->iface_type == ISCSI_IFACE_TYPE_IPV6)
 			len = sprintf(buf, "%s\n",
-				      phba->ipv6_iface ? "enable" : "disable");
+				      str_enable_disable(phba->ipv6_iface));
 		break;
 	case ISCSI_NET_PARAM_IPV4_GW:
 		memset(&gateway, 0, sizeof(gateway));

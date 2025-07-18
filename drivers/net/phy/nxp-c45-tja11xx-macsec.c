@@ -706,7 +706,7 @@ static void nxp_c45_tx_sc_update(struct phy_device *phydev,
 
 	nxp_c45_macsec_read(phydev, MACSEC_TXSC_CFG, &cfg);
 
-	phydev_dbg(phydev, "XPN %s\n", phy_secy->secy->xpn ? "on" : "off");
+	phydev_dbg(phydev, "XPN %s\n", str_on_off(phy_secy->secy->xpn));
 	if (phy_secy->secy->xpn)
 		cfg |= MACSEC_TXSC_CFG_XPN;
 	else
@@ -719,35 +719,35 @@ static void nxp_c45_tx_sc_update(struct phy_device *phydev,
 		cfg &= ~MACSEC_TXSC_CFG_AES_256;
 
 	phydev_dbg(phydev, "encryption %s\n",
-		   phy_secy->secy->tx_sc.encrypt ? "on" : "off");
+		   str_on_off(phy_secy->secy->tx_sc.encrypt));
 	if (phy_secy->secy->tx_sc.encrypt)
 		cfg |= MACSEC_TXSC_CFG_ENCRYPT;
 	else
 		cfg &= ~MACSEC_TXSC_CFG_ENCRYPT;
 
 	phydev_dbg(phydev, "protect frames %s\n",
-		   phy_secy->secy->protect_frames ? "on" : "off");
+		   str_on_off(phy_secy->secy->protect_frames));
 	if (phy_secy->secy->protect_frames)
 		cfg |= MACSEC_TXSC_CFG_PROTECT;
 	else
 		cfg &= ~MACSEC_TXSC_CFG_PROTECT;
 
 	phydev_dbg(phydev, "send sci %s\n",
-		   phy_secy->secy->tx_sc.send_sci ? "on" : "off");
+		   str_on_off(phy_secy->secy->tx_sc.send_sci));
 	if (phy_secy->secy->tx_sc.send_sci)
 		cfg |= MACSEC_TXSC_CFG_SEND_SCI;
 	else
 		cfg &= ~MACSEC_TXSC_CFG_SEND_SCI;
 
 	phydev_dbg(phydev, "end station %s\n",
-		   phy_secy->secy->tx_sc.end_station ? "on" : "off");
+		   str_on_off(phy_secy->secy->tx_sc.end_station));
 	if (phy_secy->secy->tx_sc.end_station)
 		cfg |= MACSEC_TXSC_CFG_END_STATION;
 	else
 		cfg &= ~MACSEC_TXSC_CFG_END_STATION;
 
 	phydev_dbg(phydev, "scb %s\n",
-		   phy_secy->secy->tx_sc.scb ? "on" : "off");
+		   str_on_off(phy_secy->secy->tx_sc.scb));
 	if (phy_secy->secy->tx_sc.scb)
 		cfg |= MACSEC_TXSC_CFG_SCB;
 	else
@@ -824,7 +824,7 @@ static void nxp_c45_rx_sc_update(struct phy_device *phydev,
 	phydev_dbg(phydev, "validate frames %u\n",
 		   phy_secy->secy->validate_frames);
 	phydev_dbg(phydev, "replay_protect %s window %u\n",
-		   phy_secy->secy->replay_protect ? "on" : "off",
+		   str_on_off(phy_secy->secy->replay_protect),
 		   phy_secy->secy->replay_window);
 	if (phy_secy->secy->replay_protect) {
 		cfg |= MACSEC_RXSC_CFG_RP;
@@ -835,7 +835,7 @@ static void nxp_c45_rx_sc_update(struct phy_device *phydev,
 	}
 
 	phydev_dbg(phydev, "rx_sc->active %s\n",
-		   rx_sc->active ? "on" : "off");
+		   str_on_off(rx_sc->active));
 	if (rx_sc->active &&
 	    test_bit(phy_secy->secy_id, priv->macsec->secy_bitmap))
 		cfg |= MACSEC_RXSC_CFG_SCI_EN;
@@ -848,7 +848,7 @@ static void nxp_c45_rx_sc_update(struct phy_device *phydev,
 	else
 		cfg &= ~MACSEC_RXSC_CFG_AES_256;
 
-	phydev_dbg(phydev, "XPN %s\n", phy_secy->secy->xpn ? "on" : "off");
+	phydev_dbg(phydev, "XPN %s\n", str_on_off(phy_secy->secy->xpn));
 	if (phy_secy->secy->xpn)
 		cfg |= MACSEC_RXSC_CFG_XPN;
 	else
@@ -1125,7 +1125,7 @@ static int nxp_c45_mdo_add_rxsc(struct macsec_context *ctx)
 
 	phydev_dbg(phydev, "add RX SC SCI %016llx %s\n",
 		   sci_to_cpu(ctx->rx_sc->sci),
-		   ctx->rx_sc->active ? "enabled" : "disabled");
+		   str_enabled_disabled(ctx->rx_sc->active));
 
 	phy_secy = nxp_c45_find_secy(&priv->macsec->secy_list, ctx->secy->sci);
 	if (IS_ERR(phy_secy))
@@ -1155,7 +1155,7 @@ static int nxp_c45_mdo_upd_rxsc(struct macsec_context *ctx)
 
 	phydev_dbg(phydev, "update RX SC SCI %016llx %s\n",
 		   sci_to_cpu(ctx->rx_sc->sci),
-		   ctx->rx_sc->active ? "enabled" : "disabled");
+		   str_enabled_disabled(ctx->rx_sc->active));
 
 	phy_secy = nxp_c45_find_secy(&priv->macsec->secy_list, ctx->secy->sci);
 	if (IS_ERR(phy_secy))
@@ -1175,7 +1175,7 @@ static int nxp_c45_mdo_del_rxsc(struct macsec_context *ctx)
 
 	phydev_dbg(phydev, "delete RX SC SCI %016llx %s\n",
 		   sci_to_cpu(ctx->rx_sc->sci),
-		   ctx->rx_sc->active ? "enabled" : "disabled");
+		   str_enabled_disabled(ctx->rx_sc->active));
 
 	phy_secy = nxp_c45_find_secy(&priv->macsec->secy_list, ctx->secy->sci);
 	if (IS_ERR(phy_secy))
@@ -1198,7 +1198,7 @@ static int nxp_c45_mdo_add_rxsa(struct macsec_context *ctx)
 	struct nxp_c45_sa *sa;
 
 	phydev_dbg(phydev, "add RX SA %u %s to RX SC SCI %016llx\n",
-		   an, rx_sa->active ? "enabled" : "disabled",
+		   an, str_enabled_disabled(rx_sa->active),
 		   sci_to_cpu(rx_sa->sc->sci));
 
 	phy_secy = nxp_c45_find_secy(&priv->macsec->secy_list, ctx->secy->sci);
@@ -1228,7 +1228,7 @@ static int nxp_c45_mdo_upd_rxsa(struct macsec_context *ctx)
 	struct nxp_c45_sa *sa;
 
 	phydev_dbg(phydev, "update RX SA %u %s to RX SC SCI %016llx\n",
-		   an, rx_sa->active ? "enabled" : "disabled",
+		   an, str_enabled_disabled(rx_sa->active),
 		   sci_to_cpu(rx_sa->sc->sci));
 
 	phy_secy = nxp_c45_find_secy(&priv->macsec->secy_list, ctx->secy->sci);
@@ -1258,7 +1258,7 @@ static int nxp_c45_mdo_del_rxsa(struct macsec_context *ctx)
 	struct nxp_c45_sa *sa;
 
 	phydev_dbg(phydev, "delete RX SA %u %s to RX SC SCI %016llx\n",
-		   an, rx_sa->active ? "enabled" : "disabled",
+		   an, str_enabled_disabled(rx_sa->active),
 		   sci_to_cpu(rx_sa->sc->sci));
 
 	phy_secy = nxp_c45_find_secy(&priv->macsec->secy_list, ctx->secy->sci);
@@ -1288,7 +1288,7 @@ static int nxp_c45_mdo_add_txsa(struct macsec_context *ctx)
 	struct nxp_c45_sa *sa;
 
 	phydev_dbg(phydev, "add TX SA %u %s to TX SC %016llx\n",
-		   an, ctx->sa.tx_sa->active ? "enabled" : "disabled",
+		   an, str_enabled_disabled(ctx->sa.tx_sa->active),
 		   sci_to_cpu(ctx->secy->sci));
 
 	phy_secy = nxp_c45_find_secy(&priv->macsec->secy_list, ctx->secy->sci);
@@ -1318,7 +1318,7 @@ static int nxp_c45_mdo_upd_txsa(struct macsec_context *ctx)
 	struct nxp_c45_sa *sa;
 
 	phydev_dbg(phydev, "update TX SA %u %s to TX SC %016llx\n",
-		   an, ctx->sa.tx_sa->active ? "enabled" : "disabled",
+		   an, str_enabled_disabled(ctx->sa.tx_sa->active),
 		   sci_to_cpu(ctx->secy->sci));
 
 	phy_secy = nxp_c45_find_secy(&priv->macsec->secy_list, ctx->secy->sci);
@@ -1347,7 +1347,7 @@ static int nxp_c45_mdo_del_txsa(struct macsec_context *ctx)
 	struct nxp_c45_sa *sa;
 
 	phydev_dbg(phydev, "delete TX SA %u %s to TX SC %016llx\n",
-		   an, ctx->sa.tx_sa->active ? "enabled" : "disabled",
+		   an, str_enabled_disabled(ctx->sa.tx_sa->active),
 		   sci_to_cpu(ctx->secy->sci));
 
 	phy_secy = nxp_c45_find_secy(&priv->macsec->secy_list, ctx->secy->sci);

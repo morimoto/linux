@@ -338,7 +338,7 @@ static int rtw_wow_check_fw_status(struct rtw_dev *rtwdev, bool wow_enable)
 
 wow_fail:
 	rtw_err(rtwdev, "failed to check wow status %s\n",
-		wow_enable ? "enabled" : "disabled");
+		str_enabled_disabled(wow_enable));
 	return -EBUSY;
 }
 

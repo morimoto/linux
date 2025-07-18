@@ -338,7 +338,7 @@ int sti_mixer_set_plane_status(struct sti_mixer *mixer,
 {
 	u32 mask, val;
 
-	DRM_DEBUG_DRIVER("%s %s %s\n", status ? "enable" : "disable",
+	DRM_DEBUG_DRIVER("%s %s %s\n", str_enable_disable(status),
 			 sti_mixer_to_str(mixer), sti_plane_to_str(plane));
 
 	mask = sti_mixer_get_plane_mask(plane);

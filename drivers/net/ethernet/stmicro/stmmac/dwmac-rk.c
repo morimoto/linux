@@ -1589,7 +1589,7 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
 		}
 	}
 	dev_info(dev, "integrated PHY? (%s).\n",
-		 bsp_priv->integrated_phy ? "yes" : "no");
+		 str_yes_no(bsp_priv->integrated_phy));
 
 	bsp_priv->dev = dev;
 

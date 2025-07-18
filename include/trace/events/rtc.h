@@ -94,7 +94,7 @@ TRACE_EVENT(rtc_irq_set_state,
 	),
 
 	TP_printk("%s RTC 2^N Hz periodic IRQs (%d)",
-		  __entry->enabled ? "enable" : "disable",
+		  str_enable_disable(__entry->enabled),
 		  __entry->err
 	)
 );
@@ -116,7 +116,7 @@ TRACE_EVENT(rtc_alarm_irq_enable,
 	),
 
 	TP_printk("%s RTC alarm IRQ (%d)",
-		  __entry->enabled ? "enable" : "disable",
+		  str_enable_disable(__entry->enabled),
 		  __entry->err
 	)
 );

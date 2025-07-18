@@ -75,8 +75,8 @@ static void cw1200_queue_status_show(struct seq_file *seq,
 	seq_printf(seq, "  queued:   %zu\n", q->num_queued);
 	seq_printf(seq, "  pending:  %zu\n", q->num_pending);
 	seq_printf(seq, "  sent:     %zu\n", q->num_sent);
-	seq_printf(seq, "  locked:   %s\n", q->tx_locked_cnt ? "yes" : "no");
-	seq_printf(seq, "  overfull: %s\n", q->overfull ? "yes" : "no");
+	seq_printf(seq, "  locked:   %s\n",  str_yes_no(q->tx_locked_cnt));
+	seq_printf(seq, "  overfull: %s\n",  str_yes_no(q->overfull));
 	seq_puts(seq,   "  link map: 0-> ");
 	for (i = 0; i < q->stats->map_capacity; ++i)
 		seq_printf(seq, "%.2d ", q->link_map_cache[i]);
@@ -141,8 +141,7 @@ static int cw1200_status_show(struct seq_file *seq, void *v)
 	    priv->mode == NL80211_IFTYPE_MESH_POINT ||
 	    priv->mode == NL80211_IFTYPE_P2P_GO)
 		seq_printf(seq, "Beaconing:  %s\n",
-			   priv->enable_beacon ?
-			   "enabled" : "disabled");
+			   str_enabled_disabled(priv->enable_beacon));
 
 	for (i = 0; i < 4; ++i)
 		seq_printf(seq, "EDCA(%d):    %d, %d, %d, %d, %d\n", i,
@@ -180,10 +179,10 @@ static int cw1200_status_show(struct seq_file *seq, void *v)
 		seq_printf(seq, "Powersave:  %s\n", pm_mode);
 	}
 	seq_printf(seq, "HT:         %s\n",
-		   cw1200_is_ht(&priv->ht_info) ? "on" : "off");
+		   str_on_off(cw1200_is_ht(&priv->ht_info)));
 	if (cw1200_is_ht(&priv->ht_info)) {
 		seq_printf(seq, "Greenfield: %s\n",
-			   cw1200_ht_greenfield(&priv->ht_info) ? "yes" : "no");
+			   str_yes_no(cw1200_ht_greenfield(&priv->ht_info)));
 		seq_printf(seq, "AMPDU dens: %d\n",
 			   cw1200_ht_ampdu_density(&priv->ht_info));
 	}

@@ -1419,7 +1419,7 @@ static inline void __pxafb_lcd_power(struct pxafb_info *fbi, int on)
 
 		if (ret < 0)
 			pr_warn("Unable to %s LCD supply regulator: %d\n",
-				on ? "enable" : "disable", ret);
+				str_enable_disable(on), ret);
 		else
 			fbi->lcd_supply_enabled = on;
 	}

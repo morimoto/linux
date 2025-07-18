@@ -3526,7 +3526,7 @@ _base_enable_msix(struct MPT3SAS_ADAPTER *ioc)
 	}
 
 	ioc_info(ioc, "High IOPs queues : %s\n",
-			ioc->high_iops_queues ? "enabled" : "disabled");
+		 str_enabled_disabled(ioc->high_iops_queues));
 
 	return 0;
 

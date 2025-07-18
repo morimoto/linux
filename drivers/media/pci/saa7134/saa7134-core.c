@@ -458,7 +458,7 @@ int saa7134_set_dmabits(struct saa7134_dev *dev)
 		   SAA7134_MAIN_CTRL_TE6,
 		   ctrl);
 	core_dbg("dmabits: task=0x%02x ctrl=0x%02x irq=0x%x split=%s\n",
-		task, ctrl, irq, split ? "no" : "yes");
+		 task, ctrl, irq, str_no_yes(split));
 
 	return 0;
 }

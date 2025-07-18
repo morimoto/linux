@@ -99,9 +99,9 @@ static int ux500_regulator_status_show(struct seq_file *s, void *p)
 		/* print status */
 		seq_printf(s, "%20s : %8s : %8s : %8s\n",
 			   info->desc.name,
-			   info->is_enabled ? "enabled" : "disabled",
-			   rdebug.state_before_suspend[i] ? "enabled" : "disabled",
-			   rdebug.state_after_suspend[i] ? "enabled" : "disabled");
+			   str_enabled_disabled(info->is_enabled),
+			   str_enabled_disabled(rdebug.state_before_suspend[i]),
+			   str_enabled_disabled(rdebug.state_after_suspend[i]));
 	}
 
 	return 0;
