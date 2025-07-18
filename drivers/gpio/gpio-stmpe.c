@@ -353,11 +353,11 @@ static void stmpe_dbg_show_one(struct seq_file *s,
 			return;
 		irqen = !!(ret & mask);
 
-		seq_printf(s, " gpio-%-3d (%-20.20s) in  %s %13s %13s %25s %25s",
+		seq_printf(s, " gpio-%-3d (%-20.20s) in  %s %13s IRQ-%9s %25s %25s",
 			   gpio, label ?: "(none)",
 			   str_hi_lo(val),
 			   edge_det_values[edge_det],
-			   irqen ? "IRQ-enabled" : "IRQ-disabled",
+			   str_enabled_disabled(irqen),
 			   rise_values[rise],
 			   fall_values[fall]);
 	}
