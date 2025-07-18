@@ -435,7 +435,7 @@ static void hns3_dump_coal_info(struct seq_file *s, bool is_tx)
 	struct hns3_nic_priv *priv = h->priv;
 	unsigned int i;
 
-	seq_printf(s, "%s interrupt coalesce info:\n", is_tx ? "tx" : "rx");
+	seq_printf(s, "%s interrupt coalesce info:\n", str_tx_rx(is_tx));
 
 	seq_puts(s, "VEC_ID  ALGO_STATE  PROFILE_ID  CQE_MODE  TUNE_STATE  ");
 	seq_puts(s, "STEPS_LEFT  STEPS_RIGHT  TIRED  SW_GL  SW_QL  ");
