@@ -419,12 +419,12 @@ static const struct rsnd_regmap_field_conf conf_common_ssi[] = {
 static int rsnd_gen5_probe(struct rsnd_priv *priv)
 {
 	static const struct rsnd_regmap_field_conf conf_ssiu[] = {
-		RSND_GEN_S_REG(SSI0_MODE1,	0x8004),
-		RSND_GEN_S_REG(SSI3_MODE1,	0x38004),
-		RSND_GEN_S_REG(SSI0_MODE2,	0x8008),
-		RSND_GEN_S_REG(SSI3_MODE2,	0x8008),
-		RSND_GEN_S_REG(SSI0_CONTROL,	0x8018),
-		RSND_GEN_S_REG(SSI3_CONTROL,	0x38018),
+		RSND_GEN_S_REG(SSI0_MODE1,	0x8004),	/* これは SSI_MODE4 と共に GEN_M_ で定義できる */
+		RSND_GEN_S_REG(SSI3_MODE1,	0x38004),	/* これは SSI_MODE4 と共に GEN_M_ で定義できる */
+		RSND_GEN_S_REG(SSI0_MODE2,	0x8008),	/* これは SSI_MODE4 と共に GEN_M_ で定義できる */
+		RSND_GEN_S_REG(SSI3_MODE2,	0x8008),	/* これは SSI_MODE4 と共に GEN_M_ で定義できる */
+		RSND_GEN_S_REG(SSI0_CONTROL,	0x8018),	/* これは GEN_M_ で定義できる */
+		RSND_GEN_S_REG(SSI3_CONTROL,	0x38018),	/* これは存在しない？ */
 
 		/* FIXME: it needs SSI_MODE2/3 in the future */
 
