@@ -2128,6 +2128,15 @@
 			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
+		gsx: gsx@fd000000 {
+			compatible = "renesas,gsx";
+			reg = <0 0xfd000000 0 0x800000>;
+			interrupts = <GIC_SPI 464 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&cpg CPG_MOD 0>;
+			power-domains = <&sysc R8A779G0_PD_A23DGB>;
+			resets = <&cpg 0>;
+		};
+
 		csi40: csi2@fe500000 {
 			compatible = "renesas,r8a779g0-csi2";
 			reg = <0 0xfe500000 0 0x40000>;
