@@ -1,0 +1,37 @@
+fdf96433ae17e arm64: dts: renesas: ironhide: Enable display support
+92c7897d5ad98 arm64: dts: renesas: r8a78000: Add display device nodes
+187d9500126df gpu: drm: rcar-vcon: Validate mode against dot clock supply
+21dae0dcb88f4 gpu: drm: rcar-vcon: Fix encoder initialization
+25765a528b4ca gpu: drm: rcar-vcon: Add polarity settings
+5dcac7ae8c797 gpu: drm: rcar-vcon: Add hardcoded clock enable for FCPVD, VSPD, VCON and DP-TX
+678fdecf31d9a gpu: drm: rcar-vcon: rcar_dw_dp: Add support for real DP-TX controller
+d0ad4f7e2ab4f drm: bridge: dw_dp: Update to support R-Car operation
+97f1cd265b2f3 The DW DP TX Controller is compliant with the DisplayPort Specification Version 1.4 with the following features:
+cac037abd8347 arm64: dts: renesas: ironhide: Add node for Camera Power Protectors
+de5fca7a677ef arm64: dts: renesas: Hardcode I2C address for Camera IMX728
+2fd66d89634f0 arm64: dts: renesas: r8a78000-ironhide: Add CSI-2 pin swap order of R-Car X5H
+84d70b358c284 arm64: dts: renesas: Add Video Capture related DTs for R8A78000 X5H
+ef9c5c5d94f32 media: rcar-vin: rcar-csi2: Add w/a to work with Gen1 datarates (<3500Mbps)
+f2cb4b5617ed2 media: rcar-csi2: Add CSI-2 C-PHY start-up sequence on Ironhide
+bb4e8d9c4d58e dt-bindings: media: Define pin-swap order macro for R-Car X5H
+f125e89d97871 media: rcar-vin: Hardcoded to enable module clock
+185c0d0b8f224 media: rcar-vin: Correct Endian Conversion setting for RAW20/24/28
+1cf192f09121c media: RAW8/10/12/14/16/20/24/28 support
+6bd8763b25ad5 media: media: Add 1X20, 1x24 and 1x28 raw bayer media bus code definitions
+56a0bdde549d1 media: v4l: Add 20/24/28-bit raw bayer pixel formats
+416bf14d1b6e7 drm: Add R14/16/20/24/28 FourCC
+43c877c3903f7 media: rcar-vin: Add support for crop function for Gen3 and above
+0383e5a4b714b media: rcar-vin: Fixes issue cannot capture RAW10 continuously
+adb5617e77ba9 media: rcar-isp: Disable all of LUT filter (frame, line, pixel)
+382ffa554b40a media: rcar-isp: Corect start up sequence follow description in HWUM
+ea2848f375b20 media: rcar-vin: rcar-dma: Fix error state message reports by V4L2 videobuf2 framework
+30082b9e05fd7 media: rcar-vin: Reduce the waiting time of the stop capturing process
+422aeaf13ae38 media: rcar-vin: Add support for R-Car X5H
+65aef2b8a57fe drm: drm_edid: Add 3840x2160 resolution support for drm_add_modes_noedid()
+ba5da72ef2892 drm: rcar-vcon: Add VCON support on X5H SoC
+26d15c90cf599 arm64: defconfig: Enable rcar-vin drivers for R-Car X5H
+fa94fa5778447 arm64: defconfig: Enable R-Car X5H display support
+2367ea36553af media: vsp1: Add support for VSPD (b) instance of R-Car X5H
+35b9b4e6ba4ad media: vsp1: Fix setting control register by display list
+457f66da9c727 media: vsp1: Fix access to reserved registers
+0f4474887ef3c media: rcar-csi2: Remove v4l2_async_notifier_cleanup in remove function

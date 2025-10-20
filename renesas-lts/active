@@ -1,0 +1,25 @@
+#
+# Morimoto: SCP support
+#
+4c04a63ab1ffb dt-bindings: clock: Update R8A78000 clock definitions
+bdc8631d2dd07 dt-bindings: clock: Update R8A78000 clock definitions
+37be4aa6a9144 dt-bindings: clock: Update R8A78000 clock definitions
+d3c86852f37e3 dt-bindings: clock: Add R8A78000 clock definitions
+79a560a9a68af firmware: arm_scmi: Add oem_config_val
+f2765849369ef arm64: defconfig: Enable SCMI and MFIS mailbox drivers
+6d206d3053d45 firmware: arm_scmi: Set mailbox as atomic for r8a78000
+a7a282b51b42b serial: sh-sci: fck clock with SCP fixup
+ee2b680fd351c serial: sh-sci: fck clock with SCP fixup
+31e61afe027e3 Revert "firmware: arm_scmi: Add SCP fixup"
+cc0d5e8591502 firmware: arm_scmi: Revert SCP fixup completely
+30170e51af528 firmware: arm_scmi: Add SCP fixup
+1f3474e3f45fa firmware: arm_scmi: Add SCP fixup
+4b1a106bc5bd5 arm64: configs: defconfig: Enable SCP fixup config
+50acd9180c8bb arm64: configs: defconfig: Enable SCP fixup config
+38e2e57ebb0a4 drivers: soc: renesas: Add config for SCP fixup
+43b57a51cf733 drivers: soc: renesas: Add config for SCP fixup
+be3038e9d76bd arm64: dts: renesas: ironhide: Enable RPMsg channels
+85abe4c78658b hwspinlock: rcar: Add support for R-Car X5H SoC
+4b064f628dbf8 dt-bindings: hwlock: rcar: Add binding documentation for R-Car hardware spinlock
+50ab31cd8ce85 dt-bindings: hwlock: rcar: Add binding documentation for R-Car Gen5
+88c0d3275df20 arm64: dts: renesas: r8a78000: Add MFIS-Lock device node
