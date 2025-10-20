@@ -1,0 +1,373 @@
+#
+# Format
+#
+#	# this is normal comment
+#
+#	# BSP commit and upstream commit should be pair
+#	# git-log is not mandatory
+#	# N:M pair is OK
+#
+#	# upstream: xxxx
+#	# upstream: yyyy ("xxxxxxxx")
+#	aaaaa BSP commit
+#	bbbbb BSP commit
+#	ccccc BSP commit
+#	ddddd BSP commit
+#
+
+# upstream: 5719efcc5abb34ceb47b03e58709d99713f80db1 dt-bindings: pwm: renesas,pwm-rcar: Add r8a779g0 support
+0f0be080685ec dt-bindings: pwm: Add support for V4H
+# upstream: 50315945d178eebec4e8e2c50c265767ddb926eb dt-bindings: pwm: renesas,tpu: Add r8a779g0 support
+c7bfc780c7acb dt-bindings: pwm: tpu: Add support for V4H
+# upstream: d0520eb3ed54df89eb5961ec3b88634f313123f2 i2c: rcar: add FastMode+ support for Gen4
+df974b712e280 i2c: rcar: Add fast mode plus support
+# upstream: c330601c9c93392000c077d973b182cc0164b9ac mmc: renesas_sdhi: take DMA end interrupts into account
+b12620a5df7a7 mmc: tmio: Add internal DMA transfer end
+# upstream: c330601c9c93392000c077d973b182cc0164b9ac mmc: renesas_sdhi: take DMA end interrupts into account
+2cb48c06f20e8 mmc: renesas_sdhi: Add internal DMA transfer end
+# upstream: bb6d3fa98a418b071c5f735e75558604f5f4af66 clk: renesas: rcar-gen3: Switch to new SD clock handling
+bca9f1d114034 mmc: renesas_sdhi: Fix SDnCKCR setting in 4TAP SoC
+# upstream: 2a84708c2f2f9d134abd21d1f2fe6ce5a87dffaa dt-bindings: gpio: rcar: Add r8a779a0 support
+287599c1321f6 gpio: rcar: Add DT binding for R-Car V3U
+# upstream: ce34fb3cb4a8165a51a90d0ea437d75f34a6d031 pinctrl: renesas: r8a779[56]x: Add MediaLB pins
+ccf43c2acb963 pinctrl: renesas:r8a779{50, 51, 6, 65}: add mlb pinmux
+# upstream: 843394c61e9a71f0fb340a08b28cb42695baa929 pinctrl: renesas: r8a77990: Add drive-strength
+31330d063ee59 pinctrl: renesas: r8a77990: Add driver-strength for R8A77990
+# upstream: 59e579a6af8c3f1cc73bc30f894abbb766113456 pinctrl: renesas: r8a779g0: Add Audio Clock pins, groups, and functions
+0259cf8ad66b1 pinctrl: renesas: r8a779g0: Add Audio support
+# upstream: 6210905586ae7f40e6f581e963cbf298dd13d462  pinctrl: renesas: Add shorthand for reserved register fields
+e5ac4808d2b68 pinctrl: renesas: r8a779h0: Use full description of reserved fields
+# upstream: 1b7e7240eaf39aeebed08e09d0aae86f5f207286 media: rcar-vin: Add support for RAW10
+# upstream: 94bf847ae5a61e0ab0b971ed186a443688eb793f media: rcar-vin: Fix RAW10
+d2e511f4cde74 media: rcar-vin: Add RAW10 format support
+# upstream: 083693214f28b979b50cfcd689010725ca579eb8 media: rcar-vin: Add support for V4L2_FIELD_ALTERNATE
+e81ee5206a43b media: rcar-vin: Add interrupt for V4L2_FIELD_ALTERNATE format
+# upstream: 1de3866f6d7a53dbee0ebe7d71eac738fb90972f memory: renesas-rpc-if: Add support for R-Car Gen4
+dfe81a58ff1d8 memory: renesas-rpc-if: Add R-Car Gen4 support
+# upstream: b06ec03b7464fdf235487cb68ce0902df8c34aa6 media: rcar-csi2: Allow specifying C-PHY line order
+# from old 'handled': 6346917cdaa4
+54290ffeb63f8 media: rcar-csi2: Add interface for C-PHY Analog pin swap on R-Car V4H
+# upstream: 82bc596df84daa5ff6b3e706a8473801de49e2ee media: rcar-csi2: Add support for C-PHY on R-Car V4H
+# from old 'handled': 51f0028e4e9c
+347062c90931a media: rcar-csi2: Add interface for HS Receiver Specific on R-CarV4H
+# upstream: 82bc596df84daa5ff6b3e706a8473801de49e2ee media: rcar-csi2: Add support for C-PHY on R-Car V4H
+# from old 'handled': 923c4962b355
+04b4ed16b0fa9 media: rcar-csi2: Update C-PHY start-up sequence for R-Car V4H
+# upstream: 82bc596df84daa5ff6b3e706a8473801de49e2ee media: rcar-csi2: Add support for C-PHY on R-Car V4H
+# from old 'handled': 96f790ecae56
+040f5f5e352f9 media: rcar-csi2: Add register modifying helpers
+# upstream: b33c4b4b84813fadddbd8c10e87f78de3fb10e87
+# from old 'handled': 723fc666517e
+a3746aaa20e70 pinctrl: renesas: r8a779h0: Add MSIOF pins, groups, functions
+# upstream: 0a016639ef92b28eb74ba4fed21bee1f1328513a can: rcar_canfd: Fix R-Car V3U CAN mode selection
+# from old 'handled': 86ce48264beb
+9124aa0ecb843 can: rcar_canfd: Correct the controller
+# upstream: 586d5eecdf1479b9ab861ab16438ba236fb2f383 can: rcar_canfd: Add support for Transceiver Delay Compensation
+# from old 'handled': 905813c180f4
+be509466f2a5a can: rcar_canfd: Add secondary sample point
+# upstream: b88e733ac5170efe5f26c62606ff97901dad9248
+# from old 'handled': 09d316980e2e
+186fc78d77a42 pinctrl: renesas: Add support for 1.8V/2.5V I/O voltage levels
+# upstream: 496da1003721bdaf03f6d65c66fd3ddb7c5aad53
+# from old 'handled': 273c7cbc83fc
+e4d4ab36fdfb9 pinctrl: renesas: Add generic support for resizable buses
+# upstream: 49a7a2742580ccd6194fc2bb26e6777cba9cac58
+# from old 'handled': 02c3ddcac3df
+01adf10973692 pinctrl: renesas: Add generic support for pin group subsets
+# upstream: e79da260fcb1d8eb91ccf946cef63f971b22964b
+# from old 'handled': e4b8eaeee97e
+953bcc8eeef3d pinctrl: renesas: r8a779h0: Add RPC pins, groups, functions
+# upstream: 1dba0a37644ed3022558165bbb5cb9bda540eaf7 can: rcar_canfd: Fix page entries in the AFL list
+# from old 'handled': e9ba9ac6fe77
+e8d4c908f6688 can: rcar_canfd: Configure receive rules
+# upstream: 2d2a3349521de1757b685b664af849b0824c205d usb: dwc3: Add workaround for host mode VBUS glitch when boot
+1c01bf5a55a26 usb: dwc3: Add workaround for host mode VBUS glitch when boot
+# upstream: dd22cc907a749ff34526e5b22a664d674f71c3de firmware: arm_scmi: Add support for system suspend in power control driver
+d636f00dd82d7 firmware: arm_scmi: Add support for system suspend in power control driver
+# upstream: 637581ce60403a27712c657453a210c8fd17cc66 memory: renesas-rpc-if: Remove redundant division of dummy
+0e99d036e8744 memory: renesas-rpc-if: Remove redundant division of dummy
+# upstream: 3d56c7364389fce14547803fef56d6f2cab5d366 memory: renesas-rpc-if: Fix PHYCNT.STRTIM setting
+7fdce051025c8 memory: renesas-rpc-if: Fix PHYCNT.STRTIM setting
+# upstream: 5284d0b09d1bdc695256d7240915881d71997899 soc: renesas: Identify R-Car X5H
+fa6cdb32dca80 soc: renesas: Identify R-Car X5H
+# upstream: 5284d0b09d1bdc695256d7240915881d71997899 soc: renesas: Identify R-Car X5H
+dba1d6fc84932 soc: renesas: Identify R-Car X5H
+# upstream: 317bacf960a4879af22d12175f47d284930b3273 i3c: master: add enable(disable) hot join in sys entry
+7351cac096ed8 i3c: master: add enable(disable) hot join in sys entry
+# upstream: b4da37db3e2cfc1c60875b0c10cfc556d5342a3a i3c: master: Fix build error
+f5edcc56bbcdf i3c: master: Fix build error
+# upstream: 2aac0bf4ebc8e09941bb2a40c0ce725437d9a82c i3c: Add fallback method for GETMXDS CCC
+763912834fbf1 i3c: Add fallback method for GETMXDS CCC
+# upstream: 9fd00df05e81a2e1080ce6e9abc35533dca99d74 i3c: master: handle IBIs in order they came
+0d84531e3a9d3 i3c: master: handle IBIs in order they came
+# upstream: 0c35691551387e060e6ae7a6652b4101270c73cf i3c: master: Inherit DMA masks and parameters from parent device
+62ed112708564 i3c: master: Inherit DMA masks and parameters from parent device
+# upstream: fa7726a4d9b91e0a8fb6fbbd819cd20f116f6c21 i3c: replace deprecated strncpy
+f28fc7223837a i3c: replace deprecated strncpy
+# upstream: c6a7550458922181bb922863d5f5feaf3c453fe5 i3c: master: Fix SETDASA process
+d741d1e3163a9 i3c: master: Fix SETDASA process
+# upstream: f195c470f2c2cf3737b2b157a5a2dbe182e374fa i3c: transfer pid from boardinfo to device info
+44bf83d87008d i3c: transfer pid from boardinfo to device info
+# upstream: 672825cd2823a0cee4687ce80fef5b702ff3caa3 i3c: export SETDASA method
+e89caa55a16c3 i3c: export SETDASA method
+# upstream: 97191e536c37359d17d6d32bc29acb911f731e60 pinctrl: renesas: r8a779h0: Add Audio pins, groups, functions
+8d6f5fc63a480 pinctrl: renesas: r8a779h0: Add Audio pins, groups, functions
+# upstream: 1604b9788ee334e3aa2b0aa465d39d41878ad2c9 pinctrl: renesas: r8a779h0: Add PCIe pins, groups, functions
+83f61a29f2a0f pinctrl: renesas: r8a779h0: Add PCIe pins, groups, functions
+# upstream: 2acf13cec939c084c70a2b7e99af2f5554ca3f17 pinctrl: renesas: r8a779h0: Add CANFD pins, groups, functions
+2f0925cc2c3d5 pinctrl: renesas: r8a779h0: Add CANFD pins, groups, functions
+# upstream: 4759b702d07601e17050636a909966902d3bdd91 pinctrl: renesas: r8a779h0: Add PWM/TPU pins, groups, functions
+0af61beda994c pinctrl: renesas: r8a779h0: Add PWM/TPU pins, groups, functions
+# upstream: b33c4b4b84813fadddbd8c10e87f78de3fb10e87 pinctrl: renesas: r8a779h0: Add MSIOF pins, groups, functions
+cf4b8d165e6b7 pinctrl: renesas: r8a779h0: Add MSIOF pins, groups, functions
+# upstream: 2a9d0273d1303b74ebac669b7637053b8b8180c6 pinctrl: renesas: r8a779h0: Add I2C pins, groups, functions
+f17f3ee56b839 pinctrl: renesas: r8a779h0: Add I2C pins, groups, functions
+# upstream: a0974d843d0be7780eafa87a8e4b63f32fef5766 pinctrl: renesas: r8a779h0: Add HSCIF pins, groups, functions
+ed3a88dad2731 pinctrl: renesas: r8a779h0: Add HSCIF pins, groups, functions
+# upstream: bc56b11cd734a7c640a6e434cb40cd0c52da9376 pinctrl: renesas: r8a779h0: Add SCIF pins, groups, functions
+9f30c19c571cd pinctrl: renesas: r8a779h0: Add SCIF pins, groups, functions
+# upstream: 4ab1ee6f4f05e3b184e7a2d62b0be6bcf424107c pinctrl: renesas: r8a779h0: Add SD/MMC pins, groups, functions
+d6e452bed2609 pinctrl: renesas: r8a779h0: Add SD/MMC pins, groups, functions
+# upstream: 73f35ebbf4b7783e241740418c9e962cc746bb8a pinctrl: renesas: r8a779h0: Add Ethernet AVB pins, groups, functions
+ff6ac2830e15f pinctrl: renesas: r8a779h0: Add Ethernet AVB pins, groups, functions
+# upstream: 5442c33f218b1aabbe699db978e407317a231d10 dt-bindings: pwm: Add R-Car V3U device tree bindings
+c132fef160498 dt-bindings: pwm: Add R-Car V3U device tree bindings
+# upstream: bc83a87759cabbf6f3366568e44bda088b315204
+3dc13b73f7ba5 dt-bindings: usb: dwc3: Add snps,host-vbus-glitches-quirk avoid vbus glitch
+# upstream: c35ba0ac48355df1d11fcce85945f76c42d250ac
+ba471ba3601e2 XHCI: Separate PORT and CAPs macros into dedicated file
+# upstream: 0d024974014f39207c5f52e770059b5bac35ea6d
+214f1e448e046 drm/dp: add an API to indicate if sink supports VSC SDP
+# upstream: b55b88d86fec1d3edf60489b25ed998a3f0848cb
+e6caaad7d6ddf drm/dp: drop the size parameter from drm_dp_vsc_sdp_pack()
+# upstream: 47f419e07111acecab3b529d4ae31a28985f5b61
+937b2e435610a drm/dp: move intel_dp_vsc_sdp_pack() to generic helper
+# upstream: 09cdda7a60f45784cebddf1fa2109d6279f9890b
+88c41aa758f89 drm/dp: Pull drm_dp_link_power_up/down from Tegra to common drm_dp_helper
+# upstream: da75ba93e3383fc10af71e5029b5a57378a57576
+549de9f5880ab net: renesas: rswitch: use FIELD_PREP for remaining MPIC register fields
+# upstream: 206112fa65790221ca3ebbc43092911bb8836a19
+1660826787884 net: renesas: rswitch: do not write to MPSM register at init time
+# upstream: fb9e6039c325cc205a368046dc03c56c87df2310
+431e3ef2fcea3 net: renesas: rswitch: fix initial MPIC register setting
+# upstream: 54d3970548bd9de40f921c95f8c31e1b1b2382cb
+9d6b779eb9f93 net: renesas: rswitch: enable only used MFWD features
+# upstream: 3dd002f20098b9569f8fd7f8703f364571e2e975
+c8b129d5ff880 net: renesas: rswitch: handle stop vs interrupt race
+# upstream: 66b7e9f85b8459c823b11e9af69dbf4be5eb6be8
+dfa04a0628dc6 net: renesas: rswitch: avoid use-after-put for a device tree node
+# upstream: bb617328bafa1023d8e9c25a25345a564c66c14f
+f34995d1c2a66 net: renesas: rswitch: fix leaked pointer on error path
+# upstream: 0c9547e6ccf40455b0574cf589be3b152a3edf5b
+2cacc890855b9 net: renesas: rswitch: fix race window between tx start and complete
+# upstream: 5cb099902b6b6292b3a85ffa1bb844e0ba195945
+ba01716bed461 net: renesas: rswitch: fix possible early skb release
+# upstream: 32fd46f5b69e9a2e1206d576359e533e5b7c4694
+05e543781a47a net: renesas: rswitch: remove speed from gwca structure
+# upstream: 070927427d82debf5797e60c96165f2666c0bc42
+838735665b138 net: renesas: rswitch: do not deinit disabled ports
+# upstream: 9a0c28efeec6383ef22e97437616b920e7320b67
+dd84ca81ca2ab rswitch_poll(). Since `skb` and `gq->skbs[gq->dirty]` are in fact the same pointer, the skb is first freed using dev_kfree_skb_any(), then the value in skb->len is used to update the interface statistics.
+# upstream: 6392194470575de1ac0cb7223ff3bf30da94bbea
+fa29a88add6aa uio: add missing MODULE_DESCRIPTION() macros
+# upstream: ebbc1a4789c666846b9854ef845a37a64879e5f9
+5a42b05cea87c uio: update kerneldoc comments for interrupt functions
+# upstream: f8a27dfa4b82d442af1c0645a5acc70cc97c67f6
+7ede55abcd9fd uio: use threaded interrupts
+# upstream: 1dc30075fb0fe02b74b1ea7fd1c1c734a89f1448
+1ab5f0f808fe4 media: vsp1: Add underrun debug print
+# upstream: 2768fbf10076b744596ddaf59879bc96748c6f8f
+3e5407ad56a27 media: renesas: vsp1: Add new formats (2-10-10-10 ARGB, Y210, Y212)
+# upstream: 0dc1d7a79a8d13e316d3b168e9fc57e376099c7a
+73f1c850dd481 media: Add Y210, Y212 and Y216 formats
+# upstream: 8d0e3fc61abdf56a403b316e03fa8f89a3108caa
+0b9ee8ed2d0ea media: Add 2-10-10-10 RGB formats
+# upstream: e0106bd776e178e5fe1522581d4104c396c7eeb9
+11a8b898f8e70 media: renesas: vsp1: Add V4H SoC version
+# upstream: 110d2bd7a2a5a9c59cd7700646952f88f2335539
+0ba3ef3b61260 media: renesas: vsp1: Change V3U to be gen4
+# upstream: 68a9ca452a413d9ce4a9a61926ebf3788adbfb80
+05e608877199f media: i2c: adv7604: Fix range of hue control
+# upstream: 4c5681acd75d0449ab5b6054142da93559598e39
+8e3590e16fcae media: i2c: adv7604: Enable video adjustment
+# upstream: cb88d8289fc222bd21b7a7f99b055e7e73e316f4
+d51163f91aa9e media: rcar-vin: Fix NV12 size alignment
+# upstream: 879c5a458e532b95783ce27f704d1b21573066f7
+b795e24e4bb60 media: rcar-vin: Gen3 can not scale NV12
+# upstream: 7ccd37fbecf31d610adf9aa01667632a418e06d6
+9e31ef0b8fd3d arm64: dts: renesas: draak: Make HDMI the default video input
+# upstream: a650b821fa57989deab9f7274a33af6ffab28e7e
+5fbd75add3c5a media: rcar-vin: Add support for R-Car V4H
+# upstream: 8e85c1ad3d49f5a51947d74b66b7b6a255fd370c
+c818fa6503a82 media: rcar-isp: Add support for R-Car V4H
+# upstream: 82bc596df84daa5ff6b3e706a8473801de49e2ee
+30cef9bd56f68 media: rcar-csi2: Add support for C-PHY on R-Car V4H
+# upstream: e103484c76ab0898e6cf5067b1e3d45019a4fe0b
+c78b63955ca17 media: rcar-csi2: Prepare for C-PHY support
+# upstream: a73116db88299af2c2b2aa69d7df5ccf5a1c6f75
+4e0697a054579 media: rcar-csi2: Prepare for Gen4 support
+# upstream: 6311a0d0220f18c436391b75a5c217f9d27b9b49
+3d36c3935a1fa media: staging: max96712: Add support for 3-lane C-PHY
+# upstream: e8f27ebb39420121905d26a3bd73cfc89c4e17d3
+ce92500964881 media: dt-bindings: media: renesas,vin: Add binding for V4H
+# upstream: 969242759296fbd52e679aad7fe5c198461ace74
+3084affaa0e46 media: dt-bindings: media: renesas,csi2: Add binding for V4H
+# upstream: d6de57ce85862f7e3f8e43524b2a5d38fd52a843
+ee7929399c5c7 media: dt-bindings: media: renesas,isp: Add binding for V4H
+# upstream: af4273b43f2bd9eed313654f49b40e0d19faaae0
+02a27dec6d46d media: renesas: fdp1: remove R-Car H3 ES1.* handling
+# upstream: 2f13170906607ab7899f106813ea06ee19cc6b75
+9258b6ab09319 media: rcar-vin: csi2: remove R-Car H3 ES1.* handling
+# upstream: 8584e4bea31c678316521b90b58d87179f341fe7
+fffeb3645a442 media: rcar-vin: remove R-Car H3 ES1.* handling
+# upstream: 695863408b11710b9ff7f8bab5198fd0e8a9a02f
+632adfe7a8c62 ARM: dts: renesas: Use new media bus type macros
+# upstream: f7eeb00845934851b580b188f079545ab176fa5c
+5bb7bcba02135 media: dt-bindings: media: Add macros for video interface bus types
+# upstream: 928a6ea4267450c1b1baa4219f06b3756f4b1d84
+bc2763a5e510d media: rcar-vin: Add support for Gen3 UDS (Up Down Scaler)
+# upstream: 3ad69c610ba8a3f7cf76bc856ca62c92d2bd955f
+3aaa726bd0a20 media: rcar-vin: Store scaler in a function pointer
+# upstream: f42a323252afc930eea0c9fd839037f952baf691
+80176b3244380 media: rcar-vin: Do not cache remote rectangle
+# upstream: fa8eec59570923f4132253e61c45f9d70377f049
+bddcf0b3e9b1c arm64: defconfig: Enable Renesas R-Car S4-8 Spider Ethernet devices
+# upstream: 4e4aafcddbbfcdd6eed5780e190fcbfac8b4685a
+a0dc6a3238082 net: mdio: Add dedicated C45 API to MDIO bus drivers
+# upstream: 1a5361189b7acac15b9b086b2300a11b7aa84c06
+4bcebb732ca88 phy: renesas: r8a779f0-ether-serdes: Add .exit() ops
+# upstream: aa4c0bbf820ddb9dd8105a403aa12df57b9e5129
+4250d2ed9fd49 phy: renesas: r8a779f0-ether-serdes: Reset in .init()
+# upstream: d746f127ea5b1d631d48977d1e599c312cbb05c2
+9d6a70e67e620 phy: renesas: r8a779f0-ether-serdes: Convert to devm_platform_ioremap_resource()
+# upstream: f1c01b91e56b5716eff573bdefbb771ac1d133b7
+72c2999cb1944 phy: renesas: r8a779f0-ether-serdes: Convert to platform remove callback returning void
+# upstream: 50133cd3e8dd1494a4f0ed37eb91288e93b9ab06
+86e630de66e90 phy: renesas: r8a779f0-eth-serdes: Remove retry code in .init()
+# upstream: d2aa66a9926530d7cd85e7863a55c5d25506c492
+c83e7339111b3 phy: renesas: r8a779f0-eth-serdes: Add .power_on() into phy_ops
+# upstream: ec4a1d9301100c011312357ea25627b98eb293d5
+dad1de0b32bf8 phy: renesas: r8a779f0-eth-serdes: Fix register setting
+# upstream: 742859441d44be4b408274206244011a09618a91
+d32d48ca7a22b phy: renesas: Add Renesas Ethernet SERDES driver for R-Car S4-8
+# upstream: c71517fe7353d2cbfbf2e305b282bf23c1750e29
+57e29d87a7ccf net: rswitch: Allow jumbo frames
+# upstream: d2c96b9d5f83e4327cf044d00d7f713edd7fecfd
+b3d9f2c04687d net: rswitch: Add jumbo frames handling for TX
+# upstream: 933416cc59b18ef82ea7895c4ca58be3d92d3b3c
+40dd468b1d58a net: rswitch: Add jumbo frames handling for RX
+# upstream: 9c90316a1170dd6ee1e620d28f6101f85bbaaa10
+0b188603d3d70 net: rswitch: Set GWMDNC register
+# upstream: fcff581ee43078cf23216aa7079012e935a6a078
+f6a480db64dd3 net: rswitch: Add a setting ext descriptor function
+# upstream: 271e015b91535dd87fd0f5df0cc3b906c2eddef9
+497a030ae1d63 net: rswitch: Add unmap_addrs instead of dma address in each desc
+# upstream: 6a203cb5165d2257e8d54193b69afdb480a17f6f
+f020ff68b10ea net: rswitch: Use build_skb() for RX
+# upstream: 8857034184538ca92b0e029f6f56e5e04f518ad2
+0137d24b42cd5 net: rswitch: Use unsigned int for desc related array index
+# upstream: c7e0022390d43788f63c7021ad441c1f8d9acf5f
+18e952bae28b4 net: rswitch: Drop unused argument/return value
+# upstream: 782486af9b5b76493012711413c141509ac45dec
+cf8fa5501c62b net: rswitch: Fix missing dev_kfree_skb_any() in error path
+# upstream: 1aaef8634a20b322c82e84f12a9b6aec1e2fd4fa
+ad54fb35ea859 net: rswitch: Fix return value in rswitch_start_xmit()
+# upstream: 109b25d13e0054337860d44841b990d11b32d262
+6241760694c51 net: rswitch: Fix type of ret in rswitch_start_xmit()
+# upstream: 46c361a04635a9f431fec56a75076cbb5262fb93
+d987fc1163844 net: ethernet: renesas: rcar_gen4_ptp: Prepare for shared register layout
+# upstream: 35b78409e1c7fff0f209f0aed7297e9fca13351d
+fe6d708cd952a rswitch: Add PM ops
+# upstream: 1bf55630694e0a87be529801ad064daed36f25f3
+294c3f061478a rswitch: Use unsigned int for port related array index
+# upstream: 053f13f67be6d02781730c9ac71abde6e9140610
+58e0e63bbd0d2 rswitch: Fix imbalance phy_power_off() calling
+# upstream: 510b18cf23b9bd8a982ef7f1fb19f3968a2bf787
+fa772dd88c39d rswitch: Fix renesas_eth_sw_remove() implementation
+# upstream: a0c55bba0d0d0b5591083f65f830940d8ae63f31
+2251666ce5c03 rswitch: Fix PHY station management clock setting
+# upstream: 0b4f04e2f60b435ff2457620551957418ac1ee0f
+d7ba8fa95b199 net: ethernet: renesas: Convert to platform remove callback returning void
+# upstream: c4f922e86c8e0f7c5fe94e0547e9835fc9711f08
+6e4c17fbeb497 net: renesas: rswitch: Add spin lock protection for irq {un}mask
+# upstream: e7b1ef29420fe52c2c1a273a9b4b36103a522625
+a7c222967b5d8 net: renesas: rswitch: Fix unmasking irq condition
+# upstream: 20f8be6b24da814912c09cdb5b3457f0a3ecf505
+9bdd08e645e9d net: renesas: rswitch: Add .[gs]et_link_ksettings support
+# upstream: c009b903f8ccfce5844c91f005b0f152a5518526
+900ada1336a61 net: renesas: rswitch: Add runtime speed change support
+# upstream: 3d40aed862874db14e1dd41fd6f12636dcfdcc3e
+2f0f1e202025e net: Explicitly include correct DT includes
+# upstream: c87bd91e34e1593584c3b309e8fead833c985855
+c69d52e3d1b82 net: renesas: rswitch: Use hardware pause features
+# upstream: dc510c6d2ecfff1faaf95b642c5fc01c86d6fdff
+e8a3e131dd6e7 net: renesas: rswitch: Use napi_gro_receive() in RX
+# upstream: 0ad4982c520ed87ea7ebfc9381ea1f617ed75364
+d7d2f80913a44 net: renesas: rswitch: Fix timestamp feature after all descriptors are used
+# upstream: a60caf039e96d806b1ced893242bae82ba3ccf0d
+9994af3a870d1 net: renesas: rswitch: Fix return value in error path of xmit
+# upstream: 22f5c234141d657a132f230aec08a670ee96232a
+a472ad6314493 ethernet: remove superfluous clearing of phydev
+# upstream: 2c59e993c86ad57afde26eaf1beb35694da5fbfe
+127aa59690ac5 net: renesas: rswitch: Fix GWTSDIE register handling
+# upstream: e05bb97d9c9dd4ba5739a27921044c935a7fb3be
+b98103c795205 net: renesas: rswitch: Fix the output value of quote from rswitch_rx()
+# upstream: 33f5d733b589031bda69f92f6a0dec230bc6d4fb
+47a810be78edd net: renesas: rswitch: Improve TX timestamp accuracy
+# upstream: 48cf0a25702b2d1d1ca5667d03df91780191657a
+e4520687b7911 net: renesas: rswitch: Remove gptp flag from rswitch_gwca_queue
+# upstream: e3f38039c681d8ac5956a742ee5d40b00cf57a37
+9beee417533d6 net: renesas: rswitch: Move linkfix variables to rswitch_gwca
+# upstream: 251eadcc640a0b5fd2767aaeb22a6f1ebf9b3c96
+9d2b32a148848 net: renesas: rswitch: Rename rings in struct rswitch_gwca_queue
+# upstream: 04c77d9130b693e56a477364af1e1be4379b1b49
+c331c5f296043 net: renesas: rswitch: Add "max-speed" handling
+# upstream: 5cb630925b49dd13bf3aa43f299b11615c8fe9cd
+75a4671bcdd02 net: renesas: rswitch: Add phy_power_{on,off}() calling
+# upstream: 0df024d0f1d3e556e38e5418fc3577a2c7263764
+d9737e5ec036c net: renesas: rswitch: Add host_interfaces setting
+# upstream: c16a5033f77b9ee7e5317efe288e97159f32108b
+dae816e194d55 net: renesas: rswitch: Convert to phy_device
+# upstream: b46f1e5793298c67efc2f1b917350a2cefacf9d6
+135563c341a87 net: renesas: rswitch: Simplify struct phy * handling
+# upstream: fd941bd64f0776e4c51d8934f8e666cfbe14406a
+7365e5ee5aab5 net: ethernet: renesas: rswitch: Fix ethernet-ports handling
+# upstream: 95331514d95fae22a13df955275038d531cf85a0
+06e08627ad0c0 net: ethernet: renesas: rswitch: C45 only transactions
+# upstream: bd2adfe3b3b863c883309bcc915f13c831ca88da
+4f65ab6a1eaeb net: ethernet: renesas: rswitch: Fix getting mac address from device tree
+# upstream: 8e6a8d7a3dd93e93645be061692cb4ee6702dff0
+acc6b4082bb74 net: ethernet: renesas: rswitch: Fix error path in renesas_eth_sw_probe()
+# upstream: 1cb50726329070a6e3235b6bac38dfb8d5fd18c2
+e409190bdd9af net: ethernet: renesas: rswitch: Fix MAC address info
+# upstream: b4b221bd79a1c698d9653e3ae2c3cb61cdc9aee7
+86bb6c4c93371 net: ethernet: renesas: Fix return type in rswitch_etha_wait_link_verification()
+# upstream: 380f9acdf74729d79972b947820f00b42cc26dae
+94b3b5e8c8231 net: ethernet: renesas: rswitch: Fix endless loop in error paths
+# upstream: e1f4ecab19338ec7079830e8700e4869f991fd45
+58159c63aecba net: remove explicit phylink_generic_validate() references
+# upstream: 8e0aa1ff44ca30b0b9df95dfa72003522d9a088d
+d72ace01c4429 net: ethernet: renesas: Fix return type of rswitch_start_xmit()
+# upstream: 6c6fa1a00ad3df994c96af9468cc83f225df9df4
+e0de441a11af7 net: ethernet: renesas: rswitch: Add R-Car Gen4 gPTP support
+# upstream: 3590918b5d07aa5e4702f753c375adb4868d3abd
+3a7efe7f942f0 net: ethernet: renesas: Add support for "Ethernet Switch"
+# upstream: f089dc131fbe04b07ad515b645d63db3125b6030 ("arm64: dts: renesas: Add R8A78000 X5H DTs")
+8603d3dccd660 arm64: dts: renesas: Add R8A78000 X5H DTs
+# upstream: a553ab200ef456a264aa0ebb8cb55a924e406ed3 ("serial: sh-sci: Add R-Car Gen5 support")
+d22c3374b4204 serial: sh-sci: Add R-Car Gen5 support
+# upstream: 6ac1d604737279313bbd55797460204f21044327 ("dt-bindings: serial: sh-sci: Document r8a78000 bindings")
+67854cd5ea722 dt-bindings: serial: sh-sci: Document x5h bindings
+# upstream: d2a2a5602cfe7fed309c81135b5ecb62556ce89b ("dt-bindings: serial: renesas,hscif: Document r8a779h0 bindings")
+624c5b130919f dt-bindings: serial: sh-sci: Document r8a779h0 bindings
+# upstream: 85a503c9ea7d4978db5f98de941e6c04b44623f1 ("dt-bindings: serial: renesas,hscif: Document r8a779g0 bindings")
+274ab9b85f45f dt-bindings: serial: sh-sci: Document r8a779g0 bindings
+# upstream: 6469267afed4ffb9d16ce8c44a2b518b9b31c215 ("ASoC: dt-bindings: ak4619: Add initial DT binding")
+c457187f7f960 ASoC: dt-bindings: ak4619: Add initial DT binding
+# upstream: 3913ecb38833e8926467a17f1f1679ccd25a7230 ("ASoC: simple-audio-mux: enable to select MUX names")
+959800583fe2d ASoC: simple-audio-mux: enable to select MUX names
+# upstream: f7d97cb564a2ac5517ee7cc933de729e533d659a ("ASoC: simple-mux: add read function")
+eb2bb1c4cc398 ASoC: simple-mux: add read function
+# upstream: 061505a1a61169bd25dd908f95ba22f33dffdd69 ("ASoC: Remove unneeded semicolon")
+48054d538f4d7 ASoC: Remove unneeded semicolon
+# terminator: don't remove this line
