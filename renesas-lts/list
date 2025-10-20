@@ -1,0 +1,10 @@
+Local     / media: i2c: imx219: Replace exposure magic value with named constant
+Local     / media: i2c: imx219: Propagate errors from control range updates
+Local     / media: i2c: imx219: Simplify imx219_get_binning() function
+Local     / drm/panel: ilitek-ili9881c: Add configuration for 5" Raspberry Pi 720x1280
+Local     / drm/panel: ilitek-ili9881c: Turn ILI9881C_COMMAND_INSTR() parameters lowercase
+Local     / arm64: dts: renesas: sparrow-hawk: Add overlay for RPi Display 2
+Local     / arm64: dts: renesas: sparrow-hawk: Add overlay for Argon40 fan HAT
+Local     / tools: arm64: Add Cortex-A720AE definitions
+Local     / arm64: dts: renesas: R8A78000: Add initial Ironhide support
+Local     / arm64: dts: renesas: Add R8A78000 X5H DTs
