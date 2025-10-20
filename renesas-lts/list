@@ -1,0 +1,33 @@
+Local     / soc: renesas: Add R-Car X5H PRR support
+Local     / soc: renesas: Add Renesas R-Car MFIS driver
+Local     / dt-bindings: soc: renesas: Document MFIS IP core
+Local     / arm64: dts: renesas: r8a78000: Fix SCIF brg_int clocks
+Local     / mailbox: correct kdoc title for mbox_bind_client
+Local     / mailbox: test: really ignore optional memory resources
+Local     / mailbox: remove superfluous internal header
+Local     / arm64: dts: renesas: sparrow-hawk: Add overlay for Olimex MIPI-HDMI adapter
+Local     / arm64: dts: renesas: sparrow-hawk: Add overlay for WaveShare Display 13.3"
+Local     / drm/bridge: waveshare-dsi: Fix signedness bug
+Local     / drm/panel: simple: Add Waveshare 13.3" panel support
+Local     / drm/bridge: waveshare-dsi: Add support for 1..4 DSI data lanes
+Local     / dt-bindings: display: bridge: waveshare,dsi2dpi: Document 1..4 DSI lane support
+Local     / drm/bridge: waveshare-dsi: Register and attach our DSI device at probe
+v7.0      / Input: ili210x - add support for polling mode
+v7.0      / dt-bindings: touchscreen: trivial-touch: Drop 'interrupts' requirement for old Ilitek
+v7.0      / Input: ili210x - convert to dev_err_probe()
+v6.19     / media: v4l2-core: Introduce v4l2-isp.c
+v6.19     / media: uapi: Introduce V4L2 generic ISP types
+v7.0      / arm64: dts: renesas: r8a78000: Fix out-of-range SPI interrupt numbers
+Local     / dt-bindings: firmware: arm,scmi: Document arm,no-completion-irq property
+Local     / firmware: arm_scmi: Implement arm,no-completion-irq property
+v7.0      / mailbox: remove unneeded double quotation
+v6.19     / media: i2c: imx219: Replace exposure magic value with named constant
+v6.19     / media: i2c: imx219: Propagate errors from control range updates
+v6.19     / media: i2c: imx219: Simplify imx219_get_binning() function
+v6.19     / drm/panel: ilitek-ili9881c: Add configuration for 5" Raspberry Pi 720x1280
+v6.19     / drm/panel: ilitek-ili9881c: Turn ILI9881C_COMMAND_INSTR() parameters lowercase
+v6.19     / arm64: dts: renesas: sparrow-hawk: Add overlay for RPi Display 2
+v6.19     / arm64: dts: renesas: sparrow-hawk: Add overlay for Argon40 fan HAT
+v6.19     / tools: arm64: Add Cortex-A720AE definitions
+v6.19     / arm64: dts: renesas: r8a78000: Add initial Ironhide board support
+v6.19     / arm64: dts: renesas: Add R8A78000 SoC support

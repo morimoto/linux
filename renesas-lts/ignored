@@ -1,0 +1,289 @@
+# Ignored entries (please give reason why)
+
+# UIO and OSAL are not intended for upstream.
+04f762d3a5310 arch: arm64: renesas: r8a78000-uio: Add rsipe UIO device support
+# UIO and OSAL are not intended for upstream.
+5076947c4a514 arch: arm64: renesas: r8a78000-uio: Remove unregistered devices in UIO
+# UIO and OSAL are not intended for upstream.
+b0ba0d951ef09 arm64: dts: renesas: r8a78000-uio: update definitions
+# VSP is a local patch file for MMP. So we don't need to upport.
+3abce8d0dd36d arm64: dts: renesas: r8a78000: Add device tree node for VSPI and VSPB
+# UIO and OSAL are not intended for upstream.
+9ab76b06919ee arch: arm64: renesas: r8a78000-uio: Add power domain and for isp devices
+# UIO and OSAL are not intended for upstream.
+0e7b99a0a8698 arch: arm64: renesas: r8a78000-uio: Add power domain and for imr devices
+# UIO and OSAL are not intended for upstream.
+6c077c795e373 arch: arm64: renesas: r8a78000-uio: Add power domain and for vcp5 devices
+# UIO and OSAL are not intended for upstream.
+84156c6926036 arm64: dts: renesas: ironhide-uio: Add UIO device support for R8A78000 (R-Car X5H)
+# UIO and OSAL are not intended for upstream.
+7e6111ff172d9 uio: uio_pdrv_genirq: Add shared interrupt support
+# UIO and OSAL are not intended for upstream.
+12336e138f742 uio: Switch to clk_hw_get_flags()
+# Modular as per upstream policy, CONFIG_CPU_FREQ_STAT_DETAILS was removed in v4.11
+# from old 'ignored: 0e5d0c8ae529
+c3ace7edaa275 arm64: defconfig: Enable cpufreq support
+# Modular as per upstream policy, CONFIG_CPU_FREQ_STAT_DETAILS was removed in v4.11
+# from old 'ignored: 7ed8cce11f67
+6e10b98df31a0 arm64: defconfig: Enable cpufreq configs for rcar
+# RPC-IF works on White-Hawk with current firmware.  If it must be
+# accessed only by the Cortex-R52, it should be handled like on e.g.
+# Salvator-XS.
+# Likewise for Spider?
+# from old 'ignored: 7e49a8b70a7d
+a513663713759 clk: renesas: r8a779f0: Remove RPC clock
+# EMS is not intended for upstream
+# from old 'ignored: 32cdac51bf55
+26d719256ae0c Revert "cpufreq: Remove CPUFREQ_ADJUST and CPUFREQ_NOTIFY policy notifier events"
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: e21494bf0175
+b2af94d9d84dc uio: Add IPMMU info for user-space
+# Parallel mode is not acceptable for upstream.
+# from old 'ignored: 4e5be19e18e7
+ab17eaff9eff7 net: ethernet: renesas: rcar_gen4_ptp: Add support for parallel mode
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: ad701408b101
+5166696803678 dt-bindings: ipmmu: Add definition IPMMU info for UIO devices
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 492cdd5c9cff
+f257f3d440493 dt-bindings: ipmmu: Add IPMMU info for UIO devices
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 8be32e61e150
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 72805b07fc95
+c5473bdff9148 uio: uio_pdrv_genirq: Add parameter error in case not define property in node
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: e841dd60cb71
+01a96aa37e5e2 uio: uio_pdrv_genirq: Hotfix clock and power control for multi task
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 6d96e6755a60
+c244b5e5594fa uio: uio_pdrv_genirq: Add parameter to check device no clock
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 414afef74a51
+7fec8759cd4e4 uio:  Support error notification to upper layer
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 0f76ba844d14
+bfa91f0f3aefd uio: Use EOPNOTSUPP, not ENOTSUPP
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: bf847527de9c
+b0f95e83167d9 uio: Inform UIO no-reset-line to users
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 3c6d4fd45c93
+ea0185c39e41a uio: Initialize reset struct of each UIO device
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: fcb14163efe8
+2d1543cb6804a uio: Fix the logic of setting reset to UIO devices
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: fa18bbf5f256
+18c112b7774e2 uio: uio_pdrv_genirq: renesas: Add clock divisor ioctl support
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: a11d168c6464
+04c08ff705810 uio: Add PMA IOCTL to compat list
+# UIO/OSAL is not intended for upstream
+# from old 'ignored: 6668f1736f72
+24f3454b61dde uio: Add new ioctl for power management
+# Time out. Should be confirmed.
+# from old 'ignored: 441c24bfdab0
+a90631b27e3d9 vsp1: Add display interrupt wait after setting STRCMD bit
+# Used by rcar-du, which adds a new userspace API, which is blocked
+# from old 'ignored: dffa26bbdf08
+bbafc310d5e82 v4l: vsp1: Add support for colorkey alpha blending
+# More information about use case is needed
+# from old 'ignored: 56b96a3db3e8
+217ba4668926a v4l: vsp1: Add Vmute function support
+# We don't have a camera board, so we cannot test
+# from old 'ignored: fae4aeaf8b56
+842f2540e718c arm64: dts: r8a779a0-falcon: Enable fakra connector
+# GMSL2 and FPD-Link III support is a project that needs to be scheduled
+# on its own. It is now easier to do so as we we have landed the V4L2
+# streams API upstream, but the amount of work remains too large to be
+# handled within the scope of generic BSP upporting.
+# from old 'ignored: c8b353b49501
+01422bbab4729 media: i2c: dummy-camera: Add dummy camera support
+# This patch implements incorrect behavior, if a CSI-2 node is not connected to a video source it should be disabled i DT
+# This patch as clearly marked as a development debug patch, its only function is to prinkt when an interrupt handles, no use upstream
+# from old 'ignored: 2058a7e8eddc
+037007086b1e2 media: rcar-vin: Add overflow debug message option
+# This patch implements incorrect behavior, if a CSI-2 node is not connected to a video source it should be disabled i DT
+# from old 'ignored: 9a473723caaf
+abb90dfb65125 rcar-vin: rcar-csi2: Don't bail out from probe on no ep
+# PCIe is considered broken for V3U
+# from old 'ignored: c51e84c0c4bc
+1e06e9f09b148 pinctrl: renesas: r8a779a0: Add PCIe pins, groups and functions
+# Everything in the Control Domain is not supported by upstream Linux
+# from old 'ignored: 432dd5733f8e
+9c8ac4e685f38 pinctrl: renesas: r8a779f0: Add TAUD0/1-PWM support
+# Everything in the Control Domain is not supported by upstream Linux
+# from old 'ignored: 751ac8024a13
+73144ef1accb9 pinctrl: renesas: r8a779f0: Fix pfc addresses of Control domain
+# Use "assigned-clocks" and "assigned-clock-rates" in board DTS file that
+# actually uses MSIOF, and drop the second clock from the msiof nodes
+# from old 'ignored: eaeb661228d2
+d9f4194d070ca spi: sh-msiof: Add MSIOF parent clock
+# Use "assigned-clocks" and "assigned-clock-rates" in board DTS file that
+# actually uses MSIOF, and drop the second clock from the msiof nodes
+# from old 'ignored: 469c8f7e8387
+9f25c3f3c9492 spi: sh-msiof: Add MSIOF module clock changing processing for R-Car Gen3
+# Local debug code not suitable for upstream
+# from old 'ignored: aa5fd2cbca66
+ed869ddbeb8d7 spi: sh-msiof: Add sleep before master transfer for test
+# Prototype code / Proof of concept code
+# from old 'ignored: 234e0d5eb188
+8c96392b8f9e4 dt-bindings: renesas,rcar-dmac: Document optional properties
+# Not needed. We can use the generic fallback.
+# from old 'ignored: 4d55226a52d6
+c907d4fd0275c pwm: tpu: Add a compatible string for r8a779a0
+# Only a workaround and we have no HW to test a proper solution
+# from old 'ignored: 0453069bec94
+72d86955629b7 nvme: Workaround Samsung 970 Pro power state issues
+# Prototype code / Proof of concept code
+# from old 'ignored: 3baf2c4e8881
+0638a3ac72840 dmaengine: rcar-dmac: Add fixed address mode support
+# According to our research tty-core activates clocks. Testcase needed.
+# from old 'ignored: dac54422c0d0
+cf7daf81b491e serial: sh-sci: Use pm_runtime_get/put when resume
+# According to our research tty-core activates clocks. Testcase needed.
+# from old 'ignored: 4ad9b3444ded
+65f575b93cfcf serial: sh-sci: Use pm_runtime_get/put when suspend
+# from old 'handled': 586f4f5afcb0
+8bab47fa76d86 dt-bindings: can: rcar_canfd: Convert to json-schema
+# Has been rejected upstream as it breaks Gen2 backward compatibility
+# from old 'handled': 2561701185a7
+645414a115151 rcar-vin: do not allow changing scaling and composing while streaming
+# from old 'handled': d4f31e1a412c
+4db63c11796d7 arm64: defconfig: Select power allocator as default governor
+# from old 'handled': 4e6ee9d90812
+a62c9e7a31fff arm64: defconfig: Enable DMA Test client as module
+# from old 'handled': d431cc52fd60
+b7eac8af53b92 arm64: defconfig: add UFS Config.
+# from old 'handled': e88f4e52ad53
+0f8e584ef91fc v4l: vsp1: Add write back support
+# Alpha blending is already supported upstream.
+# from old 'handled': 39719be28af2
+e8eb72d9a3972 v4l: vsp1: Add pixel alpha blending supoprt
+# from old 'handled': e22c6bae0ea6
+14e4db299484a media: rcar-vin: Fix clock control flow
+# from old 'handled': e5253817f3bc
+dce594695d91b arm64: defconfig: Enable R-Car PWM-TPU by default
+# from old 'handled': 3425791f4264
+cc6b04acf19e6 arm64: defconfig: Change R-Car PWM to built-in
+# from old 'handled': 5b474753618c
+38802b9c9c241 pinctrl: renesas: r8a77990: Remove pullup/pulldown for USB30_OVC pin
+# from old 'handled': 2dc3fee75d7f
+09003dfef28bd gpio: rcar: Modify compatible string and add support for r8a779f0
+# from old 'handled': 1b212c753d0c
+9641b359c86ed memory: renesas-rpc-if: Use burst read operation
+# from old 'handled': 77fce7defe0f
+0151f5a9d20ca arm64: defconfig: Enable RPC-IF SPI driver by default
+# from old 'handled': e6e4182857b4
+1e8fcc9cbef28 mmc: renesas_sdhi: Add PIO mode support
+# from old 'handled': 12f55f40cee1
+a9e741507eb91 arm64: defconfig: Enable UIO support
+# we use the generic compatible here
+# from old 'handled': 123f3b7ba7ed
+c488cf9b62cfc pwm: tpu: Add compatible string for V4H
+# from old 'handled': ada892809b0e
+1e4b6f39bb776 i2c: rcar: Support the suspend/resume
+# Not needed. HW allows 1 cycle, it will just output HIGH only. Confirmed by Shimoda-san
+# from old 'handled': 4896707193fc
+6c85fa28fee64 pwm: rcar: Add a judgment of the period out of range
+# from old 'handled': c9a37c38aa90
+fd6cbbf560f92 i2c: rcar: Tidy up the register order for hardware specification ver1.00.
+# from old 'handled': 089534842fe7
+09078448f75e5 arm64: defconfig: Add CANFD enable in defconfig
+# Just reverts 0a73c32f5cf97. It says 'b8833263b7f08112197391946447a762788c7c9c' though which is the same patch from an old BSP
+0e24e483a269f Revert "uio: uio_pdrv_genirq: Add parameter error in case not define property in node"
+# Gets reverted by 0e24e483a269f
+0a73c32f5cf97 uio: uio_pdrv_genirq: Add parameter error in case not define property in node
+# Just reverts 63548251a12ba
+9c31625870195 Revert "PCI: dwc: rcar-gen5: Workaround hardcoded REBAR capability offset"
+# Just reverts a03ba6f068acf
+9c74e6bf9cdc3 Revert "media: vsp1: Disable auto-start mode"
+# Gets reverted by 9c31625870195
+63548251a12ba PCI: dwc: rcar-gen5: Workaround hardcoded REBAR capability offset
+# Just reverts 720656604ff2f
+68fbb0c65aacf Revert "PCI: dwc-plat: Add R-Car Gen5 PCIe 4.0 Host and Endpoint support"
+# Just reverts 797eb0dd3a933
+6ccb3ab6cda05 Revert "gpio: gpio-rcar: Temporarily update offset resgister for X5H"
+# Just reverts 87bb3d5645297
+0420962f374b6 Revert "gpio: gpio-rcar: Fix and remove some functions."
+# Just reverts 0398772ff35db
+56b6d4c358b29 Revert "pinctrl: renesas: Initial R8A78000 (R-Car X5H) PFC support"
+# Just reverts fcd833b4467e4
+7aa7c466f36bd Revert "Revert "arm64: Disable fine grained traps on boot""
+# Just reverts 14e9594e35d1b
+4d8e3ae1acba8 Revert "Revert "random: schedule jitter credit for next jiffy, not in two jiffies""
+# Gets reverted by 7aa7c466f36bd
+fcd833b4467e4 Revert "arm64: Disable fine grained traps on boot"
+# Gets reverted by 4d8e3ae1acba8
+14e9594e35d1b Revert "random: schedule jitter credit for next jiffy, not in two jiffies"
+# Gets reverted by 0420962f374b6
+87bb3d5645297 gpio: gpio-rcar: Fix and remove some functions.
+# Just reverts 36b0ed16c3178
+9ad0e43fa757f Revert "dmaengine: rcar-dmac: Support interrupt sharing"
+# Gets reverted by 56b6d4c358b29
+0398772ff35db pinctrl: renesas: Initial R8A78000 (R-Car X5H) PFC support
+# Gets reverted by 9c74e6bf9cdc3
+a03ba6f068acf media: vsp1: Disable auto-start mode
+# Gets reverted by 68fbb0c65aacf
+720656604ff2f PCI: dwc-plat: Add R-Car Gen5 PCIe 4.0 Host and Endpoint support
+# Gets reverted by 6ccb3ab6cda05
+797eb0dd3a933 gpio: gpio-rcar: Temporarily update offset resgister for X5H
+# Gets reverted by 9ad0e43fa757f
+36b0ed16c3178 dmaengine: rcar-dmac: Support interrupt sharing
+# Same as BSP commit 1b778b7a706c6
+7e97c1a11efe7 arm64: dts: renesas: ironhide: Add workaround for USB OC (Overcurrent) issue
+# Same as BSP commit c66954bf15830
+d6599b5d7f4a4 usb: dwc3: dwc3-rcar-usb: Enable clock for USB2 and USB3
+# Same as BSP commit ca254c9302d9c
+aaf7bd2313bd6 soc: renesas: crc-wrapper: Enable clock for WCRC0 to WCRC10
+# Same as BSP commit 0d486ba7598ac
+6d24009b17c26 PCI: dwc: rcar-gen5: Use readl_poll_timeout() for PMD RX/TX ACK check
+# Same as BSP commit 2a91caa17de63
+ca6fc0be5e21f PCI: dwc: rcar-gen5: Remove PERST# handling from PCIe4 driver
+# Same as BSP commit 86c627b9724f0
+780a42e8d045b arm64: dts: renesas: ironhide: Drop unused reset GPIO for PCIe4
+# Same as BSP commit 43979959fc72f
+10500d9dfa1eb arm64: dts: renesas: r8a78000: Add PHY register address for PCIe6 node
+# Same as BSP commit 90b559e845724
+037d12ef67211 PCI: dwc: rcar-gen5: Map PHY base address for PCIe6
+# Same as BSP commit e9644cb48f56a
+d7845e264a274 PCI: dwc: rcar-gen5: Correct license and author info in PCIe4 host driver
+# Same as BSP commit e91e862a2edc6
+7ee5325d23345 arm64: dts: renesas: r8a78000: enable clk & pwr for some modules
+# Same as BSP commit fb287c739036d
+20c4a2e16f11f arm64: dts: renesas: r8a78000: support scmi clk & pwdm
+# Same as BSP commit aa5eba525d64a
+0eb2a97936de6 arm64: defconfig: Update PCIe6 defconfig
+# Same as BSP commit f5ab7a5bf0299
+1dedbbae0be1d misc: pci-endpoint-test: Add Device ID for R-Car X5H PCIe controller
+# Same as BSP commit 591459630e364
+83c13673adf27 arm64: dts: renesas: ironhide: Add PCIe6 device tree node
+# Same as BSP commit e50d03ae27622
+8a1cf880a584c arm64: dts: renesas: r8a78000: Add PCIe6 device tree node
+# Same as BSP commit dd195962c2d2d
+82e50e202f3b2 PCI: dwc: rcar-gen5: Add R-Car Gen5 PCIe 6.0 Controller
+# Same as BSP commit 2fc539f353f06
+f2b1169e2fc54 arm64: dts: renesas: r8a78000: Temporarily downgrade link speed and num-lanes to Gen1 x1lane
+# Same as BSP commit 218bf1a9d1e23
+20ab49eab9cf0 PCIe: dwc: rcar: Add check_speed() to retrain link if speed mismatch
+# Same as BSP commit 7e135b1122eec
+fad8739b309f7 PCIe: dwc: rcar: Fix set_device_type function
+# Same as BSP commit 48fb224945695
+5d7cecd343d10 PCI: dwc: rcar: Integrate MP-PHY set_mode ops into PCIe4 driver
+# Same as BSP commit 2af362e090cfa
+1d42bbdc6fc8b phy: renesas: Refactoring the conditions for init protocols in the MP-PHY driver
+# Same as BSP commit 6d6b6ff48d742
+7a4f24b637ef9 net: ethernet: renesas: rswitch3: Fix sharing one ETHA_MII channel for multiple ports
+# Same as BSP commit bc014a0ece5f0
+77f76eef7fdec phy: renesas: r8a78000-ether-pcs: Add support control multiple mpphy channels
+# Same as BSP commit 2ced938fe371f
+14d2e28f0d58c driver: net: rswitch3: Add 5G/10G Ethernet port support
+# Same as BSP commit b7cac758f7420
+d40444d55a562 arm64: dts: r8a78000-ironhide: Update for RSW3 with multiple mp-phy channels
+# Same as BSP commit 332850735a651
+1d56246194433 arm64: dts: r8a78000-ironhide: Add support for 10G Ethernet port
+# Same as BSP commit 73f1c850dd481
+ff2c8488136e8 media: Add Y210, Y212 and Y216 formats
+# Same as BSP commit 0b9ee8ed2d0ea
+86ecdf6d12e80 media: Add 2-10-10-10 RGB formats

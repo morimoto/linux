@@ -1,0 +1,12 @@
+995c63d7cb91d arm64: defconfig: Enable CONFIG_SND_SOC_SIMPLE_MUX as default
+7c4fbcb93b391 arm64: defconfig: Enable AK4619 codec support
+25e04d95851d3 ASoC: renesas: Update SSIU, SSI, ADG based on TS 0.36 for R-Car X5H
+27776159d4983 Revert "ASoC: rsnd: Audio DMA mode support for SSI route cases on Gen5 VDK"
+b2dd917956f57 dt-bindings: rsnd: Add r8a78000 support
+2f98da5c70864 ASoC: rsnd: Audio DMA mode support for SSI route cases on Gen5 VDK
+e8863b6d556dd ASoC: renesas: Add R-Car X5H to R-Car Sound Driver
+ba69630b41e91 ASoC: renesas: Add R-Car V4H to R-Car Sound Driver
+472e8879ca599 arm64: defconfig: Enable AK4554 codec support
+7fe28476ae9b4 arm64: defconfig: Enable rcar sound support
+0ff28e8622e6f ASoC: Add ak4619 codec support
+35586b500018a ASoC: rsnd: core: Enable clock for audio
