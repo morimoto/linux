@@ -1,0 +1,66 @@
+Local     / arm64: dts: renesas: r8a78000: Add MDLC nodes
+Local     / arm64: dts: renesas: r8a78000: Add CPG node
+Local     / pmdomain: renesas: Add R-Car X5H MDLC driver
+Local     / dt-bindings: power: Document Renesas R-Car X5H Module Controller
+Local     / clk: renesas: Add R-Car X5H CPG driver
+Local     / dt-bindings: clock: Document Renesas R-Car X5H Clock Pulse Generator
+v6.19     / dma-buf: heaps: cma: Create CMA heap for each CMA reserved region
+v6.19     / doc: dma-buf: List the heaps by name
+v6.19     / Documentation: dma-buf: heaps: Add naming guidelines
+v6.19     / hwmon: (scmi) Enable sensors to assure they can be read
+v6.19     / dma: contiguous: Reserve default CMA heap
+v6.19     / dma: contiguous: Register reusable CMA regions at boot
+v6.19     / dma-buf: heaps: cma: Register list of CMA regions at boot
+v7.2      / mmc: renesas_sdhi: Add OF entry for RZ/G2E SoC
+v7.2      / mmc: renesas_sdhi: Add OF entry for RZ/G2N SoC
+v7.2      / mmc: renesas_sdhi: add R-Car M3Le compatibility string
+v6.19     / mmc: renesas_sdhi: Add suspend/resume hooks
+v6.19     / mmc: renesas_sdhi: Switch to SYSTEM_SLEEP_PM_OPS()/RUNTIME_PM_OPS() and pm_ptr()
+v6.19     / mmc: renesas_sdhi: enable bigger data ports where available
+v6.19     / mmc: renesas_sdhi: Deassert the reset signal on probe
+v7.2      / firmware: arm_scmi: Rename struct scmi_revision_info to scmi_base_info
+Local     / arm64: dts: renesas: r8a78000: Enable application CPU cores via PSCI
+v7.0      / can: rcar_canfd: Add support for FD-Only mode
+v6.19     / can: rcar_canfd: Add suspend/resume support
+v6.19     / can: rcar_canfd: Convert to DEFINE_SIMPLE_DEV_PM_OPS()
+v6.19     / can: rcar_canfd: Invert CAN clock and close_candev() order
+v7.2      / soc: renesas: rcar-mfis: Add R-Car V4H/V4M support
+Local     / dt-bindings: soc: renesas: mfis: add R-Car V4H/V4M support
+v7.2      / arm64: dts: renesas: ironhide: Enable to use SCMI
+v7.2      / arm64: dts: renesas: ironhide: Describe all reserved memory
+v7.2      / arm64: dts: renesas: r8a78000: Add MFIS, MFIS-SCP, and transport nodes
+v7.2      / arm64: dts: renesas: r8a78000: Fix GIC-720AE View 1 Redistributor description
+v7.2      / arm64: dts: renesas: r8a78000: Add PSCI node
+v7.2      / soc: renesas: Add R-Car X5H PRR support
+v7.2      / soc: renesas: Add Renesas R-Car MFIS driver
+v7.2      / dt-bindings: soc: renesas: Document MFIS IP core
+v7.1      / arm64: dts: renesas: r8a78000: Fix SCIF brg_int clocks
+v7.1      / mailbox: correct kdoc title for mbox_bind_client
+v7.1      / mailbox: test: really ignore optional memory resources
+v7.1      / mailbox: remove superfluous internal header
+v7.1      / arm64: dts: renesas: sparrow-hawk: Add overlay for Olimex MIPI-HDMI adapter
+v7.1      / arm64: dts: renesas: sparrow-hawk: Add overlay for WaveShare Display 13.3"
+v7.1      / drm/bridge: waveshare-dsi: Fix signedness bug
+v7.1      / drm/panel: simple: Add Waveshare 13.3" panel support
+v7.1      / drm/bridge: waveshare-dsi: Add support for 1..4 DSI data lanes
+v7.1      / dt-bindings: display: bridge: waveshare,dsi2dpi: Document 1..4 DSI lane support
+v7.1      / drm/bridge: waveshare-dsi: Register and attach our DSI device at probe
+v7.0      / Input: ili210x - add support for polling mode
+v7.0      / dt-bindings: touchscreen: trivial-touch: Drop 'interrupts' requirement for old Ilitek
+v7.0      / Input: ili210x - convert to dev_err_probe()
+v6.19     / media: v4l2-core: Introduce v4l2-isp.c
+v6.19     / media: uapi: Introduce V4L2 generic ISP types
+v7.0      / arm64: dts: renesas: r8a78000: Fix out-of-range SPI interrupt numbers
+v7.1      / dt-bindings: firmware: arm,scmi: Document arm,no-completion-irq property
+v7.1      / firmware: arm_scmi: Implement arm,no-completion-irq property
+v7.0      / mailbox: remove unneeded double quotation
+v6.19     / media: i2c: imx219: Replace exposure magic value with named constant
+v6.19     / media: i2c: imx219: Propagate errors from control range updates
+v6.19     / media: i2c: imx219: Simplify imx219_get_binning() function
+v6.19     / drm/panel: ilitek-ili9881c: Add configuration for 5" Raspberry Pi 720x1280
+v6.19     / drm/panel: ilitek-ili9881c: Turn ILI9881C_COMMAND_INSTR() parameters lowercase
+v6.19     / arm64: dts: renesas: sparrow-hawk: Add overlay for RPi Display 2
+v6.19     / arm64: dts: renesas: sparrow-hawk: Add overlay for Argon40 fan HAT
+v6.19     / tools: arm64: Add Cortex-A720AE definitions
+v6.19     / arm64: dts: renesas: r8a78000: Add initial Ironhide board support
+v6.19     / arm64: dts: renesas: Add R8A78000 SoC support
