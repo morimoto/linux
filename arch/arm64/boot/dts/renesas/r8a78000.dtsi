@@ -5,6 +5,7 @@
  * Copyright (C) 2025 Renesas Electronics Corp.
  */
 
+#include <dt-bindings/clock/r8a78000-clock-scmi.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 
 / {
@@ -836,9 +837,37 @@
 				     "renesas,rcar-gen5-scif", "renesas,scif";
 			reg = <0 0xc0704000 0 0x40>;
 			interrupts = <GIC_SPI 4075 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&dummy_clk_sgasyncd16>, <&dummy_clk_sgasyncd16>, <&scif_clk>;
+			/*
+			 * Use X5H_CLOCK_ID_CLK_CL16M_PERW_BUS peripheral clock
+			 * instead of X5H_CLOCK_ID_HSCIF1 MDLC clock. For HSCIF
+			 * clocking details, see R-Car X5H Reference Manual,
+			 * R19UH0244EJ0052 Rev.0.52 , Aug. 7, 2025 , page 3721 .
+			 *
+			 * This has to use peripheral clock, because current SCP
+			 * internally uses two different clock drivers, one for
+			 * MDLC clock and one for Peripheral clock. Only the
+			 * Peripheral clock can report clock rate (frequency)
+			 * capabilities (list supported frequencies and possibly
+			 * even set different frequency).
+			 *
+			 * However, current SCP does not expose clock which are
+			 * not allowed to be stopped. CL16M_PERW_BUS is one such
+			 * clock, and therefore is not available to Linux.
+			 *
+			 * For SCP details, please see SCP 4.27 function:
+			 * r_scp_platform_clock_attributes_handler()
+			 *  ...
+			 *  if (SCP_CLK_STOP_OK == clock_state_enable)
+			 *  ...
+			 * and clock table entry:
+			 *  const st_scp_scmi_clock_config_t g_clock_config_table[SCP_CLOCK_ID_COUNT] = {
+			 *  ...
+			 *  {"cl16m_perw_bus", (uint32_t)SCP_CLK_STOP_NOT_OK, ...
+			 */
+			clocks = <&scmi_clk X5H_CLOCK_ID_CLK_CL16M_PERW_BUS>,
+				<&dummy_clk_sgasyncd16>, <&scif_clk>;
 			clock-names = "fck", "brg_int", "scif_clk";
-			status = "disabled";
+			status = "okay";
 		};
 
 		scif3: serial@c0708000 {
