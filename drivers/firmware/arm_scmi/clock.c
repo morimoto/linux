@@ -398,6 +398,7 @@ static int scmi_clock_attributes_get(const struct scmi_protocol_handle *ph,
 
 		attributes = le32_to_cpu(attr->attributes);
 		strscpy(clk->name, attr->name, SCMI_SHORT_NAME_MAX_SIZE);
+dev_err(ph->dev, "%s[%d]<%u =name %s>\n", __func__, __LINE__, clk_id, clk->name);
 		/* clock_enable_latency field is present only since SCMI v3.1 */
 		if (PROTOCOL_REV_MAJOR(version) >= 0x2)
 			latency = le32_to_cpu(attr->clock_enable_latency);
