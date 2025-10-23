@@ -129,6 +129,7 @@ scmi_reset_domain_attributes_get(const struct scmi_protocol_handle *ph,
 		if (dom_info->latency_us == U32_MAX)
 			dom_info->latency_us = 0;
 		strscpy(dom_info->name, attr->name, SCMI_SHORT_NAME_MAX_SIZE);
+dev_err(ph->dev, "%s[%d]<%u =name %s>\n", __func__, __LINE__, domain, dom_info->name);
 	}
 
 	ph->xops->xfer_put(ph, t);
