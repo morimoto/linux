@@ -17,6 +17,15 @@
 	};
 
 	chosen {
+		/*
+		 * REMOVE ME
+		 *
+		 * Keep all clock, power domains and regulators enabled after boot,
+		 * even if they seem unused. This is helpful when bringing up SCMI
+		 * protocols, it allows drivers to carefully operate those protocols
+		 * without interruption.
+		 */
+		bootargs = "clk_ignore_unused pd_ignore_unused regulator_ignore_unused";
 		stdout-path = "serial0:1843200n8";
 	};
 
