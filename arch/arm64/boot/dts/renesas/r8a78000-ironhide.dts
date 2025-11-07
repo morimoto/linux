@@ -76,6 +76,28 @@
 	};
 };
 
+&scmi {
+	mbox-names = "tx", "rx";
+	mboxes = <&mfis_scp 2 1 1>, <&mfis_scp 2 0 0>;
+	shmem = <&scp_lpri0>, <&scp_hpri0>;
+};
+
+&scp_sram {
+	scp_lpri0: scp-sram@61200 {
+		compatible = "arm,scmi-shmem";
+		reg = <0x61200 0x0100>;
+	};
+
+	scp_hpri0: scp-sram@61300 {
+		compatible = "arm,scmi-shmem";
+		reg = <0x61300 0x100>;
+	};
+};
+
+&mfis_scp {
+	status = "okay";
+};
+
 &extal_clk {
 	clock-frequency = <16666600>;
 };
