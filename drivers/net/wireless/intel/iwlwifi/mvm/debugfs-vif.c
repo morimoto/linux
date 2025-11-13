@@ -31,7 +31,7 @@ static void iwl_dbgfs_update_pm(struct iwl_mvm *mvm,
 	}
 	case MVM_DEBUGFS_PM_SKIP_OVER_DTIM:
 		IWL_DEBUG_POWER(mvm, "skip_over_dtim %s\n",
-				val ? "enabled" : "disabled");
+				str_enabled_disabled(val));
 		dbgfs_pm->skip_over_dtim = val;
 		break;
 	case MVM_DEBUGFS_PM_SKIP_DTIM_PERIODS:
@@ -47,7 +47,7 @@ static void iwl_dbgfs_update_pm(struct iwl_mvm *mvm,
 		dbgfs_pm->tx_data_timeout = val;
 		break;
 	case MVM_DEBUGFS_PM_LPRX_ENA:
-		IWL_DEBUG_POWER(mvm, "lprx %s\n", val ? "enabled" : "disabled");
+		IWL_DEBUG_POWER(mvm, "lprx %s\n", str_enabled_disabled(val));
 		dbgfs_pm->lprx_ena = val;
 		break;
 	case MVM_DEBUGFS_PM_LPRX_RSSI_THRESHOLD:

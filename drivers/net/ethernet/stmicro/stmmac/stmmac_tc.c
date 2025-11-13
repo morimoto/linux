@@ -1171,7 +1171,7 @@ static int tc_setup_etf(struct stmmac_priv *priv,
 		priv->dma_conf.tx_queue[qopt->queue].tbs &= ~STMMAC_TBS_EN;
 
 	netdev_info(priv->dev, "%s ETF for Queue %d\n",
-		    qopt->enable ? "enabled" : "disabled", qopt->queue);
+		    str_enabled_disabled(qopt->enable), qopt->queue);
 	return 0;
 }
 

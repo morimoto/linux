@@ -1671,7 +1671,7 @@ int mwifiex_ret_get_hw_spec(struct mwifiex_private *priv,
 		adapter->host_mlme_enabled = false;
 
 	mwifiex_dbg(adapter, MSG, "host_mlme: %s, key_api: %d\n",
-		    adapter->host_mlme_enabled ? "enable" : "disable",
+		    str_enable_disable(adapter->host_mlme_enabled),
 		    adapter->key_api_major_ver);
 
 	return 0;

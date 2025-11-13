@@ -1659,8 +1659,7 @@ static int pvr2_decoder_enable(struct pvr2_hdw *hdw,int enablefl)
 	   this point, we'll broadcast stream on/off to all sub-devices
 	   anyway, just in case somebody else wants to hear the
 	   command... */
-	pvr2_trace(PVR2_TRACE_CHIPS, "subdev v4l2 stream=%s",
-		   (enablefl ? "on" : "off"));
+	pvr2_trace(PVR2_TRACE_CHIPS, "subdev v4l2 stream=%s", str_on_off(enablefl));
 	v4l2_device_call_all(&hdw->v4l2_dev, 0, video, s_stream, enablefl);
 	v4l2_device_call_all(&hdw->v4l2_dev, 0, audio, s_stream, enablefl);
 	if (hdw->decoder_client_id) {
@@ -1724,7 +1723,7 @@ int pvr2_hdw_set_streaming(struct pvr2_hdw *hdw,int enable_flag)
 		hdw->state_pipeline_req = enable_flag != 0;
 		pvr2_trace(PVR2_TRACE_START_STOP,
 			   "/*--TRACE_STREAM--*/ %s",
-			   enable_flag ? "enable" : "disable");
+			   str_enable_disable(enable_flag));
 	}
 	pvr2_hdw_state_sched(hdw);
 	LOCK_GIVE(hdw->big_lock);

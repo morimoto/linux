@@ -671,7 +671,7 @@ static ssize_t natsemi_show_dspcfg_workaround(struct device *dev,
 {
 	struct netdev_private *np = netdev_priv(to_net_dev(dev));
 
-	return sprintf(buf, "%s\n", np->dspcfg_workaround ? "on" : "off");
+	return sprintf(buf, "%s\n", str_on_off(np->dspcfg_workaround));
 }
 
 static ssize_t natsemi_set_dspcfg_workaround(struct device *dev,

@@ -248,7 +248,7 @@ static int stmmac_enable(struct ptp_clock_info *ptp,
 			priv->plat->flags &= ~STMMAC_FLAG_EXT_SNAPSHOT_EN;
 		}
 		netdev_dbg(priv->dev, "Auxiliary Snapshot %d %s.\n",
-			   rq->extts.index, on ? "enabled" : "disabled");
+			   rq->extts.index, str_enabled_disabled(on));
 		writel(acr_value, ptpaddr + PTP_ACR);
 		mutex_unlock(&priv->aux_ts_lock);
 		/* wait for auxts fifo clear to finish */

@@ -417,7 +417,7 @@ void usbnet_cdc_status(struct usbnet *dev, struct urb *urb)
 	switch (event->bNotificationType) {
 	case USB_CDC_NOTIFY_NETWORK_CONNECTION:
 		netif_dbg(dev, timer, dev->net, "CDC: carrier %s\n",
-			  event->wValue ? "on" : "off");
+			  str_on_off(event->wValue));
 		if (netif_carrier_ok(dev->net) != !!event->wValue)
 			usbnet_link_change(dev, !!event->wValue, 0);
 		break;
@@ -513,7 +513,7 @@ static void usbnet_cdc_zte_status(struct usbnet *dev, struct urb *urb)
 	}
 
 	netif_dbg(dev, timer, dev->net, "CDC: carrier %s\n",
-		  event->wValue ? "on" : "off");
+		  str_on_off(event->wValue));
 
 	if (event->wValue &&
 	    netif_carrier_ok(dev->net))

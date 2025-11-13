@@ -1700,7 +1700,7 @@ static void rtl_op_rfkill_poll(struct ieee80211_hw *hw)
 
 			rtl_dbg(rtlpriv, COMP_RF, DBG_DMESG,
 				"wireless radio switch turned %s\n",
-				radio_state ? "on" : "off");
+				str_on_off(radio_state));
 
 			blocked = !rtlpriv->rfkill.rfkill_state;
 			wiphy_rfkill_set_hw_state(hw->wiphy, blocked);

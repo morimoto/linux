@@ -432,7 +432,7 @@ static int ar5523_set_ledsteady(struct ar5523 *ar, int lednum, int ledmode)
 
 	ar5523_dbg(ar, "set %s led %s (steady)\n",
 		   (lednum == UATH_LED_LINK) ? "link" : "activity",
-		   ledmode ? "on" : "off");
+		   str_on_off(ledmode));
 	return ar5523_cmd_write(ar, WDCMSG_SET_LED_STEADY, &led, sizeof(led),
 				 0);
 }

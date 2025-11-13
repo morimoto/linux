@@ -86,7 +86,7 @@ static int cygnus_pcie_power_config(struct cygnus_pcie_phy *phy, bool enable)
 
 	mutex_unlock(&core->lock);
 	dev_dbg(core->dev, "PCIe PHY %d %s\n", phy->id,
-		enable ? "enabled" : "disabled");
+		str_enabled_disabled(enable));
 	return 0;
 }
 

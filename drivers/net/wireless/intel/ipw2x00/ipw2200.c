@@ -5512,11 +5512,8 @@ static int ipw_find_adhoc_network(struct ipw_priv *priv,
 		IPW_DEBUG_MERGE("Network '%*pE (%pM)' excluded because of privacy mismatch: %s != %s.\n",
 				network->ssid_len, network->ssid,
 				network->bssid,
-				priv->
-				capability & CAP_PRIVACY_ON ? "on" : "off",
-				network->
-				capability & WLAN_CAPABILITY_PRIVACY ? "on" :
-				"off");
+				str_on_off(priv->capability & CAP_PRIVACY_ON),
+				str_on_off(network->capability & WLAN_CAPABILITY_PRIVACY));
 		return 0;
 	}
 
@@ -5699,10 +5696,8 @@ static int ipw_best_network(struct ipw_priv *priv,
 		IPW_DEBUG_ASSOC("Network '%*pE (%pM)' excluded because of privacy mismatch: %s != %s.\n",
 				network->ssid_len, network->ssid,
 				network->bssid,
-				priv->capability & CAP_PRIVACY_ON ? "on" :
-				"off",
-				network->capability &
-				WLAN_CAPABILITY_PRIVACY ? "on" : "off");
+				str_on_off(priv->capability & CAP_PRIVACY_ON),
+				str_on_off(network->capability & WLAN_CAPABILITY_PRIVACY));
 		return 0;
 	}
 
@@ -8486,7 +8481,7 @@ static int ipw_sw_reset(struct ipw_priv *priv, int option)
 		priv->ieee->host_decrypt = 0;
 		priv->ieee->host_mc_decrypt = 0;
 	}
-	IPW_DEBUG_INFO("Hardware crypto [%s]\n", hwcrypto ? "on" : "off");
+	IPW_DEBUG_INFO("Hardware crypto [%s]\n", str_on_off(hwcrypto));
 
 	/* IPW2200/2915 is abled to do hardware fragmentation. */
 	priv->ieee->host_open_frag = 0;

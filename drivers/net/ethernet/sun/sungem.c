@@ -2322,8 +2322,7 @@ static int __maybe_unused gem_suspend(struct device *dev_d)
 		return 0;
 	}
 	netdev_info(dev, "suspending, WakeOnLan %s\n",
-		    (gp->wake_on_lan && netif_running(dev)) ?
-		    "enabled" : "disabled");
+		    str_enabled_disabled(gp->wake_on_lan && netif_running(dev)));
 
 	/* Tell the network stack we're gone. gem_do_stop() below will
 	 * synchronize with TX, stop NAPI etc...

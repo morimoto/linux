@@ -1648,7 +1648,7 @@ static void gelic_card_get_vlan_info(struct gelic_card *card)
 	}
 
 	dev_info(ctodev(card), "internal vlan %s\n",
-		 card->vlan_required? "enabled" : "disabled");
+		 str_enabled_disabled(card->vlan_required));
 }
 /*
  * ps3_gelic_driver_probe - add a device to the control of this driver

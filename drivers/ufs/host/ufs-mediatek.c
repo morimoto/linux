@@ -535,7 +535,7 @@ out:
 	if (ret) {
 		dev_info(hba->dev,
 			 "failed to %s va09: %d\n",
-			 on ? "enable" : "disable",
+			 str_enable_disable(on),
 			 ret);
 	} else {
 		host->mphy_powered_on = on;

@@ -10305,7 +10305,7 @@ static void decode_state_complete(struct hfi1_pportdata *ppd, u32 frame,
 	dd_dev_err(dd, "    last reported state state: %s (0x%x)\n",
 		   state_completed_string(state), state);
 	dd_dev_err(dd, "    state successfully completed: %s\n",
-		   success ? "yes" : "no");
+		   str_yes_no(success));
 	dd_dev_err(dd, "    fail reason 0x%x: %s\n",
 		   reason, state_complete_reason_code_string(ppd, reason));
 	dd_dev_err(dd, "    passing lane mask: 0x%x", lanes);

@@ -27,6 +27,7 @@
 #include <linux/of_platform.h>
 #include <linux/slab.h>
 #include <linux/static_key.h>
+#include <linux/string_choices.h>
 #include <linux/list.h>
 #include <linux/log2.h>
 #include <linux/string_choices.h>

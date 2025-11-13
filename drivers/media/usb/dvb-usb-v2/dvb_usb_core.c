@@ -247,7 +247,7 @@ static int dvb_usb_start_feed(struct dvb_demux_feed *dvbdmxfeed)
 	dev_dbg(&d->udev->dev,
 			"%s: adap=%d active_fe=%d feed_type=%d setting pid [%s]: %04x (%04d) at index %d\n",
 			__func__, adap->id, adap->active_fe, dvbdmxfeed->type,
-			adap->pid_filtering ? "yes" : "no", dvbdmxfeed->pid,
+			str_yes_no(adap->pid_filtering), dvbdmxfeed->pid,
 			dvbdmxfeed->pid, dvbdmxfeed->index);
 
 	/* wait init is done */
@@ -334,7 +334,7 @@ static int dvb_usb_stop_feed(struct dvb_demux_feed *dvbdmxfeed)
 	dev_dbg(&d->udev->dev,
 			"%s: adap=%d active_fe=%d feed_type=%d setting pid [%s]: %04x (%04d) at index %d\n",
 			__func__, adap->id, adap->active_fe, dvbdmxfeed->type,
-			adap->pid_filtering ? "yes" : "no", dvbdmxfeed->pid,
+			str_yes_no(adap->pid_filtering), dvbdmxfeed->pid,
 			dvbdmxfeed->pid, dvbdmxfeed->index);
 
 	if (adap->active_fe == -1)

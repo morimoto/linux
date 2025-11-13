@@ -118,8 +118,8 @@ static int ipoib_mcg_seq_show(struct seq_file *file, void *iter_ptr)
 		   "  send_only: %8s\n"
 		   "\n",
 		   gid_buf, created, queuelen,
-		   complete ? "yes" : "no",
-		   send_only ? "yes" : "no");
+		   str_yes_no(complete),
+		   str_yes_no(send_only));
 
 	return 0;
 }
@@ -189,7 +189,7 @@ static int ipoib_path_seq_show(struct seq_file *file, void *iter_ptr)
 	seq_printf(file,
 		   "GID: %s\n"
 		   "  complete: %6s\n",
-		   gid_buf, sa_path_get_dlid(&path.pathrec) ? "yes" : "no");
+		   gid_buf, str_yes_no(sa_path_get_dlid(&path.pathrec)));
 
 	if (sa_path_get_dlid(&path.pathrec)) {
 		rate = ib_rate_to_mbps(path.pathrec.rate);

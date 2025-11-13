@@ -608,7 +608,7 @@ static int am65_cpts_extts_enable(struct am65_cpts *cpts, u32 index, int on)
 	mutex_unlock(&cpts->ptp_clk_lock);
 
 	dev_dbg(cpts->dev, "%s: ExtTS:%u %s\n",
-		__func__, index, on ? "enabled" : "disabled");
+		__func__, index, str_enabled_disabled(on));
 
 	return 0;
 }
@@ -708,7 +708,7 @@ static int am65_cpts_perout_enable(struct am65_cpts *cpts,
 	mutex_unlock(&cpts->ptp_clk_lock);
 
 	dev_dbg(cpts->dev, "%s: GenF:%u %s\n",
-		__func__, req->index, on ? "enabled" : "disabled");
+		__func__, req->index, str_enabled_disabled(on));
 
 	return 0;
 }
@@ -751,7 +751,7 @@ static int am65_cpts_pps_enable(struct am65_cpts *cpts, int on)
 	mutex_unlock(&cpts->ptp_clk_lock);
 
 	dev_dbg(cpts->dev, "%s: pps: %s\n",
-		__func__, on ? "enabled" : "disabled");
+		__func__, str_enabled_disabled(on));
 	return ret;
 }
 

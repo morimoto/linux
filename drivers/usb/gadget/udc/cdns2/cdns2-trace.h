@@ -39,7 +39,7 @@ DECLARE_EVENT_CLASS(cdns2_log_enable_disable,
 	TP_fast_assign(
 		__entry->set = set;
 	),
-	TP_printk("%s", __entry->set ? "enabled" : "disabled")
+	TP_printk("%s", str_enabled_disabled(__entry->set))
 );
 
 DEFINE_EVENT(cdns2_log_enable_disable, cdns2_pullup,

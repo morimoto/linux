@@ -845,10 +845,10 @@ int hinic_ndo_set_vf_trust(struct net_device *netdev, int vf, bool setting)
 	err = hinic_set_vf_trust(adapter->hwdev, vf, setting);
 	if (!err)
 		dev_info(&sriov_info->pdev->dev, "Set VF %d trusted %s succeed\n",
-			 vf, setting ? "on" : "off");
+			 vf, str_on_off(setting));
 	else
 		dev_err(&sriov_info->pdev->dev, "Failed set VF %d trusted %s\n",
-			vf, setting ? "on" : "off");
+			vf, str_on_off(setting));
 
 	return err;
 }
@@ -966,7 +966,7 @@ int hinic_ndo_set_vf_spoofchk(struct net_device *netdev, int vf, bool setting)
 				    OS_VF_ID_TO_HW(vf), setting);
 	if (!err) {
 		netif_info(nic_dev, drv, netdev, "Set VF %d spoofchk %s successfully\n",
-			   vf, setting ? "on" : "off");
+			   vf, str_on_off(setting));
 	} else if (err == HINIC_MGMT_CMD_UNSUPPORTED) {
 		netif_err(nic_dev, drv, netdev,
 			  "Current firmware doesn't support to set vf spoofchk, need to upgrade latest firmware version\n");

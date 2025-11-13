@@ -599,8 +599,8 @@ static int smsc75xx_update_flowcontrol(struct usbnet *dev, u8 duplex,
 			flow |= FLOW_RX_FCEN;
 
 		netif_dbg(dev, link, dev->net, "rx pause %s, tx pause %s\n",
-			  (cap & FLOW_CTRL_RX ? "enabled" : "disabled"),
-			  (cap & FLOW_CTRL_TX ? "enabled" : "disabled"));
+			  str_enabled_disabled(cap & FLOW_CTRL_RX),
+			  str_enabled_disabled(cap & FLOW_CTRL_TX));
 	} else {
 		netif_dbg(dev, link, dev->net, "half duplex\n");
 	}

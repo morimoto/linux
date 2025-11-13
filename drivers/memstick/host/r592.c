@@ -13,6 +13,7 @@
 #include <linux/pci_ids.h>
 #include <linux/delay.h>
 #include <linux/slab.h>
+#include <linux/string_choices.h>
 #include <linux/kthread.h>
 #include <linux/sched.h>
 #include <linux/highmem.h>

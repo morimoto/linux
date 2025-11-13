@@ -1043,7 +1043,7 @@ static int ccio_proc_info(struct seq_file *m, void *p)
 		seq_printf(m, "%s\n", ioc->name);
 		
 		seq_printf(m, "Cujo 2.0 bug    : %s\n",
-			   (ioc->cujo20_bug ? "yes" : "no"));
+			   str_yes_no((ioc->cujo20_bug)));
 		
 		seq_printf(m, "IO PDIR size    : %d bytes (%d entries)\n",
 			   total_pages * 8, total_pages);

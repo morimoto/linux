@@ -201,8 +201,8 @@ static void btc8192e2ant_monitor_bt_enable_disable(struct btc_coexist
 	if (pre_bt_disabled != bt_disabled) {
 		rtl_dbg(rtlpriv, COMP_BT_COEXIST, DBG_LOUD,
 			"[BTCoex], BT is from %s to %s!!\n",
-			(pre_bt_disabled ? "disabled" : "enabled"),
-			(bt_disabled ? "disabled" : "enabled"));
+			str_disabled_enabled(pre_bt_disabled),
+			str_disabled_enabled(bt_disabled));
 		pre_bt_disabled = bt_disabled;
 	}
 }

@@ -1030,9 +1030,8 @@ static bool ar5008_hw_ani_control_new(struct ath_hw *ah,
 			ath_dbg(common, ANI,
 				"** ch %d: ofdm weak signal: %s=>%s\n",
 				chan->channel,
-				aniState->ofdmWeakSigDetect ?
-				"on" : "off",
-				on ? "on" : "off");
+				str_on_off(aniState->ofdmWeakSigDetect),
+				str_on_off(on));
 			if (on)
 				ah->stats.ast_ani_ofdmon++;
 			else
@@ -1125,9 +1124,9 @@ static bool ar5008_hw_ani_control_new(struct ath_hw *ah,
 	ath_dbg(common, ANI,
 		"ANI parameters: SI=%d, ofdmWS=%s FS=%d MRCcck=%s listenTime=%d ofdmErrs=%d cckErrs=%d\n",
 		aniState->spurImmunityLevel,
-		aniState->ofdmWeakSigDetect ? "on" : "off",
+		str_on_off(aniState->ofdmWeakSigDetect),
 		aniState->firstepLevel,
-		aniState->mrcCCK ? "on" : "off",
+		str_on_off(aniState->mrcCCK),
 		aniState->listenTime,
 		aniState->ofdmPhyErrCount,
 		aniState->cckPhyErrCount);

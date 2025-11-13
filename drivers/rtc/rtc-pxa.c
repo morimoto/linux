@@ -282,9 +282,9 @@ static int pxa_rtc_proc(struct device *dev, struct seq_file *seq)
 
 	seq_printf(seq, "trim/divider\t: 0x%08x\n", rtc_readl(pxa_rtc, RTTR));
 	seq_printf(seq, "update_IRQ\t: %s\n",
-		   (rtc_readl(pxa_rtc, RTSR) & RTSR_HZE) ? "yes" : "no");
+		   str_yes_no(rtc_readl(pxa_rtc, RTSR) & RTSR_HZE));
 	seq_printf(seq, "periodic_IRQ\t: %s\n",
-		   (rtc_readl(pxa_rtc, RTSR) & RTSR_PIALE) ? "yes" : "no");
+		   str_yes_no(rtc_readl(pxa_rtc, RTSR) & RTSR_PIALE));
 	seq_printf(seq, "periodic_freq\t: %u\n", rtc_readl(pxa_rtc, PIAR));
 
 	return 0;

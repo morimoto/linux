@@ -92,7 +92,7 @@ unlock:
 	if (!lag_active)
 		return -EINVAL;
 
-	seq_printf(file, "%s:%s\n", "shared_fdb", shared_fdb ? "on" : "off");
+	seq_printf(file, "%s:%s\n", "shared_fdb", str_on_off(shared_fdb));
 	seq_printf(file, "%s:%s\n", "fdb_selection_mode",
 		   fdb_sel_mode_native ? "native" : "affinity");
 	return 0;

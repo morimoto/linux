@@ -11928,7 +11928,7 @@ void bnxt_report_link(struct bnxt *bp)
 		fec = bp->link_info.fec_cfg;
 		if (!(fec & PORT_PHY_QCFG_RESP_FEC_CFG_FEC_NONE_SUPPORTED))
 			netdev_info(bp->dev, "FEC autoneg %s encoding: %s\n",
-				    (fec & BNXT_FEC_AUTONEG) ? "on" : "off",
+				    str_on_off(fec & BNXT_FEC_AUTONEG),
 				    bnxt_report_fec(&bp->link_info));
 	} else {
 		netif_carrier_off(bp->dev);

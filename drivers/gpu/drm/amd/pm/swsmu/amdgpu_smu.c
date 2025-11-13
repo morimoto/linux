@@ -417,7 +417,7 @@ static int smu_dpm_set_power_gate(void *handle,
 		ret = smu_gfx_off_control(smu, gate);
 		if (ret)
 			dev_err(smu->adev->dev, "Failed to %s gfxoff!\n",
-				gate ? "enable" : "disable");
+				str_enable_disable(gate));
 		break;
 	case AMD_IP_BLOCK_TYPE_SDMA:
 		ret = smu_powergate_sdma(smu, gate);

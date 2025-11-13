@@ -86,7 +86,7 @@ void dcn32_dsc_pg_control(
 	if (org_ip_request_cntl == 0)
 		REG_SET(DC_IP_REQUEST_CNTL, 0, IP_REQUEST_EN, 1);
 
-	DC_LOG_DSC("%s DSC power gate for inst %d", power_gate ? "enable" : "disable", dsc_inst);
+	DC_LOG_DSC("%s DSC power gate for inst %d", str_enable_disable(power_gate), dsc_inst);
 	switch (dsc_inst) {
 	case 0: /* DSC0 */
 		REG_UPDATE(DOMAIN16_PG_CONFIG,

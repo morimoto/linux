@@ -1069,7 +1069,7 @@ static int mlx4_slave_cap(struct mlx4_dev *dev)
 
 	slave_adjust_steering_mode(dev, dev_cap, hca_param);
 	mlx4_dbg(dev, "RSS support for IP fragments is %s\n",
-		 hca_param->rss_ip_frags ? "on" : "off");
+		 str_on_off(hca_param->rss_ip_frags));
 
 	if (func_cap->extra_flags & MLX4_QUERY_FUNC_FLAGS_BF_RES_QP &&
 	    dev->caps.bf_reg_size)
@@ -2270,8 +2270,7 @@ static int mlx4_validate_optimized_steering(struct mlx4_dev *dev)
 				 "DMFS high rate steer mode differ, driver requested %s but %s in FW.\n",
 				 dmfs_high_rate_steering_mode_str(
 					dev->caps.dmfs_high_steer_mode),
-				 (port_cap.dmfs_optimized_state ?
-					"enabled" : "disabled"));
+				 str_enabled_disabled(port_cap.dmfs_optimized_state));
 		}
 	}
 

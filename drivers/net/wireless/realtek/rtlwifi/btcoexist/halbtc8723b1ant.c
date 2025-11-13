@@ -1692,8 +1692,8 @@ static void halbtc8723b1ant_monitor_bt_enable_disable(struct btc_coexist
 	if (coex_sta->bt_disabled != bt_disabled) {
 		rtl_dbg(rtlpriv, COMP_BT_COEXIST, DBG_LOUD,
 			"[BTCoex], BT is from %s to %s!!\n",
-			(coex_sta->bt_disabled ? "disabled" : "enabled"),
-			(bt_disabled ? "disabled" : "enabled"));
+			str_disabled_enabled(coex_sta->bt_disabled),
+			str_disabled_enabled(bt_disabled));
 
 		coex_sta->bt_disabled = bt_disabled;
 		btcoexist->btc_set(btcoexist, BTC_SET_BL_BT_DISABLE,

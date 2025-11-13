@@ -506,8 +506,8 @@ static void b44_link_report(struct b44 *bp)
 			    (bp->flags & B44_FLAG_FULL_DUPLEX) ? "full" : "half");
 
 		netdev_info(bp->dev, "Flow control is %s for TX and %s for RX\n",
-			    (bp->flags & B44_FLAG_TX_PAUSE) ? "on" : "off",
-			    (bp->flags & B44_FLAG_RX_PAUSE) ? "on" : "off");
+			    str_on_off(bp->flags & B44_FLAG_TX_PAUSE),
+			    str_on_off(bp->flags & B44_FLAG_RX_PAUSE));
 	}
 }
 

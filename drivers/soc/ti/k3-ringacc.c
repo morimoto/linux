@@ -15,6 +15,7 @@
 #include <linux/soc/ti/k3-ringacc.h>
 #include <linux/soc/ti/ti_sci_protocol.h>
 #include <linux/soc/ti/ti_sci_inta_msi.h>
+#include <linux/string_choices.h>
 #include <linux/of_irq.h>
 #include <linux/irqdomain.h>
 
@@ -1436,7 +1437,7 @@ static int k3_ringacc_init(struct platform_device *pdev,
 		 ringacc->rm_gp_range->desc[0].num,
 		 ringacc->tisci_dev_id);
 	dev_info(dev, "dma-ring-reset-quirk: %s\n",
-		 ringacc->dma_ring_reset_quirk ? "enabled" : "disabled");
+		 str_enabled_disabled(ringacc->dma_ring_reset_quirk));
 	dev_info(dev, "RA Proxy rev. %08x, num_proxies:%u\n",
 		 readl(&ringacc->proxy_gcfg->revision), ringacc->num_proxies);
 

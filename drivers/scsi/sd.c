@@ -3191,8 +3191,8 @@ sd_read_cache_type(struct scsi_disk *sdkp, unsigned char *buffer)
 		    old_rcd != sdkp->RCD || old_dpofua != sdkp->DPOFUA)
 			sd_printk(KERN_NOTICE, sdkp,
 				  "Write cache: %s, read cache: %s, %s\n",
-				  sdkp->WCE ? "enabled" : "disabled",
-				  sdkp->RCD ? "disabled" : "enabled",
+				  str_enabled_disabled(sdkp->WCE),
+				  str_disabled_enabled(sdkp->RCD),
 				  sdkp->DPOFUA ? "supports DPO and FUA"
 				  : "doesn't support DPO or FUA");
 

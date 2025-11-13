@@ -3136,7 +3136,7 @@ static long __tun_chr_ioctl(struct file *file, unsigned int cmd,
 
 		/* [unimplemented] */
 		netif_info(tun, drv, tun->dev, "ignored: set checksum %s\n",
-			   arg ? "disabled" : "enabled");
+			   str_disabled_enabled(arg));
 		break;
 
 	case TUNSETPERSIST:
@@ -3155,7 +3155,7 @@ static long __tun_chr_ioctl(struct file *file, unsigned int cmd,
 		}
 
 		netif_info(tun, drv, tun->dev, "persist %s\n",
-			   arg ? "enabled" : "disabled");
+			   str_enabled_disabled(arg));
 		break;
 
 	case TUNSETOWNER:

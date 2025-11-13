@@ -26,6 +26,7 @@
 #include <linux/i2c.h>
 #include <linux/slab.h>
 #include <linux/string.h>
+#include <linux/string_choices.h>
 
 #include <drm/display/drm_dp_dual_mode_helper.h>
 #include <drm/drm_device.h>
@@ -379,7 +380,7 @@ int drm_dp_dual_mode_set_tmds_output(const struct drm_device *dev, enum drm_dp_d
 					     &tmds_oen, sizeof(tmds_oen));
 		if (ret) {
 			drm_dbg_kms(dev, "Failed to %s TMDS output buffers (%d attempts)\n",
-				    enable ? "enable" : "disable", retry + 1);
+				    str_enable_disable(enable), retry + 1);
 			return ret;
 		}
 

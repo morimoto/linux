@@ -310,7 +310,7 @@ static int qlcnic_sriov_pf_config_vport(struct qlcnic_adapter *adapter,
 	if (ret) {
 		dev_err(&adapter->pdev->dev,
 			"Failed %s vport, err %d for func 0x%x\n",
-			(flag ? "enable" : "disable"), ret, func);
+			str_enable_disable(flag), ret, func);
 		goto out;
 	}
 

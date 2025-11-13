@@ -185,7 +185,7 @@ ath5k_ani_set_ofdm_weak_signal_detection(struct ath5k_hw *ah, bool on)
 
 	ah->ani_state.ofdm_weak_sig = on;
 	ATH5K_DBG_UNLIMIT(ah, ATH5K_DEBUG_ANI, "turned %s",
-			  on ? "on" : "off");
+			  str_on_off(on));
 }
 
 /**
@@ -201,7 +201,7 @@ ath5k_ani_set_cck_weak_signal_detection(struct ath5k_hw *ah, bool on)
 				AR5K_PHY_CCK_CROSSCORR_WEAK_SIG_THR, val[on]);
 	ah->ani_state.cck_weak_sig = on;
 	ATH5K_DBG_UNLIMIT(ah, ATH5K_DEBUG_ANI, "turned %s",
-			  on ? "on" : "off");
+			  str_on_off(on));
 }
 
 
