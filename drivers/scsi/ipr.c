@@ -4613,7 +4613,7 @@ static ssize_t ipr_store_raw_mode(struct device *dev,
 			len = strlen(buf);
 			if (res->sdev)
 				sdev_printk(KERN_INFO, res->sdev, "raw mode is %s\n",
-					res->raw_mode ? "enabled" : "disabled");
+					    str_enabled_disabled(res->raw_mode));
 		} else
 			len = -EINVAL;
 	} else

@@ -157,7 +157,7 @@ static int wfx_rx_stats_show(struct seq_file *seq, void *v)
 	mutex_lock(&wdev->rx_stats_lock);
 	seq_printf(seq, "Timestamp: %dus\n", st->date);
 	seq_printf(seq, "Low power clock: frequency %uHz, external %s\n",
-		   le32_to_cpu(st->pwr_clk_freq), st->is_ext_pwr_clk ? "yes" : "no");
+		   le32_to_cpu(st->pwr_clk_freq), str_yes_no(st->is_ext_pwr_clk));
 	seq_printf(seq, "Num. of frames: %d, PER (x10e4): %d, Throughput: %dKbps/s\n",
 		   st->nb_rx_frame, st->per_total, st->throughput);
 	seq_puts(seq, "       Num. of      PER     RSSI      SNR      CFO\n");

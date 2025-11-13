@@ -601,8 +601,8 @@ static int wl1251_op_config(struct ieee80211_hw *hw, int radio_idx, u32 changed)
 	wl1251_debug(DEBUG_MAC80211,
 		     "mac80211 config ch %d monitor %s psm %s power %d",
 		     channel,
-		     conf->flags & IEEE80211_CONF_MONITOR ? "on" : "off",
-		     conf->flags & IEEE80211_CONF_PS ? "on" : "off",
+		     str_on_off(conf->flags & IEEE80211_CONF_MONITOR),
+		     str_on_off(conf->flags & IEEE80211_CONF_PS),
 		     conf->power_level);
 
 	mutex_lock(&wl->mutex);

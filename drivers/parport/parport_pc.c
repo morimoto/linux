@@ -57,6 +57,7 @@
 #include <linux/pnp.h>
 #include <linux/platform_device.h>
 #include <linux/sysctl.h>
+#include <linux/string_choices.h>
 #include <linux/io.h>
 #include <linux/uaccess.h>
 
@@ -1004,8 +1005,8 @@ static void show_parconfig_smsc37c669(int io, int key)
 			(cr26 & 0x0f) ? 'A' - 1 + (cr26 & 0x0f) : '-',
 			cra & 0x0f);
 		pr_info("SMSC LPT Config: enabled=%s power=%s\n",
-			(cr23 * 4 >= 0x100) ? "yes" : "no",
-			(cr1 & 4) ? "yes" : "no");
+			str_yes_no(cr23 * 4 >= 0x100),
+			str_yes_no(cr1 & 4));
 		pr_info("SMSC LPT Config: Port mode=%s, EPP version =%s\n",
 			(cr1 & 0x08) ? "Standard mode only (SPP)"
 			: modes[cr4 & 0x03],
@@ -1087,7 +1088,7 @@ static void show_parconfig_winbond(int io, int key)
 		pr_info("Winbond LPT Config: cr_30=%02x 60,61=%02x%02x 70=%02x 74=%02x, f0=%02x\n",
 			cr30, cr60, cr61, cr70, cr74, crf0);
 		pr_info("Winbond LPT Config: active=%s, io=0x%02x%02x irq=%d, ",
-			(cr30 & 0x01) ? "yes" : "no", cr60, cr61, cr70 & 0x0f);
+			str_yes_no(cr30 & 0x01), cr60, cr61, cr70 & 0x0f);
 		if ((cr74 & 0x07) > 3)
 			pr_cont("dma=none\n");
 		else

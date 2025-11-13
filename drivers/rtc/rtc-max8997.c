@@ -379,7 +379,7 @@ static void max8997_rtc_enable_wtsr(struct max8997_rtc_info *info, bool enable)
 	mask = WTSR_EN_MASK | WTSRT_MASK;
 
 	dev_info(info->dev, "%s: %s WTSR\n", __func__,
-			enable ? "enable" : "disable");
+		 str_enable_disable(enable));
 
 	ret = max8997_update_reg(info->rtc, MAX8997_RTC_WTSR_SMPL, val, mask);
 	if (ret < 0) {
@@ -407,7 +407,7 @@ static void max8997_rtc_enable_smpl(struct max8997_rtc_info *info, bool enable)
 	mask = SMPL_EN_MASK | SMPLT_MASK;
 
 	dev_info(info->dev, "%s: %s SMPL\n", __func__,
-			enable ? "enable" : "disable");
+		 str_enable_disable(enable));
 
 	ret = max8997_update_reg(info->rtc, MAX8997_RTC_WTSR_SMPL, val, mask);
 	if (ret < 0) {

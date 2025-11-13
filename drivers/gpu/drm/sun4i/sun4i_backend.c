@@ -14,6 +14,7 @@
 #include <linux/dma-mapping.h>
 #include <linux/platform_device.h>
 #include <linux/reset.h>
+#include <linux/string_choices.h>
 
 #include <drm/drm_atomic.h>
 #include <drm/drm_atomic_helper.h>
@@ -654,7 +655,7 @@ static void sun4i_backend_mode_set(struct sunxi_engine *engine,
 			   interlaced ? SUN4I_BACKEND_MODCTL_ITLMOD_EN : 0);
 
 	DRM_DEBUG_DRIVER("Switching display backend interlaced mode %s\n",
-			 interlaced ? "on" : "off");
+			 str_on_off(interlaced));
 }
 
 static int sun4i_backend_init_sat(struct device *dev) {

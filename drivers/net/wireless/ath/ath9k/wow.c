@@ -321,7 +321,7 @@ void ath9k_set_wakeup(struct ieee80211_hw *hw, bool enabled)
 	mutex_unlock(&sc->mutex);
 
 	ath_dbg(common, WOW, "WoW wakeup source is %s\n",
-		(enabled) ? "enabled" : "disabled");
+		str_enabled_disabled(enabled));
 }
 
 void ath9k_init_wow(struct ieee80211_hw *hw)

@@ -257,7 +257,7 @@ static int adin_get_features(struct phy_device *phydev)
 	priv->tx_level_2v4_able = !!(ret & MDIO_PMA_10T1L_STAT_2V4_ABLE);
 
 	phydev_dbg(phydev, "PHY supports 2.4V TX level: %s\n",
-		   priv->tx_level_2v4_able ? "yes" : "no");
+		   str_yes_no(priv->tx_level_2v4_able));
 
 	priv->tx_level_prop_present = device_property_present(dev, "phy-10base-t1l-2.4vpp");
 	if (priv->tx_level_prop_present) {

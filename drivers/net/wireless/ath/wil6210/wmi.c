@@ -2588,7 +2588,7 @@ int wmi_rxon(struct wil6210_priv *wil, bool on)
 		.evt = {.status = WMI_FW_STATUS_FAILURE},
 	};
 
-	wil_info(wil, "(%s)\n", on ? "on" : "off");
+	wil_info(wil, "(%s)\n", str_on_off(on));
 
 	if (on) {
 		rc = wmi_call(wil, WMI_START_LISTEN_CMDID, vif->mid, NULL, 0,

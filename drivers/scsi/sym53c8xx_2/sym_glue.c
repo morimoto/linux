@@ -761,7 +761,7 @@ static void sym_tune_dev_queuing(struct sym_tcb *tp, int lun, u_short reqtags)
 	if (reqtags != oldtags) {
 		dev_info(&tp->starget->dev,
 		         "tagged command queuing %s, command queue depth %d.\n",
-		          lp->s.reqtags ? "enabled" : "disabled", reqtags);
+			 str_enabled_disabled(lp->s.reqtags), reqtags);
 	}
 }
 

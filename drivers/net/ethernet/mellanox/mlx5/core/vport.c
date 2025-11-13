@@ -890,7 +890,7 @@ int mlx5_nic_vport_update_local_lb(struct mlx5_core_dev *mdev, bool enable)
 
 	if (!err)
 		mlx5_core_dbg(mdev, "%s local_lb\n",
-			      enable ? "enable" : "disable");
+			      str_enable_disable(enable));
 
 	kvfree(in);
 	return err;

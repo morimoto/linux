@@ -9,6 +9,7 @@
 #include <linux/slab.h>
 #include <linux/uuid.h>
 #include <linux/sort.h>
+#include <linux/string_choices.h>
 #include <linux/idr.h>
 #include <linux/memory-tiers.h>
 #include <linux/string_choices.h>

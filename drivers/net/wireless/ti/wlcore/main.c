@@ -3165,7 +3165,7 @@ static int wl1271_op_config(struct ieee80211_hw *hw, int radio_idx, u32 changed)
 
 	wl1271_debug(DEBUG_MAC80211, "mac80211 config psm %s power %d %s"
 		     " changed 0x%x",
-		     conf->flags & IEEE80211_CONF_PS ? "on" : "off",
+		     str_on_off(conf->flags & IEEE80211_CONF_PS),
 		     conf->power_level,
 		     conf->flags & IEEE80211_CONF_IDLE ? "idle" : "in use",
 			 changed);
@@ -4435,7 +4435,7 @@ static void wl1271_bss_info_changed_sta(struct wl1271 *wl,
 
 	if ((changed & BSS_CHANGED_BEACON_ENABLED) && ibss_joined) {
 		wl1271_debug(DEBUG_ADHOC, "ad-hoc beaconing: %s",
-			     bss_conf->enable_beacon ? "enabled" : "disabled");
+			     str_enabled_disabled(bss_conf->enable_beacon));
 
 		do_join = true;
 	}

@@ -21,6 +21,7 @@
 #include <linux/module.h>
 #include <linux/spinlock.h>
 #include <linux/string.h>
+#include <linux/string_choices.h>
 #include <linux/log2.h>
 #include <linux/logic_pio.h>
 #include <linux/device.h>
@@ -2494,7 +2495,7 @@ void pci_pme_active(struct pci_dev *dev, bool enable)
 		}
 	}
 
-	pci_dbg(dev, "PME# %s\n", enable ? "enabled" : "disabled");
+	pci_dbg(dev, "PME# %s\n", str_enabled_disabled(enable));
 }
 EXPORT_SYMBOL(pci_pme_active);
 

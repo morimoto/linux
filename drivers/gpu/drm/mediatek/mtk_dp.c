@@ -1337,7 +1337,7 @@ static void mtk_dp_video_mute(struct mtk_dp *mtk_dp, bool enable)
 		      0, 0, 0, 0, 0, &res);
 
 	dev_dbg(mtk_dp->dev, "smc cmd: 0x%x, p1: %s, ret: 0x%lx-0x%lx\n",
-		mtk_dp->data->smc_cmd, enable ? "enable" : "disable", res.a0, res.a1);
+		mtk_dp->data->smc_cmd, str_enable_disable(enable), res.a0, res.a1);
 }
 
 static void mtk_dp_audio_mute(struct mtk_dp *mtk_dp, bool mute)

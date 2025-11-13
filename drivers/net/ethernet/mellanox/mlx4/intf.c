@@ -170,7 +170,7 @@ int mlx4_do_bond(struct mlx4_dev *dev, bool enable)
 	ret = mlx4_disable_rx_port_check(dev, enable);
 	if (ret) {
 		mlx4_err(dev, "Fail to %s rx port check\n",
-			 enable ? "enable" : "disable");
+			 str_enable_disable(enable));
 		return ret;
 	}
 	if (enable) {
@@ -229,7 +229,7 @@ int mlx4_do_bond(struct mlx4_dev *dev, bool enable)
 
 		mlx4_dbg(dev,
 			 "Interface for protocol %d restarted with bonded mode %s\n",
-			 protocol, enable ? "enabled" : "disabled");
+			 protocol, str_enabled_disabled(enable));
 	}
 
 	mutex_unlock(&intf_mutex);

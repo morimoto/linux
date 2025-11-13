@@ -265,7 +265,7 @@ vsc_read_err:
 
 alloc_err:
 	dev_dbg(dev, "Clock type: %d, clock frequency: %d, VSC: %s",
-		*clock_type, *clock_freq, *fw_vsc_cfg != NULL ? "yes" : "no");
+		*clock_type, *clock_freq, str_yes_no(*fw_vsc_cfg));
 }
 
 static const struct acpi_gpio_params power_gpios = { 0, 0, false };

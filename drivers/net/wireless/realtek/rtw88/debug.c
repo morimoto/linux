@@ -960,7 +960,7 @@ static int rtw_debugfs_get_coex_enable(struct seq_file *m, void *v)
 	struct rtw_coex *coex = &rtwdev->coex;
 
 	seq_printf(m, "coex mechanism %s\n",
-		   coex->manual_control ? "disabled" : "enabled");
+		   str_disabled_enabled(coex->manual_control));
 
 	return 0;
 }
@@ -992,7 +992,7 @@ static int rtw_debugfs_get_edcca_enable(struct seq_file *m, void *v)
 	struct rtw_dm_info *dm_info = &rtwdev->dm_info;
 
 	seq_printf(m, "EDCCA %s: EDCCA mode %d\n",
-		   rtw_edcca_enabled ? "enabled" : "disabled",
+		   str_enabled_disabled(rtw_edcca_enabled),
 		   dm_info->edcca_mode);
 	return 0;
 }

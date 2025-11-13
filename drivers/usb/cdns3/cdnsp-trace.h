@@ -103,7 +103,7 @@ DECLARE_EVENT_CLASS(cdnsp_log_enable_disable,
 	TP_fast_assign(
 		__entry->set = set;
 	),
-	TP_printk("%s", __entry->set ? "enabled" : "disabled")
+	TP_printk("%s", str_enabled_disabled(__entry->set))
 );
 
 DEFINE_EVENT(cdnsp_log_enable_disable, cdnsp_pullup,

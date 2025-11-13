@@ -527,7 +527,7 @@ static ssize_t ndev_ntb_debugfs_read(struct file *filp, char __user *ubuf,
 
 	off += scnprintf(buf + off, buf_size - off,
 			 "BAR4 Split -\t\t%s\n",
-			 ndev->bar4_split ? "yes" : "no");
+			 str_yes_no(ndev->bar4_split));
 
 	off += scnprintf(buf + off, buf_size - off,
 			 "NTB CTL -\t\t%#06x\n", ndev->ntb_ctl);

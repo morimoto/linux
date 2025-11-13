@@ -2522,7 +2522,7 @@ static int __init __of_unittest_apply_overlay_check(int overlay_nr,
 		unittest(0, "%s with device @\"%s\" %s\n",
 				overlay_name_from_nr(overlay_nr),
 				unittest_path(unittest_nr, ovtype),
-				!before ? "enabled" : "disabled");
+				str_disabled_enabled(before));
 		return -EINVAL;
 	}
 
@@ -2539,7 +2539,7 @@ static int __init __of_unittest_apply_overlay_check(int overlay_nr,
 		unittest(0, "%s with device @\"%s\" %s\n",
 				overlay_name_from_nr(overlay_nr),
 				unittest_path(unittest_nr, ovtype),
-				!after ? "enabled" : "disabled");
+				str_disabled_enabled(after));
 		return -EINVAL;
 	}
 
@@ -2587,7 +2587,7 @@ static int __init of_unittest_apply_revert_overlay_check(int overlay_nr,
 		unittest(0, "%s with device @\"%s\" %s\n",
 				overlay_name_from_nr(overlay_nr),
 				unittest_path(unittest_nr, ovtype),
-				!before ? "enabled" : "disabled");
+				str_disabled_enabled(before));
 		return -EINVAL;
 	}
 
@@ -2722,7 +2722,7 @@ static void __init of_unittest_overlay_6(void)
 					overlay_name_from_nr(overlay_nr + i),
 					unittest_path(unittest_nr + i,
 						PDEV_OVERLAY),
-					!before ? "enabled" : "disabled");
+					str_disabled_enabled(before));
 			return;
 		}
 	}
@@ -2772,7 +2772,7 @@ static void __init of_unittest_overlay_6(void)
 					overlay_name_from_nr(overlay_nr + i),
 					unittest_path(unittest_nr + i,
 						PDEV_OVERLAY),
-					!after ? "enabled" : "disabled");
+					str_disabled_enabled(after));
 			return;
 		}
 	}
@@ -2797,7 +2797,7 @@ static void __init of_unittest_overlay_6(void)
 					overlay_name_from_nr(overlay_nr + i),
 					unittest_path(unittest_nr + i,
 						PDEV_OVERLAY),
-					!before ? "enabled" : "disabled");
+					str_disabled_enabled(before));
 			return;
 		}
 	}

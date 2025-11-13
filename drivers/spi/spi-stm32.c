@@ -2017,7 +2017,7 @@ static int stm32_spi_transfer_one_setup(struct stm32_spi *spi,
 	dev_dbg(spi->dev, "transfer of %d bytes (%d data frames)\n",
 		spi->cur_xferlen, nb_words);
 	dev_dbg(spi->dev, "dma %s\n",
-		(spi->cur_usedma) ? "enabled" : "disabled");
+		str_enabled_disabled(spi->cur_usedma));
 
 out:
 	spin_unlock_irqrestore(&spi->lock, flags);

@@ -99,8 +99,8 @@ static int ds1286_proc(struct device *dev, struct seq_file *seq)
 	seq_printf(seq,
 		   "oscillator\t: %s\n"
 		   "square_wave\t: %s\n",
-		   (month & RTC_EOSC) ? "disabled" : "enabled",
-		   (month & RTC_ESQW) ? "disabled" : "enabled");
+		   str_disabled_enabled(month & RTC_EOSC),
+		   str_disabled_enabled(month & RTC_ESQW));
 
 	amode = ((ds1286_rtc_read(priv, RTC_MINUTES_ALARM) & 0x80) >> 5) |
 		((ds1286_rtc_read(priv, RTC_HOURS_ALARM) & 0x80) >> 6) |

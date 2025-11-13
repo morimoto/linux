@@ -95,8 +95,8 @@ static void run_test(enum vm_guest_mode mode, void *arg)
 	if (p->disable_slot_zap_quirk)
 		vm_enable_cap(vm, KVM_CAP_DISABLE_QUIRKS2, KVM_X86_QUIRK_SLOT_ZAP_ALL);
 
-	pr_info("Memslot zap quirk %s\n", p->disable_slot_zap_quirk ?
-		"disabled" : "enabled");
+	pr_info("Memslot zap quirk %s\n",
+		str_disabled_enabled(p->disable_slot_zap_quirk));
 #endif
 
 	pr_info("Finished creating vCPUs\n");

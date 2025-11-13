@@ -1473,7 +1473,7 @@ static int nsp32_show_info(struct seq_file *m, struct Scsi_Host *host)
 
 #ifdef CONFIG_PM
 	seq_printf(m, "Power Management:      %s\n",
-		   (mode_reg & OPTF) ? "yes" : "no");
+		   str_yes_no(mode_reg & OPTF));
 #endif
 	seq_printf(m, "OEM:                   %ld, %s\n",
 		   (mode_reg & (OEM0|OEM1)), nsp32_model[model]);

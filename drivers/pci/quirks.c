@@ -2754,8 +2754,7 @@ static int msi_ht_cap_enabled(struct pci_dev *dev)
 		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
 					 &flags) == 0) {
 			pci_info(dev, "Found %s HT MSI Mapping\n",
-				flags & HT_MSI_FLAGS_ENABLE ?
-				"enabled" : "disabled");
+				 str_enabled_disabled(flags & HT_MSI_FLAGS_ENABLE));
 			return (flags & HT_MSI_FLAGS_ENABLE) != 0;
 		}
 

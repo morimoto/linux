@@ -444,7 +444,7 @@ int wl1271_acx_conn_monit_params(struct wl1271 *wl, struct wl12xx_vif *wlvif,
 	int ret;
 
 	wl1271_debug(DEBUG_ACX, "acx connection monitor parameters: %s",
-		     enable ? "enabled" : "disabled");
+		     str_enabled_disabled(enable));
 
 	acx = kzalloc(sizeof(*acx), GFP_KERNEL);
 	if (!acx) {

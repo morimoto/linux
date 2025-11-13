@@ -1238,7 +1238,7 @@ static void rtw_coex_tdma(struct rtw_dev *rtwdev, bool force, u32 tcase)
 	    type == coex_dm->cur_ps_tdma) {
 		rtw_dbg(rtwdev, RTW_DBG_COEX,
 			"[BTCoex], Skip TDMA because no change TDMA(%s, %d)\n",
-			(coex_dm->cur_ps_tdma_on ? "on" : "off"),
+			str_on_off(coex_dm->cur_ps_tdma_on),
 			coex_dm->cur_ps_tdma);
 
 		return;
@@ -1277,7 +1277,7 @@ static void rtw_coex_tdma(struct rtw_dev *rtwdev, bool force, u32 tcase)
 
 
 	rtw_dbg(rtwdev, RTW_DBG_COEX, "[BTCoex], coex tdma type(%s, %d)\n",
-		turn_on ? "on" : "off", type);
+		str_on_off(turn_on), type);
 }
 
 static void rtw_coex_set_ant_path(struct rtw_dev *rtwdev, bool force, u8 phase)

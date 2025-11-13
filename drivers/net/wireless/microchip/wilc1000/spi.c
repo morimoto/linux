@@ -235,7 +235,7 @@ static int wilc_bus_probe(struct spi_device *spi)
 	}
 
 	dev_info(&spi->dev, "Selected CRC config: crc7=%s, crc16=%s\n",
-		 enable_crc7 ? "on" : "off", enable_crc16 ? "on" : "off");
+		 str_on_off(enable_crc7), str_on_off(enable_crc16));
 
 	/* we need power to configure the bus protocol and to read the chip id: */
 

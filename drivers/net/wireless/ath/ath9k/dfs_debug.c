@@ -47,8 +47,7 @@ static ssize_t read_file_dfs(struct file *file, char __user *user_buf,
 	len += scnprintf(buf + len, size - len, "DFS support for "
 			 "macVersion = 0x%x, macRev = 0x%x: %s\n",
 			 hw_ver->macVersion, hw_ver->macRev,
-			 (sc->sc_ah->caps.hw_caps & ATH9K_HW_CAP_DFS) ?
-					"enabled" : "disabled");
+			 str_enabled_disabled(sc->sc_ah->caps.hw_caps & ATH9K_HW_CAP_DFS));
 
 	if (!sc->dfs_detector) {
 		len += scnprintf(buf + len, size - len,

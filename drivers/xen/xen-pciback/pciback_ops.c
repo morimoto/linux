@@ -13,6 +13,7 @@
 #include <linux/bitops.h>
 #include <xen/events.h>
 #include <linux/sched.h>
+#include <linux/string_choices.h>
 #include "pciback.h"
 
 static irqreturn_t xen_pcibk_guest_interrupt(int irq, void *dev_id);
@@ -62,11 +63,11 @@ static void xen_pcibk_control_isr(struct pci_dev *dev, int reset)
 	dev_dbg(&dev->dev, "%s: #%d %s %s%s %s-> %s\n",
 		dev_data->irq_name,
 		dev_data->irq,
-		pci_is_enabled(dev) ? "on" : "off",
+		str_on_off(pci_is_enabled(dev)),
 		dev->msi_enabled ? "MSI" : "",
 		dev->msix_enabled ? "MSI/X" : "",
-		dev_data->isr_on ? "enable" : "disable",
-		enable ? "enable" : "disable");
+		str_enable_disable(dev_data->isr_on),
+		str_enable_disable(enable));
 
 	if (enable) {
 		/*

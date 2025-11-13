@@ -6325,7 +6325,7 @@ static int megasas_init_fw(struct megasas_instance *instance)
 		"current msix/max num queues\t: (%d/%u)\n",
 		instance->msix_vectors, blk_mq_num_online_queues(0));
 	dev_info(&instance->pdev->dev,
-		"RDPQ mode\t: (%s)\n", instance->is_rdpq ? "enabled" : "disabled");
+		 "RDPQ mode\t: (%s)\n", str_enabled_disabled(instance->is_rdpq));
 
 	tasklet_init(&instance->isr_tasklet, instance->instancet->tasklet,
 		(unsigned long)instance);
@@ -6484,11 +6484,11 @@ static int megasas_init_fw(struct megasas_instance *instance)
 		le16_to_cpu(ctrl_info->pci.sub_vendor_id),
 		le16_to_cpu(ctrl_info->pci.sub_device_id));
 	dev_info(&instance->pdev->dev, "unevenspan support	: %s\n",
-		instance->UnevenSpanSupport ? "yes" : "no");
+		 str_yes_no(instance->UnevenSpanSupport));
 	dev_info(&instance->pdev->dev, "firmware crash dump	: %s\n",
-		instance->crash_dump_drv_support ? "yes" : "no");
+		 str_yes_no(instance->crash_dump_drv_support));
 	dev_info(&instance->pdev->dev, "JBOD sequence map	: %s\n",
-		instance->use_seqnum_jbod_fp ? "enabled" : "disabled");
+		 str_enabled_disabled(instance->use_seqnum_jbod_fp));
 
 	instance->max_sectors_per_req = instance->max_num_sge *
 						SGE_BUFFER_SIZE / 512;

@@ -16,6 +16,7 @@
 #include <linux/pinctrl/consumer.h>
 #include <linux/platform_device.h>
 #include <linux/types.h>
+#include <linux/string_choices.h>
 
 #define TIM_CCMR_CCXS	(BIT(8) | BIT(0))
 #define TIM_CCMR_MASK	(TIM_CCMR_CC1S | TIM_CCMR_CC2S | \
@@ -710,7 +711,7 @@ static int stm32_timer_cnt_probe_encoder(struct device *dev,
 
 	priv->has_encoder = !!(STM32_TIM_ENCODER_SUPPORTED & BIT(idx));
 
-	dev_dbg(dev, "encoder support: %s\n", priv->has_encoder ? "yes" : "no");
+	dev_dbg(dev, "encoder support: %s\n", str_yes_no(priv->has_encoder));
 
 	return 0;
 }

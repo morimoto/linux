@@ -18,6 +18,7 @@
 #include <linux/blkdev.h>
 #include <linux/cdrom.h>
 #include <linux/uaccess.h>
+#include <linux/string_choices.h>
 
 #include "udf_sb.h"
 
@@ -34,7 +35,7 @@ unsigned int udf_get_last_session(struct super_block *sb)
 	ms_info.addr_format = CDROM_LBA;
 	if (cdrom_multisession(cdi, &ms_info) == 0) {
 		udf_debug("XA disk: %s, vol_desc_start=%d\n",
-			  ms_info.xa_flag ? "yes" : "no", ms_info.addr.lba);
+			  str_yes_no(ms_info.xa_flag), ms_info.addr.lba);
 		if (ms_info.xa_flag) /* necessary for a valid ms_info.addr */
 			return ms_info.addr.lba;
 	}

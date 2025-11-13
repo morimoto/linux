@@ -491,7 +491,7 @@ static int hdmi_audio_infoframe_config(struct sti_hdmi *hdmi)
 	int ret, val;
 
 	DRM_DEBUG_DRIVER("enter %s, AIF %s\n", __func__,
-			 audio->enabled ? "enable" : "disable");
+			 str_enable_disable(audio->enabled));
 	if (audio->enabled) {
 		/* set audio parameters stored*/
 		ret = hdmi_audio_infoframe_pack(&audio->cea, buffer,
@@ -617,7 +617,7 @@ static void hdmi_dbg_cfg(struct seq_file *s, int val)
 	DBGFS_PRINT_STR("mode:", tmp ? "HDMI" : "DVI");
 	seq_puts(s, "\t\t\t\t\t");
 	tmp = val & HDMI_CFG_HDCP_EN;
-	DBGFS_PRINT_STR("HDCP:", tmp ? "enable" : "disable");
+	DBGFS_PRINT_STR("HDCP:", str_enable_disable(tmp));
 	seq_puts(s, "\t\t\t\t\t");
 	tmp = val & HDMI_CFG_ESS_NOT_OESS;
 	DBGFS_PRINT_STR("HDCP mode:", tmp ? "ESS enable" : "OESS enable");
@@ -629,7 +629,7 @@ static void hdmi_dbg_cfg(struct seq_file *s, int val)
 	DBGFS_PRINT_STR("Vsync polarity:", tmp ? "inverted" : "normal");
 	seq_puts(s, "\t\t\t\t\t");
 	tmp = val & HDMI_CFG_422_EN;
-	DBGFS_PRINT_STR("YUV422 format:", tmp ? "enable" : "disable");
+	DBGFS_PRINT_STR("YUV422 format:", str_enable_disable(tmp));
 }
 
 static void hdmi_dbg_sta(struct seq_file *s, int val)
@@ -1214,7 +1214,7 @@ static int hdmi_audio_mute(struct device *dev, void *data,
 {
 	struct sti_hdmi *hdmi = dev_get_drvdata(dev);
 
-	DRM_DEBUG_DRIVER("%s\n", enable ? "enable" : "disable");
+	DRM_DEBUG_DRIVER("%s\n", str_enable_disable(enable));
 
 	if (enable)
 		hdmi_write(hdmi, HDMI_SAMPLE_FLAT_ALL, HDMI_SAMPLE_FLAT_MASK);

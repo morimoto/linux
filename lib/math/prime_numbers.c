@@ -4,6 +4,7 @@
 #include <linux/mutex.h>
 #include <linux/prime_numbers.h>
 #include <linux/slab.h>
+#include <linux/string_choices.h>
 
 #include "prime_numbers_private.h"
 

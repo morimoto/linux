@@ -3005,7 +3005,7 @@ int bnx2x_set_vf_spoofchk(struct net_device *dev, int idx, bool val)
 		rc = bnx2x_queue_state_change(bp, &q_params);
 		if (rc) {
 			BNX2X_ERR("Failed to %s spoofchk on VF %d - vfq %d\n",
-				  val ? "enable" : "disable", idx, i);
+				  str_enable_disable(val), idx, i);
 			goto out;
 		}
 	}

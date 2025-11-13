@@ -47,6 +47,7 @@
 #include <linux/kthread.h>
 #include <linux/jiffies.h>	/* time_after() */
 #include <linux/slab.h>
+#include <linux/string_choices.h>
 #include <linux/memblock.h>
 #include <linux/msi.h>
 
@@ -1156,9 +1157,9 @@ static void io_apic_print_entries(unsigned int apic, unsigned int nr_entries)
 	for (i = 0; i <= nr_entries; i++) {
 		entry = ioapic_read_entry(apic, i);
 		snprintf(buf, sizeof(buf), " pin%02x, %s, %s, %s, V(%02X), IRR(%1d), S(%1d)",
-			 i, entry.masked ? "disabled" : "enabled ",
+			 i, str_disabled_enabled(entry.masked),
 			 entry.is_level ? "level" : "edge ",
-			 entry.active_low ? "low " : "high",
+			 str_low_high(entry.active_low),
 			 entry.vector, entry.irr, entry.delivery_status);
 		if (entry.ir_format) {
 			apic_dbg("%s, remapped, I(%04X),  Z(%X)\n", buf,

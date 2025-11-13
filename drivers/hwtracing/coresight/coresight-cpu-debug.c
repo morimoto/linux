@@ -496,7 +496,7 @@ static ssize_t debug_func_knob_write(struct file *f,
 
 	if (ret) {
 		pr_err("%s: unable to %s debug function: %d\n",
-		       __func__, val ? "enable" : "disable", ret);
+		       __func__, str_enable_disable(val), ret);
 		goto err;
 	}
 

@@ -730,7 +730,7 @@ static int mrf24j40_filter(struct ieee802154_hw *hw,
 		 */
 
 		dev_dbg(printdev(devrec), "Set Pan Coord to %s\n",
-			filt->pan_coord ? "on" : "off");
+			str_on_off(filt->pan_coord));
 	}
 
 	return 0;

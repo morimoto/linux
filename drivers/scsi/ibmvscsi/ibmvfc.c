@@ -3854,7 +3854,7 @@ static int ibmvfc_toggle_scrq_irq(struct ibmvfc_queue *scrq, int enable)
 
 	if (rc)
 		dev_err(dev, "Couldn't %s sub-crq[%lu] irq. rc=%ld\n",
-			enable ? "enable" : "disable", scrq->hwq_id, rc);
+			str_enable_disable(enable), scrq->hwq_id, rc);
 
 	return rc;
 }

@@ -366,7 +366,7 @@ static inline void pcan_set_can_power(struct pcan_pccard *card, int onoff)
 	if (err)
 		dev_err(&card->pdev->dev,
 			"failed setting power %s to can connectors (err %d)\n",
-			(onoff) ? "on" : "off", err);
+			str_on_off(onoff), err);
 }
 
 /*

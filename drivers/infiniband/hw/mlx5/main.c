@@ -1786,8 +1786,8 @@ static int calc_total_bfregs(struct mlx5_ib_dev *dev, bool lib_uar_4k,
 	bfregi->num_sys_pages = bfregi->total_num_bfregs / bfregs_per_sys_page;
 
 	mlx5_ib_dbg(dev, "uar_4k: fw support %s, lib support %s, user requested %d bfregs, allocated %d, total bfregs %d, using %d sys pages\n",
-		    MLX5_CAP_GEN(dev->mdev, uar_4k) ? "yes" : "no",
-		    lib_uar_4k ? "yes" : "no", ref_bfregs,
+		    str_yes_no(MLX5_CAP_GEN(dev->mdev, uar_4k)),
+		    str_yes_no(lib_uar_4k), ref_bfregs,
 		    req->total_num_bfregs, bfregi->total_num_bfregs,
 		    bfregi->num_sys_pages);
 

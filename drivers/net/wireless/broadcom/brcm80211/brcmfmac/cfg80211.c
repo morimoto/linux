@@ -3321,7 +3321,7 @@ brcmf_cfg80211_set_power_mgmt(struct wiphy *wiphy, struct net_device *ndev,
 		brcmf_dbg(INFO, "Do not enable power save for P2P clients\n");
 		pm = PM_OFF;
 	}
-	brcmf_dbg(INFO, "power save %s\n", (pm ? "enabled" : "disabled"));
+	brcmf_dbg(INFO, "power save %s\n", str_enabled_disabled(pm));
 
 	err = brcmf_fil_cmd_int_set(ifp, BRCMF_C_SET_PM, pm);
 	if (err) {
@@ -5313,7 +5313,7 @@ brcmf_cfg80211_start_ap(struct wiphy *wiphy, struct net_device *ndev,
 		err = brcmf_fil_iovar_int_set(ifp, "closednet",	closednet);
 		if (err) {
 			bphy_err(drvr, "%s closednet error (%d)\n",
-				 (closednet ? "enabled" : "disabled"),
+				 str_enabled_disabled(closednet),
 				 err);
 			goto exit;
 		}
@@ -7803,7 +7803,7 @@ static s32 brcmf_config_dongle(struct brcmf_cfg80211_info *cfg)
 	if (err)
 		goto default_conf_out;
 	brcmf_dbg(INFO, "power save set to %s\n",
-		  (power_mode ? "enabled" : "disabled"));
+		  str_enabled_disabled(power_mode));
 
 	err = brcmf_dongle_roam(ifp);
 	if (err)

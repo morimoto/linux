@@ -312,7 +312,7 @@ int wl1271_rx_filter_enable(struct wl1271 *wl,
 
 	if (ret) {
 		wl1271_error("Failed to %s rx data filter %d (err=%d)",
-			     enable ? "enable" : "disable", index, ret);
+			     str_enable_disable(enable), index, ret);
 		return ret;
 	}
 
