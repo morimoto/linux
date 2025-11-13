@@ -895,12 +895,12 @@ bool dm_helpers_dp_write_dsc_enable(
 			ret = dm_helpers_dp_write_dpcd(ctx, stream->link, DP_DSC_ENABLE, &enable_dsc, 1);
 			drm_dbg_dp(dev,
 				   "SST_DSC Send DSC %s to SST RX\n",
-				   enable_dsc ? "enable" : "disable");
+				   str_enable_disable(enable_dsc));
 		} else if (stream->sink->link->dpcd_caps.dongle_type == DISPLAY_DONGLE_DP_HDMI_CONVERTER) {
 			ret = dm_helpers_dp_write_dpcd(ctx, stream->link, DP_DSC_ENABLE, &enable_dsc, 1);
 			drm_dbg_dp(dev,
 				   "SST_DSC Send DSC %s to DP-HDMI PCON\n",
-				   enable_dsc ? "enable" : "disable");
+				   str_enable_disable(enable_dsc));
 		}
 	}
 

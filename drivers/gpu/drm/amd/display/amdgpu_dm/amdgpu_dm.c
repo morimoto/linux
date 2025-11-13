@@ -3036,7 +3036,7 @@ static void dm_gpureset_toggle_interrupts(struct amdgpu_device *adev,
 			rc = dc_interrupt_set(adev->dm.dc, irq_source, enable) ? 0 : -EBUSY;
 			if (rc)
 				drm_warn(adev_to_drm(adev), "Failed to %s pflip interrupts\n",
-					 enable ? "enable" : "disable");
+					 str_enable_disable(enable));
 
 			if (dc_supports_vrr(adev->dm.dc->ctx->dce_version)) {
 				if (enable) {
@@ -3049,8 +3049,8 @@ static void dm_gpureset_toggle_interrupts(struct amdgpu_device *adev,
 							&acrtc->base, false);
 
 				if (rc)
-					drm_warn(adev_to_drm(adev), "Failed to %sable vupdate interrupt\n",
-						enable ? "en" : "dis");
+					drm_warn(adev_to_drm(adev), "Failed to %s vupdate interrupt\n",
+						 str_enable_disable(enable));
 			}
 
 			irq_source = IRQ_TYPE_VBLANK + acrtc->otg_inst;
@@ -3058,7 +3058,8 @@ static void dm_gpureset_toggle_interrupts(struct amdgpu_device *adev,
 			 * don't use amdgpu_irq_get/put() to avoid refcount change.
 			 */
 			if (!dc_interrupt_set(adev->dm.dc, irq_source, enable))
-				drm_warn(adev_to_drm(adev), "Failed to %sable vblank interrupt\n", enable ? "en" : "dis");
+				drm_warn(adev_to_drm(adev), "Failed to %s vblank interrupt\n",
+					 str_enable_disable(enable));
 		}
 	}
 
