@@ -131,7 +131,6 @@ MODULE_PARM_DESC(qbc_adjust, "Quad Bayer broken line correction strength [0,2-5]
 
 enum pad_types {
 	IMAGE_PAD,
-	METADATA_PAD,
 	NUM_PADS
 };
 
@@ -1010,8 +1009,6 @@ static int imx708_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 	struct imx708 *imx708 = to_imx708(sd);
 	struct v4l2_mbus_framefmt *try_fmt_img =
 		v4l2_subdev_state_get_format(fh->state, IMAGE_PAD);
-	struct v4l2_mbus_framefmt *try_fmt_meta =
-		v4l2_subdev_state_get_format(fh->state, METADATA_PAD);
 	struct v4l2_rect *try_crop;
 
 	mutex_lock(&imx708->mutex);
@@ -1026,12 +1023,6 @@ static int imx708_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 	}
 	try_fmt_img->code = imx708_get_format_code(imx708);
 	try_fmt_img->field = V4L2_FIELD_NONE;
-
-	/* Initialize try_fmt for the embedded metadata pad */
-	try_fmt_meta->width = IMX708_EMBEDDED_LINE_WIDTH;
-	try_fmt_meta->height = IMX708_NUM_EMBEDDED_LINES;
-	try_fmt_meta->code = MEDIA_BUS_FMT_SENSOR_DATA;
-	try_fmt_meta->field = V4L2_FIELD_NONE;
 
 	/* Initialize try_crop */
 	try_crop = v4l2_subdev_state_get_crop(fh->state, IMAGE_PAD);
@@ -1258,17 +1249,10 @@ static int imx708_enum_mbus_code(struct v4l2_subdev *sd,
 	if (code->pad >= NUM_PADS)
 		return -EINVAL;
 
-	if (code->pad == IMAGE_PAD) {
-		if (code->index >= (ARRAY_SIZE(codes) / 4))
-			return -EINVAL;
+	if (code->index >= (ARRAY_SIZE(codes) / 4))
+		return -EINVAL;
 
-		code->code = imx708_get_format_code(imx708);
-	} else {
-		if (code->index > 0)
-			return -EINVAL;
-
-		code->code = MEDIA_BUS_FMT_SENSOR_DATA;
-	}
+	code->code = imx708_get_format_code(imx708);
 
 	return 0;
 }
@@ -1278,38 +1262,27 @@ static int imx708_enum_frame_size(struct v4l2_subdev *sd,
 				  struct v4l2_subdev_frame_size_enum *fse)
 {
 	struct imx708 *imx708 = to_imx708(sd);
+	const struct imx708_mode *mode_list;
+	unsigned int num_modes;
 
 	guard(mutex)(&imx708->mutex);
 
 	if (fse->pad >= NUM_PADS)
 		return -EINVAL;
 
-	if (fse->pad == IMAGE_PAD) {
-		const struct imx708_mode *mode_list;
-		unsigned int num_modes;
+	get_mode_table(fse->code, &mode_list, &num_modes,
+		       imx708->hdr_mode->val);
 
-		get_mode_table(fse->code, &mode_list, &num_modes,
-			       imx708->hdr_mode->val);
+	if (fse->index >= num_modes)
+		return -EINVAL;
 
-		if (fse->index >= num_modes)
-			return -EINVAL;
+	if (fse->code != imx708_get_format_code(imx708))
+		return -EINVAL;
 
-		if (fse->code != imx708_get_format_code(imx708))
-			return -EINVAL;
-
-		fse->min_width = mode_list[fse->index].width;
-		fse->max_width = fse->min_width;
-		fse->min_height = mode_list[fse->index].height;
-		fse->max_height = fse->min_height;
-	} else {
-		if (fse->code != MEDIA_BUS_FMT_SENSOR_DATA || fse->index > 0)
-			return -EINVAL;
-
-		fse->min_width = IMX708_EMBEDDED_LINE_WIDTH;
-		fse->max_width = fse->min_width;
-		fse->min_height = IMX708_NUM_EMBEDDED_LINES;
-		fse->max_height = fse->min_height;
-	}
+	fse->min_width = mode_list[fse->index].width;
+	fse->max_width = fse->min_width;
+	fse->min_height = mode_list[fse->index].height;
+	fse->max_height = fse->min_height;
 
 	return 0;
 }
@@ -1334,14 +1307,6 @@ static void imx708_update_image_pad_format(struct imx708 *imx708,
 	imx708_reset_colorspace(&fmt->format);
 }
 
-static void imx708_update_metadata_pad_format(struct v4l2_subdev_format *fmt)
-{
-	fmt->format.width = IMX708_EMBEDDED_LINE_WIDTH;
-	fmt->format.height = IMX708_NUM_EMBEDDED_LINES;
-	fmt->format.code = MEDIA_BUS_FMT_SENSOR_DATA;
-	fmt->format.field = V4L2_FIELD_NONE;
-}
-
 static int imx708_get_pad_format(struct v4l2_subdev *sd,
 				 struct v4l2_subdev_state *sd_state,
 				 struct v4l2_subdev_format *fmt)
@@ -1358,18 +1323,12 @@ static int imx708_get_pad_format(struct v4l2_subdev *sd,
 			v4l2_subdev_state_get_format(sd_state,
 						   fmt->pad);
 		/* update the code which could change due to vflip or hflip */
-		try_fmt->code = fmt->pad == IMAGE_PAD ?
-				imx708_get_format_code(imx708) :
-				MEDIA_BUS_FMT_SENSOR_DATA;
+		try_fmt->code = imx708_get_format_code(imx708);
 		fmt->format = *try_fmt;
 	} else {
-		if (fmt->pad == IMAGE_PAD) {
-			imx708_update_image_pad_format(imx708, imx708->mode,
-						       fmt);
-			fmt->format.code = imx708_get_format_code(imx708);
-		} else {
-			imx708_update_metadata_pad_format(fmt);
-		}
+		imx708_update_image_pad_format(imx708, imx708->mode,
+					       fmt);
+		fmt->format.code = imx708_get_format_code(imx708);
 	}
 
 	mutex_unlock(&imx708->mutex);
@@ -1414,14 +1373,9 @@ static int imx708_set_pad_format(struct v4l2_subdev *sd,
 			imx708_set_framing_limits(imx708);
 		}
 	} else {
-		if (fmt->which == V4L2_SUBDEV_FORMAT_TRY) {
-			framefmt = v4l2_subdev_state_get_format(sd_state,
-							      fmt->pad);
-			*framefmt = fmt->format;
-		} else {
-			/* Only one embedded data mode is supported */
-			imx708_update_metadata_pad_format(fmt);
-		}
+		framefmt = v4l2_subdev_state_get_format(sd_state,
+						      fmt->pad);
+		*framefmt = fmt->format;
 	}
 
 	mutex_unlock(&imx708->mutex);
@@ -2049,7 +2003,6 @@ static int imx708_probe(struct i2c_client *client)
 
 	/* Initialize source pads */
 	imx708->pad[IMAGE_PAD].flags = MEDIA_PAD_FL_SOURCE;
-	imx708->pad[METADATA_PAD].flags = MEDIA_PAD_FL_SOURCE;
 
 	ret = media_entity_pads_init(&imx708->sd.entity, NUM_PADS, imx708->pad);
 	if (ret) {
