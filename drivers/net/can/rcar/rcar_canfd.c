@@ -1608,6 +1608,7 @@ static int rcar_canfd_close(struct net_device *ndev)
 	close_candev(ndev);
 	clk_disable_unprepare(gpriv->can_clk);
 	phy_power_off(priv->transceiver);
+
 	return 0;
 }
 
