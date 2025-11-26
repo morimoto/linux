@@ -593,6 +593,15 @@
 			status = "disabled";
 		};
 
+		mfis: syscon@e6260000 {
+			compatible = "renesas,r8a779g0-mfis", "renesas,rcar-gen4-mfis";
+			reg = <0 0xe6260000 0 0x1000>;
+			reg-names = "common";
+			status = "disabled";
+			#hwlock-cells = <1>;
+			#mbox-cells = <2>;
+		};
+
 		i2c0: i2c@e6500000 {
 			compatible = "renesas,i2c-r8a779g0",
 				     "renesas,rcar-gen4-i2c";
