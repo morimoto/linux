@@ -505,6 +505,10 @@
 	pinctrl-names = "default";
 };
 
+&mfis {
+	status = "okay";
+};
+
 /* Page 17 uSD-Slot */
 &mmc0 {
 	pinctrl-0 = <&sd_pins>;
