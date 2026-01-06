@@ -710,6 +710,11 @@ static void rcar_canfd_set_bit_reg(void __iomem *addr, u32 val)
 	rcar_canfd_update(val, val, addr);
 }
 
+static void rcar_canfd_clear_bit_reg(void __iomem *addr, u32 val)
+{
+	rcar_canfd_update(val, 0, addr);
+}
+
 static void rcar_canfd_update_bit_reg(void __iomem *addr, u32 mask, u32 val)
 {
 	rcar_canfd_update(mask, val, addr);
@@ -789,7 +794,7 @@ static int rcar_canfd_reset_controller(struct rcar_canfd_global *gpriv)
 	rcar_canfd_write(gpriv->base, RCANFD_GERFL, 0x0);
 
 	/* Set the controller into appropriate mode */
-	if (!gpriv->info->shared_can_regs) {
+	if (!gpriv->info->ch_interface_mode) {
 		if (gpriv->fdmode)
 			rcar_canfd_set_bit(gpriv->base, RCANFD_GRMCFG,
 					   RCANFD_GRMCFG_RCMC);
@@ -817,22 +822,18 @@ static int rcar_canfd_reset_controller(struct rcar_canfd_global *gpriv)
 		}
 
 		/* Set the controller into appropriate mode */
-		if (gpriv->info->shared_can_regs) {
+		if (gpriv->info->ch_interface_mode) {
 			/* Do not set CLOE and FDOE simultaneously */
 			if (!gpriv->fdmode) {
-				rcar_canfd_clear_bit(gpriv->base,
-						     RCANFD_GEN4_FDCFG(ch),
-						     RCANFD_GEN4_FDCFG_FDOE);
-				rcar_canfd_set_bit(gpriv->base,
-						   RCANFD_GEN4_FDCFG(ch),
-						   RCANFD_GEN4_FDCFG_CLOE);
+				rcar_canfd_clear_bit_reg(&gpriv->fcbase[ch].cfdcfg,
+							 RCANFD_GEN4_FDCFG_FDOE);
+				rcar_canfd_set_bit_reg(&gpriv->fcbase[ch].cfdcfg,
+						       RCANFD_GEN4_FDCFG_CLOE);
 			} else {
-				rcar_canfd_clear_bit(gpriv->base,
-						     RCANFD_GEN4_FDCFG(ch),
-						     RCANFD_GEN4_FDCFG_FDOE);
-				rcar_canfd_clear_bit(gpriv->base,
-						     RCANFD_GEN4_FDCFG(ch),
-						     RCANFD_GEN4_FDCFG_CLOE);
+				rcar_canfd_clear_bit_reg(&gpriv->fcbase[ch].cfdcfg,
+							 RCANFD_GEN4_FDCFG_FDOE);
+				rcar_canfd_clear_bit_reg(&gpriv->fcbase[ch].cfdcfg,
+							 RCANFD_GEN4_FDCFG_CLOE);
 			}
 		}
 	}
