@@ -503,6 +503,7 @@ void dev_pm_domain_detach_list(struct dev_pm_domain_list *list);
 int dev_pm_domain_start(struct device *dev);
 void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd);
 int dev_pm_domain_set_performance_state(struct device *dev, unsigned int state);
+bool dev_pm_domain_allow_detach_on_unbind_cleanup(void);
 #else
 static inline int dev_pm_domain_attach(struct device *dev, u32 flags)
 {
@@ -544,6 +545,10 @@ static inline int dev_pm_domain_set_performance_state(struct device *dev,
 						      unsigned int state)
 {
 	return 0;
+}
+static bool dev_pm_domain_allow_detach_on_unbind_cleanup(void)
+{
+	return false;
 }
 #endif
 
