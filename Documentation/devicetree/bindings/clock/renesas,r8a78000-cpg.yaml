@@ -35,6 +35,14 @@ properties:
       <dt-bindings/clock/renesas,r8a78000-cpg.h>.
     const: 1
 
+  renesas,scmi-firmware:
+    $ref: /schemas/types.yaml#/definitions/phandle
+    description:
+      On systems where the CPG must not be accessed directly, but only through
+      an SCMI firmware interface provider, this property must be present and
+      reference the device node that describes the SCMI compliant firmware
+      interface provider to use instead.
+
 required:
   - compatible
   - reg
@@ -52,4 +60,5 @@ examples:
             clocks = <&extal_clk>, <&extalr_clk>;
             clock-names = "extal", "extalr";
             #clock-cells = <1>;
+            renesas,scmi-firmware = <&scmi>;
     };
