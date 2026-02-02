@@ -16,7 +16,11 @@
 #
 # 2023/02/22 Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 #===============================
-BSP=`readlink -f "$0" | xargs dirname | xargs dirname`
+BSP=`readlink -f "$0" | xargs dirname | xargs dirname | xargs dirname`
+
+rm ../kernel
+ln -s ${BSP} ../kernel
+
 V1=`head ../kernel/Makefile | grep "^VERSION"    | cut -d " " -f 3`
 V2=`head ../kernel/Makefile | grep "^PATCHLEVEL" | cut -d " " -f 3`
 V3=`head ../kernel/Makefile | grep "^SUBLEVEL"   | cut -d " " -f 3`
@@ -31,7 +35,7 @@ cat ${TMP}-orig | sed -e "s/ /\n/g" | sed 1d				> ${TMP}-affected
 )
 cat ${TMP}-all ${TMP}-affected | sort -t"-" -k 2,2r -k 3nr | uniq -u	> ${TMP}-no-affect
 
-mv ${TMP}-affected	${BSP}/cve-affected
-mv ${TMP}-all		${BSP}/cve-all
-mv ${TMP}-no-affect	${BSP}/cve-no-affect
+mv ${TMP}-affected	${BSP}/renesas-lts/cve-affected
+mv ${TMP}-all		${BSP}/renesas-lts/cve-all
+mv ${TMP}-no-affect	${BSP}/renesas-lts/cve-no-affect
 rm -f ${TMP}-*
