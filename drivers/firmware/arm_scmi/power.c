@@ -12,6 +12,7 @@
 
 #include "protocols.h"
 #include "notify.h"
+#include "quirks.h"
 
 /* Updated only after ALL the mandatory features for that version are merged */
 #define SCMI_PROTOCOL_SUPPORTED_VERSION		0x30001
@@ -151,12 +152,44 @@ scmi_power_domain_attributes_get(const struct scmi_protocol_handle *ph,
 	return ret;
 }
 
+static int set_state_deny(u32 state) { return -EPERM; }
+static int get_state_on(u32 *state) { *state = 0; return 0; }
+
+#define QUIRK_RCAR_X5H_4_28_BAD_DOMAINS					\
+	({								\
+		switch (domain) {					\
+		/* Do not touch */					\
+		case 29:		/* PD_RC08 */			\
+		case 76 ... 91:		/* PD_AC00..15 */		\
+		case 92 ... 95:		/* PD_ACL0..3 */		\
+		case 96 ... 111:	/* PD_AC16..31 */		\
+		case 112 ... 115:	/* PD_ACL4..7 */		\
+		case 116:		/* PD_CMN */			\
+		case 129 ... 160:	/* PD_P_APU_CORE00..31 */	\
+		case 161 ... 168:	/* PD_P_APU_DSU00..07 */	\
+		case 169 ... 200:	/* PD_Q_APU_CORE00..31 */	\
+		case 201:		/* PD_P_CMN */			\
+		case 202 ... 206:	/* PD_Q_CMN00..04 */		\
+		case 207 ... 214:	/* PD_Q_APU_PPU00..07 */	\
+		case 215 ... 222:	/* PD_Q_APU_AT00..07 */		\
+		case 223 ... 230:	/* PD_Q_APU_GIC00..07 */	\
+		case 231 ... 238:	/* PD_Q_APU_PERI00..07 */	\
+		case 239 ... 246:	/* PD_Q_APU_S00..07 */		\
+		case 247 ... 254:	/* PD_Q_APU_P00..07 */		\
+			return _Generic(state,				\
+					u32   : set_state_deny,		\
+					u32 * : get_state_on)(state);	\
+		}							\
+	})
+
 static int scmi_power_state_set(const struct scmi_protocol_handle *ph,
 				u32 domain, u32 state)
 {
 	int ret;
 	struct scmi_xfer *t;
 	struct scmi_power_set_state *st;
+
+	SCMI_QUIRK(power_rcar_x5h_4_28_bad_domains, QUIRK_RCAR_X5H_4_28_BAD_DOMAINS);
 
 	ret = ph->xops->xfer_get_init(ph, POWER_STATE_SET, sizeof(*st), 0, &t);
 	if (ret)
@@ -178,6 +211,8 @@ static int scmi_power_state_get(const struct scmi_protocol_handle *ph,
 {
 	int ret;
 	struct scmi_xfer *t;
+
+	SCMI_QUIRK(power_rcar_x5h_4_28_bad_domains, QUIRK_RCAR_X5H_4_28_BAD_DOMAINS);
 
 	ret = ph->xops->xfer_get_init(ph, POWER_STATE_GET, sizeof(u32), sizeof(u32), &t);
 	if (ret)
