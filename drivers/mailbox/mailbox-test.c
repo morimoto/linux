@@ -5,6 +5,7 @@
  * Author: Lee Jones <lee.jones@linaro.org>
  */
 
+#define DEBUG
 #include <linux/debugfs.h>
 #include <linux/err.h>
 #include <linux/fs.h>
