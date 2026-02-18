@@ -5,7 +5,7 @@
  * Copyright (C) 2013-2014 Linaro Ltd.
  * Author: Jassi Brar <jassisinghbrar@gmail.com>
  */
-
+#define DEBUG
 #include <linux/cleanup.h>
 #include <linux/delay.h>
 #include <linux/device.h>
