@@ -1263,6 +1263,20 @@ struct snd_soc_dai *snd_soc_dai_register(struct snd_soc_component *component,
 }
 EXPORT_SYMBOL_GPL(snd_soc_dai_register);
 
+void snd_soc_dai_symmetric_get_params(struct snd_soc_dai *dai,
+				      unsigned int *symmetric_rate,
+				      unsigned int *symmetric_channels,
+				      unsigned int *symmetric_sample_bits)
+{
+	if (symmetric_rate)
+		*symmetric_rate		= dai->symmetric_rate;
+	if (symmetric_channels)
+		*symmetric_channels	= dai->symmetric_channels;
+	if (symmetric_sample_bits)
+		*symmetric_sample_bits	= dai->symmetric_sample_bits;
+}
+EXPORT_SYMBOL_GPL(snd_soc_dai_symmetric_get_params);
+
 void snd_soc_dai_symmetric_set_params(struct snd_soc_dai *dai,
 				      struct snd_pcm_hw_params *params)
 {
