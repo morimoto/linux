@@ -127,7 +127,7 @@ static int mtk_dai_pcm_configure(struct snd_pcm_substream *substream,
 	unsigned int lrck_inv;
 	unsigned int bck_inv;
 	unsigned int fmt;
-	unsigned int bit_width = dai->symmetric_sample_bits;
+	unsigned int bit_width;
 	unsigned int val = 0;
 	unsigned int mask = 0;
 	int fs = 0;
@@ -136,7 +136,10 @@ static int mtk_dai_pcm_configure(struct snd_pcm_substream *substream,
 	if (dai->id != MT8195_AFE_IO_PCM)
 		return -EINVAL;
 
+	snd_soc_dai_symmetric_get_params(dai, NULL, NULL, &bit_width);
+
 	pcmif_priv = afe_priv->dai_priv[dai->id];
+
 	slave_mode = pcmif_priv->slave_mode;
 	lrck_inv = pcmif_priv->lrck_inv;
 	bck_inv = pcmif_priv->bck_inv;

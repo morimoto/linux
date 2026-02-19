@@ -44,8 +44,10 @@ static int mt8365_dai_configure_pcm1(struct snd_pcm_substream *substream,
 	bool lrck_inv = pcm_priv->lrck_inv;
 	bool bck_inv = pcm_priv->bck_inv;
 	unsigned int fmt = pcm_priv->format;
-	unsigned int bit_width = dai->symmetric_sample_bits;
+	unsigned int bit_width;
 	unsigned int val = 0;
+
+	snd_soc_dai_symmetric_get_params(dai, NULL, NULL, &bit_width);
 
 	if (!slave_mode) {
 		val |= PCM_INTF_CON1_MASTER_MODE |

@@ -563,6 +563,10 @@ struct snd_soc_dai *snd_soc_dai_register(struct snd_soc_component *component,
 void snd_soc_dai_unregister(struct snd_soc_dai *dai);
 struct snd_soc_dai *snd_soc_dai_from_list(struct list_head *list);
 struct list_head *snd_soc_dai_to_list(struct snd_soc_dai *dai);
+void snd_soc_dai_symmetric_get_params(struct snd_soc_dai *dai,
+				      unsigned int *symmetric_rate,
+				      unsigned int *symmetric_channels,
+				      unsigned int *symmetric_sample_bits);
 
 /* REMOVE ME */
 #define snd_soc_dai_get_pcm_stream			snd_soc_dai_pcm_stream_get

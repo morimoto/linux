@@ -453,6 +453,8 @@ static int soc_pcm_shared_bclk_rule_rate(struct snd_pcm_hw_params *params,
 	/* Scan all DAIs on the card for an active peer sharing the same BCLK */
 	for_each_card_rtds(card, rtd) {
 		for_each_rtd_cpu_dais(rtd, i, other_dai) {
+			unsigned int symmetric_rate;
+
 			if (other_dai == dai)
 				continue;
 			if (!other_dai->bclk)
@@ -465,7 +467,8 @@ static int soc_pcm_shared_bclk_rule_rate(struct snd_pcm_hw_params *params,
 			 * after snd_soc_dai_hw_params(), so non-zero means
 			 * the DAI's clk_set_rate() has already executed.
 			 */
-			if (!other_dai->symmetric_rate)
+			snd_soc_dai_symmetric_get_params(other_dai, &symmetric_rate, NULL, NULL);
+			if (!symmetric_rate)
 				continue;
 			if (!clk_is_match(dai->bclk, other_dai->bclk))
 				continue;
