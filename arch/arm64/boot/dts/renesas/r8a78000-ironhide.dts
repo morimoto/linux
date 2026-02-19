@@ -16,6 +16,8 @@
 	aliases {
 		serial0 = &hscif0;
 		serial1 = &hscif1;
+		//serial0 = &scif0;	// FIXME Mutually-exclusive with hscif0
+		//serial1 = &scif1;	// FIXME Mutually-exclusive with hscif1
 	};
 
 	chosen {
@@ -261,6 +263,16 @@
 		function = "msiof6";
 	};
 
+	scif0_pins: scif0 {
+		groups = "scif0_data", "scif0_ctrl";
+		function = "scif0";
+	};
+
+	scif1_pins: scif1 {
+		groups = "scif1_data", "scif1_ctrl";
+		function = "scif1";
+	};
+
 	scif_clk_pins: scif-clk {
 		groups = "scif_clk";
 		function = "scif_clk";
@@ -269,6 +281,22 @@
 
 &scif_clk {
 	clock-frequency = <26000000>;
+};
+
+&scif0 {
+	pinctrl-0 = <&scif0_pins>;
+	pinctrl-names = "default";
+
+	uart-has-rtscts;
+	//status = "okay";	// FIXME Mutually-exclusive with hscif0
+};
+
+&scif1 {
+	pinctrl-0 = <&scif1_pins>;
+	pinctrl-names = "default";
+
+	uart-has-rtscts;
+	//status = "okay";	// FIXME Mutually-exclusive with hscif1
 };
 
 &stcm_transport {
