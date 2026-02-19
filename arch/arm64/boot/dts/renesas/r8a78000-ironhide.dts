@@ -15,6 +15,7 @@
 
 	aliases {
 		serial0 = &hscif0;
+		serial1 = &hscif1;
 	};
 
 	chosen {
@@ -202,6 +203,14 @@
 	status = "okay";
 };
 
+&hscif1 {
+	pinctrl-0 = <&hscif1_pins>;
+	pinctrl-names = "default";
+
+	uart-has-rtscts;
+	status = "okay";
+};
+
 &mfis {
 	status = "okay";
 };
@@ -217,6 +226,11 @@
 	hscif0_pins: hscif0 {
 		groups = "hscif0_data", "hscif0_ctrl";
 		function = "hscif0";
+	};
+
+	hscif1_pins: hscif1 {
+		groups = "hscif1_data", "hscif1_ctrl";
+		function = "hscif1";
 	};
 
 	scif_clk_pins: scif-clk {
