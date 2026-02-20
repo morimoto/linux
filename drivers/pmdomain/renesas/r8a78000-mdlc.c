@@ -821,8 +821,233 @@ static const struct mdlc_info r8a78000_mdlc_fw_4_28_0[] = {
 	{ 0 }
 };
 
+static const struct mod_map r8a78000_mdlc_pere_mod_fw_4_31_0[] = {
+	{ 0x30, 193 },	/* PERE_GPIODM0 */
+	// No CLOCK_ATTRIBUTES { 0x31, 194 },	/* PERE_GPIODM1 */
+	// No CLOCK_ATTRIBUTES { 0x32, 195 },	/* PERE_GPIODM2 */
+	// No CLOCK_ATTRIBUTES { 0x33, 196 },	/* PERE_GPIODM3 */
+	{ 0x40, 197 },	/* RPC */
+	{ 0x60, 198 },	/* UFS0 */
+	{ 0x61, 199 },	/* UFS1 */
+	{ 0x70, 200 },	/* SDHI0 */
+	{ -1 },
+};
+
+static const struct mod_map r8a78000_mdlc_perw_mod_fw_4_31_0[] = {
+	{ 0x30, 201 },	/* PERW_GPIODM0 */
+	// No CLOCK_ATTRIBUTES { 0x31, 202 },	/* PERW_GPIODM1 */
+	// No CLOCK_ATTRIBUTES { 0x32, 203 },	/* PERW_GPIODM2 */
+	// No CLOCK_ATTRIBUTES { 0x33, 204 },	/* PERW_GPIODM3 */
+	{ 0x40, 205 },	/* SCIF0 */
+	{ 0x41, 206 },	/* SCIF1 */
+	{ 0x42, 207 },	/* SCIF3 */
+	{ 0x43, 208 },	/* SCIF4 */
+	{ 0x44, 209 },	/* I2C1 */
+	{ 0x45, 210 },	/* I2C2 */
+	{ 0x46, 211 },	/* I2C3 */
+	{ 0x47, 212 },	/* I2C4 */
+	{ 0x48, 213 },	/* I2C5 */
+	{ 0x49, 214 },	/* I2C6 */
+	{ 0x4a, 215 },	/* I2C7 */
+	{ 0x4b, 216 },	/* I2C8 */
+	{ 0x4c, 217 },	/* I3C0 */
+	{ 0x4d, 218 },	/* I3C1 */
+	{ 0x4e, 219 },	/* I3C2 */
+	{ 0x4f, 220 },	/* MSI4 */
+	{ 0x50, 221 },	/* MSI5 */
+	{ 0x51, 222 },	/* MSI6 */
+	{ 0x52, 223 },	/* MSI7 */
+	{ 0x54, 224 },	/* HSCIF0 */
+	{ 0x55, 225 },	/* HSCIF1 */
+	{ 0x56, 226 },	/* HSCIF2 */
+	{ 0x57, 227 },	/* HSCIF3 */
+	{ 0x58, 228 },	/* DRI00 */
+	{ 0x59, 229 },	/* DRI01 */
+	{ 0x5a, 230 },	/* DRI10 */
+	{ 0x5b, 231 },	/* DRI11 */
+	{ 0x5c, 232 },	/* DRI20 */
+	{ 0x5d, 233 },	/* DRI21 */
+	{ 0x5e, 234 },	/* DRI30 */
+	{ 0x5f, 235 },	/* DRI31 */
+	{ 0x60, 236 },	/* DRI40 */
+	{ 0x61, 237 },	/* DRI41 */
+	{ 0x62, 238 },	/* DRI50 */
+	{ 0x63, 239 },	/* DRI51 */
+	{ 0x64, 240 },	/* DRI60 */
+	{ 0x65, 241 },	/* DRI61 */
+	{ 0x66, 242 },	/* DRI70 */
+	{ 0x67, 243 },	/* DRI71 */
+	{ 0x70, 244 },	/* PWM0 */
+	{ 0x72, 245 },	/* TMU1 */
+	{ 0x73, 246 },	/* TMU2 */
+	{ 0x74, 247 },	/* TMU3 */
+	{ 0x75, 248 },	/* TMU4 */
+	{ 0x76, 249 },	/* TPU0 */
+	{ 0x90, 250 },	/* ADG0 */
+	{ 0x91, 251 },	/* ADG1 */
+	{ 0x92, 252 },	/* SSI0 */
+	{ 0x93, 253 },	/* SSI00 */
+	{ 0x94, 254 },	/* SSI01 */
+	{ 0x95, 255 },	/* SSI02 */
+	{ 0x96, 256 },	/* SSI03 */
+	{ 0x97, 257 },	/* SSI04 */
+	{ 0x98, 258 },	/* SSI05 */
+	{ 0x99, 259 },	/* SSI06 */
+	{ 0x9a, 260 },	/* SSI07 */
+	{ 0x9b, 261 },	/* SSI08 */
+	{ 0x9c, 262 },	/* SSI09 */
+	{ 0x9d, 263 },	/* SSI1 */
+	{ 0x9e, 264 },	/* SSI10 */
+	{ 0x9f, 265 },	/* SSI11 */
+	{ 0xa0, 266 },	/* SSI12 */
+	{ 0xa1, 267 },	/* SSI13 */
+	{ 0xa2, 268 },	/* SSI14 */
+	{ 0xa3, 269 },	/* SSI15 */
+	{ 0xa4, 270 },	/* SSI16 */
+	{ 0xa5, 271 },	/* SSI17 */
+	{ 0xa6, 272 },	/* SSI18 */
+	{ 0xa7, 273 },	/* SSI19 */
+	{ 0xa8, 274 },	/* SCU0 */
+	{ 0xa9, 275 },	/* SRC00 */
+	{ 0xaa, 276 },	/* SRC01 */
+	{ 0xab, 277 },	/* SRC02 */
+	{ 0xac, 278 },	/* SRC03 */
+	{ 0xad, 279 },	/* SRC04 */
+	{ 0xae, 280 },	/* SRC05 */
+	{ 0xaf, 281 },	/* SRC06 */
+	{ 0xb0, 282 },	/* SRC07 */
+	{ 0xb1, 283 },	/* SRC08 */
+	{ 0xb2, 284 },	/* SRC09 */
+	{ 0xb3, 285 },	/* SCU00 */
+	{ 0xb4, 286 },	/* SCU01 */
+	{ 0xb5, 287 },	/* DVC00 */
+	{ 0xb6, 288 },	/* DVC01 */
+	{ 0xb7, 289 },	/* SCU1 */
+	{ 0xb8, 290 },	/* SRC10 */
+	{ 0xb9, 291 },	/* SRC11 */
+	{ 0xba, 292 },	/* SRC12 */
+	{ 0xbb, 293 },	/* SRC13 */
+	{ 0xbc, 294 },	/* SRC14 */
+	{ 0xbd, 295 },	/* SRC15 */
+	{ 0xbe, 296 },	/* SRC16 */
+	{ 0xbf, 297 },	/* SRC17 */
+	{ 0xc0, 298 },	/* SRC18 */
+	{ 0xc1, 299 },	/* SRC19 */
+	{ 0xc2, 300 },	/* SCU10 */
+	{ 0xc3, 301 },	/* SCU11 */
+	{ 0xc4, 302 },	/* DVC10 */
+	{ 0xc5, 303 },	/* DVC11 */
+	{ 0xc6, 304 },	/* APD00 */
+	{ 0xc7, 305 },	/* APD01 */
+	{ 0xc8, 306 },	/* APD10 */
+	{ 0xc9, 307 },	/* APD11 */
+	{ 0xca, 308 },	/* APD02 */
+	{ 0xcb, 309 },	/* APD12 */
+	{ -1 },
+};
+
+static const struct mdlc_info r8a78000_mdlc_fw_4_31_0[] = {
+	{
+		.base = 0xc3060000 /* mdlc_vipn */,
+		/* FIXME .power_map = r8a78000_mdlc_vipn_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_vipn_mod_fw_4_31_0, */
+	}, {
+		.base = 0xc3460000 /* mdlc_vips */,
+		/* FIXME .power_map = r8a78000_mdlc_vips_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_vips_mod_fw_4_31_0, */
+	}, {
+		.base = 0xc5000000 /* mdlc_vio */,
+		/* FIXME .power_map = r8a78000_mdlc_vio_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_vio_mod_fw_4_31_0, */
+	}, {
+		.base = 0xc08f0000 /* mdlc_pere */,
+		.power_map = r8a78000_mdlc_pere_power_fw_4_28_0,
+		.mod_map = r8a78000_mdlc_pere_mod_fw_4_31_0,
+	}, {
+		.base = 0xc05d0000 /* mdlc_perw */,
+		.mod_map = r8a78000_mdlc_perw_mod_fw_4_31_0,
+// FIXME We don't need all of them from the start; only add when used/tested
+#if 0
+	}, {
+		.base = 0xe8000000 /* mdlc_ddr0 */,
+	}, {
+		.base = 0xe8080000 /* mdlc_ddr1 */,
+	}, {
+		.base = 0xe8100000 /* mdlc_ddr2 */,
+	}, {
+		.base = 0xe8180000 /* mdlc_ddr3 */,
+	}, {
+		.base = 0xe8200000 /* mdlc_ddr4 */,
+	}, {
+		.base = 0xe8280000 /* mdlc_ddr5 */,
+	}, {
+		.base = 0xe8300000 /* mdlc_ddr6 */,
+	}, {
+		.base = 0xe8380000 /* mdlc_ddr7 */,
+	}, {
+		.base = 0xc9c90000 /* mdlc_hscn */,
+		/* FIXME .power_map = r8a78000_mdlc_hscn_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_hscn_mod_fw_4_31_0, */
+	}, {
+		.base = 0x19440000 /* mdlc_rt */,
+		/* FIXME .power_map = r8a78000_mdlc_rt_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_rt_mod_fw_4_31_0, */
+	}, {
+		.base = 0xc6480000 /* mdlc_top */,
+		/* FIXME .mod_map = r8a78000_mdlc_top_mod_fw_4_31_0, */
+	}, {
+		.base = 0xde200000 /* mdlc_hscs */,
+		/* FIXME .power_map = r8a78000_mdlc_hscs_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_hscs_mod_fw_4_31_0, */
+	}, {
+		.base = 0xc1990000 /* mdlc_imn */,
+		/* FIXME .power_map = r8a78000_mdlc_imn_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_imn_mod_fw_4_31_0, */
+	}, {
+		.base = 0xc1d90000 /* mdlc_ims */,
+		/* FIXME .power_map = r8a78000_mdlc_ims_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_ims_mod_fw_4_31_0, */
+	}, {
+		.base = 0xcb510000 /* mdlc_gpc */,
+		/* FIXME .power_map = r8a78000_mdlc_gpc_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_gpc_mod_fw_4_31_0, */
+	}, {
+		.base = 0xcbe90000 /* mdlc_dsp */,
+		/* FIXME .power_map = r8a78000_mdlc_dsp_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_dsp_mod_fw_4_31_0, */
+	}, {
+		.base = 0xe9980000 /* mdlc_mm */,
+		/* FIXME .mod_map = r8a78000_mdlc_mm_mod_fw_4_31_0, */
+	}, {
+		.base = 0xd2c30000 /* mdlc_npu0 */,
+		/* FIXME .power_map = r8a78000_mdlc_npu0_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_npu0_mod_fw_4_31_0, */
+	}, {
+		.base = 0xd6c30000 /* mdlc_npu1 */,
+		/* FIXME .power_map = r8a78000_mdlc_npu1_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_npu1_mod_fw_4_31_0, */
+	}, {
+		.base = 0xca410000 /* mdlc_cmnn */,
+		/* FIXME .power_map = r8a78000_mdlc_cmnn_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_cmnn_mod_fw_4_31_0, */
+	}, {
+		.base = 0xca510000 /* mdlc_cmns */,
+		/* FIXME .power_map = r8a78000_mdlc_cmns_power_fw_4_28_0, */
+		/* FIXME .mod_map = r8a78000_mdlc_cmns_mod_fw_4_31_0, */
+	}, {
+		.base = 0xc1330000 /* mdlc_scp */,
+		/* FIXME .mod_map = r8a78000_mdlc_scp_mod_fw_4_31_0, */
+	}, {
+		.base = 0xc1338000 /* mdlc_aon */,
+		/* FIXME .mod_map = r8a78000_mdlc_aon_mod_fw_4_31_0, */
+#endif
+	},
+	{ 0 }
+};
+
 static const struct fw_map r8a78000_mdlc_fw_map[] = {
 	{ 0x010a0000, r8a78000_mdlc_fw_4_28_0 },	/* SCP FW SDKv4.28.0 */
+	{ 0x010d0000, r8a78000_mdlc_fw_4_31_0 },	/* SCP FW SDKv4.31.0 */
 	{ 0, NULL }
 };
 
