@@ -9,6 +9,7 @@
 
 struct device;
 struct device_node;
+struct of_phandle_args;
 struct reset_control;
 
 /**
@@ -88,6 +89,8 @@ struct reset_control *__of_reset_control_get(struct device_node *node,
 				     const char *id, int index, enum reset_control_flags flags);
 struct reset_control *__reset_control_get(struct device *dev, const char *id,
 					  int index, enum reset_control_flags flags);
+struct reset_control *reset_control_get_from_provider_exclusive(
+					const struct of_phandle_args *args);
 void reset_control_put(struct reset_control *rstc);
 int __reset_control_bulk_get(struct device *dev, int num_rstcs,
 			     struct reset_control_bulk_data *rstcs,
@@ -168,6 +171,12 @@ static inline struct reset_control *__reset_control_get(
 	bool optional = flags & RESET_CONTROL_FLAGS_BIT_OPTIONAL;
 
 	return optional ? NULL : ERR_PTR(-ENOTSUPP);
+}
+
+static inline struct reset_control *reset_control_get_from_provider_exclusive(
+					const struct of_phandle_args *args)
+{
+	return NULL;
 }
 
 static inline int
