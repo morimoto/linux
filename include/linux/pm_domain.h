@@ -456,6 +456,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
 int of_genpd_add_provider_onecell(struct device_node *np,
 				  struct genpd_onecell_data *data);
 void of_genpd_del_provider(struct device_node *np);
+struct generic_pm_domain *genpd_get_from_provider(const struct of_phandle_args *genpdspec);
 int of_genpd_add_device(const struct of_phandle_args *args, struct device *dev);
 int of_genpd_add_subdomain(const struct of_phandle_args *parent_spec,
 			   const struct of_phandle_args *subdomain_spec);
@@ -485,6 +486,12 @@ static inline int of_genpd_add_provider_onecell(struct device_node *np,
 }
 
 static inline void of_genpd_del_provider(struct device_node *np) {}
+
+static inline struct generic_pm_domain *genpd_get_from_provider(
+				const struct of_phandle_args *genpdspec)
+{
+	return ERR_PTR(-ENODEV);
+}
 
 static inline int of_genpd_add_device(const struct of_phandle_args *args,
 				      struct device *dev)
