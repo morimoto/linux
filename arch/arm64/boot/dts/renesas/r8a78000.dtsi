@@ -1147,6 +1147,16 @@
 			#reset-cells = <1>;
 			bootph-all;
 		};
+
+		ufs: ufs@c0a40000 { // FIXME
+			compatible = "renesas,r8a78000-ufs";
+			reg = <0 0xc0a40000 0 0x100>, <0 0xc0a00000 0 0x40000>;
+			interrupts = <GIC_ESPI 220 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>;
+			clock-names = "fck";
+			power-domains = <&mdlc_pere 0x01 0x60>;
+			resets = <&mdlc_pere 0x60>;
+		};
 	};
 
 	timer {
