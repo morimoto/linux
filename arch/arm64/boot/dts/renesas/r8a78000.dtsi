@@ -1215,6 +1215,18 @@
 			#reset-cells = <1>;
 			bootph-all;
 		};
+
+		ufs1: ufs@c0a40000 { // FIXME
+			compatible = "renesas,r8a78000-ufs";
+			reg = <0 0xc0a40000 0 0x100>, <0 0xc0a00000 0 0x40000>;
+			interrupts = <GIC_ESPI 220 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&cpg R8A78000_CPG_S0D4_PERE_MAIN>,
+				 <&ufs1_ref_clk>;
+			clock-names = "fck", "ref_clk";
+			power-domains = <&mdlc_pere 0x01 0x61>;
+			resets = <&mdlc_pere 0x61>;
+			status = "disabled";
+		};
 	};
 
 	timer {
@@ -1225,5 +1237,12 @@
 			     <GIC_PPI 10 IRQ_TYPE_LEVEL_LOW>,
 			     <GIC_PPI 12 IRQ_TYPE_LEVEL_LOW>;
 		interrupt-names = "sec-phys", "phys", "virt", "hyp-phys", "hyp-virt";
+	};
+
+	ufs1_ref_clk: ufs1-ref-clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		/* This value must be overridden by the board */
+		clock-frequency = <0>;
 	};
 };
