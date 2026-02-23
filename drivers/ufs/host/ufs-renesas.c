@@ -529,17 +529,33 @@ static const struct ufs_hba_variant_ops ufs_renesas_vops = {
 
 static const struct of_device_id __maybe_unused ufs_renesas_of_match[] = {
 	{ .compatible = "renesas,r8a779f0-ufs" },
+	{ .compatible = "renesas,r8a78000-ufs", .data = (void *)0xdeadc0de },
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, ufs_renesas_of_match);
 
 static int ufs_renesas_probe(struct platform_device *pdev)
 {
+	struct device *dev = &pdev->dev;
+
+	if (of_device_get_match_data(dev)) {
+		dev_info(dev, "%s\n", __func__);
+		devm_pm_runtime_enable(dev);
+		return pm_runtime_resume_and_get(dev);
+	}
+
 	return ufshcd_pltfrm_init(pdev, &ufs_renesas_vops);
 }
 
 static void ufs_renesas_remove(struct platform_device *pdev)
 {
+	struct device *dev = &pdev->dev;
+
+	if (of_device_get_match_data(dev)) {
+		dev_info(dev, "%s\n", __func__);
+		return;
+	}
+
 	ufshcd_pltfrm_remove(pdev);
 }
 
