@@ -3129,14 +3129,6 @@ struct snd_soc_dai *snd_soc_get_dai_via_args(const struct of_phandle_args *dai_a
 }
 EXPORT_SYMBOL_GPL(snd_soc_get_dai_via_args);
 
-static void __snd_soc_of_put_component(struct snd_soc_dai_link_component *component)
-{
-	if (component->of_node) {
-		of_node_put(component->of_node);
-		component->of_node = NULL;
-	}
-}
-
 static int __snd_soc_of_get_dai_link_component_alloc(
 	struct device *dev, struct device_node *of_node,
 	struct snd_soc_dai_link_component **ret_component,
@@ -3176,7 +3168,7 @@ void snd_soc_of_put_dai_link_codecs(struct snd_soc_dai_link *dai_link)
 	int index;
 
 	for_each_link_codecs(dai_link, index, component)
-		__snd_soc_of_put_component(component);
+		snd_soc_component_of_put(component);
 }
 EXPORT_SYMBOL_GPL(snd_soc_of_put_dai_link_codecs);
 
@@ -3233,7 +3225,7 @@ void snd_soc_of_put_dai_link_cpus(struct snd_soc_dai_link *dai_link)
 	int index;
 
 	for_each_link_cpus(dai_link, index, component)
-		__snd_soc_of_put_component(component);
+		snd_soc_component_of_put(component);
 }
 EXPORT_SYMBOL_GPL(snd_soc_of_put_dai_link_cpus);
 
