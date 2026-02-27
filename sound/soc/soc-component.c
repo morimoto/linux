@@ -44,6 +44,12 @@ struct snd_soc_component *snd_soc_component_alloc(struct device *dev)
 }
 EXPORT_SYMBOL_GPL(snd_soc_component_alloc);
 
+static LIST_HEAD(component_list);
+struct list_head *snd_soc_component_get_list_head(void)
+{
+	return &component_list;
+}
+
 void snd_soc_component_set_name(struct snd_soc_component *component, const char *name)
 {
 	component->name = name;
