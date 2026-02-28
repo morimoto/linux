@@ -127,6 +127,22 @@
 			no-map;
 		};
 	};
+
+	mailbox_test_send_to_recv {
+		compatible = "mailbox-test";
+		reg = <0x0 0xc1000000 0x0 0x100>;
+		mboxes = <&mfis 0 (MFIS_CHANNEL_IICR | MFIS_CHANNEL_TX)>,
+			 <&mfis 0 (MFIS_CHANNEL_EICR | MFIS_CHANNEL_RX)>;
+		mbox-names = "tx", "rx";
+	 };
+
+	mailbox_test_recv_to_send {
+		compatible = "mailbox-test";
+		reg = <0x0 0xc1000100 0x0 0x100>;
+		mboxes = <&mfis 0 (MFIS_CHANNEL_EICR | MFIS_CHANNEL_TX)>,
+			 <&mfis 0 (MFIS_CHANNEL_IICR | MFIS_CHANNEL_RX)>;
+		mbox-names = "tx", "rx";
+	 };
 };
 
 &cpg {
@@ -256,6 +272,10 @@
 
 &mdlc_vips {
 	firmware = <&scmi>;
+};
+
+&mfis {
+	status = "okay";
 };
 
 &mfis_scp {
