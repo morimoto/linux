@@ -129,6 +129,10 @@
 	};
 };
 
+&cpg {
+	renesas,scmi-firmware = <&scmi>;
+};
+
 &extal_clk {
 	clock-frequency = <16666600>;
 };
@@ -140,6 +144,118 @@
 &hscif0 {
 	uart-has-rtscts;
 	status = "okay";
+};
+
+&mdlc_aon {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_cmnn {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_cmns {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_ddr0 {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_ddr1 {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_ddr2 {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_ddr3 {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_ddr4 {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_ddr5 {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_ddr6 {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_ddr7 {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_dsp {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_gpc {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_hscn {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_hscs {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_imn {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_ims {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_mm {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_npu0 {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_npu1 {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_pere {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_perw {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_rt {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_scp {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_top {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_vio {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_vipn {
+	renesas,scmi-firmware = <&scmi>;
+};
+
+&mdlc_vips {
+	renesas,scmi-firmware = <&scmi>;
 };
 
 &mfis_scp {
