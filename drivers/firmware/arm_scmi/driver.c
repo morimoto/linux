@@ -3416,6 +3416,37 @@ int scmi_inflight_count(const struct scmi_handle *handle)
 	}
 }
 
+/**
+ * scmi_get_revision_info() - Get SCMI provider version information
+ *
+ * @of_node: pointer to a device node for an SCMI provider
+ * @version: pointer to write version information
+ *
+ * Check if an SCMI device has been instantiated for the passed device node
+ * pointer, and, if found, return its version info.
+
+ * Return: 0 on Success or -ENOENT.
+ */
+int scmi_get_revision_info(struct device_node *of_node,
+			   struct scmi_revision_info *version)
+{
+	struct scmi_info *info;
+	int ret = -ENOENT;
+
+	mutex_lock(&scmi_list_mutex);
+	list_for_each_entry(info, &scmi_list, node) {
+		if (info->dev->of_node == of_node) {
+			*version = info->version;
+			ret = 0;
+			break;
+		}
+	}
+	mutex_unlock(&scmi_list_mutex);
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(scmi_get_revision_info);
+
 static int __init scmi_driver_init(void)
 {
 	scmi_quirks_initialize();
