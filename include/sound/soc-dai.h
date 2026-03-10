@@ -567,6 +567,8 @@ void snd_soc_dai_symmetric_get_params(struct snd_soc_dai *dai,
 				      unsigned int *symmetric_rate,
 				      unsigned int *symmetric_channels,
 				      unsigned int *symmetric_sample_bits);
+void snd_soc_dai_priv_set(struct snd_soc_dai *dai, void *priv);
+void *snd_soc_dai_priv_get(struct snd_soc_dai *dai);
 
 /* REMOVE ME */
 #define snd_soc_dai_get_pcm_stream			snd_soc_dai_pcm_stream_get
