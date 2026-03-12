@@ -547,29 +547,4 @@ void snd_soc_dai_symmetric_get_params(struct snd_soc_dai *dai,
 void snd_soc_dai_priv_set(struct snd_soc_dai *dai, void *priv);
 void *snd_soc_dai_priv_get(struct snd_soc_dai *dai);
 
-/* REMOVE ME */
-#define snd_soc_dai_get_pcm_stream			snd_soc_dai_pcm_stream_get
-#define snd_soc_dai_get_widget_playback(dai)		snd_soc_dai_stream_widget_get(dai, SNDRV_PCM_STREAM_PLAYBACK)
-#define snd_soc_dai_get_widget_capture(dai)		snd_soc_dai_stream_widget_get(dai, SNDRV_PCM_STREAM_CAPTURE)
-#define snd_soc_dai_get_widget				snd_soc_dai_stream_widget_get
-#define snd_soc_dai_set_widget_playback(dai, widget)	snd_soc_dai_stream_widget_set(dai, SNDRV_PCM_STREAM_PLAYBACK, widget)
-#define snd_soc_dai_set_widget_capture(dai,  widget)	snd_soc_dai_stream_widget_set(dai, SNDRV_PCM_STREAM_CAPTURE,  widget)
-#define snd_soc_dai_set_widget				snd_soc_dai_stream_widget_set
-#define snd_soc_dai_dma_data_get_playback(dai)		snd_soc_dai_stream_dma_data_get(dai, SNDRV_PCM_STREAM_PLAYBACK)
-#define snd_soc_dai_dma_data_get_capture(dai)		snd_soc_dai_stream_dma_data_get(dai, SNDRV_PCM_STREAM_CAPTURE)
-#define snd_soc_dai_get_dma_data			snd_soc_dai_stream_dma_data_get
-#define snd_soc_dai_dma_data_get			snd_soc_dai_stream_dma_data_get
-#define snd_soc_dai_dma_data_set_playback(dai, data)	snd_soc_dai_stream_dma_data_set(dai, SNDRV_PCM_STREAM_PLAYBACK, data)
-#define snd_soc_dai_dma_data_set_capture(dai,  data)	snd_soc_dai_stream_dma_data_set(dai, SNDRV_PCM_STREAM_CAPTURE,  data)
-#define snd_soc_dai_set_dma_data			snd_soc_dai_stream_dma_data_set
-#define snd_soc_dai_dma_data_set			snd_soc_dai_stream_dma_data_set
-#define snd_soc_dai_tdm_mask_get			snd_soc_dai_stream_tdm_mask_get
-#define snd_soc_dai_tdm_mask_set			snd_soc_dai_stream_tdm_mask_set
-#define snd_soc_dai_stream_active			snd_soc_dai_active_stream
-static inline void snd_soc_dai_init_dma_data(struct snd_soc_dai *dai, void *playback, void *capture)
-{
-	snd_soc_dai_stream_dma_data_set_playback(dai, playback);
-	snd_soc_dai_stream_dma_data_set_capture(dai,  capture);
-}
-
 #endif
