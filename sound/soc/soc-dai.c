@@ -718,13 +718,20 @@ void snd_soc_dai_action(struct snd_soc_dai *dai,
 }
 EXPORT_SYMBOL_GPL(snd_soc_dai_action);
 
+unsigned int snd_soc_dai_active_stream(const struct snd_soc_dai *dai, int stream)
+{
+	/* see snd_soc_dai_action() for setup */
+	return dai->stream[stream].active;
+}
+EXPORT_SYMBOL_GPL(snd_soc_dai_active_stream);
+
 int snd_soc_dai_active(const struct snd_soc_dai *dai)
 {
 	int stream, active;
 
 	active = 0;
 	for_each_pcm_streams(stream)
-		active += dai->stream[stream].active;
+		active += snd_soc_dai_stream_active(dai, stream);
 
 	return active;
 }
@@ -1158,13 +1165,6 @@ void snd_soc_dai_stream_tdm_mask_set(struct snd_soc_dai *dai, int stream, unsign
 	dai->stream[stream].tdm_mask = tdm_mask;
 }
 EXPORT_SYMBOL_GPL(snd_soc_dai_stream_tdm_mask_set);
-
-unsigned int snd_soc_dai_stream_active(const struct snd_soc_dai *dai, int stream)
-{
-	/* see snd_soc_dai_action() for setup */
-	return dai->stream[stream].active;
-}
-EXPORT_SYMBOL_GPL(snd_soc_dai_stream_active);
 
 /**
  * snd_soc_dai_set_stream() - Configures a DAI for stream operation
