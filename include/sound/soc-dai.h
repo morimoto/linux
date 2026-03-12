@@ -244,6 +244,7 @@ static inline void snd_soc_dai_deactivate(struct snd_soc_dai *dai,
 	snd_soc_dai_action(dai, stream, -1);
 }
 int snd_soc_dai_active(const struct snd_soc_dai *dai);
+unsigned int snd_soc_dai_active_stream(const struct snd_soc_dai *dai, int stream);
 
 int snd_soc_pcm_dai_probe(struct snd_soc_pcm_runtime *rtd, int order);
 int snd_soc_pcm_dai_remove(struct snd_soc_pcm_runtime *rtd, int order);
@@ -541,8 +542,6 @@ static inline void snd_soc_dai_stream_dma_data_set_s(struct snd_soc_dai *dai, st
 unsigned int snd_soc_dai_stream_tdm_mask_get(const struct snd_soc_dai *dai, int stream);
 void snd_soc_dai_stream_tdm_mask_set(struct snd_soc_dai *dai, int stream, unsigned int tdm_mask);
 
-unsigned int snd_soc_dai_stream_active(const struct snd_soc_dai *dai, int stream);
-
 static inline void snd_soc_dai_set_drvdata(struct snd_soc_dai *dai,
 		void *data)
 {
@@ -588,6 +587,7 @@ void *snd_soc_dai_priv_get(struct snd_soc_dai *dai);
 #define snd_soc_dai_dma_data_set			snd_soc_dai_stream_dma_data_set
 #define snd_soc_dai_tdm_mask_get			snd_soc_dai_stream_tdm_mask_get
 #define snd_soc_dai_tdm_mask_set			snd_soc_dai_stream_tdm_mask_set
+#define snd_soc_dai_stream_active			snd_soc_dai_active_stream
 static inline void snd_soc_dai_init_dma_data(struct snd_soc_dai *dai, void *playback, void *capture)
 {
 	snd_soc_dai_stream_dma_data_set_playback(dai, playback);
