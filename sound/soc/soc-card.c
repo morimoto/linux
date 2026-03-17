@@ -46,6 +46,12 @@ void *snd_soc_card_to_priv(struct snd_soc_card *card)
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_to_priv);
 
+struct device *snd_soc_card_to_dev(struct snd_soc_card *card)
+{
+	return card->dev;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_to_dev);
+
 struct snd_soc_pcm_runtime *snd_soc_card_to_rtd(struct snd_soc_card *card,
 						struct snd_soc_dai_link *dai_link)
 {
