@@ -91,6 +91,7 @@ void snd_soc_card_dapm_mutex_assert_held(struct snd_soc_card *card);
 
 int snd_soc_card_to_num_rtd(struct snd_soc_card *card);
 struct device *snd_soc_card_to_dev(struct snd_soc_card *card);
+struct snd_card *snd_soc_card_to_snd_card(struct snd_soc_card *card);
 
 int snd_soc_card_is_instantiated(struct snd_soc_card *card);
 struct snd_soc_dapm_context *snd_soc_card_to_dapm(struct snd_soc_card *card);
