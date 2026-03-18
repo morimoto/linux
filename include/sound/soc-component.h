@@ -383,17 +383,6 @@ int snd_soc_component_module_get(struct snd_soc_component *component,
 void snd_soc_component_module_put(struct snd_soc_component *component,
 				  void *mark, int upon_open, int rollback);
 
-static inline void snd_soc_component_set_drvdata(struct snd_soc_component *c,
-						 void *data)
-{
-	dev_set_drvdata(c->dev, data);
-}
-
-static inline void *snd_soc_component_get_drvdata(struct snd_soc_component *c)
-{
-	return dev_get_drvdata(c->dev);
-}
-
 unsigned int snd_soc_component_active(struct snd_soc_component *component);
 int snd_soc_component_num_dai(struct snd_soc_component *component);
 
