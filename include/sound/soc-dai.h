@@ -531,17 +531,6 @@ static inline void snd_soc_dai_stream_dma_data_set_s(struct snd_soc_dai *dai, st
 unsigned int snd_soc_dai_stream_tdm_mask_get(const struct snd_soc_dai *dai, int stream);
 void snd_soc_dai_stream_tdm_mask_set(struct snd_soc_dai *dai, int stream, unsigned int tdm_mask);
 
-static inline void snd_soc_dai_set_drvdata(struct snd_soc_dai *dai,
-		void *data)
-{
-	dev_set_drvdata(dai->dev, data);
-}
-
-static inline void *snd_soc_dai_get_drvdata(struct snd_soc_dai *dai)
-{
-	return dev_get_drvdata(dai->dev);
-}
-
 int snd_soc_dai_set_stream(struct snd_soc_dai *dai, void *stream, int direction);
 void *snd_soc_dai_get_stream(struct snd_soc_dai *dai, int direction);
 
