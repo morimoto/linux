@@ -345,6 +345,35 @@ scmi_clock_get_permissions(const struct scmi_protocol_handle *ph, u32 clk_id,
 	return ret;
 }
 
+static void quirk_rcar_x5h_crit_clocks_fixup(struct scmi_clock_info *clk)
+{
+	clk->state_ctrl_forbidden = true;
+	clk->rate_ctrl_forbidden = true;
+	clk->parent_ctrl_forbidden = true;
+}
+
+#define QUIRK_RCAR_X5H_4_28_CRIT_CLOCKS					\
+	({								\
+		switch (clk_id) {					\
+		case 468:		/* MDLC_INTAP0 */		\
+		case 498 ... 505:	/* MDLC_APRTMGINT0..7 */	\
+		case 838 ... 861:	/* CLK_ZC0/ZC1/ZD_APU0..7 */	\
+			quirk_rcar_x5h_crit_clocks_fixup(clk);		\
+			break;						\
+		}							\
+	})
+
+#define QUIRK_RCAR_X5H_4_31_CRIT_CLOCKS					\
+	({								\
+		switch (clk_id) {					\
+		case 464:		/* MDLC_INTAP0 */		\
+		case 494 ... 501:	/* MDLC_APRTMGINT0..7 */	\
+		case 834 ... 857:	/* CLK_ZC0/ZC1/ZD_APU0..7 */	\
+			quirk_rcar_x5h_crit_clocks_fixup(clk);		\
+			break;						\
+		}							\
+	})
+
 static int scmi_clock_attributes_get(const struct scmi_protocol_handle *ph,
 				     u32 clk_id, struct clock_info *cinfo,
 				     u32 version)
@@ -398,6 +427,8 @@ static int scmi_clock_attributes_get(const struct scmi_protocol_handle *ph,
 				scmi_clock_possible_parents(ph, clk_id, clk);
 			if (SUPPORTS_GET_PERMISSIONS(attributes))
 				scmi_clock_get_permissions(ph, clk_id, clk);
+			SCMI_QUIRK(clock_rcar_x5h_4_28_crit_clocks, QUIRK_RCAR_X5H_4_28_CRIT_CLOCKS);
+			SCMI_QUIRK(clock_rcar_x5h_4_31_crit_clocks, QUIRK_RCAR_X5H_4_31_CRIT_CLOCKS);
 			if (SUPPORTS_EXTENDED_CONFIG(attributes))
 				clk->extended_config = true;
 		}
