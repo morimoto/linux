@@ -756,6 +756,26 @@ scmi_clock_config_set_v2(const struct scmi_protocol_handle *ph, u32 clk_id,
 	return ret;
 }
 
+#define QUIRK_RCAR_X5H_4_28_CRIT_CLOCKS					\
+	({								\
+		switch (clk_id) {					\
+		case 468:	/* MDLC_INTAP0 */			\
+		case 498:	/* MDLC_APRTMGINT0 */			\
+		case 840:	/* CLK_ZD_APU0 */			\
+			return -EPERM;					\
+		}							\
+	})
+
+#define QUIRK_RCAR_X5H_4_31_CRIT_CLOCKS					\
+	({								\
+		switch (clk_id) {					\
+		case 464:	/* MDLC_INTAP0 */			\
+		case 494:	/* MDLC_APRTMGINT0 */			\
+		case 836:	/* CLK_ZD_APU0 */			\
+			return -EPERM;					\
+		}							\
+	})
+
 static int scmi_clock_enable(const struct scmi_protocol_handle *ph, u32 clk_id,
 			     bool atomic)
 {
@@ -785,6 +805,9 @@ static int scmi_clock_disable(const struct scmi_protocol_handle *ph, u32 clk_id,
 
 	if (clk->state_ctrl_forbidden)
 		return -EACCES;
+
+	SCMI_QUIRK(clock_rcar_x5h_4_28_crit_clocks, QUIRK_RCAR_X5H_4_28_CRIT_CLOCKS);
+	SCMI_QUIRK(clock_rcar_x5h_4_31_crit_clocks, QUIRK_RCAR_X5H_4_31_CRIT_CLOCKS);
 
 	return ci->clock_config_set(ph, clk_id, CLK_STATE_DISABLE,
 				    NULL_OEM_TYPE, 0, atomic);
