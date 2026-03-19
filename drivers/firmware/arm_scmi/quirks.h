@@ -47,6 +47,8 @@ static inline void scmi_quirks_enable(struct device *dev, const char *vend,
 
 /* Quirk delarations */
 DECLARE_SCMI_QUIRK(clock_rates_triplet_out_of_spec);
+DECLARE_SCMI_QUIRK(clock_rcar_x5h_4_28_crit_clocks);
+DECLARE_SCMI_QUIRK(clock_rcar_x5h_4_31_crit_clocks);
 DECLARE_SCMI_QUIRK(perf_level_get_fc_force);
 
 #endif /* _SCMI_QUIRKS_H */
