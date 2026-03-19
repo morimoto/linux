@@ -171,6 +171,10 @@ struct scmi_quirk {
 
 /* Global Quirks Definitions */
 DEFINE_SCMI_QUIRK(clock_rates_triplet_out_of_spec, NULL, NULL, NULL);
+DEFINE_SCMI_QUIRK(clock_rcar_x5h_4_28_crit_clocks, "Renesas", NULL, "0x10a0000",
+		  "renesas,r8a78000");
+DEFINE_SCMI_QUIRK(clock_rcar_x5h_4_31_crit_clocks, "Renesas", NULL,
+		  "0x10d0000-0x10e0000", "renesas,r8a78000");
 DEFINE_SCMI_QUIRK(perf_level_get_fc_force, "Qualcomm", NULL, "0x20000-");
 
 /*
@@ -181,6 +185,8 @@ DEFINE_SCMI_QUIRK(perf_level_get_fc_force, "Qualcomm", NULL, "0x20000-");
  */
 static struct scmi_quirk *scmi_quirks_table[] = {
 	__DECLARE_SCMI_QUIRK_ENTRY(clock_rates_triplet_out_of_spec),
+	__DECLARE_SCMI_QUIRK_ENTRY(clock_rcar_x5h_4_28_crit_clocks),
+	__DECLARE_SCMI_QUIRK_ENTRY(clock_rcar_x5h_4_31_crit_clocks),
 	__DECLARE_SCMI_QUIRK_ENTRY(perf_level_get_fc_force),
 	NULL
 };
