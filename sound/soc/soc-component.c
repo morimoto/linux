@@ -1453,7 +1453,7 @@ void snd_soc_component_remove(struct snd_soc_component *component, int probed)
 	if (probed && component->driver->remove)
 		component->driver->remove(component);
 
-	list_del_init(&component->card_list);
+	list_del_init(&component->component_list);
 	snd_soc_dapm_free(snd_soc_component_to_dapm(component));
 	snd_soc_component_debugfs_cleanup(component);
 	component->card = NULL;
@@ -1545,7 +1545,7 @@ int snd_soc_component_probe(struct snd_soc_card *card, struct snd_soc_component 
 		goto err_probe;
 
 	/* see for_each_card_components */
-	list_add(&component->card_list, &card->component_dev_list);
+	list_add(&component->component_list, &card->component_list_head);
 
 err_probe:
 	if (ret < 0)
@@ -1713,7 +1713,7 @@ static int snd_soc_component_initialize(struct snd_soc_component *component,
 
 	INIT_LIST_HEAD(&component->dai_list_head);
 	INIT_LIST_HEAD(&component->dobj_list);
-	INIT_LIST_HEAD(&component->card_list);
+	INIT_LIST_HEAD(&component->component_list);
 	INIT_LIST_HEAD(&component->aux_list);
 	INIT_LIST_HEAD(&component->component_total_list);
 	mutex_init(&component->io_mutex);
