@@ -1705,7 +1705,7 @@ struct snd_soc_component *snd_soc_component_new(struct device *dev, const char *
 	component->driver = driver;
 
 	INIT_LIST_HEAD(&component->dai_list_head);
-	INIT_LIST_HEAD(&component->dobj_list);
+	INIT_LIST_HEAD(&component->dobj_list_head);
 	INIT_LIST_HEAD(&component->component_list);
 	INIT_LIST_HEAD(&component->aux_list);
 	INIT_LIST_HEAD(&component->component_total_list);
