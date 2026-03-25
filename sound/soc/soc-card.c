@@ -244,7 +244,7 @@ static void snd_soc_card_aux_unbind(struct snd_soc_card *card)
 	for_each_card_auxs_safe(card, component, _component) {
 		/* for snd_soc_component_init() */
 		snd_soc_component_set_aux(component, NULL);
-		list_del(&component->card_aux_list);
+		list_del(&component->aux_list);
 	}
 }
 
@@ -263,7 +263,7 @@ static int snd_soc_card_aux_bind(struct snd_soc_card *card)
 		/* for snd_soc_component_init() */
 		snd_soc_component_set_aux(component, aux);
 		/* see for_each_card_auxs */
-		list_add(&component->card_aux_list, &card->aux_comp_list);
+		list_add(&component->aux_list, &card->aux_list_head);
 	}
 	return 0;
 }
