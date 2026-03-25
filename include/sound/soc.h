@@ -1038,7 +1038,7 @@ struct snd_soc_card {
 	int num_of_ignore_suspend_widgets;
 
 	/* lists of probed devices belonging to this card */
-	struct list_head component_dev_list;
+	struct list_head component_list_head;
 	struct list_head list;
 
 	struct list_head widgets;
@@ -1086,7 +1086,7 @@ struct snd_soc_card {
 				 &card->aux_list_head, aux_list)
 
 #define for_each_card_components(card, component)			\
-	list_for_each_entry(component, &(card)->component_dev_list, card_list)
+	list_for_each_entry(component, &(card)->component_list_head, component_list)
 
 #define for_each_card_dapms(card, dapm)					\
 	list_for_each_entry(dapm, &card->dapm_list, list)
