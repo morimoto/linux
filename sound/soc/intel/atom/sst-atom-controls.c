@@ -1480,7 +1480,7 @@ static void sst_fill_linked_widgets(struct snd_soc_component *component,
 	struct snd_soc_dapm_widget *w;
 	unsigned int len = strlen(ids->parent_wname);
 
-	list_for_each_entry(w, &component->card->widgets, list) {
+	list_for_each_entry(w, &component->card->widget_list_head, widget_list) {
 		if (!strncmp(ids->parent_wname, w->name, len)) {
 			ids->parent_w = w;
 			break;
@@ -1497,7 +1497,7 @@ static int sst_map_modules_to_pipe(struct snd_soc_component *component)
 	struct snd_soc_dapm_widget *w;
 	int ret = 0;
 
-	list_for_each_entry(w, &component->card->widgets, list) {
+	list_for_each_entry(w, &component->card->widget_list_head, widget_list) {
 		if (is_sst_dapm_widget(w) && (w->priv)) {
 			struct sst_ids *ids = w->priv;
 
