@@ -652,7 +652,7 @@ static int dapm_add_path(
 	path->node[SND_SOC_DAPM_DIR_OUT] = wsink;
 
 	path->connected = connected;
-	INIT_LIST_HEAD(&path->list);
+	INIT_LIST_HEAD(&path->path_list);
 	INIT_LIST_HEAD(&path->list_kcontrol);
 
 	if (wsource->is_supply || wsink->is_supply)
@@ -691,7 +691,7 @@ static int dapm_add_path(
 		}
 	}
 
-	list_add(&path->list, &dapm->card->paths);
+	list_add(&path->path_list, &dapm->card->path_list_head);
 
 	dapm_for_each_direction(dir)
 		list_add(&path->list_node[dir], &path->node[dir]->edges[dir]);
@@ -2857,7 +2857,7 @@ static void dapm_free_path(struct snd_soc_dapm_path *path)
 	list_del(&path->list_node[SND_SOC_DAPM_DIR_IN]);
 	list_del(&path->list_node[SND_SOC_DAPM_DIR_OUT]);
 	list_del(&path->list_kcontrol);
-	list_del(&path->list);
+	list_del(&path->path_list);
 	kfree(path);
 }
 
@@ -3243,7 +3243,7 @@ static int snd_soc_dapm_del_route(struct snd_soc_dapm_context *dapm,
 	}
 
 	path = NULL;
-	list_for_each_entry(p, &dapm->card->paths, list) {
+	list_for_each_entry(p, &dapm->card->path_list_head, path_list) {
 		if (strcmp(p->source->name, source) != 0)
 			continue;
 		if (strcmp(p->sink->name, sink) != 0)
