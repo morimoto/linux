@@ -472,7 +472,7 @@ struct snd_soc_dai {
 	/* parent platform/codec */
 	struct snd_soc_component *component;
 
-	struct list_head list;
+	struct list_head dai_list;
 
 	/* function mark */
 	struct snd_pcm_substream *mark_startup;
@@ -549,8 +549,8 @@ struct snd_soc_dai *snd_soc_dai_register(struct snd_soc_component *component,
 					 struct snd_soc_dai_driver *dai_drv,
 					 bool legacy_dai_naming);
 void snd_soc_dai_unregister(struct snd_soc_dai *dai);
-struct snd_soc_dai *snd_soc_dai_from_list(struct list_head *list);
-struct list_head *snd_soc_dai_to_list(struct snd_soc_dai *dai);
+struct snd_soc_dai *snd_soc_dai_from_dai_list(struct list_head *list);
+struct list_head *snd_soc_dai_to_dai_list(struct snd_soc_dai *dai);
 void snd_soc_dai_symmetric_get_params(struct snd_soc_dai *dai,
 				      unsigned int *symmetric_rate,
 				      unsigned int *symmetric_channels,

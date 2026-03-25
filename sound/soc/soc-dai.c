@@ -44,17 +44,17 @@ void *snd_soc_dai_priv_get(struct snd_soc_dai *dai)
 }
 EXPORT_SYMBOL_GPL(snd_soc_dai_priv_get);
 
-struct snd_soc_dai *snd_soc_dai_from_list(struct list_head *list)
+struct snd_soc_dai *snd_soc_dai_from_dai_list(struct list_head *list)
 {
-	return list_entry(list, typeof(struct snd_soc_dai), list);
+	return list_entry(list, typeof(struct snd_soc_dai), dai_list);
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_from_list);
+EXPORT_SYMBOL_GPL(snd_soc_dai_from_dai_list);
 
-struct list_head *snd_soc_dai_to_list(struct snd_soc_dai *dai)
+struct list_head *snd_soc_dai_to_dai_list(struct snd_soc_dai *dai)
 {
-	return &dai->list;
+	return &dai->dai_list;
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_to_list);
+EXPORT_SYMBOL_GPL(snd_soc_dai_to_dai_list);
 
 /*
  * We might want to check substream by using list.
@@ -1210,7 +1210,7 @@ void snd_soc_dai_unregister(struct snd_soc_dai *dai)
 	lockdep_assert_held(&client_mutex);
 
 	dev_dbg(dai->dev, "ASoC: Unregistered DAI '%s'\n", dai->name);
-	list_del(&dai->list);
+	list_del(&dai->dai_list);
 }
 EXPORT_SYMBOL_GPL(snd_soc_dai_unregister);
 
