@@ -1041,9 +1041,9 @@ struct snd_soc_card {
 	struct list_head component_list_head;
 	struct list_head widget_list_head;
 	struct list_head path_list_head;
+	struct list_head dapm_list_head;
 
 	struct list_head unbind_list;
-	struct list_head dapm_list;
 	struct list_head dapm_dirty;
 
 	/* Generic DAPM context for the card */
@@ -1089,7 +1089,7 @@ struct snd_soc_card {
 	list_for_each_entry(component, &(card)->component_list_head, component_list)
 
 #define for_each_card_dapms(card, dapm)					\
-	list_for_each_entry(dapm, &card->dapm_list, list)
+	list_for_each_entry(dapm, &card->dapm_list_head, dapm_list)
 
 #define for_each_card_widgets(card, w)\
 	list_for_each_entry(w, &card->widget_list_head, widget_list)
