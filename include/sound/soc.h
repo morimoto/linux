@@ -1015,7 +1015,7 @@ struct snd_soc_card {
 	 */
 	struct snd_soc_aux_dev *aux_dev;
 	int num_aux_devs;
-	struct list_head aux_comp_list;
+	struct list_head aux_list_head;
 
 	const struct snd_kcontrol_new *controls;
 	int num_controls;
@@ -1080,10 +1080,10 @@ struct snd_soc_card {
 	list_for_each_entry_safe(rtd, _rtd, &(card)->rtd_list, list)
 
 #define for_each_card_auxs(card, component)			\
-	list_for_each_entry(component, &card->aux_comp_list, card_aux_list)
+	list_for_each_entry(component, &card->aux_list_head, aux_list)
 #define for_each_card_auxs_safe(card, component, _comp)	\
 	list_for_each_entry_safe(component, _comp,	\
-				 &card->aux_comp_list, card_aux_list)
+				 &card->aux_list_head, aux_list)
 
 #define for_each_card_components(card, component)			\
 	list_for_each_entry(component, &(card)->component_dev_list, card_list)
