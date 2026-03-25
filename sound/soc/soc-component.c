@@ -1712,7 +1712,7 @@ static int snd_soc_component_initialize(struct snd_soc_component *component,
 		return -ENOMEM;
 
 	INIT_LIST_HEAD(&component->dai_list_head);
-	INIT_LIST_HEAD(&component->dobj_list);
+	INIT_LIST_HEAD(&component->dobj_list_head);
 	INIT_LIST_HEAD(&component->component_list);
 	INIT_LIST_HEAD(&component->aux_list);
 	INIT_LIST_HEAD(&component->component_total_list);
