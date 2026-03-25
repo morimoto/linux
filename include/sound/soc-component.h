@@ -221,13 +221,12 @@ struct snd_soc_component {
 	struct list_head list;
 	struct list_head card_aux_list; /* for auxiliary bound components */
 	struct list_head card_list;
+	struct list_head dai_list_head;
+	int num_dai;
 
 	struct device_link *card_device_link;
 
 	const struct snd_soc_component_driver *driver;
-
-	struct list_head dai_list;
-	int num_dai;
 
 	struct regmap *regmap;
 
@@ -261,16 +260,16 @@ struct snd_soc_component {
 	void *priv;
 };
 
-#define for_each_component_dais(component, dai)				\
-	for (dai = snd_soc_dai_from_list((component)->dai_list.next);	\
-	     snd_soc_dai_to_list(dai) != &(component)->dai_list;	\
-	     dai = snd_soc_dai_from_list(snd_soc_dai_to_list(dai)->next))
+#define for_each_component_dais(component, dai)					\
+	for (dai = snd_soc_dai_from_dai_list((component)->dai_list_head.next);	\
+	     snd_soc_dai_to_dai_list(dai) != &(component)->dai_list_head;	\
+	     dai = snd_soc_dai_from_dai_list(snd_soc_dai_to_dai_list(dai)->next))
 
-#define for_each_component_dais_safe(component, dai, _dai)			\
-	for (dai = snd_soc_dai_from_list((component)->dai_list.next),		\
-	     _dai = snd_soc_dai_from_list(snd_soc_dai_to_list(dai)->next);	\
-	     snd_soc_dai_to_list(dai) != &(component)->dai_list;		\
-	     dai = _dai, _dai = snd_soc_dai_from_list(snd_soc_dai_to_list(_dai)->next))
+#define for_each_component_dais_safe(component, dai, _dai)				\
+	for (dai = snd_soc_dai_from_dai_list((component)->dai_list_head.next),		\
+	     _dai = snd_soc_dai_from_dai_list(snd_soc_dai_to_dai_list(dai)->next);	\
+	     snd_soc_dai_to_dai_list(dai) != &(component)->dai_list_head;		\
+	     dai = _dai, _dai = snd_soc_dai_from_dai_list(snd_soc_dai_to_dai_list(_dai)->next))
 
 struct device *snd_soc_component_to_dev(struct snd_soc_component *component);
 struct snd_soc_dapm_context *snd_soc_component_to_dapm(struct snd_soc_component *component);

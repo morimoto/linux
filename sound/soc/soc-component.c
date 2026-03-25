@@ -117,8 +117,8 @@ EXPORT_SYMBOL_GPL(snd_soc_component_num_dai);
 
 void snd_soc_component_connect_dai(struct snd_soc_component *component, struct snd_soc_dai *dai)
 {
-	/* dai->list <-> component->dai_list */
-	list_add_tail(snd_soc_dai_to_list(dai), &component->dai_list);
+	/* dai->dai_list <-> component->dai_list_head */
+	list_add_tail(snd_soc_dai_to_dai_list(dai), &component->dai_list_head);
 	component->num_dai++;
 }
 
@@ -1704,7 +1704,7 @@ struct snd_soc_component *snd_soc_component_new(struct device *dev, const char *
 	component->name = name;
 	component->driver = driver;
 
-	INIT_LIST_HEAD(&component->dai_list);
+	INIT_LIST_HEAD(&component->dai_list_head);
 	INIT_LIST_HEAD(&component->dobj_list);
 	INIT_LIST_HEAD(&component->card_list);
 	INIT_LIST_HEAD(&component->list);
