@@ -20,7 +20,7 @@ static void gbaudio_dapm_link_dai_widget(struct snd_soc_dapm_widget *dai_w,
 	struct snd_soc_dai *dai = dai_w->priv;
 
 	/* ...find all widgets with the same stream and link them */
-	list_for_each_entry(w, &card->widgets, list) {
+	list_for_each_entry(w, &card->widget_list_head, widget_list) {
 		if (w->dapm != dai_w->dapm)
 			continue;
 
@@ -62,7 +62,7 @@ int gbaudio_dapm_link_component_dai_widgets(struct snd_soc_card *card,
 	struct snd_soc_dapm_widget *dai_w;
 
 	/* For each DAI widget... */
-	list_for_each_entry(dai_w, &card->widgets, list) {
+	list_for_each_entry(dai_w, &card->widget_list_head, widget_list) {
 		if (dai_w->dapm != dapm)
 			continue;
 		switch (dai_w->id) {
@@ -92,7 +92,7 @@ static void gbaudio_dapm_free_widget(struct snd_soc_dapm_widget *w)
 	struct snd_soc_dapm_path *p, *next_p;
 	enum snd_soc_dapm_direction dir;
 
-	list_del(&w->list);
+	list_del(&w->widget_list);
 	/*
 	 * remove source and sink paths associated to this widget.
 	 * While removing the path, remove reference to it from both
@@ -121,7 +121,7 @@ int gbaudio_dapm_free_controls(struct snd_soc_dapm_context *dapm,
 	for (i = 0; i < num; i++) {
 		/* below logic can be optimized to identify widget pointer */
 		w = NULL;
-		list_for_each_entry(tmp_w, &card->widgets, list) {
+		list_for_each_entry(tmp_w, &card->widget_list_head, widget_list) {
 			if (tmp_w->dapm == dapm &&
 			    !strcmp(tmp_w->name, widget->name)) {
 				w = tmp_w;
