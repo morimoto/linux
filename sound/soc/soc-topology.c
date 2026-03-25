@@ -358,7 +358,7 @@ static void soc_tplg_remove_kcontrol(struct snd_soc_component *comp, struct snd_
 		dobj->unload(comp, dobj);
 
 	snd_ctl_remove(card, dobj->control.kcontrol);
-	list_del(&dobj->list);
+	list_del(&dobj->dobj_list);
 }
 
 /* remove a route */
@@ -371,7 +371,7 @@ static void soc_tplg_remove_route(struct snd_soc_component *comp,
 	if (dobj->unload)
 		dobj->unload(comp, dobj);
 
-	list_del(&dobj->list);
+	list_del(&dobj->dobj_list);
 }
 
 /* remove a widget and it's kcontrols - routes must be removed first */
@@ -393,7 +393,7 @@ static void soc_tplg_remove_widget(struct snd_soc_component *comp,
 		for (i = 0; i < w->num_kcontrols; i++)
 			snd_ctl_remove(card, w->kcontrols[i]);
 
-	list_del(&dobj->list);
+	list_del(&dobj->dobj_list);
 
 	/* widget w is freed by soc-dapm.c */
 }
@@ -416,7 +416,7 @@ static void soc_tplg_remove_dai(struct snd_soc_component *comp,
 		if (dai->driver == dai_drv)
 			snd_soc_unregister_dai(dai);
 
-	list_del(&dobj->list);
+	list_del(&dobj->dobj_list);
 }
 
 /* remove link configurations */
@@ -432,7 +432,7 @@ static void soc_tplg_remove_link(struct snd_soc_component *comp,
 	if (dobj->unload)
 		dobj->unload(comp, dobj);
 
-	list_del(&dobj->list);
+	list_del(&dobj->dobj_list);
 
 	/* Ignored links do not need to be removed, they are not added */
 	if (!link->ignore)
@@ -456,7 +456,7 @@ static void remove_backend_link(struct snd_soc_component *comp,
 	 * We however need to reset the dobj type to its initial values
 	 */
 	dobj->type = SND_SOC_DOBJ_NONE;
-	list_del(&dobj->list);
+	list_del(&dobj->dobj_list);
 }
 
 /* bind a kcontrol to it's IO handlers */
@@ -890,7 +890,7 @@ static int soc_tplg_dbytes_create(struct soc_tplg *tplg, size_t size)
 	/* register dynamic object */
 	sbe = (struct soc_bytes_ext *)kc.private_value;
 
-	INIT_LIST_HEAD(&sbe->dobj.list);
+	INIT_LIST_HEAD(&sbe->dobj.dobj_list);
 	sbe->dobj.type = SND_SOC_DOBJ_BYTES;
 	sbe->dobj.index = tplg->index;
 	if (tplg->ops)
@@ -901,7 +901,7 @@ static int soc_tplg_dbytes_create(struct soc_tplg *tplg, size_t size)
 	if (ret < 0)
 		return ret;
 
-	list_add(&sbe->dobj.list, &tplg->comp->dobj_list);
+	list_add(&sbe->dobj.dobj_list, &tplg->comp->dobj_list_head);
 
 	return ret;
 }
@@ -924,7 +924,7 @@ static int soc_tplg_dmixer_create(struct soc_tplg *tplg, size_t size)
 	/* register dynamic object */
 	sm = (struct soc_mixer_control *)kc.private_value;
 
-	INIT_LIST_HEAD(&sm->dobj.list);
+	INIT_LIST_HEAD(&sm->dobj.dobj_list);
 	sm->dobj.type = SND_SOC_DOBJ_MIXER;
 	sm->dobj.index = tplg->index;
 	if (tplg->ops)
@@ -935,7 +935,7 @@ static int soc_tplg_dmixer_create(struct soc_tplg *tplg, size_t size)
 	if (ret < 0)
 		return ret;
 
-	list_add(&sm->dobj.list, &tplg->comp->dobj_list);
+	list_add(&sm->dobj.dobj_list, &tplg->comp->dobj_list_head);
 
 	return ret;
 }
@@ -958,7 +958,7 @@ static int soc_tplg_denum_create(struct soc_tplg *tplg, size_t size)
 	/* register dynamic object */
 	se = (struct soc_enum *)kc.private_value;
 
-	INIT_LIST_HEAD(&se->dobj.list);
+	INIT_LIST_HEAD(&se->dobj.dobj_list);
 	se->dobj.type = SND_SOC_DOBJ_ENUM;
 	se->dobj.index = tplg->index;
 	if (tplg->ops)
@@ -969,7 +969,7 @@ static int soc_tplg_denum_create(struct soc_tplg *tplg, size_t size)
 	if (ret < 0)
 		return ret;
 
-	list_add(&se->dobj.list, &tplg->comp->dobj_list);
+	list_add(&se->dobj.dobj_list, &tplg->comp->dobj_list_head);
 
 	return ret;
 }
@@ -1077,12 +1077,12 @@ static int soc_tplg_dapm_graph_elems_load(struct soc_tplg *tplg,
 			}
 		}
 
-		/* add route dobj to dobj_list */
+		/* add route dobj to dobj_list_head */
 		route->dobj.type = SND_SOC_DOBJ_GRAPH;
 		if (tplg->ops)
 			route->dobj.unload = tplg->ops->dapm_route_unload;
 		route->dobj.index = tplg->index;
-		list_add(&route->dobj.list, &tplg->comp->dobj_list);
+		list_add(&route->dobj.dobj_list, &tplg->comp->dobj_list_head);
 
 		ret = soc_tplg_add_route(tplg, route);
 		if (ret < 0) {
@@ -1238,7 +1238,7 @@ widget:
 	if (tplg->ops)
 		widget->dobj.unload = tplg->ops->widget_unload;
 	widget->dobj.index = tplg->index;
-	list_add(&widget->dobj.list, &tplg->comp->dobj_list);
+	list_add(&widget->dobj.dobj_list, &tplg->comp->dobj_list_head);
 
 	ret = soc_tplg_widget_ready(tplg, widget, w);
 	if (ret < 0)
@@ -1438,7 +1438,7 @@ static int soc_tplg_dai_create(struct soc_tplg *tplg,
 	dai_drv->dobj.type = SND_SOC_DOBJ_PCM;
 	if (tplg->ops)
 		dai_drv->dobj.unload = tplg->ops->dai_unload;
-	list_add(&dai_drv->dobj.list, &tplg->comp->dobj_list);
+	list_add(&dai_drv->dobj.dobj_list, &tplg->comp->dobj_list_head);
 
 	/* register the DAI to the component */
 	dai = snd_soc_register_dai(tplg->comp, dai_drv, false);
@@ -1569,7 +1569,7 @@ static int soc_tplg_fe_link_create(struct soc_tplg *tplg,
 		goto err;
 	}
 
-	list_add(&link->dobj.list, &tplg->comp->dobj_list);
+	list_add(&link->dobj.dobj_list, &tplg->comp->dobj_list_head);
 
 	return 0;
 err:
@@ -1804,7 +1804,7 @@ static int soc_tplg_link_config(struct soc_tplg *tplg,
 	link->dobj.type = SND_SOC_DOBJ_BACKEND_LINK;
 	if (tplg->ops)
 		link->dobj.unload = tplg->ops->link_unload;
-	list_add(&link->dobj.list, &tplg->comp->dobj_list);
+	list_add(&link->dobj.dobj_list, &tplg->comp->dobj_list_head);
 
 	return 0;
 }
@@ -2205,8 +2205,8 @@ int snd_soc_tplg_component_remove(struct snd_soc_component *comp)
 	for (pass = SOC_TPLG_PASS_END; pass >= SOC_TPLG_PASS_START; pass--) {
 
 		/* remove mixer controls */
-		list_for_each_entry_safe(dobj, next_dobj, &comp->dobj_list,
-			list) {
+		list_for_each_entry_safe(dobj, next_dobj, &comp->dobj_list_head,
+			dobj_list) {
 
 			switch (dobj->type) {
 			case SND_SOC_DOBJ_BYTES:
@@ -2242,6 +2242,6 @@ int snd_soc_tplg_component_remove(struct snd_soc_component *comp)
 	}
 
 	/* let caller know if FW can be freed when no objects are left */
-	return !list_empty(&comp->dobj_list);
+	return !list_empty(&comp->dobj_list_head);
 }
 EXPORT_SYMBOL_GPL(snd_soc_tplg_component_remove);
