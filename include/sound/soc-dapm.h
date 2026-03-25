@@ -518,7 +518,7 @@ struct snd_soc_dapm_widget {
 	enum snd_soc_dapm_type id;
 	const char *name;			/* widget name */
 	const char *sname;			/* stream name */
-	struct list_head list;
+	struct list_head widget_list;
 	struct snd_soc_dapm_context *dapm;
 
 	void *priv;				/* widget specific data */
