@@ -1707,8 +1707,8 @@ struct snd_soc_component *snd_soc_component_new(struct device *dev, const char *
 	INIT_LIST_HEAD(&component->dai_list_head);
 	INIT_LIST_HEAD(&component->dobj_list);
 	INIT_LIST_HEAD(&component->card_list);
+	INIT_LIST_HEAD(&component->aux_list);
 	INIT_LIST_HEAD(&component->list);
-	INIT_LIST_HEAD(&component->card_aux_list);
 	mutex_init(&component->io_mutex);
 
 	return component;
