@@ -54,7 +54,7 @@ struct snd_soc_dapm_context {
 
 	/* used during DAPM updates */
 	enum snd_soc_bias_level target_bias_level;
-	struct list_head list;
+	struct list_head dapm_list;
 
 	struct snd_soc_dapm_widget *wcache_sink;
 	struct snd_soc_dapm_widget *wcache_source;
@@ -4950,7 +4950,7 @@ void snd_soc_dapm_free(struct snd_soc_dapm_context *dapm)
 {
 	dapm_debugfs_cleanup(dapm);
 	dapm_free_widgets(dapm);
-	list_del(&dapm->list);
+	list_del(&dapm->dapm_list);
 }
 
 void snd_soc_dapm_init(struct snd_soc_dapm_context *dapm,
@@ -4964,9 +4964,9 @@ void snd_soc_dapm_init(struct snd_soc_dapm_context *dapm,
 	if (component)
 		dapm->idle_bias		= component->driver->idle_bias_on;
 
-	INIT_LIST_HEAD(&dapm->list);
+	INIT_LIST_HEAD(&dapm->dapm_list);
 	/* see for_each_card_dapms */
-	list_add(&dapm->list, &card->dapm_list);
+	list_add(&dapm->dapm_list, &card->dapm_list_head);
 }
 
 static void dapm_shutdown(struct snd_soc_dapm_context *dapm)
