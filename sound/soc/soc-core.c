@@ -1217,7 +1217,7 @@ int snd_soc_register_card(struct snd_soc_card *card)
 
 	INIT_LIST_HEAD(&card->widget_list_head);
 	INIT_LIST_HEAD(&card->path_list_head);
-	INIT_LIST_HEAD(&card->dapm_list);
+	INIT_LIST_HEAD(&card->dapm_list_head);
 	INIT_LIST_HEAD(&card->aux_list_head);
 	INIT_LIST_HEAD(&card->component_list_head);
 	INIT_LIST_HEAD(&card->unbind_list);
