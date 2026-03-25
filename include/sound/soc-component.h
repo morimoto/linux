@@ -219,8 +219,8 @@ struct snd_soc_component {
 	unsigned int suspended:1; /* is in suspend PM state */
 
 	struct list_head component_total_list;
+	struct list_head component_list;
 	struct list_head aux_list;		/* for auxiliary bound components */
-	struct list_head card_list;
 	struct list_head dai_list_head;
 	int num_dai;
 
