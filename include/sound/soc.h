@@ -1039,8 +1039,9 @@ struct snd_soc_card {
 
 	/* lists of probed devices belonging to this card */
 	struct list_head component_list_head;
+	struct list_head widget_list_head;
+
 	struct list_head unbind_list;
-	struct list_head widgets;
 	struct list_head paths;
 	struct list_head dapm_list;
 	struct list_head dapm_dirty;
@@ -1091,9 +1092,9 @@ struct snd_soc_card {
 	list_for_each_entry(dapm, &card->dapm_list, list)
 
 #define for_each_card_widgets(card, w)\
-	list_for_each_entry(w, &card->widgets, list)
+	list_for_each_entry(w, &card->widget_list_head, widget_list)
 #define for_each_card_widgets_safe(card, w, _w)	\
-	list_for_each_entry_safe(w, _w, &card->widgets, list)
+	list_for_each_entry_safe(w, _w, &card->widget_list_head, widget_list)
 
 
 static inline int snd_soc_card_is_instantiated(struct snd_soc_card *card)
