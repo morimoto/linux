@@ -1023,11 +1023,11 @@ static struct snd_soc_dapm_widget *
 dapm_wcache_lookup(struct snd_soc_dapm_widget *w, const char *name)
 {
 	if (w) {
-		struct list_head *wlist = &w->dapm->card->widgets;
+		struct list_head *wlist = &w->dapm->card->widget_list_head;
 		const int depth = 2;
 		int i = 0;
 
-		list_for_each_entry_from(w, wlist, list) {
+		list_for_each_entry_from(w, wlist, widget_list) {
 			if (!strcmp(name, w->name))
 				return w;
 
@@ -2875,7 +2875,7 @@ void snd_soc_dapm_free_widget(struct snd_soc_dapm_widget *w)
 	if (!w)
 		return;
 
-	list_del(&w->list);
+	list_del(&w->widget_list);
 	list_del(&w->dirty);
 	/*
 	 * remove source and sink paths associated to this widget.
@@ -3894,10 +3894,10 @@ snd_soc_dapm_new_control_unlocked(struct snd_soc_dapm_context *dapm,
 	}
 
 	w->dapm = dapm;
-	INIT_LIST_HEAD(&w->list);
+	INIT_LIST_HEAD(&w->widget_list);
 	INIT_LIST_HEAD(&w->dirty);
 	/* see for_each_card_widgets */
-	list_add_tail(&w->list, &dapm->card->widgets);
+	list_add_tail(&w->widget_list, &dapm->card->widget_list_head);
 
 	dapm_for_each_direction(dir) {
 		INIT_LIST_HEAD(&w->edges[dir]);
