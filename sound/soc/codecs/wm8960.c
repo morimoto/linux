@@ -518,7 +518,7 @@ static int wm8960_add_widgets(struct snd_soc_component *component)
 	 * list each time to find the desired power state do so now
 	 * and save the result.
 	 */
-	list_for_each_entry(w, &component->card->widgets, list) {
+	list_for_each_entry(w, &component->card->widget_list_head, widget_list) {
 		if (w->dapm != dapm)
 			continue;
 		if (strcmp(w->name, "LOUT1 PGA") == 0)
