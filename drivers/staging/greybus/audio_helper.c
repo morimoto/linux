@@ -83,7 +83,7 @@ static void gbaudio_dapm_free_path(struct snd_soc_dapm_path *path)
 	list_del(&path->list_node[SND_SOC_DAPM_DIR_IN]);
 	list_del(&path->list_node[SND_SOC_DAPM_DIR_OUT]);
 	list_del(&path->list_kcontrol);
-	list_del(&path->list);
+	list_del(&path->path_list);
 	kfree(path);
 }
 
