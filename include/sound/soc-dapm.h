@@ -510,7 +510,7 @@ struct snd_soc_dapm_path {
 
 	struct list_head list_node[2];
 	struct list_head list_kcontrol;
-	struct list_head list;
+	struct list_head path_list;
 };
 
 /* dapm widget */
