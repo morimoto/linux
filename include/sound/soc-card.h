@@ -115,4 +115,6 @@ void snd_soc_card_dapm_mutex_lock(struct snd_soc_card *card);
 void snd_soc_card_dapm_mutex_unlock(struct snd_soc_card *card);
 void snd_soc_card_dapm_mutex_assert_held(struct snd_soc_card *card);
 
+int snd_soc_card_is_instantiated(struct snd_soc_card *card);
+
 #endif /* __SOC_CARD_H */
