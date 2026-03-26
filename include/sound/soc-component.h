@@ -260,14 +260,14 @@ struct snd_soc_component {
 };
 
 #define for_each_component_dais(component, dai)					\
-	for (dai = snd_soc_dai_from_dai_list((component)->dai_list_head.next);	\
-	     snd_soc_dai_to_dai_list(dai) != &(component)->dai_list_head;	\
+	for (dai = snd_soc_dai_from_dai_list(snd_soc_component_to_dai_list_head(component)->next);\
+	     snd_soc_dai_to_dai_list(dai) != snd_soc_component_to_dai_list_head(component);	\
 	     dai = snd_soc_dai_from_dai_list(snd_soc_dai_to_dai_list(dai)->next))
 
 #define for_each_component_dais_safe(component, dai, _dai)				\
-	for (dai = snd_soc_dai_from_dai_list((component)->dai_list_head.next),		\
-	     _dai = snd_soc_dai_from_dai_list(snd_soc_dai_to_dai_list(dai)->next);	\
-	     snd_soc_dai_to_dai_list(dai) != &(component)->dai_list_head;		\
+	for (dai = snd_soc_dai_from_dai_list(snd_soc_component_to_dai_list_head(component)->next),\
+	     _dai = snd_soc_dai_from_dai_list(snd_soc_dai_to_dai_list(dai)->next);		\
+	     snd_soc_dai_to_dai_list(dai) != snd_soc_component_to_dai_list_head(component);	\
 	     dai = _dai, _dai = snd_soc_dai_from_dai_list(snd_soc_dai_to_dai_list(_dai)->next))
 
 int snd_soc_component_register_c(struct snd_soc_component *component,
@@ -312,6 +312,20 @@ struct snd_soc_component *snd_soc_component_lookup_nolock(struct device *dev,
 							  const char *driver_name);
 struct snd_soc_component *snd_soc_component_lookup(struct device *dev, const char *driver_name);
 struct snd_soc_component *snd_soc_component_lookup_by_name(const char *component_name);
+
+#define SOC_COMPOENT_LIST_DEFINE(member)				\
+struct list_head* snd_soc_component_to_##member##_list(struct snd_soc_component *component);\
+struct snd_soc_component *snd_soc_component_from_##member##_list(struct list_head *list)
+
+#define SOC_COMPOENT_LIST_HEAD_DEFINE(member)				\
+struct list_head* snd_soc_component_to_##member##_list_head(struct snd_soc_component *component)
+
+/* see with SOC_COMPOENT_LIST_ENTRY() in soc-component.c */
+SOC_COMPOENT_LIST_DEFINE(component_total);
+SOC_COMPOENT_LIST_DEFINE(component);
+SOC_COMPOENT_LIST_DEFINE(aux);
+SOC_COMPOENT_LIST_HEAD_DEFINE(dobj);
+SOC_COMPOENT_LIST_HEAD_DEFINE(dai);
 
 /* component IO */
 unsigned int snd_soc_component_read(struct snd_soc_component *component,
