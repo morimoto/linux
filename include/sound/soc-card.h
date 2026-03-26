@@ -48,27 +48,12 @@ void snd_soc_card_remove_dai_link(struct snd_soc_card *card,
 				  struct snd_soc_dai_link *dai_link);
 
 #ifdef CONFIG_PCI
-static inline void snd_soc_card_set_pci_ssid(struct snd_soc_card *card,
-					     unsigned short vendor,
-					     unsigned short device)
-{
-	card->pci_subsystem_vendor = vendor;
-	card->pci_subsystem_device = device;
-	card->pci_subsystem_set = true;
-}
-
-static inline int snd_soc_card_get_pci_ssid(struct snd_soc_card *card,
-					    unsigned short *vendor,
-					    unsigned short *device)
-{
-	if (!card->pci_subsystem_set)
-		return -ENOENT;
-
-	*vendor = card->pci_subsystem_vendor;
-	*device = card->pci_subsystem_device;
-
-	return 0;
-}
+void snd_soc_card_set_pci_ssid(struct snd_soc_card *card,
+			       unsigned short vendor,
+			       unsigned short device);
+int snd_soc_card_get_pci_ssid(struct snd_soc_card *card,
+			      unsigned short *vendor,
+			      unsigned short *device);
 #else /* !CONFIG_PCI */
 static inline void snd_soc_card_set_pci_ssid(struct snd_soc_card *card,
 					     unsigned short vendor,
