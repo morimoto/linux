@@ -28,6 +28,13 @@ static inline int _soc_card_ret(struct snd_soc_card *card,
 			   "at %s() on %s\n", func, card->name);
 }
 
+struct snd_soc_dapm_context *snd_soc_card_to_dapm(struct snd_soc_card *card)
+{
+	return card->dapm;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_to_dapm);
+
+
 #ifdef CONFIG_DEBUG_FS
 static void snd_soc_card_debugfs_init(struct snd_soc_card *card)
 {
