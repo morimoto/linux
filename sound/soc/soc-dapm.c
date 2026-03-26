@@ -219,7 +219,7 @@ EXPORT_SYMBOL_GPL(snd_soc_dapm_to_component);
 
 static bool dapm_dirty_widget(struct snd_soc_dapm_widget *w)
 {
-	return !list_empty(&w->dirty);
+	return !list_empty(&w->dapm_dirty_list);
 }
 
 static void dapm_mark_dirty(struct snd_soc_dapm_widget *w, const char *reason)
@@ -231,7 +231,7 @@ static void dapm_mark_dirty(struct snd_soc_dapm_widget *w, const char *reason)
 	if (!dapm_dirty_widget(w)) {
 		dev_vdbg(dev, "Marking %s dirty due to %s\n",
 			 w->name, reason);
-		list_add_tail(&w->dirty, &w->dapm->card->dapm_dirty);
+		list_add_tail(&w->dapm_dirty_list, &w->dapm->card->dapm_dirty_list_head);
 	}
 }
 
@@ -2292,7 +2292,7 @@ static int dapm_power_widgets(struct snd_soc_card *card, int event,
 	 * that new widgets may be added to the dirty list while we
 	 * iterate.
 	 */
-	list_for_each_entry(w, &card->dapm_dirty, dirty) {
+	list_for_each_entry(w, &card->dapm_dirty_list_head, dapm_dirty_list) {
 		dapm_power_one_widget(w, &up_list, &down_list);
 	}
 
@@ -2303,7 +2303,7 @@ static int dapm_power_widgets(struct snd_soc_card *card, int event,
 			/* These widgets always need to be powered */
 			break;
 		default:
-			list_del_init(&w->dirty);
+			list_del_init(&w->dapm_dirty_list);
 			break;
 		}
 
@@ -2876,7 +2876,7 @@ void snd_soc_dapm_free_widget(struct snd_soc_dapm_widget *w)
 		return;
 
 	list_del(&w->widget_list);
-	list_del(&w->dirty);
+	list_del(&w->dapm_dirty_list);
 	/*
 	 * remove source and sink paths associated to this widget.
 	 * While removing the path, remove reference to it from both
@@ -3895,7 +3895,7 @@ snd_soc_dapm_new_control_unlocked(struct snd_soc_dapm_context *dapm,
 
 	w->dapm = dapm;
 	INIT_LIST_HEAD(&w->widget_list);
-	INIT_LIST_HEAD(&w->dirty);
+	INIT_LIST_HEAD(&w->dapm_dirty_list);
 	/* see for_each_card_widgets */
 	list_add_tail(&w->widget_list, &dapm->card->widget_list_head);
 
