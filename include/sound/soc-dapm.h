@@ -562,7 +562,7 @@ struct snd_soc_dapm_widget {
 	/* used during DAPM updates */
 	struct list_head work_list;
 	struct list_head power_list;
-	struct list_head dirty;
+	struct list_head dapm_dirty_list;
 	int endpoints[2];
 
 	struct clk *clk;
