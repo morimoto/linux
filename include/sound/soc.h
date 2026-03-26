@@ -1386,57 +1386,39 @@ enum snd_soc_dapm_subclass {
 	SND_SOC_DAPM_CLASS_RUNTIME	= 1,
 };
 
-static inline void _snd_soc_dapm_mutex_lock_root_c(struct snd_soc_card *card)
-{
-	mutex_lock_nested(&card->dapm_mutex, SND_SOC_DAPM_CLASS_ROOT);
-}
-
-static inline void _snd_soc_dapm_mutex_lock_c(struct snd_soc_card *card)
-{
-	mutex_lock_nested(&card->dapm_mutex, SND_SOC_DAPM_CLASS_RUNTIME);
-}
-
-static inline void _snd_soc_dapm_mutex_unlock_c(struct snd_soc_card *card)
-{
-	mutex_unlock(&card->dapm_mutex);
-}
-
-static inline void _snd_soc_dapm_mutex_assert_held_c(struct snd_soc_card *card)
-{
-	lockdep_assert_held(&card->dapm_mutex);
-}
+#include <sound/soc-card.h>
 
 static inline void _snd_soc_dapm_mutex_lock_root_d(struct snd_soc_dapm_context *dapm)
 {
-	_snd_soc_dapm_mutex_lock_root_c(snd_soc_dapm_to_card(dapm));
+	snd_soc_card_dapm_mutex_lock_root(snd_soc_dapm_to_card(dapm));
 }
 
 static inline void _snd_soc_dapm_mutex_lock_d(struct snd_soc_dapm_context *dapm)
 {
-	_snd_soc_dapm_mutex_lock_c(snd_soc_dapm_to_card(dapm));
+	snd_soc_card_dapm_mutex_lock(snd_soc_dapm_to_card(dapm));
 }
 
 static inline void _snd_soc_dapm_mutex_unlock_d(struct snd_soc_dapm_context *dapm)
 {
-	_snd_soc_dapm_mutex_unlock_c(snd_soc_dapm_to_card(dapm));
+	snd_soc_card_dapm_mutex_unlock(snd_soc_dapm_to_card(dapm));
 }
 
 static inline void _snd_soc_dapm_mutex_assert_held_d(struct snd_soc_dapm_context *dapm)
 {
-	_snd_soc_dapm_mutex_assert_held_c(snd_soc_dapm_to_card(dapm));
+	snd_soc_card_dapm_mutex_assert_held(snd_soc_dapm_to_card(dapm));
 }
 
 #define snd_soc_dapm_mutex_lock_root(x) _Generic((x),			\
-	struct snd_soc_card * :		_snd_soc_dapm_mutex_lock_root_c, \
+	struct snd_soc_card * :		snd_soc_card_dapm_mutex_lock_root, \
 	struct snd_soc_dapm_context * :	_snd_soc_dapm_mutex_lock_root_d)(x)
 #define snd_soc_dapm_mutex_lock(x) _Generic((x),			\
-	struct snd_soc_card * :		_snd_soc_dapm_mutex_lock_c,	\
+	struct snd_soc_card * :		snd_soc_card_dapm_mutex_lock,	\
 	struct snd_soc_dapm_context * :	_snd_soc_dapm_mutex_lock_d)(x)
 #define snd_soc_dapm_mutex_unlock(x) _Generic((x),			\
-	struct snd_soc_card * :		_snd_soc_dapm_mutex_unlock_c,	\
+	struct snd_soc_card * :		snd_soc_card_dapm_mutex_unlock,	\
 	struct snd_soc_dapm_context * :	_snd_soc_dapm_mutex_unlock_d)(x)
 #define snd_soc_dapm_mutex_assert_held(x) _Generic((x),			\
-	struct snd_soc_card * :		_snd_soc_dapm_mutex_assert_held_c, \
+	struct snd_soc_card * :		snd_soc_card_dapm_mutex_assert_held, \
 	struct snd_soc_dapm_context * :	_snd_soc_dapm_mutex_assert_held_d)(x)
 
 /*
@@ -1485,7 +1467,6 @@ static inline void _snd_soc_dpcm_mutex_assert_held_r(struct snd_soc_pcm_runtime 
 	struct snd_soc_pcm_runtime * :	_snd_soc_dpcm_mutex_assert_held_r)(x)
 
 #include <sound/soc-component.h>
-#include <sound/soc-card.h>
 #include <sound/soc-jack.h>
 
 /*

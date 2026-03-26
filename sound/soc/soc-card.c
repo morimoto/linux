@@ -1142,3 +1142,27 @@ void snd_soc_card_mutex_unlock(struct snd_soc_card *card)
 {
 	mutex_unlock(&card->mutex);
 }
+
+void snd_soc_card_dapm_mutex_lock_root(struct snd_soc_card *card)
+{
+	mutex_lock_nested(&card->dapm_mutex, SND_SOC_DAPM_CLASS_ROOT);
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_dapm_mutex_lock_root);
+
+void snd_soc_card_dapm_mutex_lock(struct snd_soc_card *card)
+{
+	mutex_lock_nested(&card->dapm_mutex, SND_SOC_DAPM_CLASS_RUNTIME);
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_dapm_mutex_lock);
+
+void snd_soc_card_dapm_mutex_unlock(struct snd_soc_card *card)
+{
+	mutex_unlock(&card->dapm_mutex);
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_dapm_mutex_unlock);
+
+void snd_soc_card_dapm_mutex_assert_held(struct snd_soc_card *card)
+{
+	lockdep_assert_held(&card->dapm_mutex);
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_dapm_mutex_assert_held);
