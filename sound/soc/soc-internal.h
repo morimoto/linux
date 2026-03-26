@@ -63,7 +63,9 @@ void snd_soc_component_active_action(struct snd_soc_component *component, int ac
 void snd_soc_component_device_link_del(struct snd_soc_component *component);
 int snd_soc_component_device_link_add(struct snd_soc_component *component);
 
-#define for_each_component(component)					\
-	list_for_each_entry(component, snd_soc_component_total_list_head(), component_total_list)
+#define for_each_component(component)							\
+	for (component = snd_soc_component_from_component_total_list(snd_soc_component_total_list_head()->next);	\
+	     snd_soc_component_to_component_total_list(component) != snd_soc_component_total_list_head();	\
+	     component = snd_soc_component_from_component_total_list(snd_soc_component_to_component_total_list(component)->next))
 
 #endif /* __SOC_INTERNAL_H */
