@@ -169,6 +169,55 @@ int snd_soc_component_device_link_add(struct snd_soc_component *component)
 	return 0;
 }
 
+#define SOC_COMPOENT_LIST_ENTRY(member)				\
+struct list_head* snd_soc_component_to_##member##_list(struct snd_soc_component *component)\
+{									\
+	return &component->member##_list;				\
+}									\
+EXPORT_SYMBOL_GPL(snd_soc_component_to_##member##_list);		\
+									\
+struct snd_soc_component *snd_soc_component_from_##member##_list(struct list_head *list)\
+{									\
+	return list_entry(list, typeof(struct snd_soc_component), member##_list);		\
+}									\
+EXPORT_SYMBOL_GPL(snd_soc_component_from_##member##_list)
+
+#define SOC_COMPOENT_LIST_HEAD_ENTRY(member)				\
+struct list_head* snd_soc_component_to_##member##_list_head(struct snd_soc_component *component) \
+{								\
+	return &component->member##_list_head;			\
+}								\
+EXPORT_SYMBOL_GPL(snd_soc_component_to_##member##_list_head)
+
+/* for git grep */
+/*
+ * snd_soc_component_to_component_total_list()
+ * snd_soc_component_from_component_total_list()
+ */
+SOC_COMPOENT_LIST_ENTRY(component_total);
+
+/*
+ * snd_soc_component_to_component_list()
+ * snd_soc_component_from_component_list()
+ */
+SOC_COMPOENT_LIST_ENTRY(component);
+
+/*
+ * snd_soc_component_to_aux_list()
+ * snd_soc_component_from_aux_list()
+ */
+SOC_COMPOENT_LIST_ENTRY(aux);
+
+/*
+ * snd_soc_component_to_dobj_list_head()
+ */
+SOC_COMPOENT_LIST_HEAD_ENTRY(dobj);
+
+/*
+ * snd_soc_component_to_dai_list_head()
+ */
+SOC_COMPOENT_LIST_HEAD_ENTRY(dai);
+
 /*
  * We might want to check substream by using list.
  * In such case, we can update these macros.
