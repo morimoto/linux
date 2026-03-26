@@ -41,6 +41,9 @@ int snd_soc_card_bind_call(struct snd_soc_card *card);
 void snd_soc_card_mutex_lock_root(struct snd_soc_card *card);
 void snd_soc_card_mutex_lock(struct snd_soc_card *card);
 void snd_soc_card_mutex_unlock(struct snd_soc_card *card);
+void snd_soc_card_dpcm_mutex_lock(struct snd_soc_card *card);
+void snd_soc_card_dpcm_mutex_unlock(struct snd_soc_card *card);
+void snd_soc_card_dpcm_mutex_assert_held(struct snd_soc_card *card);
 
 /*
  * In soc-dai
@@ -72,5 +75,35 @@ int snd_soc_component_device_link_add(struct snd_soc_component *component);
 	for (component = snd_soc_component_from_component_total_list(snd_soc_component_total_list_head()->next);	\
 	     snd_soc_component_to_component_total_list(component) != snd_soc_component_total_list_head();	\
 	     component = snd_soc_component_from_component_total_list(snd_soc_component_to_component_total_list(component)->next))
+
+/*
+ *	PCM helper functions
+ */
+static inline void snd_soc_dpcm_mutex_lock_r(struct snd_soc_pcm_runtime *rtd)
+{
+	snd_soc_card_dpcm_mutex_lock(rtd->card);
+}
+
+static inline void snd_soc_dpcm_mutex_unlock_r(struct snd_soc_pcm_runtime *rtd)
+{
+	snd_soc_card_dpcm_mutex_unlock(rtd->card);
+}
+
+static inline void snd_soc_dpcm_mutex_assert_held_r(struct snd_soc_pcm_runtime *rtd)
+{
+	snd_soc_card_dpcm_mutex_assert_held(rtd->card);
+}
+
+#define snd_soc_dpcm_mutex_lock(x) _Generic((x),		\
+struct snd_soc_card * :		snd_soc_card_dpcm_mutex_lock,	\
+struct snd_soc_pcm_runtime * :	snd_soc_dpcm_mutex_lock_r)(x)
+
+#define snd_soc_dpcm_mutex_unlock(x) _Generic((x),		\
+struct snd_soc_card * :		snd_soc_card_dpcm_mutex_unlock,	\
+struct snd_soc_pcm_runtime * :	snd_soc_dpcm_mutex_unlock_r)(x)
+
+#define snd_soc_dpcm_mutex_assert_held(x) _Generic((x),		\
+struct snd_soc_card * :		snd_soc_card_dpcm_mutex_assert_held, \
+struct snd_soc_pcm_runtime * :	snd_soc_dpcm_mutex_assert_held_r)(x)
 
 #endif /* __SOC_INTERNAL_H */

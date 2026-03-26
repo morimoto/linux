@@ -1167,3 +1167,18 @@ void snd_soc_card_dapm_mutex_assert_held(struct snd_soc_card *card)
 	lockdep_assert_held(&card->dapm_mutex);
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_dapm_mutex_assert_held);
+
+void snd_soc_card_dpcm_mutex_lock(struct snd_soc_card *card)
+{
+	mutex_lock(&card->pcm_mutex);
+}
+
+void snd_soc_card_dpcm_mutex_unlock(struct snd_soc_card *card)
+{
+	mutex_unlock(&card->pcm_mutex);
+}
+
+void snd_soc_card_dpcm_mutex_assert_held(struct snd_soc_card *card)
+{
+	lockdep_assert_held(&card->pcm_mutex);
+}
