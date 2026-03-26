@@ -1653,3 +1653,48 @@ int snd_soc_card_fixup_dai_links_platform_name(struct snd_soc_card *card,
 	return 0;
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_fixup_dai_links_platform_name);
+
+#define SOC_CARD_LIST_ENTRY(member)						\
+struct list_head* snd_soc_card_to_##member##_list(struct snd_soc_card *card)	\
+{										\
+	return &card->member##_list;						\
+}										\
+EXPORT_SYMBOL_GPL(snd_soc_card_to_##member##_list);				\
+										\
+struct snd_soc_card *snd_soc_card_from_##member##_list(struct list_head *list)	\
+{										\
+	return list_entry(list, typeof(struct snd_soc_card), member##_list);	\
+}										\
+EXPORT_SYMBOL_GPL(snd_soc_card_from_##member##_list)
+
+#define SOC_CARD_LIST_HEAD_ENTRY(member)					\
+struct list_head* snd_soc_card_to_##member##_list_head(struct snd_soc_card *card)\
+{										\
+	return &card->member##_list_head;					\
+}										\
+EXPORT_SYMBOL_GPL(snd_soc_card_to_##member##_list_head)
+
+/* for git grep */
+/*
+ * snd_soc_card_to_unbind_list()
+ * snd_soc_card_from_unbind_list()
+ */
+SOC_CARD_LIST_ENTRY(unbind);
+
+/*
+ * snd_soc_card_to_unbind_list_head()
+ * snd_soc_card_to_rtd_list_head()
+ * snd_soc_card_to_aux_list_head()
+ * snd_soc_card_to_component_list_head()
+ * snd_soc_card_to_widget_list_head()
+ * snd_soc_card_to_path_list_head()
+ * snd_soc_card_to_dapm_list_head()
+ * snd_soc_card_to_dapm_dirty_list_head()
+ */
+SOC_CARD_LIST_HEAD_ENTRY(rtd);
+SOC_CARD_LIST_HEAD_ENTRY(aux);
+SOC_CARD_LIST_HEAD_ENTRY(component);
+SOC_CARD_LIST_HEAD_ENTRY(widget);
+SOC_CARD_LIST_HEAD_ENTRY(path);
+SOC_CARD_LIST_HEAD_ENTRY(dapm);
+SOC_CARD_LIST_HEAD_ENTRY(dapm_dirty);

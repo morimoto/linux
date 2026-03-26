@@ -96,6 +96,24 @@ void snd_soc_card_set_priv(struct snd_soc_card *card, void *data);
 struct snd_soc_pcm_runtime *snd_soc_card_to_rtd(struct snd_soc_card *card,
 						 struct snd_soc_dai_link *dai_link);
 
+#define SOC_CARD_LIST_DEFINE(member) \
+struct list_head* snd_soc_card_to_##member##_list(struct snd_soc_card *card); \
+struct snd_soc_card *snd_soc_card_from_##member##_list(struct list_head *list)
+
+#define SOC_CARD_LIST_HEAD_DEFINE(member) \
+struct list_head* snd_soc_card_to_##member##_list_head(struct snd_soc_card *card)
+
+/* see with SOC_CARD_LIST_ENTRY() in soc-component.c */
+SOC_CARD_LIST_DEFINE(unbind);
+
+SOC_CARD_LIST_HEAD_DEFINE(rtd);
+SOC_CARD_LIST_HEAD_DEFINE(aux);
+SOC_CARD_LIST_HEAD_DEFINE(component);
+SOC_CARD_LIST_HEAD_DEFINE(widget);
+SOC_CARD_LIST_HEAD_DEFINE(path);
+SOC_CARD_LIST_HEAD_DEFINE(dapm);
+SOC_CARD_LIST_HEAD_DEFINE(dapm_dirty);
+
 #define for_each_card_prelinks(card, i, link)				\
 	for ((i) = 0;							\
 	     ((i) < (card)->num_links) && ((link) = &(card)->dai_link[i]); \
