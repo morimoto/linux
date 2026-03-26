@@ -1205,3 +1205,29 @@ int snd_soc_card_is_instantiated(struct snd_soc_card *card)
 	return card && card->instantiated;
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_is_instantiated);
+
+#ifdef CONFIG_PCI
+void snd_soc_card_set_pci_ssid(struct snd_soc_card *card,
+			       unsigned short vendor,
+			       unsigned short device)
+{
+	card->pci_subsystem_vendor = vendor;
+	card->pci_subsystem_device = device;
+	card->pci_subsystem_set = true;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_set_pci_ssid);
+
+int snd_soc_card_get_pci_ssid(struct snd_soc_card *card,
+			      unsigned short *vendor,
+			      unsigned short *device)
+{
+	if (!card->pci_subsystem_set)
+		return -ENOENT;
+
+	*vendor = card->pci_subsystem_vendor;
+	*device = card->pci_subsystem_device;
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_get_pci_ssid);
+#endif /* CONFIG_PCI */
