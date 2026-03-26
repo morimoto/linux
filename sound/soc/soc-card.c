@@ -1181,3 +1181,9 @@ void snd_soc_card_dpcm_mutex_assert_held(struct snd_soc_card *card)
 {
 	lockdep_assert_held(&card->pcm_mutex);
 }
+
+int snd_soc_card_is_instantiated(struct snd_soc_card *card)
+{
+	return card && card->instantiated;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_is_instantiated);
