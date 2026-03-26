@@ -10,6 +10,7 @@
 #include <sound/soc.h>
 #include <sound/soc-dai.h>
 #include <sound/soc-link.h>
+#include <sound/soc-component.h>
 #include "soc-internal.h"
 
 #define soc_dai_ret(dai, ret) _soc_dai_ret(dai, __func__, ret)
