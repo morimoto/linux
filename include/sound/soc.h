@@ -1097,11 +1097,6 @@ struct snd_soc_card {
 	list_for_each_entry_safe(w, _w, &card->widget_list_head, widget_list)
 
 
-static inline int snd_soc_card_is_instantiated(struct snd_soc_card *card)
-{
-	return card && card->instantiated;
-}
-
 static inline struct snd_soc_dapm_context *snd_soc_card_to_dapm(struct snd_soc_card *card)
 {
 	return card->dapm;
