@@ -1097,11 +1097,6 @@ struct snd_soc_card {
 	list_for_each_entry_safe(w, _w, &card->widget_list_head, widget_list)
 
 
-static inline struct snd_soc_dapm_context *snd_soc_card_to_dapm(struct snd_soc_card *card)
-{
-	return card->dapm;
-}
-
 /* SoC machine DAI configuration, glues a codec and cpu DAI together */
 struct snd_soc_pcm_runtime {
 	struct device *dev;
