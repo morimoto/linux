@@ -1092,17 +1092,26 @@ static int samsung_i2s_dai_remove(struct snd_soc_dai *dai)
 	return 0;
 }
 
+static const u64 samsung_i2s_selectable_formats =
+	SND_SOC_POSSIBLE_DAIFMT_I2S	|
+	SND_SOC_POSSIBLE_DAIFMT_RIGHT_J	|
+	SND_SOC_POSSIBLE_DAIFMT_LEFT_J	|
+	SND_SOC_POSSIBLE_DAIFMT_NB_NF	|
+	SND_SOC_POSSIBLE_DAIFMT_NB_IF;
+
 static const struct snd_soc_dai_ops samsung_i2s_dai_ops = {
-	.probe = samsung_i2s_dai_probe,
-	.remove = samsung_i2s_dai_remove,
-	.trigger = i2s_trigger,
-	.hw_params = i2s_hw_params,
-	.set_fmt = i2s_set_fmt,
-	.set_clkdiv = i2s_set_clkdiv,
-	.set_sysclk = i2s_set_sysclk,
-	.startup = i2s_startup,
-	.shutdown = i2s_shutdown,
-	.delay = i2s_delay,
+	.probe				= samsung_i2s_dai_probe,
+	.remove				= samsung_i2s_dai_remove,
+	.trigger			= i2s_trigger,
+	.hw_params			= i2s_hw_params,
+	.set_fmt			= i2s_set_fmt,
+	.set_clkdiv			= i2s_set_clkdiv,
+	.set_sysclk			= i2s_set_sysclk,
+	.startup			= i2s_startup,
+	.shutdown			= i2s_shutdown,
+	.delay				= i2s_delay,
+	.auto_selectable_formats	= &samsung_i2s_selectable_formats,
+	.num_auto_selectable_formats	= 1,
 };
 
 static const struct snd_soc_dapm_widget samsung_i2s_widgets[] = {
