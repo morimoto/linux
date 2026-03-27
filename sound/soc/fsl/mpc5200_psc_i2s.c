@@ -124,6 +124,8 @@ static int psc_i2s_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int format)
  * - create/destroy dai hooks
  */
 
+static const u64 psc_i2s_selectable_formats = SND_SOC_POSSIBLE_DAIFMT_I2S;
+
 /**
  * var psc_i2s_dai_ops - template CPU Digital Audio Interface
  */
@@ -131,6 +133,8 @@ static const struct snd_soc_dai_ops psc_i2s_dai_ops = {
 	.hw_params	= psc_i2s_hw_params,
 	.set_sysclk	= psc_i2s_set_sysclk,
 	.set_fmt	= psc_i2s_set_fmt,
+	.auto_selectable_formats	= &psc_i2s_selectable_formats,
+	.num_auto_selectable_formats	= 1,
 };
 
 static struct snd_soc_dai_driver psc_i2s_dai[] = {{

@@ -257,6 +257,8 @@ static int lpc3xxx_i2s_dai_probe(struct snd_soc_dai *dai)
 	return 0;
 }
 
+static const u64 lpc3xxx_i2s_selectable_formats = SND_SOC_POSSIBLE_DAIFMT_I2S;
+
 static const struct snd_soc_dai_ops lpc3xxx_i2s_dai_ops = {
 	.probe	= lpc3xxx_i2s_dai_probe,
 	.startup = lpc3xxx_i2s_startup,
@@ -265,6 +267,8 @@ static const struct snd_soc_dai_ops lpc3xxx_i2s_dai_ops = {
 	.hw_params = lpc3xxx_i2s_hw_params,
 	.set_sysclk = lpc3xxx_i2s_set_dai_sysclk,
 	.set_fmt = lpc3xxx_i2s_set_dai_fmt,
+	.auto_selectable_formats	= &lpc3xxx_i2s_selectable_formats,
+	.num_auto_selectable_formats	= 1,
 };
 
 static struct snd_soc_dai_driver lpc3xxx_i2s_dai_driver = {

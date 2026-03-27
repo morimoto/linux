@@ -2382,6 +2382,16 @@ static int max98090_set_jack(struct snd_soc_component *component,
 #define MAX98090_RATES SNDRV_PCM_RATE_8000_96000
 #define MAX98090_FORMATS (SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE)
 
+static const u64 max98090_selectable_formats =
+	SND_SOC_POSSIBLE_DAIFMT_I2S	|
+	SND_SOC_POSSIBLE_DAIFMT_RIGHT_J	|
+	SND_SOC_POSSIBLE_DAIFMT_LEFT_J	|
+	SND_SOC_POSSIBLE_DAIFMT_DSP_A	|
+	SND_SOC_POSSIBLE_DAIFMT_NB_NF	|
+	SND_SOC_POSSIBLE_DAIFMT_NB_IF	|
+	SND_SOC_POSSIBLE_DAIFMT_IB_NF	|
+	SND_SOC_POSSIBLE_DAIFMT_IB_IF;
+
 static const struct snd_soc_dai_ops max98090_dai_ops = {
 	.startup = max98090_dai_startup,
 	.set_sysclk = max98090_dai_set_sysclk,
@@ -2390,6 +2400,8 @@ static const struct snd_soc_dai_ops max98090_dai_ops = {
 	.hw_params = max98090_dai_hw_params,
 	.mute_stream = max98090_dai_mute,
 	.trigger = max98090_dai_trigger,
+	.auto_selectable_formats = &max98090_selectable_formats,
+	.num_auto_selectable_formats = 1,
 	.no_capture_mute = 1,
 };
 

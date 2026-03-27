@@ -1151,6 +1151,17 @@ static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
 	return 0;
 }
 
+static const u64 fsl_ssi_selectable_formats =
+	SND_SOC_POSSIBLE_DAIFMT_I2S	|
+	SND_SOC_POSSIBLE_DAIFMT_LEFT_J	|
+	SND_SOC_POSSIBLE_DAIFMT_DSP_A	|
+	SND_SOC_POSSIBLE_DAIFMT_DSP_B	|
+	SND_SOC_POSSIBLE_DAIFMT_AC97	|
+	SND_SOC_POSSIBLE_DAIFMT_NB_NF	|
+	SND_SOC_POSSIBLE_DAIFMT_NB_IF	|
+	SND_SOC_POSSIBLE_DAIFMT_IB_NF	|
+	SND_SOC_POSSIBLE_DAIFMT_IB_IF;
+
 static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
 	.probe = fsl_ssi_dai_probe,
 	.startup = fsl_ssi_startup,
@@ -1160,6 +1171,8 @@ static const struct snd_soc_dai_ops fsl_ssi_dai_ops = {
 	.set_fmt = fsl_ssi_set_dai_fmt,
 	.set_tdm_slot = fsl_ssi_set_dai_tdm_slot,
 	.trigger = fsl_ssi_trigger,
+	.auto_selectable_formats = &fsl_ssi_selectable_formats,
+	.num_auto_selectable_formats = 1,
 };
 
 static struct snd_soc_dai_driver fsl_ssi_dai_template = {

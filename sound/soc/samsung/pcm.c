@@ -422,6 +422,13 @@ static int s3c_pcm_dai_probe(struct snd_soc_dai *dai)
 	return 0;
 }
 
+static const u64 s3c_pcm_selectable_formats =
+	SND_SOC_POSSIBLE_DAIFMT_DSP_A	|
+	SND_SOC_POSSIBLE_DAIFMT_DSP_B	|
+	SND_SOC_POSSIBLE_DAIFMT_GATED	|
+	SND_SOC_POSSIBLE_DAIFMT_CONT	|
+	SND_SOC_POSSIBLE_DAIFMT_IB_NF;
+
 static const struct snd_soc_dai_ops s3c_pcm_dai_ops = {
 	.probe		= s3c_pcm_dai_probe,
 	.set_sysclk	= s3c_pcm_set_sysclk,
@@ -429,6 +436,8 @@ static const struct snd_soc_dai_ops s3c_pcm_dai_ops = {
 	.trigger	= s3c_pcm_trigger,
 	.hw_params	= s3c_pcm_hw_params,
 	.set_fmt	= s3c_pcm_set_fmt,
+	.auto_selectable_formats	= &s3c_pcm_selectable_formats,
+	.num_auto_selectable_formats	= 1,
 };
 
 #define S3C_PCM_RATES  SNDRV_PCM_RATE_8000_96000

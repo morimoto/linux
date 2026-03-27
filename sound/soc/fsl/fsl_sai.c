@@ -1026,6 +1026,18 @@ static int fsl_sai_dai_probe(struct snd_soc_dai *cpu_dai)
 	return 0;
 }
 
+static const u64 fsl_sai_selectable_formats =
+	SND_SOC_POSSIBLE_DAIFMT_I2S	|
+	SND_SOC_POSSIBLE_DAIFMT_RIGHT_J	|
+	SND_SOC_POSSIBLE_DAIFMT_LEFT_J	|
+	SND_SOC_POSSIBLE_DAIFMT_DSP_A	|
+	SND_SOC_POSSIBLE_DAIFMT_DSP_B	|
+	SND_SOC_POSSIBLE_DAIFMT_PDM	|
+	SND_SOC_POSSIBLE_DAIFMT_NB_NF	|
+	SND_SOC_POSSIBLE_DAIFMT_NB_IF	|
+	SND_SOC_POSSIBLE_DAIFMT_IB_NF	|
+	SND_SOC_POSSIBLE_DAIFMT_IB_IF;
+
 static const struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
 	.probe		= fsl_sai_dai_probe,
 	.set_bclk_ratio	= fsl_sai_set_dai_bclk_ratio,
@@ -1036,6 +1048,8 @@ static const struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
 	.hw_free	= fsl_sai_hw_free,
 	.trigger	= fsl_sai_trigger,
 	.startup	= fsl_sai_startup,
+	.auto_selectable_formats	= &fsl_sai_selectable_formats,
+	.num_auto_selectable_formats	= 1,
 };
 
 static const struct snd_soc_dai_ops fsl_sai_pcm_dai_tx_ops = {
@@ -1049,6 +1063,8 @@ static const struct snd_soc_dai_ops fsl_sai_pcm_dai_tx_ops = {
 	.hw_free	= fsl_sai_hw_free,
 	.trigger	= fsl_sai_trigger,
 	.startup	= fsl_sai_startup,
+	.auto_selectable_formats	= &fsl_sai_selectable_formats,
+	.num_auto_selectable_formats	= 1,
 };
 
 static const struct snd_soc_dai_ops fsl_sai_pcm_dai_rx_ops = {
@@ -1062,6 +1078,8 @@ static const struct snd_soc_dai_ops fsl_sai_pcm_dai_rx_ops = {
 	.hw_free	= fsl_sai_hw_free,
 	.trigger	= fsl_sai_trigger,
 	.startup	= fsl_sai_startup,
+	.auto_selectable_formats	= &fsl_sai_selectable_formats,
+	.num_auto_selectable_formats	= 1,
 };
 
 static int fsl_sai_dai_resume(struct snd_soc_component *component)

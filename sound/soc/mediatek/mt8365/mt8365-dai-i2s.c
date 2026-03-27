@@ -721,12 +721,22 @@ static const struct snd_soc_dai_ops mt8365_afe_i2s_ops = {
 	.prepare	= mt8365_dai_i2s_prepare,
 };
 
+static const u64 mt8365_dai_selectable_formats =
+	SND_SOC_POSSIBLE_DAIFMT_I2S	|
+	SND_SOC_POSSIBLE_DAIFMT_LEFT_J	|
+	SND_SOC_POSSIBLE_DAIFMT_NB_NF	|
+	SND_SOC_POSSIBLE_DAIFMT_NB_IF	|
+	SND_SOC_POSSIBLE_DAIFMT_IB_NF	|
+	SND_SOC_POSSIBLE_DAIFMT_IB_IF;
+
 static const struct snd_soc_dai_ops mt8365_afe_2nd_i2s_ops = {
 	.startup	= mt8365_dai_i2s_startup,
 	.shutdown	= mt8365_dai_i2s_shutdown,
 	.hw_params	= mt8365_afe_2nd_i2s_hw_params,
 	.prepare	= mt8365_dai_i2s_prepare,
 	.set_fmt	= mt8365_afe_2nd_i2s_set_fmt,
+	.auto_selectable_formats	= &mt8365_dai_selectable_formats,
+	.num_auto_selectable_formats	= 1,
 };
 
 static struct snd_soc_dai_driver mtk_dai_i2s_driver[] = {
