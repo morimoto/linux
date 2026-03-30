@@ -69,19 +69,8 @@ static inline int snd_soc_card_get_pci_ssid(struct snd_soc_card *card,
 }
 #endif /* CONFIG_PCI */
 
-static inline
 struct snd_soc_dai *snd_soc_card_get_codec_dai(struct snd_soc_card *card,
-					       const char *dai_name)
-{
-	struct snd_soc_pcm_runtime *rtd;
-
-	for_each_card_rtds(card, rtd) {
-		if (!strcmp(snd_soc_rtd_to_codec(rtd, 0)->name, dai_name))
-			return snd_soc_rtd_to_codec(rtd, 0);
-	}
-
-	return NULL;
-}
+					       const char *dai_name);
 
 void snd_soc_card_dapm_mutex_lock_root(struct snd_soc_card *card);
 void snd_soc_card_dapm_mutex_lock(struct snd_soc_card *card);
