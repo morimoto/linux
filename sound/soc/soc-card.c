@@ -1231,3 +1231,17 @@ int snd_soc_card_get_pci_ssid(struct snd_soc_card *card,
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_get_pci_ssid);
 #endif /* CONFIG_PCI */
+
+struct snd_soc_dai *snd_soc_card_get_codec_dai(struct snd_soc_card *card,
+					       const char *dai_name)
+{
+	struct snd_soc_pcm_runtime *rtd;
+
+	for_each_card_rtds(card, rtd) {
+		if (!strcmp(snd_soc_rtd_to_codec(rtd, 0)->name, dai_name))
+			return snd_soc_rtd_to_codec(rtd, 0);
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_get_codec_dai);
