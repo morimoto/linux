@@ -139,14 +139,15 @@ static int acp_asoc_probe(struct platform_device *pdev)
 		goto out;
 	}
 
-	card->drvdata = (struct acp_card_drvdata *)pdev->id_entry->driver_data;
-	acp_card_drvdata = card->drvdata;
+	acp_card_drvdata = (struct acp_card_drvdata *)pdev->id_entry->driver_data;
 	acp_card_drvdata->acpi_mach = (struct snd_soc_acpi_mach *)pdev->dev.platform_data;
+
+	snd_soc_card_set_priv(card, acp_card_drvdata);
 	card->dev = dev;
 	card->owner = THIS_MODULE;
 	card->name = pdev->id_entry->name;
 
-	acp_asoc_init_ops(card->drvdata);
+	acp_asoc_init_ops(acp_card_drvdata);
 
 	/* If widgets and controls are not set in specific callback,
 	 * they will be added per-codec in acp-mach-common.c
