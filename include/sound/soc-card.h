@@ -260,7 +260,7 @@ SOC_CARD_LIST_HEAD_DEFINE(dapm_dirty);
 	     component = snd_soc_component_from_component_list(snd_soc_component_to_component_list(component)->next))
 
 #define for_each_card_dapms(card, dapm)					\
-	list_for_each_entry(dapm, &card->dapm_list_head, dapm_list)
+	list_for_each_entry(dapm, snd_soc_card_to_dapm_list_head(card), dapm_list)
 
 #define for_each_card_widgets(card, w)					\
 	list_for_each_entry(w, &card->widget_list_head, widget_list)
