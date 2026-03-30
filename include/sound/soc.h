@@ -1369,36 +1369,8 @@ struct snd_soc_dai *snd_soc_find_dai_with_mutex(
 
 #include <sound/soc-dai.h>
 
-static inline
 int snd_soc_fixup_dai_links_platform_name(struct snd_soc_card *card,
-					  const char *platform_name)
-{
-	struct snd_soc_dai_link *dai_link;
-	const char *name;
-	int i;
-
-	if (!platform_name) /* nothing to do */
-		return 0;
-
-	/* set platform name for each dailink */
-	for_each_card_prelinks(card, i, dai_link) {
-		/* only single platform is supported for now */
-		if (dai_link->num_platforms != 1)
-			return -EINVAL;
-
-		if (!dai_link->platforms)
-			return -EINVAL;
-
-		name = devm_kstrdup(card->dev, platform_name, GFP_KERNEL);
-		if (!name)
-			return -ENOMEM;
-
-		/* only single platform is supported for now */
-		dai_link->platforms->name = name;
-	}
-
-	return 0;
-}
+					  const char *platform_name);
 
 #ifdef CONFIG_DEBUG_FS
 extern struct dentry *snd_soc_debugfs_root;
