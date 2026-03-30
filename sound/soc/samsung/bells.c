@@ -55,7 +55,7 @@ static int bells_set_bias_level(struct snd_soc_card *card,
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *codec_dai;
 	struct snd_soc_component *component;
-	struct bells_drvdata *bells = card->drvdata;
+	struct bells_drvdata *bells = snd_soc_card_to_priv(card);
 	int ret;
 
 	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[DAI_DSP_CODEC]);
@@ -101,7 +101,7 @@ static int bells_set_bias_level_post(struct snd_soc_card *card,
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *codec_dai;
 	struct snd_soc_component *component;
-	struct bells_drvdata *bells = card->drvdata;
+	struct bells_drvdata *bells = snd_soc_card_to_priv(card);
 	int ret;
 
 	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[DAI_DSP_CODEC]);
@@ -138,7 +138,7 @@ static int bells_set_bias_level_post(struct snd_soc_card *card,
 
 static int bells_late_probe(struct snd_soc_card *card)
 {
-	struct bells_drvdata *bells = card->drvdata;
+	struct bells_drvdata *bells = snd_soc_card_to_priv(card);
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_component *wm0010;
 	struct snd_soc_component *component;
@@ -422,7 +422,7 @@ static struct snd_soc_card bells_cards[] = {
 		.set_bias_level = bells_set_bias_level,
 		.set_bias_level_post = bells_set_bias_level_post,
 
-		.drvdata = &wm2200_drvdata,
+		.priv = &wm2200_drvdata,
 	},
 	{
 		.name = "Bells WM5102",
@@ -442,7 +442,7 @@ static struct snd_soc_card bells_cards[] = {
 		.set_bias_level = bells_set_bias_level,
 		.set_bias_level_post = bells_set_bias_level_post,
 
-		.drvdata = &wm5102_drvdata,
+		.priv = &wm5102_drvdata,
 	},
 	{
 		.name = "Bells WM5110",
@@ -462,7 +462,7 @@ static struct snd_soc_card bells_cards[] = {
 		.set_bias_level = bells_set_bias_level,
 		.set_bias_level_post = bells_set_bias_level_post,
 
-		.drvdata = &wm5110_drvdata,
+		.priv = &wm5110_drvdata,
 	},
 };
 
