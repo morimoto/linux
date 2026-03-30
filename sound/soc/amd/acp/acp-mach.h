@@ -24,7 +24,7 @@
 
 #define ACP_OPS(priv, cb)	((priv)->ops.cb)
 
-#define acp_get_drvdata(card) ((struct acp_card_drvdata *)(card)->drvdata)
+#define acp_get_drvdata(card)	((struct acp_card_drvdata *)snd_soc_card_to_priv(card))
 
 /* List of DMI quirks - check acp-mach-common.c for usage. */
 #define QUIRK_TDM_MODE_ENABLE 1
