@@ -33,6 +33,17 @@ struct snd_soc_dapm_context *snd_soc_card_to_dapm(struct snd_soc_card *card)
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_to_dapm);
 
+void snd_soc_card_set_priv(struct snd_soc_card *card, void *data)
+{
+	card->priv = data;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_set_priv);
+
+void *snd_soc_card_to_priv(struct snd_soc_card *card)
+{
+	return card->priv;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_to_priv);
 
 #ifdef CONFIG_DEBUG_FS
 static void snd_soc_card_debugfs_init(struct snd_soc_card *card)

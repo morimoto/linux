@@ -178,7 +178,7 @@ out:
 static void sam9x5_wm8731_driver_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
-	struct sam9x5_drvdata *priv = card->drvdata;
+	struct sam9x5_drvdata *priv = snd_soc_card_to_priv(card);
 
 	atmel_ssc_put_audio(priv->ssc_id);
 }

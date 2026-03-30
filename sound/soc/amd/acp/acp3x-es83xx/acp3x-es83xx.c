@@ -418,7 +418,7 @@ static int acp3x_es83xx_probe(struct snd_soc_card *card)
 		struct acpi_device *adev;
 		struct device *codec_dev;
 
-		acp_drvdata = (struct acp_card_drvdata *)card->drvdata;
+		acp_drvdata = snd_soc_card_to_priv(card);
 
 		dev_info(dev, "matched DMI table with this system, trying to register sound card\n");
 

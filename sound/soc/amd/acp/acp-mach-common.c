@@ -124,7 +124,7 @@ static int acp_card_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_component *component = codec_dai->component;
 	int ret;
@@ -187,7 +187,7 @@ static int acp_card_hs_startup(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	int ret;
 	unsigned int fmt;
@@ -221,7 +221,7 @@ static void acp_card_shutdown(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 
 	if (!drvdata->soc_mclk)
 		clk_disable_unprepare(drvdata->wclk);
@@ -232,7 +232,7 @@ static int acp_card_rt5682_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	int ret;
@@ -371,7 +371,7 @@ static int acp_card_rt5682s_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_component *component = codec_dai->component;
 	int ret;
@@ -436,7 +436,7 @@ static int acp_card_rt5682s_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 	struct snd_soc_card *card = rtd->card;
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	int ret;
@@ -601,7 +601,7 @@ static int acp_card_rt1019_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	int ret;
 
 	if (drvdata->amp_codec_id != RT1019)
@@ -630,7 +630,7 @@ static int acp_card_rt1019_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 	struct snd_soc_card *card = rtd->card;
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	int i, ret = 0;
@@ -767,7 +767,7 @@ static int acp_card_maxim_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	int ret;
 
 	if (drvdata->amp_codec_id != MAX98360A)
@@ -796,7 +796,7 @@ static int acp_card_maxim_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 	struct snd_soc_card *card = rtd->card;
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	unsigned int fmt, srate, ch, format;
 	int ret;
@@ -904,7 +904,7 @@ static int acp_card_max98388_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	int ret;
 
 	if (drvdata->amp_codec_id != MAX98388)
@@ -984,7 +984,7 @@ static int acp_card_nau8825_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_component *component = codec_dai->component;
 	int ret;
@@ -1039,7 +1039,7 @@ static int acp_nau8825_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	int ret;
@@ -1263,7 +1263,7 @@ static int acp_nau8821_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	int ret;
 	unsigned int fmt;
@@ -1359,7 +1359,7 @@ static int acp_rtk_set_bias_level(struct snd_soc_card *card,
 				  enum snd_soc_bias_level level)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct acp_card_drvdata *drvdata = card->drvdata;
+	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	int ret = 0;
 
 	if (!component)
@@ -1402,8 +1402,9 @@ int acp_sofdsp_dai_links_create(struct snd_soc_card *card)
 {
 	struct snd_soc_dai_link *links;
 	struct device *dev = card->dev;
-	struct acp_card_drvdata *drv_data = card->drvdata;
+	struct acp_card_drvdata *drv_data = snd_soc_card_to_priv(card);
 	const struct dmi_system_id *dmi_id = dmi_first_match(acp_quirk_table);
+
 	int i = 0, num_links = 0;
 
 	if (drv_data->hs_cpu_id)
@@ -1612,7 +1613,7 @@ int acp_legacy_dai_links_create(struct snd_soc_card *card)
 {
 	struct snd_soc_dai_link *links;
 	struct device *dev = card->dev;
-	struct acp_card_drvdata *drv_data = card->drvdata;
+	struct acp_card_drvdata *drv_data = snd_soc_card_to_priv(card);
 	int i = 0, num_links = 0;
 	int rc;
 
