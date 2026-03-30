@@ -245,10 +245,14 @@ SOC_CARD_LIST_HEAD_DEFINE(dapm_dirty);
 	list_for_each_entry_safe(rtd, _rtd, snd_soc_card_to_rtd_list_head(card), rtd_list)
 
 #define for_each_card_auxs(card, component)				\
-	list_for_each_entry(component, &card->aux_list_head, aux_list)
+	for (component = snd_soc_component_from_aux_list(snd_soc_card_to_aux_list_head(card)->next); \
+	     snd_soc_component_to_aux_list(component) != snd_soc_card_to_aux_list_head(card); \
+	     component = snd_soc_component_from_aux_list(snd_soc_component_to_aux_list(component)->next))
 #define for_each_card_auxs_safe(card, component, _comp)			\
-	list_for_each_entry_safe(component, _comp,			\
-				 &card->aux_list_head, aux_list)
+	for (component = snd_soc_component_from_aux_list(snd_soc_card_to_aux_list_head(card)->next), \
+	     _comp = snd_soc_component_from_aux_list(snd_soc_component_to_aux_list(component)->next); \
+	     snd_soc_component_to_aux_list(component) != snd_soc_card_to_aux_list_head(card); \
+	     component = _comp, _comp = snd_soc_component_from_aux_list(snd_soc_component_to_aux_list(component)->next))
 
 #define for_each_card_components(card, component)			\
 	list_for_each_entry(component, &(card)->component_list_head, component_list)
