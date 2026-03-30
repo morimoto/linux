@@ -1063,7 +1063,7 @@ struct snd_soc_card {
 	unsigned int component_chaining:1;
 	struct device *devres_dev;
 
-	void *drvdata;
+	void *priv;
 };
 #define for_each_card_prelinks(card, i, link)				\
 	for ((i) = 0;							\

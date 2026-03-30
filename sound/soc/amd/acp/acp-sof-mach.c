@@ -105,10 +105,10 @@ static int acp_sof_probe(struct platform_device *pdev)
 	card->dev = dev;
 	card->owner = THIS_MODULE;
 	card->name = pdev->id_entry->name;
-	card->drvdata = (struct acp_card_drvdata *)pdev->id_entry->driver_data;
+	snd_soc_card_set_priv(card, (void *)pdev->id_entry->driver_data);
 	/* Widgets and controls added per-codec in acp-mach-common.c */
 
-	acp_card_drvdata = card->drvdata;
+	acp_card_drvdata = snd_soc_card_to_priv(card);
 	dmi_id = dmi_first_match(acp_quirk_table);
 	if (dmi_id && dmi_id->driver_data == (void *)QUIRK_TDM_MODE_ENABLE)
 		acp_card_drvdata->tdm_mode = dmi_id->driver_data;
