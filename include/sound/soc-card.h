@@ -263,9 +263,9 @@ SOC_CARD_LIST_HEAD_DEFINE(dapm_dirty);
 	list_for_each_entry(dapm, snd_soc_card_to_dapm_list_head(card), dapm_list)
 
 #define for_each_card_widgets(card, w)					\
-	list_for_each_entry(w, &card->widget_list_head, widget_list)
+	list_for_each_entry(w, snd_soc_card_to_widget_list_head(card), widget_list)
 #define for_each_card_widgets_safe(card, w, _w)				\
-	list_for_each_entry_safe(w, _w, &card->widget_list_head, widget_list)
+	list_for_each_entry_safe(w, _w, snd_soc_card_to_widget_list_head(card), widget_list)
 
 /* REMOVE ME */
 #define snd_soc_card_set_drvdata	snd_soc_card_set_priv
