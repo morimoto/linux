@@ -85,18 +85,6 @@ static inline int snd_soc_card_get_pci_ssid(struct snd_soc_card *card,
 }
 #endif /* CONFIG_PCI */
 
-/* device driver data */
-static inline void snd_soc_card_set_drvdata(struct snd_soc_card *card,
-					    void *data)
-{
-	card->drvdata = data;
-}
-
-static inline void *snd_soc_card_get_drvdata(struct snd_soc_card *card)
-{
-	return card->drvdata;
-}
-
 static inline
 struct snd_soc_dai *snd_soc_card_get_codec_dai(struct snd_soc_card *card,
 					       const char *dai_name)
@@ -118,5 +106,11 @@ void snd_soc_card_dapm_mutex_assert_held(struct snd_soc_card *card);
 
 int snd_soc_card_is_instantiated(struct snd_soc_card *card);
 struct snd_soc_dapm_context *snd_soc_card_to_dapm(struct snd_soc_card *card);
+void *snd_soc_card_to_priv(struct snd_soc_card *card);
+void snd_soc_card_set_priv(struct snd_soc_card *card, void *data);
+
+/* REMOVE ME */
+#define snd_soc_card_set_drvdata	snd_soc_card_set_priv
+#define snd_soc_card_get_drvdata	snd_soc_card_to_priv
 
 #endif /* __SOC_CARD_H */
