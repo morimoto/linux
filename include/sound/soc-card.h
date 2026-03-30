@@ -240,9 +240,9 @@ SOC_CARD_LIST_HEAD_DEFINE(dapm_dirty);
 	     (i)++)
 
 #define for_each_card_rtds(card, rtd)					\
-	list_for_each_entry(rtd, &(card)->rtd_list_head, rtd_list)
+	list_for_each_entry(rtd, snd_soc_card_to_rtd_list_head(card), rtd_list)
 #define for_each_card_rtds_safe(card, rtd, _rtd)			\
-	list_for_each_entry_safe(rtd, _rtd, &(card)->rtd_list_head, rtd_list)
+	list_for_each_entry_safe(rtd, _rtd, snd_soc_card_to_rtd_list_head(card), rtd_list)
 
 #define for_each_card_auxs(card, component)				\
 	list_for_each_entry(component, &card->aux_list_head, aux_list)
