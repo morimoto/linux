@@ -59,6 +59,7 @@ int snd_soc_component_probe(struct snd_soc_card *card, struct snd_soc_component 
 struct list_head *snd_soc_component_get_list_head(void);
 void snd_soc_component_of_put(struct snd_soc_dai_link_component *component);
 void snd_soc_component_connect_dai(struct snd_soc_component *component, struct snd_soc_dai *dai);
+void snd_soc_component_active_action(struct snd_soc_component *component, int action);
 
 #define for_each_component(component)					\
 	list_for_each_entry(component, snd_soc_component_get_list_head(), list)
