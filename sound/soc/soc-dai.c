@@ -715,7 +715,6 @@ void snd_soc_dai_active_action(struct snd_soc_dai *dai, int stream, int action)
 	/* see snd_soc_component_active() */
 	dai->component->active		+= action;
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_active_action);
 
 unsigned int snd_soc_dai_active_stream(const struct snd_soc_dai *dai, int stream)
 {
