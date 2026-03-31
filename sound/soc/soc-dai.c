@@ -713,7 +713,7 @@ void snd_soc_dai_active_action(struct snd_soc_dai *dai, int stream, int action)
 	dai->stream[stream].active	+= action;
 
 	/* see snd_soc_component_active() */
-	dai->component->active		+= action;
+	snd_soc_component_active_action(dai->component, action);
 }
 
 unsigned int snd_soc_dai_active_stream(const struct snd_soc_dai *dai, int stream)
