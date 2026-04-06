@@ -134,7 +134,7 @@ struct scmi_protocol_instance {
  *	       usage.
  * @protocols_mtx: A mutex to protect protocols instances initialization.
  * @protocols_imp: List of protocols implemented, currently maximum of
- *		   scmi_revision_info.num_protocols elements allocated by the
+ *		   scmi_base_info.num_protocols elements allocated by the
  *		   base protocol
  * @active_protocols: IDR storing device_nodes for protocols actually defined
  *		      in the DT and confirmed as implemented by fw.
@@ -152,7 +152,7 @@ struct scmi_info {
 	int id;
 	struct device *dev;
 	const struct scmi_desc *desc;
-	struct scmi_revision_info version;
+	struct scmi_base_info version;
 	struct scmi_handle handle;
 	struct scmi_xfers_info tx_minfo;
 	struct scmi_xfers_info rx_minfo;
@@ -266,7 +266,7 @@ scmi_vendor_protocol_lookup(int protocol_id, char *vendor_id,
 }
 
 static const struct scmi_protocol *
-scmi_vendor_protocol_get(int protocol_id, struct scmi_revision_info *version)
+scmi_vendor_protocol_get(int protocol_id, struct scmi_base_info *version)
 {
 	const struct scmi_protocol *proto;
 
@@ -304,7 +304,7 @@ scmi_vendor_protocol_get(int protocol_id, struct scmi_revision_info *version)
 }
 
 static const struct scmi_protocol *
-scmi_protocol_get(int protocol_id, struct scmi_revision_info *version)
+scmi_protocol_get(int protocol_id, struct scmi_base_info *version)
 {
 	const struct scmi_protocol *proto = NULL;
 
@@ -2067,7 +2067,7 @@ static const struct scmi_proto_helpers_ops helpers_ops = {
  * Return: A reference to the version memory area associated to the SCMI
  *	   instance underlying this protocol handle.
  */
-struct scmi_revision_info *
+struct scmi_base_info *
 scmi_revision_area_get(const struct scmi_protocol_handle *ph)
 {
 	const struct scmi_protocol_instance *pi = ph_to_pi(ph);
@@ -2319,7 +2319,7 @@ scmi_is_protocol_implemented(const struct scmi_handle *handle, u8 prot_id)
 {
 	int i;
 	struct scmi_info *info = handle_to_scmi_info(handle);
-	struct scmi_revision_info *rev = handle->version;
+	struct scmi_base_info *rev = handle->version;
 
 	if (!info->protocols_imp)
 		return false;
@@ -3135,7 +3135,7 @@ static const struct scmi_desc *scmi_transport_setup(struct device *dev)
 
 static void scmi_enable_matching_quirks(struct scmi_info *info)
 {
-	struct scmi_revision_info *rev = &info->version;
+	struct scmi_base_info *rev = &info->version;
 
 	dev_dbg(info->dev, "Looking for quirks matching: %s/%s/0x%08X\n",
 		rev->vendor_id, rev->sub_vendor_id, rev->impl_ver);
