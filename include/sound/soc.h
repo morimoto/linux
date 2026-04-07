@@ -1274,7 +1274,6 @@ static inline unsigned int snd_soc_enum_item_to_val(const struct soc_enum *e,
 int snd_soc_util_init(void);
 void snd_soc_util_exit(void);
 
-int snd_soc_of_parse_pin_switches(struct snd_soc_card *card, const char *prop);
 int snd_soc_of_get_slot_mask(struct device_node *np,
 			     const char *prop_name,
 			     unsigned int *mask);
@@ -1415,6 +1414,7 @@ static inline void _snd_soc_dapm_mutex_assert_held_d(struct snd_soc_dapm_context
 #define devm_snd_soc_register_deferrable_card		devm_snd_soc_register_card
 #define snd_soc_of_parse_audio_simple_widgets		snd_soc_card_of_parse_simple_widgets
 #define snd_soc_of_parse_card_name			snd_soc_card_of_parse_name
+#define snd_soc_of_parse_pin_switches			snd_soc_card_of_parse_pin_switches
 
 int snd_soc_register_card(struct snd_soc_card *card);
 void snd_soc_unregister_card(struct snd_soc_card *card);
