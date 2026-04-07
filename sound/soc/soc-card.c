@@ -624,7 +624,7 @@ static void snd_soc_card_cleanup_resources(struct snd_soc_card *card)
 		if (rtd->initialized)
 			snd_soc_link_exit(rtd);
 	/* flush delayed work before removing DAIs and DAPM widgets */
-	snd_soc_flush_all_delayed_work(card);
+	snd_soc_card_flush_all_delayed_work(card);
 
 	/* remove and free each DAI */
 	snd_soc_card_link_dais_remove(card);
@@ -1260,3 +1260,11 @@ struct snd_soc_dai *snd_soc_card_get_codec_dai(struct snd_soc_card *card,
 	return NULL;
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_get_codec_dai);
+
+void snd_soc_card_flush_all_delayed_work(struct snd_soc_card *card)
+{
+	struct snd_soc_pcm_runtime *rtd;
+
+	for_each_card_rtds(card, rtd)
+		flush_delayed_work(&rtd->delayed_work);
+}
