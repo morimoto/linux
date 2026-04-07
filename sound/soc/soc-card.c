@@ -1488,3 +1488,53 @@ int snd_soc_card_of_parse_pin_switches(struct snd_soc_card *card, const char *pr
 	return 0;
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_of_parse_pin_switches);
+
+int snd_soc_card_of_parse_audio_routing(struct snd_soc_card *card, const char *propname)
+{
+	struct device_node *np = card->dev->of_node;
+	int num_routes;
+	struct snd_soc_dapm_route *routes;
+	int i;
+
+	num_routes = of_property_count_strings(np, propname);
+	if (num_routes < 0 || num_routes & 1) {
+		dev_err(card->dev,
+			"ASoC: Property '%s' does not exist or its length is not even\n",
+			propname);
+		return -EINVAL;
+	}
+	num_routes /= 2;
+
+	routes = devm_kcalloc(card->dev, num_routes, sizeof(*routes),
+			      GFP_KERNEL);
+	if (!routes) {
+		dev_err(card->dev,
+			"ASoC: Could not allocate DAPM route table\n");
+		return -ENOMEM;
+	}
+
+	for (i = 0; i < num_routes; i++) {
+		int ret = of_property_read_string_index(np, propname,
+							2 * i, &routes[i].sink);
+		if (ret) {
+			dev_err(card->dev,
+				"ASoC: Property '%s' index %d could not be read: %d\n",
+				propname, 2 * i, ret);
+			return -EINVAL;
+		}
+		ret = of_property_read_string_index(np, propname,
+						    (2 * i) + 1, &routes[i].source);
+		if (ret) {
+			dev_err(card->dev,
+				"ASoC: Property '%s' index %d could not be read: %d\n",
+				propname, (2 * i) + 1, ret);
+			return -EINVAL;
+		}
+	}
+
+	card->num_of_dapm_routes = num_routes;
+	card->of_dapm_routes = routes;
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_of_parse_audio_routing);
