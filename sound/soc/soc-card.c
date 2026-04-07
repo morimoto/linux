@@ -45,6 +45,21 @@ void *snd_soc_card_to_priv(struct snd_soc_card *card)
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_to_priv);
 
+struct snd_soc_pcm_runtime *snd_soc_card_to_rtd(struct snd_soc_card *card,
+						struct snd_soc_dai_link *dai_link)
+{
+	struct snd_soc_pcm_runtime *rtd;
+
+	for_each_card_rtds(card, rtd) {
+		if (rtd->dai_link == dai_link)
+			return rtd;
+	}
+	dev_dbg(card->dev, "ASoC: failed to find rtd %s\n", dai_link->name);
+
+	return NULL;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_to_rtd);
+
 #ifdef CONFIG_DEBUG_FS
 static void snd_soc_card_debugfs_init(struct snd_soc_card *card)
 {
