@@ -1276,8 +1276,6 @@ void snd_soc_util_exit(void);
 
 int snd_soc_of_parse_card_name(struct snd_soc_card *card,
 			       const char *propname);
-int snd_soc_of_parse_audio_simple_widgets(struct snd_soc_card *card,
-					  const char *propname);
 int snd_soc_of_parse_pin_switches(struct snd_soc_card *card, const char *prop);
 int snd_soc_of_get_slot_mask(struct device_node *np,
 			     const char *prop_name,
@@ -1417,6 +1415,7 @@ static inline void _snd_soc_dapm_mutex_assert_held_d(struct snd_soc_dapm_context
 #define snd_soc_add_component_controls			snd_soc_component_add_controls
 #define snd_soc_add_card_controls			snd_soc_card_add_controls
 #define devm_snd_soc_register_deferrable_card		devm_snd_soc_register_card
+#define snd_soc_of_parse_audio_simple_widgets		snd_soc_card_of_parse_simple_widgets
 
 int snd_soc_register_card(struct snd_soc_card *card);
 void snd_soc_unregister_card(struct snd_soc_card *card);
