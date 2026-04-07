@@ -556,7 +556,7 @@ int snd_soc_resume(struct device *dev)
 			pinctrl_pm_select_default_state(component->dev);
 
 	dev_dbg(dev, "ASoC: Scheduling resume work\n");
-	if (!schedule_work(&card->deferred_resume_work))
+	if (!snd_soc_card_deferred_resume(card))
 		dev_err(dev, "ASoC: resume work item may be lost\n");
 
 	return 0;
