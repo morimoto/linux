@@ -47,6 +47,8 @@ int snd_soc_card_add_dai_link(struct snd_soc_card *card,
 void snd_soc_card_remove_dai_link(struct snd_soc_card *card,
 				  struct snd_soc_dai_link *dai_link);
 
+int snd_soc_card_of_parse_simple_widgets(struct snd_soc_card *card, const char *propname);
+
 #ifdef CONFIG_PCI
 void snd_soc_card_set_pci_ssid(struct snd_soc_card *card,
 			       unsigned short vendor,
