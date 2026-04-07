@@ -1240,37 +1240,6 @@ char *snd_soc_fmt_multiple_name(struct device *dev, struct snd_soc_dai_driver *d
 	return devm_kstrdup(dev, dai_drv->name, GFP_KERNEL);
 }
 
-/* Retrieve a card's name from device tree */
-int snd_soc_of_parse_card_name(struct snd_soc_card *card,
-			       const char *propname)
-{
-	struct device_node *np;
-	int ret;
-
-	if (!card->dev) {
-		pr_err("card->dev is not set before calling %s\n", __func__);
-		return -EINVAL;
-	}
-
-	np = card->dev->of_node;
-
-	ret = of_property_read_string_index(np, propname, 0, &card->name);
-	/*
-	 * EINVAL means the property does not exist. This is fine providing
-	 * card->name was previously set, which is checked later in
-	 * snd_soc_register_card.
-	 */
-	if (ret < 0 && ret != -EINVAL) {
-		dev_err(card->dev,
-			"ASoC: Property '%s' could not be read: %d\n",
-			propname, ret);
-		return ret;
-	}
-
-	return 0;
-}
-EXPORT_SYMBOL_GPL(snd_soc_of_parse_card_name);
-
 int snd_soc_of_parse_pin_switches(struct snd_soc_card *card, const char *prop)
 {
 	const unsigned int nb_controls_max = 16;
