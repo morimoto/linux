@@ -49,6 +49,7 @@ void snd_soc_card_remove_dai_link(struct snd_soc_card *card,
 
 int snd_soc_card_of_parse_simple_widgets(struct snd_soc_card *card, const char *propname);
 int snd_soc_card_of_parse_name(struct snd_soc_card *card, const char *propname);
+int snd_soc_card_of_parse_pin_switches(struct snd_soc_card *card, const char *propname);
 
 #ifdef CONFIG_PCI
 void snd_soc_card_set_pci_ssid(struct snd_soc_card *card,
