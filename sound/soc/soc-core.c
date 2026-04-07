@@ -406,14 +406,6 @@ free_rtd:
 	return NULL;
 }
 
-void soc_flush_all_delayed_work(struct snd_soc_card *card)
-{
-	struct snd_soc_pcm_runtime *rtd;
-
-	for_each_card_rtds(card, rtd)
-		flush_delayed_work(&rtd->delayed_work);
-}
-
 #ifdef CONFIG_PM_SLEEP
 void soc_playback_digital_mute(struct snd_soc_card *card, int mute)
 {
@@ -484,7 +476,7 @@ int snd_soc_suspend(struct device *dev)
 	snd_soc_card_suspend_pre(card);
 
 	/* close any waiting streams */
-	soc_flush_all_delayed_work(card);
+	snd_soc_card_flush_all_delayed_work(card);
 
 	soc_dapm_suspend_resume(card, SND_SOC_DAPM_STREAM_SUSPEND);
 
@@ -1089,7 +1081,7 @@ int snd_soc_poweroff(struct device *dev)
 	 * Flush out pmdown_time work - we actually do want to run it
 	 * now, we're shutting down so no imminent restart.
 	 */
-	soc_flush_all_delayed_work(card);
+	snd_soc_card_flush_all_delayed_work(card);
 
 	snd_soc_dapm_shutdown(card);
 

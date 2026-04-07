@@ -44,6 +44,7 @@ void snd_soc_card_mutex_unlock(struct snd_soc_card *card);
 void snd_soc_card_dpcm_mutex_lock(struct snd_soc_card *card);
 void snd_soc_card_dpcm_mutex_unlock(struct snd_soc_card *card);
 void snd_soc_card_dpcm_mutex_assert_held(struct snd_soc_card *card);
+void snd_soc_card_flush_all_delayed_work(struct snd_soc_card *card);
 
 /*
  * In soc-dai
