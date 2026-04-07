@@ -81,9 +81,12 @@ int snd_soc_card_is_instantiated(struct snd_soc_card *card);
 struct snd_soc_dapm_context *snd_soc_card_to_dapm(struct snd_soc_card *card);
 void *snd_soc_card_to_priv(struct snd_soc_card *card);
 void snd_soc_card_set_priv(struct snd_soc_card *card, void *data);
+struct snd_soc_pcm_runtime *snd_soc_card_to_rtd(struct snd_soc_card *card,
+						 struct snd_soc_dai_link *dai_link);
 
 /* REMOVE ME */
 #define snd_soc_card_set_drvdata	snd_soc_card_set_priv
 #define snd_soc_card_get_drvdata	snd_soc_card_to_priv
+#define snd_soc_get_pcm_runtime		snd_soc_card_to_rtd
 
 #endif /* __SOC_CARD_H */
