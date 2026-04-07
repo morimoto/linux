@@ -130,6 +130,12 @@ static void snd_soc_card_resume_init(struct snd_soc_card *card)
 	/* deferred resume work */
 	INIT_WORK(&card->deferred_resume_work, snd_soc_card_resume_deferred);
 }
+
+int snd_soc_card_deferred_resume(struct snd_soc_card *card)
+{
+	return schedule_work(&card->deferred_resume_work);
+}
+
 #else
 static inline void snd_soc_card_resume_init(struct snd_soc_card *card) { }
 #endif /* CONFIG_PM_SLEEP */
