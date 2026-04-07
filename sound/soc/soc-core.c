@@ -389,11 +389,8 @@ static struct snd_soc_pcm_runtime *soc_new_pcm_runtime(
 	 */
 	rtd->card	= card;
 	rtd->dai_link	= dai_link;
-	rtd->id		= card->num_rtd++;
+	rtd->id		= snd_soc_card_connect_rtd(card, rtd);
 	rtd->pmdown_time = pmdown_time;			/* default power off timeout */
-
-	/* see for_each_card_rtds */
-	list_add_tail(&rtd->rtd_list, &card->rtd_list_head);
 
 	ret = device_add_groups(dev, soc_dev_attr_groups);
 	if (ret < 0)
