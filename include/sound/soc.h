@@ -458,9 +458,6 @@ static inline int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 }
 #endif
 
-struct snd_soc_pcm_runtime *snd_soc_get_pcm_runtime(struct snd_soc_card *card,
-				struct snd_soc_dai_link *dai_link);
-
 bool snd_soc_runtime_ignore_pmdown_time(struct snd_soc_pcm_runtime *rtd);
 
 void snd_soc_runtime_action(struct snd_soc_pcm_runtime *rtd,
