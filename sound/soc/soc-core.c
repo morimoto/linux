@@ -241,21 +241,6 @@ struct snd_soc_component *snd_soc_rtdcom_lookup(struct snd_soc_pcm_runtime *rtd,
 }
 EXPORT_SYMBOL_GPL(snd_soc_rtdcom_lookup);
 
-struct snd_soc_pcm_runtime
-*snd_soc_get_pcm_runtime(struct snd_soc_card *card,
-			 struct snd_soc_dai_link *dai_link)
-{
-	struct snd_soc_pcm_runtime *rtd;
-
-	for_each_card_rtds(card, rtd) {
-		if (rtd->dai_link == dai_link)
-			return rtd;
-	}
-	dev_dbg(card->dev, "ASoC: failed to find rtd %s\n", dai_link->name);
-	return NULL;
-}
-EXPORT_SYMBOL_GPL(snd_soc_get_pcm_runtime);
-
 /*
  * Power down the audio subsystem pmdown_time msecs after close is called.
  * This is to ensure there are no pops or clicks in between any music tracks
