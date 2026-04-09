@@ -143,14 +143,14 @@ static const struct snd_kcontrol_new acp3x_es83xx_controls[] = {
 	SOC_DAPM_PIN_SWITCH("Internal Mic"),
 };
 
-static int acp3x_es83xx_configure_widgets(struct snd_soc_card *card)
+static int acp3x_es83xx_configure_widgets(struct snd_soc_card_driver *card_driver)
 {
-	card->dapm_widgets = acp3x_es83xx_widgets;
-	card->num_dapm_widgets = ARRAY_SIZE(acp3x_es83xx_widgets);
-	card->controls = acp3x_es83xx_controls;
-	card->num_controls = ARRAY_SIZE(acp3x_es83xx_controls);
-	card->dapm_routes = acp3x_es83xx_audio_map;
-	card->num_dapm_routes = ARRAY_SIZE(acp3x_es83xx_audio_map);
+	card_driver->dapm_widgets = acp3x_es83xx_widgets;
+	card_driver->num_dapm_widgets = ARRAY_SIZE(acp3x_es83xx_widgets);
+	card_driver->controls = acp3x_es83xx_controls;
+	card_driver->num_controls = ARRAY_SIZE(acp3x_es83xx_controls);
+	card_driver->dapm_routes = acp3x_es83xx_audio_map;
+	card_driver->num_dapm_routes = ARRAY_SIZE(acp3x_es83xx_audio_map);
 
 	return 0;
 }
