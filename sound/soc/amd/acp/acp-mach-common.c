@@ -1398,7 +1398,8 @@ static int acp_rtk_set_bias_level(struct snd_soc_card *card,
 	return ret;
 }
 
-int acp_sofdsp_dai_links_create(struct snd_soc_card *card)
+int acp_sofdsp_dai_links_create(struct snd_soc_card *card,
+				struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *links;
 	struct device *dev = card->dev;
@@ -1509,8 +1510,8 @@ int acp_sofdsp_dai_links_create(struct snd_soc_card *card)
 			links[i].num_codecs = ARRAY_SIZE(rt1019);
 			links[i].ops = &acp_card_rt1019_ops;
 			links[i].init = acp_card_rt1019_init;
-			card->codec_conf = rt1019_conf;
-			card->num_configs = ARRAY_SIZE(rt1019_conf);
+			card_driver->codec_conf = rt1019_conf;
+			card_driver->num_configs = ARRAY_SIZE(rt1019_conf);
 		}
 		if (drv_data->amp_codec_id == MAX98360A) {
 			links[i].codecs = max98360a;
@@ -1548,16 +1549,16 @@ int acp_sofdsp_dai_links_create(struct snd_soc_card *card)
 			links[i].num_codecs = ARRAY_SIZE(max98388);
 			links[i].ops = &acp_max98388_ops;
 			links[i].init = acp_card_max98388_init;
-			card->codec_conf = max98388_conf;
-			card->num_configs = ARRAY_SIZE(max98388_conf);
+			card_driver->codec_conf = max98388_conf;
+			card_driver->num_configs = ARRAY_SIZE(max98388_conf);
 		}
 		if (drv_data->amp_codec_id == RT1019) {
 			links[i].codecs = rt1019;
 			links[i].num_codecs = ARRAY_SIZE(rt1019);
 			links[i].ops = &acp_card_rt1019_ops;
 			links[i].init = acp_card_rt1019_init;
-			card->codec_conf = rt1019_conf;
-			card->num_configs = ARRAY_SIZE(rt1019_conf);
+			card_driver->codec_conf = rt1019_conf;
+			card_driver->num_configs = ARRAY_SIZE(rt1019_conf);
 		}
 		i++;
 	}
@@ -1601,15 +1602,16 @@ int acp_sofdsp_dai_links_create(struct snd_soc_card *card)
 		}
 	}
 
-	card->dai_link = links;
-	card->num_links = num_links;
-	card->set_bias_level = acp_rtk_set_bias_level;
+	card_driver->dai_link = links;
+	card_driver->num_links = num_links;
+	card_driver->set_bias_level = acp_rtk_set_bias_level;
 
 	return 0;
 }
 EXPORT_SYMBOL_NS_GPL(acp_sofdsp_dai_links_create, "SND_SOC_AMD_MACH");
 
-int acp_legacy_dai_links_create(struct snd_soc_card *card)
+int acp_legacy_dai_links_create(struct snd_soc_card *card,
+				struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *links;
 	struct device *dev = card->dev;
@@ -1720,8 +1722,8 @@ int acp_legacy_dai_links_create(struct snd_soc_card *card)
 			links[i].num_codecs = ARRAY_SIZE(rt1019);
 			links[i].ops = &acp_card_rt1019_ops;
 			links[i].init = acp_card_rt1019_init;
-			card->codec_conf = rt1019_conf;
-			card->num_configs = ARRAY_SIZE(rt1019_conf);
+			card_driver->codec_conf = rt1019_conf;
+			card_driver->num_configs = ARRAY_SIZE(rt1019_conf);
 		}
 		if (drv_data->amp_codec_id == MAX98360A) {
 			links[i].codecs = max98360a;
@@ -1769,8 +1771,8 @@ int acp_legacy_dai_links_create(struct snd_soc_card *card)
 			links[i].num_codecs = ARRAY_SIZE(rt1019);
 			links[i].ops = &acp_card_rt1019_ops;
 			links[i].init = acp_card_rt1019_init;
-			card->codec_conf = rt1019_conf;
-			card->num_configs = ARRAY_SIZE(rt1019_conf);
+			card_driver->codec_conf = rt1019_conf;
+			card_driver->num_configs = ARRAY_SIZE(rt1019_conf);
 		}
 		i++;
 	}
@@ -1813,9 +1815,9 @@ int acp_legacy_dai_links_create(struct snd_soc_card *card)
 		links[i].capture_only = 1;
 	}
 
-	card->dai_link = links;
-	card->num_links = num_links;
-	card->set_bias_level = acp_rtk_set_bias_level;
+	card_driver->dai_link = links;
+	card_driver->num_links = num_links;
+	card_driver->set_bias_level = acp_rtk_set_bias_level;
 
 	return 0;
 }
