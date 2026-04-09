@@ -60,7 +60,7 @@ enum codec_endpoints {
 struct acp_mach_ops {
 	int (*probe)(struct snd_soc_card *card);
 	int (*configure_link)(struct snd_soc_card *card, struct snd_soc_dai_link *dai_link);
-	int (*configure_widgets)(struct snd_soc_card *card);
+	int (*configure_widgets)(struct snd_soc_card_driver *card_driver);
 	int (*suspend_pre)(struct snd_soc_card *card);
 	int (*resume_post)(struct snd_soc_card *card);
 };
@@ -85,8 +85,10 @@ struct acp_card_drvdata {
 	bool tdm_mode;
 };
 
-int acp_sofdsp_dai_links_create(struct snd_soc_card *card);
-int acp_legacy_dai_links_create(struct snd_soc_card *card);
+int acp_sofdsp_dai_links_create(struct snd_soc_card *card,
+				struct snd_soc_card_driver *card_driver);
+int acp_legacy_dai_links_create(struct snd_soc_card *card,
+				struct snd_soc_card_driver *card_driver);
 extern const struct dmi_system_id acp_quirk_table[];
 
 static inline int acp_ops_probe(struct snd_soc_card *card)
@@ -110,13 +112,14 @@ static inline int acp_ops_configure_link(struct snd_soc_card *card,
 	return ret;
 }
 
-static inline int acp_ops_configure_widgets(struct snd_soc_card *card)
+static inline int acp_ops_configure_widgets(struct snd_soc_card *card,
+					    struct snd_soc_card_driver *card_driver)
 {
 	int ret = 1;
 	struct acp_card_drvdata *priv = acp_get_drvdata(card);
 
 	if (ACP_OPS(priv, configure_widgets))
-		ret = ACP_OPS(priv, configure_widgets)(card);
+		ret = ACP_OPS(priv, configure_widgets)(card_driver);
 	return ret;
 }
 
