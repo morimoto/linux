@@ -99,7 +99,7 @@ struct vc4_hdmi_variant {
 
 /* HDMI audio information */
 struct vc4_hdmi_audio {
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	struct snd_soc_dai_link link;
 	struct snd_soc_dai_link_component cpu;
 	struct snd_soc_dai_link_component codec;
