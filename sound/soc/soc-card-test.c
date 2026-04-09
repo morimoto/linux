@@ -67,6 +67,11 @@ static void test_snd_soc_card_get_kcontrol(struct kunit *test)
 	KUNIT_EXPECT_NULL(test, kc);
 }
 
+static struct snd_soc_card_driver card_driver = {
+	.default_name = "soc-card-test",
+	.owner = THIS_MODULE,
+};
+
 static int soc_card_test_case_init(struct kunit *test)
 {
 	struct soc_card_test_priv *priv;
@@ -78,20 +83,16 @@ static int soc_card_test_case_init(struct kunit *test)
 
 	test->priv = priv;
 
-	priv->card = kunit_kzalloc(test, sizeof(*priv->card), GFP_KERNEL);
-	if (!priv->card)
-		return -ENOMEM;
-
 	priv->card_dev = kunit_device_register(test, "sound-soc-card-test");
 	priv->card_dev = get_device(priv->card_dev);
 	if (!priv->card_dev)
 		return -ENODEV;
 
-	priv->card->name = "soc-card-test";
-	priv->card->dev = priv->card_dev;
-	priv->card->owner = THIS_MODULE;
+	priv->card = snd_soc_card_alloc(priv->card_dev);
+	if (!priv->card)
+		return -ENOMEM;
 
-	ret = snd_soc_register_card(priv->card);
+	ret = snd_soc_card_register(priv->card, &card_driver);
 	if (ret) {
 		put_device(priv->card_dev);
 		return ret;
@@ -105,7 +106,7 @@ static void soc_card_test_case_exit(struct kunit *test)
 	struct soc_card_test_priv *priv = test->priv;
 
 	if (priv->card)
-		snd_soc_unregister_card(priv->card);
+		snd_soc_card_unregister(priv->card);
 
 	if (priv->card_dev)
 		put_device(priv->card_dev);
