@@ -73,6 +73,7 @@ static int sam9x5_wm8731_driver_probe(struct platform_device *pdev)
 {
 	struct device_node *np = pdev->dev.of_node;
 	struct device_node *codec_np, *cpu_np;
+	struct snd_soc_card_driver *card_driver;
 	struct snd_soc_card *card;
 	struct snd_soc_dai_link *dai;
 	struct sam9x5_drvdata *priv;
@@ -84,23 +85,23 @@ static int sam9x5_wm8731_driver_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	card = devm_kzalloc(&pdev->dev, sizeof(*card), GFP_KERNEL);
+	card = snd_soc_card_alloc(&pdev->dev);
+	card_driver = devm_kzalloc(&pdev->dev, sizeof(*card_driver), GFP_KERNEL);
 	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
 	dai = devm_kzalloc(&pdev->dev, sizeof(*dai), GFP_KERNEL);
 	comp = devm_kzalloc(&pdev->dev, 3 * sizeof(*comp), GFP_KERNEL);
-	if (!dai || !card || !priv || !comp) {
+	if (!dai || !card || !priv || !comp || !card_driver) {
 		ret = -ENOMEM;
 		goto out;
 	}
 
 	snd_soc_card_set_drvdata(card, priv);
 
-	card->dev = &pdev->dev;
-	card->owner = THIS_MODULE;
-	card->dai_link = dai;
-	card->num_links = 1;
-	card->dapm_widgets = sam9x5_dapm_widgets;
-	card->num_dapm_widgets = ARRAY_SIZE(sam9x5_dapm_widgets);
+	card_driver->owner = THIS_MODULE;
+	card_driver->dai_link = dai;
+	card_driver->num_links = 1;
+	card_driver->dapm_widgets = sam9x5_dapm_widgets;
+	card_driver->num_dapm_widgets = ARRAY_SIZE(sam9x5_dapm_widgets);
 
 	dai->cpus = &comp[0];
 	dai->num_cpus = 1;
@@ -122,7 +123,8 @@ static int sam9x5_wm8731_driver_probe(struct platform_device *pdev)
 		goto out;
 	}
 
-	ret = snd_soc_of_parse_audio_routing(card, "atmel,audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(&pdev->dev,
+						card_driver, "atmel,audio-routing");
 	if (ret) {
 		dev_err(&pdev->dev, "atmel,audio-routing node missing\n");
 		goto out;
@@ -155,7 +157,7 @@ static int sam9x5_wm8731_driver_probe(struct platform_device *pdev)
 		goto out_put_cpu_np;
 	}
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret) {
 		dev_err(&pdev->dev, "Platform device allocation failed\n");
 		goto out_put_audio;
