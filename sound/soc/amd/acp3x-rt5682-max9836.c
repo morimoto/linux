@@ -382,8 +382,8 @@ static const struct snd_kcontrol_new acp3x_5682_mc_controls[] = {
 	SOC_DAPM_PIN_SWITCH("Headset Mic"),
 };
 
-static struct snd_soc_card acp3x_5682 = {
-	.name = "acp3xalc5682m98357",
+static struct snd_soc_card_driver acp3x_5682 = {
+	.default_name = "acp3xalc5682m98357",
 	.owner = THIS_MODULE,
 	.dai_link = acp3x_dai,
 	.num_links = ARRAY_SIZE(acp3x_dai),
@@ -421,8 +421,8 @@ static const struct snd_kcontrol_new acp3x_mc_1015_controls[] = {
 	SOC_DAPM_PIN_SWITCH("Right Spk"),
 };
 
-static struct snd_soc_card acp3x_1015 = {
-	.name = "acp3xalc56821015",
+static struct snd_soc_card_driver acp3x_1015 = {
+	.default_name = "acp3xalc56821015",
 	.owner = THIS_MODULE,
 	.dai_link = acp3x_dai,
 	.num_links = ARRAY_SIZE(acp3x_dai),
@@ -460,8 +460,8 @@ static const struct snd_kcontrol_new acp3x_mc_1015p_controls[] = {
 	SOC_DAPM_PIN_SWITCH("Headset Mic"),
 };
 
-static struct snd_soc_card acp3x_1015p = {
-	.name = "acp3xalc56821015p",
+static struct snd_soc_card_driver acp3x_1015p = {
+	.default_name = "acp3xalc56821015p",
 	.owner = THIS_MODULE,
 	.dai_link = acp3x_dai,
 	.num_links = ARRAY_SIZE(acp3x_dai),
@@ -501,21 +501,21 @@ static void card_spk_dai_link_present(struct snd_soc_dai_link *links,
 static int acp3x_probe(struct platform_device *pdev)
 {
 	int ret;
+	struct snd_soc_card_driver *card_driver;
 	struct snd_soc_card *card;
 	struct acp3x_platform_info *machine;
 	struct device *dev = &pdev->dev;
 
-	card = (struct snd_soc_card *)soc_is_rltk_max(dev);
-	if (!card)
+	card = snd_soc_card_alloc(&pdev->dev);
+	card_driver = (struct snd_soc_card_driver *)soc_is_rltk_max(dev);
+	if (!card || !card_driver)
 		return -ENODEV;
 
 	machine = devm_kzalloc(&pdev->dev, sizeof(*machine), GFP_KERNEL);
 	if (!machine)
 		return -ENOMEM;
 
-	card_spk_dai_link_present(card->dai_link, card->name);
-	card->dev = &pdev->dev;
-	platform_set_drvdata(pdev, card);
+	card_spk_dai_link_present(card_driver->dai_link, card_driver->default_name);
 	snd_soc_card_set_drvdata(card, machine);
 
 	dmic_sel = devm_gpiod_get(&pdev->dev, "dmic", GPIOD_OUT_LOW);
@@ -525,11 +525,11 @@ static int acp3x_probe(struct platform_device *pdev)
 		return PTR_ERR(dmic_sel);
 	}
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret) {
 		return dev_err_probe(&pdev->dev, ret,
-				"devm_snd_soc_register_card(%s) failed\n",
-				card->name);
+				"devm_snd_soc_card_register(%s) failed\n",
+				card_driver->default_name);
 	}
 	return 0;
 }
