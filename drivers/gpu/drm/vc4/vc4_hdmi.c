@@ -2291,7 +2291,8 @@ static int vc4_hdmi_audio_init(struct vc4_hdmi *vc4_hdmi)
 	const struct vc4_hdmi_register *mai_data =
 		&vc4_hdmi->variant->registers[HDMI_MAI_DATA];
 	struct snd_soc_dai_link *dai_link = &vc4_hdmi->audio.link;
-	struct snd_soc_card *card = &vc4_hdmi->audio.card;
+	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver = &vc4_hdmi->audio.card_driver;
 	struct device *dev = &vc4_hdmi->pdev->dev;
 	const __be32 *addr;
 	int index, len;
@@ -2314,8 +2315,12 @@ static int vc4_hdmi_audio_init(struct vc4_hdmi *vc4_hdmi)
 	 * memory address, so we can treat them indistinctly without any
 	 * issue.
 	 */
-	BUILD_BUG_ON(offsetof(struct vc4_hdmi_audio, card) != 0);
+	BUILD_BUG_ON(offsetof(struct vc4_hdmi_audio, card_driver) != 0);
 	BUILD_BUG_ON(offsetof(struct vc4_hdmi, audio) != 0);
+
+	card = snd_soc_card_alloc(dev);
+	if (!card)
+		return -ENOMEM;
 
 	if (!of_find_property(dev->of_node, "dmas", &len) || !len) {
 		dev_warn(dev,
@@ -2407,22 +2412,21 @@ static int vc4_hdmi_audio_init(struct vc4_hdmi *vc4_hdmi)
 	dai_link->platforms->name = dev_name(dev);
 	dai_link->init = vc4_hdmi_codec_init;
 
-	card->dai_link = dai_link;
-	card->num_links = 1;
-	card->name = vc4_hdmi->variant->card_name;
-	card->driver_name = "vc4-hdmi";
-	card->dev = dev;
-	card->owner = THIS_MODULE;
+	card_driver->dai_link = dai_link;
+	card_driver->num_links = 1;
+	card_driver->driver_name = "vc4-hdmi";
+	card_driver->owner = THIS_MODULE;
+	snd_soc_card_set_name(card, vc4_hdmi->variant->card_name);
 
 	/*
-	 * Be careful, snd_soc_register_card() calls dev_set_drvdata() and
+	 * Be careful, snd_soc_card_register() calls dev_set_drvdata() and
 	 * stores a pointer to the snd card object in dev->driver_data. This
 	 * means we cannot use it for something else. The hdmi back-pointer is
 	 * now stored in card->drvdata and should be retrieved with
 	 * snd_soc_card_get_drvdata() if needed.
 	 */
 	snd_soc_card_set_drvdata(card, vc4_hdmi);
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
 		dev_err_probe(dev, ret, "Could not register sound card\n");
 
