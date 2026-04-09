@@ -89,6 +89,7 @@ static struct acp_card_drvdata sof_nau8821_max98388_data = {
 static int acp_sof_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct device *dev = &pdev->dev;
 	struct snd_soc_acpi_mach *mach = dev_get_platdata(&pdev->dev);
 	const struct dmi_system_id *dmi_id;
@@ -98,13 +99,13 @@ static int acp_sof_probe(struct platform_device *pdev)
 	if (!pdev->id_entry)
 		return -EINVAL;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card = snd_soc_card_alloc(dev);
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card || !card_driver)
 		return -ENOMEM;
 
-	card->dev = dev;
-	card->owner = THIS_MODULE;
-	card->name = pdev->id_entry->name;
+	card_driver->owner = THIS_MODULE;
+	snd_soc_card_set_name(card, pdev->id_entry->name);
 	snd_soc_card_set_priv(card, (void *)pdev->id_entry->driver_data);
 	/* Widgets and controls added per-codec in acp-mach-common.c */
 
@@ -114,14 +115,15 @@ static int acp_sof_probe(struct platform_device *pdev)
 		acp_card_drvdata->tdm_mode = dmi_id->driver_data;
 
 	acp_card_drvdata->acp_rev = mach->mach_params.subsystem_rev;
-	ret = acp_sofdsp_dai_links_create(card);
+	ret = acp_sofdsp_dai_links_create(card, card_driver);
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret, "Failed to create DAI links\n");
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret,
-				     "Failed to register card(%s)\n", card->name);
+				     "Failed to register card(%s)\n",
+				     snd_soc_card_name(card));
 	return 0;
 }
 
