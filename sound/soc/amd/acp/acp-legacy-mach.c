@@ -122,10 +122,12 @@ static int acp_asoc_resume_post(struct snd_soc_card *card)
 static int acp_asoc_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = NULL;
+	struct snd_soc_card_driver *card_driver = NULL;
 	struct device *dev = &pdev->dev;
 	struct snd_soc_acpi_mach *mach = dev_get_platdata(&pdev->dev);
 	const struct dmi_system_id *dmi_id;
 	struct acp_card_drvdata *acp_card_drvdata;
+	const char *card_name;
 	int ret;
 
 	if (!pdev->id_entry) {
@@ -133,8 +135,9 @@ static int acp_asoc_probe(struct platform_device *pdev)
 		goto out;
 	}
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card) {
+	card = snd_soc_card_alloc(dev);
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card || !card_driver) {
 		ret = -ENOMEM;
 		goto out;
 	}
@@ -142,31 +145,32 @@ static int acp_asoc_probe(struct platform_device *pdev)
 	acp_card_drvdata = (struct acp_card_drvdata *)pdev->id_entry->driver_data;
 	acp_card_drvdata->acpi_mach = (struct snd_soc_acpi_mach *)pdev->dev.platform_data;
 
+	card_name = pdev->id_entry->name;
+
+	card_driver->owner = THIS_MODULE;
 	snd_soc_card_set_priv(card, acp_card_drvdata);
-	card->dev = dev;
-	card->owner = THIS_MODULE;
-	card->name = pdev->id_entry->name;
+	snd_soc_card_set_name(card, card_name);
 
 	acp_asoc_init_ops(acp_card_drvdata);
 
 	/* If widgets and controls are not set in specific callback,
 	 * they will be added per-codec in acp-mach-common.c
 	 */
-	ret = acp_ops_configure_widgets(card);
+	ret = acp_ops_configure_widgets(card, card_driver);
 	if (ret < 0) {
 		dev_err(&pdev->dev,
 			"Cannot configure widgets for card (%s): %d\n",
-			card->name, ret);
+			card_name, ret);
 		goto out;
 	}
-	card->suspend_pre = acp_asoc_suspend_pre;
-	card->resume_post = acp_asoc_resume_post;
+	card_driver->suspend_pre = acp_asoc_suspend_pre;
+	card_driver->resume_post = acp_asoc_resume_post;
 
 	ret = acp_ops_probe(card);
 	if (ret < 0) {
 		dev_err(&pdev->dev,
 			"Cannot probe card (%s): %d\n",
-			card->name, ret);
+			card_name, ret);
 		goto out;
 	}
 	if (!strcmp(pdev->name, "acp-pdm-mach"))
@@ -178,19 +182,19 @@ static int acp_asoc_probe(struct platform_device *pdev)
 	if (dmi_id && dmi_id->driver_data == (void *)QUIRK_TDM_MODE_ENABLE)
 		acp_card_drvdata->tdm_mode = dmi_id->driver_data;
 
-	ret = acp_legacy_dai_links_create(card);
+	ret = acp_legacy_dai_links_create(card, card_driver);
 	if (ret) {
 		dev_err(&pdev->dev,
 			"Cannot create dai links for card (%s): %d\n",
-			card->name, ret);
+			card_name, ret);
 		goto out;
 	}
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret) {
 		dev_err(&pdev->dev,
-				"devm_snd_soc_register_card(%s) failed: %d\n",
-				card->name, ret);
+				"devm_snd_soc_card_register(%s) failed: %d\n",
+				card_name, ret);
 		goto out;
 	}
 out:
