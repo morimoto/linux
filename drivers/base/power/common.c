@@ -453,6 +453,8 @@ bool dev_pm_domain_allow_detach_on_unbind_cleanup(void)
 		"renesas,r9a09g047", /* Renesas RZ/G3E */
 		"renesas,r9a09g056", /* Renesas RZ/V2N */
 		"renesas,r9a09g057", /* Renesas RZ/V2H */
+		"renesas,r9a09g077", /* Renesas RZ/T2H */
+		"renesas,r9a09g087", /* Renesas RZ/N2H */
 		NULL
 	};
 
