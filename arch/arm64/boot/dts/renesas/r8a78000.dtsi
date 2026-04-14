@@ -1252,6 +1252,17 @@
 			/* actual transport nodes must be set per board file */
 		};
 
+		pfc: pinctrl@c1080000 {
+			compatible = "renesas,pfc-r8a78000";
+			reg = <0 0xc1080000 0 0x104>, <0 0xc1080800 0 0x104>,
+			      <0 0xc1081000 0 0x104>, <0 0xc0800000 0 0x104>,
+			      <0 0xc0800800 0 0x104>, <0 0xc0400000 0 0x104>,
+			      <0 0xc0400800 0 0x104>, <0 0xc0401000 0 0x104>,
+			      <0 0xc0401800 0 0x104>, <0 0xc9b00000 0 0x104>,
+			      <0 0xc9b00800 0 0x104>;
+			bootph-all;
+		};
+
 		cpg: clock-controller@c1320000 {
 			compatible = "renesas,r8a78000-cpg";
 			reg = <0 0xc1320000 0 0x10000>;
