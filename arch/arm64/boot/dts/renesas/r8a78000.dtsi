@@ -862,6 +862,17 @@
 			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
+		pfc: pinctrl@c0400000 {
+			compatible = "renesas,pfc-r8a78000";
+			reg = <0 0xc1080000 0 0x104>, <0 0xc1080800 0 0x104>,
+			      <0 0xc1081000 0 0x104>, <0 0xc0800000 0 0x104>,
+			      <0 0xc0800800 0 0x104>, <0 0xc0400000 0 0x104>,
+			      <0 0xc0400800 0 0x104>, <0 0xc0401000 0 0x104>,
+			      <0 0xc0401800 0 0x104>, <0 0xc9b00000 0 0x104>,
+			      <0 0xc9b00800 0 0x104>;
+			bootph-all;
+		};
+
 		scif0: serial@c0700000 {
 			compatible = "renesas,scif-r8a78000",
 				     "renesas,rcar-gen5-scif", "renesas,scif";
