@@ -16,6 +16,7 @@
 #include <sound/core.h>
 #include <sound/pcm.h>
 #include <sound/soc.h>
+#include <sound/soc-card.h>
 
 #include "../codecs/wm8978.h"
 #include "siu.h"
@@ -138,8 +139,8 @@ static struct snd_soc_dai_link migor_dai = {
 };
 
 /* migor audio machine driver */
-static struct snd_soc_card snd_soc_migor = {
-	.name = "Migo-R",
+static struct snd_soc_card_driver snd_soc_migor = {
+	.default_name = "Migo-R",
 	.owner = THIS_MODULE,
 	.dai_link = &migor_dai,
 	.num_links = 1,

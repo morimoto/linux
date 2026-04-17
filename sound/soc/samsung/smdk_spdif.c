@@ -8,6 +8,7 @@
 #include <linux/module.h>
 
 #include <sound/soc.h>
+#include <sound/soc-card.h>
 
 #include "spdif.h"
 
@@ -150,8 +151,8 @@ static struct snd_soc_dai_link smdk_dai = {
 	SND_SOC_DAILINK_REG(spdif),
 };
 
-static struct snd_soc_card smdk = {
-	.name = "SMDK-S/PDIF",
+static struct snd_soc_card_driver smdk = {
+	.default_name = "SMDK-S/PDIF",
 	.owner = THIS_MODULE,
 	.dai_link = &smdk_dai,
 	.num_links = 1,
