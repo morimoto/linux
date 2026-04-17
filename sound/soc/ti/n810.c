@@ -13,6 +13,7 @@
 #include <sound/core.h>
 #include <sound/pcm.h>
 #include <sound/soc.h>
+#include <sound/soc-card.h>
 
 #include <asm/mach-types.h>
 #include <linux/gpio/consumer.h>
@@ -268,8 +269,8 @@ static struct snd_soc_dai_link n810_dai = {
 };
 
 /* Audio machine driver */
-static struct snd_soc_card snd_soc_n810 = {
-	.name = "N810",
+static struct snd_soc_card_driver snd_soc_n810 = {
+	.default_name = "N810",
 	.owner = THIS_MODULE,
 	.dai_link = &n810_dai,
 	.num_links = 1,
