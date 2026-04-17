@@ -10,6 +10,7 @@
 #include <sound/core.h>
 #include <sound/pcm.h>
 #include <sound/soc.h>
+#include <sound/soc-card.h>
 #include <asm/io.h>
 
 #define IPSEL 0xFE400034
@@ -25,8 +26,8 @@ static struct snd_soc_dai_link sh7760_ac97_dai = {
 	SND_SOC_DAILINK_REG(ac97),
 };
 
-static struct snd_soc_card sh7760_ac97_soc_machine  = {
-	.name = "SH7760 AC97",
+static struct snd_soc_card_driver sh7760_ac97_soc_machine  = {
+	.default_name = "SH7760 AC97",
 	.owner = THIS_MODULE,
 	.dai_link = &sh7760_ac97_dai,
 	.num_links = 1,
