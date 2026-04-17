@@ -16,6 +16,7 @@
 #include <sound/core.h>
 #include <sound/pcm.h>
 #include <sound/soc.h>
+#include <sound/soc-card.h>
 
 #include <linux/platform_data/asoc-ti-mcbsp.h>
 
@@ -207,8 +208,8 @@ static struct snd_soc_dai_link omap3pandora_dai[] = {
 };
 
 /* SoC card */
-static struct snd_soc_card snd_soc_card_omap3pandora = {
-	.name = "omap3pandora",
+static struct snd_soc_card_driver snd_soc_card_omap3pandora = {
+	.default_name = "omap3pandora",
 	.owner = THIS_MODULE,
 	.dai_link = omap3pandora_dai,
 	.num_links = ARRAY_SIZE(omap3pandora_dai),
