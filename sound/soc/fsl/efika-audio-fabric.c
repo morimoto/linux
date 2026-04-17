@@ -21,6 +21,7 @@
 #include <sound/pcm_params.h>
 #include <sound/initval.h>
 #include <sound/soc.h>
+#include <sound/soc-card.h>
 
 #define DRV_NAME "efika-audio-fabric"
 
@@ -49,8 +50,8 @@ static struct snd_soc_dai_link efika_fabric_dai[] = {
 },
 };
 
-static struct snd_soc_card card = {
-	.name = "Efika",
+static struct snd_soc_card_driver card_driver = {
+	.default_name = "Efika",
 	.owner = THIS_MODULE,
 	.dai_link = efika_fabric_dai,
 	.num_links = ARRAY_SIZE(efika_fabric_dai),
@@ -70,7 +71,7 @@ static __init int efika_fabric_init(void)
 		return -ENODEV;
 	}
 
-	platform_set_drvdata(pdev, &card);
+	platform_set_drvdata(pdev, &card_driver);
 
 	rc = platform_device_add(pdev);
 	if (rc) {
