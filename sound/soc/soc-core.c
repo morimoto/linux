@@ -1047,23 +1047,21 @@ EXPORT_SYMBOL_GPL(snd_soc_runtime_set_dai_fmt);
 /* probes a new socdev */
 static int soc_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = platform_get_drvdata(pdev);
+	struct snd_soc_card_driver *card_driver = platform_get_drvdata(pdev);
 
 	/*
 	 * no card, so machine driver should be registering card
 	 * we should not be here in that case so ret error
 	 */
-	if (!card)
+	if (!card_driver)
 		return -EINVAL;
 
 	dev_warn(&pdev->dev,
-		 "ASoC: machine %s should use snd_soc_register_card()\n",
-		 card->name);
+		 "ASoC: machine %s should use snd_soc_card_register()\n",
+		 card_driver->default_name);
 
 	/* Bodge while we unpick instantiation */
-	card->dev = &pdev->dev;
-
-	return devm_snd_soc_register_card(&pdev->dev, card);
+	return devm_snd_soc_card_register(&pdev->dev, card_driver);
 }
 
 int snd_soc_poweroff(struct device *dev)
