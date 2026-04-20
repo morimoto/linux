@@ -34,8 +34,8 @@ static struct snd_soc_dai_link acp_dai_pdm[] = {
 	},
 };
 
-static struct snd_soc_card acp_card = {
-	.name = "acp",
+static struct snd_soc_card_driver acp_card_driver = {
+	.default_name = "acp",
 	.owner = THIS_MODULE,
 	.dai_link = acp_dai_pdm,
 	.num_links = 1,
@@ -44,17 +44,12 @@ static struct snd_soc_card acp_card = {
 static int acp_probe(struct platform_device *pdev)
 {
 	int ret;
-	struct snd_soc_card *card;
 
-	card = &acp_card;
-	acp_card.dev = &pdev->dev;
-
-	platform_set_drvdata(pdev, card);
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(&pdev->dev, &acp_card_driver);
 	if (ret) {
 		return dev_err_probe(&pdev->dev, ret,
-				"snd_soc_register_card(%s) failed\n",
-				card->name);
+				"snd_soc_card_register(%s) failed\n",
+				acp_card_driver.default_name);
 	}
 	return 0;
 }
