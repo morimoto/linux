@@ -143,8 +143,8 @@ static const struct snd_kcontrol_new cz_mc_controls[] = {
 	SOC_DAPM_PIN_SWITCH("Int Mic"),
 };
 
-static struct snd_soc_card cz_card = {
-	.name = "acprt5650",
+static struct snd_soc_card_driver cz_card_driver = {
+	.default_name = "acprt5650",
 	.owner = THIS_MODULE,
 	.dai_link = cz_dai_rt5650,
 	.num_links = ARRAY_SIZE(cz_dai_rt5650),
@@ -159,16 +159,12 @@ static struct snd_soc_card cz_card = {
 static int cz_probe(struct platform_device *pdev)
 {
 	int ret;
-	struct snd_soc_card *card;
 
-	card = &cz_card;
-	cz_card.dev = &pdev->dev;
-	platform_set_drvdata(pdev, card);
-	ret = devm_snd_soc_register_card(&pdev->dev, &cz_card);
+	ret = devm_snd_soc_card_register(&pdev->dev, &cz_card_driver);
 	if (ret) {
 		dev_err(&pdev->dev,
-				"devm_snd_soc_register_card(%s) failed: %d\n",
-				cz_card.name, ret);
+				"devm_snd_soc_card_register(%s) failed: %d\n",
+				cz_card_driver.default_name, ret);
 		return ret;
 	}
 	return 0;
