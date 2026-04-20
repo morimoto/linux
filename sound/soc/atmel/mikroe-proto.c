@@ -51,8 +51,8 @@ static const struct snd_soc_dapm_route snd_proto_route[] = {
 };
 
 /* audio machine driver */
-static struct snd_soc_card snd_proto = {
-	.name		= "snd_mikroe_proto",
+static struct snd_soc_card_driver snd_proto = {
+	.default_name	= "snd_mikroe_proto",
 	.owner		= THIS_MODULE,
 	.dapm_widgets	= snd_proto_widget,
 	.num_dapm_widgets = ARRAY_SIZE(snd_proto_widget),
@@ -62,6 +62,7 @@ static struct snd_soc_card snd_proto = {
 
 static int snd_proto_probe(struct platform_device *pdev)
 {
+	struct snd_soc_card *card;
 	struct snd_soc_dai_link *dai;
 	struct snd_soc_dai_link_component *comp;
 	struct device_node *np = pdev->dev.of_node;
@@ -76,8 +77,11 @@ static int snd_proto_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	snd_proto.dev = &pdev->dev;
-	ret = snd_soc_of_parse_card_name(&snd_proto, "model");
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
+
+	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret)
 		return ret;
 
@@ -140,10 +144,10 @@ static int snd_proto_probe(struct platform_device *pdev)
 
 
 	dai->dai_fmt = dai_fmt;
-	ret = devm_snd_soc_register_card(&pdev->dev, &snd_proto);
+	ret = devm_snd_soc_card_register(card, &snd_proto);
 	if (ret)
 		dev_err_probe(&pdev->dev, ret,
-			"snd_soc_register_card() failed\n");
+			"snd_soc_card_register() failed\n");
 
 
 put_cpu_node:
