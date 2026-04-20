@@ -313,8 +313,8 @@ static const struct snd_soc_dapm_route acp5x_8821_35l41_audio_route[] = {
 	{ "Int Mic", NULL, "Platform Clock" },
 };
 
-static struct snd_soc_card acp5x_8821_35l41_card = {
-	.name = "acp5x",
+static struct snd_soc_card_driver acp5x_8821_35l41_card = {
+	.default_name = "acp5x",
 	.owner = THIS_MODULE,
 	.dai_link = acp5x_8821_35l41_dai,
 	.num_links = ARRAY_SIZE(acp5x_8821_35l41_dai),
@@ -412,8 +412,8 @@ static const struct snd_soc_dapm_route acp5x_8821_98388_route[] = {
 	{ "SPK", NULL, "Right BE_OUT" },
 };
 
-static struct snd_soc_card acp5x_8821_98388_card = {
-	.name = "acp5x-max98388",
+static struct snd_soc_card_driver acp5x_8821_98388_card = {
+	.default_name = "acp5x-max98388",
 	.owner = THIS_MODULE,
 	.dai_link = acp5x_8821_98388_dai,
 	.num_links = ARRAY_SIZE(acp5x_8821_98388_dai),
@@ -451,24 +451,25 @@ static int acp5x_probe(struct platform_device *pdev)
 	struct acp5x_platform_info *machine;
 	struct device *dev = &pdev->dev;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	int ret;
 
 	dmi_id = dmi_first_match(acp5x_vg_quirk_table);
 	if (!dmi_id || !dmi_id->driver_data)
 		return -ENODEV;
 
+	card = snd_soc_card_alloc(dev);
 	machine = devm_kzalloc(dev, sizeof(*machine), GFP_KERNEL);
-	if (!machine)
+	if (!card || !machine)
 		return -ENOMEM;
 
-	card = dmi_id->driver_data;
-	card->dev = dev;
-	platform_set_drvdata(pdev, card);
+	card_driver = dmi_id->driver_data;
 	snd_soc_card_set_drvdata(card, machine);
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
-		return dev_err_probe(dev, ret, "Register card (%s) failed\n", card->name);
+		return dev_err_probe(dev, ret, "Register card (%s) failed\n",
+				     card_driver->default_name);
 
 	return 0;
 }
