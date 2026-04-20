@@ -219,8 +219,8 @@ static int st_es8336_late_probe(struct snd_soc_card *card)
 	return 0;
 }
 
-static struct snd_soc_card st_card = {
-	.name = "acpes8336",
+static struct snd_soc_card_driver st_card = {
+	.default_name = "acpes8336",
 	.owner = THIS_MODULE,
 	.dai_link = st_dai_es8336,
 	.num_links = ARRAY_SIZE(st_dai_es8336),
@@ -268,28 +268,28 @@ static int st_es8336_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct acp_platform_info *machine;
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	machine = devm_kzalloc(&pdev->dev, sizeof(struct acp_platform_info), GFP_KERNEL);
-	if (!machine)
+	if (!card || !machine)
 		return -ENOMEM;
 
 	dmi_check_system(st_es8336_quirk_table);
 	switch (acp2x_machine_id) {
 	case ST_JADEITE:
-		card = &st_card;
-		st_card.dev = &pdev->dev;
+		card_driver = &st_card;
 		break;
 	default:
 		return -ENODEV;
 	}
 
-	platform_set_drvdata(pdev, card);
 	snd_soc_card_set_drvdata(card, machine);
-	ret = devm_snd_soc_register_card(&pdev->dev, &st_card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret) {
 		return dev_err_probe(&pdev->dev, ret,
-				     "devm_snd_soc_register_card(%s) failed\n",
+				     "devm_snd_soc_card_register(%s) failed\n",
 				     card->name);
 	}
 	return 0;
