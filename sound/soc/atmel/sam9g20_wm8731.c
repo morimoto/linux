@@ -103,12 +103,11 @@ static struct snd_soc_dai_link at91sam9g20ek_dai = {
 	SND_SOC_DAILINK_REG(pcm),
 };
 
-static struct snd_soc_card snd_soc_at91sam9g20ek = {
-	.name = "AT91SAMG20-EK",
+static struct snd_soc_card_driver snd_soc_at91sam9g20ek = {
+	.default_name = "AT91SAMG20-EK",
 	.owner = THIS_MODULE,
 	.dai_link = &at91sam9g20ek_dai,
 	.num_links = 1,
-
 	.dapm_widgets = at91sam9g20ek_dapm_widgets,
 	.num_dapm_widgets = ARRAY_SIZE(at91sam9g20ek_dapm_widgets),
 	.dapm_routes = intercon,
@@ -120,12 +119,16 @@ static int at91sam9g20ek_audio_probe(struct platform_device *pdev)
 {
 	struct device_node *np = pdev->dev.of_node;
 	struct device_node *codec_np, *cpu_np;
-	struct snd_soc_card *card = &snd_soc_at91sam9g20ek;
+	struct snd_soc_card *card;
 	int ret;
 
 	if (!np) {
 		return -ENODEV;
 	}
+
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
 
 	ret = atmel_ssc_set_audio(0);
 	if (ret) {
@@ -133,14 +136,12 @@ static int at91sam9g20ek_audio_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	card->dev = &pdev->dev;
-
 	/* Parse device node info */
 	ret = snd_soc_of_parse_card_name(card, "atmel,model");
 	if (ret)
 		goto err;
 
-	ret = snd_soc_of_parse_audio_routing(card,
+	ret = snd_soc_card_driver_of_parse_audio_routing(&pdev->dev, &snd_soc_at91sam9g20ek,
 		"atmel,audio-routing");
 	if (ret)
 		goto err;
@@ -171,10 +172,10 @@ static int at91sam9g20ek_audio_probe(struct platform_device *pdev)
 	of_node_put(codec_np);
 	of_node_put(cpu_np);
 
-	ret = snd_soc_register_card(card);
+	ret = snd_soc_card_register(card, &snd_soc_at91sam9g20ek);
 	if (ret) {
 		dev_err_probe(&pdev->dev, ret,
-			      "snd_soc_register_card() failed\n");
+			      "snd_soc_card_register() failed\n");
 		goto err;
 	}
 
@@ -189,7 +190,7 @@ static void at91sam9g20ek_audio_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
 
-	snd_soc_unregister_card(card);
+	snd_soc_card_unregister(card);
 	atmel_ssc_put_audio(0);
 }
 
