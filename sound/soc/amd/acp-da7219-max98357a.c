@@ -676,8 +676,8 @@ static const struct snd_kcontrol_new cz_mc_controls[] = {
 	SOC_DAPM_PIN_SWITCH("Int Mic"),
 };
 
-static struct snd_soc_card cz_card = {
-	.name = "acpd7219m98357",
+static struct snd_soc_card_driver cz_card = {
+	.default_name = "acpd7219m98357",
 	.owner = THIS_MODULE,
 	.dai_link = cz_dai_7219_98357,
 	.num_links = ARRAY_SIZE(cz_dai_7219_98357),
@@ -689,8 +689,8 @@ static struct snd_soc_card cz_card = {
 	.num_controls = ARRAY_SIZE(cz_mc_controls),
 };
 
-static struct snd_soc_card cz_rt5682_card = {
-	.name = "acpr5682m98357",
+static struct snd_soc_card_driver cz_rt5682_card = {
+	.default_name = "acpr5682m98357",
 	.owner = THIS_MODULE,
 	.dai_link = cz_dai_5682_98357,
 	.num_links = ARRAY_SIZE(cz_dai_5682_98357),
@@ -746,14 +746,16 @@ static int cz_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct acp_platform_info *machine;
 	struct regulator_dev *rdev;
 	struct device *dev = &pdev->dev;
 
-	card = (struct snd_soc_card *)acp_soc_is_rltk_max(dev);
-	if (!card)
+	card = snd_soc_card_alloc(&pdev->dev);
+	card_driver = (struct snd_soc_card_driver *)acp_soc_is_rltk_max(dev);
+	if (!card || !card_driver)
 		return -ENODEV;
-	if (!strcmp(card->name, "acpd7219m98357")) {
+	if (!strcmp(card_driver->default_name, "acpd7219m98357")) {
 		acp_da7219_cfg.dev = &pdev->dev;
 		rdev = devm_regulator_register(&pdev->dev, &acp_da7219_desc,
 					       &acp_da7219_cfg);
@@ -768,14 +770,13 @@ static int cz_probe(struct platform_device *pdev)
 			       GFP_KERNEL);
 	if (!machine)
 		return -ENOMEM;
-	card->dev = &pdev->dev;
-	platform_set_drvdata(pdev, card);
+
 	snd_soc_card_set_drvdata(card, machine);
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret) {
 		return dev_err_probe(&pdev->dev, ret,
-				"devm_snd_soc_register_card(%s) failed\n",
-				card->name);
+				"devm_snd_soc_card_register(%s) failed\n",
+				card_driver->default_name);
 	}
 	acp_bt_uart_enable = !device_property_read_bool(&pdev->dev,
 							"bt-pad-enable");
