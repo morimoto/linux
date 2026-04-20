@@ -70,8 +70,8 @@ static struct snd_soc_dai_link atmel_asoc_wm8904_dailink = {
 	SND_SOC_DAILINK_REG(pcm),
 };
 
-static struct snd_soc_card atmel_asoc_wm8904_card = {
-	.name = "atmel_asoc_wm8904",
+static struct snd_soc_card_driver atmel_asoc_wm8904_card_driver = {
+	.default_name = "atmel_asoc_wm8904",
 	.owner = THIS_MODULE,
 	.dai_link = &atmel_asoc_wm8904_dailink,
 	.num_links = 1,
@@ -80,12 +80,12 @@ static struct snd_soc_card atmel_asoc_wm8904_card = {
 	.fully_routed = true,
 };
 
-static int atmel_asoc_wm8904_dt_init(struct platform_device *pdev)
+static int atmel_asoc_wm8904_dt_init(struct snd_soc_card *card)
 {
-	struct device *dev = &pdev->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct device_node *np = dev->of_node;
 	struct device_node *codec_np, *cpu_np;
-	struct snd_soc_card *card = &atmel_asoc_wm8904_card;
+	struct snd_soc_card_driver *card_driver = &atmel_asoc_wm8904_card_driver;
 	struct snd_soc_dai_link *dailink = &atmel_asoc_wm8904_dailink;
 	int ret;
 
@@ -100,7 +100,7 @@ static int atmel_asoc_wm8904_dt_init(struct platform_device *pdev)
 		return ret;
 	}
 
-	ret = snd_soc_of_parse_audio_routing(card, "atmel,audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver, "atmel,audio-routing");
 	if (ret) {
 		dev_err(dev, "failed to parse audio routing\n");
 		return ret;
@@ -130,12 +130,15 @@ static int atmel_asoc_wm8904_dt_init(struct platform_device *pdev)
 
 static int atmel_asoc_wm8904_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &atmel_asoc_wm8904_card;
+	struct snd_soc_card *card;
 	struct snd_soc_dai_link *dailink = &atmel_asoc_wm8904_dailink;
 	int id, ret;
 
-	card->dev = &pdev->dev;
-	ret = atmel_asoc_wm8904_dt_init(pdev);
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
+
+	ret = atmel_asoc_wm8904_dt_init(card);
 	if (ret) {
 		dev_err(&pdev->dev, "failed to init dt info\n");
 		return ret;
@@ -148,9 +151,9 @@ static int atmel_asoc_wm8904_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	ret = snd_soc_register_card(card);
+	ret = snd_soc_card_register(card, &atmel_asoc_wm8904_card_driver);
 	if (ret) {
-		dev_err(&pdev->dev, "snd_soc_register_card failed\n");
+		dev_err(&pdev->dev, "snd_soc_card_register() failed\n");
 		goto err_set_audio;
 	}
 
@@ -169,7 +172,7 @@ static void atmel_asoc_wm8904_remove(struct platform_device *pdev)
 
 	id = of_alias_get_id((struct device_node *)dailink->cpus->of_node, "ssc");
 
-	snd_soc_unregister_card(card);
+	snd_soc_card_unregister(card);
 	atmel_ssc_put_audio(id);
 }
 
