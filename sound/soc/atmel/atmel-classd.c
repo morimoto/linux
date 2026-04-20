@@ -466,12 +466,13 @@ static const struct snd_soc_component_driver atmel_classd_cpu_dai_component = {
 };
 
 /* ASoC sound card */
-static int atmel_classd_asoc_card_init(struct device *dev,
-					struct snd_soc_card *card)
+static int atmel_classd_asoc_card_init(struct snd_soc_card *card,
+				       struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *dai_link;
 	struct atmel_classd *dd = snd_soc_card_get_drvdata(card);
 	struct snd_soc_dai_link_component *comp;
+	struct device *dev = snd_soc_card_to_dev(card);
 
 	dai_link = devm_kzalloc(dev, sizeof(*dai_link), GFP_KERNEL);
 	if (!dai_link)
@@ -494,10 +495,9 @@ static int atmel_classd_asoc_card_init(struct device *dev,
 	dai_link->cpus->dai_name	= dev_name(dev);
 	dai_link->platforms->name	= dev_name(dev);
 
-	card->dai_link	= dai_link;
-	card->num_links	= 1;
-	card->name	= dd->pdata->card_name;
-	card->dev	= dev;
+	card_driver->dai_link		= dai_link;
+	card_driver->num_links		= 1;
+	snd_soc_card_set_name(card, dd->pdata->card_name);
 
 	return 0;
 };
@@ -527,6 +527,7 @@ static int atmel_classd_probe(struct platform_device *pdev)
 	void __iomem *io_base;
 	const struct atmel_classd_pdata *pdata;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	int ret;
 
 	pdata = dev_get_platdata(dev);
@@ -592,21 +593,22 @@ static int atmel_classd_probe(struct platform_device *pdev)
 	}
 
 	/* register sound card */
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card) {
+	card = snd_soc_card_alloc(dev);
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card || !card_driver) {
 		ret = -ENOMEM;
 		goto unregister_codec;
 	}
 
 	snd_soc_card_set_drvdata(card, dd);
 
-	ret = atmel_classd_asoc_card_init(dev, card);
+	ret = atmel_classd_asoc_card_init(card, card_driver);
 	if (ret) {
 		dev_err(dev, "failed to init sound card\n");
 		goto unregister_codec;
 	}
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret) {
 		dev_err(dev, "failed to register sound card: %d\n", ret);
 		goto unregister_codec;
