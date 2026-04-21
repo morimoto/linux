@@ -22,7 +22,7 @@ struct cpu_priv {
 
 struct imx_hdmi_data {
 	struct snd_soc_dai_link dai;
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	struct snd_soc_jack hdmi_jack;
 	struct snd_soc_jack_pin hdmi_jack_pin;
 	struct cpu_priv cpu_priv;
@@ -101,12 +101,14 @@ static int imx_hdmi_probe(struct platform_device *pdev)
 	bool hdmi_out = of_property_read_bool(np, "hdmi-out");
 	bool hdmi_in = of_property_read_bool(np, "hdmi-in");
 	struct snd_soc_dai_link_component *dlc;
+	struct snd_soc_card *card;
 	struct device_node *cpu_np;
 	struct imx_hdmi_data *data;
 	int ret;
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	dlc = devm_kzalloc(&pdev->dev, 3 * sizeof(*dlc), GFP_KERNEL);
-	if (!dlc)
+	if (!card || !dlc)
 		return -ENOMEM;
 
 	cpu_np = of_parse_phandle(np, "audio-cpu", 0);
@@ -177,21 +179,20 @@ static int imx_hdmi_probe(struct platform_device *pdev)
 				    SND_SOC_DAIFMT_CBP_CFP;
 	}
 
-	data->card.dapm_widgets = imx_hdmi_widgets;
-	data->card.num_dapm_widgets = ARRAY_SIZE(imx_hdmi_widgets);
-	data->card.dev = &pdev->dev;
-	data->card.owner = THIS_MODULE;
-	ret = snd_soc_of_parse_card_name(&data->card, "model");
+	data->card_driver.dapm_widgets = imx_hdmi_widgets;
+	data->card_driver.num_dapm_widgets = ARRAY_SIZE(imx_hdmi_widgets);
+	data->card_driver.owner = THIS_MODULE;
+	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret)
 		goto fail;
 
-	data->card.num_links = 1;
-	data->card.dai_link = &data->dai;
+	data->card_driver.num_links = 1;
+	data->card_driver.dai_link = &data->dai;
 
-	snd_soc_card_set_drvdata(&data->card, data);
-	ret = devm_snd_soc_register_card(&pdev->dev, &data->card);
+	snd_soc_card_set_priv(card, data);
+	ret = devm_snd_soc_card_register(card, &data->card_driver);
 	if (ret) {
-		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card failed\n");
+		dev_err_probe(&pdev->dev, ret, "snd_soc_card_register() failed\n");
 		goto fail;
 	}
 
