@@ -447,7 +447,7 @@ static int byt_cht_es8316_resume(struct snd_soc_card *card)
 #define CARD_NAME "bytcht-es8316"
 #define DRIVER_NAME NULL /* card name will be used for driver name */
 
-static struct snd_soc_card byt_cht_es8316_card = {
+static struct snd_soc_card_driver byt_cht_es8316_card_driver = {
 	.owner = THIS_MODULE,
 	.dai_link = byt_cht_es8316_dais,
 	.num_links = ARRAY_SIZE(byt_cht_es8316_dais),
@@ -567,6 +567,7 @@ static int snd_byt_cht_es8316_mc_probe(struct platform_device *pdev)
 	struct byt_cht_es8316_private *priv;
 	const struct dmi_system_id *dmi_id;
 	struct fwnode_handle *fwnode;
+	struct snd_soc_card *card;
 	bool sof_parent, is_bytcr;
 	const char *platform_name;
 	struct acpi_device *adev;
@@ -576,8 +577,9 @@ static int snd_byt_cht_es8316_mc_probe(struct platform_device *pdev)
 	int i;
 	int ret = 0;
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
+	if (!card || !priv)
 		return -ENOMEM;
 
 	/* fix index of codec dai */
@@ -608,10 +610,10 @@ static int snd_byt_cht_es8316_mc_probe(struct platform_device *pdev)
 	priv->codec_dev = get_device(codec_dev);
 
 	/* override platform name, if required */
-	byt_cht_es8316_card.dev = dev;
 	platform_name = mach->mach_params.platform;
 
-	ret = snd_soc_fixup_dai_links_platform_name(&byt_cht_es8316_card,
+	ret = snd_soc_card_driver_fixup_dai_links_platform_name(dev,
+						    &byt_cht_es8316_card_driver,
 						    platform_name);
 	if (ret) {
 		put_device(codec_dev);
@@ -689,23 +691,23 @@ static int snd_byt_cht_es8316_mc_probe(struct platform_device *pdev)
 		 "cfg-spk:%s cfg-mic:%s",
 		 (quirk & BYT_CHT_ES8316_MONO_SPEAKER) ? "1" : "2",
 		 mic_name[BYT_CHT_ES8316_MAP(quirk)]);
-	byt_cht_es8316_card.components = components_string;
+	snd_soc_card_set_components(card, components_string);
 #if !IS_ENABLED(CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES)
 	snprintf(long_name, sizeof(long_name), "bytcht-es8316-%s-spk-%s-mic",
 		 (quirk & BYT_CHT_ES8316_MONO_SPEAKER) ? "mono" : "stereo",
 		 mic_name[BYT_CHT_ES8316_MAP(quirk)]);
-	byt_cht_es8316_card.long_name = long_name;
+	snd_soc_card_set_long_name(card, long_name);
 #endif
 
 	sof_parent = snd_soc_acpi_sof_parent(dev);
 
 	/* set card and driver name */
 	if (sof_parent) {
-		byt_cht_es8316_card.name = SOF_CARD_NAME;
-		byt_cht_es8316_card.driver_name = SOF_DRIVER_NAME;
+		byt_cht_es8316_card_driver.default_name = SOF_CARD_NAME;
+		byt_cht_es8316_card_driver.driver_name = SOF_DRIVER_NAME;
 	} else {
-		byt_cht_es8316_card.name = CARD_NAME;
-		byt_cht_es8316_card.driver_name = DRIVER_NAME;
+		byt_cht_es8316_card_driver.default_name = CARD_NAME;
+		byt_cht_es8316_card_driver.driver_name = DRIVER_NAME;
 	}
 
 	/* set pm ops */
@@ -713,15 +715,15 @@ static int snd_byt_cht_es8316_mc_probe(struct platform_device *pdev)
 		dev->driver->pm = &snd_soc_pm_ops;
 
 	/* register the soc card */
-	snd_soc_card_set_drvdata(&byt_cht_es8316_card, priv);
+	snd_soc_card_set_priv(card, priv);
 
-	ret = devm_snd_soc_register_card(dev, &byt_cht_es8316_card);
+	ret = devm_snd_soc_card_register(card, &byt_cht_es8316_card_driver);
 	if (ret) {
 		gpiod_put(priv->speaker_en_gpio);
-		dev_err(dev, "snd_soc_register_card failed: %d\n", ret);
+		dev_err(dev, "snd_soc_card_register() failed: %d\n", ret);
 		goto err_put_codec;
 	}
-	platform_set_drvdata(pdev, &byt_cht_es8316_card);
+
 	return 0;
 
 err_put_codec:
