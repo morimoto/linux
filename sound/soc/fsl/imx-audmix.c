@@ -20,7 +20,7 @@
 
 struct imx_audmix {
 	struct platform_device *pdev;
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	struct platform_device *audmix_pdev;
 	struct platform_device *out_pdev;
 	int num_dai;
@@ -131,6 +131,7 @@ static int imx_audmix_probe(struct platform_device *pdev)
 	struct platform_device *cpu_pdev;
 	struct of_phandle_args args;
 	struct imx_audmix *priv;
+	struct snd_soc_card *card;
 	int i, num_dai, ret;
 	const char *fe_name_pref = "HiFi-AUDMIX-FE-";
 	char *be_name, *dai_name;
@@ -162,8 +163,9 @@ static int imx_audmix_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
+	if (!card || !priv)
 		return -ENOMEM;
 
 	num_dai += 1;
@@ -302,22 +304,20 @@ static int imx_audmix_probe(struct platform_device *pdev)
 	priv->audmix_pdev = audmix_pdev;
 	priv->out_pdev  = cpu_pdev;
 
-	priv->card.dai_link = priv->dai;
-	priv->card.num_links = priv->num_dai;
-	priv->card.codec_conf = priv->dai_conf;
-	priv->card.num_configs = priv->num_dai_conf;
-	priv->card.dapm_routes = priv->dapm_routes;
-	priv->card.num_dapm_routes = priv->num_dapm_routes;
-	priv->card.dev = &pdev->dev;
-	priv->card.owner = THIS_MODULE;
-	priv->card.name = "imx-audmix";
+	priv->card_driver.dai_link = priv->dai;
+	priv->card_driver.num_links = priv->num_dai;
+	priv->card_driver.codec_conf = priv->dai_conf;
+	priv->card_driver.num_configs = priv->num_dai_conf;
+	priv->card_driver.dapm_routes = priv->dapm_routes;
+	priv->card_driver.num_dapm_routes = priv->num_dapm_routes;
+	priv->card_driver.owner = THIS_MODULE;
 
-	platform_set_drvdata(pdev, &priv->card);
-	snd_soc_card_set_drvdata(&priv->card, priv);
+	snd_soc_card_set_name(card, "imx-audmix");
+	snd_soc_card_set_priv(card, priv);
 
-	ret = devm_snd_soc_register_card(&pdev->dev, &priv->card);
+	ret = devm_snd_soc_card_register(card, &priv->card_driver);
 	if (ret) {
-		dev_err(&pdev->dev, "snd_soc_register_card failed\n");
+		dev_err(&pdev->dev, "snd_soc_card_register() failed\n");
 		return ret;
 	}
 
