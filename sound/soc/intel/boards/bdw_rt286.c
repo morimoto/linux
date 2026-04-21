@@ -199,7 +199,7 @@ static int card_resume_post(struct snd_soc_card *card)
 	return snd_soc_component_set_jack(codec_dai->component, &card_headset, NULL);
 }
 
-static struct snd_soc_card bdw_rt286_card = {
+static struct snd_soc_card_driver bdw_rt286_card_driver = {
 	.owner = THIS_MODULE,
 	.suspend_pre = card_suspend_pre,
 	.resume_post = card_resume_post,
@@ -226,21 +226,21 @@ static int bdw_rt286_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	int ret;
 
-	bdw_rt286_card.dev = dev;
 	mach = dev_get_platdata(dev);
 
-	ret = snd_soc_fixup_dai_links_platform_name(&bdw_rt286_card, mach->mach_params.platform);
+	ret = snd_soc_card_driver_fixup_dai_links_platform_name(dev, &bdw_rt286_card_driver,
+								mach->mach_params.platform);
 	if (ret)
 		return ret;
 
 	if (snd_soc_acpi_sof_parent(dev)) {
-		bdw_rt286_card.name = SOF_CARD_NAME;
-		bdw_rt286_card.driver_name = SOF_DRIVER_NAME;
+		bdw_rt286_card_driver.default_name = SOF_CARD_NAME;
+		bdw_rt286_card_driver.driver_name = SOF_DRIVER_NAME;
 	} else {
-		bdw_rt286_card.name = CARD_NAME;
+		bdw_rt286_card_driver.default_name = CARD_NAME;
 	}
 
-	return devm_snd_soc_register_card(dev, &bdw_rt286_card);
+	return devm_snd_soc_card_register(dev, &bdw_rt286_card_driver);
 }
 
 static struct platform_driver bdw_rt286_driver = {
