@@ -19,7 +19,7 @@
 struct imx_es8328_data {
 	struct device *dev;
 	struct snd_soc_dai_link dai;
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	char codec_dai_name[DAI_NAME_SIZE];
 	char platform_name[DAI_NAME_SIZE];
 	struct gpio_desc *jack_gpiod;
@@ -48,8 +48,8 @@ static struct snd_soc_jack_pin headset_jack_pins[] = {
 
 static int imx_es8328_dai_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct imx_es8328_data *data = container_of(rtd->card,
-					struct imx_es8328_data, card);
+	struct imx_es8328_data *data = container_of(snd_soc_card_to_driver(rtd->card),
+					struct imx_es8328_data, card_driver);
 	int ret = 0;
 
 	if (data->jack_gpiod) {
@@ -90,9 +90,14 @@ static int imx_es8328_probe(struct platform_device *pdev)
 	struct platform_device *ssi_pdev;
 	struct imx_es8328_data *data;
 	struct snd_soc_dai_link_component *comp;
+	struct snd_soc_card *card;
 	u32 int_port, ext_port;
 	int ret;
 	struct device *dev = &pdev->dev;
+
+	card = snd_soc_card_alloc(dev);
+	if (!card)
+		return -ENOMEM;
 
 	ret = of_property_read_u32(np, "mux-int-port", &int_port);
 	if (ret) {
@@ -199,26 +204,25 @@ static int imx_es8328_probe(struct platform_device *pdev)
 	data->dai.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
 			    SND_SOC_DAIFMT_CBP_CFP;
 
-	data->card.dev = dev;
-	data->card.dapm_widgets = imx_es8328_dapm_widgets;
-	data->card.num_dapm_widgets = ARRAY_SIZE(imx_es8328_dapm_widgets);
-	data->card.controls = imx_es8328_controls;
-	data->card.num_controls = ARRAY_SIZE(imx_es8328_controls);
-	ret = snd_soc_of_parse_card_name(&data->card, "model");
+	data->card_driver.dapm_widgets = imx_es8328_dapm_widgets;
+	data->card_driver.num_dapm_widgets = ARRAY_SIZE(imx_es8328_dapm_widgets);
+	data->card_driver.controls = imx_es8328_controls;
+	data->card_driver.num_controls = ARRAY_SIZE(imx_es8328_controls);
+	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret) {
 		dev_err(dev, "Unable to parse card name\n");
 		goto put_device;
 	}
-	ret = snd_soc_of_parse_audio_routing(&data->card, "audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(dev, &data->card_driver, "audio-routing");
 	if (ret) {
 		dev_err(dev, "Unable to parse routing: %d\n", ret);
 		goto put_device;
 	}
-	data->card.num_links = 1;
-	data->card.owner = THIS_MODULE;
-	data->card.dai_link = &data->dai;
+	data->card_driver.num_links = 1;
+	data->card_driver.owner = THIS_MODULE;
+	data->card_driver.dai_link = &data->dai;
 
-	ret = devm_snd_soc_register_card(&pdev->dev, &data->card);
+	ret = devm_snd_soc_card_register(card, &data->card_driver);
 	if (ret) {
 		dev_err(dev, "Unable to register: %d\n", ret);
 		goto put_device;
