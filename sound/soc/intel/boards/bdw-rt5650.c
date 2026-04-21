@@ -267,8 +267,8 @@ static struct snd_soc_dai_link bdw_rt5650_dais[] = {
 #define DRIVER_NAME NULL /* card name will be used for driver name */
 
 /* ASoC machine driver for Broadwell DSP + RT5650 */
-static struct snd_soc_card bdw_rt5650_card = {
-	.name = CARD_NAME,
+static struct snd_soc_card_driver bdw_rt5650_card_driver = {
+	.default_name = CARD_NAME,
 	.driver_name = DRIVER_NAME,
 	.owner = THIS_MODULE,
 	.dai_link = bdw_rt5650_dais,
@@ -286,9 +286,12 @@ static int bdw_rt5650_probe(struct platform_device *pdev)
 {
 	struct bdw_rt5650_priv *bdw_rt5650;
 	struct snd_soc_acpi_mach *mach;
+	struct snd_soc_card *card;
 	int ret;
 
-	bdw_rt5650_card.dev = &pdev->dev;
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
 
 	/* Allocate driver private struct */
 	bdw_rt5650 = devm_kzalloc(&pdev->dev, sizeof(struct bdw_rt5650_priv),
@@ -298,24 +301,24 @@ static int bdw_rt5650_probe(struct platform_device *pdev)
 
 	/* override platform name, if required */
 	mach = pdev->dev.platform_data;
-	ret = snd_soc_fixup_dai_links_platform_name(&bdw_rt5650_card,
+	ret = snd_soc_card_driver_fixup_dai_links_platform_name(&pdev->dev,
+						    &bdw_rt5650_card_driver,
 						    mach->mach_params.platform);
-
 	if (ret)
 		return ret;
 
 	/* set card and driver name */
 	if (snd_soc_acpi_sof_parent(&pdev->dev)) {
-		bdw_rt5650_card.name = SOF_CARD_NAME;
-		bdw_rt5650_card.driver_name = SOF_DRIVER_NAME;
+		bdw_rt5650_card_driver.default_name = SOF_CARD_NAME;
+		bdw_rt5650_card_driver.driver_name = SOF_DRIVER_NAME;
 	} else {
-		bdw_rt5650_card.name = CARD_NAME;
-		bdw_rt5650_card.driver_name = DRIVER_NAME;
+		bdw_rt5650_card_driver.default_name = CARD_NAME;
+		bdw_rt5650_card_driver.driver_name = DRIVER_NAME;
 	}
 
-	snd_soc_card_set_drvdata(&bdw_rt5650_card, bdw_rt5650);
+	snd_soc_card_set_priv(card, bdw_rt5650);
 
-	return devm_snd_soc_register_card(&pdev->dev, &bdw_rt5650_card);
+	return devm_snd_soc_card_register(card, &bdw_rt5650_card_driver);
 }
 
 static struct platform_driver bdw_rt5650_audio = {
