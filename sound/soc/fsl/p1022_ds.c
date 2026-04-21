@@ -62,7 +62,7 @@ static phys_addr_t guts_phys;
  */
 struct machine_data {
 	struct snd_soc_dai_link dai[2];
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	unsigned int dai_format;
 	unsigned int codec_clk_direction;
 	unsigned int cpu_clk_direction;
@@ -73,7 +73,8 @@ struct machine_data {
 	char platform_name[2][DAI_NAME_SIZE]; /* One for each DMA channel */
 };
 
-#define card_to_mdata(_card) container_of(_card, struct machine_data, card)
+#define card_to_mdata(card) container_of(snd_soc_card_to_driver(card),\
+					 struct machine_data, card_driver)
 
 /**
  * p1022_ds_machine_probe: initialize the board
@@ -364,16 +365,15 @@ static int p1022_ds_probe(struct platform_device *pdev)
 	mdata->dai[0].name = mdata->dai[0].stream_name;
 	mdata->dai[1].name = mdata->dai[1].stream_name;
 
-	mdata->card.probe = p1022_ds_machine_probe;
-	mdata->card.remove = p1022_ds_machine_remove;
-	mdata->card.name = pdev->name; /* The platform driver name */
-	mdata->card.owner = THIS_MODULE;
-	mdata->card.dev = &pdev->dev;
-	mdata->card.num_links = 2;
-	mdata->card.dai_link = mdata->dai;
+	mdata->card_driver.probe = p1022_ds_machine_probe;
+	mdata->card_driver.remove = p1022_ds_machine_remove;
+	mdata->card_driver.default_name = pdev->name; /* The platform driver name */
+	mdata->card_driver.owner = THIS_MODULE;
+	mdata->card_driver.num_links = 2;
+	mdata->card_driver.dai_link = mdata->dai;
 
 	/* Register with ASoC */
-	ret = snd_soc_register_card(&mdata->card);
+	ret = snd_soc_card_register(&pdev->dev, &mdata->card_driver);
 	if (ret) {
 		dev_err(&pdev->dev, "could not register card\n");
 		goto error;
@@ -400,7 +400,7 @@ static void p1022_ds_remove(struct platform_device *pdev)
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
 	struct machine_data *mdata = card_to_mdata(card);
 
-	snd_soc_unregister_card(card);
+	snd_soc_card_unregister(card);
 	kfree(mdata);
 }
 
