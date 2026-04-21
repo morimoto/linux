@@ -59,8 +59,8 @@ static struct snd_soc_dai_link db1200_ac97_dai = {
 	SND_SOC_DAILINK_REG(db1200_ac97),
 };
 
-static struct snd_soc_card db1200_ac97_machine = {
-	.name		= "DB1200_AC97",
+static struct snd_soc_card_driver db1200_ac97_machine = {
+	.default_name	= "DB1200_AC97",
 	.owner		= THIS_MODULE,
 	.dai_link	= &db1200_ac97_dai,
 	.num_links	= 1,
@@ -77,15 +77,15 @@ static struct snd_soc_dai_link db1300_ac97_dai = {
 	SND_SOC_DAILINK_REG(db1300_ac97),
 };
 
-static struct snd_soc_card db1300_ac97_machine = {
-	.name		= "DB1300_AC97",
+static struct snd_soc_card_driver db1300_ac97_machine = {
+	.default_name	= "DB1300_AC97",
 	.owner		= THIS_MODULE,
 	.dai_link	= &db1300_ac97_dai,
 	.num_links	= 1,
 };
 
-static struct snd_soc_card db1550_ac97_machine = {
-	.name		= "DB1550_AC97",
+static struct snd_soc_card_driver db1550_ac97_machine = {
+	.default_name	= "DB1550_AC97",
 	.owner		= THIS_MODULE,
 	.dai_link	= &db1200_ac97_dai,
 	.num_links	= 1,
@@ -123,8 +123,8 @@ static struct snd_soc_dai_link db1200_i2s_dai = {
 	SND_SOC_DAILINK_REG(db1200_i2s),
 };
 
-static struct snd_soc_card db1200_i2s_machine = {
-	.name		= "DB1200_I2S",
+static struct snd_soc_card_driver db1200_i2s_machine = {
+	.default_name	= "DB1200_I2S",
 	.owner		= THIS_MODULE,
 	.dai_link	= &db1200_i2s_dai,
 	.num_links	= 1,
@@ -144,8 +144,8 @@ static struct snd_soc_dai_link db1300_i2s_dai = {
 	SND_SOC_DAILINK_REG(db1300_i2s),
 };
 
-static struct snd_soc_card db1300_i2s_machine = {
-	.name		= "DB1300_I2S",
+static struct snd_soc_card_driver db1300_i2s_machine = {
+	.default_name	= "DB1300_I2S",
 	.owner		= THIS_MODULE,
 	.dai_link	= &db1300_i2s_dai,
 	.num_links	= 1,
@@ -165,8 +165,8 @@ static struct snd_soc_dai_link db1550_i2s_dai = {
 	SND_SOC_DAILINK_REG(db1550_i2s),
 };
 
-static struct snd_soc_card db1550_i2s_machine = {
-	.name		= "DB1550_I2S",
+static struct snd_soc_card_driver db1550_i2s_machine = {
+	.default_name	= "DB1550_I2S",
 	.owner		= THIS_MODULE,
 	.dai_link	= &db1550_i2s_dai,
 	.num_links	= 1,
@@ -174,7 +174,7 @@ static struct snd_soc_card db1550_i2s_machine = {
 
 /*-------------------------  COMMON PART  ---------------------------*/
 
-static struct snd_soc_card *db1200_cards[] = {
+static struct snd_soc_card_driver *db1200_cards[] = {
 	&db1200_ac97_machine,
 	&db1200_i2s_machine,
 	&db1300_ac97_machine,
@@ -186,11 +186,11 @@ static struct snd_soc_card *db1200_cards[] = {
 static int db1200_audio_probe(struct platform_device *pdev)
 {
 	const struct platform_device_id *pid = platform_get_device_id(pdev);
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 
-	card = db1200_cards[pid->driver_data];
-	card->dev = &pdev->dev;
-	return devm_snd_soc_register_card(&pdev->dev, card);
+	card_driver = db1200_cards[pid->driver_data];
+
+	return devm_snd_soc_card_register(&pdev->dev, card_driver);
 }
 
 static struct platform_driver db1200_audio_driver = {
