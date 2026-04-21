@@ -1207,7 +1207,7 @@ static const struct dmi_system_id byt_rt5640_quirk_table[] = {
 };
 
 /*
- * Note this MUST be called before snd_soc_register_card(), so that the props
+ * Note this MUST be called before snd_soc_card_register(), so that the props
  * are in place before the codec component driver's probe function parses them.
  */
 static int byt_rt5640_add_codec_device_props(struct device *i2c_dev,
@@ -1677,7 +1677,7 @@ static int byt_rt5640_resume(struct snd_soc_card *card)
 #define CARD_NAME "bytcr-rt5640"
 #define DRIVER_NAME NULL /* card name will be used for driver name */
 
-static struct snd_soc_card byt_rt5640_card = {
+static struct snd_soc_card_driver byt_rt5640_card_driver = {
 	.owner = THIS_MODULE,
 	.dai_link = byt_rt5640_dais,
 	.num_links = ARRAY_SIZE(byt_rt5640_dais),
@@ -1702,6 +1702,7 @@ static int snd_byt_rt5640_mc_probe(struct platform_device *pdev)
 	struct snd_soc_acpi_mach *mach = dev_get_platdata(dev);
 	__maybe_unused const char *spk_type;
 	const struct dmi_system_id *dmi_id;
+	struct snd_soc_card *card;
 	const char *headset2_string = "";
 	const char *lineout_string = "";
 	struct byt_rt5640_private *priv;
@@ -1715,13 +1716,12 @@ static int snd_byt_rt5640_mc_probe(struct platform_device *pdev)
 	int i, aif;
 
 	is_bytcr = false;
+	card = snd_soc_card_alloc(dev);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
+	if (!card || !priv)
 		return -ENOMEM;
 
-	/* register the soc card */
-	byt_rt5640_card.dev = dev;
-	snd_soc_card_set_drvdata(&byt_rt5640_card, priv);
+	snd_soc_card_set_priv(card, priv);
 
 	/* fix index of codec dai */
 	for (i = 0; i < ARRAY_SIZE(byt_rt5640_dais); i++) {
@@ -1924,18 +1924,19 @@ static int snd_byt_rt5640_mc_probe(struct platform_device *pdev)
 		 "cfg-spk:%s cfg-mic:%s aif:%d%s%s", cfg_spk,
 		 map_name[BYT_RT5640_MAP(byt_rt5640_quirk)], aif,
 		 lineout_string, headset2_string);
-	byt_rt5640_card.components = byt_rt5640_components;
+	snd_soc_card_set_components(card, byt_rt5640_components);
 #if !IS_ENABLED(CONFIG_SND_SOC_INTEL_USER_FRIENDLY_LONG_NAMES)
 	snprintf(byt_rt5640_long_name, sizeof(byt_rt5640_long_name),
 		 "bytcr-rt5640-%s-spk-%s-mic", spk_type,
 		 map_name[BYT_RT5640_MAP(byt_rt5640_quirk)]);
-	byt_rt5640_card.long_name = byt_rt5640_long_name;
+	snd_soc_card_set_long_name(card, byt_rt5640_long_name);
 #endif
 
 	/* override platform name, if required */
 	platform_name = mach->mach_params.platform;
 
-	ret_val = snd_soc_fixup_dai_links_platform_name(&byt_rt5640_card,
+	ret_val = snd_soc_card_driver_fixup_dai_links_platform_name(dev,
+							&byt_rt5640_card_driver,
 							platform_name);
 	if (ret_val)
 		goto err;
@@ -1944,23 +1945,23 @@ static int snd_byt_rt5640_mc_probe(struct platform_device *pdev)
 
 	/* set card and driver name */
 	if (sof_parent) {
-		byt_rt5640_card.name = SOF_CARD_NAME;
-		byt_rt5640_card.driver_name = SOF_DRIVER_NAME;
+		byt_rt5640_card_driver.default_name = SOF_CARD_NAME;
+		byt_rt5640_card_driver.driver_name = SOF_DRIVER_NAME;
 	} else {
-		byt_rt5640_card.name = CARD_NAME;
-		byt_rt5640_card.driver_name = DRIVER_NAME;
+		byt_rt5640_card_driver.default_name = CARD_NAME;
+		byt_rt5640_card_driver.driver_name = DRIVER_NAME;
 	}
 
 	/* set pm ops */
 	if (sof_parent)
 		dev->driver->pm = &snd_soc_pm_ops;
 
-	ret_val = devm_snd_soc_register_card(dev, &byt_rt5640_card);
+	ret_val = devm_snd_soc_card_register(card, &byt_rt5640_card_driver);
 	if (ret_val) {
-		dev_err(dev, "devm_snd_soc_register_card failed %d\n", ret_val);
+		dev_err(dev, "devm_snd_soc_card_register() failed %d\n", ret_val);
 		goto err;
 	}
-	platform_set_drvdata(pdev, &byt_rt5640_card);
+
 	return ret_val;
 
 err:
