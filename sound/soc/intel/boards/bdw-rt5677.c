@@ -391,8 +391,8 @@ static int bdw_rt5677_resume_post(struct snd_soc_card *card)
 #define DRIVER_NAME NULL /* card name will be used for driver name */
 
 /* ASoC machine driver for Broadwell DSP + RT5677 */
-static struct snd_soc_card bdw_rt5677_card = {
-	.name = CARD_NAME,
+static struct snd_soc_card_driver bdw_rt5677_card_driver = {
+	.default_name = CARD_NAME,
 	.driver_name = DRIVER_NAME,
 	.owner = THIS_MODULE,
 	.dai_link = bdw_rt5677_dais,
@@ -412,9 +412,12 @@ static int bdw_rt5677_probe(struct platform_device *pdev)
 {
 	struct bdw_rt5677_priv *bdw_rt5677;
 	struct snd_soc_acpi_mach *mach;
+	struct snd_soc_card *card;
 	int ret;
 
-	bdw_rt5677_card.dev = &pdev->dev;
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
 
 	/* Allocate driver private struct */
 	bdw_rt5677 = devm_kzalloc(&pdev->dev, sizeof(struct bdw_rt5677_priv),
@@ -424,23 +427,24 @@ static int bdw_rt5677_probe(struct platform_device *pdev)
 
 	/* override platform name, if required */
 	mach = pdev->dev.platform_data;
-	ret = snd_soc_fixup_dai_links_platform_name(&bdw_rt5677_card,
+	ret = snd_soc_card_driver_fixup_dai_links_platform_name(&pdev->dev,
+						    &bdw_rt5677_card_driver,
 						    mach->mach_params.platform);
 	if (ret)
 		return ret;
 
 	/* set card and driver name */
 	if (snd_soc_acpi_sof_parent(&pdev->dev)) {
-		bdw_rt5677_card.name = SOF_CARD_NAME;
-		bdw_rt5677_card.driver_name = SOF_DRIVER_NAME;
+		bdw_rt5677_card_driver.default_name = SOF_CARD_NAME;
+		bdw_rt5677_card_driver.driver_name = SOF_DRIVER_NAME;
 	} else {
-		bdw_rt5677_card.name = CARD_NAME;
-		bdw_rt5677_card.driver_name = DRIVER_NAME;
+		bdw_rt5677_card_driver.default_name = CARD_NAME;
+		bdw_rt5677_card_driver.driver_name = DRIVER_NAME;
 	}
 
-	snd_soc_card_set_drvdata(&bdw_rt5677_card, bdw_rt5677);
+	snd_soc_card_set_priv(card, bdw_rt5677);
 
-	return devm_snd_soc_register_card(&pdev->dev, &bdw_rt5677_card);
+	return devm_snd_soc_card_register(card, &bdw_rt5677_card_driver);
 }
 
 static struct platform_driver bdw_rt5677_audio = {
