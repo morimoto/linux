@@ -30,8 +30,8 @@ static struct snd_soc_dai_link db1000_ac97_dai = {
 	SND_SOC_DAILINK_REG(hifi),
 };
 
-static struct snd_soc_card db1000_ac97 = {
-	.name		= "DB1000_AC97",
+static struct snd_soc_card_driver db1000_ac97 = {
+	.default_name	= "DB1000_AC97",
 	.owner		= THIS_MODULE,
 	.dai_link	= &db1000_ac97_dai,
 	.num_links	= 1,
@@ -39,9 +39,7 @@ static struct snd_soc_card db1000_ac97 = {
 
 static int db1000_audio_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &db1000_ac97;
-	card->dev = &pdev->dev;
-	return devm_snd_soc_register_card(&pdev->dev, card);
+	return devm_snd_soc_card_register(&pdev->dev, &db1000_ac97);
 }
 
 static struct platform_driver db1000_audio_driver = {
