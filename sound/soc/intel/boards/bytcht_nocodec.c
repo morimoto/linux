@@ -147,8 +147,8 @@ static struct snd_soc_dai_link dais[] = {
 };
 
 /* SoC card */
-static struct snd_soc_card bytcht_nocodec_card = {
-	.name = "bytcht-nocodec",
+static struct snd_soc_card_driver bytcht_nocodec_card_driver = {
+	.default_name = "bytcht-nocodec",
 	.owner = THIS_MODULE,
 	.dai_link = dais,
 	.num_links = ARRAY_SIZE(dais),
@@ -166,16 +166,14 @@ static int snd_bytcht_nocodec_mc_probe(struct platform_device *pdev)
 	int ret_val = 0;
 
 	/* register the soc card */
-	bytcht_nocodec_card.dev = &pdev->dev;
-
-	ret_val = devm_snd_soc_register_card(&pdev->dev, &bytcht_nocodec_card);
+	ret_val = devm_snd_soc_card_register(&pdev->dev, &bytcht_nocodec_card_driver);
 
 	if (ret_val) {
-		dev_err(&pdev->dev, "devm_snd_soc_register_card failed %d\n",
+		dev_err(&pdev->dev, "devm_snd_soc_card_register() failed %d\n",
 			ret_val);
 		return ret_val;
 	}
-	platform_set_drvdata(pdev, &bytcht_nocodec_card);
+
 	return ret_val;
 }
 
