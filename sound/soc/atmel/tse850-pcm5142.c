@@ -299,8 +299,8 @@ static struct snd_soc_dai_link tse850_dailink = {
 	SND_SOC_DAILINK_REG(pcm),
 };
 
-static struct snd_soc_card tse850_card = {
-	.name = "TSE-850-ASoC",
+static struct snd_soc_card_driver tse850_card_driver = {
+	.default_name = "TSE-850-ASoC",
 	.owner = THIS_MODULE,
 	.dai_link = &tse850_dailink,
 	.num_links = 1,
@@ -344,13 +344,14 @@ static int tse850_dt_init(struct platform_device *pdev)
 
 static int tse850_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &tse850_card;
-	struct device *dev = card->dev = &pdev->dev;
+	struct snd_soc_card *card;
+	struct device *dev = &pdev->dev;
 	struct tse850_priv *tse850;
 	int ret;
 
+	card = snd_soc_card_alloc(dev);
 	tse850 = devm_kzalloc(dev, sizeof(*tse850), GFP_KERNEL);
-	if (!tse850)
+	if (!card || !tse850)
 		return -ENOMEM;
 
 	snd_soc_card_set_drvdata(card, tse850);
@@ -390,9 +391,9 @@ static int tse850_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	ret = snd_soc_register_card(card);
+	ret = snd_soc_card_register(card, &tse850_card_driver);
 	if (ret) {
-		dev_err(dev, "snd_soc_register_card failed\n");
+		dev_err(dev, "snd_soc_card_register() failed\n");
 		goto err_disable_ana;
 	}
 
@@ -408,7 +409,7 @@ static void tse850_remove(struct platform_device *pdev)
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
 	struct tse850_priv *tse850 = snd_soc_card_get_drvdata(card);
 
-	snd_soc_unregister_card(card);
+	snd_soc_card_unregister(card);
 	regulator_disable(tse850->ana);
 }
 
