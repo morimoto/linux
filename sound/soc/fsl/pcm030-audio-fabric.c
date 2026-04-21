@@ -43,8 +43,8 @@ static struct snd_soc_dai_link pcm030_fabric_dai[] = {
 },
 };
 
-static struct snd_soc_card pcm030_card = {
-	.name = "pcm030",
+static struct snd_soc_card_driver pcm030_card_driver = {
+	.default_name = "pcm030",
 	.owner = THIS_MODULE,
 	.dai_link = pcm030_fabric_dai,
 	.num_links = ARRAY_SIZE(pcm030_fabric_dai),
@@ -54,7 +54,7 @@ static int pcm030_fabric_probe(struct platform_device *op)
 {
 	struct device_node *np = op->dev.of_node;
 	struct device_node *platform_np;
-	struct snd_soc_card *card = &pcm030_card;
+	struct snd_soc_card *card;
 	struct pcm030_audio_data *pdata;
 	struct snd_soc_dai_link *dai_link;
 	int ret;
@@ -63,12 +63,11 @@ static int pcm030_fabric_probe(struct platform_device *op)
 	if (!of_machine_is_compatible("phytec,pcm030"))
 		return -ENODEV;
 
+	card = snd_soc_card_alloc(&op->dev);
 	pdata = devm_kzalloc(&op->dev, sizeof(struct pcm030_audio_data),
 			     GFP_KERNEL);
-	if (!pdata)
+	if (!card || !pdata)
 		return -ENOMEM;
-
-	card->dev = &op->dev;
 
 	pdata->card = card;
 
@@ -78,7 +77,7 @@ static int pcm030_fabric_probe(struct platform_device *op)
 		return -ENODEV;
 	}
 
-	for_each_card_prelinks(card, i, dai_link)
+	for_each_card_driver_prelinks(&pcm030_card_driver, i, dai_link)
 		dai_link->platforms->of_node = platform_np;
 
 	ret = request_module("snd-soc-wm9712");
@@ -95,22 +94,21 @@ static int pcm030_fabric_probe(struct platform_device *op)
 		platform_device_put(pdata->codec_device);
 	}
 
-	ret = snd_soc_register_card(card);
+	ret = snd_soc_card_register(card, &pcm030_card_driver);
 	if (ret) {
-		dev_err(&op->dev, "snd_soc_register_card() failed: %d\n", ret);
+		dev_err(&op->dev, "snd_soc_card_register() failed: %d\n", ret);
 		platform_device_unregister(pdata->codec_device);
 	}
 
 	platform_set_drvdata(op, pdata);
 	return ret;
-
 }
 
 static void pcm030_fabric_remove(struct platform_device *op)
 {
 	struct pcm030_audio_data *pdata = platform_get_drvdata(op);
 
-	snd_soc_unregister_card(pdata->card);
+	snd_soc_card_unregister(pdata->card);
 	platform_device_unregister(pdata->codec_device);
 }
 
