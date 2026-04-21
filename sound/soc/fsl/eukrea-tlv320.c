@@ -74,7 +74,7 @@ static struct snd_soc_dai_link eukrea_tlv320_dai = {
 	SND_SOC_DAILINK_REG(hifi),
 };
 
-static struct snd_soc_card eukrea_tlv320 = {
+static struct snd_soc_card_driver eukrea_tlv320 = {
 	.owner		= THIS_MODULE,
 	.dai_link	= &eukrea_tlv320_dai,
 	.num_links	= 1,
@@ -86,10 +86,14 @@ static int eukrea_tlv320_probe(struct platform_device *pdev)
 	int int_port = 0, ext_port;
 	struct device_node *np = pdev->dev.of_node;
 	struct device_node *ssi_np = NULL, *codec_np = NULL, *tmp_np = NULL;
+	struct snd_soc_card *card;
 
-	eukrea_tlv320.dev = &pdev->dev;
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
+
 	if (np) {
-		ret = snd_soc_of_parse_card_name(&eukrea_tlv320,
+		ret = snd_soc_card_of_parse_name(card,
 						 "eukrea,model");
 		if (ret) {
 			dev_err(&pdev->dev,
@@ -138,7 +142,7 @@ static int eukrea_tlv320_probe(struct platform_device *pdev)
 		eukrea_tlv320_dai.cpus->dai_name = "imx-ssi.0";
 		eukrea_tlv320_dai.platforms->name = "imx-ssi.0";
 		eukrea_tlv320_dai.codecs->name = "tlv320aic23-codec.0-001a";
-		eukrea_tlv320.name = "cpuimx-audio";
+		eukrea_tlv320.default_name = "cpuimx-audio";
 	}
 
 	if (of_machine_is_compatible("eukrea,cpuimx27") ||
@@ -195,10 +199,10 @@ static int eukrea_tlv320_probe(struct platform_device *pdev)
 		}
 	}
 
-	ret = devm_snd_soc_register_card(&pdev->dev, &eukrea_tlv320);
+	ret = devm_snd_soc_card_register(card, &eukrea_tlv320);
 err:
 	if (ret)
-		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
+		dev_err(&pdev->dev, "snd_soc_card_register() failed (%d)\n", ret);
 	of_node_put(ssi_np);
 
 	return ret;
