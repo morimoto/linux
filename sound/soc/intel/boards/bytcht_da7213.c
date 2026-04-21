@@ -208,8 +208,8 @@ static struct snd_soc_dai_link dailink[] = {
 #define DRIVER_NAME NULL /* card name will be used for driver name */
 
 /* SoC card */
-static struct snd_soc_card bytcht_da7213_card = {
-	.name = CARD_NAME,
+static struct snd_soc_card_driver bytcht_da7213_card_driver = {
+	.default_name = CARD_NAME,
 	.driver_name = DRIVER_NAME,
 	.owner = THIS_MODULE,
 	.dai_link = dailink,
@@ -226,7 +226,7 @@ static char codec_name[SND_ACPI_I2C_ID_LEN];
 
 static int bytcht_da7213_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct snd_soc_acpi_mach *mach;
 	const char *platform_name;
 	struct acpi_device *adev;
@@ -236,8 +236,7 @@ static int bytcht_da7213_probe(struct platform_device *pdev)
 	int i;
 
 	mach = pdev->dev.platform_data;
-	card = &bytcht_da7213_card;
-	card->dev = &pdev->dev;
+	card_driver = &bytcht_da7213_card_driver;
 
 	/* fix index of codec dai */
 	for (i = 0; i < ARRAY_SIZE(dailink); i++) {
@@ -264,7 +263,8 @@ static int bytcht_da7213_probe(struct platform_device *pdev)
 	/* override platform name, if required */
 	platform_name = mach->mach_params.platform;
 
-	ret_val = snd_soc_fixup_dai_links_platform_name(card, platform_name);
+	ret_val = snd_soc_card_driver_fixup_dai_links_platform_name(&pdev->dev,
+							card_driver, platform_name);
 	if (ret_val)
 		return ret_val;
 
@@ -272,24 +272,24 @@ static int bytcht_da7213_probe(struct platform_device *pdev)
 
 	/* set card and driver name */
 	if (sof_parent) {
-		bytcht_da7213_card.name = SOF_CARD_NAME;
-		bytcht_da7213_card.driver_name = SOF_DRIVER_NAME;
+		card_driver->default_name = SOF_CARD_NAME;
+		card_driver->driver_name = SOF_DRIVER_NAME;
 	} else {
-		bytcht_da7213_card.name = CARD_NAME;
-		bytcht_da7213_card.driver_name = DRIVER_NAME;
+		card_driver->default_name = CARD_NAME;
+		card_driver->driver_name = DRIVER_NAME;
 	}
 
 	/* set pm ops */
 	if (sof_parent)
 		pdev->dev.driver->pm = &snd_soc_pm_ops;
 
-	ret_val = devm_snd_soc_register_card(&pdev->dev, card);
+	ret_val = devm_snd_soc_card_register(&pdev->dev, card_driver);
 	if (ret_val) {
 		dev_err(&pdev->dev,
-			"snd_soc_register_card failed %d\n", ret_val);
+			"snd_soc_card_register() failed %d\n", ret_val);
 		return ret_val;
 	}
-	platform_set_drvdata(pdev, card);
+
 	return ret_val;
 }
 
