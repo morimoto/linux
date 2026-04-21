@@ -502,7 +502,7 @@ static struct snd_soc_dai_link byt_wm5102_dais[] = {
 #define DRIVER_NAME NULL /* card name will be used for driver name */
 
 /* SoC card */
-static struct snd_soc_card byt_wm5102_card = {
+static struct snd_soc_card_driver byt_wm5102_card_driver = {
 	.owner = THIS_MODULE,
 	.dai_link = byt_wm5102_dais,
 	.num_links = ARRAY_SIZE(byt_wm5102_dais),
@@ -524,6 +524,7 @@ static int snd_byt_wm5102_mc_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct byt_wm5102_private *priv;
 	struct snd_soc_acpi_mach *mach;
+	struct snd_soc_card *card;
 	const char *platform_name;
 	struct acpi_device *adev;
 	struct device *codec_dev;
@@ -531,8 +532,9 @@ static int snd_byt_wm5102_mc_probe(struct platform_device *pdev)
 	bool sof_parent;
 	int i, ret;
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
+	if (!card || !priv)
 		return -ENOMEM;
 
 	/* Get MCLK */
@@ -598,7 +600,7 @@ static int snd_byt_wm5102_mc_probe(struct platform_device *pdev)
 		 out_map_name[FIELD_GET(BYT_WM5102_OUT_MAP, quirk)],
 		 intmic_map_name[FIELD_GET(BYT_WM5102_IN_MAP, quirk)],
 		 hsmic_map_name[FIELD_GET(BYT_WM5102_IN_MAP, quirk)]);
-	byt_wm5102_card.components = byt_wm5102_components;
+	snd_soc_card_set_components(card, byt_wm5102_components);
 
 	/* find index of codec dai */
 	for (i = 0; i < ARRAY_SIZE(byt_wm5102_dais); i++) {
@@ -611,9 +613,9 @@ static int snd_byt_wm5102_mc_probe(struct platform_device *pdev)
 	}
 
 	/* override platform name, if required */
-	byt_wm5102_card.dev = dev;
 	platform_name = mach->mach_params.platform;
-	ret = snd_soc_fixup_dai_links_platform_name(&byt_wm5102_card, platform_name);
+	ret = snd_soc_card_driver_fixup_dai_links_platform_name(dev,
+					&byt_wm5102_card_driver, platform_name);
 	if (ret)
 		goto out_put_gpio;
 
@@ -624,22 +626,21 @@ static int snd_byt_wm5102_mc_probe(struct platform_device *pdev)
 	/* set card and driver name and pm-ops */
 	sof_parent = snd_soc_acpi_sof_parent(dev);
 	if (sof_parent) {
-		byt_wm5102_card.name = SOF_CARD_NAME;
-		byt_wm5102_card.driver_name = SOF_DRIVER_NAME;
+		byt_wm5102_card_driver.default_name = SOF_CARD_NAME;
+		byt_wm5102_card_driver.driver_name = SOF_DRIVER_NAME;
 		dev->driver->pm = &snd_soc_pm_ops;
 	} else {
-		byt_wm5102_card.name = CARD_NAME;
-		byt_wm5102_card.driver_name = DRIVER_NAME;
+		byt_wm5102_card_driver.default_name = CARD_NAME;
+		byt_wm5102_card_driver.driver_name = DRIVER_NAME;
 	}
 
-	snd_soc_card_set_drvdata(&byt_wm5102_card, priv);
-	ret = devm_snd_soc_register_card(dev, &byt_wm5102_card);
+	snd_soc_card_set_priv(card, priv);
+	ret = devm_snd_soc_card_register(card, &byt_wm5102_card_driver);
 	if (ret) {
 		dev_err_probe(dev, ret, "registering card\n");
 		goto out_put_gpio;
 	}
 
-	platform_set_drvdata(pdev, &byt_wm5102_card);
 	return 0;
 
 out_put_gpio:
