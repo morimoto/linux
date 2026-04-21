@@ -116,7 +116,7 @@ struct imx_card_data {
 	struct imx_card_plat_data *plat_data;
 	struct snd_soc_dapm_route *dapm_routes;
 	struct dai_link_data *link_data;
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	int num_dapm_routes;
 	u32 asrc_rate;
 	snd_pcm_format_t asrc_format;
@@ -536,10 +536,10 @@ static int be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 	return 0;
 }
 
-static int imx_card_parse_of(struct imx_card_data *data)
+static int imx_card_parse_of(struct snd_soc_card *card, struct imx_card_data *data)
 {
 	struct imx_card_plat_data *plat_data = data->plat_data;
-	struct snd_soc_card *card = &data->card;
+	struct snd_soc_card_driver *card_driver = &data->card_driver;
 	struct snd_soc_dai_link_component *dlc;
 	struct device_node *platform = NULL;
 	struct device_node *codec = NULL;
@@ -561,7 +561,7 @@ static int imx_card_parse_of(struct imx_card_data *data)
 
 	/* DAPM routes */
 	if (of_property_present(dev->of_node, "audio-routing")) {
-		ret = snd_soc_of_parse_audio_routing(card, "audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver, "audio-routing");
 		if (ret)
 			return ret;
 	}
@@ -570,16 +570,16 @@ static int imx_card_parse_of(struct imx_card_data *data)
 	num_links = of_get_child_count(dev->of_node);
 
 	/* Allocate the DAI link array */
-	card->dai_link = devm_kcalloc(dev, num_links, sizeof(*link), GFP_KERNEL);
-	if (!card->dai_link)
+	card_driver->dai_link = devm_kcalloc(dev, num_links, sizeof(*link), GFP_KERNEL);
+	if (!card_driver->dai_link)
 		return -ENOMEM;
 
 	data->link_data = devm_kcalloc(dev, num_links, sizeof(*link_data), GFP_KERNEL);
 	if (!data->link_data)
 		return -ENOMEM;
 
-	card->num_links = num_links;
-	link = card->dai_link;
+	card_driver->num_links = num_links;
+	link = card_driver->dai_link;
 	link_data = data->link_data;
 
 	for_each_child_of_node_scoped(dev->of_node, np) {
@@ -596,8 +596,7 @@ static int imx_card_parse_of(struct imx_card_data *data)
 
 		ret = of_property_read_string(np, "link-name", &link->name);
 		if (ret) {
-			return dev_err_probe(card->dev, ret,
-					     "error getting codec dai_link name\n");
+			return dev_err_probe(dev, ret, "error getting codec dai_link name\n");
 		}
 
 		cpu = of_get_child_by_name(np, "cpu");
@@ -609,8 +608,7 @@ static int imx_card_parse_of(struct imx_card_data *data)
 
 		ret = snd_soc_of_get_dlc(cpu, &args, link->cpus, 0);
 		if (ret) {
-			dev_err_probe(card->dev, ret,
-				      "%s: error getting cpu dai info\n", link->name);
+			dev_err_probe(dev, ret, "%s: error getting cpu dai info\n", link->name);
 			goto err;
 		}
 
@@ -767,10 +765,12 @@ static int imx_card_probe(struct platform_device *pdev)
 	struct snd_soc_dai_link *link_be = NULL, *link;
 	struct imx_card_plat_data *plat_data;
 	struct imx_card_data *data;
+	struct snd_soc_card *card;
 	int ret, i;
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-	if (!data)
+	if (!card || !data)
 		return -ENOMEM;
 
 	plat_data = devm_kzalloc(&pdev->dev, sizeof(*plat_data), GFP_KERNEL);
@@ -778,12 +778,10 @@ static int imx_card_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	data->plat_data = plat_data;
-	data->card.dev = &pdev->dev;
-	data->card.owner = THIS_MODULE;
+	data->card_driver.owner = THIS_MODULE;
 
-	dev_set_drvdata(&pdev->dev, &data->card);
-	snd_soc_card_set_drvdata(&data->card, data);
-	ret = imx_card_parse_of(data);
+	snd_soc_card_set_priv(card, data);
+	ret = imx_card_parse_of(card, data);
 	if (ret)
 		return ret;
 
@@ -905,14 +903,14 @@ static int imx_card_probe(struct platform_device *pdev)
 	}
 
 	/* with asrc as front end */
-	if (data->card.num_links == 3) {
-		data->card.dapm_routes = data->dapm_routes;
-		data->card.num_dapm_routes = data->num_dapm_routes;
-		for_each_card_prelinks(&data->card, i, link) {
+	if (data->card_driver.num_links == 3) {
+		data->card_driver.dapm_routes = data->dapm_routes;
+		data->card_driver.num_dapm_routes = data->num_dapm_routes;
+		for_each_card_driver_prelinks(&data->card_driver, i, link) {
 			if (link->no_pcm == 1)
 				link_be = link;
 		}
-		for_each_card_prelinks(&data->card, i, link) {
+		for_each_card_driver_prelinks(&data->card_driver, i, link) {
 			if (link->dynamic == 1 && link_be) {
 				link->playback_only = link_be->playback_only;
 				link->capture_only  = link_be->capture_only;
@@ -920,9 +918,9 @@ static int imx_card_probe(struct platform_device *pdev)
 		}
 	}
 
-	ret = devm_snd_soc_register_card(&pdev->dev, &data->card);
+	ret = devm_snd_soc_card_register(card, &data->card_driver);
 	if (ret)
-		return dev_err_probe(&pdev->dev, ret, "snd_soc_register_card failed\n");
+		return dev_err_probe(&pdev->dev, ret, "snd_soc_card_register() failed\n");
 
 	return 0;
 }
