@@ -1046,6 +1046,12 @@ static void __init sh_pfc_check_info(const struct sh_pfc_soc_info *info)
 #define drive_reg(i)	drive_ofs(i).reg
 #define drive_bit(i)	((i) % drive_nfields)
 #define drive_field(i)	drive_ofs(i).fields[drive_bit(i)]
+	const struct rcar5_pinmux_drive_reg *drive_regs_rcar5 = info->drive_regs_rcar5;
+#define drive_npins_rcar5	ARRAY_SIZE(drive_regs_rcar5->pins)
+#define drive_ofs_rcar5(i)	drive_regs_rcar5[(i) / drive_npins_rcar5]
+#define drive_reg_rcar5(i)	drive_ofs_rcar5(i).drvctrl0
+#define drive_bit_rcar5(i)	((i) % drive_npins_rcar5)
+#define drive_pin_rcar5(i)	drive_ofs_rcar5(i).pins[drive_bit_rcar5(i)]
 	const struct pinmux_bias_reg *bias_regs = info->bias_regs;
 #define bias_npins	ARRAY_SIZE(bias_regs->pins)
 #define bias_ofs(i)	bias_regs[(i) / bias_npins]
@@ -1118,9 +1124,14 @@ static void __init sh_pfc_check_info(const struct sh_pfc_soc_info *info)
 		}
 
 		if (pin->configs & SH_PFC_PIN_CFG_DRIVE_STRENGTH) {
-			if (!drive_regs) {
-				sh_pfc_err_once(drive, "SH_PFC_PIN_CFG_DRIVE_STRENGTH flag set but drive_regs missing\n");
-			} else {
+			if (!drive_regs && !drive_regs_rcar5) {
+				sh_pfc_err_once(drive,
+				"SH_PFC_PIN_CFG_DRIVE_STRENGTH flag set but drive_regs and drive_regs_rcar5 missing\n");
+			} else if (drive_regs && drive_regs_rcar5) {
+				sh_pfc_err_once(drive,
+				"Only one of drive_regs and drive_regs_rcar5 can be set\n");
+
+			} else if (drive_regs) {
 				for (j = 0; drive_reg(j); j++) {
 					if (!drive_field(j).pin &&
 					    !drive_field(j).offset &&
@@ -1133,6 +1144,18 @@ static void __init sh_pfc_check_info(const struct sh_pfc_soc_info *info)
 
 				if (!drive_reg(j))
 					sh_pfc_err("pin %s: SH_PFC_PIN_CFG_DRIVE_STRENGTH flag set but not in drive_regs\n",
+						   pin->name);
+			} else {
+				for (j = 0; drive_reg_rcar5(j); j++) {
+					if (drive_pin_rcar5(j) == SH_PFC_PIN_NONE)
+						continue;
+
+					if (drive_pin_rcar5(j) == pin->pin)
+						break;
+				}
+
+				if (!drive_reg_rcar5(j))
+					sh_pfc_err("pin %s: SH_PFC_PIN_CFG_DRIVE_STRENGTH flag set but not in drive_regs_rcar5\n",
 						   pin->name);
 			}
 		}
