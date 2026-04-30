@@ -6127,7 +6127,6 @@ static const struct pinmux_bias_reg pinmux_bias_regs[] = {
 static const struct sh_pfc_soc_operations r8a78000_pin_ops = {
 	.get_bias = rcar_pinmux_get_bias,
 	.set_bias = rcar_pinmux_set_bias,
-	.set_drive_strength = rcar5_pinconf_set_drive_strength,
 };
 
 const struct sh_pfc_soc_info r8a78000_pinmux_info = {
