@@ -2724,7 +2724,7 @@ static const unsigned int hscif2_ctrl_b_mux[] = {
 /* - HSCIF3 ----------------------------------------------------------------- */
 static const unsigned int hscif3_data_pins[] = {
 	/* HRX3, HTX3 */
-	RCAR_GP_PIN(6, 18), RCAR_GP_PIN(8, 17),
+	RCAR_GP_PIN(6, 18), RCAR_GP_PIN(6, 17),
 };
 static const unsigned int hscif3_data_mux[] = {
 	HRX3_MARK, HTX3_MARK,
@@ -2793,7 +2793,7 @@ static const unsigned int scif1_ctrl_mux[] = {
 /* - SCIF3 ----------------------------------------------------------------- */
 static const unsigned int scif3_data_pins[] = {
 	/* RX3, TX3 */
-	RCAR_GP_PIN(6, 18), RCAR_GP_PIN(8, 17),
+	RCAR_GP_PIN(6, 18), RCAR_GP_PIN(6, 17),
 };
 static const unsigned int scif3_data_mux[] = {
 	RX3_MARK, TX3_MARK,
