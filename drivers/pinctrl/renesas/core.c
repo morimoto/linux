@@ -688,6 +688,16 @@ static unsigned int sh_pfc_walk_regs(struct sh_pfc *pfc,
 		for (i = 0; pfc->info->drive_regs[i].reg; i++)
 			do_reg(pfc, pfc->info->drive_regs[i].reg, n++);
 
+	if (pfc->info->drive_regs_rcar5)
+		for (i = 0; pfc->info->drive_regs_rcar5[i].drvctrl0; i++) {
+			do_reg(pfc, pfc->info->drive_regs_rcar5[i].drvctrl0,
+			       n++);
+			do_reg(pfc, pfc->info->drive_regs_rcar5[i].drvctrl0 + 4,
+			       n++);
+			do_reg(pfc, pfc->info->drive_regs_rcar5[i].drvctrl0 + 8,
+			       n++);
+		}
+
 	if (pfc->info->bias_regs)
 		for (i = 0; pfc->info->bias_regs[i].puen ||
 			    pfc->info->bias_regs[i].pud; i++) {
