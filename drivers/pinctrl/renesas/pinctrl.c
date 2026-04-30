@@ -534,8 +534,8 @@ static int sh_pfc_pinconf_set_drive_strength(struct sh_pfc *pfc,
 	return 0;
 }
 
-int rcar5_pinconf_set_drive_strength(struct sh_pfc *pfc,
-				    unsigned int pin, u16 strength)
+static int rcar5_pinconf_set_drive_strength(struct sh_pfc *pfc,
+					    unsigned int pin, u16 strength)
 {
 	const struct rcar5_pinmux_drive_reg *reg;
 	unsigned int bank = pin / 32;
@@ -708,11 +708,10 @@ static int sh_pfc_pinconf_set(struct pinctrl_dev *pctldev, unsigned _pin,
 				pinconf_to_config_argument(configs[i]);
 			int ret;
 
-			if (!pfc->info->ops || !pfc->info->ops->set_drive_strength)
-				ret = sh_pfc_pinconf_set_drive_strength(pfc, _pin, arg);
+			if (pfc->info->drive_regs_rcar5)
+				ret = rcar5_pinconf_set_drive_strength(pfc, _pin, arg);
 			else
-				ret = pfc->info->ops->set_drive_strength(pfc, _pin, arg);
-
+				ret = sh_pfc_pinconf_set_drive_strength(pfc, _pin, arg);
 			if (ret < 0)
 				return ret;
 
