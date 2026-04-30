@@ -187,16 +187,12 @@ struct pinmux_data_reg {
 	const u16 *enum_ids;
 };
 
-#define RCAR5_PINMUX_DRIVE_REG(name1, r1, name2, r2, name3, r3) \
-	.drvctrl0 = r1,	\
-	.drvctrl1 = r2,	\
-	.drvctrl2 = r3,	\
+#define RCAR5_PINMUX_DRIVE_REG(name, r) \
+	.drvctrl0 = r,	\
 	.pins =
 
 struct rcar5_pinmux_drive_reg {
 	u32 drvctrl0;
-	u32 drvctrl1;
-	u32 drvctrl2;
 	const u16 pins[32];
 };
 
