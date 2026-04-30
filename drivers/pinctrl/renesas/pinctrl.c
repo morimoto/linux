@@ -567,8 +567,8 @@ int rcar5_pinconf_set_drive_strength(struct sh_pfc *pfc,
 	strength = strength / 3 - 1;
 
 	rcar5_pinconf_write_bit(pfc, bit, FIELD_GET(GENMASK(0, 0), strength), reg->drvctrl0);
-	rcar5_pinconf_write_bit(pfc, bit, FIELD_GET(GENMASK(1, 1), strength), reg->drvctrl1);
-	rcar5_pinconf_write_bit(pfc, bit, FIELD_GET(GENMASK(2, 2), strength), reg->drvctrl2);
+	rcar5_pinconf_write_bit(pfc, bit, FIELD_GET(GENMASK(1, 1), strength), reg->drvctrl0 + 4);
+	rcar5_pinconf_write_bit(pfc, bit, FIELD_GET(GENMASK(2, 2), strength), reg->drvctrl0 + 8);
 
 	return 0;
 }

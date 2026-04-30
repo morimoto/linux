@@ -5318,9 +5318,7 @@ static const struct pinmux_cfg_reg pinmux_config_regs[] = {
 };
 
 static const struct rcar5_pinmux_drive_reg pinmux_drive_regs[] = {
-	{ RCAR5_PINMUX_DRIVE_REG("GP0_DRVCTRL0", 0xC1080080,
-				 "GP0_DRVCTRL1", 0xC1080084,
-				 "GP0_DRVCTRL2", 0xC1080088) {
+	{ RCAR5_PINMUX_DRIVE_REG("GP0_DRVCTRL0", 0xC1080080) {
 		[ 0] = RCAR_GP_PIN(0,  0),	/* GP0_00 */
 		[ 1] = RCAR_GP_PIN(0,  1),	/* GP0_01 */
 		[ 2] = RCAR_GP_PIN(0,  2),	/* GP0_02 */
@@ -5354,9 +5352,7 @@ static const struct rcar5_pinmux_drive_reg pinmux_drive_regs[] = {
 		[30] = SH_PFC_PIN_NONE,
 		[31] = SH_PFC_PIN_NONE,
 	} },
-	{ RCAR5_PINMUX_DRIVE_REG("GP1_DRVCTRL0", 0xC1080880,
-				 "GP1_DRVCTRL1", 0xC1080884,
-				 "GP1_DRVCTRL2", 0xC1080888) {
+	{ RCAR5_PINMUX_DRIVE_REG("GP1_DRVCTRL0", 0xC1080880) {
 		[ 0] = RCAR_GP_PIN(1,  0),	/* CAN0RX_INTP0 */
 		[ 1] = RCAR_GP_PIN(1,  1),	/* CAN0TX */
 		[ 2] = RCAR_GP_PIN(1,  2),	/* CAN1RX_INTP1 */
@@ -5390,9 +5386,7 @@ static const struct rcar5_pinmux_drive_reg pinmux_drive_regs[] = {
 		[30] = SH_PFC_PIN_NONE,
 		[31] = SH_PFC_PIN_NONE,
 	} },
-	{ RCAR5_PINMUX_DRIVE_REG("GP2_DRVCTRL0", 0xC1081080,
-				 "GP2_DRVCTRL1", 0xC1081084,
-				 "GP2_DRVCTRL2", 0xC1081088) {
+	{ RCAR5_PINMUX_DRIVE_REG("GP2_DRVCTRL0", 0xC1081080) {
 		[ 0] = RCAR_GP_PIN(2,  0),	/* RLIN34RX_INTP20_B */
 		[ 1] = RCAR_GP_PIN(2,  1),	/* RLIN34TX_B */
 		[ 2] = RCAR_GP_PIN(2,  2),	/* RLIN35RX_INTP21_B */
@@ -5426,9 +5420,7 @@ static const struct rcar5_pinmux_drive_reg pinmux_drive_regs[] = {
 		[30] = SH_PFC_PIN_NONE,
 		[31] = SH_PFC_PIN_NONE,
 	} },
-	{ RCAR5_PINMUX_DRIVE_REG("GP3_DRVCTRL0", 0xC0800080,
-				 "GP3_DRVCTRL1", 0xC0800084,
-				 "GP3_DRVCTRL2", 0xC0800088) {
+	{ RCAR5_PINMUX_DRIVE_REG("GP3_DRVCTRL0", 0xC0800080) {
 		[ 0] = RCAR_GP_PIN(3,  0),	/* QSPI0_SPCLK */
 		[ 1] = RCAR_GP_PIN(3,  1),	/* QSPI0_MOSI_IO0 */
 		[ 2] = RCAR_GP_PIN(3,  2),	/* QSPI0_MISO_IO1 */
@@ -5462,9 +5454,7 @@ static const struct rcar5_pinmux_drive_reg pinmux_drive_regs[] = {
 		[30] = SH_PFC_PIN_NONE,
 		[31] = SH_PFC_PIN_NONE,
 	} },
-	{ RCAR5_PINMUX_DRIVE_REG("GP4_DRVCTRL0", 0xC0800880,
-				 "GP4_DRVCTRL1", 0xC0800884,
-				 "GP4_DRVCTRL2", 0xC0800888) {
+	{ RCAR5_PINMUX_DRIVE_REG("GP4_DRVCTRL0", 0xC0800880) {
 		[ 0] = RCAR_GP_PIN(4,  0),	/* MMC0_SD_CLK */
 		[ 1] = RCAR_GP_PIN(4,  1),	/* MMC0_SD_CMD */
 		[ 2] = RCAR_GP_PIN(4,  2),	/* MMC0_SD_D0 */
@@ -5498,9 +5488,7 @@ static const struct rcar5_pinmux_drive_reg pinmux_drive_regs[] = {
 		[30] = SH_PFC_PIN_NONE,
 		[31] = SH_PFC_PIN_NONE,
 	} },
-	{ RCAR5_PINMUX_DRIVE_REG("GP5_DRVCTRL0", 0xC0400080,
-				 "GP5_DRVCTRL1", 0xC0400084,
-				 "GP5_DRVCTRL2", 0xC0400088) {
+	{ RCAR5_PINMUX_DRIVE_REG("GP5_DRVCTRL0", 0xC0400080) {
 		[ 0] = RCAR_GP_PIN(5,  0),	/* HTX0 */
 		[ 1] = RCAR_GP_PIN(5,  1),	/* HRX0 */
 		[ 2] = RCAR_GP_PIN(5,  2),	/* HRTS0_N */
@@ -5534,9 +5522,7 @@ static const struct rcar5_pinmux_drive_reg pinmux_drive_regs[] = {
 		[30] = SH_PFC_PIN_NONE,
 		[31] = SH_PFC_PIN_NONE,
 	} },
-	{ RCAR5_PINMUX_DRIVE_REG("GP6_DRVCTRL0", 0xC0400880,
-				 "GP6_DRVCTRL1", 0xC0400884,
-				 "GP6_DRVCTRL2", 0xC0400888) {
+	{ RCAR5_PINMUX_DRIVE_REG("GP6_DRVCTRL0", 0xC0400880) {
 		[ 0] = RCAR_GP_PIN(6,  0),	/* RIF6_D0 */
 		[ 1] = RCAR_GP_PIN(6,  1),	/* RIF6_D1 */
 		[ 2] = RCAR_GP_PIN(6,  2),	/* RIF6_SYNC */
@@ -5570,9 +5556,7 @@ static const struct rcar5_pinmux_drive_reg pinmux_drive_regs[] = {
 		[30] = RCAR_GP_PIN(6, 30),	/* AUDIO1_CLKOUT1 */
 		[31] = SH_PFC_PIN_NONE,
 	} },
-	{ RCAR5_PINMUX_DRIVE_REG("GP7_DRVCTRL0", 0xC0401080,
-				 "GP7_DRVCTRL1", 0xC0401084,
-				 "GP7_DRVCTRL2", 0xC0401088) {
+	{ RCAR5_PINMUX_DRIVE_REG("GP7_DRVCTRL0", 0xC0401080) {
 		[ 0] = RCAR_GP_PIN(7,  0),	/* SSI3_SCK */
 		[ 1] = RCAR_GP_PIN(7,  1),	/* SSI3_WS */
 		[ 2] = RCAR_GP_PIN(7,  2),	/* SSI3_SD */
@@ -5606,9 +5590,7 @@ static const struct rcar5_pinmux_drive_reg pinmux_drive_regs[] = {
 		[30] = RCAR_GP_PIN(7, 30),	/* MSIOF6_SS2_B */
 		[31] = SH_PFC_PIN_NONE,
 	} },
-	{ RCAR5_PINMUX_DRIVE_REG("GP8_DRVCTRL0", 0xC0401880,
-				 "GP8_DRVCTRL1", 0xC0401884,
-				 "GP8_DRVCTRL2", 0xC0401888) {
+	{ RCAR5_PINMUX_DRIVE_REG("GP8_DRVCTRL0", 0xC0401880) {
 		[ 0] = RCAR_GP_PIN(8,  0),	/* SCL1 */
 		[ 1] = RCAR_GP_PIN(8,  1),	/* SDA1 */
 		[ 2] = RCAR_GP_PIN(8,  2),	/* SCL2 */
@@ -5642,9 +5624,7 @@ static const struct rcar5_pinmux_drive_reg pinmux_drive_regs[] = {
 		[30] = RCAR_GP_PIN(8, 30),	/* S3CL2 */
 		[31] = RCAR_GP_PIN(8, 31),	/* S3DA2 */
 	} },
-	{ RCAR5_PINMUX_DRIVE_REG("GP9_DRVCTRL0", 0xC9B00080,
-				 "GP9_DRVCTRL1", 0xC9B00084,
-				 "GP9_DRVCTRL2", 0xC9B00088) {
+	{ RCAR5_PINMUX_DRIVE_REG("GP9_DRVCTRL0", 0xC9B00080) {
 		[ 0] = RCAR_GP_PIN(9,  0),	/* ETHES0_PPS */
 		[ 1] = RCAR_GP_PIN(9,  1),	/* ETHES0_CAPTURE */
 		[ 2] = RCAR_GP_PIN(9,  2),	/* ETHES0_MATCH */
@@ -5678,9 +5658,7 @@ static const struct rcar5_pinmux_drive_reg pinmux_drive_regs[] = {
 		[30] = SH_PFC_PIN_NONE,
 		[31] = SH_PFC_PIN_NONE,
 	} },
-	{ RCAR5_PINMUX_DRIVE_REG("GP10_DRVCTRL0", 0xC9B00880,
-				 "GP10_DRVCTRL1", 0xC9B00884,
-				 "GP10_DRVCTRL2", 0xC9B00888) {
+	{ RCAR5_PINMUX_DRIVE_REG("GP10_DRVCTRL0", 0xC9B00880) {
 		[ 0] = RCAR_GP_PIN(10,  0),	/* USB0_PWEN */
 		[ 1] = RCAR_GP_PIN(10,  1),	/* USB0_OVC */
 		[ 2] = RCAR_GP_PIN(10,  2),	/* USB0_VBUS_VALID */
