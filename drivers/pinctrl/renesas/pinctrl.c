@@ -534,6 +534,30 @@ static int sh_pfc_pinconf_set_drive_strength(struct sh_pfc *pfc,
 	return 0;
 }
 
+static int rcar5_pinconf_get_drive_strength(struct sh_pfc *pfc,
+					    unsigned int pin)
+{
+	const struct rcar5_pinmux_drive_reg *reg;
+	unsigned int bank = pin / 32;
+	unsigned int bit = pin % 32;
+	u32 drvctrl, val = 0;
+	unsigned int i;
+
+	reg = &pfc->info->drive_regs_rcar5[bank];
+	if (reg->pins[bit] != pin)
+		return -EINVAL;
+
+	for (i = 0, drvctrl = reg->drvctrl0; i < 3; i++, drvctrl += 4) {
+		if (sh_pfc_read(pfc, drvctrl) & BIT(bit))
+			val |= BIT(i);
+	}
+
+	/* Convert the value to mA based on a full drive strength value of 24mA.
+	 * We can make the full value configurable later if needed.
+	 */
+	return (val + 1) * 3;
+}
+
 static int rcar5_pinconf_set_drive_strength(struct sh_pfc *pfc,
 					    unsigned int pin, u16 strength)
 {
@@ -635,7 +659,10 @@ static int sh_pfc_pinconf_get(struct pinctrl_dev *pctldev, unsigned _pin,
 	case PIN_CONFIG_DRIVE_STRENGTH: {
 		int ret;
 
-		ret = sh_pfc_pinconf_get_drive_strength(pfc, _pin);
+		if (pfc->info->drive_regs_rcar5)
+			ret = rcar5_pinconf_get_drive_strength(pfc, _pin);
+		else
+			ret = sh_pfc_pinconf_get_drive_strength(pfc, _pin);
 		if (ret < 0)
 			return ret;
 
