@@ -145,6 +145,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x0>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_0>;
 		};
 
@@ -152,6 +153,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x100>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_1>;
 		};
 
@@ -159,6 +161,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x200>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_2>;
 		};
 
@@ -166,6 +169,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x300>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_3>;
 		};
 
@@ -173,6 +177,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x10000>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_4>;
 		};
 
@@ -180,6 +185,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x10100>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_5>;
 		};
 
@@ -187,6 +193,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x10200>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_6>;
 		};
 
@@ -194,6 +201,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x10300>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_7>;
 		};
 
@@ -201,6 +209,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x20000>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_8>;
 		};
 
@@ -208,6 +217,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x20100>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_9>;
 		};
 
@@ -215,6 +225,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x20200>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_10>;
 		};
 
@@ -222,6 +233,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x20300>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_11>;
 		};
 
@@ -229,6 +241,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x30000>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_12>;
 		};
 
@@ -236,6 +249,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x30100>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_13>;
 		};
 
@@ -243,6 +257,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x30200>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_14>;
 		};
 
@@ -250,6 +265,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x30300>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_15>;
 		};
 
@@ -257,6 +273,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x40000>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_16>;
 		};
 
@@ -264,6 +281,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x40100>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_17>;
 		};
 
@@ -271,6 +289,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x40200>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_18>;
 		};
 
@@ -278,6 +297,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x40300>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_19>;
 		};
 
@@ -285,6 +305,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x50000>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_20>;
 		};
 
@@ -292,6 +313,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x50100>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_21>;
 		};
 
@@ -299,6 +321,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x50200>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_22>;
 		};
 
@@ -306,6 +329,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x50300>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_23>;
 		};
 
@@ -313,6 +337,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x60000>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_24>;
 		};
 
@@ -320,6 +345,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x60100>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_25>;
 		};
 
@@ -327,6 +353,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x60200>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_26>;
 		};
 
@@ -334,6 +361,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x60300>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_27>;
 		};
 
@@ -341,6 +369,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x70000>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_28>;
 		};
 
@@ -348,6 +377,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x70100>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_29>;
 		};
 
@@ -355,6 +385,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x70200>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_30>;
 		};
 
@@ -362,6 +393,7 @@
 			compatible = "arm,cortex-a720ae";
 			reg = <0x0 0x70300>;
 			device_type = "cpu";
+			enable-method = "psci";
 			next-level-cache = <&L2_CA720_31>;
 		};
 
