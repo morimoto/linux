@@ -867,10 +867,16 @@ static int mtk_dai_i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	return 0;
 }
 
+static const u64 mtk_dai_i2s_selectable_formats =
+	SND_SOC_POSSIBLE_DAIFMT_I2S	|
+	SND_SOC_POSSIBLE_DAIFMT_LEFT_J;
+
 static const struct snd_soc_dai_ops mtk_dai_i2s_ops = {
 	.hw_params = mtk_dai_i2s_hw_params,
 	.set_sysclk = mtk_dai_i2s_set_sysclk,
 	.set_fmt = mtk_dai_i2s_set_fmt,
+	.auto_selectable_formats	= &mtk_dai_i2s_selectable_formats,
+	.num_auto_selectable_formats	= 1,
 };
 
 /* dai driver */
