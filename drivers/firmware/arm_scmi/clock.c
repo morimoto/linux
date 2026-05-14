@@ -760,9 +760,9 @@ scmi_clock_config_set_v2(const struct scmi_protocol_handle *ph, u32 clk_id,
 #define QUIRK_RCAR_X5H_4_28_CRIT_CLOCKS					\
 	({								\
 		switch (clk_id) {					\
-		case 468:	/* MDLC_INTAP0 */			\
-		case 498:	/* MDLC_APRTMGINT0 */			\
-		case 840:	/* CLK_ZD_APU0 */			\
+		case 468:		/* MDLC_INTAP0 */		\
+		case 498 ... 505:	/* MDLC_APRTMGINT0..7 */	\
+		case 838 ... 861:	/* CLK_ZC0/ZC1/ZD_APU0..7 */	\
 			return -EPERM;					\
 		}							\
 	})
@@ -770,9 +770,9 @@ scmi_clock_config_set_v2(const struct scmi_protocol_handle *ph, u32 clk_id,
 #define QUIRK_RCAR_X5H_4_31_CRIT_CLOCKS					\
 	({								\
 		switch (clk_id) {					\
-		case 464:	/* MDLC_INTAP0 */			\
-		case 494:	/* MDLC_APRTMGINT0 */			\
-		case 836:	/* CLK_ZD_APU0 */			\
+		case 464:		/* MDLC_INTAP0 */		\
+		case 494 ... 501:	/* MDLC_APRTMGINT0..7 */	\
+		case 834 ... 857:	/* CLK_ZC0/ZC1/ZD_APU0..7 */	\
 			return -EPERM;					\
 		}							\
 	})
