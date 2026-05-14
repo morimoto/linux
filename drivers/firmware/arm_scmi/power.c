@@ -157,16 +157,24 @@ dev_err(ph->dev, "%s[%d]<%u =name %s>\n", __func__, __LINE__, domain, dom_info->
 	({								\
 		switch (domain) {					\
 		/* Do not touch */					\
-		case 29:	/* PD_RC08 */				\
-		case 92:	/* PD_ACL0 */				\
-		case 116:	/* PD_CMN */				\
+		case 29:		/* PD_RC08 */			\
+		case 92 ... 95:		/* PD_ACL0..3 */		\
+		case 112 ... 115:	/* PD_ACL4..7 */		\
+		case 116:		/* PD_CMN */			\
+		case 76 ... 91:		/* PD_AC00..15 */		\
+		case 96 ... 111:	/* PD_AC16..31 */		\
+		case 129 ... 160:	/* PD_P_APU_CORE00..31 */	\
+		case 161 ... 168:	/* PD_P_APU_DSU00..07 */	\
+		case 169 ... 200:	/* PD_Q_APU_CORE00..31 */	\
+		case 201:		/* PD_P_CMN */			\
+		case 202 ... 206:	/* PD_Q_CMN00..04 */		\
+		case 207 ... 214:	/* PD_Q_APU_PPU00..07 */	\
+		case 215 ... 222:	/* PD_Q_APU_AT00..07 */		\
+		case 223 ... 230:	/* PD_Q_APU_GIC00..07 */	\
+		case 231 ... 238:	/* PD_Q_APU_PERI00..07 */	\
+		case 239 ... 246:	/* PD_Q_APU_S00..07 */		\
+		case 247 ... 254:	/* PD_Q_APU_P00..07 */		\
 			return -EPERM;					\
-									\
-		/* Do not power off */					\
-		case 76:	/* PD_AC00 */				\
-			if (state == SCMI_POWER_STATE_GENERIC_OFF)	\
-				return -EPERM;				\
-			break;						\
 		}							\
 	})
 
