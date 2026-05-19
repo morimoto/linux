@@ -230,8 +230,8 @@ static struct snd_soc_dai_link ehl_rt5660_dailink[] = {
 };
 
 /* SoC card */
-static struct snd_soc_card snd_soc_card_ehl_rt5660 = {
-	.name = "ehl-rt5660",
+static struct snd_soc_card_driver snd_soc_card_ehl_rt5660 = {
+	.default_name = "ehl-rt5660",
 	.owner = THIS_MODULE,
 	.dai_link = ehl_rt5660_dailink,
 	.num_links = ARRAY_SIZE(ehl_rt5660_dailink),
@@ -246,7 +246,7 @@ static struct snd_soc_card snd_soc_card_ehl_rt5660 = {
 };
 
 /* If hdmi codec is not supported, switch to use dummy codec */
-static void hdmi_link_init(struct snd_soc_card *card,
+static void hdmi_link_init(struct snd_soc_card_driver *card_driver,
 			   struct sof_card_private *ctx,
 			   struct snd_soc_acpi_mach *mach)
 {
@@ -262,33 +262,34 @@ static void hdmi_link_init(struct snd_soc_card *card,
 	 * hdmi codec is not supported
 	 */
 	for (i = HDMI_LINK_START; i <= HDMI_LINE_END; i++)
-		card->dai_link[i].codecs[0] = snd_soc_dummy_dlc;
+		card_driver->dai_link[i].codecs[0] = snd_soc_dummy_dlc;
 }
 
 static int snd_ehl_rt5660_probe(struct platform_device *pdev)
 {
 	struct snd_soc_acpi_mach *mach;
-	struct snd_soc_card *card = &snd_soc_card_ehl_rt5660;
+	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver = &snd_soc_card_ehl_rt5660;
 	struct sof_card_private *ctx;
 	int ret;
 
-	card->dev = &pdev->dev;
-
+	card = snd_soc_card_alloc(&pdev->dev);
 	ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
-	if (!ctx)
+	if (!card || !ctx)
 		return -ENOMEM;
 	INIT_LIST_HEAD(&ctx->hdmi_pcm_list);
 	snd_soc_card_set_drvdata(card, ctx);
 
 	mach = pdev->dev.platform_data;
-	ret = snd_soc_fixup_dai_links_platform_name(card,
+	ret = snd_soc_card_driver_fixup_dai_links_platform_name(&pdev->dev,
+						    card_driver,
 						    mach->mach_params.platform);
 	if (ret)
 		return ret;
 
-	hdmi_link_init(card, ctx, mach);
+	hdmi_link_init(card_driver, ctx, mach);
 
-	return devm_snd_soc_register_card(&pdev->dev, card);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static const struct platform_device_id ehl_board_ids[] = {
