@@ -277,3 +277,11 @@
 		reg = <0x1300 0x100>;
 	};
 };
+
+&ufs1_ref_clk {
+	clock-frequency = <52000000>;
+};
+
+&ufs1 {
+	status = "okay";
+};
