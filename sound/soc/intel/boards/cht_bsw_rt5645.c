@@ -34,7 +34,7 @@
 struct cht_acpi_card {
 	char *codec_id;
 	int codec_type;
-	struct snd_soc_card *soc_card;
+	struct snd_soc_card_driver *soc_card_driver;
 };
 
 struct cht_mc_private {
@@ -483,7 +483,7 @@ static struct snd_soc_dai_link cht_dailink[] = {
 #define DRIVER_NAME NULL /* card name will be used for driver name */
 
 /* SoC card */
-static struct snd_soc_card snd_soc_card_chtrt5645 = {
+static struct snd_soc_card_driver snd_soc_card_chtrt5645 = {
 	.owner = THIS_MODULE,
 	.dai_link = cht_dailink,
 	.num_links = ARRAY_SIZE(cht_dailink),
@@ -495,7 +495,7 @@ static struct snd_soc_card snd_soc_card_chtrt5645 = {
 	.num_controls = ARRAY_SIZE(cht_mc_controls),
 };
 
-static struct snd_soc_card snd_soc_card_chtrt5650 = {
+static struct snd_soc_card_driver snd_soc_card_chtrt5650 = {
 	.owner = THIS_MODULE,
 	.dai_link = cht_dailink,
 	.num_links = ARRAY_SIZE(cht_dailink),
@@ -524,7 +524,8 @@ struct acpi_chan_package {   /* ACPICA seems to require 64 bit integers */
 
 static int snd_cht_mc_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = snd_soc_cards[0].soc_card;
+	struct snd_soc_card_driver *card_driver = snd_soc_cards[0].soc_card_driver;
+	struct snd_soc_card *card;
 	struct snd_soc_acpi_mach *mach;
 	const char *platform_name;
 	struct cht_mc_private *drv;
@@ -538,8 +539,9 @@ static int snd_cht_mc_probe(struct platform_device *pdev)
 	int i;
 	const char *mclk_name;
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	drv = devm_kzalloc(&pdev->dev, sizeof(*drv), GFP_KERNEL);
-	if (!drv)
+	if (!card || !drv)
 		return -ENOMEM;
 
 	mach = pdev->dev.platform_data;
@@ -549,7 +551,7 @@ static int snd_cht_mc_probe(struct platform_device *pdev)
 			(!strncmp(snd_soc_cards[i].codec_id, mach->id, 8))) {
 			dev_dbg(&pdev->dev,
 				"found codec %s\n", snd_soc_cards[i].codec_id);
-			card = snd_soc_cards[i].soc_card;
+			card_driver = snd_soc_cards[i].soc_card_driver;
 			drv->acpi_card = &snd_soc_cards[i];
 			found = true;
 			break;
@@ -560,8 +562,6 @@ static int snd_cht_mc_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "No matching HID found in supported list\n");
 		return -ENODEV;
 	}
-
-	card->dev = &pdev->dev;
 
 	/* set correct codec name */
 	for (i = 0; i < ARRAY_SIZE(cht_dailink); i++)
@@ -589,8 +589,7 @@ static int snd_cht_mc_probe(struct platform_device *pdev)
 	if (!codec_dev)
 		return -EPROBE_DEFER;
 
-	snd_soc_card_chtrt5645.components = rt5645_components(codec_dev);
-	snd_soc_card_chtrt5650.components = rt5645_components(codec_dev);
+	snd_soc_card_set_components(card, rt5645_components(codec_dev));
 
 	/*
 	 * swap SSP0 if bytcr is detected
@@ -663,7 +662,8 @@ static int snd_cht_mc_probe(struct platform_device *pdev)
 	/* override platform name, if required */
 	platform_name = mach->mach_params.platform;
 
-	ret_val = snd_soc_fixup_dai_links_platform_name(card,
+	ret_val = snd_soc_card_driver_fixup_dai_links_platform_name(&pdev->dev,
+							card_driver,
 							platform_name);
 	if (ret_val)
 		return ret_val;
@@ -686,14 +686,14 @@ static int snd_cht_mc_probe(struct platform_device *pdev)
 
 	/* set card and driver name */
 	if (sof_parent) {
-		snd_soc_card_chtrt5645.name = SOF_CARD_RT5645_NAME;
+		snd_soc_card_chtrt5645.default_name = SOF_CARD_RT5645_NAME;
 		snd_soc_card_chtrt5645.driver_name = SOF_DRIVER_NAME;
-		snd_soc_card_chtrt5650.name = SOF_CARD_RT5650_NAME;
+		snd_soc_card_chtrt5650.default_name = SOF_CARD_RT5650_NAME;
 		snd_soc_card_chtrt5650.driver_name = SOF_DRIVER_NAME;
 	} else {
-		snd_soc_card_chtrt5645.name = CARD_RT5645_NAME;
+		snd_soc_card_chtrt5645.default_name = CARD_RT5645_NAME;
 		snd_soc_card_chtrt5645.driver_name = DRIVER_NAME;
-		snd_soc_card_chtrt5650.name = CARD_RT5650_NAME;
+		snd_soc_card_chtrt5650.default_name = CARD_RT5650_NAME;
 		snd_soc_card_chtrt5650.driver_name = DRIVER_NAME;
 	}
 
@@ -701,13 +701,13 @@ static int snd_cht_mc_probe(struct platform_device *pdev)
 	if (sof_parent)
 		pdev->dev.driver->pm = &snd_soc_pm_ops;
 
-	ret_val = devm_snd_soc_register_card(&pdev->dev, card);
+	ret_val = devm_snd_soc_card_register(card, card_driver);
 	if (ret_val) {
 		dev_err(&pdev->dev,
-			"snd_soc_register_card failed %d\n", ret_val);
+			"snd_soc_card_register() failed %d\n", ret_val);
 		return ret_val;
 	}
-	platform_set_drvdata(pdev, card);
+
 	return ret_val;
 }
 
