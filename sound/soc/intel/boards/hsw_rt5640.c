@@ -129,8 +129,8 @@ static struct snd_soc_dai_link card_dai_links[] = {
 	},
 };
 
-static struct snd_soc_card hsw_rt5640_card = {
-	.name = "haswell-rt5640",
+static struct snd_soc_card_driver hsw_rt5640_card_driver = {
+	.default_name = "haswell-rt5640",
 	.owner = THIS_MODULE,
 	.dai_link = card_dai_links,
 	.num_links = ARRAY_SIZE(card_dai_links),
@@ -147,14 +147,15 @@ static int hsw_rt5640_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	int ret;
 
-	hsw_rt5640_card.dev = dev;
 	mach = dev_get_platdata(dev);
 
-	ret = snd_soc_fixup_dai_links_platform_name(&hsw_rt5640_card, mach->mach_params.platform);
+	ret = snd_soc_card_driver_fixup_dai_links_platform_name(dev,
+						&hsw_rt5640_card_driver,
+						mach->mach_params.platform);
 	if (ret)
 		return ret;
 
-	return devm_snd_soc_register_card(dev, &hsw_rt5640_card);
+	return devm_snd_soc_card_register(dev, &hsw_rt5640_card_driver);
 }
 
 static struct platform_driver hsw_rt5640_driver = {
