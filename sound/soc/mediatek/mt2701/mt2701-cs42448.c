@@ -302,8 +302,8 @@ static struct snd_soc_dai_link mt2701_cs42448_dai_links[] = {
 	},
 };
 
-static struct snd_soc_card mt2701_cs42448_soc_card = {
-	.name = "mt2701-cs42448",
+static struct snd_soc_card_driver mt2701_cs42448_card_driver = {
+	.default_name = "mt2701-cs42448",
 	.owner = THIS_MODULE,
 	.dai_link = mt2701_cs42448_dai_links,
 	.num_links = ARRAY_SIZE(mt2701_cs42448_dai_links),
@@ -315,7 +315,8 @@ static struct snd_soc_card mt2701_cs42448_soc_card = {
 
 static int mt2701_cs42448_machine_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &mt2701_cs42448_soc_card;
+	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver = &mt2701_cs42448_card_driver;
 	int ret;
 	int i;
 	struct device_node *platform_node, *codec_node, *codec_node_bt_mrg;
@@ -328,19 +329,21 @@ static int mt2701_cs42448_machine_probe(struct platform_device *pdev)
 	if (!priv)
 		return -ENOMEM;
 
+	card = snd_soc_card_alloc(dev);
+	if (!card)
+		return -ENOMEM;
+
 	platform_node = of_parse_phandle(pdev->dev.of_node,
 					 "mediatek,platform", 0);
 	if (!platform_node) {
 		dev_err(dev, "Property 'platform' missing or invalid\n");
 		return -EINVAL;
 	}
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (dai_link->platforms->name)
 			continue;
 		dai_link->platforms->of_node = platform_node;
 	}
-
-	card->dev = dev;
 
 	codec_node = of_parse_phandle(pdev->dev.of_node,
 				      "mediatek,audio-codec", 0);
@@ -349,7 +352,7 @@ static int mt2701_cs42448_machine_probe(struct platform_device *pdev)
 			"Property 'audio-codec' missing or invalid\n");
 		return -EINVAL;
 	}
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (dai_link->codecs->name)
 			continue;
 		dai_link->codecs->of_node = codec_node;
@@ -365,7 +368,7 @@ static int mt2701_cs42448_machine_probe(struct platform_device *pdev)
 	mt2701_cs42448_dai_links[DAI_LINK_BE_MRG_BT].codecs->of_node
 							= codec_node_bt_mrg;
 
-	ret = snd_soc_of_parse_audio_routing(card, "audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver, "audio-routing");
 	if (ret) {
 		dev_err(dev, "failed to parse audio-routing: %d\n", ret);
 		return ret;
@@ -385,10 +388,10 @@ static int mt2701_cs42448_machine_probe(struct platform_device *pdev)
 
 	snd_soc_card_set_drvdata(card, priv);
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 
 	if (ret)
-		dev_err(dev, "%s snd_soc_register_card fail %d\n",
+		dev_err(dev, "%s snd_soc_card_register() fail %d\n",
 			__func__, ret);
 	return ret;
 }
