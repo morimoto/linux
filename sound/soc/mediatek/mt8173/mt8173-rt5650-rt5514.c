@@ -169,8 +169,8 @@ static struct snd_soc_codec_conf mt8173_rt5650_rt5514_codec_conf[] = {
 	},
 };
 
-static struct snd_soc_card mt8173_rt5650_rt5514_card = {
-	.name = "mtk-rt5650-rt5514",
+static struct snd_soc_card_driver mt8173_rt5650_rt5514_card_driver = {
+	.default_name = "mtk-rt5650-rt5514",
 	.owner = THIS_MODULE,
 	.dai_link = mt8173_rt5650_rt5514_dais,
 	.num_links = ARRAY_SIZE(mt8173_rt5650_rt5514_dais),
@@ -186,7 +186,7 @@ static struct snd_soc_card mt8173_rt5650_rt5514_card = {
 
 static int mt8173_rt5650_rt5514_dev_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &mt8173_rt5650_rt5514_card;
+	struct snd_soc_card_driver *card_driver = &mt8173_rt5650_rt5514_card_driver;
 	struct device_node *platform_node;
 	struct snd_soc_dai_link *dai_link;
 	int i, ret;
@@ -198,7 +198,7 @@ static int mt8173_rt5650_rt5514_dev_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (dai_link->platforms->name)
 			continue;
 		dai_link->platforms->of_node = platform_node;
@@ -223,9 +223,7 @@ static int mt8173_rt5650_rt5514_dev_probe(struct platform_device *pdev)
 	mt8173_rt5650_rt5514_codec_conf[0].dlc.of_node =
 		mt8173_rt5650_rt5514_dais[DAI_LINK_CODEC_I2S].codecs[1].of_node;
 
-	card->dev = &pdev->dev;
-
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(&pdev->dev, card_driver);
 
 out:
 	of_node_put(platform_node);
