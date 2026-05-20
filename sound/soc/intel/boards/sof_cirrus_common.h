@@ -21,6 +21,6 @@
 #define CS35L41_DEV3_NAME	"i2c-" CS35L41_ACPI_HID ":03"
 
 void cs35l41_set_dai_link(struct snd_soc_dai_link *link);
-void cs35l41_set_codec_conf(struct snd_soc_card *card);
+void cs35l41_set_codec_conf(struct snd_soc_card_driver *card_driver);
 
 #endif /* __SOF_CIRRUS_COMMON_H */
