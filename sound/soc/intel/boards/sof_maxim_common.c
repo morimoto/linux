@@ -285,10 +285,10 @@ void max_98373_dai_link(struct device *dev, struct snd_soc_dai_link *link)
 }
 EXPORT_SYMBOL_NS(max_98373_dai_link, "SND_SOC_INTEL_SOF_MAXIM_COMMON");
 
-void max_98373_set_codec_conf(struct snd_soc_card *card)
+void max_98373_set_codec_conf(struct snd_soc_card_driver *card_driver)
 {
-	card->codec_conf = max_98373_codec_conf;
-	card->num_configs = ARRAY_SIZE(max_98373_codec_conf);
+	card_driver->codec_conf = max_98373_codec_conf;
+	card_driver->num_configs = ARRAY_SIZE(max_98373_codec_conf);
 }
 EXPORT_SYMBOL_NS(max_98373_set_codec_conf, "SND_SOC_INTEL_SOF_MAXIM_COMMON");
 
@@ -509,20 +509,20 @@ void max_98390_dai_link(struct device *dev, struct snd_soc_dai_link *link)
 }
 EXPORT_SYMBOL_NS(max_98390_dai_link, "SND_SOC_INTEL_SOF_MAXIM_COMMON");
 
-void max_98390_set_codec_conf(struct device *dev, struct snd_soc_card *card)
+void max_98390_set_codec_conf(struct device *dev, struct snd_soc_card_driver *card_driver)
 {
 	unsigned int num_codecs = get_num_codecs(MAX_98390_ACPI_HID);
 
-	card->codec_conf = max_98390_codec_conf;
+	card_driver->codec_conf = max_98390_codec_conf;
 
 	switch (num_codecs) {
 	case 2:
 		if (soc_intel_is_cml())
-			card->codec_conf = max_98390_cml_codec_conf;
+			card_driver->codec_conf = max_98390_cml_codec_conf;
 
 		fallthrough;
 	case 4:
-		card->num_configs = num_codecs;
+		card_driver->num_configs = num_codecs;
 		break;
 	default:
 		dev_err(dev, "invalid codec number %d for %s\n", num_codecs,
