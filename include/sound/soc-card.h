@@ -13,6 +13,15 @@ enum snd_soc_card_subclass {
 	SND_SOC_CARD_CLASS_RUNTIME	= 1,
 };
 
+const char *snd_soc_card_name(struct snd_soc_card *card);
+const char *snd_soc_card_long_name(struct snd_soc_card *card);
+const char *snd_soc_card_components(struct snd_soc_card *card);
+const char *snd_soc_card_topology_shortname(struct snd_soc_card *card);
+void snd_soc_card_set_name(struct snd_soc_card *card, const char *name);
+void snd_soc_card_set_long_name(struct snd_soc_card *card, const char *long_name);
+void snd_soc_card_set_components(struct snd_soc_card *card, const char *components);
+void snd_soc_card_set_topology_shortname(struct snd_soc_card *card, const char *topology_shortname);
+
 int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card *card);
 
 int snd_soc_card_add_controls(struct snd_soc_card *soc_card,
