@@ -127,8 +127,8 @@ static struct snd_soc_dai_link mt8173_max98090_dais[] = {
 	},
 };
 
-static struct snd_soc_card mt8173_max98090_card = {
-	.name = "mt8173-max98090",
+static struct snd_soc_card_driver mt8173_max98090_card_driver = {
+	.default_name = "mt8173-max98090",
 	.owner = THIS_MODULE,
 	.dai_link = mt8173_max98090_dais,
 	.num_links = ARRAY_SIZE(mt8173_max98090_dais),
@@ -142,7 +142,7 @@ static struct snd_soc_card mt8173_max98090_card = {
 
 static int mt8173_max98090_dev_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &mt8173_max98090_card;
+	struct snd_soc_card_driver *card_driver = &mt8173_max98090_card_driver;
 	struct device_node *codec_node, *platform_node;
 	struct snd_soc_dai_link *dai_link;
 	int ret, i;
@@ -153,7 +153,7 @@ static int mt8173_max98090_dev_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "Property 'platform' missing or invalid\n");
 		return -EINVAL;
 	}
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (dai_link->platforms->name)
 			continue;
 		dai_link->platforms->of_node = platform_node;
@@ -167,14 +167,13 @@ static int mt8173_max98090_dev_probe(struct platform_device *pdev)
 		ret = -EINVAL;
 		goto put_platform_node;
 	}
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (dai_link->codecs->name)
 			continue;
 		dai_link->codecs->of_node = codec_node;
 	}
-	card->dev = &pdev->dev;
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(&pdev->dev, card_driver);
 
 	of_node_put(codec_node);
 
