@@ -418,8 +418,8 @@ static int sof_es8336_late_probe(struct snd_soc_card *card)
 }
 
 /* SoC card */
-static struct snd_soc_card sof_es8336_card = {
-	.name = "essx8336", /* sof- prefix added automatically */
+static struct snd_soc_card_driver sof_es8336_card_driver = {
+	.default_name = "essx8336", /* sof- prefix added automatically */
 	.owner = THIS_MODULE,
 	.dapm_widgets = sof_es8316_widgets,
 	.num_dapm_widgets = ARRAY_SIZE(sof_es8316_widgets),
@@ -444,9 +444,9 @@ static struct snd_soc_dai_link *sof_card_dai_links_create(struct device *dev,
 	int id = 0;
 	int i;
 
-	links = devm_kcalloc(dev, sof_es8336_card.num_links,
+	links = devm_kcalloc(dev, sof_es8336_card_driver.num_links,
 			     sizeof(struct snd_soc_dai_link), GFP_KERNEL);
-	cpus = devm_kcalloc(dev, sof_es8336_card.num_links,
+	cpus = devm_kcalloc(dev, sof_es8336_card_driver.num_links,
 			    sizeof(struct snd_soc_dai_link_component), GFP_KERNEL);
 	if (!links || !cpus)
 		goto devm_err;
@@ -617,8 +617,9 @@ static int sof_es8336_probe(struct platform_device *pdev)
 	if (!priv)
 		return -ENOMEM;
 
-	card = &sof_es8336_card;
-	card->dev = dev;
+	card = snd_soc_card_alloc(dev);
+	if (!card)
+		return -ENOMEM;
 
 	if (pdev->id_entry && pdev->id_entry->driver_data)
 		quirk = (unsigned long)pdev->id_entry->driver_data;
@@ -664,10 +665,10 @@ static int sof_es8336_probe(struct platform_device *pdev)
 		dmic_be_num = 2;
 
 	/* compute number of dai links */
-	sof_es8336_card.num_links = 1 + dmic_be_num + hdmi_num;
+	sof_es8336_card_driver.num_links = 1 + dmic_be_num + hdmi_num;
 
 	if (quirk & SOF_SSP_HDMI_CAPTURE_PRESENT)
-		sof_es8336_card.num_links += (quirk & SOF_NO_OF_HDMI_CAPTURE_SSP_MASK) >>
+		sof_es8336_card_driver.num_links += (quirk & SOF_NO_OF_HDMI_CAPTURE_SSP_MASK) >>
 				SOF_NO_OF_HDMI_CAPTURE_SSP_SHIFT;
 
 	dai_links = sof_card_dai_links_create(dev,
@@ -676,7 +677,7 @@ static int sof_es8336_probe(struct platform_device *pdev)
 	if (!dai_links)
 		return -ENOMEM;
 
-	sof_es8336_card.dai_link = dai_links;
+	sof_es8336_card_driver.dai_link = dai_links;
 
 	/* fixup codec name based on HID */
 	adev = acpi_dev_get_first_match_dev(mach->id, NULL, -1);
@@ -699,7 +700,8 @@ static int sof_es8336_probe(struct platform_device *pdev)
 		return -EPROBE_DEFER;
 	priv->codec_dev = get_device(codec_dev);
 
-	ret = snd_soc_fixup_dai_links_platform_name(&sof_es8336_card,
+	ret = snd_soc_card_driver_fixup_dai_links_platform_name(dev,
+						    &sof_es8336_card_driver,
 						    mach->mach_params.platform);
 	if (ret) {
 		put_device(codec_dev);
@@ -764,16 +766,16 @@ static int sof_es8336_probe(struct platform_device *pdev)
 	if (mach->mach_params.dmic_num > 0) {
 		snprintf(soc_components, sizeof(soc_components),
 			 "cfg-dmics:%d", mach->mach_params.dmic_num);
-		card->components = soc_components;
+		snd_soc_card_set_components(card, soc_components);
 	}
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, &sof_es8336_card_driver);
 	if (ret) {
 		gpiod_put(priv->gpio_speakers);
-		dev_err(dev, "snd_soc_register_card failed: %d\n", ret);
+		dev_err(dev, "snd_soc_card_register() failed: %d\n", ret);
 		goto err_put_codec;
 	}
-	platform_set_drvdata(pdev, &sof_es8336_card);
+
 	return 0;
 
 err_put_codec:
