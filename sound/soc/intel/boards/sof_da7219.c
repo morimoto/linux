@@ -195,8 +195,8 @@ static int card_late_probe(struct snd_soc_card *card)
 	return sof_intel_board_card_late_probe(card);
 }
 
-static struct snd_soc_card card_da7219 = {
-	.name = "da7219", /* the sof- prefix is added by the core */
+static struct snd_soc_card_driver card_da7219 = {
+	.default_name = "da7219", /* the sof- prefix is added by the core */
 	.owner = THIS_MODULE,
 	.controls = controls,
 	.num_controls = ARRAY_SIZE(controls),
@@ -216,12 +216,12 @@ static struct snd_soc_dai_link_component da7219_component[] = {
 };
 
 static int
-sof_card_dai_links_create(struct device *dev, struct snd_soc_card *card,
+sof_card_dai_links_create(struct device *dev, struct snd_soc_card_driver *card_driver,
 			  struct sof_card_private *ctx)
 {
 	int ret;
 
-	ret = sof_intel_board_set_dai_link(dev, card, ctx);
+	ret = sof_intel_board_set_dai_link(dev, card_driver, ctx);
 	if (ret)
 		return ret;
 
@@ -293,10 +293,15 @@ sof_card_dai_links_create(struct device *dev, struct snd_soc_card *card,
 static int audio_probe(struct platform_device *pdev)
 {
 	struct snd_soc_acpi_mach *mach = pdev->dev.platform_data;
+	struct snd_soc_card *card;
 	struct sof_card_private *ctx;
 	char *card_name;
 	unsigned long board_quirk = 0;
 	int ret;
+
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
 
 	if (pdev->id_entry && pdev->id_entry->driver_data)
 		board_quirk = (unsigned long)pdev->id_entry->driver_data;
@@ -326,7 +331,7 @@ static int audio_probe(struct platform_device *pdev)
 			if (!card_name)
 				return -ENOMEM;
 
-			card_da7219.name = card_name;
+			card_da7219.default_name = card_name;
 			break;
 		default:
 			break;
@@ -343,7 +348,7 @@ static int audio_probe(struct platform_device *pdev)
 			if (!card_name)
 				return -ENOMEM;
 
-			card_da7219.name = card_name;
+			card_da7219.default_name = card_name;
 			break;
 		case CODEC_MAX98390:
 			card_name = devm_kstrdup(&pdev->dev,
@@ -352,7 +357,7 @@ static int audio_probe(struct platform_device *pdev)
 			if (!card_name)
 				return -ENOMEM;
 
-			card_da7219.name = card_name;
+			card_da7219.default_name = card_name;
 			break;
 		default:
 			break;
@@ -369,7 +374,7 @@ static int audio_probe(struct platform_device *pdev)
 			if (!card_name)
 				return -ENOMEM;
 
-			card_da7219.name = card_name;
+			card_da7219.default_name = card_name;
 			break;
 		case CODEC_MAX98373:
 			card_name = devm_kstrdup(&pdev->dev, "da7219max",
@@ -377,7 +382,7 @@ static int audio_probe(struct platform_device *pdev)
 			if (!card_name)
 				return -ENOMEM;
 
-			card_da7219.name = card_name;
+			card_da7219.default_name = card_name;
 			break;
 		default:
 			break;
@@ -410,16 +415,15 @@ static int audio_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	card_da7219.dev = &pdev->dev;
-
-	ret = snd_soc_fixup_dai_links_platform_name(&card_da7219,
+	ret = snd_soc_card_driver_fixup_dai_links_platform_name(&pdev->dev,
+						    &card_da7219,
 						    mach->mach_params.platform);
 	if (ret)
 		return ret;
 
-	snd_soc_card_set_drvdata(&card_da7219, ctx);
+	snd_soc_card_set_priv(card, ctx);
 
-	return devm_snd_soc_register_card(&pdev->dev, &card_da7219);
+	return devm_snd_soc_card_register(card, &card_da7219);
 }
 
 static const struct platform_device_id board_ids[] = {
