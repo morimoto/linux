@@ -91,8 +91,8 @@ static struct snd_soc_dai_link a370db_dai[] = {
 },
 };
 
-static struct snd_soc_card a370db = {
-	.name = "a370db",
+static struct snd_soc_card_driver a370db = {
+	.default_name = "a370db",
 	.owner = THIS_MODULE,
 	.dai_link = a370db_dai,
 	.num_links = ARRAY_SIZE(a370db_dai),
@@ -104,10 +104,6 @@ static struct snd_soc_card a370db = {
 
 static int a370db_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &a370db;
-
-	card->dev = &pdev->dev;
-
 	a370db_dai[0].cpus->of_node =
 		of_parse_phandle(pdev->dev.of_node,
 				 "marvell,audio-controller", 0);
@@ -131,7 +127,7 @@ static int a370db_probe(struct platform_device *pdev)
 		of_parse_phandle(pdev->dev.of_node,
 				 "marvell,audio-codec", 2);
 
-	return devm_snd_soc_register_card(card->dev, card);
+	return devm_snd_soc_card_register(&pdev->dev, &a370db);
 }
 
 static const struct of_device_id a370db_dt_ids[] __maybe_unused = {
