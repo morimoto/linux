@@ -641,8 +641,8 @@ static const struct snd_soc_dapm_route mt8183_da7219_max98357_dapm_routes[] = {
 	{"I2S Playback", NULL, "TDM_OUT_PINCTRL"},
 };
 
-static struct snd_soc_card mt8183_da7219_max98357_card = {
-	.name = "mt8183_da7219_max98357",
+static struct snd_soc_card_driver mt8183_da7219_max98357_card_driver = {
+	.default_name = "mt8183_da7219_max98357",
 	.owner = THIS_MODULE,
 	.controls = mt8183_da7219_max98357_snd_controls,
 	.num_controls = ARRAY_SIZE(mt8183_da7219_max98357_snd_controls),
@@ -698,8 +698,8 @@ static const struct snd_soc_dapm_route mt8183_da7219_rt1015_dapm_routes[] = {
 	{"I2S Playback", NULL, "TDM_OUT_PINCTRL"},
 };
 
-static struct snd_soc_card mt8183_da7219_rt1015_card = {
-	.name = "mt8183_da7219_rt1015",
+static struct snd_soc_card_driver mt8183_da7219_rt1015_card_driver = {
+	.default_name = "mt8183_da7219_rt1015",
 	.owner = THIS_MODULE,
 	.controls = mt8183_da7219_rt1015_snd_controls,
 	.num_controls = ARRAY_SIZE(mt8183_da7219_rt1015_snd_controls),
@@ -715,8 +715,8 @@ static struct snd_soc_card mt8183_da7219_rt1015_card = {
 	.num_configs = ARRAY_SIZE(mt8183_da7219_rt1015_codec_conf),
 };
 
-static struct snd_soc_card mt8183_da7219_rt1015p_card = {
-	.name = "mt8183_da7219_rt1015p",
+static struct snd_soc_card_driver mt8183_da7219_rt1015p_card_driver = {
+	.default_name = "mt8183_da7219_rt1015p",
 	.owner = THIS_MODULE,
 	.controls = mt8183_da7219_max98357_snd_controls,
 	.num_controls = ARRAY_SIZE(mt8183_da7219_max98357_snd_controls),
@@ -734,12 +734,17 @@ static struct snd_soc_card mt8183_da7219_rt1015p_card = {
 
 static int mt8183_da7219_max98357_dev_probe(struct platform_device *pdev)
 {
+	struct snd_soc_card_driver *card_driver;
 	struct snd_soc_card *card;
 	struct device_node *platform_node, *hdmi_codec;
 	struct snd_soc_dai_link *dai_link;
 	struct mt8183_da7219_max98357_priv *priv;
 	struct pinctrl *pinctrl;
 	int ret, i;
+
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
 
 	platform_node = of_parse_phandle(pdev->dev.of_node,
 					 "mediatek,platform", 0);
@@ -748,20 +753,18 @@ static int mt8183_da7219_max98357_dev_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	card = (struct snd_soc_card *)of_device_get_match_data(&pdev->dev);
-	if (!card) {
+	card_driver = (struct snd_soc_card_driver *)of_device_get_match_data(&pdev->dev);
+	if (!card_driver) {
 		ret = -EINVAL;
 		goto put_platform_node;
 	}
 
-	card->dev = &pdev->dev;
-
 	hdmi_codec = of_parse_phandle(pdev->dev.of_node,
 				      "mediatek,hdmi-codec", 0);
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (strcmp(dai_link->name, "I2S3") == 0) {
-			if (card == &mt8183_da7219_max98357_card) {
+			if (card_driver == &mt8183_da7219_max98357_card_driver) {
 				dai_link->be_hw_params_fixup =
 					mt8183_i2s_hw_params_fixup;
 				dai_link->ops = &mt8183_da7219_i2s_ops;
@@ -774,7 +777,7 @@ static int mt8183_da7219_max98357_dev_probe(struct platform_device *pdev)
 				dai_link->platforms = i2s3_max98357a_platforms;
 				dai_link->num_platforms =
 					ARRAY_SIZE(i2s3_max98357a_platforms);
-			} else if (card == &mt8183_da7219_rt1015_card) {
+			} else if (card_driver == &mt8183_da7219_rt1015_card_driver) {
 				dai_link->be_hw_params_fixup =
 					mt8183_rt1015_i2s_hw_params_fixup;
 				dai_link->ops = &mt8183_da7219_rt1015_i2s_ops;
@@ -787,7 +790,7 @@ static int mt8183_da7219_max98357_dev_probe(struct platform_device *pdev)
 				dai_link->platforms = i2s3_rt1015_platforms;
 				dai_link->num_platforms =
 					ARRAY_SIZE(i2s3_rt1015_platforms);
-			} else if (card == &mt8183_da7219_rt1015p_card) {
+			} else if (card_driver == &mt8183_da7219_rt1015p_card_driver) {
 				dai_link->be_hw_params_fixup =
 					mt8183_rt1015_i2s_hw_params_fixup;
 				dai_link->ops = &mt8183_da7219_i2s_ops;
@@ -838,7 +841,7 @@ static int mt8183_da7219_max98357_dev_probe(struct platform_device *pdev)
 		goto put_hdmi_codec;
 	}
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 
 
 put_hdmi_codec:
@@ -852,15 +855,15 @@ put_platform_node:
 static const struct of_device_id mt8183_da7219_max98357_dt_match[] = {
 	{
 		.compatible = "mediatek,mt8183_da7219_max98357",
-		.data = &mt8183_da7219_max98357_card,
+		.data = &mt8183_da7219_max98357_card_driver,
 	},
 	{
 		.compatible = "mediatek,mt8183_da7219_rt1015",
-		.data = &mt8183_da7219_rt1015_card,
+		.data = &mt8183_da7219_rt1015_card_driver,
 	},
 	{
 		.compatible = "mediatek,mt8183_da7219_rt1015p",
-		.data = &mt8183_da7219_rt1015p_card,
+		.data = &mt8183_da7219_rt1015p_card_driver,
 	},
 	{}
 };
