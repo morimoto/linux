@@ -174,8 +174,8 @@ static struct snd_soc_dai_link mt6797_mt6351_dai_links[] = {
 	},
 };
 
-static struct snd_soc_card mt6797_mt6351_card = {
-	.name = "mt6797-mt6351",
+static struct snd_soc_card_driver mt6797_mt6351_card_driver = {
+	.default_name = "mt6797-mt6351",
 	.owner = THIS_MODULE,
 	.dai_link = mt6797_mt6351_dai_links,
 	.num_links = ARRAY_SIZE(mt6797_mt6351_dai_links),
@@ -183,12 +183,10 @@ static struct snd_soc_card mt6797_mt6351_card = {
 
 static int mt6797_mt6351_dev_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &mt6797_mt6351_card;
+	struct snd_soc_card_driver *card_driver = &mt6797_mt6351_card_driver;
 	struct device_node *platform_node, *codec_node;
 	struct snd_soc_dai_link *dai_link;
 	int ret, i;
-
-	card->dev = &pdev->dev;
 
 	platform_node = of_parse_phandle(pdev->dev.of_node,
 					 "mediatek,platform", 0);
@@ -196,7 +194,7 @@ static int mt6797_mt6351_dev_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "Property 'platform' missing or invalid\n");
 		return -EINVAL;
 	}
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (dai_link->platforms->name)
 			continue;
 		dai_link->platforms->of_node = platform_node;
@@ -210,15 +208,16 @@ static int mt6797_mt6351_dev_probe(struct platform_device *pdev)
 		ret = -EINVAL;
 		goto put_platform_node;
 	}
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (dai_link->codecs->name)
 			continue;
 		dai_link->codecs->of_node = codec_node;
 	}
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(&pdev->dev, card_driver);
+
 	if (ret)
-		dev_err(&pdev->dev, "%s snd_soc_register_card fail %d\n",
+		dev_err(&pdev->dev, "%s snd_soc_card_register() fail %d\n",
 			__func__, ret);
 
 	of_node_put(codec_node);
