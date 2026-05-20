@@ -198,8 +198,8 @@ static int dmic_init(struct snd_soc_pcm_runtime *rtd)
 }
 
 /* sof audio machine driver for pcm512x codec */
-static struct snd_soc_card sof_audio_card_pcm512x = {
-	.name = "pcm512x",
+static struct snd_soc_card_driver sof_audio_card_pcm512x = {
+	.default_name = "pcm512x",
 	.owner = THIS_MODULE,
 	.controls = sof_controls,
 	.num_controls = ARRAY_SIZE(sof_controls),
@@ -355,12 +355,14 @@ static int sof_audio_probe(struct platform_device *pdev)
 {
 	struct snd_soc_acpi_mach *mach = pdev->dev.platform_data;
 	struct snd_soc_dai_link *dai_links;
+	struct snd_soc_card *card;
 	struct sof_card_private *ctx;
 	int dmic_be_num, hdmi_num;
 	int ret, ssp_codec;
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
-	if (!ctx)
+	if (!card || !ctx)
 		return -ENOMEM;
 
 	hdmi_num = 0;
@@ -400,18 +402,16 @@ static int sof_audio_probe(struct platform_device *pdev)
 
 	INIT_LIST_HEAD(&ctx->hdmi_pcm_list);
 
-	sof_audio_card_pcm512x.dev = &pdev->dev;
-
 	/* set platform name for each dailink */
-	ret = snd_soc_fixup_dai_links_platform_name(&sof_audio_card_pcm512x,
+	ret = snd_soc_card_driver_fixup_dai_links_platform_name(&pdev->dev,
+						    &sof_audio_card_pcm512x,
 						    mach->mach_params.platform);
 	if (ret)
 		return ret;
 
-	snd_soc_card_set_drvdata(&sof_audio_card_pcm512x, ctx);
+	snd_soc_card_set_drvdata(card, ctx);
 
-	return devm_snd_soc_register_card(&pdev->dev,
-					  &sof_audio_card_pcm512x);
+	return devm_snd_soc_card_register(card, &sof_audio_card_pcm512x);
 }
 
 static void sof_pcm512x_remove(struct platform_device *pdev)
