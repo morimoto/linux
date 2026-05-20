@@ -943,6 +943,7 @@ struct snd_soc_card {
 	const char *long_name;
 	const char *driver_name;
 	const char *components;
+	const char *topology_shortname;
 
 #ifdef CONFIG_PCI
 	/*
@@ -953,8 +954,6 @@ struct snd_soc_card {
 	unsigned short pci_subsystem_device;
 	bool pci_subsystem_set;
 #endif /* CONFIG_PCI */
-
-	char *topology_shortname;
 
 	struct device *dev;
 	struct snd_card *snd_card;
