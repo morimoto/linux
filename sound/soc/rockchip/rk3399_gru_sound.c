@@ -284,8 +284,8 @@ static const struct snd_soc_ops rockchip_sound_dmic_ops = {
 	.hw_params = rockchip_sound_dmic_hw_params,
 };
 
-static struct snd_soc_card rockchip_sound_card = {
-	.name = "rk3399-gru-sound",
+static struct snd_soc_card_driver rockchip_sound_card_driver = {
+	.default_name = "rk3399-gru-sound",
 	.owner = THIS_MODULE,
 	.dapm_widgets = rockchip_dapm_widgets,
 	.num_dapm_widgets = ARRAY_SIZE(rockchip_dapm_widgets),
@@ -496,7 +496,7 @@ static int rockchip_sound_codec_node_match(struct device_node *np_codec)
 }
 
 static int rockchip_sound_of_parse_dais(struct device *dev,
-					struct snd_soc_card *card)
+					struct snd_soc_card_driver *card_driver)
 {
 	struct device_node *np_cpu, *np_cpu0, *np_cpu1;
 	struct device_node *np_codec;
@@ -505,9 +505,8 @@ static int rockchip_sound_of_parse_dais(struct device *dev,
 	int i, index;
 	int num_routes;
 
-	card->dai_link = devm_kzalloc(dev, sizeof(rockchip_dais),
-				      GFP_KERNEL);
-	if (!card->dai_link)
+	card_driver->dai_link = devm_kzalloc(dev, sizeof(rockchip_dais), GFP_KERNEL);
+	if (!card_driver->dai_link)
 		return -ENOMEM;
 
 	num_routes = 0;
@@ -517,13 +516,13 @@ static int rockchip_sound_of_parse_dais(struct device *dev,
 			      GFP_KERNEL);
 	if (!routes)
 		return -ENOMEM;
-	card->dapm_routes = routes;
+	card_driver->dapm_routes = routes;
 
 	np_cpu0 = of_parse_phandle(dev->of_node, "rockchip,cpu", 0);
 	np_cpu1 = of_parse_phandle(dev->of_node, "rockchip,cpu", 1);
 
-	card->num_dapm_routes = 0;
-	card->num_links = 0;
+	card_driver->num_dapm_routes = 0;
+	card_driver->num_links = 0;
 	for (i = 0; i < ARRAY_SIZE(rockchip_dais); i++) {
 		np_codec = of_parse_phandle(dev->of_node,
 					    "rockchip,codec", i);
@@ -555,7 +554,7 @@ static int rockchip_sound_of_parse_dais(struct device *dev,
 			return -EINVAL;
 		}
 
-		dai = &card->dai_link[card->num_links++];
+		dai = &card_driver->dai_link[card_driver->num_links++];
 		*dai = rockchip_dais[index];
 
 		if (!dai->codecs->name)
@@ -563,16 +562,16 @@ static int rockchip_sound_of_parse_dais(struct device *dev,
 		dai->platforms->of_node = np_cpu;
 		dai->cpus->of_node = np_cpu;
 
-		if (card->num_dapm_routes + rockchip_routes[index].num_routes >
+		if (card_driver->num_dapm_routes + rockchip_routes[index].num_routes >
 		    num_routes) {
 			dev_err(dev, "Too many routes\n");
 			return -EINVAL;
 		}
 
-		memcpy(routes + card->num_dapm_routes,
+		memcpy(routes + card_driver->num_dapm_routes,
 		       rockchip_routes[index].routes,
 		       rockchip_routes[index].num_routes * sizeof(*routes));
-		card->num_dapm_routes += rockchip_routes[index].num_routes;
+		card_driver->num_dapm_routes += rockchip_routes[index].num_routes;
 	}
 
 	return 0;
@@ -580,10 +579,10 @@ static int rockchip_sound_of_parse_dais(struct device *dev,
 
 static int rockchip_sound_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &rockchip_sound_card;
+	struct snd_soc_card_driver *card_driver = &rockchip_sound_card_driver;
 	int ret;
 
-	ret = rockchip_sound_of_parse_dais(&pdev->dev, card);
+	ret = rockchip_sound_of_parse_dais(&pdev->dev, card_driver);
 	if (ret < 0) {
 		dev_err(&pdev->dev, "Failed to parse dais: %d\n", ret);
 		return ret;
@@ -598,8 +597,7 @@ static int rockchip_sound_probe(struct platform_device *pdev)
 			"no optional property 'dmic-wakeup-delay-ms' found, default: no delay\n");
 	}
 
-	card->dev = &pdev->dev;
-	return devm_snd_soc_register_card(&pdev->dev, card);
+	return devm_snd_soc_card_register(&pdev->dev, card_driver);
 }
 
 static const struct of_device_id rockchip_sound_of_match[] = {
