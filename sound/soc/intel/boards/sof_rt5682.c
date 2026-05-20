@@ -491,8 +491,8 @@ static int rt5650_spk_init(struct snd_soc_pcm_runtime *rtd)
 }
 
 /* sof audio machine driver for rt5682 codec */
-static struct snd_soc_card sof_audio_card_rt5682 = {
-	.name = "rt5682", /* the sof- prefix is added by the core */
+static struct snd_soc_card_driver sof_audio_card_rt5682 = {
+	.default_name = "rt5682", /* the sof- prefix is added by the core */
 	.owner = THIS_MODULE,
 	.controls = sof_controls,
 	.num_controls = ARRAY_SIZE(sof_controls),
@@ -530,12 +530,12 @@ static struct snd_soc_dai_link_component rt5650_components[] = {
 };
 
 static int
-sof_card_dai_links_create(struct device *dev, struct snd_soc_card *card,
+sof_card_dai_links_create(struct device *dev, struct snd_soc_card_driver *card_driver,
 			  struct sof_card_private *ctx)
 {
 	int ret;
 
-	ret = sof_intel_board_set_dai_link(dev, card, ctx);
+	ret = sof_intel_board_set_dai_link(dev, card_driver, ctx);
 	if (ret)
 		return ret;
 
@@ -643,9 +643,14 @@ sof_card_dai_links_create(struct device *dev, struct snd_soc_card *card,
 static int sof_audio_probe(struct platform_device *pdev)
 {
 	struct snd_soc_acpi_mach *mach = pdev->dev.platform_data;
+	struct snd_soc_card *card;
 	struct sof_card_private *ctx;
 	char *card_name;
 	int ret;
+
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
 
 	if (pdev->id_entry && pdev->id_entry->driver_data)
 		sof_rt5682_quirk = (unsigned long)pdev->id_entry->driver_data;
@@ -670,7 +675,7 @@ static int sof_audio_probe(struct platform_device *pdev)
 		if (!card_name)
 			return -ENOMEM;
 
-		sof_audio_card_rt5682.name = card_name;
+		sof_audio_card_rt5682.default_name = card_name;
 
 		/* create speaker dai link also */
 		if (ctx->amp_type == CODEC_NONE)
@@ -700,7 +705,7 @@ static int sof_audio_probe(struct platform_device *pdev)
 			if (!card_name)
 				return -ENOMEM;
 
-			sof_audio_card_rt5682.name = card_name;
+			sof_audio_card_rt5682.default_name = card_name;
 			break;
 		default:
 			break;
@@ -714,7 +719,7 @@ static int sof_audio_probe(struct platform_device *pdev)
 			if (!card_name)
 				return -ENOMEM;
 
-			sof_audio_card_rt5682.name = card_name;
+			sof_audio_card_rt5682.default_name = card_name;
 			break;
 		default:
 			break;
@@ -780,18 +785,16 @@ static int sof_audio_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	sof_audio_card_rt5682.dev = &pdev->dev;
-
 	/* set platform name for each dailink */
-	ret = snd_soc_fixup_dai_links_platform_name(&sof_audio_card_rt5682,
+	ret = snd_soc_card_driver_fixup_dai_links_platform_name(&pdev->dev,
+						    &sof_audio_card_rt5682,
 						    mach->mach_params.platform);
 	if (ret)
 		return ret;
 
-	snd_soc_card_set_drvdata(&sof_audio_card_rt5682, ctx);
+	snd_soc_card_set_priv(card, ctx);
 
-	return devm_snd_soc_register_card(&pdev->dev,
-					  &sof_audio_card_rt5682);
+	return devm_snd_soc_card_register(card, &sof_audio_card_rt5682);
 }
 
 static const struct platform_device_id board_ids[] = {

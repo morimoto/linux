@@ -42,8 +42,8 @@ static int sof_card_late_probe(struct snd_soc_card *card)
 	return sof_intel_board_card_late_probe(card);
 }
 
-static struct snd_soc_card sof_ssp_amp_card = {
-	.name         = "ssp_amp",
+static struct snd_soc_card_driver sof_ssp_amp_card = {
+	.default_name = "ssp_amp",
 	.owner        = THIS_MODULE,
 	.fully_routed = true,
 	.late_probe = sof_card_late_probe,
@@ -75,12 +75,12 @@ static struct snd_soc_card sof_ssp_amp_card = {
 					0)
 
 static int
-sof_card_dai_links_create(struct device *dev, struct snd_soc_card *card,
+sof_card_dai_links_create(struct device *dev, struct snd_soc_card_driver *card_driver,
 			  struct sof_card_private *ctx)
 {
 	int ret;
 
-	ret = sof_intel_board_set_dai_link(dev, card, ctx);
+	ret = sof_intel_board_set_dai_link(dev, card_driver, ctx);
 	if (ret)
 		return ret;
 
@@ -111,8 +111,13 @@ sof_card_dai_links_create(struct device *dev, struct snd_soc_card *card,
 static int sof_ssp_amp_probe(struct platform_device *pdev)
 {
 	struct snd_soc_acpi_mach *mach = pdev->dev.platform_data;
+	struct snd_soc_card *card;
 	struct sof_card_private *ctx;
 	int ret;
+
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
 
 	if (pdev->id_entry && pdev->id_entry->driver_data)
 		sof_ssp_amp_quirk = (unsigned long)pdev->id_entry->driver_data;
@@ -161,17 +166,16 @@ static int sof_ssp_amp_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	sof_ssp_amp_card.dev = &pdev->dev;
-
 	/* set platform name for each dailink */
-	ret = snd_soc_fixup_dai_links_platform_name(&sof_ssp_amp_card,
+	ret = snd_soc_card_driver_fixup_dai_links_platform_name(&pdev->dev,
+						    &sof_ssp_amp_card,
 						    mach->mach_params.platform);
 	if (ret)
 		return ret;
 
-	snd_soc_card_set_drvdata(&sof_ssp_amp_card, ctx);
+	snd_soc_card_set_priv(card, ctx);
 
-	return devm_snd_soc_register_card(&pdev->dev, &sof_ssp_amp_card);
+	return devm_snd_soc_card_register(card, &sof_ssp_amp_card);
 }
 
 static const struct platform_device_id board_ids[] = {
