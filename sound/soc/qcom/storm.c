@@ -88,14 +88,15 @@ static int storm_parse_of(struct device *dev)
 static int storm_platform_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	int ret;
 
-	card = devm_kzalloc(&pdev->dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card = snd_soc_card_alloc(&pdev->dev);
+	card_driver = devm_kzalloc(&pdev->dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card || !card_driver)
 		return -ENOMEM;
 
-	card->dev = &pdev->dev;
-	card->owner = THIS_MODULE;
+	card_driver->owner = THIS_MODULE;
 
 	ret = snd_soc_of_parse_card_name(card, "qcom,model");
 	if (ret) {
@@ -103,8 +104,8 @@ static int storm_platform_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	card->dai_link	= &storm_dai_link;
-	card->num_links	= 1;
+	card_driver->dai_link	= &storm_dai_link;
+	card_driver->num_links	= 1;
 
 	ret = storm_parse_of(&pdev->dev);
 	if (ret) {
@@ -112,7 +113,8 @@ static int storm_platform_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
+
 	if (ret)
 		dev_err(&pdev->dev, "error registering soundcard: %d\n", ret);
 
