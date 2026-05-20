@@ -269,12 +269,11 @@ static struct snd_soc_dai_link spitz_dai = {
 };
 
 /* spitz audio machine driver */
-static struct snd_soc_card snd_soc_spitz = {
-	.name = "Spitz",
+static struct snd_soc_card_driver snd_soc_spitz = {
+	.default_name = "Spitz",
 	.owner = THIS_MODULE,
 	.dai_link = &spitz_dai,
 	.num_links = 1,
-
 	.controls = wm8750_spitz_controls,
 	.num_controls = ARRAY_SIZE(wm8750_spitz_controls),
 	.dapm_widgets = wm8750_dapm_widgets,
@@ -286,7 +285,6 @@ static struct snd_soc_card snd_soc_spitz = {
 
 static int spitz_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &snd_soc_spitz;
 	int ret;
 
 	gpiod_mic = devm_gpiod_get(&pdev->dev, "mic", GPIOD_OUT_LOW);
@@ -299,11 +297,9 @@ static int spitz_probe(struct platform_device *pdev)
 	if (IS_ERR(gpiod_mute_r))
 		return PTR_ERR(gpiod_mute_r);
 
-	card->dev = &pdev->dev;
-
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(&pdev->dev, &snd_soc_spitz);
 	if (ret)
-		dev_err(&pdev->dev, "snd_soc_register_card() failed: %d\n",
+		dev_err(&pdev->dev, "snd_soc_card_register() failed: %d\n",
 			ret);
 
 	return ret;
