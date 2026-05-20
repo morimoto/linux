@@ -51,6 +51,24 @@ void *snd_soc_card_to_priv(struct snd_soc_card *card)
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_to_priv);
 
+#define SND_SOC_CARD_NAME(name)					\
+const char *snd_soc_card_##name(struct snd_soc_card *card)	\
+{								\
+	return card->name;					\
+}								\
+EXPORT_SYMBOL_GPL(snd_soc_card_##name);				\
+								\
+void snd_soc_card_set_##name(struct snd_soc_card *card,		\
+			     const char *name)			\
+{								\
+	card->name = name;					\
+}								\
+EXPORT_SYMBOL_GPL(snd_soc_card_set_##name);
+
+SND_SOC_CARD_NAME(name)		/* snd_soc_card_name(),		snd_soc_card_set_name()		*/
+SND_SOC_CARD_NAME(long_name)	/* snd_soc_card_long_name(),	snd_soc_card_set_long_name()	*/
+SND_SOC_CARD_NAME(components)	/* snd_soc_card_components(),	snd_soc_card_set_components()	*/
+
 struct device *snd_soc_card_to_dev(struct snd_soc_card *card)
 {
 	return card->dev;
