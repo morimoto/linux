@@ -21,7 +21,7 @@
 #define MAX_98373_DEV1_NAME	"i2c-" MAX_98373_ACPI_HID ":01"
 
 void max_98373_dai_link(struct device *dev, struct snd_soc_dai_link *link);
-void max_98373_set_codec_conf(struct snd_soc_card *card);
+void max_98373_set_codec_conf(struct snd_soc_card_driver *card_driver);
 
 /*
  * Maxim MAX98390
@@ -33,7 +33,7 @@ void max_98373_set_codec_conf(struct snd_soc_card *card);
 #define MAX_98390_DEV3_NAME	"i2c-" MAX_98390_ACPI_HID ":03"
 
 void max_98390_dai_link(struct device *dev, struct snd_soc_dai_link *link);
-void max_98390_set_codec_conf(struct device *dev, struct snd_soc_card *card);
+void max_98390_set_codec_conf(struct device *dev, struct snd_soc_card_driver *card_driver);
 
 /*
  * Maxim MAX98357A/MAX98360A

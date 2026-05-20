@@ -24,7 +24,7 @@
 #define RT1011_DEV3_NAME	"i2c-" RT1011_ACPI_HID ":03"
 
 void sof_rt1011_dai_link(struct device *dev, struct snd_soc_dai_link *link);
-void sof_rt1011_codec_conf(struct device *dev, struct snd_soc_card *card);
+void sof_rt1011_codec_conf(struct device *dev, struct snd_soc_card_driver *card_driver);
 
 /*
  * Realtek ALC1015 (AUTO)
@@ -33,7 +33,7 @@ void sof_rt1011_codec_conf(struct device *dev, struct snd_soc_card *card);
 #define RT1015P_DEV0_NAME	RT1015P_ACPI_HID ":00"
 
 void sof_rt1015p_dai_link(struct snd_soc_dai_link *link);
-void sof_rt1015p_codec_conf(struct snd_soc_card *card);
+void sof_rt1015p_codec_conf(struct snd_soc_card_driver *card_driver);
 
 /*
  * Realtek ALC1015 (I2C)
@@ -43,7 +43,7 @@ void sof_rt1015p_codec_conf(struct snd_soc_card *card);
 #define RT1015_DEV1_NAME	"i2c-" RT1015_ACPI_HID ":01"
 
 void sof_rt1015_dai_link(struct snd_soc_dai_link *link);
-void sof_rt1015_codec_conf(struct snd_soc_card *card);
+void sof_rt1015_codec_conf(struct snd_soc_card_driver *card_driver);
 
 /*
  * Realtek ALC1308
