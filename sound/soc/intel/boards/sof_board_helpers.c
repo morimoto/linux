@@ -533,7 +533,7 @@ static int calculate_num_links(struct sof_card_private *ctx)
 	return num_links;
 }
 
-int sof_intel_board_set_dai_link(struct device *dev, struct snd_soc_card *card,
+int sof_intel_board_set_dai_link(struct device *dev, struct snd_soc_card_driver *card_driver,
 				 struct sof_card_private *ctx)
 {
 	struct snd_soc_dai_link *links;
@@ -728,8 +728,8 @@ int sof_intel_board_set_dai_link(struct device *dev, struct snd_soc_card *card,
 		return -EINVAL;
 	}
 
-	card->dai_link = links;
-	card->num_links = num_links;
+	card_driver->dai_link = links;
+	card_driver->num_links = num_links;
 
 	return 0;
 }

@@ -196,10 +196,10 @@ void cs35l41_set_dai_link(struct snd_soc_dai_link *link)
 }
 EXPORT_SYMBOL_NS(cs35l41_set_dai_link, "SND_SOC_INTEL_SOF_CIRRUS_COMMON");
 
-void cs35l41_set_codec_conf(struct snd_soc_card *card)
+void cs35l41_set_codec_conf(struct snd_soc_card_driver *card_driver)
 {
-	card->codec_conf = cs35l41_codec_conf;
-	card->num_configs = ARRAY_SIZE(cs35l41_codec_conf);
+	card_driver->codec_conf = cs35l41_codec_conf;
+	card_driver->num_configs = ARRAY_SIZE(cs35l41_codec_conf);
 }
 EXPORT_SYMBOL_NS(cs35l41_set_codec_conf, "SND_SOC_INTEL_SOF_CIRRUS_COMMON");
 
