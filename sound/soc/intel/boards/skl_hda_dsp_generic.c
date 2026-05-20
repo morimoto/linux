@@ -101,19 +101,21 @@ static int skl_hda_audio_probe(struct platform_device *pdev)
 {
 	struct snd_soc_acpi_mach *mach = pdev->dev.platform_data;
 	struct sof_card_private *ctx;
+	struct snd_soc_card_driver *card_driver;
 	struct snd_soc_card *card;
 	unsigned long board_quirk = skl_hda_get_board_quirk(&mach->mach_params);
 	int ret;
 
-	card = devm_kzalloc(&pdev->dev, sizeof(struct snd_soc_card), GFP_KERNEL);
-	if (!card)
+	card = snd_soc_card_alloc(&pdev->dev);
+	card_driver = devm_kzalloc(&pdev->dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card || !card_driver)
 		return -ENOMEM;
 
-	card->name = "hda-dsp";
-	card->owner = THIS_MODULE;
-	card->fully_routed = true;
-	card->late_probe = skl_hda_card_late_probe;
-	card->add_dai_link = skl_hda_add_dai_link;
+	card_driver->default_name = "hda-dsp";
+	card_driver->owner = THIS_MODULE;
+	card_driver->fully_routed = true;
+	card_driver->late_probe = skl_hda_card_late_probe;
+	card_driver->add_dai_link = skl_hda_add_dai_link;
 
 	dev_dbg(&pdev->dev, "board_quirk = %lx\n", board_quirk);
 
@@ -132,28 +134,29 @@ static int skl_hda_audio_probe(struct platform_device *pdev)
 	ctx->link_id_overwrite = HDA_LINK_IDS;
 
 	/* update dai_link */
-	ret = sof_intel_board_set_dai_link(&pdev->dev, card, ctx);
+	ret = sof_intel_board_set_dai_link(&pdev->dev, card_driver, ctx);
 	if (ret)
 		return ret;
 
-	card->dev = &pdev->dev;
-
 	if (mach->mach_params.dmic_num > 0) {
-		card->components = devm_kasprintf(card->dev, GFP_KERNEL,
+		const char *components = devm_kasprintf(&pdev->dev, GFP_KERNEL,
 						  "cfg-dmics:%d",
 						  mach->mach_params.dmic_num);
-		if (!card->components)
+		if (!components)
 			return -ENOMEM;
+
+		snd_soc_card_set_components(card, components);
 	}
 
-	ret = snd_soc_fixup_dai_links_platform_name(card,
+	ret = snd_soc_card_driver_fixup_dai_links_platform_name(&pdev->dev,
+						    card_driver,
 						    mach->mach_params.platform);
 	if (ret)
 		return ret;
 
 	snd_soc_card_set_drvdata(card, ctx);
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (!ret)
 		skl_set_hda_codec_autosuspend_delay(card);
 
