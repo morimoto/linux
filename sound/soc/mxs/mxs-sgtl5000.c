@@ -98,8 +98,8 @@ static const struct snd_soc_dapm_widget mxs_sgtl5000_dapm_widgets[] = {
 	SND_SOC_DAPM_SPK("Ext Spk", NULL),
 };
 
-static struct snd_soc_card mxs_sgtl5000 = {
-	.name		= "mxs_sgtl5000",
+static struct snd_soc_card_driver mxs_sgtl5000 = {
+	.default_name	= "mxs_sgtl5000",
 	.owner		= THIS_MODULE,
 	.dai_link	= mxs_sgtl5000_dai,
 	.num_links	= ARRAY_SIZE(mxs_sgtl5000_dai),
@@ -107,7 +107,7 @@ static struct snd_soc_card mxs_sgtl5000 = {
 
 static int mxs_sgtl5000_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &mxs_sgtl5000;
+	struct snd_soc_card_driver *card_driver = &mxs_sgtl5000;
 	int ret, i;
 	struct device_node *np = pdev->dev.of_node;
 	struct device_node *saif_np[2], *codec_np;
@@ -147,23 +147,23 @@ static int mxs_sgtl5000_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	card->dev = &pdev->dev;
-
 	if (of_property_present(np, "audio-routing")) {
-		card->dapm_widgets = mxs_sgtl5000_dapm_widgets;
-		card->num_dapm_widgets = ARRAY_SIZE(mxs_sgtl5000_dapm_widgets);
+		card_driver->dapm_widgets = mxs_sgtl5000_dapm_widgets;
+		card_driver->num_dapm_widgets = ARRAY_SIZE(mxs_sgtl5000_dapm_widgets);
 
-		ret = snd_soc_of_parse_audio_routing(card, "audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(&pdev->dev,
+							card_driver, "audio-routing");
 		if (ret) {
 			mxs_saif_put_mclk(0);
 			return ret;
 		}
 	}
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(&pdev->dev, card_driver);
+
 	if (ret) {
 		mxs_saif_put_mclk(0);
-		return dev_err_probe(&pdev->dev, ret, "snd_soc_register_card failed\n");
+		return dev_err_probe(&pdev->dev, ret, "snd_soc_card_register() failed\n");
 	}
 
 	return 0;
