@@ -276,7 +276,7 @@ void sof_rt1011_dai_link(struct device *dev, struct snd_soc_dai_link *link)
 }
 EXPORT_SYMBOL_NS(sof_rt1011_dai_link, "SND_SOC_INTEL_SOF_REALTEK_COMMON");
 
-void sof_rt1011_codec_conf(struct device *dev, struct snd_soc_card *card)
+void sof_rt1011_codec_conf(struct device *dev, struct snd_soc_card_driver *card_driver)
 {
 	unsigned int num_codecs = get_num_codecs(RT1011_ACPI_HID);
 
@@ -287,16 +287,16 @@ void sof_rt1011_codec_conf(struct device *dev, struct snd_soc_card *card)
 			 * use name prefix 'WL' and 'WR' for speaker widgets to
 			 * keep backward compatible with cml devices
 			 */
-			card->codec_conf = rt1011_4spk_codec_confs;
+			card_driver->codec_conf = rt1011_4spk_codec_confs;
 		} else {
-			card->codec_conf = rt1011_2spk_codec_confs;
+			card_driver->codec_conf = rt1011_2spk_codec_confs;
 		}
 
-		card->num_configs = num_codecs;
+		card_driver->num_configs = num_codecs;
 		break;
 	case 4:
-		card->codec_conf = rt1011_4spk_codec_confs;
-		card->num_configs = ARRAY_SIZE(rt1011_4spk_codec_confs);
+		card_driver->codec_conf = rt1011_4spk_codec_confs;
+		card_driver->num_configs = ARRAY_SIZE(rt1011_4spk_codec_confs);
 		break;
 	default:
 		dev_err(dev, "rt1011: invalid num_codecs %d\n", num_codecs);
@@ -375,7 +375,7 @@ void sof_rt1015p_dai_link(struct snd_soc_dai_link *link)
 }
 EXPORT_SYMBOL_NS(sof_rt1015p_dai_link, "SND_SOC_INTEL_SOF_REALTEK_COMMON");
 
-void sof_rt1015p_codec_conf(struct snd_soc_card *card)
+void sof_rt1015p_codec_conf(struct snd_soc_card_driver *card_driver)
 {
 }
 EXPORT_SYMBOL_NS(sof_rt1015p_codec_conf, "SND_SOC_INTEL_SOF_REALTEK_COMMON");
@@ -518,10 +518,10 @@ static int speaker_codec_init_lr(struct snd_soc_pcm_runtime *rtd)
 	return ret;
 }
 
-void sof_rt1015_codec_conf(struct snd_soc_card *card)
+void sof_rt1015_codec_conf(struct snd_soc_card_driver *card_driver)
 {
-	card->codec_conf = rt1015_amp_conf;
-	card->num_configs = ARRAY_SIZE(rt1015_amp_conf);
+	card_driver->codec_conf = rt1015_amp_conf;
+	card_driver->num_configs = ARRAY_SIZE(rt1015_amp_conf);
 }
 EXPORT_SYMBOL_NS(sof_rt1015_codec_conf, "SND_SOC_INTEL_SOF_REALTEK_COMMON");
 
