@@ -173,8 +173,8 @@ static struct snd_soc_dai_link dailink[] = {
 };
 
 /* SoC card */
-static struct snd_soc_card sof_wm8804_card = {
-	.name = "wm8804", /* sof- prefix added automatically */
+static struct snd_soc_card_driver sof_wm8804_card_driver = {
+	.default_name = "wm8804", /* sof- prefix added automatically */
 	.owner = THIS_MODULE,
 	.dai_link = dailink,
 	.num_links = ARRAY_SIZE(dailink),
@@ -217,8 +217,9 @@ static int sof_wm8804_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	mach = pdev->dev.platform_data;
-	card = &sof_wm8804_card;
-	card->dev = &pdev->dev;
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
 
 	dmi_check_system(sof_wm8804_quirk_table);
 
@@ -277,7 +278,7 @@ static int sof_wm8804_probe(struct platform_device *pdev)
 
 	snd_soc_card_set_drvdata(card, ctx);
 
-	return devm_snd_soc_register_card(&pdev->dev, card);
+	return devm_snd_soc_card_register(card, &sof_wm8804_card_driver);
 }
 
 static void sof_wm8804_remove(struct platform_device *pdev)
