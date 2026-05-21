@@ -49,8 +49,8 @@ static struct snd_soc_dai_link mop500_dai_links[] = {
 	},
 };
 
-static struct snd_soc_card mop500_card = {
-	.name = "MOP500-card",
+static struct snd_soc_card_driver mop500_card_driver = {
+	.default_name = "MOP500-card",
 	.owner = THIS_MODULE,
 	.probe = NULL,
 	.dai_link = mop500_dai_links,
@@ -103,33 +103,38 @@ static int mop500_of_probe(struct snd_soc_card *card)
 
 static int mop500_probe(struct platform_device *pdev)
 {
+	struct snd_soc_card *card;
 	int ret;
 
 	dev_dbg(&pdev->dev, "%s: Enter.\n", __func__);
 
-	mop500_card.dev = &pdev->dev;
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
 
-	ret = mop500_of_probe(&mop500_card);
+	ret = mop500_of_probe(card);
 	if (ret)
 		return ret;
 
 	dev_dbg(&pdev->dev, "%s: Card %s: Set platform drvdata.\n",
-		__func__, mop500_card.name);
+		__func__, mop500_card_driver.default_name);
 
-	snd_soc_card_set_drvdata(&mop500_card, NULL);
+	snd_soc_card_set_priv(card, NULL);
 
 	dev_dbg(&pdev->dev, "%s: Card %s: num_links = %d\n",
-		__func__, mop500_card.name, mop500_card.num_links);
+		__func__, mop500_card_driver.default_name,
+			  mop500_card_driver.num_links);
 	dev_dbg(&pdev->dev, "%s: Card %s: DAI-link 0: name = %s\n",
-		__func__, mop500_card.name, mop500_card.dai_link[0].name);
+		__func__, mop500_card_driver.default_name,
+			  mop500_card_driver.dai_link[0].name);
 	dev_dbg(&pdev->dev, "%s: Card %s: DAI-link 0: stream_name = %s\n",
-		__func__, mop500_card.name,
-		mop500_card.dai_link[0].stream_name);
+		__func__, mop500_card_driver.default_name,
+			  mop500_card_driver.dai_link[0].stream_name);
 
-	ret = snd_soc_register_card(&mop500_card);
+	ret = devm_snd_soc_card_register(card, &mop500_card_driver);
 	if (ret)
 		dev_err(&pdev->dev,
-			"Error: snd_soc_register_card failed (%d)!\n", ret);
+			"Error: snd_soc_card_register() failed (%d)!\n", ret);
 
 	return ret;
 }
@@ -140,7 +145,7 @@ static void mop500_remove(struct platform_device *pdev)
 
 	pr_debug("%s: Enter.\n", __func__);
 
-	snd_soc_unregister_card(card);
+	snd_soc_card_unregister(card);
 	mop500_ab8500_remove(card);
 	mop500_of_node_put();
 }
