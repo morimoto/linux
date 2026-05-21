@@ -497,8 +497,8 @@ static struct snd_soc_dai_link aries_dai[] = {
 	},
 };
 
-static struct snd_soc_card aries_card = {
-	.name = "ARIES",
+static struct snd_soc_card_driver aries_card_driver = {
+	.default_name = "ARIES",
 	.owner = THIS_MODULE,
 	.dai_link = aries_dai,
 	.num_links = ARRAY_SIZE(aries_dai),
@@ -539,7 +539,8 @@ static int aries_audio_probe(struct platform_device *pdev)
 	struct device_node *np = pdev->dev.of_node;
 	struct device_node *cpu, *codec, *extcon_np;
 	struct device *dev = &pdev->dev;
-	struct snd_soc_card *card = &aries_card;
+	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver = &aries_card_driver;
 	struct aries_wm8994_data *priv;
 	struct snd_soc_dai_link *dai_link;
 	const struct of_device_id *match;
@@ -549,10 +550,9 @@ static int aries_audio_probe(struct platform_device *pdev)
 	if (!np)
 		return -EINVAL;
 
-	card->dev = dev;
-
+	card = snd_soc_card_alloc(dev);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
+	if (!card || !priv)
 		return -ENOMEM;
 
 	snd_soc_card_set_drvdata(card, priv);
@@ -562,7 +562,7 @@ static int aries_audio_probe(struct platform_device *pdev)
 
 	/* Remove FM widget if not present */
 	if (!priv->variant->has_fm_radio)
-		card->num_dapm_widgets--;
+		card_driver->num_dapm_widgets--;
 
 	priv->reg_main_micbias = devm_regulator_get(dev, "main-micbias");
 	if (IS_ERR(priv->reg_main_micbias)) {
@@ -619,10 +619,11 @@ static int aries_audio_probe(struct platform_device *pdev)
 	/* Update card-name if provided through DT, else use default name */
 	snd_soc_of_parse_card_name(card, "model");
 
-	ret = snd_soc_of_parse_audio_routing(card, "audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver, "audio-routing");
 	if (ret < 0) {
 		/* Backwards compatible way */
-		ret = snd_soc_of_parse_audio_routing(card, "samsung,audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver,
+								 "samsung,audio-routing");
 		if (ret < 0) {
 			dev_err(dev, "Audio routing invalid/unspecified\n");
 			return ret;
@@ -641,7 +642,7 @@ static int aries_audio_probe(struct platform_device *pdev)
 		goto out;
 	}
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		dai_link->codecs->of_node = of_parse_phandle(codec,
 				"sound-dai", 0);
 		if (!dai_link->codecs->of_node) {
@@ -676,9 +677,9 @@ static int aries_audio_probe(struct platform_device *pdev)
 		goto out;
 	}
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
-		dev_err(dev, "snd_soc_register_card() failed:%d\n", ret);
+		dev_err(dev, "snd_soc_card_register() failed:%d\n", ret);
 
 out:
 	of_node_put(cpu);
