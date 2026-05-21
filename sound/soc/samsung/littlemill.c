@@ -19,9 +19,10 @@ static int littlemill_set_bias_level(struct snd_soc_card *card,
 {
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *aif1_dai;
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[0]);
+	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[0]);
 	aif1_dai = snd_soc_rtd_to_codec(rtd, 0);
 
 	if (snd_soc_dapm_to_dev(dapm) != aif1_dai->dev)
@@ -66,9 +67,10 @@ static int littlemill_set_bias_level_post(struct snd_soc_card *card,
 {
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *aif1_dai;
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[0]);
+	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[0]);
 	aif1_dai = snd_soc_rtd_to_codec(rtd, 0);
 
 	if (snd_soc_dapm_to_dev(dapm) != aif1_dai->dev)
@@ -174,11 +176,12 @@ static int bbclk_ev(struct snd_soc_dapm_widget *w,
 		    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *aif2_dai;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[1]);
+	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[1]);
 	aif2_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
 	switch (event) {
@@ -270,15 +273,16 @@ static int littlemill_late_probe(struct snd_soc_card *card)
 {
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_component *component;
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	struct snd_soc_dai *aif1_dai;
 	struct snd_soc_dai *aif2_dai;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[0]);
+	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[0]);
 	component = snd_soc_rtd_to_codec(rtd, 0)->component;
 	aif1_dai = snd_soc_rtd_to_codec(rtd, 0);
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[1]);
+	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[1]);
 	aif2_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
 	ret = snd_soc_dai_set_sysclk(aif1_dai, WM8994_SYSCLK_MCLK2,
@@ -311,8 +315,8 @@ static int littlemill_late_probe(struct snd_soc_card *card)
 	return 0;
 }
 
-static struct snd_soc_card littlemill = {
-	.name = "Littlemill",
+static struct snd_soc_card_driver littlemill = {
+	.default_name = "Littlemill",
 	.owner = THIS_MODULE,
 	.dai_link = littlemill_dai,
 	.num_links = ARRAY_SIZE(littlemill_dai),
@@ -332,14 +336,11 @@ static struct snd_soc_card littlemill = {
 
 static int littlemill_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &littlemill;
 	int ret;
 
-	card->dev = &pdev->dev;
-
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(&pdev->dev, &littlemill);
 	if (ret)
-		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card() failed\n");
+		dev_err_probe(&pdev->dev, ret, "snd_soc_card_register() failed\n");
 
 	return ret;
 }
