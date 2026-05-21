@@ -118,26 +118,26 @@ static struct snd_soc_dai_link arndale_wm1811_dai[] = {
 	},
 };
 
-static struct snd_soc_card arndale_rt5631 = {
-	.name = "Arndale RT5631",
+static struct snd_soc_card_driver arndale_rt5631 = {
+	.default_name = "Arndale RT5631",
 	.owner = THIS_MODULE,
 	.dai_link = arndale_rt5631_dai,
 	.num_links = ARRAY_SIZE(arndale_rt5631_dai),
 };
 
-static struct snd_soc_card arndale_wm1811 = {
-	.name = "Arndale WM1811",
+static struct snd_soc_card_driver arndale_wm1811 = {
+	.default_name = "Arndale WM1811",
 	.owner = THIS_MODULE,
 	.dai_link = arndale_wm1811_dai,
 	.num_links = ARRAY_SIZE(arndale_wm1811_dai),
 };
 
-static void arndale_put_of_nodes(struct snd_soc_card *card)
+static void arndale_put_of_nodes(struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *dai_link;
 	int i;
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		of_node_put(dai_link->cpus->of_node);
 		of_node_put(dai_link->codecs->of_node);
 	}
@@ -146,13 +146,12 @@ static void arndale_put_of_nodes(struct snd_soc_card *card)
 static int arndale_audio_probe(struct platform_device *pdev)
 {
 	struct device_node *np = pdev->dev.of_node;
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct snd_soc_dai_link *dai_link;
 	int ret;
 
-	card = (struct snd_soc_card *)of_device_get_match_data(&pdev->dev);
-	card->dev = &pdev->dev;
-	dai_link = card->dai_link;
+	card_driver = (struct snd_soc_card_driver *)of_device_get_match_data(&pdev->dev);
+	dai_link = card_driver->dai_link;
 
 	dai_link->cpus->of_node = of_parse_phandle(np, "samsung,audio-cpu", 0);
 	if (!dai_link->cpus->of_node) {
@@ -172,16 +171,16 @@ static int arndale_audio_probe(struct platform_device *pdev)
 		goto err_put_of_nodes;
 	}
 
-	ret = devm_snd_soc_register_card(card->dev, card);
+	ret = devm_snd_soc_card_register(&pdev->dev, card_driver);
 	if (ret) {
 		dev_err_probe(&pdev->dev, ret,
-			      "snd_soc_register_card() failed\n");
+			      "snd_soc_card_register() failed\n");
 		goto err_put_of_nodes;
 	}
 	return 0;
 
 err_put_of_nodes:
-	arndale_put_of_nodes(card);
+	arndale_put_of_nodes(card_driver);
 	return ret;
 }
 
@@ -189,7 +188,7 @@ static void arndale_audio_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
 
-	arndale_put_of_nodes(card);
+	arndale_put_of_nodes(snd_soc_card_to_driver(card));
 }
 
 static const struct of_device_id arndale_audio_of_match[] = {
