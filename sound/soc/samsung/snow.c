@@ -115,8 +115,8 @@ static int snow_late_probe(struct snd_soc_card *card)
 				FIN_PLL_RATE, SND_SOC_CLOCK_IN);
 }
 
-static struct snd_soc_card snow_snd = {
-	.name = "Snow-I2S",
+static struct snd_soc_card_driver snow_snd = {
+	.default_name = "Snow-I2S",
 	.owner = THIS_MODULE,
 	.late_probe = snow_late_probe,
 };
@@ -124,14 +124,15 @@ static struct snd_soc_card snow_snd = {
 static int snow_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
-	struct snd_soc_card *card = &snow_snd;
+	struct snd_soc_card *card;
 	struct device_node *cpu, *codec;
 	struct snd_soc_dai_link *link;
 	struct snow_priv *priv;
 	int ret;
 
+	card = snd_soc_card_alloc(dev);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
+	if (!card || !priv)
 		return -ENOMEM;
 
 	link = &priv->dai_link;
@@ -149,9 +150,8 @@ static int snow_probe(struct platform_device *pdev)
 	link->platforms = links_platforms;
 	link->num_platforms = ARRAY_SIZE(links_platforms);
 
-	card->dai_link = link;
-	card->num_links = 1;
-	card->dev = dev;
+	snow_snd.dai_link = link;
+	snow_snd.num_links = 1;
 
 	/* Try new DT bindings with HDMI support first. */
 	cpu = of_get_child_by_name(dev->of_node, "cpu");
@@ -210,10 +210,10 @@ static int snow_probe(struct platform_device *pdev)
 
 	snd_soc_card_set_drvdata(card, priv);
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, &snow_snd);
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret,
-				     "snd_soc_register_card failed\n");
+				     "snd_soc_card_register() failed\n");
 
 	return 0;
 }
