@@ -133,9 +133,8 @@ static struct snd_soc_dai_link tegra_wm8994_dai = {
 	SND_SOC_DAILINK_REG(wm8994_hifi),
 };
 
-static struct snd_soc_card snd_soc_tegra_wm8994 = {
-	.components = "codec:wm8994",
-	.owner = THIS_MODULE,
+static struct snd_soc_card_driver snd_soc_tegra_wm8994 = {
+	.default_components = "codec:wm8994",
 	.dai_link = &tegra_wm8994_dai,
 	.num_links = 1,
 	.controls = tegra_wm8994_controls,
@@ -147,7 +146,7 @@ static struct snd_soc_card snd_soc_tegra_wm8994 = {
 static const struct tegra_asoc_data tegra_wm8994_data = {
 	.mclk_rate = tegra_wm8994_mclk_rate,
 	.mclk_id = WM8994_SYSCLK_MCLK1,
-	.card = &snd_soc_tegra_wm8994,
+	.card_driver = &snd_soc_tegra_wm8994,
 	.add_common_dapm_widgets = true,
 	.add_common_snd_ops = true,
 	.add_mic_jack = true,
