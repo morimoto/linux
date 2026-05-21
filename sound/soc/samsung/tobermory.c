@@ -198,8 +198,8 @@ static int tobermory_late_probe(struct snd_soc_card *card)
 	return 0;
 }
 
-static struct snd_soc_card tobermory = {
-	.name = "Tobermory",
+static struct snd_soc_card_driver tobermory = {
+	.default_name = "Tobermory",
 	.owner = THIS_MODULE,
 	.dai_link = tobermory_dai,
 	.num_links = ARRAY_SIZE(tobermory_dai),
@@ -220,14 +220,11 @@ static struct snd_soc_card tobermory = {
 
 static int tobermory_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &tobermory;
 	int ret;
 
-	card->dev = &pdev->dev;
-
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(&pdev->dev, &tobermory);
 	if (ret)
-		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card() failed\n");
+		dev_err_probe(&pdev->dev, ret, "snd_soc_card_register() failed\n");
 
 	return ret;
 }
