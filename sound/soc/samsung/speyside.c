@@ -308,8 +308,8 @@ static const struct snd_soc_dapm_route audio_paths[] = {
 	{ "Main Speaker", NULL, "SPKDAT" },
 };
 
-static struct snd_soc_card speyside = {
-	.name = "Speyside",
+static struct snd_soc_card_driver speyside = {
+	.default_name = "Speyside",
 	.owner = THIS_MODULE,
 	.dai_link = speyside_dai,
 	.num_links = ARRAY_SIZE(speyside_dai),
@@ -354,10 +354,7 @@ static void speyside_gpiod_table_action(void *data)
 
 static int speyside_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &speyside;
 	int ret;
-
-	card->dev = &pdev->dev;
 
 	gpiod_add_lookup_table(&wm8996_gpiod_table);
 	ret = devm_add_action_or_reset(&pdev->dev, speyside_gpiod_table_action,
@@ -365,9 +362,9 @@ static int speyside_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(&pdev->dev, &speyside);
 	if (ret)
-		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card() failed\n");
+		dev_err_probe(&pdev->dev, ret, "snd_soc_card_register() failed\n");
 
 	return ret;
 }
