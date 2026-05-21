@@ -56,9 +56,10 @@ static int bells_set_bias_level(struct snd_soc_card *card,
 	struct snd_soc_dai *codec_dai;
 	struct snd_soc_component *component;
 	struct bells_drvdata *bells = snd_soc_card_to_priv(card);
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[DAI_DSP_CODEC]);
+	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[DAI_DSP_CODEC]);
 	codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	component = codec_dai->component;
 
@@ -102,9 +103,10 @@ static int bells_set_bias_level_post(struct snd_soc_card *card,
 	struct snd_soc_dai *codec_dai;
 	struct snd_soc_component *component;
 	struct bells_drvdata *bells = snd_soc_card_to_priv(card);
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[DAI_DSP_CODEC]);
+	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[DAI_DSP_CODEC]);
 	codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	component = codec_dai->component;
 
@@ -139,6 +141,7 @@ static int bells_set_bias_level_post(struct snd_soc_card *card,
 static int bells_late_probe(struct snd_soc_card *card)
 {
 	struct bells_drvdata *bells = snd_soc_card_to_priv(card);
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_component *wm0010;
 	struct snd_soc_component *component;
@@ -148,10 +151,10 @@ static int bells_late_probe(struct snd_soc_card *card)
 	struct snd_soc_dai *wm9081_dai;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[DAI_AP_DSP]);
+	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[DAI_AP_DSP]);
 	wm0010 = snd_soc_rtd_to_codec(rtd, 0)->component;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[DAI_DSP_CODEC]);
+	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[DAI_DSP_CODEC]);
 	component = snd_soc_rtd_to_codec(rtd, 0)->component;
 	aif1_dai = snd_soc_rtd_to_codec(rtd, 0);
 
@@ -191,7 +194,7 @@ static int bells_late_probe(struct snd_soc_card *card)
 		return ret;
 	}
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[DAI_CODEC_CP]);
+	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[DAI_CODEC_CP]);
 	aif2_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
 	ret = snd_soc_dai_set_sysclk(aif2_dai, ARIZONA_CLK_ASYNCCLK, 0, 0);
@@ -203,7 +206,7 @@ static int bells_late_probe(struct snd_soc_card *card)
 	if (card->num_rtd == DAI_CODEC_SUB)
 		return 0;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[DAI_CODEC_SUB]);
+	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[DAI_CODEC_SUB]);
 	aif3_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	wm9081_dai = snd_soc_rtd_to_codec(rtd, 0);
 
@@ -403,9 +406,9 @@ static const struct snd_soc_dapm_route bells_routes[] = {
 	{ "IN2R", NULL, "DMIC" },
 };
 
-static struct snd_soc_card bells_cards[] = {
+static struct snd_soc_card_driver bells_card_drivers[] = {
 	{
-		.name = "Bells WM2200",
+		.default_name = "Bells WM2200",
 		.owner = THIS_MODULE,
 		.dai_link = bells_dai_wm2200,
 		.num_links = ARRAY_SIZE(bells_dai_wm2200),
@@ -421,11 +424,9 @@ static struct snd_soc_card bells_cards[] = {
 
 		.set_bias_level = bells_set_bias_level,
 		.set_bias_level_post = bells_set_bias_level_post,
-
-		.priv = &wm2200_drvdata,
 	},
 	{
-		.name = "Bells WM5102",
+		.default_name = "Bells WM5102",
 		.owner = THIS_MODULE,
 		.dai_link = bells_dai_wm5102,
 		.num_links = ARRAY_SIZE(bells_dai_wm5102),
@@ -441,11 +442,9 @@ static struct snd_soc_card bells_cards[] = {
 
 		.set_bias_level = bells_set_bias_level,
 		.set_bias_level_post = bells_set_bias_level_post,
-
-		.priv = &wm5102_drvdata,
 	},
 	{
-		.name = "Bells WM5110",
+		.default_name = "Bells WM5110",
 		.owner = THIS_MODULE,
 		.dai_link = bells_dai_wm5110,
 		.num_links = ARRAY_SIZE(bells_dai_wm5110),
@@ -461,22 +460,30 @@ static struct snd_soc_card bells_cards[] = {
 
 		.set_bias_level = bells_set_bias_level,
 		.set_bias_level_post = bells_set_bias_level_post,
-
-		.priv = &wm5110_drvdata,
 	},
+};
+
+static struct bells_drvdata *drvdatas[] = {
+	&wm2200_drvdata,
+	&wm5102_drvdata,
+	&wm5110_drvdata,
 };
 
 static int bells_probe(struct platform_device *pdev)
 {
+	struct snd_soc_card *card;
 	int ret;
 
-	bells_cards[pdev->id].dev = &pdev->dev;
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
 
-	ret = devm_snd_soc_register_card(&pdev->dev, &bells_cards[pdev->id]);
+	snd_soc_card_set_priv(card, drvdatas[pdev->id]);
+	ret = devm_snd_soc_card_register(card, &bells_card_drivers[pdev->id]);
 	if (ret)
 		dev_err(&pdev->dev,
-			"snd_soc_register_card(%s) failed: %d\n",
-			bells_cards[pdev->id].name, ret);
+			"snd_soc_card_register(%s) failed: %d\n",
+			bells_card_drivers[pdev->id].default_name, ret);
 
 	return ret;
 }
