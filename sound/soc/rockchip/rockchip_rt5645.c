@@ -149,8 +149,8 @@ static struct snd_soc_dai_link rk_dailink = {
 	SND_SOC_DAILINK_REG(pcm),
 };
 
-static struct snd_soc_card snd_soc_card_rk = {
-	.name = "I2S-RT5650",
+static struct snd_soc_card_driver snd_soc_card_rk = {
+	.default_name = "I2S-RT5650",
 	.owner = THIS_MODULE,
 	.dai_link = &rk_dailink,
 	.num_links = 1,
@@ -165,11 +165,14 @@ static struct snd_soc_card snd_soc_card_rk = {
 static int snd_rk_mc_probe(struct platform_device *pdev)
 {
 	int ret = 0;
-	struct snd_soc_card *card = &snd_soc_card_rk;
+	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver = &snd_soc_card_rk;
 	struct device_node *np = pdev->dev.of_node;
 
 	/* register the soc card */
-	card->dev = &pdev->dev;
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
 
 	rk_dailink.codecs->of_node = of_parse_phandle(np,
 			"rockchip,audio-codec", 0);
@@ -194,7 +197,7 @@ static int snd_rk_mc_probe(struct platform_device *pdev)
 	if (ret)
 		goto put_cpu_of_node;
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret) {
 		dev_err(&pdev->dev,
 			"Soc register card failed %d\n", ret);
