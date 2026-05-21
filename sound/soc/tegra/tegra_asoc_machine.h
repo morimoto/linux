@@ -15,7 +15,7 @@ struct tegra_asoc_data {
 	unsigned int (*mclk_rate)(unsigned int srate);
 	const char *codec_dev_name;
 	const char *hp_jack_name;
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	unsigned int mclk_id;
 	bool hp_jack_gpio_active_low;
 	bool add_common_dapm_widgets;
