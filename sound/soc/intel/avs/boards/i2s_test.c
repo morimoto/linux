@@ -57,6 +57,7 @@ static int avs_i2s_test_probe(struct platform_device *pdev)
 	struct snd_soc_acpi_mach *mach;
 	struct avs_mach_pdata *pdata;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct device *dev = &pdev->dev;
 	int ssp_port, tdm_slot, ret;
 
@@ -75,20 +76,25 @@ static int avs_i2s_test_probe(struct platform_device *pdev)
 	}
 	tdm_slot = avs_mach_ssp_tdm(mach, ssp_port);
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card = snd_soc_card_alloc(&pdev->dev);
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card || !card_driver)
 		return -ENOMEM;
 
 	if (pdata->obsolete_card_names) {
-		card->name = devm_kasprintf(dev, GFP_KERNEL,
+		const char *name = devm_kasprintf(dev, GFP_KERNEL,
 					    AVS_STRING_FMT("ssp", "-loopback", ssp_port, tdm_slot));
+
+		snd_soc_card_set_name(card, name);
 	} else {
-		card->driver_name = "avs_i2s_test";
-		card->long_name = card->name = devm_kasprintf(dev, GFP_KERNEL,
-							      AVS_STRING_FMT("AVS I2S TEST-", "",
-									     ssp_port, tdm_slot));
+		const char *name = devm_kasprintf(dev, GFP_KERNEL,
+						  AVS_STRING_FMT("AVS I2S TEST-", "",
+								 ssp_port, tdm_slot));
+		card_driver->driver_name = "avs_i2s_test";
+		snd_soc_card_set_name(card, name);
+		snd_soc_card_set_long_name(card, name);
 	}
-	if (!card->name)
+	if (!snd_soc_card_name(card))
 		return -ENOMEM;
 
 	ret = avs_create_dai_link(dev, ssp_port, tdm_slot, &dai_link);
@@ -97,13 +103,12 @@ static int avs_i2s_test_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	card->dev = dev;
-	card->owner = THIS_MODULE;
-	card->dai_link = dai_link;
-	card->num_links = 1;
-	card->fully_routed = true;
+	card_driver->owner = THIS_MODULE;
+	card_driver->dai_link = dai_link;
+	card_driver->num_links = 1;
+	card_driver->fully_routed = true;
 
-	return devm_snd_soc_register_deferrable_card(dev, card);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static const struct platform_device_id avs_i2s_test_driver_ids[] = {
