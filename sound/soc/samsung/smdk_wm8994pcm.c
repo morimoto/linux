@@ -105,8 +105,8 @@ static struct snd_soc_dai_link smdk_dai[] = {
 	},
 };
 
-static struct snd_soc_card smdk_pcm = {
-	.name = "SMDK-PCM",
+static struct snd_soc_card_driver smdk_pcm = {
+	.default_name = "SMDK-PCM",
 	.owner = THIS_MODULE,
 	.dai_link = smdk_dai,
 	.num_links = 1,
@@ -116,10 +116,9 @@ static int snd_smdk_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 
-	smdk_pcm.dev = &pdev->dev;
-	ret = devm_snd_soc_register_card(&pdev->dev, &smdk_pcm);
+	ret = devm_snd_soc_card_register(&pdev->dev, &smdk_pcm);
 	if (ret)
-		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card failed\n");
+		dev_err_probe(&pdev->dev, ret, "snd_soc_card_register() failed\n");
 
 	return ret;
 }
