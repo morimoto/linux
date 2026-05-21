@@ -392,7 +392,8 @@ static int create_dmic_dailinks(struct snd_soc_card *card,
 	return 0;
 }
 
-static int soc_card_dai_links_create(struct snd_soc_card *card)
+static int soc_card_dai_links_create(struct snd_soc_card *card,
+				     struct snd_soc_card_driver *card_driver)
 {
 	struct device *dev = card->dev;
 	int sdw_be_num = 0, dmic_num = 0;
@@ -454,12 +455,12 @@ static int soc_card_dai_links_create(struct snd_soc_card *card)
 	if (!dai_links)
 		return -ENOMEM;
 
-	card->codec_conf = codec_conf;
-	card->num_configs = num_confs;
-	card->dai_link = dai_links;
-	card->num_links = num_links;
-	card->aux_dev = soc_aux;
-	card->num_aux_devs = num_aux;
+	card_driver->codec_conf = codec_conf;
+	card_driver->num_configs = num_confs;
+	card_driver->dai_link = dai_links;
+	card_driver->num_links = num_links;
+	card_driver->aux_dev = soc_aux;
+	card_driver->num_aux_devs = num_aux;
 
 	/* SDW */
 	if (sdw_be_num) {
@@ -480,8 +481,8 @@ static int soc_card_dai_links_create(struct snd_soc_card *card)
 		}
 	}
 
-	WARN_ON(codec_conf != card->codec_conf + card->num_configs);
-	WARN_ON(dai_links != card->dai_link + card->num_links);
+	WARN_ON(codec_conf != card_driver->codec_conf + card_driver->num_configs);
+	WARN_ON(dai_links != card_driver->dai_link + card_driver->num_links);
 
 	return ret;
 }
@@ -490,8 +491,10 @@ static int mc_probe(struct platform_device *pdev)
 {
 	struct snd_soc_acpi_mach *mach = dev_get_platdata(&pdev->dev);
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct amd_mc_ctx *amd_ctx;
 	struct asoc_sdw_mc_private *ctx;
+	const char *components;
 	int amp_num = 0, i;
 	int ret;
 
@@ -501,18 +504,18 @@ static int mc_probe(struct platform_device *pdev)
 
 	amd_ctx->acp_rev = mach->mach_params.subsystem_rev;
 	amd_ctx->max_sdw_links = ACP63_SDW_MAX_LINKS;
+	card = snd_soc_card_alloc(&pdev->dev);
 	ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
-	if (!ctx)
+	if (!card || !ctx)
 		return -ENOMEM;
 	ctx->codec_info_list_count = asoc_sdw_get_codec_info_list_count();
 	ctx->private = amd_ctx;
-	card = &ctx->card;
-	card->dev = &pdev->dev;
-	card->name = "amd-soundwire";
-	card->owner = THIS_MODULE;
-	card->late_probe = asoc_sdw_card_late_probe;
+	card_driver = &ctx->card_driver;
+	card_driver->owner = THIS_MODULE;
+	card_driver->late_probe = asoc_sdw_card_late_probe;
 
-	snd_soc_card_set_drvdata(card, ctx);
+	snd_soc_card_set_name(card, "amd-soundwire");
+	snd_soc_card_set_priv(card, ctx);
 	if (mach->mach_params.subsystem_id_set)
 		snd_soc_card_set_pci_ssid(card,
 					  mach->mach_params.subsystem_vendor,
@@ -534,7 +537,7 @@ static int mc_probe(struct platform_device *pdev)
 	for (i = 0; i < ctx->codec_info_list_count; i++)
 		codec_info_list[i].amp_num = 0;
 
-	ret = soc_card_dai_links_create(card);
+	ret = soc_card_dai_links_create(card, card_driver);
 	if (ret < 0)
 		return ret;
 
@@ -546,24 +549,27 @@ static int mc_probe(struct platform_device *pdev)
 	for (i = 0; i < ctx->codec_info_list_count; i++)
 		amp_num += codec_info_list[i].amp_num;
 
-	card->components = devm_kasprintf(&pdev->dev, GFP_KERNEL,
+	components = devm_kasprintf(&pdev->dev, GFP_KERNEL,
 					  " cfg-amp:%d", amp_num);
-	if (!card->components)
+	if (!components)
 		return -ENOMEM;
+	snd_soc_card_set_components(card, components);
 	if (soc_sdw_quirk & ASOC_SDW_ACP_DMIC) {
-		card->components = devm_kasprintf(&pdev->dev, GFP_KERNEL,
+		components = devm_kasprintf(&pdev->dev, GFP_KERNEL,
 						  "%s mic:acp-dmic cfg-mics:%d",
-						  card->components,
+						  components,
 						  1);
-		if (!card->components)
+		if (!components)
 			return -ENOMEM;
+
+		snd_soc_card_set_components(card, components);
 	}
 
 	/* Register the card */
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret) {
-		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card failed %d\n", ret);
-		asoc_sdw_mc_dailink_exit_loop(card);
+		dev_err_probe(&pdev->dev, ret, "snd_soc_card_register() failed %d\n", ret);
+		asoc_sdw_mc_dailink_exit_loop(card, card_driver);
 		return ret;
 	}
 
@@ -575,8 +581,9 @@ static int mc_probe(struct platform_device *pdev)
 static void mc_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 
-	asoc_sdw_mc_dailink_exit_loop(card);
+	asoc_sdw_mc_dailink_exit_loop(card, card_driver);
 }
 
 static const struct platform_device_id mc_id_table[] = {
