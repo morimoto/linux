@@ -12,7 +12,7 @@
 #include "i2s-regs.h"
 
 struct odroid_priv {
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	struct clk *clk_i2s_bus;
 	struct clk *sclk_i2s;
 
@@ -191,18 +191,18 @@ static int odroid_audio_probe(struct platform_device *pdev)
 	struct device_node *cpu, *codec;
 	struct odroid_priv *priv;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct snd_soc_dai_link *link, *codec_link;
 	int num_pcms, ret, i;
 
+	card = snd_soc_card_alloc(dev);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
+	if (!card || !priv)
 		return -ENOMEM;
 
-	card = &priv->card;
-	card->dev = dev;
-
-	card->owner = THIS_MODULE;
-	card->fully_routed = true;
+	card_driver = &priv->card_driver;
+	card_driver->owner = THIS_MODULE;
+	card_driver->fully_routed = true;
 
 	spin_lock_init(&priv->lock);
 	snd_soc_card_set_drvdata(card, priv);
@@ -212,7 +212,8 @@ static int odroid_audio_probe(struct platform_device *pdev)
 		return ret;
 
 	if (of_property_present(dev->of_node, "samsung,audio-widgets")) {
-		ret = snd_soc_of_parse_audio_simple_widgets(card,
+		ret = snd_soc_card_driver_of_parse_simple_widgets(dev,
+						card_driver,
 						"samsung,audio-widgets");
 		if (ret < 0)
 			return ret;
@@ -220,19 +221,19 @@ static int odroid_audio_probe(struct platform_device *pdev)
 
 	ret = 0;
 	if (of_property_present(dev->of_node, "audio-routing"))
-		ret = snd_soc_of_parse_audio_routing(card, "audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver, "audio-routing");
 	else if (of_property_present(dev->of_node, "samsung,audio-routing"))
-		ret = snd_soc_of_parse_audio_routing(card, "samsung,audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver, "samsung,audio-routing");
 	if (ret < 0)
 		return ret;
 
-	card->dai_link = odroid_card_dais;
-	card->num_links = ARRAY_SIZE(odroid_card_dais);
+	card_driver->dai_link = odroid_card_dais;
+	card_driver->num_links = ARRAY_SIZE(odroid_card_dais);
 
 	cpu = of_get_child_by_name(dev->of_node, "cpu");
 	codec = of_get_child_by_name(dev->of_node, "codec");
-	link = card->dai_link;
-	codec_link = &card->dai_link[1];
+	link = odroid_card_dais;
+	codec_link = &odroid_card_dais[1];
 
 	/*
 	 * For backwards compatibility create the secondary CPU DAI link only
@@ -242,9 +243,9 @@ static int odroid_audio_probe(struct platform_device *pdev)
 	num_pcms = of_count_phandle_with_args(cpu, "sound-dai",
 					      "#sound-dai-cells");
 	if (num_pcms == 1) {
-		card->dapm_routes = odroid_dapm_routes;
-		card->num_dapm_routes = ARRAY_SIZE(odroid_dapm_routes);
-		card->num_links--;
+		card_driver->dapm_routes = odroid_dapm_routes;
+		card_driver->num_dapm_routes = ARRAY_SIZE(odroid_dapm_routes);
+		card_driver->num_links--;
 	}
 
 	for (i = 0; i < num_pcms; i++, link += 2) {
@@ -268,8 +269,8 @@ static int odroid_audio_probe(struct platform_device *pdev)
 
 	/* Set capture capability only for boards with the MAX98090 CODEC */
 	if (codec_link->num_codecs > 1) {
-		card->dai_link[0].playback_only = 0;
-		card->dai_link[1].playback_only = 0;
+		card_driver->dai_link[0].playback_only = 0;
+		card_driver->dai_link[1].playback_only = 0;
 	}
 
 	priv->sclk_i2s = of_clk_get_by_name(cpu_dai, "i2s_opclk1");
@@ -284,9 +285,9 @@ static int odroid_audio_probe(struct platform_device *pdev)
 		goto err_put_sclk;
 	}
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret < 0) {
-		dev_err_probe(dev, ret, "snd_soc_register_card() failed\n");
+		dev_err_probe(dev, ret, "snd_soc_card_register() failed\n");
 		goto err_put_clk_i2s;
 	}
 
@@ -310,7 +311,7 @@ static void odroid_audio_remove(struct platform_device *pdev)
 {
 	struct odroid_priv *priv = platform_get_drvdata(pdev);
 
-	snd_soc_of_put_dai_link_codecs(&priv->card.dai_link[1]);
+	snd_soc_of_put_dai_link_codecs(&priv->card_driver.dai_link[1]);
 	clk_put(priv->sclk_i2s);
 	clk_put(priv->clk_i2s_bus);
 }
