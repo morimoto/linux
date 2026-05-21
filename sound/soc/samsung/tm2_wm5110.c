@@ -478,7 +478,7 @@ static struct snd_soc_dai_link tm2_dai_links[] = {
 	}
 };
 
-static struct snd_soc_card tm2_card = {
+static struct snd_soc_card_driver tm2_card_driver = {
 	.owner			= THIS_MODULE,
 
 	.dai_link		= tm2_dai_links,
@@ -499,17 +499,18 @@ static int tm2_probe(struct platform_device *pdev)
 	struct device_node *codec_dai_node[2] = {};
 	const char *cells_name = NULL;
 	struct device *dev = &pdev->dev;
-	struct snd_soc_card *card = &tm2_card;
+	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver = &tm2_card_driver;
 	struct tm2_machine_priv *priv;
 	struct snd_soc_dai_link *dai_link;
 	int num_codecs, ret, i;
 
+	card = snd_soc_card_alloc(dev);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
+	if (!card || !priv)
 		return -ENOMEM;
 
 	snd_soc_card_set_drvdata(card, priv);
-	card->dev = dev;
 
 	priv->gpio_mic_bias = devm_gpiod_get(dev, "mic-bias", GPIOD_OUT_HIGH);
 	if (IS_ERR(priv->gpio_mic_bias)) {
@@ -523,19 +524,20 @@ static int tm2_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	ret = snd_soc_of_parse_audio_routing(card, "audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver, "audio-routing");
 	if (ret < 0) {
 		/* Backwards compatible way */
-		ret = snd_soc_of_parse_audio_routing(card, "samsung,audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver,
+								 "samsung,audio-routing");
 		if (ret < 0) {
 			dev_err(dev, "Audio routing is not specified or invalid\n");
 			return ret;
 		}
 	}
 
-	card->aux_dev[0].dlc.of_node = of_parse_phandle(dev->of_node,
+	card_driver->aux_dev[0].dlc.of_node = of_parse_phandle(dev->of_node,
 							"audio-amplifier", 0);
-	if (!card->aux_dev[0].dlc.of_node) {
+	if (!card_driver->aux_dev[0].dlc.of_node) {
 		dev_err(dev, "audio-amplifier property invalid or missing\n");
 		return -EINVAL;
 	}
@@ -545,10 +547,10 @@ static int tm2_probe(struct platform_device *pdev)
 
 	/* Skip the HDMI link if not specified in DT */
 	if (num_codecs > 1) {
-		card->num_links = ARRAY_SIZE(tm2_dai_links);
+		card_driver->num_links = ARRAY_SIZE(tm2_dai_links);
 		cells_name = "#sound-dai-cells";
 	} else {
-		card->num_links = ARRAY_SIZE(tm2_dai_links) - 1;
+		card_driver->num_links = ARRAY_SIZE(tm2_dai_links) - 1;
 	}
 
 	for (i = 0; i < num_codecs; i++) {
@@ -573,13 +575,13 @@ static int tm2_probe(struct platform_device *pdev)
 	}
 
 	/* Initialize WM5110 - I2S and HDMI - I2S1 DAI links */
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		unsigned int dai_index = 0; /* WM5110 */
 
 		dai_link->cpus->name = NULL;
 		dai_link->platforms->name = NULL;
 
-		if (num_codecs > 1 && i == card->num_links - 1)
+		if (num_codecs > 1 && i == card_driver->num_links - 1)
 			dai_index = 1; /* HDMI */
 
 		dai_link->codecs->of_node = codec_dai_node[dai_index];
@@ -591,7 +593,7 @@ static int tm2_probe(struct platform_device *pdev)
 		struct of_phandle_args args;
 
 		/* HDMI DAI link (I2S1) */
-		i = card->num_links - 1;
+		i = card_driver->num_links - 1;
 
 		ret = of_parse_phandle_with_fixed_args(dev->of_node,
 						"audio-codec", 0, 1, &args);
@@ -600,7 +602,7 @@ static int tm2_probe(struct platform_device *pdev)
 			goto dai_node_put;
 		}
 
-		ret = snd_soc_get_dai_name(&args, &card->dai_link[i].codecs->dai_name);
+		ret = snd_soc_get_dai_name(&args, &card_driver->dai_link[i].codecs->dai_name);
 		if (ret) {
 			dev_err(dev, "Unable to get codec_dai_name\n");
 			goto dai_node_put;
@@ -614,7 +616,7 @@ static int tm2_probe(struct platform_device *pdev)
 		goto dai_node_put;
 	}
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret < 0) {
 		dev_err_probe(dev, ret, "Failed to register card\n");
 		goto dai_node_put;
@@ -626,7 +628,7 @@ dai_node_put:
 		of_node_put(cpu_dai_node[i]);
 	}
 
-	of_node_put(card->aux_dev[0].dlc.of_node);
+	of_node_put(card_driver->aux_dev[0].dlc.of_node);
 
 	return ret;
 }
