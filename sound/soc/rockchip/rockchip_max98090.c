@@ -295,8 +295,8 @@ static struct snd_soc_aux_dev rk_98090_headset_dev = {
 	.init = rk_98090_headset_init,
 };
 
-static struct snd_soc_card rockchip_max98090_card = {
-	.name = "ROCKCHIP-I2S",
+static struct snd_soc_card_driver rockchip_max98090_card_driver = {
+	.default_name = "ROCKCHIP-I2S",
 	.owner = THIS_MODULE,
 	.dai_link = rk_max98090_dailinks,
 	.num_links = ARRAY_SIZE(rk_max98090_dailinks),
@@ -310,8 +310,8 @@ static struct snd_soc_card rockchip_max98090_card = {
 	.num_controls = ARRAY_SIZE(rk_max98090_controls),
 };
 
-static struct snd_soc_card rockchip_hdmi_card = {
-	.name = "ROCKCHIP-HDMI",
+static struct snd_soc_card_driver rockchip_hdmi_card_driver = {
+	.default_name = "ROCKCHIP-HDMI",
 	.owner = THIS_MODULE,
 	.dai_link = rk_hdmi_dailinks,
 	.num_links = ARRAY_SIZE(rk_hdmi_dailinks),
@@ -323,8 +323,8 @@ static struct snd_soc_card rockchip_hdmi_card = {
 	.num_controls = ARRAY_SIZE(rk_hdmi_controls),
 };
 
-static struct snd_soc_card rockchip_max98090_hdmi_card = {
-	.name = "ROCKCHIP-MAX98090-HDMI",
+static struct snd_soc_card_driver rockchip_max98090_hdmi_card_driver = {
+	.default_name = "ROCKCHIP-MAX98090-HDMI",
 	.owner = THIS_MODULE,
 	.dai_link = rk_max98090_hdmi_dailinks,
 	.num_links = ARRAY_SIZE(rk_max98090_hdmi_dailinks),
@@ -374,10 +374,15 @@ static int snd_rk_mc_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct device *dev = &pdev->dev;
 	struct device_node *np = pdev->dev.of_node;
 	struct device_node *np_cpu;
 	struct device_node *np_audio, *np_hdmi;
+
+	card = snd_soc_card_alloc(dev);
+	if (!card)
+		return -ENOMEM;
 
 	/* Parse DTS for I2S controller. */
 	np_cpu = of_parse_phandle(np, "rockchip,i2s-controller", 0);
@@ -395,29 +400,27 @@ static int snd_rk_mc_probe(struct platform_device *pdev)
 	np_audio = of_parse_phandle(np, "rockchip,audio-codec", 0);
 	np_hdmi = of_parse_phandle(np, "rockchip,hdmi-codec", 0);
 	if (np_audio && np_hdmi) {
-		card = &rockchip_max98090_hdmi_card;
-		card->dai_link[DAILINK_MAX98090].codecs->of_node = np_audio;
-		card->dai_link[DAILINK_HDMI].codecs->of_node = np_hdmi;
-		card->dai_link[DAILINK_MAX98090].cpus->of_node = np_cpu;
-		card->dai_link[DAILINK_MAX98090].platforms->of_node = np_cpu;
-		card->dai_link[DAILINK_HDMI].cpus->of_node = np_cpu;
-		card->dai_link[DAILINK_HDMI].platforms->of_node = np_cpu;
+		card_driver = &rockchip_max98090_hdmi_card_driver;
+		card_driver->dai_link[DAILINK_MAX98090].codecs->of_node = np_audio;
+		card_driver->dai_link[DAILINK_HDMI].codecs->of_node = np_hdmi;
+		card_driver->dai_link[DAILINK_MAX98090].cpus->of_node = np_cpu;
+		card_driver->dai_link[DAILINK_MAX98090].platforms->of_node = np_cpu;
+		card_driver->dai_link[DAILINK_HDMI].cpus->of_node = np_cpu;
+		card_driver->dai_link[DAILINK_HDMI].platforms->of_node = np_cpu;
 	} else if (np_audio) {
-		card = &rockchip_max98090_card;
-		card->dai_link[0].codecs->of_node = np_audio;
-		card->dai_link[0].cpus->of_node = np_cpu;
-		card->dai_link[0].platforms->of_node = np_cpu;
+		card_driver = &rockchip_max98090_card_driver;
+		card_driver->dai_link[0].codecs->of_node = np_audio;
+		card_driver->dai_link[0].cpus->of_node = np_cpu;
+		card_driver->dai_link[0].platforms->of_node = np_cpu;
 	} else if (np_hdmi) {
-		card = &rockchip_hdmi_card;
-		card->dai_link[0].codecs->of_node = np_hdmi;
-		card->dai_link[0].cpus->of_node = np_cpu;
-		card->dai_link[0].platforms->of_node = np_cpu;
+		card_driver = &rockchip_hdmi_card_driver;
+		card_driver->dai_link[0].codecs->of_node = np_hdmi;
+		card_driver->dai_link[0].cpus->of_node = np_cpu;
+		card_driver->dai_link[0].platforms->of_node = np_cpu;
 	} else {
 		dev_err(dev, "At least one of codecs should be specified\n");
 		return -EINVAL;
 	}
-
-	card->dev = dev;
 
 	/* Parse headset detection codec. */
 	if (np_audio) {
@@ -432,7 +435,7 @@ static int snd_rk_mc_probe(struct platform_device *pdev)
 		return ret;
 
 	/* register the soc card */
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret) {
 		dev_err(&pdev->dev,
 			"Soc register card failed %d\n", ret);
