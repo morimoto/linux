@@ -167,8 +167,8 @@ static const struct snd_soc_dapm_route audio_paths[] = {
 	{ "Main Speaker", NULL, "SPKDAT1" },
 };
 
-static struct snd_soc_card lowland = {
-	.name = "Lowland",
+static struct snd_soc_card_driver lowland = {
+	.default_name = "Lowland",
 	.owner = THIS_MODULE,
 	.dai_link = lowland_dai,
 	.num_links = ARRAY_SIZE(lowland_dai),
@@ -185,14 +185,11 @@ static struct snd_soc_card lowland = {
 
 static int lowland_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &lowland;
 	int ret;
 
-	card->dev = &pdev->dev;
-
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(&pdev->dev, &lowland);
 	if (ret)
-		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card() failed\n");
+		dev_err_probe(&pdev->dev, ret, "snd_soc_card_register() failed\n");
 
 	return ret;
 }
