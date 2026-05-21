@@ -450,16 +450,17 @@ int tegra_asoc_machine_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct tegra_machine *machine;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct gpio_desc *gpiod;
 	int err;
 
+	card = snd_soc_card_alloc(dev);
 	machine = devm_kzalloc(dev, sizeof(*machine), GFP_KERNEL);
-	if (!machine)
+	if (!card || !machine)
 		return -ENOMEM;
 
 	asoc = of_device_get_match_data(dev);
-	card = asoc->card;
-	card->dev = dev;
+	card_driver = asoc->card_driver;
 
 	machine->asoc = asoc;
 	machine->mic_jack = &tegra_machine_mic_jack;
@@ -506,8 +507,9 @@ int tegra_asoc_machine_probe(struct platform_device *pdev)
 	if (err)
 		return err;
 
-	if (!card->dapm_routes) {
-		err = snd_soc_of_parse_audio_routing(card, "nvidia,audio-routing");
+	if (!card_driver->dapm_routes) {
+		err = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver,
+								 "nvidia,audio-routing");
 		if (err)
 			return err;
 	}
@@ -521,8 +523,8 @@ int tegra_asoc_machine_probe(struct platform_device *pdev)
 		if (IS_ERR(np_ac97))
 			return PTR_ERR(np_ac97);
 
-		card->dai_link->cpus->of_node = np_ac97;
-		card->dai_link->platforms->of_node = np_ac97;
+		card_driver->dai_link->cpus->of_node = np_ac97;
+		card_driver->dai_link->platforms->of_node = np_ac97;
 	} else {
 		np_codec = tegra_machine_parse_phandle(dev, "nvidia,audio-codec");
 		if (IS_ERR(np_codec))
@@ -532,28 +534,28 @@ int tegra_asoc_machine_probe(struct platform_device *pdev)
 		if (IS_ERR(np_i2s))
 			return PTR_ERR(np_i2s);
 
-		card->dai_link->cpus->of_node = np_i2s;
-		card->dai_link->codecs->of_node = np_codec;
-		card->dai_link->platforms->of_node = np_i2s;
+		card_driver->dai_link->cpus->of_node = np_i2s;
+		card_driver->dai_link->codecs->of_node = np_codec;
+		card_driver->dai_link->platforms->of_node = np_i2s;
 	}
 
 	if (asoc->add_common_controls) {
-		card->controls = tegra_machine_controls;
-		card->num_controls = ARRAY_SIZE(tegra_machine_controls);
+		card_driver->controls = tegra_machine_controls;
+		card_driver->num_controls = ARRAY_SIZE(tegra_machine_controls);
 	}
 
 	if (asoc->add_common_dapm_widgets) {
-		card->dapm_widgets = tegra_machine_dapm_widgets;
-		card->num_dapm_widgets = ARRAY_SIZE(tegra_machine_dapm_widgets);
+		card_driver->dapm_widgets = tegra_machine_dapm_widgets;
+		card_driver->num_dapm_widgets = ARRAY_SIZE(tegra_machine_dapm_widgets);
 	}
 
 	if (asoc->add_common_snd_ops)
-		card->dai_link->ops = &tegra_machine_snd_ops;
+		card_driver->dai_link->ops = &tegra_machine_snd_ops;
 
-	if (!card->owner)
-		card->owner = THIS_MODULE;
-	if (!card->driver_name)
-		card->driver_name = "tegra";
+	if (!card_driver->owner)
+		card_driver->owner = THIS_MODULE;
+	if (!card_driver->driver_name)
+		card_driver->driver_name = "tegra";
 
 	machine->clk_pll_a = devm_clk_get(dev, "pll_a");
 	if (IS_ERR(machine->clk_pll_a))
@@ -633,7 +635,7 @@ int tegra_asoc_machine_probe(struct platform_device *pdev)
 		return dev_err_probe(dev, err,
 				     "can't enable cdev1\n");
 
-	err = devm_snd_soc_register_card(dev, card);
+	err = devm_snd_soc_card_register(card, card_driver);
 	if (err)
 		return err;
 
@@ -657,8 +659,8 @@ static struct snd_soc_dai_link tegra_wm8753_dai = {
 	SND_SOC_DAILINK_REG(wm8753_hifi),
 };
 
-static struct snd_soc_card snd_soc_tegra_wm8753 = {
-	.components = "codec:wm8753",
+static struct snd_soc_card_driver snd_soc_tegra_wm8753 = {
+	.default_components = "codec:wm8753",
 	.dai_link = &tegra_wm8753_dai,
 	.num_links = 1,
 	.fully_routed = true,
@@ -666,7 +668,7 @@ static struct snd_soc_card snd_soc_tegra_wm8753 = {
 
 static const struct tegra_asoc_data tegra_wm8753_data = {
 	.mclk_rate = tegra_machine_mclk_rate_12mhz,
-	.card = &snd_soc_tegra_wm8753,
+	.card_driver = &snd_soc_tegra_wm8753,
 	.add_common_dapm_widgets = true,
 	.add_common_snd_ops = true,
 };
@@ -692,15 +694,15 @@ static struct snd_soc_dai_link tegra_wm9712_dai = {
 	SND_SOC_DAILINK_REG(wm9712_hifi),
 };
 
-static struct snd_soc_card snd_soc_tegra_wm9712 = {
-	.components = "codec:wm9712",
+static struct snd_soc_card_driver snd_soc_tegra_wm9712 = {
+	.default_components = "codec:wm9712",
 	.dai_link = &tegra_wm9712_dai,
 	.num_links = 1,
 	.fully_routed = true,
 };
 
 static const struct tegra_asoc_data tegra_wm9712_data = {
-	.card = &snd_soc_tegra_wm9712,
+	.card_driver = &snd_soc_tegra_wm9712,
 	.add_common_dapm_widgets = true,
 	.codec_dev_name = "wm9712-codec",
 	.set_ac97 = true,
@@ -723,8 +725,8 @@ static struct snd_soc_dai_link tegra_max98090_dai = {
 	SND_SOC_DAILINK_REG(max98090_hifi),
 };
 
-static struct snd_soc_card snd_soc_tegra_max98090 = {
-	.components = "codec:max98090",
+static struct snd_soc_card_driver snd_soc_tegra_max98090 = {
+	.default_components = "codec:max98090",
 	.dai_link = &tegra_max98090_dai,
 	.num_links = 1,
 	.fully_routed = true,
@@ -732,7 +734,7 @@ static struct snd_soc_card snd_soc_tegra_max98090 = {
 
 static const struct tegra_asoc_data tegra_max98090_data = {
 	.mclk_rate = tegra_machine_mclk_rate_12mhz,
-	.card = &snd_soc_tegra_max98090,
+	.card_driver = &snd_soc_tegra_max98090,
 	.hp_jack_name = "Headphones",
 	.add_common_dapm_widgets = true,
 	.add_common_controls = true,
@@ -758,8 +760,8 @@ static struct snd_soc_dai_link tegra_max98088_dai = {
 	SND_SOC_DAILINK_REG(max98088_hifi),
 };
 
-static struct snd_soc_card snd_soc_tegra_max98088 = {
-	.components = "codec:max98088",
+static struct snd_soc_card_driver snd_soc_tegra_max98088 = {
+	.default_components = "codec:max98088",
 	.dai_link = &tegra_max98088_dai,
 	.num_links = 1,
 	.fully_routed = true,
@@ -767,7 +769,7 @@ static struct snd_soc_card snd_soc_tegra_max98088 = {
 
 static const struct tegra_asoc_data tegra_max98088_data = {
 	.mclk_rate = tegra_machine_mclk_rate_12mhz,
-	.card = &snd_soc_tegra_max98088,
+	.card_driver = &snd_soc_tegra_max98088,
 	.add_common_dapm_widgets = true,
 	.add_common_controls = true,
 	.add_common_snd_ops = true,
@@ -791,8 +793,8 @@ static struct snd_soc_dai_link tegra_sgtl5000_dai = {
 	SND_SOC_DAILINK_REG(sgtl5000_hifi),
 };
 
-static struct snd_soc_card snd_soc_tegra_sgtl5000 = {
-	.components = "codec:sgtl5000",
+static struct snd_soc_card_driver snd_soc_tegra_sgtl5000 = {
+	.default_components = "codec:sgtl5000",
 	.dai_link = &tegra_sgtl5000_dai,
 	.num_links = 1,
 	.fully_routed = true,
@@ -800,7 +802,7 @@ static struct snd_soc_card snd_soc_tegra_sgtl5000 = {
 
 static const struct tegra_asoc_data tegra_sgtl5000_data = {
 	.mclk_rate = tegra_machine_mclk_rate_12mhz,
-	.card = &snd_soc_tegra_sgtl5000,
+	.card_driver = &snd_soc_tegra_sgtl5000,
 	.add_common_dapm_widgets = true,
 	.add_common_snd_ops = true,
 };
@@ -834,9 +836,9 @@ static struct snd_soc_dai_link tegra_tlv320aic23_dai = {
 	SND_SOC_DAILINK_REG(tlv320aic23_hifi),
 };
 
-static struct snd_soc_card snd_soc_tegra_trimslice = {
-	.name = "tegra-trimslice",
-	.components = "codec:tlv320aic23",
+static struct snd_soc_card_driver snd_soc_tegra_trimslice = {
+	.default_name = "tegra-trimslice",
+	.default_components = "codec:tlv320aic23",
 	.dai_link = &tegra_tlv320aic23_dai,
 	.num_links = 1,
 	.dapm_widgets = trimslice_dapm_widgets,
@@ -848,7 +850,7 @@ static struct snd_soc_card snd_soc_tegra_trimslice = {
 
 static const struct tegra_asoc_data tegra_trimslice_data = {
 	.mclk_rate = tegra_machine_mclk_rate_128,
-	.card = &snd_soc_tegra_trimslice,
+	.card_driver = &snd_soc_tegra_trimslice,
 	.add_common_snd_ops = true,
 };
 
@@ -884,8 +886,8 @@ static struct snd_soc_dai_link tegra_rt5677_dai = {
 	SND_SOC_DAILINK_REG(rt5677_aif1),
 };
 
-static struct snd_soc_card snd_soc_tegra_rt5677 = {
-	.components = "codec:rt5677",
+static struct snd_soc_card_driver snd_soc_tegra_rt5677 = {
+	.default_components = "codec:rt5677",
 	.dai_link = &tegra_rt5677_dai,
 	.num_links = 1,
 	.fully_routed = true,
@@ -893,7 +895,7 @@ static struct snd_soc_card snd_soc_tegra_rt5677 = {
 
 static const struct tegra_asoc_data tegra_rt5677_data = {
 	.mclk_rate = tegra_machine_mclk_rate_256,
-	.card = &snd_soc_tegra_rt5677,
+	.card_driver = &snd_soc_tegra_rt5677,
 	.add_common_dapm_widgets = true,
 	.add_common_controls = true,
 	.add_common_snd_ops = true,
@@ -918,8 +920,8 @@ static struct snd_soc_dai_link tegra_rt5640_dai = {
 	SND_SOC_DAILINK_REG(rt5640_aif1),
 };
 
-static struct snd_soc_card snd_soc_tegra_rt5640 = {
-	.components = "codec:rt5640",
+static struct snd_soc_card_driver snd_soc_tegra_rt5640 = {
+	.default_components = "codec:rt5640",
 	.dai_link = &tegra_rt5640_dai,
 	.num_links = 1,
 	.fully_routed = true,
@@ -927,7 +929,7 @@ static struct snd_soc_card snd_soc_tegra_rt5640 = {
 
 static const struct tegra_asoc_data tegra_rt5640_data = {
 	.mclk_rate = tegra_machine_mclk_rate_256,
-	.card = &snd_soc_tegra_rt5640,
+	.card_driver = &snd_soc_tegra_rt5640,
 	.add_common_dapm_widgets = true,
 	.add_common_controls = true,
 	.add_common_snd_ops = true,
@@ -951,8 +953,8 @@ static struct snd_soc_dai_link tegra_rt5632_dai = {
 	SND_SOC_DAILINK_REG(rt5632_hifi),
 };
 
-static struct snd_soc_card snd_soc_tegra_rt5632 = {
-	.components = "codec:rt5632",
+static struct snd_soc_card_driver snd_soc_tegra_rt5632 = {
+	.default_components = "codec:rt5632",
 	.dai_link = &tegra_rt5632_dai,
 	.num_links = 1,
 	.fully_routed = true,
@@ -960,7 +962,7 @@ static struct snd_soc_card snd_soc_tegra_rt5632 = {
 
 static const struct tegra_asoc_data tegra_rt5632_data = {
 	.mclk_rate = tegra_machine_mclk_rate_512,
-	.card = &snd_soc_tegra_rt5632,
+	.card_driver = &snd_soc_tegra_rt5632,
 	.add_common_dapm_widgets = true,
 	.add_common_controls = true,
 	.add_common_snd_ops = true,
@@ -984,8 +986,8 @@ static struct snd_soc_dai_link tegra_rt5631_dai = {
 	SND_SOC_DAILINK_REG(rt5631_hifi),
 };
 
-static struct snd_soc_card snd_soc_tegra_rt5631 = {
-	.components = "codec:rt5631",
+static struct snd_soc_card_driver snd_soc_tegra_rt5631 = {
+	.default_components = "codec:rt5631",
 	.dai_link = &tegra_rt5631_dai,
 	.num_links = 1,
 	.fully_routed = true,
@@ -993,7 +995,7 @@ static struct snd_soc_card snd_soc_tegra_rt5631 = {
 
 static const struct tegra_asoc_data tegra_rt5631_data = {
 	.mclk_rate = tegra_machine_mclk_rate_6mhz,
-	.card = &snd_soc_tegra_rt5631,
+	.card_driver = &snd_soc_tegra_rt5631,
 	.add_common_dapm_widgets = true,
 	.add_common_controls = true,
 	.add_common_snd_ops = true,
@@ -1018,8 +1020,8 @@ static struct snd_soc_dai_link tegra_cpcap_dai = {
 	SND_SOC_DAILINK_REG(cpcap_hifi),
 };
 
-static struct snd_soc_card snd_soc_tegra_cpcap = {
-	.components = "codec:cpcap",
+static struct snd_soc_card_driver snd_soc_tegra_cpcap = {
+	.default_components = "codec:cpcap",
 	.dai_link = &tegra_cpcap_dai,
 	.num_links = 1,
 	.fully_routed = true,
@@ -1027,7 +1029,7 @@ static struct snd_soc_card snd_soc_tegra_cpcap = {
 
 static const struct tegra_asoc_data tegra_cpcap_data = {
 	.mclk_rate = tegra_machine_mclk_rate_cpcap,
-	.card = &snd_soc_tegra_cpcap,
+	.card_driver = &snd_soc_tegra_cpcap,
 	.add_common_dapm_widgets = true,
 	.add_common_controls = true,
 	.add_common_snd_ops = true,
