@@ -101,34 +101,36 @@ static int avs_pcm3168a_probe(struct platform_device *pdev)
 	struct avs_mach_pdata *pdata;
 	struct device *dev = &pdev->dev;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	int ret;
 
 	mach = dev_get_platdata(dev);
 	pdata = mach->pdata;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card = snd_soc_card_alloc(dev);
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card || !card_driver)
 		return -ENOMEM;
 
-	ret = avs_create_dai_links(dev, &card->dai_link, &card->num_links);
+	ret = avs_create_dai_links(dev, &card_driver->dai_link, &card_driver->num_links);
 	if (ret)
 		return ret;
 
 	if (pdata->obsolete_card_names) {
-		card->name = "avs_pcm3168a";
+		snd_soc_card_set_name(card, "avs_pcm3168a");
 	} else {
-		card->driver_name = "avs_pcm3168a";
-		card->long_name = card->name = "AVS I2S PCM3168A";
+		card_driver->driver_name = "avs_pcm3168a";
+		snd_soc_card_set_name(card, "AVS I2S PCM3168A");
+		snd_soc_card_set_long_name(card, "AVS I2S PCM3168A");
 	}
-	card->dev = dev;
-	card->owner = THIS_MODULE;
-	card->dapm_widgets = card_widgets;
-	card->num_dapm_widgets = ARRAY_SIZE(card_widgets);
-	card->dapm_routes = card_routes;
-	card->num_dapm_routes = ARRAY_SIZE(card_routes);
-	card->fully_routed = true;
+	card_driver->owner = THIS_MODULE;
+	card_driver->dapm_widgets = card_widgets;
+	card_driver->num_dapm_widgets = ARRAY_SIZE(card_widgets);
+	card_driver->dapm_routes = card_routes;
+	card_driver->num_dapm_routes = ARRAY_SIZE(card_routes);
+	card_driver->fully_routed = true;
 
-	return devm_snd_soc_register_deferrable_card(dev, card);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static const struct platform_device_id avs_pcm3168a_driver_ids[] = {
