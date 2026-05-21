@@ -552,8 +552,8 @@ static struct snd_soc_dai_link midas_dai[] = {
 	},
 };
 
-static struct snd_soc_card midas_card = {
-	.name = "Midas WM1811",
+static struct snd_soc_card_driver midas_card_driver = {
+	.default_name = "Midas WM1811",
 	.owner = THIS_MODULE,
 
 	.dai_link = midas_dai,
@@ -573,7 +573,8 @@ static int midas_probe(struct platform_device *pdev)
 {
 	struct device_node *cpu_dai_node = NULL, *codec_dai_node = NULL;
 	struct device_node *cpu = NULL, *codec = NULL;
-	struct snd_soc_card *card = &midas_card;
+	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver = &midas_card_driver;
 	struct device *dev = &pdev->dev;
 	static struct snd_soc_dai_link *dai_link;
 	enum iio_chan_type channel_type;
@@ -582,12 +583,12 @@ static int midas_probe(struct platform_device *pdev)
 	struct midas_priv *priv;
 	int ret, i;
 
+	card = snd_soc_card_alloc(dev);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
+	if (!card || !priv)
 		return -ENOMEM;
 
 	snd_soc_card_set_drvdata(card, priv);
-	card->dev = dev;
 
 	priv->gpio_fm_sel = devm_gpiod_get_optional(dev, "fm-sel", GPIOD_OUT_HIGH);
 	if (IS_ERR(priv->gpio_fm_sel))
@@ -690,10 +691,11 @@ static int midas_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	ret = snd_soc_of_parse_audio_routing(card, "audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver, "audio-routing");
 	if (ret < 0) {
 		/* Backwards compatible way */
-		ret = snd_soc_of_parse_audio_routing(card, "samsung,audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver,
+								 "samsung,audio-routing");
 		if (ret < 0) {
 			dev_err(dev, "Audio routing invalid/unspecified\n");
 			return ret;
@@ -726,7 +728,7 @@ static int midas_probe(struct platform_device *pdev)
 		goto put_cpu_dai_node;
 	}
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		dai_link->codecs->of_node = codec_dai_node;
 		dai_link->cpus->of_node = cpu_dai_node;
 		dai_link->platforms->of_node = cpu_dai_node;
@@ -739,7 +741,7 @@ static int midas_probe(struct platform_device *pdev)
 		goto put_codec_dai_node;
 	}
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret < 0) {
 		dev_err(dev, "Failed to register card: %d\n", ret);
 		goto put_codec_dai_node;
