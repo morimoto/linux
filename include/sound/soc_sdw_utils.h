@@ -45,7 +45,7 @@
 struct asoc_sdw_codec_info;
 
 struct asoc_sdw_mc_private {
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	struct snd_soc_jack sdw_headset;
 	struct device *headset_codec_dev; /* only one headset per card */
 	struct device *amp_dev1, *amp_dev2;
@@ -152,10 +152,11 @@ struct asoc_sdw_codec_info *asoc_sdw_find_codec_info_acpi(const u8 *acpi_id);
 struct asoc_sdw_codec_info *asoc_sdw_find_codec_info_dai(const char *dai_name,
 							 int *dai_index);
 
-struct snd_soc_dai_link *asoc_sdw_mc_find_codec_dai_used(struct snd_soc_card *card,
+struct snd_soc_dai_link *asoc_sdw_mc_find_codec_dai_used(struct snd_soc_card_driver *card_driver,
 							 const char *dai_name);
 
-void asoc_sdw_mc_dailink_exit_loop(struct snd_soc_card *card);
+void asoc_sdw_mc_dailink_exit_loop(struct snd_soc_card *card,
+				   struct snd_soc_card_driver *card_driver);
 
 int asoc_sdw_card_late_probe(struct snd_soc_card *card);
 
