@@ -93,7 +93,7 @@ struct snd_soc_card then sets up the machine with its DAIs. e.g.
 	.num_links = 1,
   };
 
-Following this, ``devm_snd_soc_register_card`` can be used to register
+Following this, ``devm_snd_soc_card_register()`` can be used to register
 the sound card. During the registration, the individual components
 such as the codec, CPU, and platform are probed. If all these components
 are successfully probed, the sound card gets registered.
