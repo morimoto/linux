@@ -1707,14 +1707,14 @@ const char *asoc_sdw_get_codec_name(struct device *dev,
 EXPORT_SYMBOL_NS(asoc_sdw_get_codec_name, "SND_SOC_SDW_UTILS");
 
 /* helper to get the link that the codec DAI is used */
-struct snd_soc_dai_link *asoc_sdw_mc_find_codec_dai_used(struct snd_soc_card *card,
+struct snd_soc_dai_link *asoc_sdw_mc_find_codec_dai_used(struct snd_soc_card_driver *card_driver,
 							 const char *dai_name)
 {
 	struct snd_soc_dai_link *dai_link;
 	int i;
 	int j;
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		for (j = 0; j < dai_link->num_codecs; j++) {
 			/* Check each codec in a link */
 			if (!strcmp(dai_link->codecs[j].dai_name, dai_name))
@@ -1725,7 +1725,8 @@ struct snd_soc_dai_link *asoc_sdw_mc_find_codec_dai_used(struct snd_soc_card *ca
 }
 EXPORT_SYMBOL_NS(asoc_sdw_mc_find_codec_dai_used, "SND_SOC_SDW_UTILS");
 
-void asoc_sdw_mc_dailink_exit_loop(struct snd_soc_card *card)
+void asoc_sdw_mc_dailink_exit_loop(struct snd_soc_card *card,
+				   struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *dai_link;
 	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
@@ -1742,7 +1743,7 @@ void asoc_sdw_mc_dailink_exit_loop(struct snd_soc_card *card)
 			 * We don't need to call .exit function if there is no matched
 			 * dai link found.
 			 */
-			dai_link = asoc_sdw_mc_find_codec_dai_used(card,
+			dai_link = asoc_sdw_mc_find_codec_dai_used(card_driver,
 							  codec_info_list[i].dais[j].dai_name);
 			if (dai_link) {
 				/* Do the .exit function if the codec dai is used in the link */
