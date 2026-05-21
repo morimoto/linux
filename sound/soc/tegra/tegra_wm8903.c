@@ -129,8 +129,8 @@ static struct snd_soc_dai_link tegra_wm8903_dai = {
 	SND_SOC_DAILINK_REG(hifi),
 };
 
-static struct snd_soc_card snd_soc_tegra_wm8903 = {
-	.components = "codec:wm8903",
+static struct snd_soc_card_driver snd_soc_tegra_wm8903 = {
+	.default_components = "codec:wm8903",
 	.owner = THIS_MODULE,
 	.dai_link = &tegra_wm8903_dai,
 	.num_links = 1,
@@ -141,7 +141,7 @@ static struct snd_soc_card snd_soc_tegra_wm8903 = {
 /* older device-trees used wrong polarity for the headphones-detection GPIO */
 static const struct tegra_asoc_data tegra_wm8903_data_legacy = {
 	.mclk_rate = tegra_wm8903_mclk_rate,
-	.card = &snd_soc_tegra_wm8903,
+	.card_driver = &snd_soc_tegra_wm8903,
 	.hp_jack_gpio_active_low = true,
 	.add_common_dapm_widgets = true,
 	.add_common_controls = true,
@@ -152,7 +152,7 @@ static const struct tegra_asoc_data tegra_wm8903_data_legacy = {
 
 static const struct tegra_asoc_data tegra_wm8903_data = {
 	.mclk_rate = tegra_wm8903_mclk_rate,
-	.card = &snd_soc_tegra_wm8903,
+	.card_driver = &snd_soc_tegra_wm8903,
 	.add_common_dapm_widgets = true,
 	.add_common_controls = true,
 	.add_common_snd_ops = true,
