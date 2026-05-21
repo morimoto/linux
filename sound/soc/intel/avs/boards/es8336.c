@@ -263,6 +263,7 @@ static int avs_es8336_probe(struct platform_device *pdev)
 	struct avs_mach_pdata *pdata;
 	struct avs_card_drvdata *data;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct device *dev = &pdev->dev;
 	int ssp_port, tdm_slot, ret;
 
@@ -280,32 +281,33 @@ static int avs_es8336_probe(struct platform_device *pdev)
 	}
 
 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!data || !card)
+	card = snd_soc_card_alloc(&pdev->dev);
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!data || !card || !card_driver)
 		return -ENOMEM;
 
 	if (pdata->obsolete_card_names) {
-		card->name = "avs_es8336";
+		snd_soc_card_set_name(card, "avs_es8336");
 	} else {
-		card->driver_name = "avs_es8336";
-		card->long_name = card->name = "AVS I2S ES8336";
+		card_driver->driver_name = "avs_es8336";
+		snd_soc_card_set_name(card, "AVS I2S ES8336");
+		snd_soc_card_set_long_name(card, "AVS I2S ES8336");
 	}
-	card->dev = dev;
-	card->owner = THIS_MODULE;
-	card->suspend_pre = avs_card_suspend_pre;
-	card->resume_post = avs_card_resume_post;
-	card->dai_link = dai_link;
-	card->num_links = 1;
-	card->controls = card_controls;
-	card->num_controls = ARRAY_SIZE(card_controls);
-	card->dapm_widgets = card_widgets;
-	card->num_dapm_widgets = ARRAY_SIZE(card_widgets);
-	card->dapm_routes = card_routes;
-	card->num_dapm_routes = ARRAY_SIZE(card_routes);
-	card->fully_routed = true;
+	card_driver->owner = THIS_MODULE;
+	card_driver->suspend_pre = avs_card_suspend_pre;
+	card_driver->resume_post = avs_card_resume_post;
+	card_driver->dai_link = dai_link;
+	card_driver->num_links = 1;
+	card_driver->controls = card_controls;
+	card_driver->num_controls = ARRAY_SIZE(card_controls);
+	card_driver->dapm_widgets = card_widgets;
+	card_driver->num_dapm_widgets = ARRAY_SIZE(card_widgets);
+	card_driver->dapm_routes = card_routes;
+	card_driver->num_dapm_routes = ARRAY_SIZE(card_routes);
+	card_driver->fully_routed = true;
 	snd_soc_card_set_drvdata(card, data);
 
-	return devm_snd_soc_register_deferrable_card(dev, card);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static const struct platform_device_id avs_es8336_driver_ids[] = {
