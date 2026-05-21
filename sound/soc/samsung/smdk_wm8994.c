@@ -119,8 +119,8 @@ static struct snd_soc_dai_link smdk_dai[] = {
 	},
 };
 
-static struct snd_soc_card smdk = {
-	.name = "SMDK-I2S",
+static struct snd_soc_card_driver smdk = {
+	.default_name = "SMDK-I2S",
 	.owner = THIS_MODULE,
 	.dai_link = smdk_dai,
 	.num_links = ARRAY_SIZE(smdk_dai),
@@ -136,9 +136,6 @@ static int smdk_audio_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct device_node *np = pdev->dev.of_node;
-	struct snd_soc_card *card = &smdk;
-
-	card->dev = &pdev->dev;
 
 	if (np) {
 		smdk_dai[0].cpus->dai_name = NULL;
@@ -155,10 +152,10 @@ static int smdk_audio_probe(struct platform_device *pdev)
 		smdk_dai[0].platforms->of_node = smdk_dai[0].cpus->of_node;
 	}
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(&pdev->dev, &smdk);
 
 	if (ret)
-		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card() failed\n");
+		dev_err_probe(&pdev->dev, ret, "snd_soc_card_register() failed\n");
 
 	return ret;
 }
