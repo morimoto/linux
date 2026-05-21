@@ -41,23 +41,25 @@ static int avs_probe_mb_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	int ret;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card = snd_soc_card_alloc(dev);
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card || !card_driver)
 		return -ENOMEM;
 
-	ret = avs_create_dai_links(dev, &card->dai_link, &card->num_links);
+	ret = avs_create_dai_links(dev, &card_driver->dai_link, &card_driver->num_links);
 	if (ret)
 		return ret;
 
-	card->driver_name = "avs_probe_mb";
-	card->long_name = card->name = "AVS PROBE";
-	card->dev = dev;
-	card->owner = THIS_MODULE;
-	card->fully_routed = true;
+	card_driver->driver_name = "avs_probe_mb";
+	card_driver->owner = THIS_MODULE;
+	card_driver->fully_routed = true;
+	snd_soc_card_set_name(card, "AVS PROBE");
+	snd_soc_card_set_long_name(card, "AVS PROBE");
 
-	return devm_snd_soc_register_deferrable_card(dev, card);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static const struct platform_device_id avs_probe_mb_driver_ids[] = {
