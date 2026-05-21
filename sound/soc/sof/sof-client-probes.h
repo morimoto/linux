@@ -62,7 +62,7 @@ struct sof_probes_priv {
 	struct dentry *dfs_points;
 	struct dentry *dfs_points_remove;
 	u32 extractor_stream_tag;
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	void *ipc_priv;
 
 	const struct sof_probes_host_ops *host_ops;
