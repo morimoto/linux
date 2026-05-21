@@ -13,8 +13,8 @@
 #include "sof-audio.h"
 #include "sof-priv.h"
 
-static struct snd_soc_card sof_nocodec_card = {
-	.name = "nocodec", /* the sof- prefix is added by the core */
+static struct snd_soc_card_driver sof_nocodec_card_driver = {
+	.default_name = "nocodec", /* the sof- prefix is added by the core */
 	.owner = THIS_MODULE
 };
 
@@ -23,7 +23,7 @@ static int sof_nocodec_bes_setup(struct device *dev,
 				 struct snd_soc_dai_link *links,
 				 int link_num)
 {
-	struct snd_soc_card *card = &sof_nocodec_card;
+	struct snd_soc_card_driver *card_driver = &sof_nocodec_card_driver;
 	struct snd_soc_dai_link_component *dlc;
 	int i;
 
@@ -62,8 +62,8 @@ static int sof_nocodec_bes_setup(struct device *dev,
 		links[i].be_hw_params_fixup = sof_pcm_dai_link_fixup;
 	}
 
-	card->dai_link = links;
-	card->num_links = link_num;
+	card_driver->dai_link = links;
+	card_driver->num_links = link_num;
 
 	return 0;
 }
@@ -84,20 +84,24 @@ static int sof_nocodec_setup(struct device *dev, struct snd_soc_acpi_mach *mach)
 
 static int sof_nocodec_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &sof_nocodec_card;
+	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver = &sof_nocodec_card_driver;
 	struct snd_soc_acpi_mach *mach;
 	int ret;
 
-	card->dev = &pdev->dev;
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
+
 	mach = pdev->dev.platform_data;
 
 	snd_soc_card_set_topology_name(card, "sof");
 
-	ret = sof_nocodec_setup(card->dev, mach);
+	ret = sof_nocodec_setup(&pdev->dev, mach);
 	if (ret < 0)
 		return ret;
 
-	return devm_snd_soc_register_card(&pdev->dev, card);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static struct platform_driver sof_nocodec_audio = {
