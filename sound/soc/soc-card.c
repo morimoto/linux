@@ -33,6 +33,11 @@ struct snd_soc_dapm_context *snd_soc_card_to_dapm(struct snd_soc_card *card)
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_to_dapm);
 
+struct snd_soc_dapm_stats *snd_soc_card_to_dapm_stats(struct snd_soc_card *card)
+{
+	return &card->dapm_stats;
+}
+
 void snd_soc_card_set_priv(struct snd_soc_card *card, void *data)
 {
 	card->priv = data;
