@@ -95,6 +95,7 @@ struct snd_card *snd_soc_card_to_snd_card(struct snd_soc_card *card);
 
 int snd_soc_card_is_instantiated(struct snd_soc_card *card);
 struct snd_soc_dapm_context *snd_soc_card_to_dapm(struct snd_soc_card *card);
+struct snd_soc_dapm_stats *snd_soc_card_to_dapm_stats(struct snd_soc_card *card);
 void *snd_soc_card_to_priv(struct snd_soc_card *card);
 void snd_soc_card_set_priv(struct snd_soc_card *card, void *data);
 struct snd_soc_pcm_runtime *snd_soc_card_to_rtd(struct snd_soc_card *card,
