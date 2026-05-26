@@ -81,6 +81,12 @@ struct snd_card *snd_soc_card_to_snd_card(struct snd_soc_card *card)
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_to_snd_card);
 
+struct snd_soc_card_driver *snd_soc_card_to_driver(struct snd_soc_card *card)
+{
+	return card->driver;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_to_driver);
+
 struct snd_soc_pcm_runtime *snd_soc_card_to_rtd(struct snd_soc_card *card,
 						struct snd_soc_dai_link *dai_link)
 {
