@@ -149,20 +149,6 @@ static int component_list_show(struct seq_file *m, void *v)
 }
 DEFINE_SHOW_ATTRIBUTE(component_list);
 
-static void soc_init_card_debugfs(struct snd_soc_card *card)
-{
-	card->debugfs_card_root = debugfs_create_dir(card->name,
-						     snd_soc_debugfs_root);
-
-	snd_soc_dapm_debugfs_init(snd_soc_card_to_dapm(card), card->debugfs_card_root);
-}
-
-static void soc_cleanup_card_debugfs(struct snd_soc_card *card)
-{
-	debugfs_remove_recursive(card->debugfs_card_root);
-	card->debugfs_card_root = NULL;
-}
-
 static void snd_soc_debugfs_init(void)
 {
 	snd_soc_debugfs_root = debugfs_create_dir("asoc", NULL);
@@ -183,8 +169,6 @@ static void snd_soc_debugfs_exit(void)
 
 #else
 
-static inline void soc_init_card_debugfs(struct snd_soc_card *card) { }
-static inline void soc_cleanup_card_debugfs(struct snd_soc_card *card) { }
 static inline void snd_soc_debugfs_init(void) { }
 static inline void snd_soc_debugfs_exit(void) { }
 

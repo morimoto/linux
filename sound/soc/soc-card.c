@@ -28,6 +28,25 @@ static inline int _soc_card_ret(struct snd_soc_card *card,
 			   "at %s() on %s\n", func, card->name);
 }
 
+#ifdef CONFIG_DEBUG_FS
+static void soc_card_debugfs_init(struct snd_soc_card *card)
+{
+	card->debugfs_card_root = debugfs_create_dir(card->name,
+						     snd_soc_debugfs_root);
+
+	snd_soc_dapm_debugfs_init(snd_soc_card_to_dapm(card), card->debugfs_card_root);
+}
+
+static void soc_card_debugfs_cleanup(struct snd_soc_card *card)
+{
+	debugfs_remove_recursive(card->debugfs_card_root);
+	card->debugfs_card_root = NULL;
+}
+#else
+static inline void soc_card_debugfs_init(struct snd_soc_card *card) { }
+static inline void soc_card_debugfs_cleanup(struct snd_soc_card *card) { }
+#endif /* CONFIG_DEBUG_FS */
+
 struct snd_kcontrol *snd_soc_card_get_kcontrol(struct snd_soc_card *soc_card,
 					       const char *name)
 {
