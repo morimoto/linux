@@ -750,7 +750,7 @@ int snd_soc_card_probe(struct snd_soc_card *card)
 		 *
 		 * see
 		 *	snd_soc_bind_card()
-		 *	snd_soc_card_late_probe()
+		 *	soc_card_late_probe()
 		 */
 		card->probed = 1;
 	}
@@ -758,7 +758,7 @@ int snd_soc_card_probe(struct snd_soc_card *card)
 	return 0;
 }
 
-int snd_soc_card_late_probe(struct snd_soc_card *card)
+static int soc_card_late_probe(struct snd_soc_card *card)
 {
 	if (card->late_probe) {
 		int ret = card->late_probe(card);
