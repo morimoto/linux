@@ -6,11 +6,19 @@
 // Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 //
 
+#include <linux/debugfs.h>
+#include <linux/dmi.h>
 #include <linux/lockdep.h>
+#include <linux/pinctrl/consumer.h>
 #include <linux/rwsem.h>
+#include <sound/core.h>
+#include <sound/initval.h>
 #include <sound/soc.h>
+#include <sound/soc-link.h>
 #include <sound/jack.h>
 #include "soc-internal.h"
+
+static LIST_HEAD(unbind_card_list);
 
 #define soc_card_ret(dai, ret) _soc_card_ret(dai, __func__, ret)
 static inline int _soc_card_ret(struct snd_soc_card *card,

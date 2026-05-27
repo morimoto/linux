@@ -30,24 +30,19 @@
 #include <linux/slab.h>
 #include <linux/of.h>
 #include <linux/of_graph.h>
-#include <linux/dmi.h>
 #include <linux/acpi.h>
 #include <linux/string_choices.h>
-#include <sound/core.h>
 #include <sound/pcm.h>
 #include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/soc-dpcm.h>
 #include <sound/soc-topology.h>
-#include <sound/soc-link.h>
-#include <sound/initval.h>
 #include "soc-internal.h"
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/asoc.h>
 
 DEFINE_MUTEX(client_mutex);
-static LIST_HEAD(unbind_card_list);
 
 /*
  * This is used if driver don't need to have CPU/Codec/Platform
