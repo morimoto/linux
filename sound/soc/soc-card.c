@@ -18,7 +18,7 @@
 #include <sound/jack.h>
 #include "soc-internal.h"
 
-static LIST_HEAD(unbind_card_list);
+static LIST_HEAD(unbind_list_head);
 
 #define soc_card_ret(dai, ret) _soc_card_ret(dai, __func__, ret)
 static inline int _soc_card_ret(struct snd_soc_card *card,
@@ -895,11 +895,11 @@ void snd_soc_card_unbind(struct snd_soc_card *card, bool reuse)
 		soc_card_cleanup_resources(card);
 
 		if (reuse)
-			list_add(&card->list, &unbind_card_list);
+			list_add(&card->unbind_list, &unbind_list_head);
 	}
 
 	if (!reuse)
-		list_del(&card->list);
+		list_del(&card->unbind_list);
 }
 
 int snd_soc_card_bind(struct snd_soc_card *card)
@@ -913,7 +913,7 @@ int snd_soc_card_bind(struct snd_soc_card *card)
 	snd_soc_card_fill_dummy_dai(card);
 
 	snd_soc_dapm_init(dapm, card, NULL);
-	list_del_init(&card->list);
+	list_del_init(&card->unbind_list);
 
 	/* check whether any platform is ignore machine FE and using topology */
 	soc_card_check_tplg_fes(card);
@@ -1078,7 +1078,7 @@ probe_end:
 	}
 
 	if (ret == -EPROBE_DEFER) {
-		list_add(&card->list, &unbind_card_list);
+		list_add(&card->unbind_list, &unbind_list_head);
 		ret = 0;
 	}
 	snd_soc_card_mutex_unlock(card);
@@ -1090,7 +1090,7 @@ void snd_soc_card_rebind(void)
 {
 	struct snd_soc_card *card, *c;
 
-	list_for_each_entry_safe(card, c, &unbind_card_list, list)
+	list_for_each_entry_safe(card, c, &unbind_list_head, unbind_list)
 		snd_soc_card_bind_call(card);
 }
 
