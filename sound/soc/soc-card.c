@@ -1502,6 +1502,79 @@ static const struct snd_soc_dapm_widget simple_widgets[] = {
 	SND_SOC_DAPM_SPK("Speaker", NULL),
 };
 
+int snd_soc_card_driver_of_parse_simple_widgets(struct device *dev,
+						struct snd_soc_card_driver *card_driver,
+						const char *propname)
+{
+	struct device_node *np = dev->of_node;
+	struct snd_soc_dapm_widget *widgets;
+	const char *template, *wname;
+	int i, j, num_widgets;
+
+	num_widgets = of_property_count_strings(np, propname);
+	if (num_widgets < 0) {
+		dev_err(dev, "ASoC: Property '%s' does not exist\n",	propname);
+		return -EINVAL;
+	}
+	if (!num_widgets) {
+		dev_err(dev, "ASoC: Property '%s's length is zero\n", propname);
+		return -EINVAL;
+	}
+	if (num_widgets & 1) {
+		dev_err(dev, "ASoC: Property '%s' length is not even\n", propname);
+		return -EINVAL;
+	}
+
+	num_widgets /= 2;
+
+	widgets = devm_kcalloc(dev, num_widgets, sizeof(*widgets), GFP_KERNEL);
+	if (!widgets) {
+		dev_err(dev, "ASoC: Could not allocate memory for widgets\n");
+		return -ENOMEM;
+	}
+
+	for (i = 0; i < num_widgets; i++) {
+		int ret = of_property_read_string_index(np, propname,
+							2 * i, &template);
+		if (ret) {
+			dev_err(dev, "ASoC: Property '%s' index %d read error:%d\n",
+				propname, 2 * i, ret);
+			return -EINVAL;
+		}
+
+		for (j = 0; j < ARRAY_SIZE(simple_widgets); j++) {
+			if (!strncmp(template, simple_widgets[j].name,
+				     strlen(simple_widgets[j].name))) {
+				widgets[i] = simple_widgets[j];
+				break;
+			}
+		}
+
+		if (j >= ARRAY_SIZE(simple_widgets)) {
+			dev_err(dev, "ASoC: DAPM widget '%s' is not supported\n", template);
+			return -EINVAL;
+		}
+
+		ret = of_property_read_string_index(np, propname,
+						    (2 * i) + 1,
+						    &wname);
+		if (ret) {
+			dev_err(dev, "ASoC: Property '%s' index %d read error:%d\n",
+				propname, (2 * i) + 1, ret);
+			return -EINVAL;
+		}
+
+		widgets[i].name = wname;
+	}
+
+	card_driver->of_dapm_widgets		= widgets;
+	card_driver->num_of_dapm_widgets	= num_widgets;
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_driver_of_parse_simple_widgets);
+
+/* REMOVE ME */
 int snd_soc_card_of_parse_simple_widgets(struct snd_soc_card *card, const char *propname)
 {
 	struct device_node *np = card->dev->of_node;

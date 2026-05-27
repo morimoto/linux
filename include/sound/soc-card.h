@@ -139,7 +139,6 @@ int snd_soc_card_add_dai_link(struct snd_soc_card *card,
 void snd_soc_card_remove_dai_link(struct snd_soc_card *card,
 				  struct snd_soc_dai_link *dai_link);
 
-int snd_soc_card_of_parse_simple_widgets(struct snd_soc_card *card, const char *propname);
 int snd_soc_card_of_parse_name(struct snd_soc_card *card, const char *propname);
 int snd_soc_card_of_parse_pin_switches(struct snd_soc_card *card, const char *propname);
 int snd_soc_card_of_parse_audio_routing(struct snd_soc_card *card, const char *propname);
@@ -148,6 +147,10 @@ int snd_soc_card_of_parse_ignore_suspend_widgets(struct snd_soc_card *card, cons
 
 int snd_soc_card_fixup_dai_links_platform_name(struct snd_soc_card *card,
 					       const char *platform_name);
+
+int snd_soc_card_driver_of_parse_simple_widgets(struct device *dev,
+						struct snd_soc_card_driver *card_driver,
+						const char *propname);
 
 #ifdef CONFIG_PCI
 void snd_soc_card_set_pci_ssid(struct snd_soc_card *card,
@@ -257,5 +260,6 @@ SOC_CARD_LIST_HEAD_DEFINE(dapm_dirty);
 #define snd_soc_get_pcm_runtime		snd_soc_card_to_rtd
 
 int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card *card);
+int snd_soc_card_of_parse_simple_widgets(struct snd_soc_card *card, const char *propname);
 
 #endif /* __SOC_CARD_H */
