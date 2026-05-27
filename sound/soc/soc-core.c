@@ -1316,37 +1316,6 @@ void snd_soc_of_parse_node_prefix(struct device_node *np,
 }
 EXPORT_SYMBOL_GPL(snd_soc_of_parse_node_prefix);
 
-int snd_soc_of_parse_aux_devs(struct snd_soc_card *card, const char *propname)
-{
-	struct device_node *node = card->dev->of_node;
-	struct snd_soc_aux_dev *aux;
-	int num, i;
-
-	num = of_count_phandle_with_args(node, propname, NULL);
-	if (num == -ENOENT) {
-		return 0;
-	} else if (num < 0) {
-		dev_err(card->dev, "ASOC: Property '%s' could not be read: %d\n",
-			propname, num);
-		return num;
-	}
-
-	aux = devm_kcalloc(card->dev, num, sizeof(*aux), GFP_KERNEL);
-	if (!aux)
-		return -ENOMEM;
-	card->aux_dev = aux;
-	card->num_aux_devs = num;
-
-	for_each_card_pre_auxs(card, i, aux) {
-		aux->dlc.of_node = of_parse_phandle(node, propname, i);
-		if (!aux->dlc.of_node)
-			return -EINVAL;
-	}
-
-	return 0;
-}
-EXPORT_SYMBOL_GPL(snd_soc_of_parse_aux_devs);
-
 int snd_soc_of_parse_ignore_suspend_widgets(struct snd_soc_card *card,
 					    const char *propname)
 {
