@@ -23,6 +23,19 @@ char *snd_soc_fmt_multiple_name(struct device *dev, struct snd_soc_dai_driver *d
 int snd_soc_add_controls(struct snd_card *card, struct device *dev,
 			 const struct snd_kcontrol_new *controls, int num_controls,
 			 const char *prefix, void *data);
+void soc_flush_all_delayed_work(struct snd_soc_card *card);
+struct snd_soc_component *soc_find_component(const struct snd_soc_dai_link_component *dlc);
+#ifdef CONFIG_PM_SLEEP
+void soc_playback_digital_mute(struct snd_soc_card *card, int mute);
+void soc_dapm_suspend_resume(struct snd_soc_card *card, int event);
+#endif
+
+/*
+ * In soc-card
+ */
+void soc_card_unbind(struct snd_soc_card *card, bool reuse);
+int soc_card_bind(struct snd_soc_card *card);
+void soc_card_rebind(struct snd_soc_card *card);
 
 /*
  * In soc-dai
