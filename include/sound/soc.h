@@ -1039,8 +1039,7 @@ struct snd_soc_card {
 
 	/* lists of probed devices belonging to this card */
 	struct list_head component_list_head;
-	struct list_head list;
-
+	struct list_head unbind_list;
 	struct list_head widgets;
 	struct list_head paths;
 	struct list_head dapm_list;
