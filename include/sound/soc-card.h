@@ -8,6 +8,75 @@
 #ifndef __SOC_CARD_H
 #define __SOC_CARD_H
 
+struct snd_soc_card_driver {
+	const char *driver_name;
+
+	struct module *owner;
+
+	int (*probe)(struct snd_soc_card *card);
+	int (*late_probe)(struct snd_soc_card *card);
+	void (*fixup_controls)(struct snd_soc_card *card);
+	int (*remove)(struct snd_soc_card *card);
+
+	/* the pre and post PM functions are used to do any PM work before and
+	 * after the codec and DAI's do any PM work. */
+	int (*suspend_pre)(struct snd_soc_card *card);
+	int (*suspend_post)(struct snd_soc_card *card);
+	int (*resume_pre)(struct snd_soc_card *card);
+	int (*resume_post)(struct snd_soc_card *card);
+
+	/* callbacks */
+	int (*set_bias_level)(struct snd_soc_card *,
+			      struct snd_soc_dapm_context *dapm,
+			      enum snd_soc_bias_level level);
+	int (*set_bias_level_post)(struct snd_soc_card *,
+				   struct snd_soc_dapm_context *dapm,
+				   enum snd_soc_bias_level level);
+
+	int (*add_dai_link)(struct snd_soc_card *,
+			    struct snd_soc_dai_link *link);
+	void (*remove_dai_link)(struct snd_soc_card *,
+				struct snd_soc_dai_link *link);
+
+	/* CPU <--> Codec DAI links  */
+	struct snd_soc_dai_link *dai_link;	/* predefined links only */
+	int num_links;				/* predefined links only */
+
+	/* optional codec specific configuration */
+	struct snd_soc_codec_conf *codec_conf;
+	int num_configs;
+
+	/*
+	 * optional auxiliary devices such as amplifiers or codecs with DAI
+	 * link unused
+	 */
+	struct snd_soc_aux_dev *aux_dev;
+	int num_aux_devs;
+
+	const struct snd_kcontrol_new *controls;
+	int num_controls;
+
+	/*
+	 * Card-specific routes and widgets.
+	 * Note: of_dapm_xxx for Device Tree; Otherwise for driver build-in.
+	 */
+	const struct snd_soc_dapm_widget *dapm_widgets;
+	int num_dapm_widgets;
+	const struct snd_soc_dapm_route *dapm_routes;
+	int num_dapm_routes;
+	const char **ignore_suspend_widgets;
+	int num_ignore_suspend_widgets;
+	const struct snd_soc_dapm_widget *of_dapm_widgets;
+	int num_of_dapm_widgets;
+	const struct snd_soc_dapm_route *of_dapm_routes;
+	int num_of_dapm_routes;
+	const char **of_ignore_suspend_widgets;
+	int num_of_ignore_suspend_widgets;
+
+	unsigned int fully_routed:1;
+	unsigned int component_chaining:1;
+};
+
 enum snd_soc_card_subclass {
 	SND_SOC_CARD_CLASS_ROOT		= 0,
 	SND_SOC_CARD_CLASS_RUNTIME	= 1,
@@ -126,6 +195,16 @@ SOC_CARD_LIST_HEAD_DEFINE(path);
 SOC_CARD_LIST_HEAD_DEFINE(dapm);
 SOC_CARD_LIST_HEAD_DEFINE(dapm_dirty);
 
+#define for_each_card_driver_prelinks(card_driver, i, link)		\
+	for ((i) = 0;							\
+	     ((i) < (card_driver)->num_links) && ((link) = &(card_driver)->dai_link[i]); \
+	     (i)++)
+#define for_each_card_driver_pre_auxs(card_driver, i, aux)		\
+	for ((i) = 0;							\
+	     ((i) < (card_driver)->num_aux_devs) && ((aux) = &(card_driver)->aux_dev[i]); \
+	     (i)++)
+
+/* REMOVE ME */
 #define for_each_card_prelinks(card, i, link)				\
 	for ((i) = 0;							\
 	     ((i) < (card)->num_links) && ((link) = &(card)->dai_link[i]); \
