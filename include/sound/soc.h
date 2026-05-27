@@ -1287,7 +1287,6 @@ void snd_soc_of_parse_node_prefix(struct device_node *np,
 				   struct device_node *of_node,
 				   const char *propname);
 
-int snd_soc_of_parse_aux_devs(struct snd_soc_card *card, const char *propname);
 int snd_soc_of_parse_ignore_suspend_widgets(struct snd_soc_card *card, const char *propname);
 
 unsigned int snd_soc_daifmt_clock_provider_flipped(unsigned int dai_fmt);
@@ -1414,6 +1413,7 @@ static inline void _snd_soc_dapm_mutex_assert_held_d(struct snd_soc_dapm_context
 #define snd_soc_of_parse_card_name			snd_soc_card_of_parse_name
 #define snd_soc_of_parse_pin_switches			snd_soc_card_of_parse_pin_switches
 #define snd_soc_of_parse_audio_routing			snd_soc_card_of_parse_audio_routing
+#define snd_soc_of_parse_aux_devs			snd_soc_card_of_parse_aux_devs
 
 int snd_soc_register_card(struct snd_soc_card *card);
 void snd_soc_unregister_card(struct snd_soc_card *card);
