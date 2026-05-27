@@ -1125,7 +1125,7 @@ static int devm_snd_soc_bind_card(struct device *dev, struct snd_soc_card *card)
 	return ret;
 }
 
-static int call_soc_bind_card(struct snd_soc_card *card)
+int call_soc_bind_card(struct snd_soc_card *card)
 {
 	if (card->devres_dev)
 		return devm_snd_soc_bind_card(card->devres_dev, card);
