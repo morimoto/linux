@@ -941,7 +941,7 @@ struct snd_soc_aux_dev {
 struct snd_soc_card {
 	const char *name;
 	const char *long_name;
-	const char *driver_name;
+	const char *driver_name;				/* REMOVE ME (goto driver) */
 	const char *components;
 
 #ifdef CONFIG_PCI
@@ -958,7 +958,7 @@ struct snd_soc_card {
 
 	struct device *dev;
 	struct snd_card *snd_card;
-	struct module *owner;
+	struct module *owner;					/* REMOVE ME (goto driver) */
 
 	struct mutex mutex;
 	struct mutex dapm_mutex;
@@ -966,69 +966,53 @@ struct snd_soc_card {
 	/* Mutex for PCM operations */
 	struct mutex pcm_mutex;
 
-	int (*probe)(struct snd_soc_card *card);
-	int (*late_probe)(struct snd_soc_card *card);
-	void (*fixup_controls)(struct snd_soc_card *card);
-	int (*remove)(struct snd_soc_card *card);
-
-	/* the pre and post PM functions are used to do any PM work before and
-	 * after the codec and DAI's do any PM work. */
-	int (*suspend_pre)(struct snd_soc_card *card);
-	int (*suspend_post)(struct snd_soc_card *card);
-	int (*resume_pre)(struct snd_soc_card *card);
-	int (*resume_post)(struct snd_soc_card *card);
-
-	/* callbacks */
-	int (*set_bias_level)(struct snd_soc_card *,
+	int (*probe)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
+	int (*late_probe)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
+	void (*fixup_controls)(struct snd_soc_card *card);	/* REMOVE ME (goto driver) */
+	int (*remove)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
+	int (*suspend_pre)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
+	int (*suspend_post)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
+	int (*resume_pre)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
+	int (*resume_post)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
+	int (*set_bias_level)(struct snd_soc_card *,		/* REMOVE ME (goto driver) */
 			      struct snd_soc_dapm_context *dapm,
 			      enum snd_soc_bias_level level);
-	int (*set_bias_level_post)(struct snd_soc_card *,
+	int (*set_bias_level_post)(struct snd_soc_card *,	/* REMOVE ME (goto driver) */
 				   struct snd_soc_dapm_context *dapm,
 				   enum snd_soc_bias_level level);
-
-	int (*add_dai_link)(struct snd_soc_card *,
+	int (*add_dai_link)(struct snd_soc_card *,		/* REMOVE ME (goto driver) */
 			    struct snd_soc_dai_link *link);
-	void (*remove_dai_link)(struct snd_soc_card *,
+	void (*remove_dai_link)(struct snd_soc_card *,		/* REMOVE ME (goto driver) */
 			    struct snd_soc_dai_link *link);
 
-	/* CPU <--> Codec DAI links  */
-	struct snd_soc_dai_link *dai_link;  /* predefined links only */
-	int num_links;  /* predefined links only */
+	struct snd_soc_dai_link *dai_link;  			/* REMOVE ME (goto driver) */
+	int num_links; 						/* REMOVE ME (goto driver) */
 
 	struct list_head rtd_list_head;
 	int num_rtd;
 
-	/* optional codec specific configuration */
-	struct snd_soc_codec_conf *codec_conf;
-	int num_configs;
+	struct snd_soc_codec_conf *codec_conf;			/* REMOVE ME (goto driver) */
+	int num_configs;					/* REMOVE ME (goto driver) */
 
-	/*
-	 * optional auxiliary devices such as amplifiers or codecs with DAI
-	 * link unused
-	 */
-	struct snd_soc_aux_dev *aux_dev;
-	int num_aux_devs;
+	struct snd_soc_aux_dev *aux_dev;			/* REMOVE ME (goto driver) */
+	int num_aux_devs;					/* REMOVE ME (goto driver) */
 	struct list_head aux_list_head;
 
-	const struct snd_kcontrol_new *controls;
-	int num_controls;
+	const struct snd_kcontrol_new *controls;		/* REMOVE ME (goto driver) */
+	int num_controls;					/* REMOVE ME (goto driver) */
 
-	/*
-	 * Card-specific routes and widgets.
-	 * Note: of_dapm_xxx for Device Tree; Otherwise for driver build-in.
-	 */
-	const struct snd_soc_dapm_widget *dapm_widgets;
-	int num_dapm_widgets;
-	const struct snd_soc_dapm_route *dapm_routes;
-	int num_dapm_routes;
-	const char **ignore_suspend_widgets;
-	int num_ignore_suspend_widgets;
-	const struct snd_soc_dapm_widget *of_dapm_widgets;
-	int num_of_dapm_widgets;
-	const struct snd_soc_dapm_route *of_dapm_routes;
-	int num_of_dapm_routes;
-	const char **of_ignore_suspend_widgets;
-	int num_of_ignore_suspend_widgets;
+	const struct snd_soc_dapm_widget *dapm_widgets;		/* REMOVE ME (goto driver) */
+	int num_dapm_widgets;					/* REMOVE ME (goto driver) */
+	const struct snd_soc_dapm_route *dapm_routes;		/* REMOVE ME (goto driver) */
+	int num_dapm_routes;					/* REMOVE ME (goto driver) */
+	const char **ignore_suspend_widgets;			/* REMOVE ME (goto driver) */
+	int num_ignore_suspend_widgets;				/* REMOVE ME (goto driver) */
+	const struct snd_soc_dapm_widget *of_dapm_widgets;	/* REMOVE ME (goto driver) */
+	int num_of_dapm_widgets;				/* REMOVE ME (goto driver) */
+	const struct snd_soc_dapm_route *of_dapm_routes;	/* REMOVE ME (goto driver) */
+	int num_of_dapm_routes;					/* REMOVE ME (goto driver) */
+	const char **of_ignore_suspend_widgets;			/* REMOVE ME (goto driver) */
+	int num_of_ignore_suspend_widgets;			/* REMOVE ME (goto driver) */
 
 	/* lists of probed devices belonging to this card */
 	struct list_head component_list_head;
@@ -1051,9 +1035,9 @@ struct snd_soc_card {
 #endif
 	/* bit field */
 	unsigned int instantiated:1;
-	unsigned int fully_routed:1;
+	unsigned int fully_routed:1;					/* REMOVE ME (goto driver) */
 	unsigned int probed:1;
-	unsigned int component_chaining:1;
+	unsigned int component_chaining:1;				/* REMOVE ME (goto driver) */
 	struct device *devres_dev;
 
 	void *priv;
