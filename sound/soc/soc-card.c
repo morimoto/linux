@@ -1884,6 +1884,41 @@ int snd_soc_card_of_parse_audio_routing(struct snd_soc_card *card, const char *p
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_of_parse_audio_routing);
 
+int snd_soc_card_driver_of_parse_aux_devs(struct device *dev,
+					  struct snd_soc_card_driver *card_driver,
+					  const char *propname)
+{
+	struct device_node *node = dev->of_node;
+	struct snd_soc_aux_dev *aux;
+	int num, i;
+
+	num = of_count_phandle_with_args(node, propname, NULL);
+	if (num == -ENOENT) {
+		return 0;
+	} else if (num < 0) {
+		dev_err(dev, "ASOC: Property '%s' could not be read: %d\n",
+			propname, num);
+		return num;
+	}
+
+	aux = devm_kcalloc(dev, num, sizeof(*aux), GFP_KERNEL);
+	if (!aux)
+		return -ENOMEM;
+
+	card_driver->aux_dev		= aux;
+	card_driver->num_aux_devs	= num;
+
+	for_each_card_driver_pre_auxs(card_driver, i, aux) {
+		aux->dlc.of_node = of_parse_phandle(node, propname, i);
+		if (!aux->dlc.of_node)
+			return -EINVAL;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_driver_of_parse_aux_devs);
+
+/* REMOVE ME */
 int snd_soc_card_of_parse_aux_devs(struct snd_soc_card *card, const char *propname)
 {
 	struct device_node *node = card->dev->of_node;
