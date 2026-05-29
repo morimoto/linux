@@ -51,14 +51,14 @@ static int custom_hook_pre(struct simple_util_priv *priv)
 static int custom_hook_post(struct simple_util_priv *priv)
 {
 	struct device *dev = simple_priv_to_dev(priv);
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 
 	/* You can custom after parsing */
 	dev_info(dev, "hook : %s\n", __func__);
 
 	/* overwrite .probe sample */
-	card = simple_priv_to_card(priv);
-	card->probe = custom_card_probe;
+	card_driver = simple_priv_to_card_driver(priv);
+	card_driver->probe = custom_card_probe;
 
 	return 0;
 }
@@ -141,6 +141,7 @@ static int custom_probe(struct platform_device *pdev)
 {
 	struct custom_priv *custom_priv;
 	struct simple_util_priv *simple_priv;
+	struct snd_soc_card_driver *card_driver;
 	struct device *dev = &pdev->dev;
 	int ret;
 
@@ -151,8 +152,11 @@ static int custom_probe(struct platform_device *pdev)
 	simple_priv		= &custom_priv->simple_priv;
 	simple_priv->ops	= &custom_ops; /* customize dai_link ops */
 
+	card_driver			= simple_priv_to_card_driver(simple_priv);
 	/* "audio-graph-card2-custom-sample" is too long */
-	simple_priv->snd_card.name = "card2-custom";
+	card_driver->default_name	= "card2-custom";
+	card_driver->owner		= THIS_MODULE;
+	card_driver->probe		= graph_util_card_probe;
 
 	/* use audio-graph-card2 parsing with own custom hooks */
 	ret = audio_graph2_parse_of(simple_priv, dev, &custom_hooks);
