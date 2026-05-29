@@ -209,7 +209,7 @@ static int graph_dai_link_of_dpcm(struct simple_util_priv *priv,
 	dev_dbg(dev, "link_of DPCM (%pOF)\n", ep);
 
 	if (li->cpu) {
-		struct snd_soc_card *card = simple_priv_to_card(priv);
+		struct snd_soc_card_driver *card_driver = simple_priv_to_card_driver(priv);
 		struct snd_soc_dai_link_component *cpus = snd_soc_link_to_cpu(dai_link, 0);
 		struct snd_soc_dai_link_component *platforms = snd_soc_link_to_platform(dai_link, 0);
 		int is_single_links = 0;
@@ -236,7 +236,7 @@ static int graph_dai_link_of_dpcm(struct simple_util_priv *priv,
 		 * For example: FE <-> BE1 <-> BE2 <-> ... <-> BEn where
 		 * there are 'n' BE components in the path.
 		 */
-		if (card->component_chaining && !soc_component_is_pcm(cpus)) {
+		if (card_driver->component_chaining && !soc_component_is_pcm(cpus)) {
 			dai_link->no_pcm = 1;
 			dai_link->be_hw_params_fixup = simple_util_be_hw_params_fixup;
 		}
@@ -550,15 +550,19 @@ static int graph_get_dais_count(struct simple_util_priv *priv,
 
 int audio_graph_parse_of(struct simple_util_priv *priv, struct device *dev)
 {
-	struct snd_soc_card *card = simple_priv_to_card(priv);
+	struct snd_soc_card_driver *card_driver = simple_priv_to_card_driver(priv);
 	int ret = -ENOMEM;
+
+	priv->card = snd_soc_card_alloc(dev);
+	if (!priv->card)
+		return ret;
+
+	snd_soc_card_set_name(priv->card, card_driver->default_name);
+	snd_soc_card_set_priv(priv->card, priv);
 
 	struct link_info *li __free(kfree) = kzalloc_obj(*li);
 	if (!li)
 		goto end;
-
-	card->owner = THIS_MODULE;
-	card->dev = dev;
 
 	ret = graph_get_dais_count(priv, li);
 	if (ret < 0)
@@ -599,11 +603,9 @@ int audio_graph_parse_of(struct simple_util_priv *priv, struct device *dev)
 	if (ret < 0)
 		goto err;
 
-	snd_soc_card_set_drvdata(card, priv);
-
 	simple_util_debug_info(priv);
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(priv->card, card_driver);
 err:
 	if (ret < 0) {
 		simple_util_clean_reference(priv);
@@ -618,17 +620,18 @@ static int graph_probe(struct platform_device *pdev)
 {
 	struct simple_util_priv *priv;
 	struct device *dev = &pdev->dev;
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 
 	/* Allocate the private data and the DAI link array */
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
 
-	card = simple_priv_to_card(priv);
-	card->dapm_widgets	= graph_dapm_widgets;
-	card->num_dapm_widgets	= ARRAY_SIZE(graph_dapm_widgets);
-	card->probe		= graph_util_card_probe;
+	card_driver			= simple_priv_to_card_driver(priv);
+	card_driver->owner		= THIS_MODULE;
+	card_driver->dapm_widgets	= graph_dapm_widgets;
+	card_driver->num_dapm_widgets	= ARRAY_SIZE(graph_dapm_widgets);
+	card_driver->probe		= graph_util_card_probe;
 
 	if (of_device_get_match_data(dev))
 		priv->dpcm_selectable = 1;

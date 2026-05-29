@@ -217,11 +217,14 @@ int simple_util_set_dailink_name(struct simple_util_priv *priv,
 EXPORT_SYMBOL_GPL(simple_util_set_dailink_name);
 
 int simple_util_parse_property(struct simple_util_priv *priv,
-			       int (*func)(struct snd_soc_card *card, const char *propname),
+			       int (*func)(struct device *dev,
+					   struct snd_soc_card_driver *card_driver,
+					   const char *propname),
 			       char *prefix, char *property)
 {
-	struct snd_soc_card *card = simple_priv_to_card(priv);
-	struct device_node *node = card->dev->of_node;
+	struct snd_soc_card_driver *card_driver = simple_priv_to_card_driver(priv);
+	struct device *dev = simple_priv_to_dev(priv);
+	struct device_node *node = dev->of_node;
 	char prop[128];
 
 	if (!prefix)
@@ -233,7 +236,7 @@ int simple_util_parse_property(struct simple_util_priv *priv,
 	if (!of_property_present(node, prop))
 		return 0;
 
-	return func(card, prop);
+	return func(dev, card_driver, prop);
 }
 EXPORT_SYMBOL_GPL(simple_util_parse_property);
 
@@ -241,6 +244,7 @@ int simple_util_parse_card_name(struct simple_util_priv *priv,
 				char *prefix)
 {
 	struct snd_soc_card *card = simple_priv_to_card(priv);
+	struct snd_soc_card_driver *card_driver = simple_priv_to_card_driver(priv);
 	int ret;
 
 	if (!prefix)
@@ -248,7 +252,7 @@ int simple_util_parse_card_name(struct simple_util_priv *priv,
 
 	/* Parse the card name from DT */
 	ret = snd_soc_of_parse_card_name(card, "label");
-	if (ret < 0 || !card->name) {
+	if (ret < 0 || !snd_soc_card_name(card)) {
 		char prop[128];
 
 		snprintf(prop, sizeof(prop), "%sname", prefix);
@@ -257,8 +261,8 @@ int simple_util_parse_card_name(struct simple_util_priv *priv,
 			goto end;
 	}
 
-	if (!card->name && card->dai_link)
-		card->name = card->dai_link->name;
+	if (!snd_soc_card_name(card) && card_driver->dai_link)
+		snd_soc_card_set_name(card, card_driver->dai_link->name);
 end:
 	return simple_ret(priv, ret);
 }
@@ -757,10 +761,10 @@ void simple_util_clean_reference(struct simple_util_priv *priv)
 	struct snd_soc_dai_link *dai_link;
 	struct snd_soc_dai_link_component *cpu;
 	struct snd_soc_dai_link_component *codec;
-	struct snd_soc_card *card = simple_priv_to_card(priv);
+	struct snd_soc_card_driver *card_driver = simple_priv_to_card_driver(priv);
 	int i, j;
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		for_each_link_cpus(dai_link, j, cpu)
 			of_node_put(cpu->of_node);
 		for_each_link_codecs(dai_link, j, codec)
@@ -881,7 +885,7 @@ static struct simple_util_dai dummy_util_dais = {
 int simple_util_init_priv(struct simple_util_priv *priv,
 			  struct link_info *li)
 {
-	struct snd_soc_card *card = simple_priv_to_card(priv);
+	struct snd_soc_card_driver *card_driver = simple_priv_to_card_driver(priv);
 	struct device *dev = simple_priv_to_dev(priv);
 	struct snd_soc_dai_link *dai_link;
 	struct simple_dai_props *dai_props;
@@ -929,10 +933,10 @@ int simple_util_init_priv(struct simple_util_priv *priv,
 	priv->dlcs		= dlcs;
 	priv->codec_conf	= cconf;
 
-	card->dai_link		= priv->dai_link;
-	card->num_links		= li->link;
-	card->codec_conf	= cconf;
-	card->num_configs	= cnf_num;
+	card_driver->dai_link		= dai_link;
+	card_driver->num_links		= li->link;
+	card_driver->codec_conf		= cconf;
+	card_driver->num_configs	= cnf_num;
 
 	for (i = 0; i < li->link; i++) {
 		if (li->num[i].cpus) {
