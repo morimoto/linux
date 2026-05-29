@@ -13,6 +13,49 @@
 #include <sound/soc-component.h>
 #include "soc-internal.h"
 
+/*
+ * Digital Audio Interface runtime data.
+ *
+ * Holds runtime data for a DAI.
+ */
+struct snd_soc_dai {
+	const char *name;
+	int id;
+	struct device *dev;
+
+	/* driver ops */
+	struct snd_soc_dai_driver *driver;
+
+	/* DAI runtime info */
+	struct snd_soc_dai_stream stream[SNDRV_PCM_STREAM_LAST + 1];
+
+	/* Symmetry data - only valid if symmetry is being enforced */
+	unsigned int symmetric_rate;
+	unsigned int symmetric_channels;
+	unsigned int symmetric_sample_bits;
+
+	/* shared BCLK clock for cross-DAI rate constraints */
+	struct clk *bclk;
+	unsigned int bclk_ratio; /* BCLK = rate * bclk_ratio (0 = use channels * sample_bits) */
+
+	/* parent platform/codec */
+	struct snd_soc_component *component;
+
+	struct list_head dai_list;
+
+	/* function mark */
+	struct snd_pcm_substream *mark_startup;
+	struct snd_pcm_substream *mark_hw_params;
+	struct snd_pcm_substream *mark_trigger;
+	struct snd_compr_stream  *mark_compr_startup;
+
+	/* bit field */
+	unsigned int probed:1;
+
+	/* DAI private data */
+	void *priv;
+};
+
 #define soc_dai_ret(dai, ret) _soc_dai_ret(dai, __func__, ret)
 static inline int _soc_dai_ret(const struct snd_soc_dai *dai,
 			       const char *func, int ret)
