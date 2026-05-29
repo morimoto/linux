@@ -424,7 +424,7 @@ static int cht_resume_post(struct snd_soc_card *card)
 #define DRIVER_NAME NULL /* card name will be used for driver name */
 
 /* SoC card */
-static struct snd_soc_card snd_soc_card_cht = {
+static struct snd_soc_card_driver snd_soc_card_cht = {
 	.owner = THIS_MODULE,
 	.dai_link = cht_dailink,
 	.num_links = ARRAY_SIZE(cht_dailink),
@@ -448,12 +448,14 @@ static int snd_cht_mc_probe(struct platform_device *pdev)
 	const char *platform_name;
 	struct device *dev = &pdev->dev;
 	struct acpi_device *adev;
+	struct snd_soc_card *card;
 	bool sof_parent;
 	int dai_index = 0;
 	int i;
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	drv = devm_kzalloc(dev, sizeof(*drv), GFP_KERNEL);
-	if (!drv)
+	if (!card || !drv)
 		return -ENOMEM;
 
 	strscpy(drv->codec_name, RT5672_I2C_DEFAULT, sizeof(drv->codec_name));
@@ -487,15 +489,15 @@ static int snd_cht_mc_probe(struct platform_device *pdev)
 	}
 
 	/* override platform name, if required */
-	snd_soc_card_cht.dev = dev;
 	platform_name = mach->mach_params.platform;
 
-	ret_val = snd_soc_fixup_dai_links_platform_name(&snd_soc_card_cht,
+	ret_val = snd_soc_card_driver_fixup_dai_links_platform_name(dev,
+							&snd_soc_card_cht,
 							platform_name);
 	if (ret_val)
 		return ret_val;
 
-	snd_soc_card_cht.components = rt5670_components();
+	snd_soc_card_set_components(card, rt5670_components());
 
 	drv->mclk = devm_clk_get(dev, "pmc_plt_clk_3");
 	if (IS_ERR(drv->mclk)) {
@@ -504,16 +506,16 @@ static int snd_cht_mc_probe(struct platform_device *pdev)
 			PTR_ERR(drv->mclk));
 		return PTR_ERR(drv->mclk);
 	}
-	snd_soc_card_set_drvdata(&snd_soc_card_cht, drv);
+	snd_soc_card_set_priv(card, drv);
 
 	sof_parent = snd_soc_acpi_sof_parent(dev);
 
 	/* set card and driver name */
 	if (sof_parent) {
-		snd_soc_card_cht.name = SOF_CARD_NAME;
+		snd_soc_card_cht.default_name = SOF_CARD_NAME;
 		snd_soc_card_cht.driver_name = SOF_DRIVER_NAME;
 	} else {
-		snd_soc_card_cht.name = CARD_NAME;
+		snd_soc_card_cht.default_name = CARD_NAME;
 		snd_soc_card_cht.driver_name = DRIVER_NAME;
 	}
 
@@ -522,13 +524,13 @@ static int snd_cht_mc_probe(struct platform_device *pdev)
 		pdev->dev.driver->pm = &snd_soc_pm_ops;
 
 	/* register the soc card */
-	ret_val = devm_snd_soc_register_card(dev, &snd_soc_card_cht);
+	ret_val = devm_snd_soc_card_register(card, &snd_soc_card_cht);
 	if (ret_val) {
 		dev_err(dev,
-			"snd_soc_register_card failed %d\n", ret_val);
+			"snd_soc_card_register() failed %d\n", ret_val);
 		return ret_val;
 	}
-	platform_set_drvdata(pdev, &snd_soc_card_cht);
+
 	return ret_val;
 }
 
