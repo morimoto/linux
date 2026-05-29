@@ -666,16 +666,18 @@ end:
 	return simple_ret(priv, ret);
 }
 
-static int simple_parse_of(struct simple_util_priv *priv)
+static int simple_parse_of(struct simple_util_priv *priv, struct device *dev)
 {
-	struct snd_soc_card *card = simple_priv_to_card(priv);
-	struct device *dev = card->dev;
-	int ret = -EINVAL;
+	struct snd_soc_card_driver *card_driver = simple_priv_to_card_driver(priv);
+	int ret = -ENOMEM;
 
-	if (!dev)
-		return simple_ret(priv, ret);
+	priv->card = snd_soc_card_alloc(dev);
+	if (!priv->card)
+		return ret;
 
-	ret = -ENOMEM;
+	snd_soc_card_set_name(priv->card, card_driver->default_name);
+	snd_soc_card_set_priv(priv->card, priv);
+
 	struct link_info *li __free(kfree) = kzalloc_obj(*li);
 	if (!li)
 		goto end;
@@ -725,11 +727,9 @@ static int simple_parse_of(struct simple_util_priv *priv)
 	if (ret < 0)
 		goto err;
 
-	snd_soc_card_set_drvdata(card, priv);
-
 	simple_util_debug_info(priv);
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(priv->card, card_driver);
 err:
 	if (ret < 0) {
 		simple_util_clean_reference(priv);
@@ -743,20 +743,19 @@ static int simple_probe(struct platform_device *pdev)
 {
 	struct simple_util_priv *priv;
 	struct device *dev = &pdev->dev;
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 
 	/* Allocate the private data and the DAI link array */
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
 
-	card = simple_priv_to_card(priv);
-	card->owner		= THIS_MODULE;
-	card->dev		= dev;
-	card->probe		= simple_soc_probe;
-	card->driver_name       = "simple-card";
+	card_driver			= simple_priv_to_card_driver(priv);
+	card_driver->owner		= THIS_MODULE;
+	card_driver->probe		= simple_soc_probe;
+	card_driver->driver_name	= "simple-card";
 
-	return simple_parse_of(priv);
+	return simple_parse_of(priv, dev);
 }
 
 static const struct of_device_id simple_of_match[] = {
