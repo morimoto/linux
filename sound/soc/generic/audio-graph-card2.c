@@ -1302,16 +1302,19 @@ static int graph_for_each_link(struct simple_util_priv *priv,
 int audio_graph2_parse_of(struct simple_util_priv *priv, struct device *dev,
 			  struct graph2_custom_hooks *hooks)
 {
-	struct snd_soc_card *card = simple_priv_to_card(priv);
+	struct snd_soc_card_driver *card_driver = simple_priv_to_card_driver(priv);
 	int ret = -ENOMEM;
+
+	priv->card = snd_soc_card_alloc(dev);
+	if (!priv->card)
+		return ret;
+
+	snd_soc_card_set_name(priv->card, card_driver->default_name);
+	snd_soc_card_set_priv(priv->card, priv);
 
 	struct link_info *li __free(kfree) = kzalloc_obj(*li);
 	if (!li)
 		goto end;
-
-	card->probe	= graph_util_card_probe;
-	card->owner	= THIS_MODULE;
-	card->dev	= dev;
 
 	if ((hooks) && (hooks)->hook_pre) {
 		ret = (hooks)->hook_pre(priv);
@@ -1358,8 +1361,6 @@ int audio_graph2_parse_of(struct simple_util_priv *priv, struct device *dev,
 	if (ret < 0)
 		goto err;
 
-	snd_soc_card_set_drvdata(card, priv);
-
 	if ((hooks) && (hooks)->hook_post) {
 		ret = (hooks)->hook_post(priv);
 		if (ret < 0)
@@ -1368,7 +1369,7 @@ int audio_graph2_parse_of(struct simple_util_priv *priv, struct device *dev,
 
 	simple_util_debug_info(priv);
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(priv->card, card_driver);
 err:
 	if (ret < 0) {
 		simple_util_clean_reference(priv);
@@ -1382,12 +1383,17 @@ EXPORT_SYMBOL_GPL(audio_graph2_parse_of);
 static int graph_probe(struct platform_device *pdev)
 {
 	struct simple_util_priv *priv;
+	struct snd_soc_card_driver *card_driver;
 	struct device *dev = &pdev->dev;
 
 	/* Allocate the private data and the DAI link array */
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
+
+	card_driver		= simple_priv_to_card_driver(priv);
+	card_driver->owner	= THIS_MODULE;
+	card_driver->probe	= graph_util_card_probe;
 
 	return audio_graph2_parse_of(priv, dev, NULL);
 }
