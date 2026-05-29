@@ -197,19 +197,19 @@ static int tegra_audio_graph_probe(struct platform_device *pdev)
 {
 	struct tegra_audio_priv *priv;
 	struct device *dev = &pdev->dev;
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
 
-	card = simple_priv_to_card(&priv->simple);
-	card->driver_name = "tegra-ape";
-
-	card->probe = tegra_audio_graph_card_probe;
-
 	/* audio_graph_parse_of() depends on below */
-	card->component_chaining = 1;
+	card_driver			= simple_priv_to_card_driver(&priv->simple);
+	card_driver->default_name	= "tegra-ape";
+	card_driver->owner		= THIS_MODULE;
+	card_driver->probe		= tegra_audio_graph_card_probe;
+	card_driver->component_chaining	= 1;
+
 	priv->simple.ops = &tegra_audio_graph_ops;
 	priv->simple.force_dpcm = 1;
 
