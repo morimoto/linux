@@ -74,7 +74,7 @@ struct j721e_audio_domain {
 
 struct j721e_priv {
 	struct device *dev;
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	struct snd_soc_codec_conf codec_conf[J721E_CODEC_CONF_COUNT];
 	struct snd_interval rate_range;
 	const struct j721e_audio_match_data *match_data;
@@ -841,6 +841,7 @@ static int j721e_soc_probe(struct platform_device *pdev)
 {
 	const struct j721e_audio_match_data *match;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct j721e_priv *priv;
 	int link_cnt, conf_cnt, ret, i;
 
@@ -850,9 +851,10 @@ static int j721e_soc_probe(struct platform_device *pdev)
 		return -ENODEV;
 	}
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	priv = devm_kzalloc(&pdev->dev,
 			struct_size(priv, dai_links, match->num_links), GFP_KERNEL);
-	if (!priv)
+	if (!card || !priv)
 		return -ENOMEM;
 
 	priv->match_data = match;
@@ -861,14 +863,13 @@ static int j721e_soc_probe(struct platform_device *pdev)
 		priv->audio_domains[i].parent_clk_id = -1;
 
 	priv->dev = &pdev->dev;
-	card = &priv->card;
-	card->dev = &pdev->dev;
-	card->owner = THIS_MODULE;
-	card->dapm_widgets = j721e_cpb_dapm_widgets;
-	card->num_dapm_widgets = ARRAY_SIZE(j721e_cpb_dapm_widgets);
-	card->dapm_routes = j721e_cpb_dapm_routes;
-	card->num_dapm_routes = ARRAY_SIZE(j721e_cpb_dapm_routes);
-	card->fully_routed = 1;
+	card_driver = &priv->card_driver;
+	card_driver->owner = THIS_MODULE;
+	card_driver->dapm_widgets = j721e_cpb_dapm_widgets;
+	card_driver->num_dapm_widgets = ARRAY_SIZE(j721e_cpb_dapm_widgets);
+	card_driver->dapm_routes = j721e_cpb_dapm_routes;
+	card_driver->num_dapm_routes = ARRAY_SIZE(j721e_cpb_dapm_routes);
+	card_driver->fully_routed = 1;
 
 	ret = snd_soc_of_parse_card_name(card, "model");
 	if (ret)
@@ -884,11 +885,11 @@ static int j721e_soc_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	card->dai_link = priv->dai_links;
-	card->num_links = link_cnt;
+	card_driver->dai_link = priv->dai_links;
+	card_driver->num_links = link_cnt;
 
-	card->codec_conf = priv->codec_conf;
-	card->num_configs = conf_cnt;
+	card_driver->codec_conf = priv->codec_conf;
+	card_driver->num_configs = conf_cnt;
 
 	ret = j721e_calculate_rate_range(priv);
 	if (ret)
@@ -897,10 +898,10 @@ static int j721e_soc_probe(struct platform_device *pdev)
 	snd_soc_card_set_drvdata(card, priv);
 
 	mutex_init(&priv->mutex);
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
 		dev_err_probe(&pdev->dev, ret,
-			      "devm_snd_soc_register_card() failed: %d\n",
+			      "devm_snd_soc_card_register() failed: %d\n",
 			      ret);
 
 	return ret;
