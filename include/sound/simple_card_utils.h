@@ -60,7 +60,8 @@ enum simple_util_sysclk_order {
 };
 
 struct simple_util_priv {
-	struct snd_soc_card snd_card;
+	struct snd_soc_card *card;
+	struct snd_soc_card_driver card_driver;
 	struct simple_dai_props {
 		struct simple_util_dai *cpu_dai;
 		struct simple_util_dai *codec_dai;
@@ -82,7 +83,9 @@ struct simple_util_priv {
 	unsigned int dpcm_selectable:1;
 	unsigned int force_dpcm:1;
 };
-#define simple_priv_to_card(priv)	(&(priv)->snd_card)
+#define simple_priv_to_card(priv)		((priv)->card)
+#define simple_priv_to_card_driver(priv)	(&(priv)->card_driver)
+
 #define simple_priv_to_props(priv, i)	((priv)->dai_props + (i))
 #define simple_priv_to_dev(priv)	(simple_priv_to_card(priv)->dev)
 #define simple_priv_to_link(priv, i)	(simple_priv_to_card(priv)->dai_link + (i))
@@ -190,29 +193,31 @@ bool simple_util_is_convert_required(const struct simple_util_data *data);
 int simple_util_get_sample_fmt(struct simple_util_data *data);
 
 int simple_util_parse_property(struct simple_util_priv *priv,
-			       int (*func)(struct snd_soc_card *card, const char *propname),
+			       int (*func)(struct device *dev,
+					   struct snd_soc_card_driver *card_driver,
+					   const char *propname),
 			       char *prefix, char *property);
 static inline int simple_util_parse_routing(struct simple_util_priv *priv, char *prefix)
 {
-	return simple_util_parse_property(priv, snd_soc_of_parse_audio_routing,
+	return simple_util_parse_property(priv, snd_soc_card_driver_of_parse_audio_routing,
 					  prefix, "routing");
 }
 
 static inline int simple_util_parse_widgets(struct simple_util_priv *priv, char *prefix)
 {
-	return simple_util_parse_property(priv, snd_soc_of_parse_audio_simple_widgets,
+	return simple_util_parse_property(priv, snd_soc_card_driver_of_parse_simple_widgets,
 					  prefix, "widgets");
 }
 
 static inline int simple_util_parse_pin_switches(struct simple_util_priv *priv, char *prefix)
 {
-	return simple_util_parse_property(priv, snd_soc_of_parse_pin_switches,
+	return simple_util_parse_property(priv, snd_soc_card_driver_of_parse_pin_switches,
 					  prefix, "pin-switches");
 }
 
 static inline int simple_util_parse_aux_devs(struct simple_util_priv *priv, char *prefix)
 {
-	return simple_util_parse_property(priv, snd_soc_of_parse_aux_devs,
+	return simple_util_parse_property(priv, snd_soc_card_driver_of_parse_aux_devs,
 					  prefix, "aux-devs");
 }
 
