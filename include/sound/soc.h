@@ -941,7 +941,6 @@ struct snd_soc_aux_dev {
 struct snd_soc_card {
 	const char *name;
 	const char *long_name;
-	const char *driver_name;				/* REMOVE ME (goto driver) */
 	const char *components;
 
 #ifdef CONFIG_PCI
@@ -959,7 +958,6 @@ struct snd_soc_card {
 	struct device *dev;
 	struct snd_card *snd_card;
 	struct snd_soc_card_driver *driver;
-	struct module *owner;					/* REMOVE ME (goto driver) */
 
 	struct mutex mutex;
 	struct mutex dapm_mutex;
@@ -967,53 +965,10 @@ struct snd_soc_card {
 	/* Mutex for PCM operations */
 	struct mutex pcm_mutex;
 
-	int (*probe)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
-	int (*late_probe)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
-	void (*fixup_controls)(struct snd_soc_card *card);	/* REMOVE ME (goto driver) */
-	int (*remove)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
-	int (*suspend_pre)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
-	int (*suspend_post)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
-	int (*resume_pre)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
-	int (*resume_post)(struct snd_soc_card *card);		/* REMOVE ME (goto driver) */
-	int (*set_bias_level)(struct snd_soc_card *,		/* REMOVE ME (goto driver) */
-			      struct snd_soc_dapm_context *dapm,
-			      enum snd_soc_bias_level level);
-	int (*set_bias_level_post)(struct snd_soc_card *,	/* REMOVE ME (goto driver) */
-				   struct snd_soc_dapm_context *dapm,
-				   enum snd_soc_bias_level level);
-	int (*add_dai_link)(struct snd_soc_card *,		/* REMOVE ME (goto driver) */
-			    struct snd_soc_dai_link *link);
-	void (*remove_dai_link)(struct snd_soc_card *,		/* REMOVE ME (goto driver) */
-			    struct snd_soc_dai_link *link);
-
-	struct snd_soc_dai_link *dai_link;  			/* REMOVE ME (goto driver) */
-	int num_links; 						/* REMOVE ME (goto driver) */
-
 	struct list_head rtd_list_head;
 	int num_rtd;
 
-	struct snd_soc_codec_conf *codec_conf;			/* REMOVE ME (goto driver) */
-	int num_configs;					/* REMOVE ME (goto driver) */
-
-	struct snd_soc_aux_dev *aux_dev;			/* REMOVE ME (goto driver) */
-	int num_aux_devs;					/* REMOVE ME (goto driver) */
 	struct list_head aux_list_head;
-
-	const struct snd_kcontrol_new *controls;		/* REMOVE ME (goto driver) */
-	int num_controls;					/* REMOVE ME (goto driver) */
-
-	const struct snd_soc_dapm_widget *dapm_widgets;		/* REMOVE ME (goto driver) */
-	int num_dapm_widgets;					/* REMOVE ME (goto driver) */
-	const struct snd_soc_dapm_route *dapm_routes;		/* REMOVE ME (goto driver) */
-	int num_dapm_routes;					/* REMOVE ME (goto driver) */
-	const char **ignore_suspend_widgets;			/* REMOVE ME (goto driver) */
-	int num_ignore_suspend_widgets;				/* REMOVE ME (goto driver) */
-	const struct snd_soc_dapm_widget *of_dapm_widgets;	/* REMOVE ME (goto driver) */
-	int num_of_dapm_widgets;				/* REMOVE ME (goto driver) */
-	const struct snd_soc_dapm_route *of_dapm_routes;	/* REMOVE ME (goto driver) */
-	int num_of_dapm_routes;					/* REMOVE ME (goto driver) */
-	const char **of_ignore_suspend_widgets;			/* REMOVE ME (goto driver) */
-	int num_of_ignore_suspend_widgets;			/* REMOVE ME (goto driver) */
 
 	/* lists of probed devices belonging to this card */
 	struct list_head component_list_head;
@@ -1036,9 +991,7 @@ struct snd_soc_card {
 #endif
 	/* bit field */
 	unsigned int instantiated:1;
-	unsigned int fully_routed:1;					/* REMOVE ME (goto driver) */
 	unsigned int probed:1;
-	unsigned int component_chaining:1;				/* REMOVE ME (goto driver) */
 	struct device *devres_dev;
 
 	void *priv;
@@ -1347,25 +1300,5 @@ static inline void _snd_soc_dapm_mutex_assert_held_d(struct snd_soc_dapm_context
 
 #include <sound/soc-component.h>
 #include <sound/soc-jack.h>
-
-/*
- * REMOVE ME
- */
-#define snd_soc_add_dai_controls			snd_soc_dai_add_controls
-#define snd_soc_register_dai				snd_soc_dai_register
-#define snd_soc_unregister_dai				snd_soc_dai_unregister
-#define snd_soc_add_component_controls			snd_soc_component_add_controls
-#define snd_soc_add_card_controls			snd_soc_card_add_controls
-#define devm_snd_soc_register_deferrable_card		devm_snd_soc_register_card
-#define snd_soc_of_parse_audio_simple_widgets		snd_soc_card_of_parse_simple_widgets
-#define snd_soc_of_parse_card_name			snd_soc_card_of_parse_name
-#define snd_soc_of_parse_pin_switches			snd_soc_card_of_parse_pin_switches
-#define snd_soc_of_parse_audio_routing			snd_soc_card_of_parse_audio_routing
-#define snd_soc_of_parse_aux_devs			snd_soc_card_of_parse_aux_devs
-#define snd_soc_of_parse_ignore_suspend_widgets		snd_soc_card_of_parse_ignore_suspend_widgets
-#define snd_soc_fixup_dai_links_platform_name		snd_soc_card_fixup_dai_links_platform_name
-#define snd_soc_unregister_card				snd_soc_card_unregister
-
-int snd_soc_register_card(struct snd_soc_card *card);
 
 #endif
