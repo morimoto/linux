@@ -32,7 +32,7 @@
 struct zynqmp_dpsub_audio {
 	void __iomem *base;
 
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 
 	const char *dai_name;
 	const char *link_names[ZYNQMP_NUM_PCMS];
@@ -302,14 +302,16 @@ int zynqmp_audio_init(struct zynqmp_dpsub *dpsub)
 	struct device *dev = dpsub->dev;
 	struct zynqmp_dpsub_audio *audio;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	void *dev_data;
 	int ret;
 
 	if (!dpsub->aud_clk)
 		return 0;
 
+	card = snd_soc_card_alloc(dev);
 	audio = devm_kzalloc(dev, sizeof(*audio), GFP_KERNEL);
-	if (!audio)
+	if (!card || !audio)
 		return -ENOMEM;
 
 	dpsub->audio = audio;
@@ -381,17 +383,17 @@ int zynqmp_audio_init(struct zynqmp_dpsub *dpsub)
 
 	/* Create card */
 
-	card = &audio->card;
-	card->name = "DisplayPort";
-	card->long_name = "DisplayPort Monitor";
-	card->driver_name = "zynqmp_dpsub";
-	card->dev = dev;
-	card->owner = THIS_MODULE;
-	card->num_links = ZYNQMP_NUM_PCMS;
-	card->dai_link = audio->links;
+	snd_soc_card_set_name(card, "DisplayPort");
+	snd_soc_card_set_long_name(card, "DisplayPort Monitor");
+
+	card_driver = &audio->card_driver;
+	card_driver->driver_name = "zynqmp_dpsub";
+	card_driver->owner = THIS_MODULE;
+	card_driver->num_links = ZYNQMP_NUM_PCMS;
+	card_driver->dai_link = audio->links;
 
 	for (unsigned int i = 0; i < ZYNQMP_NUM_PCMS; ++i) {
-		struct snd_soc_dai_link *link = &card->dai_link[i];
+		struct snd_soc_dai_link *link = &audio->links[i];
 
 		link->ops = &zynqmp_dp_ops;
 
@@ -411,11 +413,11 @@ int zynqmp_audio_init(struct zynqmp_dpsub *dpsub)
 	}
 
 	/*
-	 * HACK: devm_snd_soc_register_card() overwrites current drvdata
+	 * HACK: devm_snd_soc_card_register() overwrites current drvdata
 	 * so we need to hack it back.
 	 */
 	dev_data = dev_get_drvdata(dev);
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	dev_set_drvdata(dev, dev_data);
 	if (ret) {
 		/*
