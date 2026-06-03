@@ -536,18 +536,4 @@ static inline void snd_soc_component_regcache_cache_bypass(struct snd_soc_compon
 		regcache_cache_bypass(regmap, enable);
 }
 
-/* REMOVE ME */
-#define snd_soc_component_init_regmap			snd_soc_component_regmap_init
-#define snd_soc_component_exit_regmap			snd_soc_component_regmap_exit
-#define snd_soc_component_regmap_val_bytes		snd_soc_component_regmap_get_val_bytes
-#define snd_soc_component_cache_sync			snd_soc_component_regcache_sync
-#define snd_soc_component_async_complete		snd_soc_component_regmap_async_complete
-#define snd_soc_lookup_component_nolocked		snd_soc_component_lookup_nolock
-#define snd_soc_lookup_component			snd_soc_component_lookup
-#define snd_soc_lookup_component_by_name		snd_soc_component_lookup_by_name
-#define snd_soc_register_component			snd_soc_component_register
-#define snd_soc_unregister_component(dev)		snd_soc_component_unregister_by_driver(dev, NULL)
-#define snd_soc_unregister_component_by_driver		snd_soc_component_unregister_by_driver
-#define devm_snd_soc_register_component			devm_snd_soc_component_register
-
 #endif /* __SOC_COMPONENT_H */
