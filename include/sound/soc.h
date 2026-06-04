@@ -1343,9 +1343,6 @@ struct snd_soc_dai *snd_soc_find_dai_with_mutex(
 
 #include <sound/soc-dai.h>
 
-int snd_soc_fixup_dai_links_platform_name(struct snd_soc_card *card,
-					  const char *platform_name);
-
 #ifdef CONFIG_DEBUG_FS
 extern struct dentry *snd_soc_debugfs_root;
 #endif
@@ -1413,6 +1410,7 @@ static inline void _snd_soc_dapm_mutex_assert_held_d(struct snd_soc_dapm_context
 #define snd_soc_of_parse_audio_routing			snd_soc_card_of_parse_audio_routing
 #define snd_soc_of_parse_aux_devs			snd_soc_card_of_parse_aux_devs
 #define snd_soc_of_parse_ignore_suspend_widgets		snd_soc_card_of_parse_ignore_suspend_widgets
+#define snd_soc_fixup_dai_links_platform_name		snd_soc_card_fixup_dai_links_platform_name
 
 int snd_soc_register_card(struct snd_soc_card *card);
 void snd_soc_unregister_card(struct snd_soc_card *card);
