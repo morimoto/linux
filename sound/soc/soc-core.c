@@ -1317,45 +1317,6 @@ void snd_soc_of_parse_node_prefix(struct device_node *np,
 }
 EXPORT_SYMBOL_GPL(snd_soc_of_parse_node_prefix);
 
-int snd_soc_of_parse_ignore_suspend_widgets(struct snd_soc_card *card,
-					    const char *propname)
-{
-	struct device_node *np = card->dev->of_node;
-	int num_widgets;
-	const char **widgets;
-	int i;
-
-	num_widgets = of_property_count_strings(np, propname);
-	if (num_widgets < 0) {
-		dev_err(card->dev,
-			"ASoC: Property '%s' does not exist\n", propname);
-		return -EINVAL;
-	}
-
-	widgets = devm_kcalloc(card->dev, num_widgets, sizeof(char *), GFP_KERNEL);
-	if (!widgets)
-		return -ENOMEM;
-
-	for (i = 0; i < num_widgets; i++) {
-		const char *name;
-		int ret = of_property_read_string_index(np, propname, i, &name);
-
-		if (ret) {
-			dev_err(card->dev,
-				"ASoC: Property '%s' could not be read: %d\n",
-				propname, ret);
-			return -EINVAL;
-		}
-		widgets[i] = name;
-	}
-
-	card->num_of_ignore_suspend_widgets = num_widgets;
-	card->of_ignore_suspend_widgets = widgets;
-
-	return 0;
-}
-EXPORT_SYMBOL_GPL(snd_soc_of_parse_ignore_suspend_widgets);
-
 unsigned int snd_soc_daifmt_clock_provider_flipped(unsigned int dai_fmt)
 {
 	unsigned int inv_dai_fmt = dai_fmt & ~SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK;
