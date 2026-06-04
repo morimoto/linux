@@ -55,6 +55,9 @@ int snd_soc_card_of_parse_audio_routing(struct snd_soc_card *card, const char *p
 int snd_soc_card_of_parse_aux_devs(struct snd_soc_card *card, const char *propname);
 int snd_soc_card_of_parse_ignore_suspend_widgets(struct snd_soc_card *card, const char *propname);
 
+int snd_soc_card_fixup_dai_links_platform_name(struct snd_soc_card *card,
+					       const char *platform_name);
+
 #ifdef CONFIG_PCI
 void snd_soc_card_set_pci_ssid(struct snd_soc_card *card,
 			       unsigned short vendor,
