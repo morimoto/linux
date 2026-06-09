@@ -498,6 +498,15 @@ static inline void snd_soc_component_regmap_async_complete(struct snd_soc_compon
 		regmap_async_complete(regmap);
 }
 
+static inline void snd_soc_component_regcache_mark_dirty(struct snd_soc_component *component)
+{
+	struct regmap *regmap = snd_soc_component_to_regmap(component);
+
+	if (regmap)
+		regcache_mark_dirty(regmap);
+}
+
+
 /* REMOVE ME */
 #define snd_soc_component_init_regmap			snd_soc_component_regmap_init
 #define snd_soc_component_exit_regmap			snd_soc_component_regmap_exit
