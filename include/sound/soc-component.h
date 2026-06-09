@@ -354,13 +354,6 @@ int snd_soc_component_stream_event(struct snd_soc_component *component,
 int snd_soc_component_set_bias_level(struct snd_soc_component *component,
 				     enum snd_soc_bias_level level);
 
-void snd_soc_component_regmap_init(struct snd_soc_component *component,
-				   struct regmap *regmap);
-void snd_soc_component_regmap_exit(struct snd_soc_component *component);
-int snd_soc_component_regmap_val_bytes(struct snd_soc_component *component);
-int snd_soc_component_regmap_cache_sync(struct snd_soc_component *component);
-void snd_soc_component_regmap_async_complete(struct snd_soc_component *component);
-
 int snd_soc_component_fixup_controls(struct snd_soc_component *component);
 int snd_soc_component_add_controls(struct snd_soc_component *component,
 				const struct snd_kcontrol_new *controls, unsigned int num_controls);
@@ -463,10 +456,53 @@ int snd_soc_pcm_component_ack(struct snd_pcm_substream *substream);
 void snd_soc_pcm_component_delay(struct snd_pcm_substream *substream,
 				 snd_pcm_sframes_t *cpu_delay, snd_pcm_sframes_t *codec_delay);
 
+/*
+ * regmap
+ */
+void snd_soc_component_regmap_init(struct snd_soc_component *component,
+				   struct regmap *regmap);
+void snd_soc_component_regmap_exit(struct snd_soc_component *component);
+
+static inline int snd_soc_component_regmap_get_val_bytes(struct snd_soc_component *component)
+{
+	struct regmap *regmap = snd_soc_component_to_regmap(component);
+	int val_bytes;
+
+	/* Errors are legitimate for non-integer byte multiples */
+
+	if (!regmap)
+		return 0;
+
+	val_bytes = regmap_get_val_bytes(regmap);
+	if (val_bytes < 0)
+		return 0;
+
+	return val_bytes;
+}
+
+static inline int snd_soc_component_regcache_sync(struct snd_soc_component *component)
+{
+	struct regmap *regmap = snd_soc_component_to_regmap(component);
+
+	if (!regmap)
+		return 0;
+
+	return regcache_sync(regmap);
+}
+
+static inline void snd_soc_component_regmap_async_complete(struct snd_soc_component *component)
+{
+	struct regmap *regmap = snd_soc_component_to_regmap(component);
+
+	if (regmap)
+		regmap_async_complete(regmap);
+}
+
 /* REMOVE ME */
 #define snd_soc_component_init_regmap			snd_soc_component_regmap_init
 #define snd_soc_component_exit_regmap			snd_soc_component_regmap_exit
-#define snd_soc_component_cache_sync			snd_soc_component_regmap_cache_sync
+#define snd_soc_component_regmap_val_bytes		snd_soc_component_regmap_get_val_bytes
+#define snd_soc_component_cache_sync			snd_soc_component_regcache_sync
 #define snd_soc_component_async_complete		snd_soc_component_regmap_async_complete
 #define snd_soc_lookup_component_nolocked		snd_soc_component_lookup_nolock
 #define snd_soc_lookup_component			snd_soc_component_lookup
