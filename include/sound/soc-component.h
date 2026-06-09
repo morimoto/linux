@@ -514,6 +514,14 @@ static inline void snd_soc_component_regcache_cache_only(struct snd_soc_componen
 		regcache_cache_only(regmap, enable);
 }
 
+static inline void snd_soc_component_regcache_cache_bypass(struct snd_soc_component *component, bool enable)
+{
+	struct regmap *regmap = snd_soc_component_to_regmap(component);
+
+	if (regmap)
+		regcache_cache_bypass(regmap, enable);
+}
+
 /* REMOVE ME */
 #define snd_soc_component_init_regmap			snd_soc_component_regmap_init
 #define snd_soc_component_exit_regmap			snd_soc_component_regmap_exit
