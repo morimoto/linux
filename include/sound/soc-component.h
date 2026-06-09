@@ -490,6 +490,18 @@ static inline int snd_soc_component_regcache_sync(struct snd_soc_component *comp
 	return regcache_sync(regmap);
 }
 
+static inline int snd_soc_component_regmap_multi_reg_write_bypassed(struct snd_soc_component *component,
+								    const struct reg_sequence *regs,
+								    int num_regs)
+{
+	struct regmap *regmap = snd_soc_component_to_regmap(component);
+
+	if (!regmap)
+		return 0;
+
+	return regmap_multi_reg_write_bypassed(regmap, regs, num_regs);
+}
+
 static inline void snd_soc_component_regmap_async_complete(struct snd_soc_component *component)
 {
 	struct regmap *regmap = snd_soc_component_to_regmap(component);
