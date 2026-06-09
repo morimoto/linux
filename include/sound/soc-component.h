@@ -506,6 +506,13 @@ static inline void snd_soc_component_regcache_mark_dirty(struct snd_soc_componen
 		regcache_mark_dirty(regmap);
 }
 
+static inline void snd_soc_component_regcache_cache_only(struct snd_soc_component *component, bool enable)
+{
+	struct regmap *regmap = snd_soc_component_to_regmap(component);
+
+	if (regmap)
+		regcache_cache_only(regmap, enable);
+}
 
 /* REMOVE ME */
 #define snd_soc_component_init_regmap			snd_soc_component_regmap_init
