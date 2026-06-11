@@ -49,7 +49,6 @@ static void snd_soc_tplg_test_exit(struct kunit *test)
 struct kunit_soc_component {
 	struct kunit *kunit;
 	int expect; /* what result we expect when loading topology */
-	struct snd_soc_card card;
 	struct firmware fw;
 };
 
@@ -231,8 +230,17 @@ static const struct snd_soc_component_driver test_component_null_comp = {
 	.probe = d_probe_null_comp,
 };
 
+static struct snd_soc_card_driver test_card_driver = {
+	.default_name = "kunit-card",
+	.owner = THIS_MODULE,
+	.dai_link = kunit_dai_links,
+	.num_links = ARRAY_SIZE(kunit_dai_links),
+	.fully_routed = true,
+};
+
 static void snd_soc_tplg_test_load_with_null_comp(struct kunit *test)
 {
+	struct snd_soc_card *card;
 	struct kunit_soc_component *kunit_comp;
 	struct snd_soc_component *component;
 	int ret;
@@ -243,12 +251,8 @@ static void snd_soc_tplg_test_load_with_null_comp(struct kunit *test)
 	kunit_comp->kunit = test;
 	kunit_comp->expect = -EINVAL; /* expect failure */
 
-	kunit_comp->card.dev = test_dev;
-	kunit_comp->card.name = "kunit-card";
-	kunit_comp->card.owner = THIS_MODULE;
-	kunit_comp->card.dai_link = kunit_dai_links;
-	kunit_comp->card.num_links = ARRAY_SIZE(kunit_dai_links);
-	kunit_comp->card.fully_routed = true;
+	card = snd_soc_card_alloc(test_dev);
+	KUNIT_ASSERT_NOT_NULL(test, card);
 
 	component = snd_soc_component_new(test_dev, NULL, &test_component_null_comp);
 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, component);
@@ -256,7 +260,7 @@ static void snd_soc_tplg_test_load_with_null_comp(struct kunit *test)
 	snd_soc_component_set_priv(component, kunit_comp);
 
 	/* run test */
-	ret = snd_soc_register_card(&kunit_comp->card);
+	ret = snd_soc_card_register(card, &test_card_driver);
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
@@ -264,7 +268,7 @@ static void snd_soc_tplg_test_load_with_null_comp(struct kunit *test)
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
-	snd_soc_unregister_card(&kunit_comp->card);
+	snd_soc_card_unregister(card);
 	snd_soc_unregister_component(test_dev);
 }
 
@@ -278,6 +282,7 @@ static void snd_soc_tplg_test_load_with_null_comp(struct kunit *test)
  */
 static void snd_soc_tplg_test_load_with_null_ops(struct kunit *test)
 {
+	struct snd_soc_card *card;
 	struct kunit_soc_component *kunit_comp;
 	struct snd_soc_component *component;
 	int ret;
@@ -288,12 +293,8 @@ static void snd_soc_tplg_test_load_with_null_ops(struct kunit *test)
 	kunit_comp->kunit = test;
 	kunit_comp->expect = 0; /* expect success */
 
-	kunit_comp->card.dev = test_dev;
-	kunit_comp->card.name = "kunit-card";
-	kunit_comp->card.owner = THIS_MODULE;
-	kunit_comp->card.dai_link = kunit_dai_links;
-	kunit_comp->card.num_links = ARRAY_SIZE(kunit_dai_links);
-	kunit_comp->card.fully_routed = true;
+	card = snd_soc_card_alloc(test_dev);
+	KUNIT_ASSERT_NOT_NULL(test, card);
 
 	component = snd_soc_component_new(test_dev, NULL, &test_component);
 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, component);
@@ -301,7 +302,7 @@ static void snd_soc_tplg_test_load_with_null_ops(struct kunit *test)
 	snd_soc_component_set_priv(component, kunit_comp);
 
 	/* run test */
-	ret = snd_soc_register_card(&kunit_comp->card);
+	ret = snd_soc_card_register(card, &test_card_driver);
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
@@ -309,7 +310,7 @@ static void snd_soc_tplg_test_load_with_null_ops(struct kunit *test)
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
-	snd_soc_unregister_card(&kunit_comp->card);
+	snd_soc_card_unregister(card);
 
 	snd_soc_unregister_component(test_dev);
 }
@@ -342,6 +343,7 @@ static const struct snd_soc_component_driver test_component_null_fw = {
 
 static void snd_soc_tplg_test_load_with_null_fw(struct kunit *test)
 {
+	struct snd_soc_card *card;
 	struct kunit_soc_component *kunit_comp;
 	struct snd_soc_component *component;
 	int ret;
@@ -352,12 +354,8 @@ static void snd_soc_tplg_test_load_with_null_fw(struct kunit *test)
 	kunit_comp->kunit = test;
 	kunit_comp->expect = -EINVAL; /* expect failure */
 
-	kunit_comp->card.dev = test_dev;
-	kunit_comp->card.name = "kunit-card";
-	kunit_comp->card.owner = THIS_MODULE;
-	kunit_comp->card.dai_link = kunit_dai_links;
-	kunit_comp->card.num_links = ARRAY_SIZE(kunit_dai_links);
-	kunit_comp->card.fully_routed = true;
+	card = snd_soc_card_alloc(test_dev);
+	KUNIT_ASSERT_NOT_NULL(test, card);
 
 	component = snd_soc_component_new(test_dev, NULL, &test_component_null_fw);
 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, component);
@@ -365,7 +363,7 @@ static void snd_soc_tplg_test_load_with_null_fw(struct kunit *test)
 	snd_soc_component_set_priv(component, kunit_comp);
 
 	/* run test */
-	ret = snd_soc_register_card(&kunit_comp->card);
+	ret = snd_soc_card_register(card, &test_card_driver);
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
@@ -373,7 +371,7 @@ static void snd_soc_tplg_test_load_with_null_fw(struct kunit *test)
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
-	snd_soc_unregister_card(&kunit_comp->card);
+	snd_soc_card_unregister(card);
 
 	snd_soc_unregister_component(test_dev);
 }
@@ -382,6 +380,7 @@ static void snd_soc_tplg_test_load_with_null_fw(struct kunit *test)
 // Test passing "empty" topology file
 static void snd_soc_tplg_test_load_empty_tplg(struct kunit *test)
 {
+	struct snd_soc_card *card;
 	struct kunit_soc_component *kunit_comp;
 	struct snd_soc_component *component;
 	struct tplg_tmpl_001 *data;
@@ -403,12 +402,8 @@ static void snd_soc_tplg_test_load_empty_tplg(struct kunit *test)
 	kunit_comp->fw.data = (u8 *)data;
 	kunit_comp->fw.size = size;
 
-	kunit_comp->card.dev = test_dev;
-	kunit_comp->card.name = "kunit-card";
-	kunit_comp->card.owner = THIS_MODULE;
-	kunit_comp->card.dai_link = kunit_dai_links;
-	kunit_comp->card.num_links = ARRAY_SIZE(kunit_dai_links);
-	kunit_comp->card.fully_routed = true;
+	card = snd_soc_card_alloc(test_dev);
+	KUNIT_ASSERT_NOT_NULL(test, card);
 
 	component = snd_soc_component_new(test_dev, NULL, &test_component);
 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, component);
@@ -416,7 +411,7 @@ static void snd_soc_tplg_test_load_empty_tplg(struct kunit *test)
 	snd_soc_component_set_priv(component, kunit_comp);
 
 	/* run test */
-	ret = snd_soc_register_card(&kunit_comp->card);
+	ret = snd_soc_register_card2(test_dev, &test_card_driver);
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
@@ -424,7 +419,7 @@ static void snd_soc_tplg_test_load_empty_tplg(struct kunit *test)
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
-	snd_soc_unregister_card(&kunit_comp->card);
+	snd_soc_card_unregister(card);
 
 	snd_soc_unregister_component(test_dev);
 }
@@ -435,6 +430,7 @@ static void snd_soc_tplg_test_load_empty_tplg(struct kunit *test)
 // long, so just use SND_SOC_TPLG_MAGIC + 1
 static void snd_soc_tplg_test_load_empty_tplg_bad_magic(struct kunit *test)
 {
+	struct snd_soc_card *card;
 	struct kunit_soc_component *kunit_comp;
 	struct snd_soc_component *component;
 	struct tplg_tmpl_001 *data;
@@ -461,12 +457,8 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_magic(struct kunit *test)
 	kunit_comp->fw.data = (u8 *)data;
 	kunit_comp->fw.size = size;
 
-	kunit_comp->card.dev = test_dev;
-	kunit_comp->card.name = "kunit-card";
-	kunit_comp->card.owner = THIS_MODULE;
-	kunit_comp->card.dai_link = kunit_dai_links;
-	kunit_comp->card.num_links = ARRAY_SIZE(kunit_dai_links);
-	kunit_comp->card.fully_routed = true;
+	card = snd_soc_card_alloc(test_dev);
+	KUNIT_ASSERT_NOT_NULL(test, card);
 
 	component = snd_soc_component_new(test_dev, NULL, &test_component);
 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, component);
@@ -474,7 +466,7 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_magic(struct kunit *test)
 	snd_soc_component_set_priv(component, kunit_comp);
 
 	/* run test */
-	ret = snd_soc_register_card(&kunit_comp->card);
+	ret = snd_soc_card_register(card, &test_card_driver);
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
@@ -482,7 +474,7 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_magic(struct kunit *test)
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
-	snd_soc_unregister_card(&kunit_comp->card);
+	snd_soc_card_unregister(card);
 
 	snd_soc_unregister_component(test_dev);
 }
@@ -493,6 +485,7 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_magic(struct kunit *test)
 // long, so just use SND_SOC_TPLG_ABI_VERSION + 1
 static void snd_soc_tplg_test_load_empty_tplg_bad_abi(struct kunit *test)
 {
+	struct snd_soc_card *card;
 	struct kunit_soc_component *kunit_comp;
 	struct snd_soc_component *component;
 	struct tplg_tmpl_001 *data;
@@ -519,12 +512,8 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_abi(struct kunit *test)
 	kunit_comp->fw.data = (u8 *)data;
 	kunit_comp->fw.size = size;
 
-	kunit_comp->card.dev = test_dev;
-	kunit_comp->card.name = "kunit-card";
-	kunit_comp->card.owner = THIS_MODULE;
-	kunit_comp->card.dai_link = kunit_dai_links;
-	kunit_comp->card.num_links = ARRAY_SIZE(kunit_dai_links);
-	kunit_comp->card.fully_routed = true;
+	card = snd_soc_card_alloc(test_dev);
+	KUNIT_ASSERT_NOT_NULL(test, card);
 
 	component = snd_soc_component_new(test_dev, NULL, &test_component);
 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, component);
@@ -532,7 +521,7 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_abi(struct kunit *test)
 	snd_soc_component_set_priv(component, kunit_comp);
 
 	/* run test */
-	ret = snd_soc_register_card(&kunit_comp->card);
+	ret = snd_soc_card_register(card, &test_card_driver);
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
@@ -540,7 +529,7 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_abi(struct kunit *test)
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
-	snd_soc_unregister_card(&kunit_comp->card);
+	snd_soc_card_unregister(card);
 
 	snd_soc_unregister_component(test_dev);
 }
@@ -551,6 +540,7 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_abi(struct kunit *test)
 // long, so just use sizeof(struct snd_soc_tplg_hdr) + 1
 static void snd_soc_tplg_test_load_empty_tplg_bad_size(struct kunit *test)
 {
+	struct snd_soc_card *card;
 	struct kunit_soc_component *kunit_comp;
 	struct snd_soc_component *component;
 	struct tplg_tmpl_001 *data;
@@ -577,12 +567,8 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_size(struct kunit *test)
 	kunit_comp->fw.data = (u8 *)data;
 	kunit_comp->fw.size = size;
 
-	kunit_comp->card.dev = test_dev;
-	kunit_comp->card.name = "kunit-card";
-	kunit_comp->card.owner = THIS_MODULE;
-	kunit_comp->card.dai_link = kunit_dai_links;
-	kunit_comp->card.num_links = ARRAY_SIZE(kunit_dai_links);
-	kunit_comp->card.fully_routed = true;
+	card = snd_soc_card_alloc(test_dev);
+	KUNIT_ASSERT_NOT_NULL(test, card);
 
 	component = snd_soc_component_new(test_dev, NULL, &test_component);
 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, component);
@@ -590,7 +576,7 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_size(struct kunit *test)
 	snd_soc_component_set_priv(component, kunit_comp);
 
 	/* run test */
-	ret = snd_soc_register_card(&kunit_comp->card);
+	ret = snd_soc_card_register(card, &test_card_driver);
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
@@ -598,7 +584,7 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_size(struct kunit *test)
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
-	snd_soc_unregister_card(&kunit_comp->card);
+	snd_soc_card_unregister(card);
 
 	snd_soc_unregister_component(test_dev);
 }
@@ -609,6 +595,7 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_size(struct kunit *test)
 // long, so just use the known wrong one
 static void snd_soc_tplg_test_load_empty_tplg_bad_payload_size(struct kunit *test)
 {
+	struct snd_soc_card *card;
 	struct kunit_soc_component *kunit_comp;
 	struct snd_soc_component *component;
 	struct tplg_tmpl_001 *data;
@@ -636,12 +623,8 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_payload_size(struct kunit *tes
 	kunit_comp->fw.data = (u8 *)data;
 	kunit_comp->fw.size = size;
 
-	kunit_comp->card.dev = test_dev;
-	kunit_comp->card.name = "kunit-card";
-	kunit_comp->card.owner = THIS_MODULE;
-	kunit_comp->card.dai_link = kunit_dai_links;
-	kunit_comp->card.num_links = ARRAY_SIZE(kunit_dai_links);
-	kunit_comp->card.fully_routed = true;
+	card = snd_soc_card_alloc(test_dev);
+	KUNIT_ASSERT_NOT_NULL(test, card);
 
 	component = snd_soc_component_new(test_dev, NULL, &test_component);
 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, component);
@@ -649,7 +632,7 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_payload_size(struct kunit *tes
 	snd_soc_component_set_priv(component, kunit_comp);
 
 	/* run test */
-	ret = snd_soc_register_card(&kunit_comp->card);
+	ret = snd_soc_card_register(card, &test_card_driver);
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
@@ -659,13 +642,14 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_payload_size(struct kunit *tes
 	/* cleanup */
 	snd_soc_unregister_component(test_dev);
 
-	snd_soc_unregister_card(&kunit_comp->card);
+	snd_soc_card_unregister(card);
 }
 
 // TEST CASE
 // Test passing topology file with PCM definition
 static void snd_soc_tplg_test_load_pcm_tplg(struct kunit *test)
 {
+	struct snd_soc_card *card;
 	struct kunit_soc_component *kunit_comp;
 	struct snd_soc_component *component;
 	u8 *data;
@@ -687,12 +671,8 @@ static void snd_soc_tplg_test_load_pcm_tplg(struct kunit *test)
 	kunit_comp->fw.data = data;
 	kunit_comp->fw.size = size;
 
-	kunit_comp->card.dev = test_dev;
-	kunit_comp->card.name = "kunit-card";
-	kunit_comp->card.owner = THIS_MODULE;
-	kunit_comp->card.dai_link = kunit_dai_links;
-	kunit_comp->card.num_links = ARRAY_SIZE(kunit_dai_links);
-	kunit_comp->card.fully_routed = true;
+	card = snd_soc_card_alloc(test_dev);
+	KUNIT_ASSERT_NOT_NULL(test, card);
 
 	component = snd_soc_component_new(test_dev, NULL, &test_component);
 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, component);
@@ -700,7 +680,7 @@ static void snd_soc_tplg_test_load_pcm_tplg(struct kunit *test)
 	snd_soc_component_set_priv(component, kunit_comp);
 
 	/* run test */
-	ret = snd_soc_register_card(&kunit_comp->card);
+	ret = snd_soc_card_register(card, &test_card_driver);
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
@@ -710,7 +690,7 @@ static void snd_soc_tplg_test_load_pcm_tplg(struct kunit *test)
 	snd_soc_unregister_component(test_dev);
 
 	/* cleanup */
-	snd_soc_unregister_card(&kunit_comp->card);
+	snd_soc_card_unregister(card);
 }
 
 // TEST CASE
@@ -718,6 +698,7 @@ static void snd_soc_tplg_test_load_pcm_tplg(struct kunit *test)
 // with component reload
 static void snd_soc_tplg_test_load_pcm_tplg_reload_comp(struct kunit *test)
 {
+	struct snd_soc_card *card;
 	struct kunit_soc_component *kunit_comp;
 	struct snd_soc_component *component;
 	u8 *data;
@@ -740,12 +721,8 @@ static void snd_soc_tplg_test_load_pcm_tplg_reload_comp(struct kunit *test)
 	kunit_comp->fw.data = data;
 	kunit_comp->fw.size = size;
 
-	kunit_comp->card.dev = test_dev;
-	kunit_comp->card.name = "kunit-card";
-	kunit_comp->card.owner = THIS_MODULE;
-	kunit_comp->card.dai_link = kunit_dai_links;
-	kunit_comp->card.num_links = ARRAY_SIZE(kunit_dai_links);
-	kunit_comp->card.fully_routed = true;
+	card = snd_soc_card_alloc(test_dev);
+	KUNIT_ASSERT_NOT_NULL(test, card);
 
 	component = snd_soc_component_new(test_dev, NULL, &test_component);
 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, component);
@@ -753,7 +730,7 @@ static void snd_soc_tplg_test_load_pcm_tplg_reload_comp(struct kunit *test)
 	snd_soc_component_set_priv(component, kunit_comp);
 
 	/* run test */
-	ret = snd_soc_register_card(&kunit_comp->card);
+	ret = snd_soc_card_register(card, &test_card_driver);
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
@@ -766,7 +743,7 @@ static void snd_soc_tplg_test_load_pcm_tplg_reload_comp(struct kunit *test)
 	}
 
 	/* cleanup */
-	snd_soc_unregister_card(&kunit_comp->card);
+	snd_soc_card_unregister(card);
 }
 
 // TEST CASE
@@ -774,6 +751,7 @@ static void snd_soc_tplg_test_load_pcm_tplg_reload_comp(struct kunit *test)
 // with card reload
 static void snd_soc_tplg_test_load_pcm_tplg_reload_card(struct kunit *test)
 {
+	struct snd_soc_card *card;
 	struct kunit_soc_component *kunit_comp;
 	struct snd_soc_component *component;
 	u8 *data;
@@ -796,12 +774,8 @@ static void snd_soc_tplg_test_load_pcm_tplg_reload_card(struct kunit *test)
 	kunit_comp->fw.data = data;
 	kunit_comp->fw.size = size;
 
-	kunit_comp->card.dev = test_dev;
-	kunit_comp->card.name = "kunit-card";
-	kunit_comp->card.owner = THIS_MODULE;
-	kunit_comp->card.dai_link = kunit_dai_links;
-	kunit_comp->card.num_links = ARRAY_SIZE(kunit_dai_links);
-	kunit_comp->card.fully_routed = true;
+	card = snd_soc_card_alloc(test_dev);
+	KUNIT_ASSERT_NOT_NULL(test, card);
 
 	component = snd_soc_component_new(test_dev, NULL, &test_component);
 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, component);
@@ -813,11 +787,11 @@ static void snd_soc_tplg_test_load_pcm_tplg_reload_card(struct kunit *test)
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	for (i = 0; i < 100; i++) {
-		ret = snd_soc_register_card(&kunit_comp->card);
+		ret = snd_soc_card_register(card, &test_card_driver);
 		if (ret != 0 && ret != -EPROBE_DEFER)
 			KUNIT_FAIL(test, "Failed to register card");
 
-		snd_soc_unregister_card(&kunit_comp->card);
+		snd_soc_card_unregister(card);
 	}
 
 	/* cleanup */
