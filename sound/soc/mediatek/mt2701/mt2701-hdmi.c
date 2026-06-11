@@ -47,8 +47,8 @@ static struct snd_soc_dai_link mt2701_hdmi_dai_links[] = {
 	},
 };
 
-static struct snd_soc_card mt2701_hdmi_soc_card = {
-	.name = "mt2701-hdmi",
+static struct snd_soc_card_driver mt2701_hdmi_card_driver = {
+	.default_name = "mt2701-hdmi",
 	.owner = THIS_MODULE,
 	.dai_link = mt2701_hdmi_dai_links,
 	.num_links = ARRAY_SIZE(mt2701_hdmi_dai_links),
@@ -56,7 +56,7 @@ static struct snd_soc_card mt2701_hdmi_soc_card = {
 
 static int mt2701_hdmi_machine_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &mt2701_hdmi_soc_card;
+	struct snd_soc_card_driver *card_driver = &mt2701_hdmi_card_driver;
 	struct device *dev = &pdev->dev;
 	struct device_node *platform_node;
 	struct device_node *codec_node;
@@ -69,7 +69,7 @@ static int mt2701_hdmi_machine_probe(struct platform_device *pdev)
 		return dev_err_probe(dev, -EINVAL,
 				     "Property 'mediatek,platform' missing\n");
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (dai_link->platforms->name)
 			continue;
 		dai_link->platforms->of_node = platform_node;
@@ -83,9 +83,7 @@ static int mt2701_hdmi_machine_probe(struct platform_device *pdev)
 	}
 	mt2701_hdmi_dai_links[DAI_LINK_BE_HDMI_I2S].codecs->of_node = codec_node;
 
-	card->dev = dev;
-
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(dev, card_driver);
 
 	of_node_put(platform_node);
 	of_node_put(codec_node);
