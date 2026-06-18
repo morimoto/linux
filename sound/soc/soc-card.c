@@ -60,6 +60,12 @@ struct snd_soc_pcm_runtime *snd_soc_card_to_rtd(struct snd_soc_card *card,
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_to_rtd);
 
+int snd_soc_card_to_num_rtd(struct snd_soc_card *card)
+{
+	return card->num_rtd;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_to_num_rtd);
+
 int snd_soc_card_connect_rtd(struct snd_soc_card *card, struct snd_soc_pcm_runtime *rtd)
 {
 	list_add_tail(&rtd->rtd_list, &card->rtd_list_head);
