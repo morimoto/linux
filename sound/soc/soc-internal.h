@@ -33,5 +33,6 @@ int snd_soc_dai_symmetric_apply(struct snd_pcm_substream *substream, struct snd_
 int snd_soc_dai_symmetric_params(struct snd_pcm_substream *substream, struct snd_pcm_hw_params *params);
 void snd_soc_dai_symmetric_update(struct snd_pcm_substream *substream);
 void snd_soc_dai_active_action(struct snd_soc_dai *dai, int stream, int action);
+void snd_soc_dai_get_bclk(struct snd_soc_dai *dai, struct clk **bclk, unsigned int *bclk_ratio);
 
 #endif /* __SOC_INTERNAL_H */
