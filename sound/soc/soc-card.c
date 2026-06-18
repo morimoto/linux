@@ -1004,6 +1004,7 @@ static int snd_soc_card_bind(struct snd_soc_card *card)
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_component *component;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
+	struct snd_card *snd_card;
 	int ret;
 
 	snd_soc_card_mutex_lock_root(card);
@@ -1028,13 +1029,14 @@ static int snd_soc_card_bind(struct snd_soc_card *card)
 
 	/* card bind complete so register a sound card */
 	ret = snd_card_new(card->dev, SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1,
-			   card->owner, 0, &card->snd_card);
+			   card->owner, 0, &snd_card);
 	if (ret < 0) {
 		dev_err(card->dev,
 			"ASoC: can't create sound card for card %s: %d\n",
 			card->name, ret);
 		goto probe_end;
 	}
+	card->snd_card = snd_card;
 
 	snd_soc_card_debugfs_init(card);
 
@@ -1108,16 +1110,16 @@ static int snd_soc_card_bind(struct snd_soc_card *card)
 	/* try to set some sane longname if DMI is available */
 	snd_soc_card_set_dmi_name(card);
 
-	soc_card_setup_name(card, card->snd_card->shortname,	card->name,		NULL);
-	soc_card_setup_name(card, card->snd_card->longname,	card->long_name,	card->name);
-	soc_card_setup_name(card, card->snd_card->driver,	card->driver_name,	card->name);
+	soc_card_setup_name(card, snd_card->shortname,	card->name,		NULL);
+	soc_card_setup_name(card, snd_card->longname,	card->long_name,	card->name);
+	soc_card_setup_name(card, snd_card->driver,	card->driver_name,	card->name);
 
 	if (card->components) {
 		/* the current implementation of snd_component_add() accepts */
 		/* multiple components in the string separated by space, */
 		/* but the string collision (identical string) check might */
 		/* not work correctly */
-		ret = snd_component_add(card->snd_card, card->components);
+		ret = snd_component_add(snd_card, card->components);
 		if (ret < 0) {
 			dev_err(card->dev, "ASoC: %s snd_component_add() failed: %d\n",
 				card->name, ret);
@@ -1152,7 +1154,7 @@ static int snd_soc_card_bind(struct snd_soc_card *card)
 	}
 	snd_soc_card_fixup_controls(card);
 
-	ret = snd_card_register(card->snd_card);
+	ret = snd_card_register(snd_card);
 	if (ret < 0) {
 		dev_err(card->dev, "ASoC: failed to register soundcard %d\n",
 			ret);
