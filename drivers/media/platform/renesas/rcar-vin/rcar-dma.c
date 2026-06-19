@@ -1581,8 +1581,6 @@ int rvin_start_streaming(struct rvin_dev *vin)
 	unsigned long flags;
 	int ret;
 
-	pm_runtime_get_sync(vin->dev);
-
 	ret = rvin_set_stream(vin, 1);
 	if (ret)
 		return ret;
@@ -1594,7 +1592,6 @@ int rvin_start_streaming(struct rvin_dev *vin)
 	ret = rvin_capture_start(vin);
 	if (ret) {
 		rvin_set_stream(vin, 0);
-		pm_runtime_put_sync(vin->dev);
 		return ret;
 	}
 
@@ -1677,8 +1674,6 @@ void rvin_stop_streaming(struct rvin_dev *vin)
 			vb2_buffer_done(&vin->buf_hw[i].buffer->vb2_buf,
 					VB2_BUF_STATE_ERROR);
 	}
-
-	pm_runtime_put_sync(vin->dev);
 }
 
 static void rvin_stop_streaming_vq(struct vb2_queue *vq)
