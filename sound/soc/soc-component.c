@@ -1917,3 +1917,29 @@ int devm_snd_soc_component_register(struct device *dev,
 	return ret;
 }
 EXPORT_SYMBOL_GPL(devm_snd_soc_component_register);
+
+#if IS_ENABLED(CONFIG_SND_SOC_TEST_HACK)
+#include <sound/soc-test-hack.h>
+void test_hack_component_setup(struct snd_soc_component *component,
+			       struct snd_soc_card *card,
+			       struct regmap *regmap)
+{
+	mutex_init(&component->io_mutex);
+
+	component->card		= card;
+	component->regmap	= regmap;
+}
+EXPORT_SYMBOL_GPL(test_hack_component_setup);
+
+const char *test_hack_component_setup_name_prefix(struct snd_soc_component *component,
+						  const char *name_prefix)
+{
+	/*
+	 * name_prefix should be set by the function
+	 * see
+	 *      soc_component_set_name_prefix()
+	 */
+	return component->name_prefix = name_prefix;
+}
+EXPORT_SYMBOL_GPL(test_hack_component_setup_name_prefix);
+#endif /* CONFIG_SND_SOC_TEST_HACK */

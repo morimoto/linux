@@ -413,6 +413,7 @@ config SND_SOC_WM_ADSP_TEST
 	depends on KUNIT
 	depends on SND_SOC_WM_ADSP
 	default KUNIT_ALL_TESTS
+	select SND_SOC_TEST_HACK
 	help
 	  This builds KUnit tests for the Cirrus Logic wm_adsp library.
 	  For more information on KUnit and unit tests in general,
@@ -948,6 +949,7 @@ config SND_SOC_CS35L56_TEST
 	depends on SND_SOC_CS35L56 && KUNIT
 	default KUNIT_ALL_TESTS
 	select SND_SOC_CS_AMP_LIB_TEST_HOOKS
+	select SND_SOC_TEST_HACK
 	help
 	  This builds KUnit tests for the Cirrus Logic cs35l56
 	  codec driver.
