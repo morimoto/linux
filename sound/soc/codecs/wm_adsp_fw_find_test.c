@@ -10,6 +10,7 @@
 #include <kunit/test.h>
 #include <linux/slab.h>
 #include "wm_adsp.h"
+#include <sound/soc-test-hack.h>
 
 KUNIT_DEFINE_ACTION_WRAPPER(_put_device_wrapper, put_device, struct device *);
 
@@ -118,9 +119,9 @@ static void wm_adsp_fw_find_test_pick_file(struct kunit *test)
 	dsp->part = params->part;
 	dsp->fwf_name = params->fwf_name;
 	dsp->system_name = params->system_name;
-	dsp->component->name_prefix = params->alsa_name;
 	dsp->wmfw_optional = params->wmfw_optional;
 	dsp->bin_mandatory = params->bin_mandatory;
+	test_hack_component_setup_name_prefix(dsp->component, params->alsa_name);
 
 	kunit_activate_static_stub(test,
 				   wm_adsp_firmware_request,
@@ -200,8 +201,8 @@ static void wm_adsp_fw_find_test_search_order(struct kunit *test)
 	dsp->part = params->part;
 	dsp->fwf_name = params->fwf_name;
 	dsp->system_name = params->system_name;
-	dsp->component->name_prefix = params->alsa_name;
 	dsp->wmfw_optional = params->wmfw_optional;
+	test_hack_component_setup_name_prefix(dsp->component, params->alsa_name);
 
 	kunit_activate_static_stub(test,
 				   wm_adsp_firmware_request,
@@ -275,17 +276,17 @@ static int wm_adsp_fw_find_test_case_init(struct kunit *test)
 	if (!priv)
 		return -ENOMEM;
 
-	/* Require dummy struct snd_soc_component for the alsa name prefix string */
-	priv->dsp.component = kunit_kzalloc(test, sizeof(*priv->dsp.component), GFP_KERNEL);
-	if (!priv->dsp.component)
-		return -ENOMEM;
-
 	test->priv = priv;
 
 	/* Create dummy amp device */
 	test_dev = kunit_device_register(test, "wm_adsp_test_drv");
 	if (IS_ERR(test_dev))
 		return PTR_ERR(test_dev);
+
+	/* Require dummy struct snd_soc_component for the alsa name prefix string */
+	priv->dsp.component = snd_soc_component_alloc(test_dev);
+	if (!priv->dsp.component)
+		return -ENOMEM;
 
 	priv->dsp.cs_dsp.dev = get_device(test_dev);
 	if (!priv->dsp.cs_dsp.dev)
