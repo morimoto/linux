@@ -21,6 +21,7 @@
 #include <sound/cs35l56.h>
 #include <sound/cs-amp-lib.h>
 #include "cs35l56.h"
+#include <sound/soc-test-hack.h>
 
 KUNIT_DEFINE_ACTION_WRAPPER(faux_device_destroy_wrapper, faux_device_destroy,
 			    struct faux_device *)
@@ -156,7 +157,7 @@ static void cs35l56_test_l56_b0_suffix_sdw(struct kunit *test)
 	cs35l56->base.rev = 0xb0;
 
 	/* Set the ALSA name prefix */
-	cs35l56->component->name_prefix = "AMP1";
+	test_hack_component_setup_name_prefix(cs35l56->component, "AMP1");
 
 	/* Set SoundWire link and UID number */
 	cs35l56->sdw_link_num = 1;
@@ -181,7 +182,7 @@ static void cs35l56_test_suffix_sdw(struct kunit *test)
 	struct cs35l56_private *cs35l56 = priv->cs35l56_priv;
 
 	/* Set the ALSA name prefix */
-	cs35l56->component->name_prefix = "AMP1";
+	test_hack_component_setup_name_prefix(cs35l56->component, "AMP1");
 
 	/* Set SoundWire link and UID number */
 	cs35l56->sdw_link_num = 1;
@@ -204,7 +205,7 @@ static void cs35l56_test_suffix_i2cspi(struct kunit *test)
 	struct cs35l56_private *cs35l56 = priv->cs35l56_priv;
 
 	/* Set the ALSA name prefix */
-	cs35l56->component->name_prefix = "AMP1";
+	test_hack_component_setup_name_prefix(cs35l56->component, "AMP1");
 
 	kunit_activate_static_stub(test,
 				   cs35l56_test_devm_get_vendor_specific_variant_id_none,
@@ -247,7 +248,7 @@ static void cs35l56_test_ssidexv2_suffix_sdw(struct kunit *test)
 	struct cs35l56_private *cs35l56 = priv->cs35l56_priv;
 
 	/* Set the ALSA name prefix */
-	cs35l56->component->name_prefix = "AMP1";
+	test_hack_component_setup_name_prefix(cs35l56->component, "AMP1");
 
 	/* Set SoundWire link and UID number */
 	cs35l56->sdw_link_num = 1;
@@ -277,7 +278,7 @@ static void cs35l56_test_ssidexv2_suffix_i2cspi(struct kunit *test)
 	struct cs35l56_private *cs35l56 = priv->cs35l56_priv;
 
 	/* Set the ALSA name prefix */
-	cs35l56->component->name_prefix = "AMP1";
+	test_hack_component_setup_name_prefix(cs35l56->component, "AMP1");
 
 	/* Set a SSID to enable lookup of SSIDExV2 */
 	snd_soc_card_set_pci_ssid(cs35l56->component->card, PCI_VENDOR_ID_DELL, 0x1234);
@@ -312,7 +313,7 @@ static void cs35l56_test_l56_b0_ssidexv2_ignored_suffix_sdw(struct kunit *test)
 	cs35l56->base.rev = 0xb0;
 
 	/* Set the ALSA name prefix */
-	cs35l56->component->name_prefix = "AMP1";
+	test_hack_component_setup_name_prefix(cs35l56->component, "AMP1");
 
 	/* Set SoundWire link and UID number */
 	cs35l56->sdw_link_num = 1;
@@ -524,6 +525,7 @@ static int cs35l56_test_case_init_common(struct kunit *test)
 	struct cs35l56_test_priv *priv;
 	const struct cs35l56_test_param *param = test->param_value;
 	struct cs35l56_private *cs35l56;
+	struct snd_soc_card *card;
 
 	KUNIT_ASSERT_NOT_NULL(test, cs_amp_test_hooks);
 
@@ -547,14 +549,13 @@ static int cs35l56_test_case_init_common(struct kunit *test)
 	cs35l56 = priv->cs35l56_priv;
 	cs35l56->base.dev = &priv->amp_dev->dev;
 
-	cs35l56->component = kunit_kzalloc(test, sizeof(*cs35l56->component), GFP_KERNEL);
-	KUNIT_ASSERT_NOT_NULL(test, cs35l56->component);
-	cs35l56->component->dev = cs35l56->base.dev;
-	snd_soc_component_set_drvdata(cs35l56->component, cs35l56);
+	card = snd_soc_card_alloc(&priv->amp_dev->dev);
+	KUNIT_ASSERT_NOT_NULL(test, card);
 
-	cs35l56->component->card = kunit_kzalloc(test, sizeof(*cs35l56->component->card),
-						 GFP_KERNEL);
-	KUNIT_ASSERT_NOT_NULL(test, cs35l56->component->card);
+	cs35l56->component = snd_soc_component_alloc(cs35l56->base.dev);
+	KUNIT_ASSERT_NOT_NULL(test, cs35l56->component);
+	snd_soc_component_set_drvdata(cs35l56->component, cs35l56);
+	test_hack_component_setup(cs35l56->component, card, NULL);
 
 	if (param) {
 		cs35l56->base.type = param->type;
