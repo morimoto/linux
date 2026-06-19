@@ -11,6 +11,7 @@
 #include <sound/control.h>
 #include <sound/soc.h>
 #include <sound/soc-component.h>
+#include <sound/soc-test-hack.h>
 
 enum soc_ops_test_control_layout {
 	SOC_OPS_TEST_SINGLE,
@@ -67,7 +68,7 @@ enum soc_ops_test_control_layout {
 struct soc_ops_test_priv {
 	struct kunit *test;
 
-	struct snd_soc_component component;
+	struct snd_soc_component *component;
 };
 
 struct info_test_param {
@@ -402,9 +403,10 @@ static int soc_ops_test_init(struct kunit *test)
 	/* No actual hardware, we just use the cache */
 	regcache_cache_only(regmap, true);
 
-	priv->component.dev = dev;
-	priv->component.regmap = regmap;
-	mutex_init(&priv->component.io_mutex);
+	priv->component = snd_soc_component_alloc(dev);
+	if (!priv->component)
+		return -ENOMEM;
+	test_hack_component_setup(priv->component, NULL, regmap);
 
 	test->priv = priv;
 
@@ -414,8 +416,9 @@ static int soc_ops_test_init(struct kunit *test)
 static void soc_ops_test_exit(struct kunit *test)
 {
 	struct soc_ops_test_priv *priv = test->priv;
+	struct device *dev = snd_soc_component_to_dev(priv->component);
 
-	kunit_device_unregister(test, priv->component.dev);
+	kunit_device_unregister(test, dev);
 }
 
 static void info_test_desc(const struct info_test_param *param, char *desc)
@@ -436,7 +439,7 @@ static void soc_ops_test_info(struct kunit *test)
 	const struct snd_ctl_elem_info *target = &param->uinfo;
 	struct snd_ctl_elem_info result;
 	struct snd_kcontrol kctl = {
-		.private_data = &priv->component,
+		.private_data = priv->component,
 		.private_value = (unsigned long)&param->mc,
 	};
 	int ret;
@@ -478,7 +481,7 @@ static void soc_ops_test_access(struct kunit *test)
 	struct soc_ops_test_priv *priv = test->priv;
 	const struct access_test_param *param = test->param_value;
 	struct snd_kcontrol kctl = {
-		.private_data = &priv->component,
+		.private_data = priv->component,
 		.private_value = (unsigned long)&param->mc,
 	};
 	unsigned int val;
@@ -490,9 +493,9 @@ static void soc_ops_test_access(struct kunit *test)
 	if (!result)
 		return;
 
-	ret = regmap_write(priv->component.regmap, 0x0, param->init);
+	ret = snd_soc_component_write(priv->component, 0x0, param->init);
 	KUNIT_ASSERT_FALSE(test, ret);
-	ret = regmap_write(priv->component.regmap, 0x1, param->init);
+	ret = snd_soc_component_write(priv->component, 0x1, param->init);
 	KUNIT_ASSERT_FALSE(test, ret);
 
 	result->value.integer.value[0] = param->lctl;
@@ -503,11 +506,10 @@ static void soc_ops_test_access(struct kunit *test)
 	if (ret < 0)
 		goto end;
 
-	ret = regmap_read(priv->component.regmap, 0x0, &val);
-	KUNIT_ASSERT_FALSE(test, ret);
+	val = snd_soc_component_read(priv->component, 0x0);
 	KUNIT_EXPECT_EQ(test, val, (param->init & ~param->lmask) | param->lreg);
 
-	ret = regmap_read(priv->component.regmap, 0x1, &val);
+	val = snd_soc_component_read(priv->component, 0x1);
 	KUNIT_ASSERT_FALSE(test, ret);
 	KUNIT_EXPECT_EQ(test, val, (param->init & ~param->rmask) | param->rreg);
 
