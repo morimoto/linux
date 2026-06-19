@@ -85,6 +85,7 @@ config SND_SOC_OPS_KUNIT_TEST
 	tristate "KUnit tests for SoC ops"
 	depends on KUNIT
 	default KUNIT_ALL_TESTS
+	select SND_SOC_TEST_HACK
 	help
 	  If you want to perform tests on ALSA SoC ops library say Y here.
 
@@ -100,6 +101,9 @@ config SND_SOC_USB
 	  notify the ASoC USB DPCM backend DAI link about available USB audio
 	  devices.  Based on the notifications, sequences to enable the audio
 	  stream can be taken based on the design.
+
+config SND_SOC_TEST_HACK
+	tristate
 
 # All the supported SoCs
 source "sound/soc/adi/Kconfig"
