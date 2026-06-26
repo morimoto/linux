@@ -889,7 +889,7 @@ static void snd_soc_remove_device_links(struct snd_soc_card *card)
 	}
 }
 
-static void soc_card_unbind(struct snd_soc_card *card)
+static void soc_card_unbind(struct snd_soc_card *card, bool reuse)
 {
 	if (snd_soc_card_is_instantiated(card)) {
 		card->instantiated = false;
@@ -897,7 +897,13 @@ static void soc_card_unbind(struct snd_soc_card *card)
 		snd_soc_remove_device_links(card);
 
 		soc_cleanup_card_resources(card);
+
+		if (reuse)
+			list_add(&card->list, &unbind_card_list);
 	}
+
+	if (!reuse)
+		list_del(&card->list);
 }
 
 static int soc_card_bind(struct snd_soc_card *card)
