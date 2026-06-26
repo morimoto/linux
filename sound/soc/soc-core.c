@@ -430,7 +430,7 @@ void soc_flush_all_delayed_work(struct snd_soc_card *card)
 }
 
 #ifdef CONFIG_PM_SLEEP
-static void soc_playback_digital_mute(struct snd_soc_card *card, int mute)
+void soc_playback_digital_mute(struct snd_soc_card *card, int mute)
 {
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *dai;
@@ -449,7 +449,7 @@ static void soc_playback_digital_mute(struct snd_soc_card *card, int mute)
 	}
 }
 
-static void soc_dapm_suspend_resume(struct snd_soc_card *card, int event)
+void soc_dapm_suspend_resume(struct snd_soc_card *card, int event)
 {
 	struct snd_soc_pcm_runtime *rtd;
 	int stream;
@@ -499,7 +499,7 @@ int snd_soc_suspend(struct device *dev)
 	snd_soc_card_suspend_pre(card);
 
 	/* close any waiting streams */
-	snd_soc_flush_all_delayed_work(card);
+	soc_flush_all_delayed_work(card);
 
 	soc_dapm_suspend_resume(card, SND_SOC_DAPM_STREAM_SUSPEND);
 
@@ -604,8 +604,7 @@ struct of_phandle_args *snd_soc_copy_dai_args(struct device *dev,
 }
 EXPORT_SYMBOL_GPL(snd_soc_copy_dai_args);
 
-static struct snd_soc_component *soc_find_component(
-	const struct snd_soc_dai_link_component *dlc)
+struct snd_soc_component *soc_find_component(const struct snd_soc_dai_link_component *dlc)
 {
 	struct snd_soc_component *component;
 
@@ -1105,7 +1104,7 @@ int snd_soc_poweroff(struct device *dev)
 	 * Flush out pmdown_time work - we actually do want to run it
 	 * now, we're shutting down so no imminent restart.
 	 */
-	snd_soc_flush_all_delayed_work(card);
+	soc_flush_all_delayed_work(card);
 
 	snd_soc_dapm_shutdown(card);
 

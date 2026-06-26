@@ -96,7 +96,7 @@ static void soc_card_resume_deferred(struct work_struct *work)
 static void soc_card_resume_init(struct snd_soc_card *card)
 {
 	/* deferred resume work */
-	INIT_WORK(&card->deferred_resume_work, soc_resume_deferred);
+	INIT_WORK(&card->deferred_resume_work, soc_card_resume_deferred);
 }
 #else
 static inline void soc_card_resume_init(struct snd_soc_card *card) { }
@@ -376,7 +376,7 @@ static void append_dmi_string(char *dst, const char *str)
 }
 
 /**
- * snd_soc_set_dmi_name() - Register DMI names to card
+ * soc_card_set_dmi_name() - Register DMI names to card
  * @card: The card to register DMI names
  *
  * An Intel machine driver may be used by many different devices but are
@@ -405,7 +405,7 @@ static void append_dmi_string(char *dst, const char *str)
  *
  * Returns 0 on success, otherwise a negative error code.
  */
-static int snd_soc_set_dmi_name(struct snd_soc_card *card)
+static int soc_card_set_dmi_name(struct snd_soc_card *card)
 {
 	const char *vendor, *product, *board;
 	char *dmi_longname;
@@ -460,13 +460,13 @@ static int snd_soc_set_dmi_name(struct snd_soc_card *card)
 	return 0;
 }
 #else
-static inline int snd_soc_set_dmi_name(struct snd_soc_card *card)
+static inline int soc_card_set_dmi_name(struct snd_soc_card *card)
 {
 	return 0;
 }
 #endif /* CONFIG_DMI */
 
-static void soc_check_tplg_fes(struct snd_soc_card *card)
+static void soc_card_check_tplg_fes(struct snd_soc_card *card)
 {
 	struct snd_soc_component *component;
 	struct snd_soc_dai_link *dai_link;
@@ -533,9 +533,9 @@ static void soc_check_tplg_fes(struct snd_soc_card *card)
 	}
 }
 
-#define soc_setup_card_name(card, name, name1, name2)			\
-	__soc_setup_card_name(card, name, sizeof(name), name1, name2)
-static void __soc_setup_card_name(struct snd_soc_card *card,
+#define soc_card_setup_name(card, name, name1, name2)			\
+	__soc_card_setup_name(card, name, sizeof(name), name1, name2)
+static void __soc_card_setup_name(struct snd_soc_card *card,
 				  char *name, int len,
 				  const char *name1, const char *name2)
 {
@@ -578,7 +578,7 @@ static void __soc_setup_card_name(struct snd_soc_card *card,
 		dev_err(card->dev, "ASoC: driver name too long '%s' -> '%s'\n", src, name);
 }
 
-static void soc_cleanup_card_resources(struct snd_soc_card *card)
+static void soc_card_cleanup_resources(struct snd_soc_card *card)
 {
 	struct snd_soc_pcm_runtime *rtd, *n;
 
@@ -592,21 +592,21 @@ static void soc_cleanup_card_resources(struct snd_soc_card *card)
 		if (rtd->initialized)
 			snd_soc_link_exit(rtd);
 	/* flush delayed work before removing DAIs and DAPM widgets */
-	snd_soc_flush_all_delayed_work(card);
+	soc_flush_all_delayed_work(card);
 
 	/* remove and free each DAI */
-	soc_remove_link_dais(card);
-	soc_remove_link_components(card);
+	soc_card_link_dais_remove(card);
+	soc_card_link_components_remove(card);
 
 	for_each_card_rtds_safe(card, rtd, n)
 		snd_soc_remove_pcm_runtime(card, rtd);
 
 	/* remove auxiliary devices */
-	soc_remove_aux_devices(card);
-	soc_unbind_aux_dev(card);
+	soc_card_aux_remove(card);
+	soc_card_aux_unbind(card);
 
 	snd_soc_dapm_free(snd_soc_card_to_dapm(card));
-	soc_cleanup_card_debugfs(card);
+	soc_card_debugfs_cleanup(card);
 
 	/* remove the card */
 	snd_soc_card_remove(card);
@@ -889,14 +889,14 @@ static void snd_soc_remove_device_links(struct snd_soc_card *card)
 	}
 }
 
-static void soc_card_unbind(struct snd_soc_card *card, bool reuse)
+void soc_card_unbind(struct snd_soc_card *card, bool reuse)
 {
 	if (snd_soc_card_is_instantiated(card)) {
 		card->instantiated = false;
 
 		snd_soc_remove_device_links(card);
 
-		soc_cleanup_card_resources(card);
+		soc_card_cleanup_resources(card);
 
 		if (reuse)
 			list_add(&card->list, &unbind_card_list);
@@ -906,7 +906,7 @@ static void soc_card_unbind(struct snd_soc_card *card, bool reuse)
 		list_del(&card->list);
 }
 
-static int soc_card_bind(struct snd_soc_card *card)
+int soc_card_bind(struct snd_soc_card *card)
 {
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_component *component;
@@ -914,16 +914,16 @@ static int soc_card_bind(struct snd_soc_card *card)
 	int ret;
 
 	snd_soc_card_mutex_lock_root(card);
-	snd_soc_fill_dummy_dai(card);
+	soc_card_fill_dummy_dai(card);
 
 	snd_soc_dapm_init(dapm, card, NULL);
 	list_del_init(&card->list);
 
 	/* check whether any platform is ignore machine FE and using topology */
-	soc_check_tplg_fes(card);
+	soc_card_check_tplg_fes(card);
 
 	/* bind aux_devs too */
-	ret = soc_bind_aux_dev(card);
+	ret = soc_card_aux_bind(card);
 	if (ret < 0)
 		goto probe_end;
 
@@ -943,9 +943,9 @@ static int soc_card_bind(struct snd_soc_card *card)
 		goto probe_end;
 	}
 
-	soc_init_card_debugfs(card);
+	soc_card_debugfs_init(card);
 
-	soc_resume_init(card);
+	soc_card_resume_init(card);
 
 	ret = snd_soc_dapm_new_controls(dapm, card->dapm_widgets,
 					card->num_dapm_widgets);
@@ -963,7 +963,7 @@ static int soc_card_bind(struct snd_soc_card *card)
 		goto probe_end;
 
 	/* probe all components used by DAI links on this card */
-	ret = soc_probe_link_components(card);
+	ret = soc_card_link_components_probe(card);
 	if (ret < 0) {
 		if (ret != -EPROBE_DEFER) {
 			dev_err(card->dev,
@@ -973,7 +973,7 @@ static int soc_card_bind(struct snd_soc_card *card)
 	}
 
 	/* probe auxiliary components */
-	ret = soc_probe_aux_devices(card);
+	ret = soc_card_aux_probe(card);
 	if (ret < 0) {
 		dev_err(card->dev,
 			"ASoC: failed to probe aux component %d\n", ret);
@@ -981,7 +981,7 @@ static int soc_card_bind(struct snd_soc_card *card)
 	}
 
 	/* probe all DAI links on this card */
-	ret = soc_probe_link_dais(card);
+	ret = soc_card_link_dais_probe(card);
 	if (ret < 0) {
 		dev_err(card->dev,
 			"ASoC: failed to instantiate card %d\n", ret);
@@ -989,7 +989,7 @@ static int soc_card_bind(struct snd_soc_card *card)
 	}
 
 	for_each_card_rtds(card, rtd) {
-		ret = soc_init_pcm_runtime(card, rtd);
+		ret = soc_card_init_pcm_runtime(card, rtd);
 		if (ret < 0)
 			goto probe_end;
 	}
@@ -1013,14 +1013,11 @@ static int soc_card_bind(struct snd_soc_card *card)
 		goto probe_end;
 
 	/* try to set some sane longname if DMI is available */
-	snd_soc_set_dmi_name(card);
+	soc_card_set_dmi_name(card);
 
-	soc_setup_card_name(card, card->snd_card->shortname,
-			    card->name, NULL);
-	soc_setup_card_name(card, card->snd_card->longname,
-			    card->long_name, card->name);
-	soc_setup_card_name(card, card->snd_card->driver,
-			    card->driver_name, card->name);
+	soc_card_setup_name(card, card->snd_card->shortname,	card->name,		NULL);
+	soc_card_setup_name(card, card->snd_card->longname,	card->long_name,	card->name);
+	soc_card_setup_name(card, card->snd_card->driver,	card->driver_name,	card->name);
 
 	if (card->components) {
 		/* the current implementation of snd_component_add() accepts */
@@ -1056,7 +1053,7 @@ static int soc_card_bind(struct snd_soc_card *card)
 		}
 	}
 
-	ret = snd_soc_card_late_probe(card);
+	ret = soc_card_late_probe(card);
 	if (ret < 0)
 		goto probe_end;
 
@@ -1091,7 +1088,7 @@ static int soc_card_bind(struct snd_soc_card *card)
 probe_end:
 	if (ret < 0) {
 		snd_soc_remove_device_links(card);
-		soc_cleanup_card_resources(card);
+		soc_card_cleanup_resources(card);
 	}
 
 	if (ret == -EPROBE_DEFER) {
@@ -1116,7 +1113,7 @@ static void devm_card_bind_release(struct device *dev, void *res)
 	snd_soc_unregister_card(*(struct snd_soc_card **)res);
 }
 
-static int devm_snd_soc_bind_card(struct device *dev, struct snd_soc_card *card)
+static int devm_card_bind(struct device *dev, struct snd_soc_card *card)
 {
 	struct snd_soc_card **ptr;
 	int ret;
@@ -1128,7 +1125,7 @@ static int devm_snd_soc_bind_card(struct device *dev, struct snd_soc_card *card)
 	if (!ptr)
 		return -ENOMEM;
 
-	ret = snd_soc_bind_card(card);
+	ret = soc_card_bind(card);
 	if (ret == 0) {
 		*ptr = card;
 		devres_add(dev, ptr);
@@ -1142,6 +1139,6 @@ static int devm_snd_soc_bind_card(struct device *dev, struct snd_soc_card *card)
 int call_soc_bind_card(struct snd_soc_card *card)
 {
 	if (card->devres_dev)
-		return devm_snd_soc_bind_card(card->devres_dev, card);
+		return devm_card_bind(card->devres_dev, card);
 	return soc_card_bind(card);
 }
