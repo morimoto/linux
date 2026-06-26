@@ -578,6 +578,45 @@ static void __soc_setup_card_name(struct snd_soc_card *card,
 		dev_err(card->dev, "ASoC: driver name too long '%s' -> '%s'\n", src, name);
 }
 
+static void soc_cleanup_card_resources(struct snd_soc_card *card)
+{
+	struct snd_soc_pcm_runtime *rtd, *n;
+
+	if (card->snd_card)
+		snd_card_disconnect_sync(card->snd_card);
+
+	snd_soc_dapm_shutdown(card);
+
+	/* release machine specific resources */
+	for_each_card_rtds(card, rtd)
+		if (rtd->initialized)
+			snd_soc_link_exit(rtd);
+	/* flush delayed work before removing DAIs and DAPM widgets */
+	snd_soc_flush_all_delayed_work(card);
+
+	/* remove and free each DAI */
+	soc_remove_link_dais(card);
+	soc_remove_link_components(card);
+
+	for_each_card_rtds_safe(card, rtd, n)
+		snd_soc_remove_pcm_runtime(card, rtd);
+
+	/* remove auxiliary devices */
+	soc_remove_aux_devices(card);
+	soc_unbind_aux_dev(card);
+
+	snd_soc_dapm_free(snd_soc_card_to_dapm(card));
+	soc_cleanup_card_debugfs(card);
+
+	/* remove the card */
+	snd_soc_card_remove(card);
+
+	if (card->snd_card) {
+		snd_card_free(card->snd_card);
+		card->snd_card = NULL;
+	}
+}
+
 struct snd_kcontrol *snd_soc_card_get_kcontrol(struct snd_soc_card *soc_card,
 					       const char *name)
 {
