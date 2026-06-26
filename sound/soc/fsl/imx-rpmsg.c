@@ -17,7 +17,7 @@
 
 struct imx_rpmsg {
 	struct snd_soc_dai_link dai;
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	unsigned long sysclk;
 	bool lpa;
 	struct simple_util_jack hp_jack;
@@ -152,10 +152,12 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
 	struct of_phandle_args args;
 	const char *platform_name;
 	struct imx_rpmsg *data;
+	struct snd_soc_card *card;
 	int ret = 0;
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	dlc = devm_kzalloc(&pdev->dev, 3 * sizeof(*dlc), GFP_KERNEL);
-	if (!dlc)
+	if (!card || !dlc)
 		return -ENOMEM;
 
 	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
@@ -227,8 +229,8 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
 		data->dai.platforms->name = "rpmsg-audio-channel";
 	data->dai.playback_only = true;
 	data->dai.capture_only = true;
-	data->card.num_links = 1;
-	data->card.dai_link = &data->dai;
+	data->card_driver.num_links = 1;
+	data->card_driver.dai_link = &data->dai;
 
 	if (of_property_read_bool(np, "fsl,rpmsg-out"))
 		data->dai.capture_only = false;
@@ -245,24 +247,24 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
 	if (of_property_read_bool(np, "fsl,enable-lpa"))
 		data->lpa = true;
 
-	data->card.dev = &pdev->dev;
-	data->card.owner = THIS_MODULE;
-	data->card.dapm_widgets = imx_rpmsg_dapm_widgets;
-	data->card.num_dapm_widgets = ARRAY_SIZE(imx_rpmsg_dapm_widgets);
-	data->card.late_probe = imx_rpmsg_late_probe;
-	data->card.driver_name = "imx-audio-rpmsg";
+	data->card_driver.owner = THIS_MODULE;
+	data->card_driver.dapm_widgets = imx_rpmsg_dapm_widgets;
+	data->card_driver.num_dapm_widgets = ARRAY_SIZE(imx_rpmsg_dapm_widgets);
+	data->card_driver.late_probe = imx_rpmsg_late_probe;
+	data->card_driver.driver_name = "imx-audio-rpmsg";
 	/*
 	 * Inoder to use common api to get card name and audio routing.
 	 * Use parent of_node for this device, revert it after finishing using
 	 */
-	data->card.dev->of_node = np;
+	pdev->dev.of_node = np;
 
-	ret = snd_soc_of_parse_card_name(&data->card, "model");
+	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret)
 		goto fail;
 
 	if (of_property_present(np, "audio-routing")) {
-		ret = snd_soc_of_parse_audio_routing(&data->card, "audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(&pdev->dev,
+						&data->card_driver, "audio-routing");
 		if (ret) {
 			dev_err(&pdev->dev, "failed to parse audio-routing: %d\n", ret);
 			goto fail;
@@ -270,7 +272,8 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
 	}
 
 	if (data->lpa && of_property_present(np, "ignore-suspend-widgets")) {
-		ret = snd_soc_of_parse_ignore_suspend_widgets(&data->card,
+		ret = snd_soc_card_driver_of_parse_ignore_suspend_widgets(&pdev->dev,
+							      &data->card_driver,
 							      "ignore-suspend-widgets");
 		if (ret) {
 			dev_err(&pdev->dev, "failed to parse ignore-suspend-widgets: %d\n", ret);
@@ -278,11 +281,10 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
 		}
 	}
 
-	platform_set_drvdata(pdev, &data->card);
-	snd_soc_card_set_drvdata(&data->card, data);
-	ret = devm_snd_soc_register_card(&pdev->dev, &data->card);
+	snd_soc_card_set_priv(card, data);
+	ret = devm_snd_soc_card_register(card, &data->card_driver);
 	if (ret) {
-		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card failed\n");
+		dev_err_probe(&pdev->dev, ret, "snd_soc_card_register() failed\n");
 		goto fail;
 	}
 
