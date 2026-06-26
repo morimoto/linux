@@ -889,7 +889,7 @@ static void snd_soc_remove_device_links(struct snd_soc_card *card)
 	}
 }
 
-static void snd_soc_unbind_card(struct snd_soc_card *card)
+static void soc_card_unbind(struct snd_soc_card *card)
 {
 	if (snd_soc_card_is_instantiated(card)) {
 		card->instantiated = false;
@@ -900,7 +900,7 @@ static void snd_soc_unbind_card(struct snd_soc_card *card)
 	}
 }
 
-static int snd_soc_bind_card(struct snd_soc_card *card)
+static int soc_card_bind(struct snd_soc_card *card)
 {
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_component *component;
@@ -1137,5 +1137,5 @@ int call_soc_bind_card(struct snd_soc_card *card)
 {
 	if (card->devres_dev)
 		return devm_snd_soc_bind_card(card->devres_dev, card);
-	return snd_soc_bind_card(card);
+	return soc_card_bind(card);
 }
