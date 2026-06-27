@@ -36,6 +36,7 @@ struct gpio_rcar_info {
 	bool has_both_edge_trigger;
 	bool has_always_in;
 	bool has_inen;
+	bool has_layout_gen5;
 };
 
 struct gpio_rcar_priv {
@@ -66,14 +67,59 @@ struct gpio_rcar_priv {
 
 #define RCAR_MAX_GPIO_PER_BANK		32
 
+static inline int gpio_rcar_remap_offset(struct gpio_rcar_priv *p, int *offs)
+{
+	/* R-Car Gen4 and older do not need any offset remap. */
+	if (!p->info.has_layout_gen5)
+		return 0;
+
+	/*
+	 * R-Car Gen5 register layout is slightly different and the offsets
+	 * that have to be added to or subtracted from each register offset
+	 * can be divided into five groups, listed below.
+	 */
+	switch (*offs) {
+	case IOINTSEL...OUTDT:
+		return 0;
+	case INDT:
+		*offs += 0x10;
+		return 0;
+	case INTDT...EDGLEVEL:
+		fallthrough;
+	case BOTHEDGE:
+		*offs += 0x70;
+		return 0;
+	case OUTDTSEL:
+		*offs -= 0x34;
+		return 0;
+	case INEN:
+		*offs -= 0x38;
+		return 0;
+	default:
+		/*
+		 * This here must never be reached, if this is reached, that
+		 * means there is a catastrophic failure in the driver. Skip
+		 * any IO read/write to prevent further damage.
+		 */
+		WARN_ON(1);
+		return -EINVAL;
+	}
+}
+
 static inline u32 gpio_rcar_read(struct gpio_rcar_priv *p, int offs)
 {
+	if (gpio_rcar_remap_offset(p, &offs))
+		return 0;
+
 	return ioread32(p->base + offs);
 }
 
 static inline void gpio_rcar_write(struct gpio_rcar_priv *p, int offs,
 				   u32 value)
 {
+	if (gpio_rcar_remap_offset(p, &offs))
+		return;
+
 	iowrite32(value, p->base + offs);
 }
 
@@ -400,6 +446,7 @@ static const struct gpio_rcar_info gpio_rcar_info_gen1 = {
 	.has_both_edge_trigger = false,
 	.has_always_in = false,
 	.has_inen = false,
+	.has_layout_gen5 = false,
 };
 
 static const struct gpio_rcar_info gpio_rcar_info_gen2 = {
@@ -407,6 +454,7 @@ static const struct gpio_rcar_info gpio_rcar_info_gen2 = {
 	.has_both_edge_trigger = true,
 	.has_always_in = false,
 	.has_inen = false,
+	.has_layout_gen5 = false,
 };
 
 static const struct gpio_rcar_info gpio_rcar_info_gen3 = {
@@ -414,6 +462,7 @@ static const struct gpio_rcar_info gpio_rcar_info_gen3 = {
 	.has_both_edge_trigger = true,
 	.has_always_in = true,
 	.has_inen = false,
+	.has_layout_gen5 = false,
 };
 
 static const struct gpio_rcar_info gpio_rcar_info_gen4 = {
@@ -421,6 +470,15 @@ static const struct gpio_rcar_info gpio_rcar_info_gen4 = {
 	.has_both_edge_trigger = true,
 	.has_always_in = true,
 	.has_inen = true,
+	.has_layout_gen5 = false,
+};
+
+static const struct gpio_rcar_info gpio_rcar_info_gen5 = {
+	.has_outdtsel = true,
+	.has_both_edge_trigger = true,
+	.has_always_in = true,
+	.has_inen = true,
+	.has_layout_gen5 = true,
 };
 
 static const struct of_device_id gpio_rcar_of_table[] = {
@@ -439,6 +497,9 @@ static const struct of_device_id gpio_rcar_of_table[] = {
 	}, {
 		.compatible = "renesas,rcar-gen4-gpio",
 		.data = &gpio_rcar_info_gen4,
+	}, {
+		.compatible = "renesas,rcar-gen5-gpio",
+		.data = &gpio_rcar_info_gen5,
 	}, {
 		.compatible = "renesas,gpio-rcar",
 		.data = &gpio_rcar_info_gen1,
