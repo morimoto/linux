@@ -1404,6 +1404,31 @@
 			resets = <&mdlc_pere 0x61>;
 			status = "disabled";
 		};
+
+		mp_phy: mp_phy@c9a00000 {
+			compatible = "renesas,r8a78000-mpphy",
+				     "renesas,rcar-gen5-mpphy";
+			reg = <0 0xc9a00000 0 0x100000>;
+			#phy-cells = <2>;
+			power-domains = <&scmi_devpd 17>, /* R8A78000_SCMI_PD_MPP0 */
+					<&scmi_devpd 18>, /* R8A78000_SCMI_PD_MPP1 */
+					<&scmi_devpd 19>, /* R8A78000_SCMI_PD_MPP2 */
+					<&scmi_devpd 20>; /* R8A78000_SCMI_PD_MPP3 */
+			power-domain-names = "mpp0", "mpp1", "mpp2", "mpp3";
+			clocks = <&scmi_clk 340>, /* R8A78000_SCMI_CLOCK_MDLC_MPPHY01 */
+				 <&scmi_clk 341>, /* R8A78000_SCMI_CLOCK_MDLC_MPPHY11 */
+				 <&scmi_clk 342>, /* R8A78000_SCMI_CLOCK_MDLC_MPPHY21 */
+				 <&scmi_clk 343>, /* R8A78000_SCMI_CLOCK_MDLC_MPPHY31 */
+				 <&scmi_clk 344>; /* R8A78000_SCMI_CLOCK_MDLC_MPPHY02 */
+			clock-names = "mpphy01", "mpphy11", "mpphy21", "mpphy31", "mpphy02";
+			resets = <&scmi_reset 340>, /* R8A78000_SCMI_RESET_MPPHY01 */
+				 <&scmi_reset 341>, /* R8A78000_SCMI_RESET_MPPHY11 */
+				 <&scmi_reset 342>, /* R8A78000_SCMI_RESET_MPPHY21 */
+				 <&scmi_reset 343>, /* R8A78000_SCMI_RESET_MPPHY31 */
+				 <&scmi_reset 344>; /* R8A78000_SCMI_RESET_MPPHY02 */
+			reset-names = "mpphy01", "mpphy11", "mpphy21", "mpphy31", "mpphy02";
+			status = "disabled";
+		};
 	};
 
 	timer {
