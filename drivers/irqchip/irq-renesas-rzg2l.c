@@ -583,7 +583,7 @@ static int rzg2l_irqc_common_init(struct device_node *node, struct device_node *
 					      rzg2l_irqc_data);
 	if (!irq_domain) {
 		pm_runtime_put(dev);
-		return dev_err_probe(dev, -ENOMEM, "failed to add irq domain\n");
+		return -ENOMEM;
 	}
 
 	register_syscore(&rzg2l_irqc_syscore);
