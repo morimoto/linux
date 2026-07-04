@@ -876,7 +876,7 @@
 			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
-		pfc: pinctrl@c0400000 {
+		pfc: pinctrl@c1080000 {
 			compatible = "renesas,pfc-r8a78000";
 			reg = <0 0xc1080000 0 0x104>, <0 0xc1080800 0 0x104>,
 			      <0 0xc1081000 0 0x104>, <0 0xc0800000 0 0x104>,
