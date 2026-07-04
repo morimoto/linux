@@ -658,7 +658,7 @@ static void r8a78000_eth_pcs_remove(struct platform_device *pdev)
 
 static struct platform_driver r8a78000_eth_pcs_driver_platform = {
 	.probe = r8a78000_eth_pcs_probe,
-	.remove_new = r8a78000_eth_pcs_remove,
+	.remove = r8a78000_eth_pcs_remove,
 	.driver = {
 		.name = "r8a78000_eth_pcs",
 		.of_match_table = r8a78000_eth_pcs_of_table,
