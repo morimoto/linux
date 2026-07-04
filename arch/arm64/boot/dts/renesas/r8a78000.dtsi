@@ -843,7 +843,8 @@
 		gic: interrupt-controller@39000000 {
 			compatible = "arm,gic-v3";
 			#interrupt-cells = <3>;
-			#address-cells = <0>;
+			#address-cells = <2>;
+			#size-cells = <2>;
 			interrupt-controller;
 			#redistributor-regions = <32>;
 			reg = <0x0 0x39000000 0x0 0x10000>,
@@ -880,6 +881,16 @@
 			      <0x0 0x39800000 0x0 0x40000>,
 			      <0x0 0x39840000 0x0 0x40000>;
 			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
+			dma-noncoherent;
+
+			ranges = <0x0 0x0 0x0 0x39000000 0x0 0x200000>;
+
+			its: msi-controller@40000 {
+				compatible = "arm,gic-v3-its";
+				reg = <0x0 0x40000 0x0 0x30000>;
+				dma-noncoherent;
+				msi-controller;
+			};
 		};
 
 		pfc: pinctrl@c1080000 {
@@ -1468,6 +1479,7 @@
 			resets = <&scmi_reset 345>; /* R8A78000_SCMI_RESET_PCI401 */
 			reset-names = "pwr";
 			max-link-speed = <4>;
+			msi-parent = <&its>;
 			num-lanes = <2>;
 			#address-cells = <3>;
 			#size-cells = <2>;
@@ -1498,10 +1510,10 @@
 			dma-ranges = <0x43000000 0 0x00000000 0 0x00000000 0x100 0x00000000>;
 			#interrupt-cells = <1>;
 			interrupt-map-mask = <0 0 0 7>;
-			interrupt-map = <0 0 0 1 &gic GIC_ESPI 236 IRQ_TYPE_LEVEL_HIGH
-					 0 0 0 2 &gic GIC_ESPI 236 IRQ_TYPE_LEVEL_HIGH
-					 0 0 0 3 &gic GIC_ESPI 236 IRQ_TYPE_LEVEL_HIGH
-					 0 0 0 4 &gic GIC_ESPI 236 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-map = <0 0 0 1 &gic 0 0 GIC_ESPI 236 IRQ_TYPE_LEVEL_HIGH
+					 0 0 0 2 &gic 0 0 GIC_ESPI 236 IRQ_TYPE_LEVEL_HIGH
+					 0 0 0 3 &gic 0 0 GIC_ESPI 236 IRQ_TYPE_LEVEL_HIGH
+					 0 0 0 4 &gic 0 0 GIC_ESPI 236 IRQ_TYPE_LEVEL_HIGH>;
 			snps,enable-cdm-check;
 			status = "disabled";
 
@@ -1535,6 +1547,7 @@
 			resets = <&scmi_reset 346>; /* R8A78000_SCMI_RESET_PCI411 */
 			reset-names = "pwr";
 			max-link-speed = <4>;
+			msi-parent = <&its>;
 			num-lanes = <2>;
 			#address-cells = <3>;
 			#size-cells = <2>;
@@ -1564,10 +1577,10 @@
 			dma-ranges = <0x43000000 0 0x00000000 0 0x00000000 0x100 0x00000000>;
 			#interrupt-cells = <1>;
 			interrupt-map-mask = <0 0 0 7>;
-			interrupt-map = <0 0 0 1 &gic GIC_ESPI 240 IRQ_TYPE_LEVEL_HIGH
-					 0 0 0 2 &gic GIC_ESPI 240 IRQ_TYPE_LEVEL_HIGH
-					 0 0 0 3 &gic GIC_ESPI 240 IRQ_TYPE_LEVEL_HIGH
-					 0 0 0 4 &gic GIC_ESPI 240 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-map = <0 0 0 1 &gic 0 0 GIC_ESPI 240 IRQ_TYPE_LEVEL_HIGH
+					 0 0 0 2 &gic 0 0 GIC_ESPI 240 IRQ_TYPE_LEVEL_HIGH
+					 0 0 0 3 &gic 0 0 GIC_ESPI 240 IRQ_TYPE_LEVEL_HIGH
+					 0 0 0 4 &gic 0 0 GIC_ESPI 240 IRQ_TYPE_LEVEL_HIGH>;
 			snps,enable-cdm-check;
 			status = "disabled";
 
