@@ -701,6 +701,12 @@
 		method = "smc";
 	};
 
+	rsw3_clk: rsw3_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <0>;
+	};
+
 	/* External SCIF clock - to be overridden by boards that provide it */
 	scif_clk: scif-clk {
 		compatible = "fixed-clock";
@@ -1573,6 +1579,289 @@
 				compatible = "pciclass,0604";
 				device_type = "pci";
 				ranges;
+			};
+		};
+
+		/* Test bindings */
+		usb20: usb@c9c56000 {
+			compatible = "renesas,rcar-gen5-usb";
+			reg = <0 0xc9c56000 0 0x2000>;
+			phy-names = "usb2-phy";
+			#address-cells = <2>;
+			#size-cells = <2>;
+			/* CRITICAL FIX: Proper address translation */
+			ranges = <0x0 0xc8900000 0x0 0xc8900000 0x0 0x100000>;
+			power-domains = <&scmi_devpd 16>; /* R8A78000_SCMI_PD_USB */
+			clocks = <&scmi_clk 337>; /* R8A78000_SCMI_CLOCK_MDLC_US31 */
+			clock-names = "usb20";
+			resets = <&scmi_reset 337>; /* R8A78000_SCMI_RESET_US31 */
+			reset-names = "usb20";
+			status = "disabled";
+		};
+
+		usb21: usb@c9c5a000 {
+			compatible = "renesas,rcar-gen5-usb";
+			reg = <0 0xc9c5a000 0 0x2000>;
+			phy-names = "usb2-phy";
+			#address-cells = <2>;
+			#size-cells = <2>;
+			/* CRITICAL FIX: Proper address translation */
+			ranges = <0x0 0xc8b00000 0x0 0xc8b00000 0x0 0x100000>;
+			power-domains = <&scmi_devpd 16>; /* R8A78000_SCMI_PD_USB */
+			clocks = <&scmi_clk 339>; /* R8A78000_SCMI_CLOCK_MDLC_US33 */
+			clock-names = "usb21";
+			resets = <&scmi_reset 339>; /* R8A78000_SCMI_RESET_US33 */
+			reset-names = "usb21";
+			status = "disabled";
+		};
+
+		usb30: usb@c9c54000 {
+			compatible = "renesas,rcar-gen5-usb";
+			reg = <0 0xc9c54000 0 0x2000>;
+			#address-cells = <2>;
+			#size-cells = <2>;
+			/* CRITICAL FIX: Proper address translation */
+			ranges = <0x0 0xc8800000 0x0 0xc8800000 0x0 0x100000>;
+			power-domains = <&scmi_devpd 16>; /* R8A78000_SCMI_PD_USB */
+			clocks = <&scmi_clk 336>; /* R8A78000_SCMI_CLOCK_MDLC_US30 */
+			clock-names = "usb30";
+			resets = <&scmi_reset 336>; /* R8A78000_SCMI_RESET_US30 */
+			reset-names = "usb30";
+			status = "disabled";
+		};
+
+		usb31: usb@c9c58000 {
+			compatible = "renesas,rcar-gen5-usb";
+			reg = <0 0xc9c58000 0 0x2000>;
+			#address-cells = <2>;
+			#size-cells = <2>;
+			/* CRITICAL FIX: Proper address translation */
+			ranges = <0x0 0xc8a00000 0x0 0xc8a00000 0x0 0x100000>;
+			power-domains = <&scmi_devpd 16>; /* R8A78000_SCMI_PD_USB */
+			clocks = <&scmi_clk 338>; /* R8A78000_SCMI_CLOCK_MDLC_US32 */
+			clock-names = "usb31";
+			resets = <&scmi_reset 338>; /* R8A78000_SCMI_RESET_US32 */
+			reset-names = "usb31";
+			status = "disabled";
+		};
+
+		rswitch3: ethernet@c9bc0000 {
+			compatible = "renesas,r8a78000-ether-switch";
+			reg = <0 0xc9bc0000 0 0x0040000>,  // base
+			      <0 0xc9b80000 0 0x00040000>, // secure_base
+			      <0 0xc9c88000 0x0 0x800>,
+			      <0 0xc9c89000 0 0x800>;
+			reg-names = "base", "secure_base",
+				    "gptp_base", "secure_ptp";
+			interrupts = <GIC_SPI 799 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 800 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 801 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 802 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 803 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 804 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 805 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 806 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 807 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 808 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 809 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 810 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 811 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 812 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 813 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 814 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 815 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 816 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 817 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 818 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 819 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 820 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 821 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 822 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 823 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 824 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 825 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 826 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 827 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 828 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 829 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 830 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 831 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 832 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 833 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 834 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 835 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 836 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 837 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 838 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 839 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 840 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 841 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 842 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 843 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 844 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 845 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 846 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 847 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 848 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 849 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 850 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 851 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 852 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 853 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 854 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 855 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 856 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 857 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 858 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 859 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 860 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 861 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 862 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 863 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 864 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 865 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 866 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 867 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 868 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 869 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 870 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 871 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 872 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 873 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 874 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 875 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 876 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 877 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 878 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 879 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 880 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 881 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 882 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 883 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 884 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 885 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 886 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 887 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 888 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 889 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 890 IRQ_TYPE_LEVEL_HIGH>,
+				 <GIC_SPI 891 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names =
+				"race_wrap_mfwd_int", "race_wrap_race_int",
+				"race_wrap_coma_int", "race_wrap_gwca0_int",
+				"race_wrap_gwca1_int", "race_wrap_etha0_int",
+				"race_wrap_etha1_int", "race_wrap_etha2_int",
+				"race_wrap_etha3_int", "race_wrap_etha4_int",
+				"race_wrap_etha5_int", "race_wrap_etha6_int",
+				"race_wrap_etha7_int", "race_wrap_etha8_int",
+				"race_wrap_etha9_int", "race_wrap_etha10_int",
+				"race_wrap_etha11_int", "race_wrap_etha12_int",
+				"race_wrap_gwca0_gwdis_int0", "race_wrap_gwca0_gwdis_int1",
+				"race_wrap_gwca0_gwdis_int2", "race_wrap_gwca0_gwdis_int3",
+				"race_wrap_gwca0_gwdis_int4", "race_wrap_gwca0_gwdis_int5",
+				"race_wrap_gwca0_gwdis_int6", "race_wrap_gwca0_gwdis_int7",
+				"gwca1_gwdis0", "gwca1_gwdis1", "gwca1_gwdis2", "gwca1_gwdis3",
+				"gwca1_gwdis4", "gwca1_gwdis5", "gwca1_gwdis6", "gwca1_gwdis7",
+				"race_wrap_gwca0_gwtsdis_int0", "race_wrap_gwca0_gwtsdis_int1",
+				"race_wrap_gwca1_gwtsdis_int0", "race_wrap_gwca1_gwtsdis_int1",
+				"race_wrap_gptp_int",
+				"tes0_status_int", "tes0_tx_int", "tes0_rx_int", "tes0_ts_int",
+				"tes0_error_int", "tes1_status_int", "tes1_tx_int",
+				"tes1_rx_int", "tes1_ts_int", "tes1_error_int",
+				"tes2_status_int", "tes2_tx_int", "tes2_rx_int",
+				"tes2_ts_int", "tes2_error_int", "tes3_status_int",
+				"tes3_tx_int", "tes3_rx_int", "tes3_ts_int", "tes3_error_int",
+				"tes4_status_int", "tes4_tx_int", "tes4_rx_int", "tes4_ts_int",
+				"tes4_error_int", "tes5_status_int", "tes5_tx_int",
+				"tes5_rx_int", "tes5_ts_int", "tes5_error_int",
+				"tes6_status_int", "tes6_tx_int", "tes6_rx_int",
+				"tes6_ts_int", "tes6_error_int", "tes7_status_int",
+				"tes7_tx_int", "tes7_rx_int", "tes7_ts_int", "tes7_error_int",
+				"tes0_gptp_int", "tes1_gptp_int", "tes2_gptp_int",
+				"tes3_gptp_int", "tes4_gptp_int", "tes5_gptp_int",
+				"tes6_gptp_int", "tes7_gptp_int",
+				"race_wrap_msc0_error_int", "race_wrap_msc1_error_int",
+				"race_wrap_msc2_error_int", "race_wrap_msc3_error_int",
+				"race_wrap_msc4_error_int", "race_wrap_msc5_error_int",
+				"race_wrap_msc6_error_int", "race_wrap_msc7_error_int";
+
+			power-domains = <&scmi_devpd 15>; /* R8A78000_SCMI_PD_RSW */
+			clocks = <&scmi_clk 320>, /* R8A78000_SCMI_CLOCK_MDLC_RSW3 */
+				 <&scmi_clk 321>, /* R8A78000_SCMI_CLOCK_MDLC_RSW3TSN */
+				 <&scmi_clk 322>, /* R8A78000_SCMI_CLOCK_MDLC_RSW3AES */
+				 <&scmi_clk 323>, /* R8A78000_SCMI_CLOCK_MDLC_RSW3TSNTES0 */
+				 <&scmi_clk 324>, /* R8A78000_SCMI_CLOCK_MDLC_RSW3TSNTES1 */
+				 <&scmi_clk 325>, /* R8A78000_SCMI_CLOCK_MDLC_RSW3TSNTES2 */
+				 <&scmi_clk 326>, /* R8A78000_SCMI_CLOCK_MDLC_RSW3TSNTES3 */
+				 <&scmi_clk 327>, /* R8A78000_SCMI_CLOCK_MDLC_RSW3TSNTES4 */
+				 <&scmi_clk 328>, /* R8A78000_SCMI_CLOCK_MDLC_RSW3TSNTES5 */
+				 <&scmi_clk 329>, /* R8A78000_SCMI_CLOCK_MDLC_RSW3TSNTES6 */
+				 <&scmi_clk 330>, /* R8A78000_SCMI_CLOCK_MDLC_RSW3TSNTES7 */
+				 <&scmi_clk 331>; /* R8A78000_SCMI_CLOCK_MDLC_RSW3MFWD */
+			clock-names = "rsw3", "rsw3tsn", "rsw3aes",
+				      "rsw3tsntes0", "rsw3tsntes1", "rsw3tsntes2",
+				      "rsw3tsntes3", "rsw3tsntes4", "rsw3tsntes5",
+				      "rsw3tsntes6", "rsw3tsntes7", "rsw3mfwd";
+			// TODO: Add reset reference if needed
+			// resets = <&cpg RSW3_RST>;
+
+			status = "disabled";
+		};
+
+		eth_pcs: phy@c9c50000 {
+			compatible = "renesas,r8a78000-ether-pcs";
+			reg = <0 0xc9c50000 0 0x4000>;
+			#phy-cells = <1>;
+			power-domains = <&scmi_devpd 19>; /* R8A78000_SCMI_PD_MPP2 */
+			clocks = <&scmi_clk 312>, /* R8A78000_SCMI_CLOCK_MDLC_XPCS0 */
+				 <&scmi_clk 313>, /* R8A78000_SCMI_CLOCK_MDLC_XPCS1 */
+				 <&scmi_clk 314>, /* R8A78000_SCMI_CLOCK_MDLC_XPCS2 */
+				 <&scmi_clk 315>, /* R8A78000_SCMI_CLOCK_MDLC_XPCS3 */
+				 <&scmi_clk 316>, /* R8A78000_SCMI_CLOCK_MDLC_XPCS4 */
+				 <&scmi_clk 317>, /* R8A78000_SCMI_CLOCK_MDLC_XPCS5 */
+				 <&scmi_clk 318>, /* R8A78000_SCMI_CLOCK_MDLC_XPCS6 */
+				 <&scmi_clk 319>; /* R8A78000_SCMI_CLOCK_MDLC_XPCS7 */
+			clock-names = "xpcs0", "xpcs1", "xpcs2", "xpcs3",
+				      "xpcs4", "xpcs5", "xpcs6", "xpcs7";
+			resets = <&scmi_reset 312>, /* R8A78000_SCMI_RESET_XPCS0 */
+				 <&scmi_reset 313>, /* R8A78000_SCMI_RESET_XPCS1 */
+				 <&scmi_reset 314>, /* R8A78000_SCMI_RESET_XPCS2 */
+				 <&scmi_reset 315>, /* R8A78000_SCMI_RESET_XPCS3 */
+				 <&scmi_reset 316>, /* R8A78000_SCMI_RESET_XPCS4 */
+				 <&scmi_reset 317>, /* R8A78000_SCMI_RESET_XPCS5 */
+				 <&scmi_reset 318>, /* R8A78000_SCMI_RESET_XPCS6 */
+				 <&scmi_reset 319>; /* R8A78000_SCMI_RESET_XPCS7 */
+			reset-names = "pcs0", "pcs1", "pcs2", "pcs3",
+				      "pcs4", "pcs5", "pcs6", "pcs7";
+			status = "disabled";
+		};
+
+		tsnes3: ethernet@c9c6c000 {
+			compatible = "renesas,r8a78000-ethertsn";
+			reg = <0 0xc9c6c000 0 0x4000>,
+				  <0 0xc9ca3000 0 0x800>;
+			reg-names = "tsnes", "gptp";
+			interrupts = <GIC_SPI 853 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 854 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 855 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 856 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 857 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "status", "tx", "rx", "ts", "error";
+			power-domains = <&scmi_devpd 15>; /* R8A78000_SCMI_PD_RSW */
+			clocks = <&scmi_clk 321>, /* R8A78000_SCMI_CLOCK_MDLC_RSW3TSN */
+				 <&scmi_clk 326>; /* R8A78000_SCMI_CLOCK_MDLC_RSW3TSNTES3 */
+			clock-names = "rsw3tsn", "tsnes";
+			renesas,gptp-domain = "a";
+			phy-mode = "gmii";
+			max-speed = <2500>;
+			renesas,tsnes-id = <3>;
+			renesas,rswitch = <&rswitch3>;
+			renesas,rswitch-if = <8>;
+			renesas,rswitch-forward-ports = <4>;
+			status = "disabled";
+			fixed-link {
+				speed = <2500>;
+				full-duplex;
 			};
 		};
 	};
