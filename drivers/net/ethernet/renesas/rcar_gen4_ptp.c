@@ -130,8 +130,12 @@ static struct ptp_clock_info rcar_gen4_ptp_info = {
 	.enable = rcar_gen4_ptp_enable,
 };
 
-static int rcar_gen4_ptp_set_offs(struct rcar_gen4_ptp_private *ptp_priv)
+static int rcar_gen4_ptp_set_offs(struct rcar_gen4_ptp_private *ptp_priv,
+				  enum rcar_gen4_ptp_reg_layout layout)
 {
+	if (layout != RCAR_GEN4_PTP_REG_LAYOUT)
+		return -EINVAL;
+
 	ptp_priv->offs = &gen4_offs;
 
 	return 0;
@@ -147,7 +151,8 @@ static s64 rcar_gen4_ptp_rate_to_increment(u32 rate)
 	return div_s64(1000000000LL << 27, rate);
 }
 
-int rcar_gen4_ptp_register(struct rcar_gen4_ptp_private *ptp_priv, u32 rate)
+int rcar_gen4_ptp_register(struct rcar_gen4_ptp_private *ptp_priv,
+			   enum rcar_gen4_ptp_reg_layout layout, u32 rate)
 {
 	int ret;
 
@@ -156,7 +161,7 @@ int rcar_gen4_ptp_register(struct rcar_gen4_ptp_private *ptp_priv, u32 rate)
 
 	spin_lock_init(&ptp_priv->lock);
 
-	ret = rcar_gen4_ptp_set_offs(ptp_priv);
+	ret = rcar_gen4_ptp_set_offs(ptp_priv, layout);
 	if (ret)
 		return ret;
 
