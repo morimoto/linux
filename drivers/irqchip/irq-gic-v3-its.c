@@ -4900,6 +4900,7 @@ static const char * const dma_32bit_impaired_platforms[] = {
 	"renesas,r8a779f0",
 	"renesas,r8a779g0",
 	"renesas,r8a779h0",
+	"renesas,r8a78000",
 #endif
 #ifdef CONFIG_ROCKCHIP_ERRATUM_3568002
 	"rockchip,rk3566",
@@ -4988,6 +4989,12 @@ static const struct gic_quirk its_quirks[] = {
 	{
 		.desc   = "ITS: Broken GIC600 integration limited to 32bit PA",
 		.iidr   = 0x0201743b,
+		.mask   = 0xffffffff,
+		.init   = its_enable_dma32,
+	},
+	{
+		.desc   = "ITS: Broken GIC720AE integration limited to 32bit PA",
+		.iidr   = 0x0701043b,
 		.mask   = 0xffffffff,
 		.init   = its_enable_dma32,
 	},
