@@ -8,6 +8,7 @@
 /dts-v1/;
 #include <dt-bindings/phy/phy.h>
 #include <dt-bindings/soc/renesas,r8a78000-mfis.h>
+#include <dt-bindings/net/ti-dp83869.h>
 #include "r8a78000.dtsi"
 
 / {
@@ -431,6 +432,24 @@
 };
 
 &pfc {
+	eth25g2_pins: eth25g2 {
+		groups = "eth25g2_mdio", "eth25g2_link", "eth25g2_phyint";
+		function = "eth25g2";
+		drive-strength = <24>;
+	};
+
+	ethes0_pins: ethes0 {
+		groups = "ethes0_match", "ethes0_capture", "ethes0_pps";
+		function = "ethes0";
+		drive-strength = <24>;
+	};
+
+	rsw3_pins: rsw3 {
+		groups = "rsw3_match", "rsw3_capture", "rsw3_pps";
+		function = "rsw3";
+		drive-strength = <24>;
+	};
+
 	usb30_pins: usb0 {
 		//groups = "usb0_vbus", "usb0";
 		//function = "usb0";
@@ -526,6 +545,94 @@
 			bias-pull-up;
 		};
 	};
+};
+
+&eth_pcs {
+	status = "okay";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@4 {
+			reg = <4>;
+			phys = <&mp_phy 2>;
+		};
+
+		port@5 {
+			reg = <5>;
+			phys = <&mp_phy 2>;
+		};
+	};
+};
+
+&rsw3_clk {
+	clock-frequency = <66660000>;
+};
+
+&rswitch3 {
+	status = "okay";
+	pinctrl-0 = <&eth25g2_pins>, <&ethes0_pins>;
+	pinctrl-names = "default";
+
+	ethernet-ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		// TODO: Add more ports (e.g., port@0, port@1) as needed
+		port@4 {
+			reg = <4>;
+			renesas,etha-mii-chan = <4>;
+			phy-handle = <&q32xx_phy>;
+			phy-mode = "usxgmii";
+			phys = <&eth_pcs 4>;
+			max-speed = <10000>;
+
+			mdio {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				q32xx_phy: ethernet-phy@1 {
+					reg = <1>;
+					compatible = "ethernet-phy-ieee802.3-c45";
+				};
+			};
+		};
+
+		port@5 {
+			reg = <5>;
+			renesas,etha-mii-chan = <4>;
+			renesas,connect_to_xpcs;
+			phy-handle = <&dp83869_phy>;
+			phy-mode = "sgmii";
+			phys = <&eth_pcs 5>;
+
+			mdio {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				dp83869_phy: ethernet-phy@2 {
+					reg = <2>;
+					ti,sgmii-interface;
+					ti,max-output-impedance;
+					ti,refclk-output-enable;
+					ti,clk-output-sel = <DP83869_CLK_O_SEL_REF_CLK>;
+				};
+			};
+		};
+
+		/* Example stub for future ports */
+		//	port@5 {
+		//	reg = <5>;
+		//	phy-handle = <&mv_phy5>;
+		//	phy-mode = "usxgmii";
+		//	local-mac-address = [xx xx xx xx xx xx];
+		//	phys = <&eth_pcs X>;
+		//	...
+		// };
+	};
+};
+
+&tsnes3 {
+	status = "okay";
 };
 
 &ufs1_ref_clk {
