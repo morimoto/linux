@@ -89,6 +89,7 @@ void snd_soc_card_set_name(struct snd_soc_card *card, const char *name);
 void snd_soc_card_set_long_name(struct snd_soc_card *card, const char *long_name);
 void snd_soc_card_set_components(struct snd_soc_card *card, const char *components);
 
+struct snd_soc_card *snd_soc_card_alloc(struct device *dev);
 int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card *card);
 
 int snd_soc_card_add_controls(struct snd_soc_card *soc_card,
