@@ -295,6 +295,7 @@ struct snd_soc_component *snd_soc_component_alloc(struct device *dev);
 
 void snd_soc_component_set_name(struct snd_soc_component *component, const char *name);
 const char *snd_soc_component_name(struct snd_soc_component *component);
+const char *snd_soc_component_name_prefix(struct snd_soc_component *component);
 
 void snd_soc_component_set_priv(struct snd_soc_component *component, void *priv);
 void *snd_soc_component_to_priv(struct snd_soc_component *component);
