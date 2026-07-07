@@ -289,6 +289,7 @@ int devm_snd_soc_component_register(struct device *dev,
 void snd_soc_component_unregister_by_driver(struct device *dev,
 					    const struct snd_soc_component_driver *component_driver);
 
+struct device *snd_soc_component_to_dev(struct snd_soc_component *component);
 struct snd_soc_dapm_context *snd_soc_component_to_dapm(struct snd_soc_component *component);
 
 struct snd_soc_component *snd_soc_component_alloc(struct device *dev);
