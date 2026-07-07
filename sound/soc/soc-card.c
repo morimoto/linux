@@ -1329,6 +1329,20 @@ void snd_soc_card_flush_all_delayed_work(struct snd_soc_card *card)
 		flush_delayed_work(&rtd->delayed_work);
 }
 
+struct snd_soc_card *snd_soc_card_alloc(struct device *dev)
+{
+	struct snd_soc_card *card;
+
+	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
+	if (!card)
+		return NULL;
+
+	card->dev	= dev;
+
+	return card;
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_alloc);
+
 /**
  * snd_soc_register_card - Register a card with the ASoC core
  *
