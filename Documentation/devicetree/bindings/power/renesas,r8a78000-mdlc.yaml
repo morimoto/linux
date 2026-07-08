@@ -43,6 +43,12 @@ properties:
       and thus identical to the second power domain specifier cell.
     const: 1
 
+  firmware:
+    $ref: /schemas/types.yaml#/definitions/phandle
+    description:
+      Reference to the SCMI firmware device node on systems where SCMI must be
+      used instead of direct hardware access.
+
 required:
   - compatible
   - reg
@@ -58,4 +64,5 @@ examples:
             reg = <0xc3060000 0x1000>;
             #power-domain-cells = <2>;
             #reset-cells = <1>;
+            firmware = <&scmi>;
     };
