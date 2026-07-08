@@ -90,6 +90,7 @@ void reset_controller_unregister(struct reset_controller_dev *rcdev);
 struct device;
 int devm_reset_controller_register(struct device *dev,
 				   struct reset_controller_dev *rcdev);
+struct reset_controller_dev *reset_controller_get_provider(struct device_node *np);
 
 void reset_controller_add_lookup(struct reset_control_lookup *lookup,
 				 unsigned int num_entries);
@@ -112,6 +113,11 @@ static inline int devm_reset_controller_register(struct device *dev,
 static inline void reset_controller_add_lookup(struct reset_control_lookup *lookup,
 					       unsigned int num_entries)
 {
+}
+
+static inline struct reset_controller_dev *reset_controller_get_provider(struct device_node *np)
+{
+	return NULL;
 }
 #endif
 
