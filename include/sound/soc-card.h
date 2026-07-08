@@ -13,6 +13,8 @@ enum snd_soc_card_subclass {
 	SND_SOC_CARD_CLASS_RUNTIME	= 1,
 };
 
+int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card *card);
+
 int snd_soc_card_add_controls(struct snd_soc_card *soc_card,
 			      const struct snd_kcontrol_new *controls, int num_controls);
 struct snd_kcontrol *snd_soc_card_get_kcontrol(struct snd_soc_card *soc_card,
