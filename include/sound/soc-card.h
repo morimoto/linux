@@ -98,8 +98,12 @@ int snd_soc_card_register_d(struct device *dev, struct snd_soc_card_driver *driv
 #define snd_soc_card_register(x, ...) _Generic((x),	\
 struct snd_soc_card * :	snd_soc_card_register_c,	\
 struct device * :	snd_soc_card_register_d)(x, __VA_ARGS__)
+int devm_snd_soc_card_register_c(struct snd_soc_card *card, struct snd_soc_card_driver *driver);
+int devm_snd_soc_card_register_d(struct device *dev, struct snd_soc_card_driver *driver);
+#define devm_snd_soc_card_register(x, ...) _Generic((x),			\
+struct snd_soc_card * :	devm_snd_soc_card_register_c, \
+struct device * :	devm_snd_soc_card_register_d)(x, __VA_ARGS__)
 void snd_soc_card_unregister(struct snd_soc_card *card);
-int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card *card);
 
 int snd_soc_card_add_controls(struct snd_soc_card *soc_card,
 			      const struct snd_kcontrol_new *controls, int num_controls);
@@ -250,5 +254,7 @@ SOC_CARD_LIST_HEAD_DEFINE(dapm_dirty);
 #define snd_soc_card_set_drvdata	snd_soc_card_set_priv
 #define snd_soc_card_get_drvdata	snd_soc_card_to_priv
 #define snd_soc_get_pcm_runtime		snd_soc_card_to_rtd
+
+int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card *card);
 
 #endif /* __SOC_CARD_H */

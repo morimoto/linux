@@ -1452,6 +1452,7 @@ void snd_soc_card_unregister(struct snd_soc_card *card)
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_unregister);
 
+/* REMOVE ME */
 /**
  * devm_snd_soc_register_card - resource managed card registration
  * @dev: Device used to manage card
@@ -1466,6 +1467,27 @@ int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card *card)
 	return snd_soc_register_card(card);
 }
 EXPORT_SYMBOL_GPL(devm_snd_soc_register_card);
+
+int devm_snd_soc_card_register_c(struct snd_soc_card *card, struct snd_soc_card_driver *driver)
+{
+	card->devres_dev = card->dev;
+	return snd_soc_card_register(card, driver);
+}
+EXPORT_SYMBOL_GPL(devm_snd_soc_card_register_c);
+
+int devm_snd_soc_card_register_d(struct device *dev, struct snd_soc_card_driver *driver)
+{
+	struct snd_soc_card *card;
+
+	card = snd_soc_card_alloc(dev);
+	if (!card)
+		return -ENOMEM;
+
+	snd_soc_card_set_name(card, driver->default_name);
+
+	return devm_snd_soc_card_register(card, driver);
+}
+EXPORT_SYMBOL_GPL(devm_snd_soc_card_register_d);
 
 static const struct snd_soc_dapm_widget simple_widgets[] = {
 	SND_SOC_DAPM_MIC("Microphone", NULL),
