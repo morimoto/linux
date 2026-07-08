@@ -265,11 +265,22 @@ static void ohci_platform_remove(struct platform_device *dev)
 }
 
 #ifdef CONFIG_PM_SLEEP
+static bool ohci_platform_reset_control_allowed(void)
+{
+	static const char * const reset_control_allow_list[] = {
+		"renesas,r9a08g045", /* Renesas RZ/G3S */
+		NULL
+	};
+
+	return of_machine_compatible_match(reset_control_allow_list);
+}
+
 static int ohci_platform_suspend(struct device *dev)
 {
 	struct usb_hcd *hcd = dev_get_drvdata(dev);
 	struct usb_ohci_pdata *pdata = dev->platform_data;
 	struct platform_device *pdev = to_platform_device(dev);
+	struct ohci_platform_priv *priv = hcd_to_ohci_priv(hcd);
 	bool do_wakeup = device_may_wakeup(dev);
 	int ret;
 
@@ -280,6 +291,17 @@ static int ohci_platform_suspend(struct device *dev)
 	if (pdata->power_suspend)
 		pdata->power_suspend(pdev);
 
+	if (!ohci_platform_reset_control_allowed())
+		return ret;
+
+	ret = reset_control_assert(priv->resets);
+	if (ret) {
+		if (pdata->power_on)
+			pdata->power_on(pdev);
+
+		ohci_resume(hcd, false);
+	}
+
 	return ret;
 }
 
@@ -288,11 +310,23 @@ static int ohci_platform_resume_common(struct device *dev, bool hibernated)
 	struct usb_hcd *hcd = dev_get_drvdata(dev);
 	struct usb_ohci_pdata *pdata = dev_get_platdata(dev);
 	struct platform_device *pdev = to_platform_device(dev);
+	struct ohci_platform_priv *priv = hcd_to_ohci_priv(hcd);
+	bool reset_control_allowed = ohci_platform_reset_control_allowed();
+	int err;
+
+	if (reset_control_allowed) {
+		err = reset_control_deassert(priv->resets);
+		if (err)
+			return err;
+	}
 
 	if (pdata->power_on) {
-		int err = pdata->power_on(pdev);
-		if (err < 0)
+		err = pdata->power_on(pdev);
+		if (err < 0) {
+			if (reset_control_allowed)
+				reset_control_assert(priv->resets);
 			return err;
+		}
 	}
 
 	ohci_resume(hcd, hibernated);
