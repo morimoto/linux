@@ -1323,6 +1323,21 @@ void snd_soc_unregister_card(struct snd_soc_card *card)
 }
 EXPORT_SYMBOL_GPL(snd_soc_unregister_card);
 
+/**
+ * devm_snd_soc_register_card - resource managed card registration
+ * @dev: Device used to manage card
+ * @card: Card to register
+ *
+ * Register a card with automatic unregistration when the device is
+ * unregistered.
+ */
+int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card *card)
+{
+	card->devres_dev = dev;
+	return snd_soc_register_card(card);
+}
+EXPORT_SYMBOL_GPL(devm_snd_soc_register_card);
+
 static const struct snd_soc_dapm_widget simple_widgets[] = {
 	SND_SOC_DAPM_MIC("Microphone", NULL),
 	SND_SOC_DAPM_LINE("Line", NULL),
