@@ -117,6 +117,7 @@ allOf:
         compatible:
           contains:
             enum:
+              - renesas,usb2-phy-r9a08g045
               - renesas,usb2-phy-r9a09g057
               - renesas,rzg2l-usb2-phy
     then:
