@@ -1343,6 +1343,7 @@ struct snd_soc_card *snd_soc_card_alloc(struct device *dev)
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_alloc);
 
+/* REMOVE ME */
 /**
  * snd_soc_register_card - Register a card with the ASoC core
  *
@@ -1380,13 +1381,68 @@ int snd_soc_register_card(struct snd_soc_card *card)
 }
 EXPORT_SYMBOL_GPL(snd_soc_register_card);
 
+int snd_soc_card_register_c(struct snd_soc_card *card, struct snd_soc_card_driver *driver)
+{
+	if (!card->name)
+		snd_soc_card_set_name(card, driver->default_name);
+	if (!card->long_name)
+		snd_soc_card_set_long_name(card, driver->default_long_name);
+	if (!card->components)
+		snd_soc_card_set_components(card, driver->default_components);
+
+	card->driver	= driver;
+
+	/*
+	 * REMOVE ME
+	 *
+	 * To keep compatible, use driver settings as-is for now.
+	 */
+	card->driver_name			= driver->driver_name;
+
+	card->dai_link				= driver->dai_link;
+	card->num_links				= driver->num_links;
+	card->codec_conf			= driver->codec_conf;
+	card->num_configs			= driver->num_configs;
+	card->aux_dev				= driver->aux_dev;
+	card->num_aux_devs			= driver->num_aux_devs;
+	card->controls				= driver->controls;
+	card->num_controls			= driver->num_controls;
+	card->dapm_widgets			= driver->dapm_widgets;
+	card->num_dapm_widgets			= driver->num_dapm_widgets;
+	card->dapm_routes			= driver->dapm_routes;
+	card->num_dapm_routes			= driver->num_dapm_routes;
+	card->of_dapm_widgets			= driver->of_dapm_widgets;
+	card->num_of_dapm_widgets		= driver->num_of_dapm_widgets;
+	card->of_dapm_routes			= driver->of_dapm_routes;
+	card->num_of_dapm_routes		= driver->num_of_dapm_routes;
+	card->of_ignore_suspend_widgets		= driver->of_ignore_suspend_widgets;
+	card->num_of_ignore_suspend_widgets	= driver->num_of_ignore_suspend_widgets;
+	card->fully_routed			= driver->fully_routed;
+	card->component_chaining		= driver->component_chaining;
+
+	return snd_soc_register_card(card);
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_register_c);
+
+int snd_soc_card_register_d(struct device *dev, struct snd_soc_card_driver *driver)
+{
+	struct snd_soc_card *card;
+
+	card = snd_soc_card_alloc(dev);
+	if (!card)
+		return -ENOMEM;
+
+	return snd_soc_card_register_c(card, driver);
+}
+EXPORT_SYMBOL_GPL(snd_soc_card_register_d);
+
 /**
- * snd_soc_unregister_card - Unregister a card with the ASoC core
+ * snd_soc_card_unregister - Unregister a card with the ASoC core
  *
  * @card: Card to unregister
  *
  */
-void snd_soc_unregister_card(struct snd_soc_card *card)
+void snd_soc_card_unregister(struct snd_soc_card *card)
 {
 	guard(mutex)(&client_mutex);
 
@@ -1394,7 +1450,7 @@ void snd_soc_unregister_card(struct snd_soc_card *card)
 
 	dev_dbg(card->dev, "ASoC: Unregistered card '%s'\n", card->name);
 }
-EXPORT_SYMBOL_GPL(snd_soc_unregister_card);
+EXPORT_SYMBOL_GPL(snd_soc_card_unregister);
 
 /**
  * devm_snd_soc_register_card - resource managed card registration

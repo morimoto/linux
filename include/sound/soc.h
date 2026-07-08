@@ -958,6 +958,7 @@ struct snd_soc_card {
 
 	struct device *dev;
 	struct snd_card *snd_card;
+	struct snd_soc_card_driver *driver;
 	struct module *owner;					/* REMOVE ME (goto driver) */
 
 	struct mutex mutex;
@@ -1363,8 +1364,8 @@ static inline void _snd_soc_dapm_mutex_assert_held_d(struct snd_soc_dapm_context
 #define snd_soc_of_parse_aux_devs			snd_soc_card_of_parse_aux_devs
 #define snd_soc_of_parse_ignore_suspend_widgets		snd_soc_card_of_parse_ignore_suspend_widgets
 #define snd_soc_fixup_dai_links_platform_name		snd_soc_card_fixup_dai_links_platform_name
+#define snd_soc_unregister_card				snd_soc_card_unregister
 
 int snd_soc_register_card(struct snd_soc_card *card);
-void snd_soc_unregister_card(struct snd_soc_card *card);
 
 #endif
