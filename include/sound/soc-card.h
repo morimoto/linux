@@ -9,6 +9,9 @@
 #define __SOC_CARD_H
 
 struct snd_soc_card_driver {
+	const char *default_name;
+	const char *default_long_name;
+	const char *default_components;
 	const char *driver_name;
 
 	struct module *owner;
@@ -90,6 +93,12 @@ void snd_soc_card_set_long_name(struct snd_soc_card *card, const char *long_name
 void snd_soc_card_set_components(struct snd_soc_card *card, const char *components);
 
 struct snd_soc_card *snd_soc_card_alloc(struct device *dev);
+int snd_soc_card_register_c(struct snd_soc_card *card, struct snd_soc_card_driver *driver);
+int snd_soc_card_register_d(struct device *dev, struct snd_soc_card_driver *driver);
+#define snd_soc_card_register(x, ...) _Generic((x),	\
+struct snd_soc_card * :	snd_soc_card_register_c,	\
+struct device * :	snd_soc_card_register_d)(x, __VA_ARGS__)
+void snd_soc_card_unregister(struct snd_soc_card *card);
 int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card *card);
 
 int snd_soc_card_add_controls(struct snd_soc_card *soc_card,
