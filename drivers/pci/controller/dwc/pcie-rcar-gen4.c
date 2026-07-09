@@ -13,7 +13,6 @@
 #include <linux/interrupt.h>
 #include <linux/io.h>
 #include <linux/iopoll.h>
-#include <linux/irqchip/arm-gic-v3.h>
 #include <linux/module.h>
 #include <linux/of.h>
 #include <linux/of_address.h>
@@ -25,6 +24,9 @@
 
 #include "../../pci.h"
 #include "pcie-designware.h"
+
+/* GIC ITS TRANSLATER register offset in GIC ITS space */
+#define GITS_TRANSLATER		0x10040
 
 /* Renesas-specific */
 /* PCIe Mode Setting Register 0 */
