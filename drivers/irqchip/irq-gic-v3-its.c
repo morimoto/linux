@@ -107,6 +107,7 @@ struct its_node {
 	void __iomem		*base;
 	void __iomem		*sgir_base;
 	phys_addr_t		phys_base;
+	phys_addr_t		xlate_base;
 	struct its_cmd_block	*cmd_base;
 	struct its_cmd_block	*cmd_write;
 	struct its_baser	tables[GITS_BASER_NR_REGS];
@@ -1808,7 +1809,7 @@ static u64 its_irq_get_msi_base(struct its_device *its_dev)
 {
 	struct its_node *its = its_dev->its;
 
-	return its->phys_base + GITS_TRANSLATER;
+	return its->xlate_base;
 }
 
 static void its_irq_compose_msi_msg(struct irq_data *d, struct msi_msg *msg)
@@ -5532,6 +5533,12 @@ static struct its_node __init *its_node_init(struct resource *res,
 	its = kzalloc(sizeof(*its), GFP_KERNEL);
 	if (!its)
 		goto out_unmap;
+
+	err = fwnode_property_read_u64(handle, "translate-reg", &its->xlate_base);
+	if (err)
+		its->xlate_base = its->phys_base + GITS_TRANSLATER;
+
+	pr_info("ITS TRANSLATER 0x%llx\n", its->xlate_base);
 
 	raw_spin_lock_init(&its->lock);
 	mutex_init(&its->dev_alloc_lock);
