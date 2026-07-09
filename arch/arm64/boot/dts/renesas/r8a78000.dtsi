@@ -888,6 +888,7 @@
 			its: msi-controller@40000 {
 				compatible = "arm,gic-v3-its";
 				reg = <0x0 0x40000 0x0 0x30000>;
+				translate-reg = <0x0 0x38050040>;
 				dma-noncoherent;
 				msi-controller;
 			};
