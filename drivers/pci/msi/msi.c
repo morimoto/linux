@@ -190,6 +190,9 @@ static inline void pci_write_msg_msi(struct pci_dev *dev, struct msi_desc *desc,
 	int pos = dev->msi_cap;
 	u16 msgctl;
 
+	pr_err("msi address_hi %#x address_lo %#x data %#x\n", msg->address_hi, msg->address_lo, msg->data);
+//if (msg->address_lo == 0x39050040) msg->address_lo = 0x38050040;
+
 	pci_read_config_word(dev, pos + PCI_MSI_FLAGS, &msgctl);
 	msgctl &= ~PCI_MSI_FLAGS_QSIZE;
 	msgctl |= FIELD_PREP(PCI_MSI_FLAGS_QSIZE, desc->pci.msi_attrib.multiple);
@@ -224,6 +227,9 @@ static inline void pci_write_msg_msix(struct msi_desc *desc, struct msi_msg *msg
 	 */
 	if (unmasked)
 		pci_msix_write_vector_ctrl(desc, ctrl | PCI_MSIX_ENTRY_CTRL_MASKBIT);
+
+	pr_err("msix address_hi %#x address_lo %#x data %#x\n", msg->address_hi, msg->address_lo, msg->data);
+//if (msg->address_lo == 0x39050040) msg->address_lo = 0x38050040;
 
 	writel(msg->address_lo, base + PCI_MSIX_ENTRY_LOWER_ADDR);
 	writel(msg->address_hi, base + PCI_MSIX_ENTRY_UPPER_ADDR);
