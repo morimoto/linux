@@ -506,6 +506,10 @@ static int rcar_gen4_pcie_host_msi_init(struct dw_pcie_rp *pp)
 		if (ret)
 			goto err;
 
+		/* FIXME: If this is R-Car Gen5, use View0 for GIC ITS TRANSLATER */
+		if (val == 0x39050040)
+			val = 0x38050040;
+
 		/* Point AXIINTC to GIC ITS and enable. */
 		writel(val, rcar->base + AXIINTCADDR);
 		writel(INTC_EN | INTC_MASK, rcar->base + AXIINTCCONT);

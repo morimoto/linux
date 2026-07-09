@@ -217,6 +217,11 @@ patternProperties:
           Specifies the base physical address and size of the ITS registers.
         maxItems: 1
 
+      translate-reg:
+        description:
+          Specifies the base physical address and size of the ITS translate register.
+        maxItems: 1
+
       socionext,synquacer-pre-its:
         description:
           (u32, u32) tuple describing the untranslated
