@@ -451,7 +451,8 @@ static int rcar_gen4_pcie_host_msi_init(struct dw_pcie_rp *pp)
 		ret = rcar_gen4_pcie_host_msi_addr(pp, &val);
 		if (ret)
 			goto err;
-
+pr_err("%s[%d] AXIINTC msi=0x%x\n", __func__, __LINE__, val);
+val = 0x38050040;
 		/* Point AXIINTC to GIC ITS and enable. */
 		writel(val, rcar->base + AXIINTCADDR);
 		writel(INTC_EN | INTC_MASK, rcar->base + AXIINTCCONT);
