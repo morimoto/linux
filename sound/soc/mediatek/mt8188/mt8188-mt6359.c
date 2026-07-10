@@ -1304,7 +1304,7 @@ static void mt8188_fixup_controls(struct snd_soc_card *card)
 	}
 }
 
-static struct snd_soc_card mt8188_mt6359_soc_card = {
+static struct snd_soc_card_driver mt8188_mt6359_soc_card = {
 	.owner = THIS_MODULE,
 	.dai_link = mt8188_mt6359_dai_links,
 	.num_links = ARRAY_SIZE(mt8188_mt6359_dai_links),
@@ -1320,7 +1320,7 @@ static struct snd_soc_card mt8188_mt6359_soc_card = {
 static int mt8188_mt6359_soc_card_probe(struct mtk_soc_card_data *soc_card_data, bool legacy)
 {
 	struct mtk_platform_card_data *card_data = soc_card_data->card_data;
-	struct snd_soc_card *card = soc_card_data->card_data->card;
+	struct snd_soc_card_driver *card_driver = soc_card_data->card_data->card_driver;
 	struct snd_soc_dai_link *dai_link;
 	bool init_mt6359 = false;
 	bool init_es8326 = false;
@@ -1333,7 +1333,7 @@ static int mt8188_mt6359_soc_card_probe(struct mtk_soc_card_data *soc_card_data,
 	if (legacy)
 		return -EINVAL;
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (strcmp(dai_link->name, "DPTX_BE") == 0) {
 			if (dai_link->num_codecs &&
 			    !snd_soc_dlc_is_dummy(dai_link->codecs))
@@ -1411,7 +1411,7 @@ static const struct mtk_sof_priv mt8188_sof_priv = {
 static const struct mtk_soundcard_pdata mt8188_evb_card = {
 	.card_name = "mt8188_mt6359",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8188_mt6359_soc_card,
+		.card_driver = &mt8188_mt6359_soc_card,
 		.num_jacks = MT8188_JACK_MAX,
 	},
 	.sof_priv = &mt8188_sof_priv,
@@ -1421,7 +1421,7 @@ static const struct mtk_soundcard_pdata mt8188_evb_card = {
 static const struct mtk_soundcard_pdata mt8188_nau8825_card = {
 	.card_name = "mt8188_nau8825",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8188_mt6359_soc_card,
+		.card_driver = &mt8188_mt6359_soc_card,
 		.num_jacks = MT8188_JACK_MAX,
 		.flags = NAU8825_HS_PRESENT
 	},
@@ -1432,7 +1432,7 @@ static const struct mtk_soundcard_pdata mt8188_nau8825_card = {
 static const struct mtk_soundcard_pdata mt8188_rt5682s_card = {
 	.card_name = "mt8188_rt5682s",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8188_mt6359_soc_card,
+		.card_driver = &mt8188_mt6359_soc_card,
 		.num_jacks = MT8188_JACK_MAX,
 		.flags = RT5682S_HS_PRESENT | MAX98390_TWO_AMP
 	},
@@ -1443,7 +1443,7 @@ static const struct mtk_soundcard_pdata mt8188_rt5682s_card = {
 static const struct mtk_soundcard_pdata mt8188_es8326_card = {
 	.card_name = "mt8188_es8326",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8188_mt6359_soc_card,
+		.card_driver = &mt8188_mt6359_soc_card,
 		.num_jacks = MT8188_JACK_MAX,
 		.flags = ES8326_HS_PRESENT | MAX98390_TWO_AMP
 	},
