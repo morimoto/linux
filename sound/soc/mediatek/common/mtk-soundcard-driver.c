@@ -84,8 +84,10 @@ static int set_dailink_daifmt(struct device_node *sub_node,
 	return 0;
 }
 
-int parse_dai_link_info(struct snd_soc_card *card)
+int parse_dai_link_info(struct mtk_platform_card_data *card_data)
 {
+	struct snd_soc_card *card = card_data->card;
+	struct snd_soc_card_driver *card_driver = card_data->card_driver;
 	struct device *dev = card->dev;
 	struct snd_soc_dai_link *dai_link;
 	const char *dai_link_name;
@@ -97,12 +99,12 @@ int parse_dai_link_info(struct snd_soc_card *card)
 					    &dai_link_name))
 			return -EINVAL;
 
-		for_each_card_prelinks(card, i, dai_link) {
+		for_each_card_driver_prelinks(card_driver, i, dai_link) {
 			if (!strcmp(dai_link_name, dai_link->name))
 				break;
 		}
 
-		if (i >= card->num_links)
+		if (i >= card_driver->num_links)
 			return -EINVAL;
 
 		ret = set_card_codec_info(dev, sub_node, dai_link);
@@ -118,13 +120,13 @@ int parse_dai_link_info(struct snd_soc_card *card)
 }
 EXPORT_SYMBOL_GPL(parse_dai_link_info);
 
-void clean_card_reference(struct snd_soc_card *card)
+void clean_card_reference(struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *dai_link;
 	int i;
 
 	/* release codec reference gotten by set_card_codec_info */
-	for_each_card_prelinks(card, i, dai_link)
+	for_each_card_driver_prelinks(card_driver, i, dai_link)
 		snd_soc_of_put_dai_link_codecs(dai_link);
 }
 EXPORT_SYMBOL_GPL(clean_card_reference);
@@ -189,18 +191,24 @@ int mtk_soundcard_common_probe(struct platform_device *pdev)
 	struct mtk_soc_card_data *soc_card_data;
 	struct snd_soc_dai_link *orig_dai_link, *dai_link;
 	struct snd_soc_jack *jacks;
+	struct snd_soc_card_driver *card_driver;
 	struct snd_soc_card *card;
 	int i, orig_num_links, ret;
 	bool needs_legacy_probe;
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	pdata = device_get_match_data(&pdev->dev);
-	if (!pdata)
+	if (!card || !pdata)
 		return -EINVAL;
 
-	card = pdata->card_data->card;
-	card->dev = &pdev->dev;
-	orig_dai_link = card->dai_link;
-	orig_num_links = card->num_links;
+	pdata->card_data->card = card;
+
+	card_driver = pdata->card_data->card_driver;
+
+	orig_dai_link = card_driver->dai_link;
+	orig_num_links = card_driver->num_links;
+
+	snd_soc_card_set_name(card, card_driver->default_name);
 
 	ret = snd_soc_of_parse_card_name(card, "model");
 	if (ret)
@@ -224,7 +232,8 @@ int mtk_soundcard_common_probe(struct platform_device *pdev)
 
 		dev_info_once(&pdev->dev, "audio-routing not found: using legacy probe\n");
 	} else {
-		ret = snd_soc_of_parse_audio_routing(card, "audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(&pdev->dev,
+							card_driver, "audio-routing");
 		if (ret)
 			return ret;
 	}
@@ -273,7 +282,7 @@ int mtk_soundcard_common_probe(struct platform_device *pdev)
 
 	if (adsp_node) {
 		if (of_property_present(pdev->dev.of_node, "mediatek,dai-link")) {
-			ret = mtk_sof_dailink_parse_of(&pdev->dev, card,
+			ret = mtk_sof_dailink_parse_of(&pdev->dev, card_driver,
 						       "mediatek,dai-link");
 			if (ret) {
 				of_node_put(adsp_node);
@@ -284,8 +293,8 @@ int mtk_soundcard_common_probe(struct platform_device *pdev)
 		}
 
 		soc_card_data->sof_priv = pdata->sof_priv;
-		card->probe = mtk_sof_card_probe;
-		card->late_probe = mtk_sof_card_late_probe;
+		card_driver->probe = mtk_sof_card_probe;
+		card_driver->late_probe = mtk_sof_card_late_probe;
 
 		snd_soc_card_set_topology_name(card, "sof");
 	}
@@ -296,7 +305,7 @@ int mtk_soundcard_common_probe(struct platform_device *pdev)
 	 * link is present, we have to make sure that the platforms->of_node
 	 * is not NULL, and set to either ADSP (adsp_node) or AFE (platform_node).
 	 */
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (adsp_node && !strncmp(dai_link->name, "AFE_SOF", strlen("AFE_SOF")))
 			dai_link->platforms->of_node = adsp_node;
 		else if (!dai_link->platforms->name && !dai_link->platforms->of_node)
@@ -304,7 +313,7 @@ int mtk_soundcard_common_probe(struct platform_device *pdev)
 	}
 
 	if (!needs_legacy_probe) {
-		ret = parse_dai_link_info(card);
+		ret = parse_dai_link_info(pdata->card_data);
 		if (ret)
 			goto err_restore_dais;
 	} else {
@@ -317,16 +326,16 @@ int mtk_soundcard_common_probe(struct platform_device *pdev)
 		ret = pdata->soc_probe(soc_card_data, needs_legacy_probe);
 		if (ret) {
 			if (!needs_legacy_probe)
-				clean_card_reference(card);
+				clean_card_reference(card_driver);
 			goto err_restore_dais;
 		}
 	}
 	snd_soc_card_set_drvdata(card, soc_card_data);
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 
 	if (!needs_legacy_probe)
-		clean_card_reference(card);
+		clean_card_reference(card_driver);
 
 	if (ret) {
 		dev_err_probe(&pdev->dev, ret, "Cannot register card\n");
@@ -336,8 +345,8 @@ int mtk_soundcard_common_probe(struct platform_device *pdev)
 	return 0;
 
 err_restore_dais:
-	card->dai_link = orig_dai_link;
-	card->num_links = orig_num_links;
+	card_driver->dai_link = orig_dai_link;
+	card_driver->num_links = orig_num_links;
 	return ret;
 }
 EXPORT_SYMBOL_GPL(mtk_soundcard_common_probe);
