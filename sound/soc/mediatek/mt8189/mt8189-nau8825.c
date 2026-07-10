@@ -1014,7 +1014,7 @@ static struct snd_soc_codec_conf mt8189_cs35l41_codec_conf[] = {
 
 static int mt8189_nau8825_soc_card_probe(struct mtk_soc_card_data *soc_card_data, bool legacy)
 {
-	struct snd_soc_card *card = soc_card_data->card_data->card;
+	struct snd_soc_card_driver *card_driver = soc_card_data->card_data->card_driver;
 	struct snd_soc_dai_link *dai_link;
 	bool init_nau8825 = false;
 	bool init_rt5682s = false;
@@ -1024,7 +1024,7 @@ static int mt8189_nau8825_soc_card_probe(struct mtk_soc_card_data *soc_card_data
 	bool init_dumb = false;
 	int i;
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (strcmp(dai_link->name, "TDM_DPTX_BE") == 0) {
 			if (dai_link->num_codecs &&
 			    strcmp(dai_link->codecs->dai_name, "snd-soc-dummy-dai"))
@@ -1081,8 +1081,8 @@ static int mt8189_nau8825_soc_card_probe(struct mtk_soc_card_data *soc_card_data
 		} else if (strcmp(dai_link->name, "I2SOUT1_BE") == 0) {
 			if (!strcmp(dai_link->codecs->dai_name, CS35L41_CODEC_DAI)) {
 				dai_link->ops = &mt8189_cs35l41_i2s_ops;
-				card->num_configs = ARRAY_SIZE(mt8189_cs35l41_codec_conf);
-				card->codec_conf = mt8189_cs35l41_codec_conf;
+				card_driver->num_configs = ARRAY_SIZE(mt8189_cs35l41_codec_conf);
+				card_driver->codec_conf = mt8189_cs35l41_codec_conf;
 			}
 		}
 	}
@@ -1090,7 +1090,7 @@ static int mt8189_nau8825_soc_card_probe(struct mtk_soc_card_data *soc_card_data
 	return 0;
 }
 
-static struct snd_soc_card mt8189_nau8825_soc_card = {
+static struct snd_soc_card_driver mt8189_nau8825_soc_card = {
 	.owner = THIS_MODULE,
 	.dai_link = mt8189_nau8825_dai_links,
 	.num_links = ARRAY_SIZE(mt8189_nau8825_dai_links),
@@ -1101,7 +1101,7 @@ static struct snd_soc_card mt8189_nau8825_soc_card = {
 static const struct mtk_soundcard_pdata mt8189_nau8825_card = {
 	.card_name = "mt8189_nau8825",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8189_nau8825_soc_card,
+		.card_driver = &mt8189_nau8825_soc_card,
 		.num_jacks = MT8189_JACK_MAX,
 		.flags = NAU8825_HS_PRESENT
 	},
@@ -1112,7 +1112,7 @@ static const struct mtk_soundcard_pdata mt8189_nau8825_card = {
 static const struct mtk_soundcard_pdata mt8189_rt5650_card = {
 	.card_name = "mt8189_rt5650",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8189_nau8825_soc_card,
+		.card_driver = &mt8189_nau8825_soc_card,
 		.num_jacks = MT8189_JACK_MAX,
 		.flags = RT5650_HS_PRESENT
 	},
@@ -1123,7 +1123,7 @@ static const struct mtk_soundcard_pdata mt8189_rt5650_card = {
 static const struct mtk_soundcard_pdata mt8189_rt5682s_card = {
 	.card_name = "mt8189_rt5682s",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8189_nau8825_soc_card,
+		.card_driver = &mt8189_nau8825_soc_card,
 		.num_jacks = MT8189_JACK_MAX,
 		.flags = RT5682S_HS_PRESENT
 	},
@@ -1134,7 +1134,7 @@ static const struct mtk_soundcard_pdata mt8189_rt5682s_card = {
 static const struct mtk_soundcard_pdata mt8189_rt5682i_card = {
 	.card_name = "mt8189_rt5682i",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8189_nau8825_soc_card,
+		.card_driver = &mt8189_nau8825_soc_card,
 		.num_jacks = MT8189_JACK_MAX,
 		.flags = RT5682I_HS_PRESENT
 	},
@@ -1145,7 +1145,7 @@ static const struct mtk_soundcard_pdata mt8189_rt5682i_card = {
 static const struct mtk_soundcard_pdata mt8188_es8326_card = {
 	.card_name = "mt8188_es8326",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8189_nau8825_soc_card,
+		.card_driver = &mt8189_nau8825_soc_card,
 		.num_jacks = MT8189_JACK_MAX,
 		.flags = ES8326_HS_PRESENT
 	},
