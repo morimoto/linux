@@ -969,8 +969,8 @@ static struct snd_soc_codec_conf rt1015_amp_conf[] = {
 	},
 };
 
-static struct snd_soc_card mt8192_mt6359_rt1015_rt5682_card = {
-	.name = RT1015_RT5682_CARD_NAME,
+static struct snd_soc_card_driver mt8192_mt6359_rt1015_rt5682_card = {
+	.default_name = RT1015_RT5682_CARD_NAME,
 	.driver_name = DRIVER_NAME,
 	.owner = THIS_MODULE,
 	.dai_link = mt8192_mt6359_dai_links,
@@ -1006,7 +1006,7 @@ static const struct snd_kcontrol_new mt8192_mt6359_rt1015p_rt5682x_controls[] = 
 	SOC_DAPM_PIN_SWITCH("Headset Mic"),
 };
 
-static struct snd_soc_card mt8192_mt6359_rt1015p_rt5682x_card = {
+static struct snd_soc_card_driver mt8192_mt6359_rt1015p_rt5682x_card = {
 	.driver_name = DRIVER_NAME,
 	.owner = THIS_MODULE,
 	.dai_link = mt8192_mt6359_dai_links,
@@ -1041,6 +1041,7 @@ static int mt8192_mt6359_legacy_probe(struct mtk_soc_card_data *soc_card_data)
 {
 	struct mtk_platform_card_data *card_data = soc_card_data->card_data;
 	struct snd_soc_card *card = card_data->card;
+	struct snd_soc_card_driver *card_driver = card_data->card_driver;
 	struct device *dev = card->dev;
 	struct device_node *hdmi_codec, *headset_codec, *speaker_codec;
 	struct snd_soc_dai_link *dai_link;
@@ -1064,7 +1065,7 @@ static int mt8192_mt6359_legacy_probe(struct mtk_soc_card_data *soc_card_data)
 		goto err_headset_codec;
 	}
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		ret = mt8192_mt6359_card_set_be_link(dev, dai_link, speaker_codec, "I2S3");
 		if (ret) {
 			dev_err_probe(dev, ret, "%s set speaker_codec fail\n",
@@ -1108,6 +1109,7 @@ static int mt8192_mt6359_soc_card_probe(struct mtk_soc_card_data *soc_card_data,
 {
 	struct mtk_platform_card_data *card_data = soc_card_data->card_data;
 	struct snd_soc_card *card = card_data->card;
+	struct snd_soc_card_driver *card_driver = card_data->card_driver;
 	int ret;
 
 	if (legacy) {
@@ -1118,7 +1120,7 @@ static int mt8192_mt6359_soc_card_probe(struct mtk_soc_card_data *soc_card_data,
 		struct snd_soc_dai_link *dai_link;
 		int i;
 
-		for_each_card_prelinks(card, i, dai_link)
+		for_each_card_driver_prelinks(card_driver, i, dai_link)
 			if (dai_link->num_codecs &&
 			    strcmp(dai_link->codecs[0].dai_name, RT1015_CODEC_DAI) == 0)
 				dai_link->ops = &mt8192_rt1015_i2s_ops;
@@ -1165,7 +1167,7 @@ static const struct mtk_pcm_constraints_data mt8192_pcm_constraints[MTK_CONSTRAI
 static const struct mtk_soundcard_pdata mt8192_mt6359_rt1015_rt5682_pdata = {
 	.card_name = RT1015_RT5682_CARD_NAME,
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8192_mt6359_rt1015_rt5682_card,
+		.card_driver = &mt8192_mt6359_rt1015_rt5682_card,
 		.num_jacks = MT8192_JACK_MAX,
 		.pcm_constraints = mt8192_pcm_constraints,
 		.num_pcm_constraints = ARRAY_SIZE(mt8192_pcm_constraints),
@@ -1176,7 +1178,7 @@ static const struct mtk_soundcard_pdata mt8192_mt6359_rt1015_rt5682_pdata = {
 static const struct mtk_soundcard_pdata mt8192_mt6359_rt1015p_rt5682_pdata = {
 	.card_name = RT1015P_RT5682_CARD_NAME,
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8192_mt6359_rt1015p_rt5682x_card,
+		.card_driver = &mt8192_mt6359_rt1015p_rt5682x_card,
 		.num_jacks = MT8192_JACK_MAX,
 		.pcm_constraints = mt8192_pcm_constraints,
 		.num_pcm_constraints = ARRAY_SIZE(mt8192_pcm_constraints),
@@ -1187,7 +1189,7 @@ static const struct mtk_soundcard_pdata mt8192_mt6359_rt1015p_rt5682_pdata = {
 static const struct mtk_soundcard_pdata mt8192_mt6359_rt1015p_rt5682s_pdata = {
 	.card_name = RT1015P_RT5682S_CARD_NAME,
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8192_mt6359_rt1015p_rt5682x_card,
+		.card_driver = &mt8192_mt6359_rt1015p_rt5682x_card,
 		.num_jacks = MT8192_JACK_MAX,
 		.pcm_constraints = mt8192_pcm_constraints,
 		.num_pcm_constraints = ARRAY_SIZE(mt8192_pcm_constraints),

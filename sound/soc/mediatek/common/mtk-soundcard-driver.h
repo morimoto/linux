@@ -27,6 +27,7 @@ struct mtk_pcm_constraints_data {
 
 struct mtk_platform_card_data {
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct snd_soc_jack *jacks;
 	const struct mtk_pcm_constraints_data *pcm_constraints;
 	u8 num_jacks;
@@ -50,7 +51,7 @@ extern const struct snd_soc_ops mtk_soundcard_common_capture_ops;
 int mtk_soundcard_startup(struct snd_pcm_substream *substream,
 			  enum mtk_pcm_constraint_type ctype);
 
-int parse_dai_link_info(struct snd_soc_card *card);
-void clean_card_reference(struct snd_soc_card *card);
+int parse_dai_link_info(struct mtk_platform_card_data *card_data);
+void clean_card_reference(struct snd_soc_card_driver *card_driver);
 int mtk_soundcard_common_probe(struct platform_device *pdev);
 #endif
