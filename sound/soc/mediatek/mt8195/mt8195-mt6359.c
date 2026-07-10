@@ -1243,7 +1243,7 @@ static struct snd_soc_codec_conf max98390_codec_conf[] = {
 	},
 };
 
-static struct snd_soc_card mt8195_mt6359_soc_card = {
+static struct snd_soc_card_driver mt8195_mt6359_soc_card = {
 	.owner = THIS_MODULE,
 	.dai_link = mt8195_mt6359_dai_links,
 	.num_links = ARRAY_SIZE(mt8195_mt6359_dai_links),
@@ -1276,6 +1276,7 @@ static int mt8195_mt6359_legacy_probe(struct mtk_soc_card_data *soc_card_data)
 {
 	struct mtk_platform_card_data *card_data = soc_card_data->card_data;
 	struct snd_soc_card *card = card_data->card;
+	struct snd_soc_card_driver *card_driver = card_data->card_driver;
 	struct device_node *codec_node, *dp_node, *hdmi_node;
 	struct snd_soc_dai_link *dai_link;
 	struct device *dev = card->dev;
@@ -1293,7 +1294,7 @@ static int mt8195_mt6359_legacy_probe(struct mtk_soc_card_data *soc_card_data)
 	dp_node = of_parse_phandle(dev->of_node, "mediatek,dptx-codec", 0);
 	hdmi_node = of_parse_phandle(dev->of_node, "mediatek,hdmi-codec", 0);
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (strcmp(dai_link->name, "DPTX_BE") == 0) {
 			if (!dp_node) {
 				dev_dbg(dev, "No property 'dptx-codec'\n");
@@ -1348,8 +1349,8 @@ static int mt8195_mt6359_legacy_probe(struct mtk_soc_card_data *soc_card_data)
 				dai_link->init = mt8195_rt1011_init;
 				dai_link->ops = &mt8195_rt1011_etdm_ops;
 				dai_link->be_hw_params_fixup = mt8195_etdm_hw_params_fixup;
-				card->codec_conf = rt1011_codec_conf;
-				card->num_configs = ARRAY_SIZE(rt1011_codec_conf);
+				card_driver->codec_conf = rt1011_codec_conf;
+				card_driver->num_configs = ARRAY_SIZE(rt1011_codec_conf);
 				break;
 			case RT1019_SPEAKER_AMP_PRESENT:
 				dai_link->codecs = rt1019_comps;
@@ -1360,8 +1361,8 @@ static int mt8195_mt6359_legacy_probe(struct mtk_soc_card_data *soc_card_data)
 				dai_link->codecs = max98390_comps;
 				dai_link->num_codecs = ARRAY_SIZE(max98390_comps);
 				dai_link->init = mt8195_max98390_init;
-				card->codec_conf = max98390_codec_conf;
-				card->num_configs = ARRAY_SIZE(max98390_codec_conf);
+				card_driver->codec_conf = max98390_codec_conf;
+				card_driver->num_configs = ARRAY_SIZE(max98390_codec_conf);
 				break;
 			default:
 				break;
@@ -1376,6 +1377,7 @@ static int mt8195_mt6359_soc_card_probe(struct mtk_soc_card_data *soc_card_data,
 {
 	struct mtk_platform_card_data *card_data = soc_card_data->card_data;
 	struct snd_soc_card *card = card_data->card;
+	struct snd_soc_card_driver *card_driver = card_data->card_driver;
 	struct mt8195_mt6359_priv *mach_priv;
 	struct snd_soc_dai_link *dai_link;
 	u8 codec_init = 0;
@@ -1390,7 +1392,7 @@ static int mt8195_mt6359_soc_card_probe(struct mtk_soc_card_data *soc_card_data,
 	if (legacy)
 		return mt8195_mt6359_legacy_probe(soc_card_data);
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (strcmp(dai_link->name, "DPTX_BE") == 0) {
 			if (dai_link->num_codecs &&
 			    !snd_soc_dlc_is_dummy(dai_link->codecs))
@@ -1493,7 +1495,7 @@ static const struct mtk_sof_priv mt8195_sof_priv = {
 static const struct mtk_soundcard_pdata mt8195_mt6359_rt1019_rt5682_card = {
 	.card_name = "mt8195_r1019_5682",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8195_mt6359_soc_card,
+		.card_driver = &mt8195_mt6359_soc_card,
 		.num_jacks = MT8195_JACK_MAX,
 		.pcm_constraints = mt8195_pcm_constraints,
 		.num_pcm_constraints = ARRAY_SIZE(mt8195_pcm_constraints),
@@ -1506,7 +1508,7 @@ static const struct mtk_soundcard_pdata mt8195_mt6359_rt1019_rt5682_card = {
 static const struct mtk_soundcard_pdata mt8195_mt6359_rt1011_rt5682_card = {
 	.card_name = "mt8195_r1011_5682",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8195_mt6359_soc_card,
+		.card_driver = &mt8195_mt6359_soc_card,
 		.num_jacks = MT8195_JACK_MAX,
 		.pcm_constraints = mt8195_pcm_constraints,
 		.num_pcm_constraints = ARRAY_SIZE(mt8195_pcm_constraints),
@@ -1519,7 +1521,7 @@ static const struct mtk_soundcard_pdata mt8195_mt6359_rt1011_rt5682_card = {
 static const struct mtk_soundcard_pdata mt8195_mt6359_max98390_rt5682_card = {
 	.card_name = "mt8195_m98390_r5682",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8195_mt6359_soc_card,
+		.card_driver = &mt8195_mt6359_soc_card,
 		.num_jacks = MT8195_JACK_MAX,
 		.pcm_constraints = mt8195_pcm_constraints,
 		.num_pcm_constraints = ARRAY_SIZE(mt8195_pcm_constraints),
@@ -1532,7 +1534,7 @@ static const struct mtk_soundcard_pdata mt8195_mt6359_max98390_rt5682_card = {
 static const struct mtk_soundcard_pdata mt8195_mt6359_card = {
 	.card_name = "mt8195_mt6359",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8195_mt6359_soc_card,
+		.card_driver = &mt8195_mt6359_soc_card,
 		.num_jacks = MT8195_JACK_MAX,
 		.pcm_constraints = mt8195_pcm_constraints,
 		.num_pcm_constraints = ARRAY_SIZE(mt8195_pcm_constraints),
