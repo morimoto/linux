@@ -1096,8 +1096,8 @@ mt8186_mt6366_rt1019_rt5682s_controls[] = {
 	SOC_DAPM_PIN_SWITCH("HDMI1"),
 };
 
-static struct snd_soc_card mt8186_mt6366_da7219_max98357_soc_card = {
-	.name = "mt8186_da7219_max98357",
+static struct snd_soc_card_driver mt8186_mt6366_da7219_max98357_soc_card = {
+	.default_name = "mt8186_da7219_max98357",
 	.owner = THIS_MODULE,
 	.dai_link = mt8186_mt6366_rt1019_rt5682s_dai_links,
 	.num_links = ARRAY_SIZE(mt8186_mt6366_rt1019_rt5682s_dai_links),
@@ -1111,8 +1111,8 @@ static struct snd_soc_card mt8186_mt6366_da7219_max98357_soc_card = {
 	.num_configs = ARRAY_SIZE(mt8186_mt6366_rt1019_rt5682s_codec_conf),
 };
 
-static struct snd_soc_card mt8186_mt6366_rt1019_rt5682s_soc_card = {
-	.name = "mt8186_rt1019_rt5682s",
+static struct snd_soc_card_driver mt8186_mt6366_rt1019_rt5682s_soc_card = {
+	.default_name = "mt8186_rt1019_rt5682s",
 	.owner = THIS_MODULE,
 	.dai_link = mt8186_mt6366_rt1019_rt5682s_dai_links,
 	.num_links = ARRAY_SIZE(mt8186_mt6366_rt1019_rt5682s_dai_links),
@@ -1126,8 +1126,8 @@ static struct snd_soc_card mt8186_mt6366_rt1019_rt5682s_soc_card = {
 	.num_configs = ARRAY_SIZE(mt8186_mt6366_rt1019_rt5682s_codec_conf),
 };
 
-static struct snd_soc_card mt8186_mt6366_rt5682s_max98360_soc_card = {
-	.name = "mt8186_rt5682s_max98360",
+static struct snd_soc_card_driver mt8186_mt6366_rt5682s_max98360_soc_card = {
+	.default_name = "mt8186_rt5682s_max98360",
 	.owner = THIS_MODULE,
 	.dai_link = mt8186_mt6366_rt1019_rt5682s_dai_links,
 	.num_links = ARRAY_SIZE(mt8186_mt6366_rt1019_rt5682s_dai_links),
@@ -1141,8 +1141,8 @@ static struct snd_soc_card mt8186_mt6366_rt5682s_max98360_soc_card = {
 	.num_configs = ARRAY_SIZE(mt8186_mt6366_rt1019_rt5682s_codec_conf),
 };
 
-static struct snd_soc_card mt8186_mt6366_rt5650_soc_card = {
-	.name = "mt8186_rt5650",
+static struct snd_soc_card_driver mt8186_mt6366_rt5650_soc_card = {
+	.default_name = "mt8186_rt5650",
 	.owner = THIS_MODULE,
 	.dai_link = mt8186_mt6366_rt1019_rt5682s_dai_links,
 	.num_links = ARRAY_SIZE(mt8186_mt6366_rt1019_rt5682s_dai_links),
@@ -1160,6 +1160,7 @@ static int mt8186_mt6366_legacy_probe(struct mtk_soc_card_data *soc_card_data)
 {
 	struct mtk_platform_card_data *card_data = soc_card_data->card_data;
 	struct snd_soc_card *card = card_data->card;
+	struct snd_soc_card_driver *card_driver = card_data->card_driver;
 	struct device *dev = card->dev;
 	struct snd_soc_dai_link *dai_link;
 	struct device_node *headset_codec, *playback_codec;
@@ -1177,7 +1178,7 @@ static int mt8186_mt6366_legacy_probe(struct mtk_soc_card_data *soc_card_data)
 				     "Property 'headset-codec' missing or invalid\n");
 	}
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		ret = mt8186_mt6366_card_set_be_link(dev, dai_link, playback_codec, "I2S3");
 		if (ret) {
 			dev_err_probe(dev, ret, "%s set playback_codec fail\n",
@@ -1209,6 +1210,7 @@ static int mt8186_mt6366_soc_card_probe(struct mtk_soc_card_data *soc_card_data,
 {
 	struct mtk_platform_card_data *card_data = soc_card_data->card_data;
 	struct snd_soc_card *card = card_data->card;
+	struct snd_soc_card_driver *card_driver = card_data->card_driver;
 	struct snd_soc_dai_link *dai_link;
 	struct mt8186_mt6366_rt1019_rt5682s_priv *mach_priv;
 	struct device *dev = card->dev;
@@ -1225,7 +1227,7 @@ static int mt8186_mt6366_soc_card_probe(struct mtk_soc_card_data *soc_card_data,
 		return dev_err_probe(dev, PTR_ERR(mach_priv->dmic_sel),
 				     "DMIC gpio failed\n");
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (strcmp(dai_link->name, "I2S0") == 0 ||
 		    strcmp(dai_link->name, "I2S1") == 0 ||
 		    strcmp(dai_link->name, "I2S2") == 0) {
@@ -1291,7 +1293,7 @@ static const struct mtk_sof_priv mt8186_sof_priv = {
 
 static const struct mtk_soundcard_pdata mt8186_mt6366_da7219_max98357_pdata = {
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8186_mt6366_da7219_max98357_soc_card,
+		.card_driver = &mt8186_mt6366_da7219_max98357_soc_card,
 		.num_jacks = MT8186_JACK_MAX,
 		.pcm_constraints = mt8186_pcm_constraints,
 		.num_pcm_constraints = ARRAY_SIZE(mt8186_pcm_constraints),
@@ -1303,7 +1305,7 @@ static const struct mtk_soundcard_pdata mt8186_mt6366_da7219_max98357_pdata = {
 
 static const struct mtk_soundcard_pdata mt8186_mt6366_rt1019_rt5682s_pdata = {
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8186_mt6366_rt1019_rt5682s_soc_card,
+		.card_driver = &mt8186_mt6366_rt1019_rt5682s_soc_card,
 		.num_jacks = MT8186_JACK_MAX,
 		.pcm_constraints = mt8186_pcm_constraints,
 		.num_pcm_constraints = ARRAY_SIZE(mt8186_pcm_constraints),
@@ -1314,7 +1316,7 @@ static const struct mtk_soundcard_pdata mt8186_mt6366_rt1019_rt5682s_pdata = {
 
 static const struct mtk_soundcard_pdata mt8186_mt6366_rt5682s_max98360_pdata = {
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8186_mt6366_rt5682s_max98360_soc_card,
+		.card_driver = &mt8186_mt6366_rt5682s_max98360_soc_card,
 		.num_jacks = MT8186_JACK_MAX,
 		.pcm_constraints = mt8186_pcm_constraints,
 		.num_pcm_constraints = ARRAY_SIZE(mt8186_pcm_constraints),
@@ -1325,7 +1327,7 @@ static const struct mtk_soundcard_pdata mt8186_mt6366_rt5682s_max98360_pdata = {
 
 static const struct mtk_soundcard_pdata mt8186_mt6366_rt5650_pdata = {
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8186_mt6366_rt5650_soc_card,
+		.card_driver = &mt8186_mt6366_rt5650_soc_card,
 		.num_jacks = MT8186_JACK_MAX,
 		.pcm_constraints = mt8186_pcm_constraints,
 		.num_pcm_constraints = ARRAY_SIZE(mt8186_pcm_constraints),
