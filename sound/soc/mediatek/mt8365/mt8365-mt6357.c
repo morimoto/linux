@@ -278,8 +278,8 @@ static int mt8365_mt6357_gpio_probe(struct snd_soc_card *card)
 	return 0;
 }
 
-static struct snd_soc_card mt8365_mt6357_soc_card = {
-	.name = "mt8365-evk",
+static struct snd_soc_card_driver mt8365_mt6357_soc_card = {
+	.default_name = "mt8365-evk",
 	.owner = THIS_MODULE,
 	.dai_link = mt8365_mt6357_dais,
 	.num_links = ARRAY_SIZE(mt8365_mt6357_dais),
@@ -297,7 +297,7 @@ static int mt8365_mt6357_dev_probe(struct mtk_soc_card_data *soc_card_data, bool
 	struct mt8365_mt6357_priv *mach_priv;
 	int ret;
 
-	ret = parse_dai_link_info(card);
+	ret = parse_dai_link_info(card_data);
 	if (ret)
 		goto err;
 
@@ -311,14 +311,14 @@ static int mt8365_mt6357_dev_probe(struct mtk_soc_card_data *soc_card_data, bool
 	return 0;
 
 err:
-	clean_card_reference(card);
+	clean_card_reference(card_data->card_driver);
 	return ret;
 }
 
 static const struct mtk_soundcard_pdata mt8365_mt6357_card = {
 	.card_name = "mt8365-mt6357",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8365_mt6357_soc_card,
+		.card_driver = &mt8365_mt6357_soc_card,
 	},
 	.soc_probe = mt8365_mt6357_dev_probe
 };
