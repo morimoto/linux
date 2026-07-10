@@ -737,6 +737,7 @@ static const struct snd_soc_ops mt8196_rt5682s_i2s_ops = {
 static int mt8196_nau8825_soc_card_probe(struct mtk_soc_card_data *soc_card_data, bool legacy)
 {
 	struct snd_soc_card *card = soc_card_data->card_data->card;
+	struct snd_soc_card_driver *card_driver = soc_card_data->card_data->card_driver;
 	struct snd_soc_dai_link *dai_link;
 	bool init_nau8825 = false;
 	bool init_rt5682s = false;
@@ -746,7 +747,7 @@ static int mt8196_nau8825_soc_card_probe(struct mtk_soc_card_data *soc_card_data
 
 	dev_info(card->dev, "legacy: %d\n", legacy);
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (strcmp(dai_link->name, "TDM_DPTX_BE") == 0) {
 			if (dai_link->num_codecs &&
 			    strcmp(dai_link->codecs->dai_name, "snd-soc-dummy-dai"))
@@ -797,7 +798,7 @@ static const struct mtk_sof_priv mt8196_sof_priv = {
 	.num_streams = ARRAY_SIZE(g_sof_conn_streams),
 };
 
-static struct snd_soc_card mt8196_nau8825_soc_card = {
+static struct snd_soc_card_driver mt8196_nau8825_soc_card = {
 	.owner = THIS_MODULE,
 	.dai_link = mt8196_nau8825_dai_links,
 	.num_links = ARRAY_SIZE(mt8196_nau8825_dai_links),
@@ -812,7 +813,7 @@ static struct snd_soc_card mt8196_nau8825_soc_card = {
 static const struct mtk_soundcard_pdata mt8196_nau8825_card = {
 	.card_name = "mt8196_nau8825",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8196_nau8825_soc_card,
+		.card_driver = &mt8196_nau8825_soc_card,
 		.num_jacks = MT8196_JACK_MAX,
 		.flags = NAU8825_HS_PRESENT
 	},
@@ -823,7 +824,7 @@ static const struct mtk_soundcard_pdata mt8196_nau8825_card = {
 static const struct mtk_soundcard_pdata mt8196_rt5682s_card = {
 	.card_name = "mt8196_rt5682s",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8196_nau8825_soc_card,
+		.card_driver = &mt8196_nau8825_soc_card,
 		.num_jacks = MT8196_JACK_MAX,
 		.flags = RT5682S_HS_PRESENT
 	},
@@ -834,7 +835,7 @@ static const struct mtk_soundcard_pdata mt8196_rt5682s_card = {
 static const struct mtk_soundcard_pdata mt8196_rt5650_card = {
 	.card_name = "mt8196_rt5650",
 	.card_data = &(struct mtk_platform_card_data) {
-		.card = &mt8196_nau8825_soc_card,
+		.card_driver = &mt8196_nau8825_soc_card,
 		.num_jacks = MT8196_JACK_MAX,
 		.flags = RT5650_HS_PRESENT
 	},
