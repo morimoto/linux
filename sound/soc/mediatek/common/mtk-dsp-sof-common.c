@@ -228,7 +228,7 @@ int mtk_sof_card_late_probe(struct snd_soc_card *card)
 }
 EXPORT_SYMBOL_GPL(mtk_sof_card_late_probe);
 
-int mtk_sof_dailink_parse_of(struct device *dev, struct snd_soc_card *card,
+int mtk_sof_dailink_parse_of(struct device *dev, struct snd_soc_card_driver *card_driver,
 			     const char *propname)
 {
 	struct device_node *np = dev->of_node;
@@ -238,7 +238,7 @@ int mtk_sof_dailink_parse_of(struct device *dev, struct snd_soc_card *card,
 	int i, j, ret, num_links, parsed_num_links = 0;
 
 	num_links = of_property_count_strings(np, "mediatek,dai-link");
-	if (num_links < 0 || num_links > card->num_links) {
+	if (num_links < 0 || num_links > card_driver->num_links) {
 		dev_dbg(dev, "number of dai-link is invalid\n");
 		return -EINVAL;
 	}
@@ -255,7 +255,7 @@ int mtk_sof_dailink_parse_of(struct device *dev, struct snd_soc_card *card,
 			return ret;
 		}
 		dev_dbg(dev, "ASoC: Property get dai_name:%s\n", dai_name);
-		for_each_card_prelinks(card, j, dai_link) {
+		for_each_card_driver_prelinks(card_driver, j, dai_link) {
 			if (!strcmp(dai_name, dai_link->name)) {
 				memcpy(&parsed_dai_link[parsed_num_links++], dai_link,
 				       sizeof(struct snd_soc_dai_link));
@@ -267,8 +267,8 @@ int mtk_sof_dailink_parse_of(struct device *dev, struct snd_soc_card *card,
 	if (parsed_num_links != num_links)
 		return -EINVAL;
 
-	card->dai_link = parsed_dai_link;
-	card->num_links = parsed_num_links;
+	card_driver->dai_link = parsed_dai_link;
+	card_driver->num_links = parsed_num_links;
 
 	return 0;
 }
