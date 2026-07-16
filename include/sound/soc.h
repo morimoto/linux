@@ -937,66 +937,6 @@ struct snd_soc_aux_dev {
 	int (*init)(struct snd_soc_component *component);
 };
 
-/* SoC card */
-struct snd_soc_card {
-	const char *name;
-	const char *long_name;
-	const char *components;
-
-#ifdef CONFIG_PCI
-	/*
-	 * PCI does not define 0 as invalid, so pci_subsystem_set indicates
-	 * whether a value has been written to these fields.
-	 */
-	unsigned short pci_subsystem_vendor;
-	unsigned short pci_subsystem_device;
-	bool pci_subsystem_set;
-#endif /* CONFIG_PCI */
-
-	char *topology_shortname;
-
-	struct device *dev;
-	struct snd_card *snd_card;
-	struct snd_soc_card_driver *driver;
-
-	struct mutex mutex;
-	struct mutex dapm_mutex;
-
-	/* Mutex for PCM operations */
-	struct mutex pcm_mutex;
-
-	struct list_head rtd_list_head;
-	int num_rtd;
-
-	struct list_head aux_list_head;
-
-	/* lists of probed devices belonging to this card */
-	struct list_head component_list_head;
-	struct list_head widget_list_head;
-	struct list_head path_list_head;
-	struct list_head dapm_list_head;
-	struct list_head dapm_dirty_list_head;
-
-	struct list_head unbind_list;
-
-	/* Generic DAPM context for the card */
-	struct snd_soc_dapm_context *dapm;
-	struct snd_soc_dapm_stats dapm_stats;
-
-#ifdef CONFIG_DEBUG_FS
-	struct dentry *debugfs_card_root;
-#endif
-#ifdef CONFIG_PM_SLEEP
-	struct work_struct deferred_resume_work;
-#endif
-	/* bit field */
-	unsigned int instantiated:1;
-	unsigned int probed:1;
-	struct device *devres_dev;
-
-	void *priv;
-};
-
 /* SoC machine DAI configuration, glues a codec and cpu DAI together */
 struct snd_soc_pcm_runtime {
 	struct device *dev;
