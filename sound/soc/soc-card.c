@@ -495,7 +495,7 @@ static void soc_card_check_tplg_fes(struct snd_soc_card *card)
 			}
 
 			dev_dbg(card->dev, "info: override BE DAI link %s\n",
-				card->dai_link[i].name);
+				dai_link->name);
 
 			/* override platform component */
 			if (!dai_link->platforms) {
