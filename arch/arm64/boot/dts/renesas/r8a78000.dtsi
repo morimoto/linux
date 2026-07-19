@@ -1575,6 +1575,62 @@
 				ranges;
 			};
 		};
+
+		usb30: usb@c8800000 {
+			compatible = "renesas,r8a78000-dwc3",
+				     "renesas,rcar-gen5-dwc3";
+			reg = <0 0xc8800000 0 0x100000>, <0 0xc9c54000 0 0x2000>;
+			reg-names = "dwc3", "glue";
+			clocks = <&scmi_clk 336>; /* R8A78000_SCMI_CLOCK_MDLC_US30 */
+			interrupts = <GIC_SPI 795 IRQ_TYPE_LEVEL_HIGH>;
+			phys = <&usb30_phy>, <&mp_phy 2>;
+			phy-names = "usb2-phy", "usb3-phy";
+			power-domains = <&scmi_devpd 16>; /* R8A78000_SCMI_PD_USB */
+			resets = <&scmi_reset 336>; /* R8A78000_SCMI_RESET_US30 */
+			status = "disabled";
+		};
+
+		usb20: usb@c8900000 {
+			compatible = "renesas,r8a78000-dwc3",
+				     "renesas,rcar-gen5-dwc3";
+			reg = <0 0xc8900000 0 0x100000>, <0 0xc9c56000 0 0x2000>;
+			reg-names = "dwc3", "glue";
+			clocks = <&scmi_clk 337>; /* R8A78000_SCMI_CLOCK_MDLC_US31 */
+			interrupts = <GIC_SPI 796 IRQ_TYPE_LEVEL_HIGH>;
+			phys = <&usb20_phy>;
+			phy-names = "usb2-phy";
+			power-domains = <&scmi_devpd 16>; /* R8A78000_SCMI_PD_USB */
+			resets = <&scmi_reset 337>; /* R8A78000_SCMI_RESET_US31 */
+			status = "disabled";
+		};
+
+		usb31: usb@c8a00000 {
+			compatible = "renesas,r8a78000-dwc3",
+				     "renesas,rcar-gen5-dwc3";
+			reg = <0 0xc8a00000 0 0x100000>, <0 0xc9c58000 0 0x2000>;
+			reg-names = "dwc3", "glue";
+			clocks = <&scmi_clk 338>; /* R8A78000_SCMI_CLOCK_MDLC_US32 */
+			interrupts = <GIC_SPI 797 IRQ_TYPE_LEVEL_HIGH>;
+			phys = <&usb31_phy>, <&mp_phy 3>;
+			phy-names = "usb2-phy", "usb3-phy";
+			power-domains = <&scmi_devpd 16>; /* R8A78000_SCMI_PD_USB */
+			resets = <&scmi_reset 338>; /* R8A78000_SCMI_RESET_US32 */
+			status = "disabled";
+		};
+
+		usb21: usb@c8b00000 {
+			compatible = "renesas,r8a78000-dwc3",
+				     "renesas,rcar-gen5-dwc3";
+			reg = <0 0xc8b00000 0 0x100000>, <0 0xc9c5a000 0 0x2000>;
+			reg-names = "dwc3", "glue";
+			clocks = <&scmi_clk 339>; /* R8A78000_SCMI_CLOCK_MDLC_US33 */
+			interrupts = <GIC_SPI 798 IRQ_TYPE_LEVEL_HIGH>;
+			phys = <&usb21_phy>;
+			phy-names = "usb2-phy";
+			power-domains = <&scmi_devpd 16>; /* R8A78000_SCMI_PD_USB */
+			resets = <&scmi_reset 339>; /* R8A78000_SCMI_RESET_US33 */
+			status = "disabled";
+		};
 	};
 
 	timer {
@@ -1592,5 +1648,25 @@
 		#clock-cells = <0>;
 		/* This value must be overridden by the board */
 		clock-frequency = <0>;
+	};
+
+	usb20_phy: usb20-phy {
+		#phy-cells = <0>;
+		compatible = "usb-nop-xceiv";
+	};
+
+	usb21_phy: usb21-phy {
+		#phy-cells = <0>;
+		compatible = "usb-nop-xceiv";
+	};
+
+	usb30_phy: usb30-phy {
+		#phy-cells = <0>;
+		compatible = "usb-nop-xceiv";
+	};
+
+	usb31_phy: usb31-phy {
+		#phy-cells = <0>;
+		compatible = "usb-nop-xceiv";
 	};
 };
