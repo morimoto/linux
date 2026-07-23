@@ -46,14 +46,14 @@ int meson_card_reallocate_links(struct snd_soc_card *card,
 	struct snd_soc_dai_link *links;
 	void **ldata;
 
-	links = krealloc(priv->card.dai_link,
-			 num_links * sizeof(*priv->card.dai_link),
+	links = krealloc(priv->card_driver.dai_link,
+			 num_links * sizeof(*priv->card_driver.dai_link),
 			 GFP_KERNEL | __GFP_ZERO);
 	if (!links)
 		return -ENOMEM;
 
-	priv->card.dai_link = links;
-	priv->card.num_links = num_links;
+	priv->card_driver.dai_link = links;
+	priv->card_driver.num_links = num_links;
 
 	ldata = krealloc(priv->link_data,
 			 num_links * sizeof(*priv->link_data),
@@ -220,9 +220,11 @@ static int meson_card_add_links(struct snd_soc_card *card)
 
 static int meson_card_parse_of_optional(struct snd_soc_card *card,
 					const char *propname,
-					int (*func)(struct snd_soc_card *c,
+					int (*func)(struct device *dev,
+						    struct snd_soc_card_driver *c,
 						    const char *p))
 {
+	struct meson_card *priv = snd_soc_card_get_drvdata(card);
 	struct device *dev = card->dev;
 
 	/* If property is not provided, don't fail ... */
@@ -230,19 +232,19 @@ static int meson_card_parse_of_optional(struct snd_soc_card *card,
 		return 0;
 
 	/* ... but do fail if it is provided and the parsing fails */
-	return func(card, propname);
+	return func(dev, &priv->card_driver, propname);
 }
 
 static void meson_card_clean_references(struct meson_card *priv)
 {
-	struct snd_soc_card *card = &priv->card;
+	struct snd_soc_card_driver *card_driver = &priv->card_driver;
 	struct snd_soc_dai_link *link;
 	struct snd_soc_dai_link_component *codec;
 	struct snd_soc_aux_dev *aux;
 	int i, j;
 
-	if (card->dai_link) {
-		for_each_card_prelinks(card, i, link) {
+	if (card_driver->dai_link) {
+		for_each_card_driver_prelinks(card_driver, i, link) {
 			if (link->cpus)
 				of_node_put(link->cpus->of_node);
 			for_each_link_codecs(link, j, codec)
@@ -250,18 +252,19 @@ static void meson_card_clean_references(struct meson_card *priv)
 		}
 	}
 
-	if (card->aux_dev) {
-		for_each_card_pre_auxs(card, i, aux)
+	if (card_driver->aux_dev) {
+		for_each_card_driver_pre_auxs(card_driver, i, aux)
 			of_node_put(aux->dlc.of_node);
 	}
 
-	kfree(card->dai_link);
+	kfree(card_driver->dai_link);
 	kfree(priv->link_data);
 }
 
 int meson_card_probe(struct platform_device *pdev)
 {
 	const struct meson_card_match_data *data;
+	struct snd_soc_card *card;
 	struct device *dev = &pdev->dev;
 	struct meson_card *priv;
 	int ret;
@@ -272,45 +275,46 @@ int meson_card_probe(struct platform_device *pdev)
 		return -ENODEV;
 	}
 
+	card = snd_soc_card_alloc(dev);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
+	if (!card || !priv)
 		return -ENOMEM;
 
 	platform_set_drvdata(pdev, priv);
-	snd_soc_card_set_drvdata(&priv->card, priv);
+	snd_soc_card_set_priv(card, priv);
 
-	priv->card.owner = THIS_MODULE;
-	priv->card.dev = dev;
-	priv->card.driver_name = dev->driver->name;
+	priv->card = card;
+	priv->card_driver.owner = THIS_MODULE;
+	priv->card_driver.driver_name = dev->driver->name;
 	priv->match_data = data;
 
-	ret = snd_soc_of_parse_card_name(&priv->card, "model");
+	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret < 0)
 		return ret;
 
-	ret = meson_card_parse_of_optional(&priv->card, "audio-routing",
-					   snd_soc_of_parse_audio_routing);
+	ret = meson_card_parse_of_optional(card, "audio-routing",
+				snd_soc_card_driver_of_parse_audio_routing);
 	if (ret) {
 		dev_err(dev, "error while parsing routing\n");
 		return ret;
 	}
 
-	ret = meson_card_parse_of_optional(&priv->card, "audio-widgets",
-					   snd_soc_of_parse_audio_simple_widgets);
+	ret = meson_card_parse_of_optional(card, "audio-widgets",
+				snd_soc_card_driver_of_parse_simple_widgets);
 	if (ret) {
 		dev_err(dev, "error while parsing widgets\n");
 		return ret;
 	}
 
-	ret = meson_card_add_links(&priv->card);
+	ret = meson_card_add_links(card);
 	if (ret)
 		goto out_err;
 
-	ret = snd_soc_of_parse_aux_devs(&priv->card, "audio-aux-devs");
+	ret = snd_soc_card_driver_of_parse_aux_devs(dev, &priv->card_driver, "audio-aux-devs");
 	if (ret)
 		goto out_err;
 
-	ret = devm_snd_soc_register_card(dev, &priv->card);
+	ret = devm_snd_soc_card_register(card, &priv->card_driver);
 	if (ret)
 		goto out_err;
 
