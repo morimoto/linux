@@ -104,6 +104,7 @@ static int axg_card_add_tdm_loopback(struct snd_soc_card *card,
 				     int *index)
 {
 	struct meson_card *priv = snd_soc_card_get_drvdata(card);
+	struct snd_soc_card_driver *card_driver = &priv->card_driver;
 	struct snd_soc_dai_link *pad;
 	struct snd_soc_dai_link *lb;
 	struct snd_soc_dai_link_component *dlc;
@@ -111,12 +112,12 @@ static int axg_card_add_tdm_loopback(struct snd_soc_card *card,
 	int ret;
 
 	/* extend links */
-	ret = meson_card_reallocate_links(card, card->num_links + 1);
+	ret = meson_card_reallocate_links(card, card_driver->num_links + 1);
 	if (ret)
 		return ret;
 
-	pad = &card->dai_link[*index];
-	lb = &card->dai_link[*index + 1];
+	pad = &card_driver->dai_link[*index];
+	lb = &card_driver->dai_link[*index + 1];
 
 	lb->name = devm_kasprintf(dev, GFP_KERNEL, "%s-lb", pad->name);
 	if (!lb->name)
@@ -250,7 +251,7 @@ static int axg_card_parse_tdm(struct snd_soc_card *card,
 			      int *index)
 {
 	struct meson_card *priv = snd_soc_card_get_drvdata(card);
-	struct snd_soc_dai_link *link = &card->dai_link[*index];
+	struct snd_soc_dai_link *link = &priv->card_driver.dai_link[*index];
 	struct axg_dai_link_tdm_data *be;
 	struct device *dev = card->dev;
 	int ret;
@@ -312,7 +313,8 @@ static int axg_card_cpu_is_codec(struct device_node *np)
 static int axg_card_add_link(struct snd_soc_card *card, struct device_node *np,
 			     int *index)
 {
-	struct snd_soc_dai_link *dai_link = &card->dai_link[*index];
+	struct meson_card *priv = snd_soc_card_get_drvdata(card);
+	struct snd_soc_dai_link *dai_link = &priv->card_driver.dai_link[*index];
 	struct snd_soc_dai_link_component *cpu;
 	struct device *dev = card->dev;
 	int ret;
