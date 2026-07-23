@@ -46,7 +46,7 @@ static int gx_card_parse_i2s(struct snd_soc_card *card,
 			     int *index)
 {
 	struct meson_card *priv = snd_soc_card_get_drvdata(card);
-	struct snd_soc_dai_link *link = &card->dai_link[*index];
+	struct snd_soc_dai_link *link = &priv->card_driver.dai_link[*index];
 	struct gx_dai_link_i2s_data *be;
 	struct device *dev = card->dev;
 
@@ -80,7 +80,8 @@ static int gx_card_cpu_identify(struct snd_soc_dai_link_component *c,
 static int gx_card_add_link(struct snd_soc_card *card, struct device_node *np,
 			    int *index)
 {
-	struct snd_soc_dai_link *dai_link = &card->dai_link[*index];
+	struct meson_card *priv = snd_soc_card_get_drvdata(card);
+	struct snd_soc_dai_link *dai_link = &priv->card_driver.dai_link[*index];
 	struct snd_soc_dai_link_component *cpu;
 	struct device *dev = card->dev;
 	int ret;
