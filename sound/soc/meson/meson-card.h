@@ -24,7 +24,8 @@ struct meson_card_match_data {
 
 struct meson_card {
 	const struct meson_card_match_data *match_data;
-	struct snd_soc_card card;
+	struct snd_soc_card *card;
+	struct snd_soc_card_driver card_driver;
 	void **link_data;
 };
 
