@@ -374,7 +374,7 @@ static const struct dw_pcie_host_ops dra7xx_pcie_host_ops = {
 	.init = dra7xx_pcie_host_init,
 };
 
-static void dra7xx_pcie_ep_init(struct dw_pcie_ep *ep)
+static int dra7xx_pcie_ep_init(struct dw_pcie_ep *ep)
 {
 	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
 	struct dra7xx_pcie *dra7xx = to_dra7xx_pcie(pci);
@@ -384,6 +384,8 @@ static void dra7xx_pcie_ep_init(struct dw_pcie_ep *ep)
 		dw_pcie_ep_reset_bar(pci, bar);
 
 	dra7xx_pcie_enable_wrapper_interrupts(dra7xx);
+
+	return 0;
 }
 
 static void dra7xx_pcie_raise_intx_irq(struct dra7xx_pcie *dra7xx)
