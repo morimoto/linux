@@ -98,7 +98,7 @@ int asoc_sdw_cs_spk_feedback_rtd_init(struct snd_soc_pcm_runtime *rtd, struct sn
 
 	for_each_rtd_ch_maps(rtd, i, ch_map) {
 		codec_dlc = snd_soc_link_to_codec(rtd->dai_link, i);
-		codec_dai = snd_soc_find_dai(codec_dlc);
+		codec_dai = snd_soc_find_dai_nolock(codec_dlc);
 		mask = GENMASK(ch_per_amp - 1, 0) << ch_slot[ch_map->cpu];
 
 		ret = snd_soc_dai_set_tdm_slot(codec_dai, 0, mask, 4, 32);
