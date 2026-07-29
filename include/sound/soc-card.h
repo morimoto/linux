@@ -80,11 +80,6 @@ struct snd_soc_card_driver {
 	unsigned int component_chaining:1;
 };
 
-enum snd_soc_card_subclass {
-	SND_SOC_CARD_CLASS_ROOT		= 0,
-	SND_SOC_CARD_CLASS_RUNTIME	= 1,
-};
-
 const char *snd_soc_card_name(struct snd_soc_card *card);
 const char *snd_soc_card_long_name(struct snd_soc_card *card);
 const char *snd_soc_card_components(struct snd_soc_card *card);
