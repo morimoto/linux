@@ -118,8 +118,6 @@ int snd_soc_card_jack_new_pins(struct snd_soc_card *card, const char *id,
 
 int snd_soc_card_suspend_pre(struct snd_soc_card *card);
 int snd_soc_card_suspend_post(struct snd_soc_card *card);
-int snd_soc_card_resume_pre(struct snd_soc_card *card);
-int snd_soc_card_resume_post(struct snd_soc_card *card);
 
 int snd_soc_card_probe(struct snd_soc_card *card);
 void snd_soc_card_fixup_controls(struct snd_soc_card *card);
