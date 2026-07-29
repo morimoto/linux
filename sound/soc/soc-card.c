@@ -746,7 +746,7 @@ static inline int snd_soc_card_set_dmi_name(struct snd_soc_card *card)
 }
 #endif /* CONFIG_DMI */
 
-int snd_soc_card_probe(struct snd_soc_card *card)
+static int snd_soc_card_probe(struct snd_soc_card *card)
 {
 	if (card->driver->probe) {
 		int ret = card->driver->probe(card);
