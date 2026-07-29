@@ -747,7 +747,7 @@ static inline int soc_card_set_dmi_name(struct snd_soc_card *card)
 }
 #endif /* CONFIG_DMI */
 
-int snd_soc_card_probe(struct snd_soc_card *card)
+static int soc_card_probe(struct snd_soc_card *card)
 {
 	if (card->driver->probe) {
 		int ret = card->driver->probe(card);
@@ -787,7 +787,7 @@ static int soc_card_late_probe(struct snd_soc_card *card)
 	 *
 	 * see
 	 *	snd_soc_bind_card()
-	 *	snd_soc_card_probe()
+	 *	soc_card_probe()
 	 */
 	card->probed = 1;
 
@@ -1199,7 +1199,7 @@ int snd_soc_card_bind(struct snd_soc_card *card)
 		goto probe_end;
 
 	/* initialise the sound card only once */
-	ret = snd_soc_card_probe(card);
+	ret = soc_card_probe(card);
 	if (ret < 0)
 		goto probe_end;
 
