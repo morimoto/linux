@@ -217,7 +217,8 @@ static void snd_soc_card_resume_deferred(struct work_struct *work)
 	/* Bring us up into D2 so that DAPM starts enabling things */
 	snd_power_change_state(card->snd_card, SNDRV_CTL_POWER_D2);
 
-	snd_soc_card_resume_pre(card);
+	if (card->driver->resume_pre)
+		card->driver->resume_pre(card);
 
 	for_each_card_components(card, component) {
 		if (snd_soc_component_is_suspended(component))
@@ -229,7 +230,8 @@ static void snd_soc_card_resume_deferred(struct work_struct *work)
 	/* unmute any active DACs */
 	soc_playback_digital_mute(card, 0);
 
-	snd_soc_card_resume_post(card);
+	if (card->driver->resume_post)
+		 card->driver->resume_post(card);
 
 	dev_dbg(card->dev, "ASoC: resume work completed\n");
 
@@ -1049,26 +1051,6 @@ int snd_soc_card_suspend_post(struct snd_soc_card *card)
 
 	if (card->driver->suspend_post)
 		ret = card->driver->suspend_post(card);
-
-	return soc_card_ret(card, ret);
-}
-
-int snd_soc_card_resume_pre(struct snd_soc_card *card)
-{
-	int ret = 0;
-
-	if (card->driver->resume_pre)
-		ret = card->driver->resume_pre(card);
-
-	return soc_card_ret(card, ret);
-}
-
-int snd_soc_card_resume_post(struct snd_soc_card *card)
-{
-	int ret = 0;
-
-	if (card->driver->resume_post)
-		ret = card->driver->resume_post(card);
 
 	return soc_card_ret(card, ret);
 }
