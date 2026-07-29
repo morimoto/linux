@@ -2854,7 +2854,7 @@ static int soc_get_playback_capture(struct snd_soc_pcm_runtime *rtd,
 	struct snd_soc_dai *cpu_dai;
 	struct snd_soc_dai *codec_dai;
 	struct snd_soc_dai_link_ch_map *ch_maps;
-	struct snd_soc_dai *dummy_dai = snd_soc_find_dai(&snd_soc_dummy_dlc);
+	struct snd_soc_dai *dummy_dai = snd_soc_find_dai_nolock(&snd_soc_dummy_dlc);
 	int cpu_capture;
 	int cpu_playback;
 	int has_playback = 0;

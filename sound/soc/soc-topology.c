@@ -1888,7 +1888,7 @@ static int soc_tplg_dai_config(struct soc_tplg *tplg,
 		return ret;
 
 	dai_component.dai_name = d->dai_name;
-	dai = snd_soc_find_dai(&dai_component);
+	dai = snd_soc_find_dai_nolock(&dai_component);
 	if (!dai) {
 		dev_err(tplg->dev, "ASoC: physical DAI %s not registered\n",
 			d->dai_name);
