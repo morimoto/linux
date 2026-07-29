@@ -348,7 +348,7 @@ static int tm2_late_probe(struct snd_soc_card *card)
 		return ret;
 	}
 
-	amp_pdm_dai = snd_soc_find_dai(&tm2_speaker_amp_dev.dlc);
+	amp_pdm_dai = snd_soc_find_dai_nolock(&tm2_speaker_amp_dev.dlc);
 	if (!amp_pdm_dai)
 		return -ENODEV;
 
