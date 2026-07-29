@@ -285,7 +285,8 @@ int snd_soc_card_suspend(struct snd_soc_card *card)
 		snd_pcm_suspend_all(rtd->pcm);
 	}
 
-	snd_soc_card_suspend_pre(card);
+	if (card->driver->suspend_pre)
+		card->driver->suspend_pre(card);
 
 	/* close any waiting streams */
 	snd_soc_card_flush_all_delayed_work(card);
@@ -345,7 +346,8 @@ int snd_soc_card_suspend(struct snd_soc_card *card)
 		}
 	}
 
-	snd_soc_card_suspend_post(card);
+	if (card->driver->suspend_post)
+		card->driver->suspend_post(card);
 
 	return 0;
 }
@@ -1034,26 +1036,6 @@ end:
 	return soc_card_ret(card, ret);
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_jack_new_pins);
-
-int snd_soc_card_suspend_pre(struct snd_soc_card *card)
-{
-	int ret = 0;
-
-	if (card->driver->suspend_pre)
-		ret = card->driver->suspend_pre(card);
-
-	return soc_card_ret(card, ret);
-}
-
-int snd_soc_card_suspend_post(struct snd_soc_card *card)
-{
-	int ret = 0;
-
-	if (card->driver->suspend_post)
-		ret = card->driver->suspend_post(card);
-
-	return soc_card_ret(card, ret);
-}
 
 void snd_soc_card_fixup_controls(struct snd_soc_card *card)
 {
