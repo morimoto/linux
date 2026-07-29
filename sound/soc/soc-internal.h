@@ -46,6 +46,12 @@ void snd_soc_card_dpcm_mutex_unlock(struct snd_soc_card *card);
 void snd_soc_card_dpcm_mutex_assert_held(struct snd_soc_card *card);
 void snd_soc_card_flush_all_delayed_work(struct snd_soc_card *card);
 int snd_soc_card_connect_rtd(struct snd_soc_card *card, struct snd_soc_pcm_runtime *rtd);
+int snd_soc_card_set_bias_level(struct snd_soc_card *card,
+				struct snd_soc_dapm_context *dapm,
+				enum snd_soc_bias_level level);
+int snd_soc_card_set_bias_level_post(struct snd_soc_card *card,
+				     struct snd_soc_dapm_context *dapm,
+				     enum snd_soc_bias_level level);
 #ifdef CONFIG_PM_SLEEP
 int snd_soc_card_suspend(struct snd_soc_card *card);
 int snd_soc_card_resume(struct snd_soc_card *card);
