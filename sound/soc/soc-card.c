@@ -38,27 +38,25 @@ struct snd_soc_card {
 #endif /* CONFIG_PCI */
 
 	struct device *dev;
+	struct device *devres_dev;
+
 	struct snd_card *snd_card;
 	struct snd_soc_card_driver *driver;
 
+	/* Mutex */
 	struct mutex mutex;
 	struct mutex dapm_mutex;
-
-	/* Mutex for PCM operations */
 	struct mutex pcm_mutex;
 
+	/* Lists */
 	struct list_head rtd_list_head;
 	int num_rtd;
-
 	struct list_head aux_list_head;
-
-	/* lists of probed devices belonging to this card */
 	struct list_head component_list_head;
 	struct list_head widget_list_head;
 	struct list_head path_list_head;
 	struct list_head dapm_list_head;
 	struct list_head dapm_dirty_list_head;
-
 	struct list_head unbind_list;
 
 	/* Generic DAPM context for the card */
@@ -75,7 +73,6 @@ struct snd_soc_card {
 	unsigned int instantiated:1;
 	unsigned int probed:1;
 
-	struct device *devres_dev;
 	void *priv;
 };
 
