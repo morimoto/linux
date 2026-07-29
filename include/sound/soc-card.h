@@ -114,13 +114,6 @@ int snd_soc_card_jack_new_pins(struct snd_soc_card *card, const char *id,
 void snd_soc_card_fixup_controls(struct snd_soc_card *card);
 void snd_soc_card_set_topology_name(struct snd_soc_card *card, const char *preifx);
 
-int snd_soc_card_set_bias_level(struct snd_soc_card *card,
-				struct snd_soc_dapm_context *dapm,
-				enum snd_soc_bias_level level);
-int snd_soc_card_set_bias_level_post(struct snd_soc_card *card,
-				     struct snd_soc_dapm_context *dapm,
-				     enum snd_soc_bias_level level);
-
 int snd_soc_card_add_dai_link(struct snd_soc_card *card,
 			      struct snd_soc_dai_link *dai_link);
 void snd_soc_card_remove_dai_link(struct snd_soc_card *card,
