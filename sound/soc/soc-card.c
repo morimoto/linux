@@ -743,6 +743,66 @@ static inline int soc_card_set_dmi_name(struct snd_soc_card *card)
 }
 #endif /* CONFIG_DMI */
 
+int snd_soc_card_probe(struct snd_soc_card *card)
+{
+	if (card->driver->probe) {
+		int ret = card->driver->probe(card);
+
+		if (ret < 0)
+			return soc_card_ret(card, ret);
+
+		/*
+		 * It has "card->probe" and "card->late_probe" callbacks.
+		 * So, set "probed" flag here, because it needs to care
+		 * about "late_probe".
+		 *
+		 * see
+		 *	snd_soc_bind_card()
+		 *	soc_card_late_probe()
+		 */
+		card->probed = 1;
+	}
+
+	return 0;
+}
+
+static int soc_card_late_probe(struct snd_soc_card *card)
+{
+	if (card->driver->late_probe) {
+		int ret = card->driver->late_probe(card);
+
+		if (ret < 0)
+			return soc_card_ret(card, ret);
+	}
+
+	/*
+	 * It has "card->driver->probe" and "card->driver->late_probe" callbacks,
+	 * and "late_probe" callback is called after "probe".
+	 * This means, we can set "card->probed" flag afer "late_probe"
+	 * for all cases.
+	 *
+	 * see
+	 *	snd_soc_bind_card()
+	 *	snd_soc_card_probe()
+	 */
+	card->probed = 1;
+
+	return 0;
+}
+
+int snd_soc_card_remove(struct snd_soc_card *card)
+{
+	int ret = 0;
+
+	if (card->probed &&
+	    card->driver->remove)
+		ret = card->driver->remove(card);
+
+	card->probed = 0;
+
+	return soc_card_ret(card, ret);
+}
+
 static void soc_card_check_tplg_fes(struct snd_soc_card *card)
 {
 	struct snd_soc_component *component;
@@ -1013,70 +1073,10 @@ int snd_soc_card_resume_post(struct snd_soc_card *card)
 	return soc_card_ret(card, ret);
 }
 
-int snd_soc_card_probe(struct snd_soc_card *card)
-{
-	if (card->driver->probe) {
-		int ret = card->driver->probe(card);
-
-		if (ret < 0)
-			return soc_card_ret(card, ret);
-
-		/*
-		 * It has "card->probe" and "card->late_probe" callbacks.
-		 * So, set "probed" flag here, because it needs to care
-		 * about "late_probe".
-		 *
-		 * see
-		 *	snd_soc_bind_card()
-		 *	soc_card_late_probe()
-		 */
-		card->probed = 1;
-	}
-
-	return 0;
-}
-
-static int soc_card_late_probe(struct snd_soc_card *card)
-{
-	if (card->driver->late_probe) {
-		int ret = card->driver->late_probe(card);
-
-		if (ret < 0)
-			return soc_card_ret(card, ret);
-	}
-
-	/*
-	 * It has "card->driver->probe" and "card->driver->late_probe" callbacks,
-	 * and "late_probe" callback is called after "probe".
-	 * This means, we can set "card->probed" flag afer "late_probe"
-	 * for all cases.
-	 *
-	 * see
-	 *	snd_soc_bind_card()
-	 *	snd_soc_card_probe()
-	 */
-	card->probed = 1;
-
-	return 0;
-}
-
 void snd_soc_card_fixup_controls(struct snd_soc_card *card)
 {
 	if (card->driver->fixup_controls)
 		card->driver->fixup_controls(card);
-}
-
-int snd_soc_card_remove(struct snd_soc_card *card)
-{
-	int ret = 0;
-
-	if (card->probed &&
-	    card->driver->remove)
-		ret = card->driver->remove(card);
-
-	card->probed = 0;
-
-	return soc_card_ret(card, ret);
 }
 
 int snd_soc_card_set_bias_level(struct snd_soc_card *card,
