@@ -74,7 +74,7 @@ static const struct snd_soc_ops graph_ops = {
 
 static bool soc_component_is_pcm(struct snd_soc_dai_link_component *dlc)
 {
-	struct snd_soc_dai *dai = snd_soc_find_dai_with_mutex(dlc);
+	struct snd_soc_dai *dai = snd_soc_find_dai(dlc);
 	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	const struct snd_soc_component_driver *component_driver = snd_soc_component_to_driver(component);

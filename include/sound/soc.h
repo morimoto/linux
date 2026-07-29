@@ -1182,10 +1182,8 @@ struct of_phandle_args *snd_soc_copy_dai_args(struct device *dev,
 					      const struct of_phandle_args *args);
 struct snd_soc_dai *snd_soc_get_dai_via_args(const struct of_phandle_args *dai_args);
 
-struct snd_soc_dai *snd_soc_find_dai(
-	const struct snd_soc_dai_link_component *dlc);
-struct snd_soc_dai *snd_soc_find_dai_with_mutex(
-	const struct snd_soc_dai_link_component *dlc);
+struct snd_soc_dai *snd_soc_find_dai_nolock(const struct snd_soc_dai_link_component *dlc);
+struct snd_soc_dai *snd_soc_find_dai(const struct snd_soc_dai_link_component *dlc);
 
 #include <sound/soc-dai.h>
 
