@@ -65,6 +65,8 @@ void snd_soc_card_remove_dai_link(struct snd_soc_card *card,
 		     _comp = snd_soc_component_from_aux_list(snd_soc_component_to_aux_list(component)->next); \
 	     snd_soc_component_to_aux_list(component) != snd_soc_card_to_aux_list_head(card); \
 	     component = _comp, _comp = snd_soc_component_from_aux_list(snd_soc_component_to_aux_list(component)->next))
+#define for_each_card_dapms(card, dapm)					\
+	list_for_each_entry(dapm, snd_soc_card_to_dapm_list_head(card), dapm_list)
 #ifdef CONFIG_PM_SLEEP
 int snd_soc_card_suspend(struct snd_soc_card *card);
 int snd_soc_card_resume(struct snd_soc_card *card);
