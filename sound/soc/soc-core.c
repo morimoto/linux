@@ -602,7 +602,7 @@ struct snd_soc_component *soc_find_component(const struct snd_soc_dai_link_compo
 }
 
 /**
- * snd_soc_find_dai - Find a registered DAI
+ * snd_soc_find_dai_nolock - Find a registered DAI
  *
  * @dlc: name of the DAI or the DAI driver and optional component info to match
  *
@@ -612,8 +612,7 @@ struct snd_soc_component *soc_find_component(const struct snd_soc_dai_link_compo
  *
  * Return: pointer of DAI, or NULL if not found.
  */
-struct snd_soc_dai *snd_soc_find_dai(
-	const struct snd_soc_dai_link_component *dlc)
+struct snd_soc_dai *snd_soc_find_dai_nolock(const struct snd_soc_dai_link_component *dlc)
 {
 	struct snd_soc_component *component;
 	struct snd_soc_dai *dai;
@@ -629,16 +628,15 @@ struct snd_soc_dai *snd_soc_find_dai(
 
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(snd_soc_find_dai);
+EXPORT_SYMBOL_GPL(snd_soc_find_dai_nolock);
 
-struct snd_soc_dai *snd_soc_find_dai_with_mutex(
-	const struct snd_soc_dai_link_component *dlc)
+struct snd_soc_dai *snd_soc_find_dai(const struct snd_soc_dai_link_component *dlc)
 {
 	guard(mutex)(&client_mutex);
 
-	return snd_soc_find_dai(dlc);
+	return snd_soc_find_dai_nolock(dlc);
 }
-EXPORT_SYMBOL_GPL(snd_soc_find_dai_with_mutex);
+EXPORT_SYMBOL_GPL(snd_soc_find_dai);
 
 static int soc_dai_link_sanity_check(struct snd_soc_card *card,
 				     struct snd_soc_dai_link *link)
@@ -900,7 +898,7 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 		return -ENOMEM;
 
 	for_each_link_cpus(dai_link, i, cpu) {
-		struct snd_soc_dai *cpu_dai = snd_soc_find_dai(cpu);
+		struct snd_soc_dai *cpu_dai = snd_soc_find_dai_nolock(cpu);
 
 		snd_soc_rtd_to_cpu(rtd, i) = cpu_dai;
 		if (!cpu_dai) {
@@ -913,7 +911,7 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 
 	/* Find CODEC from registered CODECs */
 	for_each_link_codecs(dai_link, i, codec) {
-		struct snd_soc_dai *codec_dai = snd_soc_find_dai(codec);
+		struct snd_soc_dai *codec_dai = snd_soc_find_dai_nolock(codec);
 
 		snd_soc_rtd_to_codec(rtd, i) = codec_dai;
 		if (!codec_dai) {
