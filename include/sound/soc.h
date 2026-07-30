@@ -15,6 +15,7 @@
 #include <linux/device.h>
 #include <linux/errno.h>
 #include <linux/interrupt.h>
+#include <linux/list.h>
 #include <linux/lockdep.h>
 #include <linux/log2.h>
 #include <linux/mutex.h>
@@ -26,6 +27,7 @@
 #include <linux/regmap.h>
 
 #include <sound/ac97_codec.h>
+#include <sound/asoc.h>
 #include <sound/compress_driver.h>
 #include <sound/control.h>
 #include <sound/core.h>
@@ -34,15 +36,28 @@
 #include <sound/jack.h>
 
 /* Forward Declaration */
+struct firmware;
+struct snd_ctl_elem_value;
+struct snd_ctl_elem_info;
+struct snd_kcontrol;
+struct snd_kcontrol_new;
 struct snd_soc_card;
+struct snd_soc_component;
+struct snd_soc_dai;
+struct snd_soc_dai_driver;
 struct snd_soc_dai_link;
 struct snd_soc_dapm_context;
+struct snd_soc_dapm_widget;
+struct snd_soc_dapm_route;
 struct snd_soc_jack;
 struct snd_soc_jack_pin;
+struct snd_soc_tplg_pcm_be;
+struct snd_soc_tplg_pcm_fe;
 
 enum snd_soc_bias_level;
 
 #include <sound/soc-card.h>
+#include <sound/soc-topology.h>
 
 /*
  * Convenience kcontrol builders
@@ -423,14 +438,10 @@ enum snd_soc_bias_level;
 	const struct soc_enum name = SOC_ENUM_SINGLE_VIRT(ARRAY_SIZE(xtexts), xtexts)
 
 struct snd_soc_pcm_runtime;
-struct snd_soc_dai;
-struct snd_soc_dai_driver;
-struct snd_soc_component;
 struct snd_soc_component_driver;
 
 #include <sound/soc-dapm.h>
 #include <sound/soc-dpcm.h>
-#include <sound/soc-topology.h>
 
 #ifdef CONFIG_PM_SLEEP
 int snd_soc_suspend(struct device *dev);
