@@ -33,6 +33,17 @@
 #include <sound/pcm_params.h>
 #include <sound/jack.h>
 
+/* Forward Declaration */
+struct snd_soc_card;
+struct snd_soc_dai_link;
+struct snd_soc_dapm_context;
+struct snd_soc_jack;
+struct snd_soc_jack_pin;
+
+enum snd_soc_bias_level;
+
+#include <sound/soc-card.h>
+
 /*
  * Convenience kcontrol builders
  */
@@ -411,15 +422,11 @@
 #define SOC_ENUM_SINGLE_VIRT_DECL(name, xtexts) \
 	const struct soc_enum name = SOC_ENUM_SINGLE_VIRT(ARRAY_SIZE(xtexts), xtexts)
 
-struct snd_soc_card;
 struct snd_soc_pcm_runtime;
 struct snd_soc_dai;
 struct snd_soc_dai_driver;
-struct snd_soc_dai_link;
 struct snd_soc_component;
 struct snd_soc_component_driver;
-struct snd_soc_jack;
-struct snd_soc_jack_pin;
 
 #include <sound/soc-dapm.h>
 #include <sound/soc-dpcm.h>
@@ -1197,8 +1204,6 @@ enum snd_soc_dapm_subclass {
 	SND_SOC_DAPM_CLASS_ROOT		= 0,
 	SND_SOC_DAPM_CLASS_RUNTIME	= 1,
 };
-
-#include <sound/soc-card.h>
 
 static inline void _snd_soc_dapm_mutex_lock_root_d(struct snd_soc_dapm_context *dapm)
 {
