@@ -69,6 +69,7 @@ enum snd_soc_bias_level;
 #include <sound/soc-def.h>
 #include <sound/soc-dai.h>
 #include <sound/soc-component.h>
+#include <sound/soc-jack.h>
 
 #ifdef CONFIG_PM_SLEEP
 int snd_soc_suspend(struct device *dev);
@@ -852,7 +853,5 @@ static inline void _snd_soc_dapm_mutex_assert_held_d(struct snd_soc_dapm_context
 #define snd_soc_dapm_mutex_assert_held(x) _Generic((x),			\
 	struct snd_soc_card * :		snd_soc_card_dapm_mutex_assert_held, \
 	struct snd_soc_dapm_context * :	_snd_soc_dapm_mutex_assert_held_d)(x)
-
-#include <sound/soc-jack.h>
 
 #endif
