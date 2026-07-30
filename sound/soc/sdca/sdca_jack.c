@@ -8,22 +8,16 @@
  */
 
 #include <linux/cleanup.h>
-#include <linux/device.h>
 #include <linux/dev_printk.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_registers.h>
 #include <linux/sprintf.h>
-#include <linux/regmap.h>
 #include <linux/rwsem.h>
 #include <sound/asound.h>
-#include <sound/control.h>
-#include <sound/jack.h>
 #include <sound/sdca.h>
 #include <sound/sdca_function.h>
 #include <sound/sdca_interrupts.h>
 #include <sound/sdca_jack.h>
-#include <sound/soc-component.h>
-#include <sound/soc-jack.h>
 #include <sound/soc.h>
 
 /**
