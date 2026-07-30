@@ -10,15 +10,6 @@
 #ifndef __LINUX_SND_SOC_DAI_H
 #define __LINUX_SND_SOC_DAI_H
 
-
-#include <linux/list.h>
-#include <sound/asoc.h>
-
-struct snd_pcm_substream;
-struct snd_soc_dapm_widget;
-struct snd_compr_stream;
-struct clk;
-
 /*
  * DAI hardware audio formats.
  *
