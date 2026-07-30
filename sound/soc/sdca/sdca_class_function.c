@@ -10,12 +10,10 @@
 #include <linux/auxiliary_bus.h>
 #include <linux/cleanup.h>
 #include <linux/minmax.h>
-#include <linux/module.h>
 #include <linux/pm.h>
 #include <linux/pm_runtime.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_registers.h>
-#include <sound/pcm.h>
 #include <sound/sdca_asoc.h>
 #include <sound/sdca_fdl.h>
 #include <sound/sdca_function.h>
@@ -23,8 +21,6 @@
 #include <sound/sdca_jack.h>
 #include <sound/sdca_regmap.h>
 #include <sound/sdw.h>
-#include <sound/soc-component.h>
-#include <sound/soc-dai.h>
 #include <sound/soc.h>
 #include "sdca_class.h"
 #include "sdca_function_device.h"
