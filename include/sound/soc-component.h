@@ -8,10 +8,6 @@
 #ifndef __SOC_COMPONENT_H
 #define __SOC_COMPONENT_H
 
-#include <sound/soc.h>
-
-struct device_link;
-
 /*
  * Component probe and remove ordering levels for components with runtime
  * dependencies.
