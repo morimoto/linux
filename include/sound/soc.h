@@ -22,6 +22,8 @@
 #include <linux/of.h>
 #include <linux/types.h>
 #include <linux/workqueue.h>
+#include <linux/platform_device.h>
+#include <linux/regmap.h>
 
 #include <sound/ac97_codec.h>
 #include <sound/compress_driver.h>
@@ -30,10 +32,6 @@
 #include <sound/pcm.h>
 #include <sound/pcm_params.h>
 #include <sound/jack.h>
-
-/* For the current users of sound/soc.h to avoid build issues */
-#include <linux/platform_device.h>
-#include <linux/regmap.h>
 
 /*
  * Convenience kcontrol builders
