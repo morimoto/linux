@@ -10,18 +10,6 @@
 #ifndef __LINUX_SND_SOC_DAPM_H
 #define __LINUX_SND_SOC_DAPM_H
 
-#include <linux/types.h>
-#include <sound/control.h>
-#include <sound/soc-topology.h>
-#include <sound/asoc.h>
-
-struct device;
-struct regulator;
-struct soc_enum;
-struct snd_pcm_substream;
-struct snd_soc_pcm_runtime;
-struct snd_soc_dapm_context;
-
 /* widget has no PM register bit */
 #define SND_SOC_NOPM	-1
 
