@@ -8,12 +8,6 @@
 #ifndef __LINUX_SND_SOC_DPCM_H
 #define __LINUX_SND_SOC_DPCM_H
 
-#include <linux/slab.h>
-#include <linux/list.h>
-#include <sound/pcm.h>
-
-struct snd_soc_pcm_runtime;
-
 /*
  * Types of runtime_update to perform. e.g. originated from FE PCM ops
  * or audio route changes triggered by muxes/mixers.
