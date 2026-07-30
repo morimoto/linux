@@ -10,11 +10,9 @@
 #include <linux/bitmap.h>
 #include <linux/bits.h>
 #include <linux/cleanup.h>
-#include <linux/device.h>
 #include <linux/dev_printk.h>
 #include <linux/interrupt.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_registers.h>
 #include <sound/sdca.h>
@@ -24,7 +22,6 @@
 #include <sound/sdca_interrupts.h>
 #include <sound/sdca_jack.h>
 #include <sound/sdca_ump.h>
-#include <sound/soc-component.h>
 #include <sound/soc.h>
 
 #define IRQ_SDCA(number) REGMAP_IRQ_REG(number, ((number) / BITS_PER_BYTE), \
