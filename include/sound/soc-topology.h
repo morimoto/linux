@@ -12,25 +12,6 @@
 #ifndef __LINUX_SND_SOC_TPLG_H
 #define __LINUX_SND_SOC_TPLG_H
 
-#include <sound/asoc.h>
-#include <linux/list.h>
-
-struct firmware;
-struct snd_kcontrol;
-struct snd_soc_tplg_pcm_be;
-struct snd_ctl_elem_value;
-struct snd_ctl_elem_info;
-struct snd_soc_dapm_widget;
-struct snd_soc_component;
-struct snd_soc_tplg_pcm_fe;
-struct snd_soc_dapm_context;
-struct snd_soc_card;
-struct snd_kcontrol_new;
-struct snd_soc_dai_link;
-struct snd_soc_dai_driver;
-struct snd_soc_dai;
-struct snd_soc_dapm_route;
-
 /* dynamic object type */
 enum snd_soc_dobj_type {
 	SND_SOC_DOBJ_NONE		= 0,	/* object is not dynamic */
