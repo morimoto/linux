@@ -37,10 +37,13 @@
 
 /* Forward Declaration */
 struct firmware;
+struct device;
+struct regulator;
 struct snd_ctl_elem_value;
 struct snd_ctl_elem_info;
 struct snd_kcontrol;
 struct snd_kcontrol_new;
+struct snd_pcm_substream;
 struct snd_soc_card;
 struct snd_soc_component;
 struct snd_soc_dai;
@@ -51,13 +54,16 @@ struct snd_soc_dapm_widget;
 struct snd_soc_dapm_route;
 struct snd_soc_jack;
 struct snd_soc_jack_pin;
+struct snd_soc_pcm_runtime;
 struct snd_soc_tplg_pcm_be;
 struct snd_soc_tplg_pcm_fe;
+struct soc_enum;
 
 enum snd_soc_bias_level;
 
 #include <sound/soc-card.h>
 #include <sound/soc-topology.h>
+#include <sound/soc-dapm.h>
 
 /*
  * Convenience kcontrol builders
@@ -437,10 +443,8 @@ enum snd_soc_bias_level;
 #define SOC_ENUM_SINGLE_VIRT_DECL(name, xtexts) \
 	const struct soc_enum name = SOC_ENUM_SINGLE_VIRT(ARRAY_SIZE(xtexts), xtexts)
 
-struct snd_soc_pcm_runtime;
 struct snd_soc_component_driver;
 
-#include <sound/soc-dapm.h>
 #include <sound/soc-dpcm.h>
 
 #ifdef CONFIG_PM_SLEEP
