@@ -31,9 +31,6 @@
 #include <sound/pcm_params.h>
 #include <sound/jack.h>
 
-struct module;
-struct platform_device;
-
 /* For the current users of sound/soc.h to avoid build issues */
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
