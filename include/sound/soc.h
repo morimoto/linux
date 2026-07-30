@@ -28,6 +28,8 @@
 #include <sound/control.h>
 #include <sound/core.h>
 #include <sound/pcm.h>
+#include <sound/pcm_params.h>
+#include <sound/jack.h>
 
 struct module;
 struct platform_device;
