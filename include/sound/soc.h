@@ -67,6 +67,7 @@ enum snd_soc_bias_level;
 #include <sound/soc-dapm.h>
 #include <sound/soc-dpcm.h>
 #include <sound/soc-def.h>
+#include <sound/soc-dai.h>
 
 struct snd_soc_component_driver;
 
@@ -805,8 +806,6 @@ struct snd_soc_dai *snd_soc_get_dai_via_args(const struct of_phandle_args *dai_a
 
 struct snd_soc_dai *snd_soc_find_dai_nolock(const struct snd_soc_dai_link_component *dlc);
 struct snd_soc_dai *snd_soc_find_dai(const struct snd_soc_dai_link_component *dlc);
-
-#include <sound/soc-dai.h>
 
 #ifdef CONFIG_DEBUG_FS
 extern struct dentry *snd_soc_debugfs_root;
