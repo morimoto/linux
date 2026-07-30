@@ -21,6 +21,7 @@
 #include <linux/mutex.h>
 #include <linux/notifier.h>
 #include <linux/of.h>
+#include <linux/slab.h>
 #include <linux/types.h>
 #include <linux/workqueue.h>
 #include <linux/platform_device.h>
@@ -64,6 +65,7 @@ enum snd_soc_bias_level;
 #include <sound/soc-card.h>
 #include <sound/soc-topology.h>
 #include <sound/soc-dapm.h>
+#include <sound/soc-dpcm.h>
 
 /*
  * Convenience kcontrol builders
@@ -444,8 +446,6 @@ enum snd_soc_bias_level;
 	const struct soc_enum name = SOC_ENUM_SINGLE_VIRT(ARRAY_SIZE(xtexts), xtexts)
 
 struct snd_soc_component_driver;
-
-#include <sound/soc-dpcm.h>
 
 #ifdef CONFIG_PM_SLEEP
 int snd_soc_suspend(struct device *dev);
