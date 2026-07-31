@@ -19,9 +19,6 @@ config SND_SOC_SH4_HAC
 	select AC97_BUS
 	select SND_SOC_AC97_BUS
 
-config SND_SOC_SH4_SSI
-	tristate
-
 config SND_SOC_SH4_FSI
 	tristate "SH4 FSI support"
 	depends on SUPERH || COMMON_CLK
