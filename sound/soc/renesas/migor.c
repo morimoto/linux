@@ -11,8 +11,6 @@
 
 #include <asm/clock.h>
 
-#include <cpu/sh7722.h>
-
 #include <sound/core.h>
 #include <sound/pcm.h>
 #include <sound/soc.h>
