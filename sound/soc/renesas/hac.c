@@ -86,8 +86,6 @@ struct hac_priv {
 	{
 		.mmio	= 0xFFE40000,
 	},
-#else
-#error "Unsupported SuperH SoC"
 #endif
 };
 
