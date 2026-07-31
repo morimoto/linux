@@ -5,11 +5,9 @@ obj-$(CONFIG_SND_SOC_PCM_SH7760)	+= snd-soc-dma-sh7760.o
 
 ## audio units found on some SH-4
 snd-soc-hac-y		:= hac.o
-snd-soc-ssi-y		:= ssi.o
 snd-soc-fsi-y		:= fsi.o
 snd-soc-siu-y		:= siu_pcm.o siu_dai.o
 obj-$(CONFIG_SND_SOC_SH4_HAC)	+= snd-soc-hac.o
-obj-$(CONFIG_SND_SOC_SH4_SSI)	+= snd-soc-ssi.o
 obj-$(CONFIG_SND_SOC_SH4_FSI)	+= snd-soc-fsi.o
 obj-$(CONFIG_SND_SOC_SH4_SIU)	+= snd-soc-siu.o
 
