@@ -168,7 +168,7 @@ static const struct of_device_id davinci_evm_dt_ids[] = {
 MODULE_DEVICE_TABLE(of, davinci_evm_dt_ids);
 
 /* davinci evm audio machine driver */
-static struct snd_soc_card evm_soc_card = {
+static struct snd_soc_card_driver evm_soc_card_driver = {
 	.owner = THIS_MODULE,
 	.num_links = 1,
 };
@@ -178,8 +178,13 @@ static int davinci_evm_probe(struct platform_device *pdev)
 	struct device_node *np = pdev->dev.of_node;
 	struct snd_soc_dai_link *dai;
 	struct snd_soc_card_drvdata_davinci *drvdata = NULL;
+	struct snd_soc_card *card;
 	struct clk *mclk;
 	int ret = 0;
+
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
 
 	dai = (struct snd_soc_dai_link *) device_get_match_data(&pdev->dev);
 	if (!dai) {
@@ -187,7 +192,7 @@ static int davinci_evm_probe(struct platform_device *pdev)
 		return -ENODEV;
 	}
 
-	evm_soc_card.dai_link = dai;
+	evm_soc_card_driver.dai_link = dai;
 
 	dai->codecs->of_node = of_parse_phandle(np, "ti,audio-codec", 0);
 	if (!dai->codecs->of_node)
@@ -201,8 +206,7 @@ static int davinci_evm_probe(struct platform_device *pdev)
 
 	dai->platforms->of_node = dai->cpus->of_node;
 
-	evm_soc_card.dev = &pdev->dev;
-	ret = snd_soc_of_parse_card_name(&evm_soc_card, "ti,model");
+	ret = snd_soc_card_of_parse_name(card, "ti,model");
 	if (ret)
 		goto err_put;
 
@@ -243,10 +247,10 @@ static int davinci_evm_probe(struct platform_device *pdev)
 				 requestd_rate, drvdata->sysclk);
 	}
 
-	snd_soc_card_set_drvdata(&evm_soc_card, drvdata);
-	ret = devm_snd_soc_register_card(&pdev->dev, &evm_soc_card);
+	snd_soc_card_set_priv(card, drvdata);
+	ret = devm_snd_soc_card_register(card, &evm_soc_card_driver);
 	if (ret) {
-		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card() failed\n");
+		dev_err_probe(&pdev->dev, ret, "snd_soc_card_register() failed\n");
 		goto err_put;
 	}
 
