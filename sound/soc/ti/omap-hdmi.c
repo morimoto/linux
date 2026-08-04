@@ -307,7 +307,9 @@ static int omap_hdmi_audio_probe(struct platform_device *pdev)
 	struct hdmi_audio_data *ad;
 	struct snd_soc_dai_driver *dai_drv;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct snd_soc_dai_link_component *compnent;
+	char *card_name;
 	int ret;
 
 	if (!ha) {
@@ -344,37 +346,37 @@ static int omap_hdmi_audio_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card = snd_soc_card_alloc(dev);
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card || !card_driver)
 		return -ENOMEM;
 
-	card->name = "HDMI";
-	card->owner = THIS_MODULE;
-	card->dai_link =
-		devm_kzalloc(dev, sizeof(*(card->dai_link)), GFP_KERNEL);
-	if (!card->dai_link)
+	card_name = "HDMI";
+	snd_soc_card_set_name(card, card_name);
+	card_driver->owner = THIS_MODULE;
+	card_driver->dai_link = devm_kzalloc(dev, sizeof(*(card_driver->dai_link)), GFP_KERNEL);
+	if (!card_driver->dai_link)
 		return -ENOMEM;
 
 	compnent = devm_kzalloc(dev, 2 * sizeof(*compnent), GFP_KERNEL);
 	if (!compnent)
 		return -ENOMEM;
-	card->dai_link->cpus		= &compnent[0];
-	card->dai_link->num_cpus	= 1;
-	card->dai_link->codecs		= &snd_soc_dummy_dlc;
-	card->dai_link->num_codecs	= 1;
-	card->dai_link->platforms	= &compnent[1];
-	card->dai_link->num_platforms	= 1;
+	card_driver->dai_link->cpus		= &compnent[0];
+	card_driver->dai_link->num_cpus		= 1;
+	card_driver->dai_link->codecs		= &snd_soc_dummy_dlc;
+	card_driver->dai_link->num_codecs	= 1;
+	card_driver->dai_link->platforms	= &compnent[1];
+	card_driver->dai_link->num_platforms	= 1;
 
-	card->dai_link->name = card->name;
-	card->dai_link->stream_name = card->name;
-	card->dai_link->cpus->dai_name = dev_name(ad->dssdev);
-	card->dai_link->platforms->name = dev_name(ad->dssdev);
-	card->num_links = 1;
-	card->dev = dev;
+	card_driver->dai_link->name = card_name;
+	card_driver->dai_link->stream_name = card_name;
+	card_driver->dai_link->cpus->dai_name = dev_name(ad->dssdev);
+	card_driver->dai_link->platforms->name = dev_name(ad->dssdev);
+	card_driver->num_links = 1;
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
-		return dev_err_probe(dev, ret, "snd_soc_register_card() failed\n");
+		return dev_err_probe(dev, ret, "snd_soc_card_register() failed\n");
 
 	snd_soc_card_set_drvdata(card, ad);
 
