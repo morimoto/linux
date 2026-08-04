@@ -1690,27 +1690,26 @@ static const struct snd_soc_dapm_route sun4i_codec_card_dapm_routes[] = {
 	{ "Speaker", NULL, "HP Left" },
 };
 
-static struct snd_soc_card *sun4i_codec_create_card(struct device *dev)
+static struct snd_soc_card_driver *sun4i_codec_create_card_driver(struct device *dev)
 {
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card_driver)
 		return ERR_PTR(-ENOMEM);
 
-	card->dai_link = sun4i_codec_create_link(dev, &card->num_links);
-	if (!card->dai_link)
+	card_driver->dai_link = sun4i_codec_create_link(dev, &card_driver->num_links);
+	if (!card_driver->dai_link)
 		return ERR_PTR(-ENOMEM);
 
-	card->dev		= dev;
-	card->owner		= THIS_MODULE;
-	card->name		= "sun4i-codec";
-	card->dapm_widgets	= sun4i_codec_card_dapm_widgets;
-	card->num_dapm_widgets	= ARRAY_SIZE(sun4i_codec_card_dapm_widgets);
-	card->dapm_routes	= sun4i_codec_card_dapm_routes;
-	card->num_dapm_routes	= ARRAY_SIZE(sun4i_codec_card_dapm_routes);
+	card_driver->owner		= THIS_MODULE;
+	card_driver->default_name	= "sun4i-codec";
+	card_driver->dapm_widgets	= sun4i_codec_card_dapm_widgets;
+	card_driver->num_dapm_widgets	= ARRAY_SIZE(sun4i_codec_card_dapm_widgets);
+	card_driver->dapm_routes	= sun4i_codec_card_dapm_routes;
+	card_driver->num_dapm_routes	= ARRAY_SIZE(sun4i_codec_card_dapm_routes);
 
-	return card;
+	return card_driver;
 };
 
 static const struct snd_soc_dapm_widget sun6i_codec_card_dapm_widgets[] = {
@@ -1722,31 +1721,31 @@ static const struct snd_soc_dapm_widget sun6i_codec_card_dapm_widgets[] = {
 	SND_SOC_DAPM_SPK("Speaker", sun4i_codec_spk_event),
 };
 
-static struct snd_soc_card *sun6i_codec_create_card(struct device *dev)
+static struct snd_soc_card_driver *sun6i_codec_create_card_driver(struct device *dev)
 {
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	int ret;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card_driver)
 		return ERR_PTR(-ENOMEM);
 
-	card->dai_link = sun4i_codec_create_link(dev, &card->num_links);
-	if (!card->dai_link)
+	card_driver->dai_link = sun4i_codec_create_link(dev, &card_driver->num_links);
+	if (!card_driver->dai_link)
 		return ERR_PTR(-ENOMEM);
 
-	card->dev		= dev;
-	card->owner		= THIS_MODULE;
-	card->name		= "A31 Audio Codec";
-	card->dapm_widgets	= sun6i_codec_card_dapm_widgets;
-	card->num_dapm_widgets	= ARRAY_SIZE(sun6i_codec_card_dapm_widgets);
-	card->fully_routed	= true;
+	card_driver->owner		= THIS_MODULE;
+	card_driver->default_name	= "A31 Audio Codec";
+	card_driver->dapm_widgets	= sun6i_codec_card_dapm_widgets;
+	card_driver->num_dapm_widgets	= ARRAY_SIZE(sun6i_codec_card_dapm_widgets);
+	card_driver->fully_routed	= true;
 
-	ret = snd_soc_of_parse_audio_routing(card, "allwinner,audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver,
+							 "allwinner,audio-routing");
 	if (ret)
 		dev_warn(dev, "failed to parse audio-routing: %d\n", ret);
 
-	return card;
+	return card_driver;
 };
 
 /* Connect digital side enables to analog side widgets */
@@ -1768,13 +1767,13 @@ static struct snd_soc_aux_dev aux_dev = {
 	.dlc = COMP_EMPTY(),
 };
 
-static struct snd_soc_card *sun8i_a23_codec_create_card(struct device *dev)
+static struct snd_soc_card_driver *sun8i_a23_codec_create_card_driver(struct device *dev)
 {
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	int ret;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card_driver)
 		return ERR_PTR(-ENOMEM);
 
 	aux_dev.dlc.of_node = of_parse_phandle(dev->of_node,
@@ -1785,35 +1784,35 @@ static struct snd_soc_card *sun8i_a23_codec_create_card(struct device *dev)
 		return ERR_PTR(-EINVAL);
 	}
 
-	card->dai_link = sun4i_codec_create_link(dev, &card->num_links);
-	if (!card->dai_link)
+	card_driver->dai_link = sun4i_codec_create_link(dev, &card_driver->num_links);
+	if (!card_driver->dai_link)
 		return ERR_PTR(-ENOMEM);
 
-	card->dev		= dev;
-	card->owner		= THIS_MODULE;
-	card->name		= "A23 Audio Codec";
-	card->dapm_widgets	= sun6i_codec_card_dapm_widgets;
-	card->num_dapm_widgets	= ARRAY_SIZE(sun6i_codec_card_dapm_widgets);
-	card->dapm_routes	= sun8i_codec_card_routes;
-	card->num_dapm_routes	= ARRAY_SIZE(sun8i_codec_card_routes);
-	card->aux_dev		= &aux_dev;
-	card->num_aux_devs	= 1;
-	card->fully_routed	= true;
+	card_driver->owner		= THIS_MODULE;
+	card_driver->default_name	= "A23 Audio Codec";
+	card_driver->dapm_widgets	= sun6i_codec_card_dapm_widgets;
+	card_driver->num_dapm_widgets	= ARRAY_SIZE(sun6i_codec_card_dapm_widgets);
+	card_driver->dapm_routes	= sun8i_codec_card_routes;
+	card_driver->num_dapm_routes	= ARRAY_SIZE(sun8i_codec_card_routes);
+	card_driver->aux_dev		= &aux_dev;
+	card_driver->num_aux_devs	= 1;
+	card_driver->fully_routed	= true;
 
-	ret = snd_soc_of_parse_audio_routing(card, "allwinner,audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver,
+							 "allwinner,audio-routing");
 	if (ret)
 		dev_warn(dev, "failed to parse audio-routing: %d\n", ret);
 
-	return card;
+	return card_driver;
 };
 
-static struct snd_soc_card *sun8i_h3_codec_create_card(struct device *dev)
+static struct snd_soc_card_driver *sun8i_h3_codec_create_card_driver(struct device *dev)
 {
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	int ret;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card_driver)
 		return ERR_PTR(-ENOMEM);
 
 	aux_dev.dlc.of_node = of_parse_phandle(dev->of_node,
@@ -1824,35 +1823,35 @@ static struct snd_soc_card *sun8i_h3_codec_create_card(struct device *dev)
 		return ERR_PTR(-EINVAL);
 	}
 
-	card->dai_link = sun4i_codec_create_link(dev, &card->num_links);
-	if (!card->dai_link)
+	card_driver->dai_link = sun4i_codec_create_link(dev, &card_driver->num_links);
+	if (!card_driver->dai_link)
 		return ERR_PTR(-ENOMEM);
 
-	card->dev		= dev;
-	card->owner		= THIS_MODULE;
-	card->name		= "H3 Audio Codec";
-	card->dapm_widgets	= sun6i_codec_card_dapm_widgets;
-	card->num_dapm_widgets	= ARRAY_SIZE(sun6i_codec_card_dapm_widgets);
-	card->dapm_routes	= sun8i_codec_card_routes;
-	card->num_dapm_routes	= ARRAY_SIZE(sun8i_codec_card_routes);
-	card->aux_dev		= &aux_dev;
-	card->num_aux_devs	= 1;
-	card->fully_routed	= true;
+	card_driver->owner		= THIS_MODULE;
+	card_driver->default_name	= "H3 Audio Codec";
+	card_driver->dapm_widgets	= sun6i_codec_card_dapm_widgets;
+	card_driver->num_dapm_widgets	= ARRAY_SIZE(sun6i_codec_card_dapm_widgets);
+	card_driver->dapm_routes	= sun8i_codec_card_routes;
+	card_driver->num_dapm_routes	= ARRAY_SIZE(sun8i_codec_card_routes);
+	card_driver->aux_dev		= &aux_dev;
+	card_driver->num_aux_devs	= 1;
+	card_driver->fully_routed	= true;
 
-	ret = snd_soc_of_parse_audio_routing(card, "allwinner,audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver,
+							 "allwinner,audio-routing");
 	if (ret)
 		dev_warn(dev, "failed to parse audio-routing: %d\n", ret);
 
-	return card;
+	return card_driver;
 };
 
-static struct snd_soc_card *sun8i_v3s_codec_create_card(struct device *dev)
+static struct snd_soc_card_driver *sun8i_v3s_codec_create_card_driver(struct device *dev)
 {
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	int ret;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card_driver)
 		return ERR_PTR(-ENOMEM);
 
 	aux_dev.dlc.of_node = of_parse_phandle(dev->of_node,
@@ -1863,26 +1862,26 @@ static struct snd_soc_card *sun8i_v3s_codec_create_card(struct device *dev)
 		return ERR_PTR(-EINVAL);
 	}
 
-	card->dai_link = sun4i_codec_create_link(dev, &card->num_links);
-	if (!card->dai_link)
+	card_driver->dai_link = sun4i_codec_create_link(dev, &card_driver->num_links);
+	if (!card_driver->dai_link)
 		return ERR_PTR(-ENOMEM);
 
-	card->dev		= dev;
-	card->owner		= THIS_MODULE;
-	card->name		= "V3s Audio Codec";
-	card->dapm_widgets	= sun6i_codec_card_dapm_widgets;
-	card->num_dapm_widgets	= ARRAY_SIZE(sun6i_codec_card_dapm_widgets);
-	card->dapm_routes	= sun8i_codec_card_routes;
-	card->num_dapm_routes	= ARRAY_SIZE(sun8i_codec_card_routes);
-	card->aux_dev		= &aux_dev;
-	card->num_aux_devs	= 1;
-	card->fully_routed	= true;
+	card_driver->owner		= THIS_MODULE;
+	card_driver->default_name	= "V3s Audio Codec";
+	card_driver->dapm_widgets	= sun6i_codec_card_dapm_widgets;
+	card_driver->num_dapm_widgets	= ARRAY_SIZE(sun6i_codec_card_dapm_widgets);
+	card_driver->dapm_routes	= sun8i_codec_card_routes;
+	card_driver->num_dapm_routes	= ARRAY_SIZE(sun8i_codec_card_routes);
+	card_driver->aux_dev		= &aux_dev;
+	card_driver->num_aux_devs	= 1;
+	card_driver->fully_routed	= true;
 
-	ret = snd_soc_of_parse_audio_routing(card, "allwinner,audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver,
+							 "allwinner,audio-routing");
 	if (ret)
 		dev_warn(dev, "failed to parse audio-routing: %d\n", ret);
 
-	return card;
+	return card_driver;
 };
 
 static const struct snd_kcontrol_new sun50i_h616_codec_codec_controls[] = {
@@ -1995,40 +1994,40 @@ static const struct snd_soc_dapm_route sun50i_h616_codec_card_routes[] = {
 	{ "LINEOUT", NULL, "Line Out Ramp Controller" },
 };
 
-static struct snd_soc_card *sun50i_h616_codec_create_card(struct device *dev)
+static struct snd_soc_card_driver *sun50i_h616_codec_create_card_driver(struct device *dev)
 {
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	int ret;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card_driver)
 		return ERR_PTR(-ENOMEM);
 
-	card->dai_link = sun4i_codec_create_link(dev, &card->num_links);
-	if (!card->dai_link)
+	card_driver->dai_link = sun4i_codec_create_link(dev, &card_driver->num_links);
+	if (!card_driver->dai_link)
 		return ERR_PTR(-ENOMEM);
 
-	card->dai_link->playback_only = true;
-	card->dai_link->capture_only = false;
+	card_driver->dai_link->playback_only = true;
+	card_driver->dai_link->capture_only = false;
 
-	card->dev		= dev;
-	card->owner		= THIS_MODULE;
-	card->name		= "H616 Audio Codec";
-	card->long_name		= "h616-audio-codec";
-	card->driver_name	= "sun4i-codec";
-	card->controls		= sun50i_h616_card_controls;
-	card->num_controls	= ARRAY_SIZE(sun50i_h616_card_controls);
-	card->dapm_widgets	= sun50i_h616_codec_card_dapm_widgets;
-	card->num_dapm_widgets	= ARRAY_SIZE(sun50i_h616_codec_card_dapm_widgets);
-	card->dapm_routes	= sun50i_h616_codec_card_routes;
-	card->num_dapm_routes	= ARRAY_SIZE(sun50i_h616_codec_card_routes);
-	card->fully_routed	= true;
+	card_driver->owner		= THIS_MODULE;
+	card_driver->default_name	= "H616 Audio Codec";
+	card_driver->default_long_name	= "h616-audio-codec";
+	card_driver->driver_name	= "sun4i-codec";
+	card_driver->controls		= sun50i_h616_card_controls;
+	card_driver->num_controls	= ARRAY_SIZE(sun50i_h616_card_controls);
+	card_driver->dapm_widgets	= sun50i_h616_codec_card_dapm_widgets;
+	card_driver->num_dapm_widgets	= ARRAY_SIZE(sun50i_h616_codec_card_dapm_widgets);
+	card_driver->dapm_routes	= sun50i_h616_codec_card_routes;
+	card_driver->num_dapm_routes	= ARRAY_SIZE(sun50i_h616_codec_card_routes);
+	card_driver->fully_routed	= true;
 
-	ret = snd_soc_of_parse_audio_routing(card, "allwinner,audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver,
+							 "allwinner,audio-routing");
 	if (ret)
 		dev_warn(dev, "failed to parse audio-routing: %d\n", ret);
 
-	return card;
+	return card_driver;
 };
 
 static const struct snd_soc_dapm_widget suniv_codec_card_dapm_widgets[] = {
@@ -2053,32 +2052,32 @@ static const struct snd_soc_dapm_route suniv_codec_card_routes[] = {
 	{ "Right DAC", NULL, "Codec Playback" },
 };
 
-static struct snd_soc_card *suniv_codec_create_card(struct device *dev)
+static struct snd_soc_card_driver *suniv_codec_create_card_driver(struct device *dev)
 {
-	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	int ret;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card_driver)
 		return ERR_PTR(-ENOMEM);
 
-	card->dai_link = sun4i_codec_create_link(dev, &card->num_links);
-	if (!card->dai_link)
+	card_driver->dai_link = sun4i_codec_create_link(dev, &card_driver->num_links);
+	if (!card_driver->dai_link)
 		return ERR_PTR(-ENOMEM);
 
-	card->dev		= dev;
-	card->name		= "F1C100s Audio Codec";
-	card->dapm_widgets	= suniv_codec_card_dapm_widgets;
-	card->num_dapm_widgets	= ARRAY_SIZE(suniv_codec_card_dapm_widgets);
-	card->dapm_routes	= suniv_codec_card_routes;
-	card->num_dapm_routes	= ARRAY_SIZE(suniv_codec_card_routes);
-	card->fully_routed	= true;
+	card_driver->default_name	= "F1C100s Audio Codec";
+	card_driver->dapm_widgets	= suniv_codec_card_dapm_widgets;
+	card_driver->num_dapm_widgets	= ARRAY_SIZE(suniv_codec_card_dapm_widgets);
+	card_driver->dapm_routes	= suniv_codec_card_routes;
+	card_driver->num_dapm_routes	= ARRAY_SIZE(suniv_codec_card_routes);
+	card_driver->fully_routed	= true;
 
-	ret = snd_soc_of_parse_audio_routing(card, "allwinner,audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver,
+							 "allwinner,audio-routing");
 	if (ret)
 		dev_warn(dev, "failed to parse audio-routing: %d\n", ret);
 
-	return card;
+	return card_driver;
 };
 
 static const struct regmap_config sun4i_codec_regmap_config = {
@@ -2141,7 +2140,7 @@ static const struct regmap_config suniv_codec_regmap_config = {
 struct sun4i_codec_quirks {
 	const struct regmap_config *regmap_config;
 	const struct snd_soc_component_driver *codec;
-	struct snd_soc_card * (*create_card)(struct device *dev);
+	struct snd_soc_card_driver * (*create_driver)(struct device *dev);
 	struct reg_field reg_adc_fifoc;	/* used for regmap_field */
 	struct reg_field reg_dac_fifoc;	/* used for regmap_field */
 	unsigned int reg_dac_txdata;	/* TX FIFO offset for DMA config */
@@ -2154,7 +2153,7 @@ struct sun4i_codec_quirks {
 static const struct sun4i_codec_quirks sun4i_codec_quirks = {
 	.regmap_config	= &sun4i_codec_regmap_config,
 	.codec		= &sun4i_codec_codec,
-	.create_card	= sun4i_codec_create_card,
+	.create_driver	= sun4i_codec_create_card_driver,
 	.reg_adc_fifoc	= REG_FIELD(SUN4I_CODEC_ADC_FIFOC, 0, 31),
 	.reg_dac_fifoc	= REG_FIELD(SUN4I_CODEC_DAC_FIFOC, 0, 31),
 	.reg_dac_txdata	= SUN4I_CODEC_DAC_TXDATA,
@@ -2165,7 +2164,7 @@ static const struct sun4i_codec_quirks sun4i_codec_quirks = {
 static const struct sun4i_codec_quirks sun6i_a31_codec_quirks = {
 	.regmap_config	= &sun6i_codec_regmap_config,
 	.codec		= &sun6i_codec_codec,
-	.create_card	= sun6i_codec_create_card,
+	.create_driver	= sun6i_codec_create_card_driver,
 	.reg_adc_fifoc	= REG_FIELD(SUN6I_CODEC_ADC_FIFOC, 0, 31),
 	.reg_dac_fifoc	= REG_FIELD(SUN4I_CODEC_DAC_FIFOC, 0, 31),
 	.reg_dac_txdata	= SUN4I_CODEC_DAC_TXDATA,
@@ -2177,7 +2176,7 @@ static const struct sun4i_codec_quirks sun6i_a31_codec_quirks = {
 static const struct sun4i_codec_quirks sun7i_codec_quirks = {
 	.regmap_config	= &sun7i_codec_regmap_config,
 	.codec		= &sun7i_codec_codec,
-	.create_card	= sun4i_codec_create_card,
+	.create_driver	= sun4i_codec_create_card_driver,
 	.reg_adc_fifoc	= REG_FIELD(SUN4I_CODEC_ADC_FIFOC, 0, 31),
 	.reg_dac_fifoc	= REG_FIELD(SUN4I_CODEC_DAC_FIFOC, 0, 31),
 	.reg_dac_txdata	= SUN4I_CODEC_DAC_TXDATA,
@@ -2188,7 +2187,7 @@ static const struct sun4i_codec_quirks sun7i_codec_quirks = {
 static const struct sun4i_codec_quirks sun8i_a23_codec_quirks = {
 	.regmap_config	= &sun8i_a23_codec_regmap_config,
 	.codec		= &sun8i_a23_codec_codec,
-	.create_card	= sun8i_a23_codec_create_card,
+	.create_driver	= sun8i_a23_codec_create_card_driver,
 	.reg_adc_fifoc	= REG_FIELD(SUN6I_CODEC_ADC_FIFOC, 0, 31),
 	.reg_dac_fifoc	= REG_FIELD(SUN4I_CODEC_DAC_FIFOC, 0, 31),
 	.reg_dac_txdata	= SUN4I_CODEC_DAC_TXDATA,
@@ -2205,7 +2204,7 @@ static const struct sun4i_codec_quirks sun8i_h3_codec_quirks = {
 	 * processing support for the H3.
 	 */
 	.codec		= &sun8i_a23_codec_codec,
-	.create_card	= sun8i_h3_codec_create_card,
+	.create_driver	= sun8i_h3_codec_create_card_driver,
 	.reg_adc_fifoc	= REG_FIELD(SUN6I_CODEC_ADC_FIFOC, 0, 31),
 	.reg_dac_fifoc	= REG_FIELD(SUN4I_CODEC_DAC_FIFOC, 0, 31),
 	.reg_dac_txdata	= SUN8I_H3_CODEC_DAC_TXDATA,
@@ -2221,7 +2220,7 @@ static const struct sun4i_codec_quirks sun8i_v3s_codec_quirks = {
 	 * H3, when adding digital audio processing support.
 	 */
 	.codec		= &sun8i_a23_codec_codec,
-	.create_card	= sun8i_v3s_codec_create_card,
+	.create_driver	= sun8i_v3s_codec_create_card_driver,
 	.reg_adc_fifoc	= REG_FIELD(SUN6I_CODEC_ADC_FIFOC, 0, 31),
 	.reg_dac_fifoc	= REG_FIELD(SUN4I_CODEC_DAC_FIFOC, 0, 31),
 	.reg_dac_txdata	= SUN8I_H3_CODEC_DAC_TXDATA,
@@ -2233,7 +2232,7 @@ static const struct sun4i_codec_quirks sun8i_v3s_codec_quirks = {
 static const struct sun4i_codec_quirks sun50i_h616_codec_quirks = {
 	.regmap_config	= &sun50i_h616_codec_regmap_config,
 	.codec		= &sun50i_h616_codec_codec,
-	.create_card	= sun50i_h616_codec_create_card,
+	.create_driver	= sun50i_h616_codec_create_card_driver,
 	.reg_dac_fifoc	= REG_FIELD(SUN50I_H616_CODEC_DAC_FIFOC, 0, 31),
 	.reg_dac_txdata	= SUN8I_H3_CODEC_DAC_TXDATA,
 	.has_reset	= true,
@@ -2244,7 +2243,7 @@ static const struct sun4i_codec_quirks sun50i_h616_codec_quirks = {
 static const struct sun4i_codec_quirks suniv_f1c100s_codec_quirks = {
 	.regmap_config	= &suniv_codec_regmap_config,
 	.codec		= &suniv_codec_codec,
-	.create_card	= suniv_codec_create_card,
+	.create_driver	= suniv_codec_create_card_driver,
 	.reg_adc_fifoc	= REG_FIELD(SUNIV_CODEC_ADC_FIFOC, 0, 31),
 	.reg_dac_fifoc	= REG_FIELD(SUN4I_CODEC_DAC_FIFOC, 0, 31),
 	.reg_dac_txdata	= SUN4I_CODEC_DAC_TXDATA,
@@ -2293,14 +2292,16 @@ MODULE_DEVICE_TABLE(of, sun4i_codec_of_match);
 static int sun4i_codec_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct sun4i_codec *scodec;
 	const struct sun4i_codec_quirks *quirks;
 	struct resource *res;
 	void __iomem *base;
 	int ret;
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	scodec = devm_kzalloc(&pdev->dev, sizeof(*scodec), GFP_KERNEL);
-	if (!scodec)
+	if (!card || !scodec)
 		return -ENOMEM;
 
 	scodec->dev = &pdev->dev;
@@ -2394,13 +2395,13 @@ static int sun4i_codec_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	card = quirks->create_card(&pdev->dev);
-	if (IS_ERR(card))
-		return PTR_ERR(card);
+	card_driver = quirks->create_driver(&pdev->dev);
+	if (IS_ERR(card_driver))
+		return PTR_ERR(card_driver);
 
 	snd_soc_card_set_drvdata(card, scodec);
 
-	ret = snd_soc_register_card(card);
+	ret = snd_soc_card_register(card, card_driver);
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret,
 				     "Failed to register our card\n");
@@ -2412,7 +2413,7 @@ static void sun4i_codec_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
 
-	snd_soc_unregister_card(card);
+	snd_soc_card_unregister(card);
 }
 
 static struct platform_driver sun4i_codec_driver = {
