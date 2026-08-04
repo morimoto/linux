@@ -13,13 +13,8 @@
  * Machine Driver Interface for ACP HW block
  */
 
-#include <sound/core.h>
-#include <sound/jack.h>
-#include <sound/pcm_params.h>
-#include <sound/soc-dapm.h>
 #include <sound/soc.h>
 #include <linux/input.h>
-#include <linux/module.h>
 #include <linux/dmi.h>
 
 #include "../../codecs/rt5682.h"
