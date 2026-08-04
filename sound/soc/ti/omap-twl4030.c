@@ -187,7 +187,7 @@ static struct snd_soc_dai_link omap_twl4030_dai_links[] = {
 };
 
 /* Audio machine driver */
-static struct snd_soc_card omap_twl4030_card = {
+static struct snd_soc_card_driver omap_twl4030_card_driver = {
 	.owner = THIS_MODULE,
 	.dai_link = omap_twl4030_dai_links,
 	.num_links = ARRAY_SIZE(omap_twl4030_dai_links),
@@ -200,7 +200,8 @@ static struct snd_soc_card omap_twl4030_card = {
 
 static int omap_twl4030_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &omap_twl4030_card;
+	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver = &omap_twl4030_card_driver;
 	struct device_node *node, *dai_node;
 	struct omap_twl4030 *priv;
 	struct property *prop;
@@ -210,10 +211,9 @@ static int omap_twl4030_probe(struct platform_device *pdev)
 	if (!node)
 		return -ENODEV;
 
-	card->dev = &pdev->dev;
-
+	card = snd_soc_card_alloc(&pdev->dev);
 	priv = devm_kzalloc(&pdev->dev, sizeof(struct omap_twl4030), GFP_KERNEL);
-	if (priv == NULL)
+	if (!card || !priv)
 		return -ENOMEM;
 
 	ret = snd_soc_of_parse_card_name(card, "ti,model");
@@ -238,7 +238,7 @@ static int omap_twl4030_probe(struct platform_device *pdev)
 
 	dai_node = of_parse_phandle(node, "ti,mcbsp-voice", 0);
 	if (!dai_node) {
-		card->num_links = 1;
+		card_driver->num_links = 1;
 	} else {
 		omap_twl4030_dai_links[1].cpus->dai_name  = NULL;
 		omap_twl4030_dai_links[1].cpus->of_node = dai_node;
@@ -250,18 +250,20 @@ static int omap_twl4030_probe(struct platform_device *pdev)
 	/* Optional: audio routing can be provided */
 	prop = of_find_property(node, "ti,audio-routing", NULL);
 	if (prop) {
-		ret = snd_soc_of_parse_audio_routing(card, "ti,audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(
+							&pdev->dev, card_driver,
+							"ti,audio-routing");
 		if (ret)
 			return ret;
 
-		card->fully_routed = 1;
+		card_driver->fully_routed = 1;
 	}
 
 	snd_soc_card_set_drvdata(card, priv);
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret,
-				     "devm_snd_soc_register_card() failed\n");
+				     "devm_snd_soc_card_register() failed\n");
 
 	return 0;
 }
