@@ -34,7 +34,7 @@ SND_SOC_DAILINK_DEFS(link1,
 	DAILINK_COMP_ARRAY(COMP_EMPTY()));
 
 struct abe_twl6040 {
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	struct snd_soc_dai_link dai_links[2];
 	int	jack_detection;	/* board can detect jack events */
 	int	mclk_freq;	/* MCLK frequency speed for twl6040 */
@@ -212,6 +212,7 @@ static int omap_abe_probe(struct platform_device *pdev)
 {
 	struct device_node *node = pdev->dev.of_node;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct device_node *dai_node;
 	struct abe_twl6040 *priv;
 	int num_links = 0;
@@ -222,23 +223,23 @@ static int omap_abe_probe(struct platform_device *pdev)
 		return -ENODEV;
 	}
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	priv = devm_kzalloc(&pdev->dev, sizeof(struct abe_twl6040), GFP_KERNEL);
-	if (priv == NULL)
+	if (!card || !priv)
 		return -ENOMEM;
 
-	card = &priv->card;
-	card->dev = &pdev->dev;
-	card->owner = THIS_MODULE;
-	card->dapm_widgets = twl6040_dapm_widgets;
-	card->num_dapm_widgets = ARRAY_SIZE(twl6040_dapm_widgets);
-	card->dapm_routes = audio_map;
-	card->num_dapm_routes = ARRAY_SIZE(audio_map);
+	card_driver = &priv->card_driver;
+	card_driver->owner = THIS_MODULE;
+	card_driver->dapm_widgets = twl6040_dapm_widgets;
+	card_driver->num_dapm_widgets = ARRAY_SIZE(twl6040_dapm_widgets);
+	card_driver->dapm_routes = audio_map;
+	card_driver->num_dapm_routes = ARRAY_SIZE(audio_map);
 
 	ret = snd_soc_of_parse_card_name(card, "ti,model");
 	if (ret)
 		return ret;
 
-	ret = snd_soc_of_parse_audio_routing(card, "ti,audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(&pdev->dev, card_driver, "ti,audio-routing");
 	if (ret)
 		return ret;
 
@@ -287,17 +288,17 @@ static int omap_abe_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	card->fully_routed = 1;
+	card_driver->fully_routed = 1;
 
-	card->dai_link = priv->dai_links;
-	card->num_links = num_links;
+	card_driver->dai_link = priv->dai_links;
+	card_driver->num_links = num_links;
 
 	snd_soc_card_set_drvdata(card, priv);
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
 		dev_err_probe(&pdev->dev, ret,
-			      "devm_snd_soc_register_card() failed\n");
+			      "devm_snd_soc_card_register() failed\n");
 
 	return ret;
 }
