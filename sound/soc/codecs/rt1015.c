@@ -14,17 +14,10 @@
 #include <linux/fs.h>
 #include <linux/i2c.h>
 #include <linux/init.h>
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/platform_device.h>
 #include <linux/pm.h>
-#include <linux/regmap.h>
-#include <sound/core.h>
+
 #include <sound/initval.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/rt1015.h>
-#include <sound/soc-dapm.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 

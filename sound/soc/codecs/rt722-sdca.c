@@ -13,17 +13,10 @@
 #include <linux/firmware.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/moduleparam.h>
 #include <linux/pm_runtime.h>
-#include <linux/slab.h>
 #include <linux/soundwire/sdw_registers.h>
-#include <sound/core.h>
 #include <sound/initval.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/soc-dapm.h>
+#include <sound/soc.h>
 #include <sound/tlv.h>
 
 #include "rt722-sdca.h"
