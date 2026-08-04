@@ -336,8 +336,8 @@ static struct snd_soc_codec_conf rx51_codec_conf[] = {
 };
 
 /* Audio card */
-static struct snd_soc_card rx51_sound_card = {
-	.name = "RX-51",
+static struct snd_soc_card_driver rx51_sound_card_driver = {
+	.default_name = "RX-51",
 	.owner = THIS_MODULE,
 	.dai_link = rx51_dai,
 	.num_links = ARRAY_SIZE(rx51_dai),
@@ -360,13 +360,11 @@ static int rx51_soc_probe(struct platform_device *pdev)
 	struct rx51_audio_pdata *pdata;
 	struct device *dev = &pdev->dev;
 	struct device_node *np = dev->of_node;
-	struct snd_soc_card *card = &rx51_sound_card;
+	struct snd_soc_card *card;
 	int err;
 
 	if (!of_machine_is_compatible("nokia,omap3-n900"))
 		return -ENODEV;
-
-	card->dev = dev;
 
 	if (np) {
 		struct device_node *dai_node;
@@ -410,8 +408,9 @@ static int rx51_soc_probe(struct platform_device *pdev)
 		rx51_codec_conf[1].dlc.of_node = dai_node;
 	}
 
+	card = snd_soc_card_alloc(dev);
 	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
-	if (pdata == NULL)
+	if (!card || !pdata)
 		return -ENOMEM;
 
 	snd_soc_card_set_drvdata(card, pdata);
@@ -436,10 +435,10 @@ static int rx51_soc_probe(struct platform_device *pdev)
 		return dev_err_probe(dev, PTR_ERR(pdata->speaker_amp_gpio),
 				     "could not get speaker enable gpio\n");
 
-	err = devm_snd_soc_register_card(dev, card);
+	err = devm_snd_soc_card_register(card, &rx51_sound_card_driver);
 	if (err)
 		return dev_err_probe(dev, err,
-				     "snd_soc_register_card() failed\n");
+				     "snd_soc_card_register() failed\n");
 
 	return 0;
 }
