@@ -540,8 +540,8 @@ static struct snd_soc_dai_link ams_delta_dai_link = {
 };
 
 /* Audio card driver */
-static struct snd_soc_card ams_delta_audio_card = {
-	.name = "AMS_DELTA",
+static struct snd_soc_card_driver ams_delta_audio_card_driver = {
+	.default_name = "AMS_DELTA",
 	.owner = THIS_MODULE,
 	.dai_link = &ams_delta_dai_link,
 	.num_links = 1,
@@ -557,10 +557,7 @@ static struct snd_soc_card ams_delta_audio_card = {
 /* Module init/exit */
 static int ams_delta_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &ams_delta_audio_card;
 	int ret;
-
-	card->dev = &pdev->dev;
 
 	handset_mute = devm_gpiod_get(&pdev->dev, "handset_mute",
 				      GPIOD_OUT_HIGH);
@@ -572,12 +569,11 @@ static int ams_delta_probe(struct platform_device *pdev)
 	if (IS_ERR(handsfree_mute))
 		return PTR_ERR(handsfree_mute);
 
-	ret = snd_soc_register_card(card);
-	if (ret) {
-		card->dev = NULL;
+	ret = snd_soc_card_register(&pdev->dev, &ams_delta_audio_card_driver);
+	if (ret)
 		return dev_err_probe(&pdev->dev, ret,
-				     "snd_soc_register_card() failed\n");
-	}
+				     "snd_soc_card_register() failed\n");
+
 	return 0;
 }
 
@@ -587,8 +583,7 @@ static void ams_delta_remove(struct platform_device *pdev)
 
 	tty_unregister_ldisc(&cx81801_ops);
 
-	snd_soc_unregister_card(card);
-	card->dev = NULL;
+	snd_soc_card_unregister(card);
 }
 
 #define DRV_NAME "ams-delta-audio"
