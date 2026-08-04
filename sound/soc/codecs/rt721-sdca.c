@@ -7,20 +7,13 @@
 //
 #include <linux/cleanup.h>
 #include <linux/bitops.h>
-#include <sound/core.h>
 #include <linux/delay.h>
 #include <linux/init.h>
 #include <sound/initval.h>
-#include <sound/jack.h>
 #include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <sound/pcm.h>
 #include <linux/pm_runtime.h>
-#include <sound/pcm_params.h>
 #include <linux/soundwire/sdw_registers.h>
-#include <linux/slab.h>
-#include <sound/soc-dapm.h>
+#include <sound/soc.h>
 #include <sound/tlv.h>
 
 #include "rt721-sdca.h"
