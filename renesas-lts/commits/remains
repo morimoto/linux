@@ -497,4 +497,3 @@ b5ce8d1a749fd arm64: dts: renesas: Hardcode I2C address for Camera IMX728
 f763ef478cd6d arm64: dts: renesas: ironhide: Add node for Camera Power Protectors
 b436c3ee7b0d3 arm64: dts: renesas: r8a78000-ironhide: Add CSI-2 pin swap order of R-Car X5H
 661a85310945d arm64: dts: renesas: Add Video Capture related DTs for R8A78000 X5H
-b19186d95d663 dt-bindings: media: Define pin-swap order macro for R-Car X5H
