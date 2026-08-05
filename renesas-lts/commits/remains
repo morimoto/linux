@@ -481,9 +481,7 @@ fcfd63cf865f2 media: media: Add 1X20, 1x24 and 1x28 raw bayer media bus code def
 a48fb184cbf77 media: rcar-vin: Add support for crop function for Gen3 and above
 dc2b76c49b932 media: rcar-isp: Corect start up sequence follow description in HWUM
 e9411b103398b media: rcar-vin: rcar-dma: Fix error state message reports by V4L2 videobuf2 framework
-07feaa541e4bc media: rcar-vin: Reduce the waiting time of the stop capturing process
 08473e2d45b9c media: rcar-vin: Add support for R-Car X5H
-705d972f2d026 media: rcar-vin: Add SW workaround to run Video Capture drivers on virtual platform (e.g. VDK, RFS, RFS2X)
 8b6658813f574 media: rcar-csi2: Remove v4l2_async_notifier_cleanup in remove function
 
 #

@@ -1,5 +1,9 @@
 # Empty line below is needed
 
+# Workaround for running the driver in simulator
+07feaa541e4bc media: rcar-vin: Reduce the waiting time of the stop capturing process
+# Workaround for running the driver in simulator
+705d972f2d026 media: rcar-vin: Add SW workaround to run Video Capture drivers on virtual platform (e.g. VDK, RFS, RFS2X)
 # Rejected: https://patchwork.kernel.org/project/linux-dmaengine/patch/20170728131613.122505-1-arnd@arndb.de/
 e4ea07d0e1c04 dmaengine: rcar-dmac: Fix array-bounds warning refer chcr_ts[]
 # Workaround for broken SCMI firmware? Such a fallback is not upstreamable
