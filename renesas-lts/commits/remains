@@ -473,7 +473,6 @@ f30498741ab1f media: renesas: rcar-csi2: Add callback support for enable_link
 e725eebc9546e media: rcar-vin: rcar-csi2: Add 1/2/3/4 lane support for MIPI CSI-2 C-PHY
 5ae4ef92ba96b media: rcar-vin: rcar-csi2: Add w/a to work with Gen1 datarates (<3500Mbps)
 042ca69bd9998 media: rcar-csi2: Add support for C-PHY on R-Car X5H Ironhide board
-6dca6dab6a83a media: rcar-csi2: move macro defination to top (no functional changes)
 13d42abb3659e media: rcar-vin: Hardcoded to control Module Standby
 03df8c0587caf media: RAW12/14/16/20/24/28 support
 fcfd63cf865f2 media: media: Add 1X20, 1x24 and 1x28 raw bayer media bus code definitions

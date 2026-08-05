@@ -1,5 +1,7 @@
 # Empty line below is needed
 
+# Style change
+6dca6dab6a83a media: rcar-csi2: move macro defination to top (no functional changes)
 # Workaround for running the driver in simulator
 07feaa541e4bc media: rcar-vin: Reduce the waiting time of the stop capturing process
 # Workaround for running the driver in simulator
