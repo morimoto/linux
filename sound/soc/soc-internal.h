@@ -144,6 +144,10 @@ int snd_soc_component_device_link_add(struct snd_soc_component *component);
 	for (component = snd_soc_component_from_component_total_list(snd_soc_component_total_list_head()->next);	\
 	     snd_soc_component_to_component_total_list(component) != snd_soc_component_total_list_head();	\
 	     component = snd_soc_component_from_component_total_list(snd_soc_component_to_component_total_list(component)->next))
+#define for_each_comp_order(order)		\
+	for (order  = SND_SOC_COMP_ORDER_FIRST;	\
+	     order <= SND_SOC_COMP_ORDER_LAST;	\
+	     order++)
 
 /*
  *	PCM helper functions
