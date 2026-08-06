@@ -429,9 +429,6 @@ static inline void snd_soc_dai_stream_dma_data_set_s(struct snd_soc_dai *dai, st
 	int :				snd_soc_dai_stream_dma_data_set_i,	\
 	struct snd_pcm_substream * :	snd_soc_dai_stream_dma_data_set_s)(dai, x, data)
 
-unsigned int snd_soc_dai_stream_tdm_mask_get(const struct snd_soc_dai *dai, int stream);
-void snd_soc_dai_stream_tdm_mask_set(struct snd_soc_dai *dai, int stream, unsigned int tdm_mask);
-
 int snd_soc_dai_set_stream(struct snd_soc_dai *dai, void *stream, int direction);
 void *snd_soc_dai_get_stream(struct snd_soc_dai *dai, int direction);
 
