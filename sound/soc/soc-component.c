@@ -31,10 +31,10 @@ static inline int _soc_component_ret_reg_rw(struct snd_soc_component *component,
 			   func, component->name, reg);
 }
 
-static LIST_HEAD(component_list);
-struct list_head *snd_soc_component_get_list_head(void)
+static LIST_HEAD(component_total_list_head);
+struct list_head *snd_soc_component_total_list_head(void)
 {
-	return &component_list;
+	return &component_total_list_head;
 }
 
 const char *snd_soc_component_name(struct snd_soc_component *component)
@@ -1676,7 +1676,7 @@ static void snd_soc_del_component_unlocked(struct snd_soc_component *component)
 	if (card)
 		snd_soc_card_unbind(card, true);
 
-	list_del(&component->list);
+	list_del(&component->component_total_list);
 }
 
 struct snd_soc_component *snd_soc_component_new(struct device *dev, const char *name,
@@ -1708,7 +1708,7 @@ struct snd_soc_component *snd_soc_component_new(struct device *dev, const char *
 	INIT_LIST_HEAD(&component->dobj_list);
 	INIT_LIST_HEAD(&component->card_list);
 	INIT_LIST_HEAD(&component->aux_list);
-	INIT_LIST_HEAD(&component->list);
+	INIT_LIST_HEAD(&component->component_total_list);
 	mutex_init(&component->io_mutex);
 
 	return component;
@@ -1744,7 +1744,7 @@ int snd_soc_component_register(struct snd_soc_component *component,
 	}
 
 	/* see for_each_component */
-	list_add(&component->list, snd_soc_component_get_list_head());
+	list_add(&component->component_total_list, snd_soc_component_total_list_head());
 
 	snd_soc_card_rebind();
 
