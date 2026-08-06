@@ -218,9 +218,6 @@ void snd_soc_dai_resume(struct snd_soc_dai *dai);
 int snd_soc_dai_active(const struct snd_soc_dai *dai);
 unsigned int snd_soc_dai_active_stream(const struct snd_soc_dai *dai, int stream);
 
-void snd_soc_pcm_dai_delay(struct snd_pcm_substream *substream,
-			   snd_pcm_sframes_t *cpu_delay, snd_pcm_sframes_t *codec_delay);
-
 int snd_soc_dai_compr_startup(struct snd_soc_dai *dai,
 			      struct snd_compr_stream *cstream);
 void snd_soc_dai_compr_shutdown(struct snd_soc_dai *dai,
