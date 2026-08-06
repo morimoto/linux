@@ -102,7 +102,7 @@ static void soc_card_resume_init(struct snd_soc_card *card)
 static inline void soc_card_resume_init(struct snd_soc_card *card) { }
 #endif /* CONFIG_PM_SLEEP */
 
-static void soc_card_fill_dummy_dai(struct snd_soc_card *card)
+static void snd_soc_card_fill_dummy_dai(struct snd_soc_card *card)
 {
 	struct snd_soc_dai_link *dai_link;
 	int i;
@@ -124,8 +124,8 @@ static void soc_card_fill_dummy_dai(struct snd_soc_card *card)
 	}
 }
 
-static int soc_init_pcm_runtime(struct snd_soc_card *card,
-				struct snd_soc_pcm_runtime *rtd)
+static int snd_soc_card_init_pcm_runtime(struct snd_soc_card *card,
+					 struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai_link *dai_link = rtd->dai_link;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
@@ -168,7 +168,7 @@ err:
 	return ret;
 }
 
-static void soc_remove_link_dais(struct snd_soc_card *card)
+static void snd_soc_card_link_dais_remove(struct snd_soc_card *card)
 {
 	struct snd_soc_pcm_runtime *rtd;
 	int order;
@@ -181,7 +181,7 @@ static void soc_remove_link_dais(struct snd_soc_card *card)
 	}
 }
 
-static int soc_probe_link_dais(struct snd_soc_card *card)
+static int snd_soc_card_link_dais_probe(struct snd_soc_card *card)
 {
 	struct snd_soc_pcm_runtime *rtd;
 	int order, ret;
@@ -198,7 +198,7 @@ static int soc_probe_link_dais(struct snd_soc_card *card)
 	return 0;
 }
 
-static void soc_remove_link_components(struct snd_soc_card *card)
+static void snd_soc_card_link_components_remove(struct snd_soc_card *card)
 {
 	struct snd_soc_component *component;
 	struct snd_soc_pcm_runtime *rtd;
@@ -216,7 +216,7 @@ static void soc_remove_link_components(struct snd_soc_card *card)
 	}
 }
 
-static int soc_probe_link_components(struct snd_soc_card *card)
+static int snd_soc_card_link_components_probe(struct snd_soc_card *card)
 {
 	struct snd_soc_component *component;
 	struct snd_soc_pcm_runtime *rtd;
@@ -238,7 +238,7 @@ static int soc_probe_link_components(struct snd_soc_card *card)
 	return 0;
 }
 
-static void soc_unbind_aux_dev(struct snd_soc_card *card)
+static void snd_soc_card_aux_unbind(struct snd_soc_card *card)
 {
 	struct snd_soc_component *component, *_component;
 
@@ -249,7 +249,7 @@ static void soc_unbind_aux_dev(struct snd_soc_card *card)
 	}
 }
 
-static int soc_bind_aux_dev(struct snd_soc_card *card)
+static int snd_soc_card_aux_bind(struct snd_soc_card *card)
 {
 	struct snd_soc_component *component;
 	struct snd_soc_aux_dev *aux;
@@ -269,7 +269,7 @@ static int soc_bind_aux_dev(struct snd_soc_card *card)
 	return 0;
 }
 
-static int soc_probe_aux_devices(struct snd_soc_card *card)
+static int snd_soc_card_aux_probe(struct snd_soc_card *card)
 {
 	struct snd_soc_component *component;
 	int order;
@@ -289,7 +289,7 @@ static int soc_probe_aux_devices(struct snd_soc_card *card)
 	return 0;
 }
 
-static void soc_remove_aux_devices(struct snd_soc_card *card)
+static void snd_soc_card_aux_remove(struct snd_soc_card *card)
 {
 	struct snd_soc_component *comp, *_comp;
 	int order;
@@ -595,15 +595,15 @@ static void soc_card_cleanup_resources(struct snd_soc_card *card)
 	soc_flush_all_delayed_work(card);
 
 	/* remove and free each DAI */
-	soc_card_link_dais_remove(card);
-	soc_card_link_components_remove(card);
+	snd_soc_card_link_dais_remove(card);
+	snd_soc_card_link_components_remove(card);
 
 	for_each_card_rtds_safe(card, rtd, n)
 		snd_soc_remove_pcm_runtime(card, rtd);
 
 	/* remove auxiliary devices */
-	soc_card_aux_remove(card);
-	soc_card_aux_unbind(card);
+	snd_soc_card_aux_remove(card);
+	snd_soc_card_aux_unbind(card);
 
 	snd_soc_dapm_free(snd_soc_card_to_dapm(card));
 	soc_card_debugfs_cleanup(card);
@@ -914,7 +914,7 @@ int soc_card_bind(struct snd_soc_card *card)
 	int ret;
 
 	snd_soc_card_mutex_lock_root(card);
-	soc_card_fill_dummy_dai(card);
+	snd_soc_card_fill_dummy_dai(card);
 
 	snd_soc_dapm_init(dapm, card, NULL);
 	list_del_init(&card->list);
@@ -923,7 +923,7 @@ int soc_card_bind(struct snd_soc_card *card)
 	soc_card_check_tplg_fes(card);
 
 	/* bind aux_devs too */
-	ret = soc_card_aux_bind(card);
+	ret = snd_soc_card_aux_bind(card);
 	if (ret < 0)
 		goto probe_end;
 
@@ -963,7 +963,7 @@ int soc_card_bind(struct snd_soc_card *card)
 		goto probe_end;
 
 	/* probe all components used by DAI links on this card */
-	ret = soc_card_link_components_probe(card);
+	ret = snd_soc_card_link_components_probe(card);
 	if (ret < 0) {
 		if (ret != -EPROBE_DEFER) {
 			dev_err(card->dev,
@@ -973,7 +973,7 @@ int soc_card_bind(struct snd_soc_card *card)
 	}
 
 	/* probe auxiliary components */
-	ret = soc_card_aux_probe(card);
+	ret = snd_soc_card_aux_probe(card);
 	if (ret < 0) {
 		dev_err(card->dev,
 			"ASoC: failed to probe aux component %d\n", ret);
@@ -981,7 +981,7 @@ int soc_card_bind(struct snd_soc_card *card)
 	}
 
 	/* probe all DAI links on this card */
-	ret = soc_card_link_dais_probe(card);
+	ret = snd_soc_card_link_dais_probe(card);
 	if (ret < 0) {
 		dev_err(card->dev,
 			"ASoC: failed to instantiate card %d\n", ret);
@@ -989,7 +989,7 @@ int soc_card_bind(struct snd_soc_card *card)
 	}
 
 	for_each_card_rtds(card, rtd) {
-		ret = soc_card_init_pcm_runtime(card, rtd);
+		ret = snd_soc_card_init_pcm_runtime(card, rtd);
 		if (ret < 0)
 			goto probe_end;
 	}
