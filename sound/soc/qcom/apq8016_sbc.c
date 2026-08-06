@@ -23,7 +23,7 @@
 #define MI2S_COUNT  (MI2S_QUATERNARY + 1)
 
 struct apq8016_sbc_data {
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	void __iomem *mic_iomux;
 	void __iomem *spkr_iomux;
 	struct snd_soc_jack jack;
@@ -153,12 +153,13 @@ static int apq8016_sbc_dai_init(struct snd_soc_pcm_runtime *rtd)
 	return apq8016_dai_init(rtd, cpu_dai->id);
 }
 
-static void apq8016_sbc_add_ops(struct snd_soc_card *card)
+static void apq8016_sbc_add_ops(struct snd_soc_card *card,
+				struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *link;
 	int i;
 
-	for_each_card_prelinks(card, i, link)
+	for_each_card_driver_prelinks(card_driver, i, link)
 		link->init = apq8016_sbc_dai_init;
 }
 
@@ -252,15 +253,16 @@ static int msm8916_qdsp6_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 	return 0;
 }
 
-static void msm8916_qdsp6_add_ops(struct snd_soc_card *card)
+static void msm8916_qdsp6_add_ops(struct snd_soc_card *card,
+				  struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *link;
 	int i;
 
 	/* Make it obvious to userspace that QDSP6 is used */
-	card->components = "qdsp6";
+	snd_soc_card_set_components(card, "qdsp6");
 
-	for_each_card_prelinks(card, i, link) {
+	for_each_card_driver_prelinks(card_driver, i, link) {
 		if (link->no_pcm) {
 			link->init = msm8916_qdsp6_dai_init;
 			link->ops = &msm8916_qdsp6_be_ops;
@@ -286,9 +288,10 @@ static const struct snd_soc_dapm_widget apq8016_sbc_dapm_widgets[] = {
 
 static int apq8016_sbc_platform_probe(struct platform_device *pdev)
 {
-	void (*add_ops)(struct snd_soc_card *card);
+	void (*add_ops)(struct snd_soc_card *, struct snd_soc_card_driver *);
 	struct device *dev = &pdev->dev;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct apq8016_sbc_data *data;
 	int ret;
 
@@ -296,19 +299,19 @@ static int apq8016_sbc_platform_probe(struct platform_device *pdev)
 	if (!add_ops)
 		return -EINVAL;
 
+	card = snd_soc_card_alloc(dev);
 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-	if (!data)
+	if (!card || !data)
 		return -ENOMEM;
 
-	card = &data->card;
-	card->dev = dev;
-	card->owner = THIS_MODULE;
-	card->dapm_widgets = apq8016_sbc_dapm_widgets;
-	card->num_dapm_widgets = ARRAY_SIZE(apq8016_sbc_dapm_widgets);
-	card->controls = apq8016_sbc_snd_controls;
-	card->num_controls = ARRAY_SIZE(apq8016_sbc_snd_controls);
+	card_driver = &data->card_driver;
+	card_driver->owner = THIS_MODULE;
+	card_driver->dapm_widgets = apq8016_sbc_dapm_widgets;
+	card_driver->num_dapm_widgets = ARRAY_SIZE(apq8016_sbc_dapm_widgets);
+	card_driver->controls = apq8016_sbc_snd_controls;
+	card_driver->num_controls = ARRAY_SIZE(apq8016_sbc_snd_controls);
 
-	ret = qcom_snd_parse_of(card);
+	ret = qcom_snd_parse_of(card, card_driver);
 	if (ret)
 		return ret;
 
@@ -322,8 +325,8 @@ static int apq8016_sbc_platform_probe(struct platform_device *pdev)
 
 	snd_soc_card_set_drvdata(card, data);
 
-	add_ops(card);
-	return devm_snd_soc_register_card(&pdev->dev, card);
+	add_ops(card, card_driver);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static const struct of_device_id apq8016_sbc_device_id[] __maybe_unused = {
