@@ -336,6 +336,31 @@ int snd_soc_component_probe(struct snd_soc_component *component)
 	return soc_component_ret(component, ret);
 }
 
+void snd_soc_component_remove(struct snd_soc_component *component)
+{
+	if (component->driver->remove)
+		component->driver->remove(component);
+}
+
+/**
+ * snd_soc_component_add_controls - Add an array of controls to a component.
+ *
+ * @component: Component to add controls to
+ * @controls: Array of controls to add
+ * @num_controls: Number of elements in the array
+ *
+ * Return: 0 for success, else error.
+ */
+int snd_soc_component_add_controls(struct snd_soc_component *component,
+				   const struct snd_kcontrol_new *controls, unsigned int num_controls)
+{
+	struct snd_card *card = component->card->snd_card;
+
+	return snd_soc_add_controls(card, component->dev, controls,
+				    num_controls, component->name_prefix, component);
+}
+EXPORT_SYMBOL_GPL(snd_soc_component_add_controls);
+
 int snd_soc_component_fixup_controls(struct snd_soc_component *component)
 {
 	int ret = 0;
@@ -344,12 +369,6 @@ int snd_soc_component_fixup_controls(struct snd_soc_component *component)
 		ret = component->driver->fixup_controls(component);
 
 	return soc_component_ret(component, ret);
-}
-
-void snd_soc_component_remove(struct snd_soc_component *component)
-{
-	if (component->driver->remove)
-		component->driver->remove(component);
 }
 
 int snd_soc_component_of_xlate_dai_id(struct snd_soc_component *component,
@@ -1271,22 +1290,3 @@ int snd_soc_pcm_component_ack(struct snd_pcm_substream *substream)
 
 	return 0;
 }
-
-/**
- * snd_soc_component_add_controls - Add an array of controls to a component.
- *
- * @component: Component to add controls to
- * @controls: Array of controls to add
- * @num_controls: Number of elements in the array
- *
- * Return: 0 for success, else error.
- */
-int snd_soc_component_add_controls(struct snd_soc_component *component,
-				   const struct snd_kcontrol_new *controls, unsigned int num_controls)
-{
-	struct snd_card *card = component->card->snd_card;
-
-	return snd_soc_add_controls(card, component->dev, controls,
-				    num_controls, component->name_prefix, component);
-}
-EXPORT_SYMBOL_GPL(snd_soc_component_add_controls);
