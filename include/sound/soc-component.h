@@ -309,19 +309,6 @@ int snd_soc_component_fixup_controls(struct snd_soc_component *component);
 int snd_soc_component_add_controls(struct snd_soc_component *component,
 				const struct snd_kcontrol_new *controls, unsigned int num_controls);
 
-#define snd_soc_component_module_get_when_probe(component)\
-	snd_soc_component_module_get(component, NULL, 0)
-#define snd_soc_component_module_get_when_open(component, substream)	\
-	snd_soc_component_module_get(component, substream, 1)
-int snd_soc_component_module_get(struct snd_soc_component *component,
-				 void *mark, int upon_open);
-#define snd_soc_component_module_put_when_remove(component)	\
-	snd_soc_component_module_put(component, NULL, 0, 0)
-#define snd_soc_component_module_put_when_close(component, substream, rollback) \
-	snd_soc_component_module_put(component, substream, 1, rollback)
-void snd_soc_component_module_put(struct snd_soc_component *component,
-				  void *mark, int upon_open, int rollback);
-
 unsigned int snd_soc_component_active(struct snd_soc_component *component);
 int snd_soc_component_num_dai(struct snd_soc_component *component);
 
