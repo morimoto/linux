@@ -86,6 +86,7 @@ void snd_soc_dai_symmetric_update(struct snd_pcm_substream *substream);
 void snd_soc_dai_active_action(struct snd_soc_dai *dai, int stream, int action);
 void snd_soc_dai_get_bclk(struct snd_soc_dai *dai, struct clk **bclk, unsigned int *bclk_ratio);
 unsigned int snd_soc_dai_auto_select_format(const struct snd_soc_pcm_runtime *rtd);
+int snd_soc_dai_prepare(struct snd_soc_dai *dai, struct snd_pcm_substream *substream);
 
 /*
  * In soc-component
