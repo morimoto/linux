@@ -114,11 +114,6 @@ int snd_soc_card_jack_new_pins(struct snd_soc_card *card, const char *id,
 void snd_soc_card_fixup_controls(struct snd_soc_card *card);
 void snd_soc_card_set_topology_name(struct snd_soc_card *card, const char *preifx);
 
-int snd_soc_card_add_dai_link(struct snd_soc_card *card,
-			      struct snd_soc_dai_link *dai_link);
-void snd_soc_card_remove_dai_link(struct snd_soc_card *card,
-				  struct snd_soc_dai_link *dai_link);
-
 int snd_soc_card_of_parse_name(struct snd_soc_card *card, const char *propname);
 int snd_soc_card_driver_of_parse_simple_widgets(struct device *dev,
 						struct snd_soc_card_driver *card_driver,
