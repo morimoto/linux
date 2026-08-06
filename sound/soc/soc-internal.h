@@ -102,6 +102,8 @@ int snd_soc_pcm_dai_remove(struct snd_soc_pcm_runtime *rtd, int order);
 int snd_soc_pcm_dai_new(struct snd_soc_pcm_runtime *rtd);
 int snd_soc_pcm_dai_prepare(struct snd_pcm_substream *substream);
 int snd_soc_pcm_dai_trigger(struct snd_pcm_substream *substream, int cmd, int rollback);
+void snd_soc_pcm_dai_delay(struct snd_pcm_substream *substream,
+			   snd_pcm_sframes_t *cpu_delay, snd_pcm_sframes_t *codec_delay);
 
 /*
  * In soc-component
