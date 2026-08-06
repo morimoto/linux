@@ -153,6 +153,10 @@ int snd_soc_component_module_get(struct snd_soc_component *component, void *mark
 	snd_soc_component_module_put(component, substream, 1, rollback)
 void snd_soc_component_module_put(struct snd_soc_component *component, void *mark, int upon_open,
 				  int rollback);
+int snd_soc_component_open(struct snd_soc_component *component,
+			   struct snd_pcm_substream *substream);
+int snd_soc_component_close(struct snd_soc_component *component,
+			    struct snd_pcm_substream *substream, int rollback);
 
 #define for_each_component(component)							\
 	for (component = snd_soc_component_from_component_total_list(snd_soc_component_total_list_head()->next);	\
