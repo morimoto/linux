@@ -178,7 +178,7 @@ int qcom_snd_apply_dai_tdm_slots(struct snd_soc_pcm_runtime *rtd)
 }
 EXPORT_SYMBOL_GPL(qcom_snd_apply_dai_tdm_slots);
 
-int qcom_snd_parse_of(struct snd_soc_card *card)
+int qcom_snd_parse_of(struct snd_soc_card *card, struct snd_soc_card_driver *card_driver)
 {
 	struct device *dev = card->dev;
 	struct snd_soc_dai_link *link;
@@ -196,29 +196,32 @@ int qcom_snd_parse_of(struct snd_soc_card *card)
 	}
 
 	if (of_property_present(dev->of_node, "widgets")) {
-		ret = snd_soc_of_parse_audio_simple_widgets(card, "widgets");
+		ret = snd_soc_card_driver_of_parse_simple_widgets(dev,
+						card_driver, "widgets");
 		if (ret)
 			return ret;
 	}
 
 	/* DAPM routes */
 	if (of_property_present(dev->of_node, "audio-routing")) {
-		ret = snd_soc_of_parse_audio_routing(card, "audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(dev,
+						card_driver, "audio-routing");
 		if (ret)
 			return ret;
 	}
 	/* Deprecated, only for compatibility with old device trees */
 	if (of_property_present(dev->of_node, "qcom,audio-routing")) {
-		ret = snd_soc_of_parse_audio_routing(card, "qcom,audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(dev,
+						card_driver, "qcom,audio-routing");
 		if (ret)
 			return ret;
 	}
 
-	ret = snd_soc_of_parse_pin_switches(card, "pin-switches");
+	ret = snd_soc_card_driver_of_parse_pin_switches(dev, card_driver, "pin-switches");
 	if (ret)
 		return ret;
 
-	ret = snd_soc_of_parse_aux_devs(card, "aux-devs");
+	ret = snd_soc_card_driver_of_parse_aux_devs(dev, card_driver, "aux-devs");
 	if (ret)
 		return ret;
 
@@ -226,12 +229,12 @@ int qcom_snd_parse_of(struct snd_soc_card *card)
 	num_links = of_get_available_child_count(dev->of_node);
 
 	/* Allocate the DAI link array */
-	card->dai_link = devm_kcalloc(dev, num_links, sizeof(*link), GFP_KERNEL);
-	if (!card->dai_link)
+	card_driver->dai_link = devm_kcalloc(dev, num_links, sizeof(*link), GFP_KERNEL);
+	if (!card_driver->dai_link)
 		return -ENOMEM;
 
-	card->num_links = num_links;
-	link = card->dai_link;
+	card_driver->num_links = num_links;
+	link = card_driver->dai_link;
 
 	for_each_available_child_of_node_scoped(dev->of_node, np) {
 		dlc = devm_kcalloc(dev, 2, sizeof(*dlc), GFP_KERNEL);
@@ -318,9 +321,9 @@ int qcom_snd_parse_of(struct snd_soc_card *card)
 		link++;
 	}
 
-	if (!card->dapm_widgets) {
-		card->dapm_widgets = qcom_jack_snd_widgets;
-		card->num_dapm_widgets = ARRAY_SIZE(qcom_jack_snd_widgets);
+	if (!card_driver->dapm_widgets) {
+		card_driver->dapm_widgets = qcom_jack_snd_widgets;
+		card_driver->num_dapm_widgets = ARRAY_SIZE(qcom_jack_snd_widgets);
 	}
 
 	return 0;
