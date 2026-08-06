@@ -44,10 +44,10 @@ struct snd_soc_component *snd_soc_component_alloc(struct device *dev)
 }
 EXPORT_SYMBOL_GPL(snd_soc_component_alloc);
 
-static LIST_HEAD(component_list);
-struct list_head *snd_soc_component_get_list_head(void)
+static LIST_HEAD(component_total_list_head);
+struct list_head *snd_soc_component_total_list_head(void)
 {
-	return &component_list;
+	return &component_total_list_head;
 }
 
 void snd_soc_component_set_name(struct snd_soc_component *component, const char *name)
@@ -1699,7 +1699,7 @@ static void snd_soc_component_del(struct snd_soc_component *component)
 	if (card)
 		snd_soc_card_unbind(card, true);
 
-	list_del(&component->list);
+	list_del(&component->component_total_list);
 }
 
 static int snd_soc_component_initialize(struct snd_soc_component *component,
@@ -1715,7 +1715,7 @@ static int snd_soc_component_initialize(struct snd_soc_component *component,
 	INIT_LIST_HEAD(&component->dobj_list);
 	INIT_LIST_HEAD(&component->card_list);
 	INIT_LIST_HEAD(&component->aux_list);
-	INIT_LIST_HEAD(&component->list);
+	INIT_LIST_HEAD(&component->component_total_list);
 	mutex_init(&component->io_mutex);
 
 	if (!component->name) {
@@ -1760,7 +1760,7 @@ static int snd_soc_component_add(struct snd_soc_component *component,
 	}
 
 	/* see for_each_component */
-	list_add(&component->list, snd_soc_component_get_list_head());
+	list_add(&component->component_total_list, snd_soc_component_total_list_head());
 
 	snd_soc_card_rebind();
 
