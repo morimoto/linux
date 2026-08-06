@@ -97,6 +97,8 @@ void snd_soc_dai_shutdown(struct snd_soc_dai *dai, struct snd_pcm_substream *sub
 			  int rollback);
 int snd_soc_dai_compress_new(struct snd_soc_dai *dai, struct snd_soc_pcm_runtime *rtd);
 bool snd_soc_dai_stream_valid(const struct snd_soc_dai *dai, int stream);
+int snd_soc_pcm_dai_probe(struct snd_soc_pcm_runtime *rtd, int order);
+int snd_soc_pcm_dai_remove(struct snd_soc_pcm_runtime *rtd, int order);
 
 /*
  * In soc-component
