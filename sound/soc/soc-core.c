@@ -1175,59 +1175,6 @@ int snd_soc_add_controls(struct snd_card *card, struct device *dev,
 	return 0;
 }
 
-/**
- * snd_soc_register_card - Register a card with the ASoC core
- *
- * @card: Card to register
- *
- */
-int snd_soc_register_card(struct snd_soc_card *card)
-{
-	if (!card->name || !card->dev)
-		return -EINVAL;
-
-	card->dapm = snd_soc_dapm_alloc(card->dev);
-	if (!card->dapm)
-		return -ENOMEM;
-
-	dev_set_drvdata(card->dev, card);
-
-	INIT_LIST_HEAD(&card->widget_list_head);
-	INIT_LIST_HEAD(&card->path_list_head);
-	INIT_LIST_HEAD(&card->dapm_list_head);
-	INIT_LIST_HEAD(&card->dapm_dirty_list_head);
-	INIT_LIST_HEAD(&card->aux_list_head);
-	INIT_LIST_HEAD(&card->component_list_head);
-	INIT_LIST_HEAD(&card->unbind_list);
-	INIT_LIST_HEAD(&card->rtd_list_head);
-
-	card->instantiated = 0;
-	mutex_init(&card->mutex);
-	mutex_init(&card->dapm_mutex);
-	mutex_init(&card->pcm_mutex);
-
-	guard(mutex)(&client_mutex);
-
-	return snd_soc_card_bind_call(card);
-}
-EXPORT_SYMBOL_GPL(snd_soc_register_card);
-
-/**
- * snd_soc_unregister_card - Unregister a card with the ASoC core
- *
- * @card: Card to unregister
- *
- */
-void snd_soc_unregister_card(struct snd_soc_card *card)
-{
-	guard(mutex)(&client_mutex);
-
-	snd_soc_card_unbind(card, false);
-
-	dev_dbg(card->dev, "ASoC: Unregistered card '%s'\n", card->name);
-}
-EXPORT_SYMBOL_GPL(snd_soc_unregister_card);
-
 /*
  * Simplify DAI link configuration by removing ".-1" from device names
  * and sanitizing names.
