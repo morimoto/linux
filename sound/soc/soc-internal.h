@@ -92,6 +92,9 @@ int snd_soc_dai_hw_params(struct snd_soc_dai *dai, struct snd_pcm_substream *sub
 			  struct snd_pcm_hw_params *params);
 void snd_soc_dai_hw_free(struct snd_soc_dai *dai, struct snd_pcm_substream *substream,
 			 int rollback);
+int snd_soc_dai_startup(struct snd_soc_dai *dai, struct snd_pcm_substream *substream);
+void snd_soc_dai_shutdown(struct snd_soc_dai *dai, struct snd_pcm_substream *substream,
+			  int rollback);
 
 /*
  * In soc-component
