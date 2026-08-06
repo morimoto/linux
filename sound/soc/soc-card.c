@@ -29,7 +29,7 @@ static inline int _soc_card_ret(struct snd_soc_card *card,
 }
 
 #ifdef CONFIG_DEBUG_FS
-static void soc_card_debugfs_init(struct snd_soc_card *card)
+static void snd_soc_card_debugfs_init(struct snd_soc_card *card)
 {
 	card->debugfs_card_root = debugfs_create_dir(card->name,
 						     snd_soc_debugfs_root);
@@ -37,14 +37,14 @@ static void soc_card_debugfs_init(struct snd_soc_card *card)
 	snd_soc_dapm_debugfs_init(snd_soc_card_to_dapm(card), card->debugfs_card_root);
 }
 
-static void soc_card_debugfs_cleanup(struct snd_soc_card *card)
+static void snd_soc_card_debugfs_cleanup(struct snd_soc_card *card)
 {
 	debugfs_remove_recursive(card->debugfs_card_root);
 	card->debugfs_card_root = NULL;
 }
 #else
-static inline void soc_card_debugfs_init(struct snd_soc_card *card) { }
-static inline void soc_card_debugfs_cleanup(struct snd_soc_card *card) { }
+static inline void snd_soc_card_debugfs_init(struct snd_soc_card *card) { }
+static inline void snd_soc_card_debugfs_cleanup(struct snd_soc_card *card) { }
 #endif /* CONFIG_DEBUG_FS */
 
 #ifdef CONFIG_PM_SLEEP
@@ -52,7 +52,7 @@ static inline void soc_card_debugfs_cleanup(struct snd_soc_card *card) { }
  * deferred resume work, so resume can complete before we finished
  * setting our codec back up, which can be very slow on I2C
  */
-static void soc_card_resume_deferred(struct work_struct *work)
+static void snd_soc_card_resume_deferred(struct work_struct *work)
 {
 	struct snd_soc_card *card =
 		container_of(work, struct snd_soc_card,
@@ -93,13 +93,13 @@ static void soc_card_resume_deferred(struct work_struct *work)
 	snd_power_change_state(card->snd_card, SNDRV_CTL_POWER_D0);
 }
 
-static void soc_card_resume_init(struct snd_soc_card *card)
+static void snd_soc_card_resume_init(struct snd_soc_card *card)
 {
 	/* deferred resume work */
-	INIT_WORK(&card->deferred_resume_work, soc_card_resume_deferred);
+	INIT_WORK(&card->deferred_resume_work, snd_soc_card_resume_deferred);
 }
 #else
-static inline void soc_card_resume_init(struct snd_soc_card *card) { }
+static inline void snd_soc_card_resume_init(struct snd_soc_card *card) { }
 #endif /* CONFIG_PM_SLEEP */
 
 static void snd_soc_card_fill_dummy_dai(struct snd_soc_card *card)
@@ -606,7 +606,7 @@ static void soc_card_cleanup_resources(struct snd_soc_card *card)
 	snd_soc_card_aux_unbind(card);
 
 	snd_soc_dapm_free(snd_soc_card_to_dapm(card));
-	soc_card_debugfs_cleanup(card);
+	snd_soc_card_debugfs_cleanup(card);
 
 	/* remove the card */
 	snd_soc_card_remove(card);
@@ -943,9 +943,9 @@ int soc_card_bind(struct snd_soc_card *card)
 		goto probe_end;
 	}
 
-	soc_card_debugfs_init(card);
+	snd_soc_card_debugfs_init(card);
 
-	soc_card_resume_init(card);
+	snd_soc_card_resume_init(card);
 
 	ret = snd_soc_dapm_new_controls(dapm, card->dapm_widgets,
 					card->num_dapm_widgets);
