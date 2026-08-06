@@ -14,6 +14,7 @@
 #include <sound/jack.h>
 #include <sound/pcm_params.h>
 #include <sound/simple_card_utils.h>
+#include "../soc-internal.h"
 
 #define simple_ret(priv, ret) _simple_ret(priv, __func__, ret)
 static inline int _simple_ret(struct simple_util_priv *priv,
