@@ -15,6 +15,57 @@
 #include <linux/bitops.h>
 #include "soc-internal.h"
 
+struct snd_soc_component {
+	const char *name;
+	const char *name_prefix;
+	struct device *dev;
+	struct snd_soc_card *card;
+
+	unsigned int active;
+
+	unsigned int suspended:1; /* is in suspend PM state */
+
+	struct list_head component_total_list;
+	struct list_head component_list;
+	struct list_head aux_list;		/* for auxiliary bound components */
+
+	struct list_head dobj_list_head;	/* attached dynamic objects */
+	struct list_head dai_list_head;
+	int num_dai;
+
+	struct device_link *card_device_link;
+
+	const struct snd_soc_component_driver *driver;
+
+	struct regmap *regmap;
+
+	struct mutex io_mutex;
+
+	/*
+	 * DO NOT use any of the fields below in drivers, they are temporary and
+	 * are going to be removed again soon. If you use them in driver code
+	 * the driver will be marked as BROKEN when these fields are removed.
+	 */
+
+	struct snd_soc_dapm_context *dapm;
+
+	/* machine specific init */
+	int (*init)(struct snd_soc_component *component);
+
+	/* function mark */
+	void *mark_module;
+	struct snd_pcm_substream *mark_open;
+	struct snd_pcm_substream *mark_hw_params;
+	struct snd_pcm_substream *mark_trigger;
+	struct snd_compr_stream  *mark_compr_open;
+	void *mark_pm;
+
+	struct dentry *debugfs_root;
+
+	/* Component private data */
+	void *priv;
+};
+
 #define soc_component_ret(dai, ret) _soc_component_ret(dai, __func__, ret)
 static inline int _soc_component_ret(struct snd_soc_component *component, const char *func, int ret)
 {
