@@ -141,6 +141,7 @@ void snd_soc_component_device_link_del(struct snd_soc_component *component);
 int snd_soc_component_device_link_add(struct snd_soc_component *component);
 void snd_soc_component_set_aux(struct snd_soc_component *component, struct snd_soc_aux_dev *aux);
 int snd_soc_component_init(struct snd_soc_component *component);
+int snd_soc_component_is_dummy(struct snd_soc_component *component);
 
 #define for_each_component(component)							\
 	for (component = snd_soc_component_from_component_total_list(snd_soc_component_total_list_head()->next);	\
