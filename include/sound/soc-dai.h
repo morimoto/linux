@@ -218,8 +218,6 @@ void snd_soc_dai_resume(struct snd_soc_dai *dai);
 int snd_soc_dai_active(const struct snd_soc_dai *dai);
 unsigned int snd_soc_dai_active_stream(const struct snd_soc_dai *dai, int stream);
 
-int snd_soc_pcm_dai_trigger(struct snd_pcm_substream *substream, int cmd,
-			    int rollback);
 void snd_soc_pcm_dai_delay(struct snd_pcm_substream *substream,
 			   snd_pcm_sframes_t *cpu_delay, snd_pcm_sframes_t *codec_delay);
 
