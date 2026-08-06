@@ -13,21 +13,6 @@ enum snd_soc_card_subclass {
 	SND_SOC_CARD_CLASS_RUNTIME	= 1,
 };
 
-static inline void snd_soc_card_mutex_lock_root(struct snd_soc_card *card)
-{
-	mutex_lock_nested(&card->mutex, SND_SOC_CARD_CLASS_ROOT);
-}
-
-static inline void snd_soc_card_mutex_lock(struct snd_soc_card *card)
-{
-	mutex_lock_nested(&card->mutex, SND_SOC_CARD_CLASS_RUNTIME);
-}
-
-static inline void snd_soc_card_mutex_unlock(struct snd_soc_card *card)
-{
-	mutex_unlock(&card->mutex);
-}
-
 int snd_soc_card_add_controls(struct snd_soc_card *soc_card,
 			      const struct snd_kcontrol_new *controls, int num_controls);
 struct snd_kcontrol *snd_soc_card_get_kcontrol(struct snd_soc_card *soc_card,

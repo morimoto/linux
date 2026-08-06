@@ -37,6 +37,10 @@ void snd_soc_card_unbind(struct snd_soc_card *card, bool reuse);
 void snd_soc_card_rebind(void);
 int snd_soc_card_bind_call(struct snd_soc_card *card);
 
+void snd_soc_card_mutex_lock_root(struct snd_soc_card *card);
+void snd_soc_card_mutex_lock(struct snd_soc_card *card);
+void snd_soc_card_mutex_unlock(struct snd_soc_card *card);
+
 /*
  * In soc-dai
  */
