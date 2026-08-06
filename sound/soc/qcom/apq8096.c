@@ -88,12 +88,12 @@ static int apq8096_init(struct snd_soc_pcm_runtime *rtd)
 	return 0;
 }
 
-static void apq8096_add_be_ops(struct snd_soc_card *card)
+static void apq8096_add_be_ops(struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *link;
 	int i;
 
-	for_each_card_prelinks(card, i, link) {
+	for_each_card_driver_prelinks(card_driver, i, link) {
 		if (link->no_pcm == 1) {
 			link->be_hw_params_fixup = apq8096_be_hw_params_fixup;
 			link->init = apq8096_init;
@@ -105,23 +105,23 @@ static void apq8096_add_be_ops(struct snd_soc_card *card)
 static int apq8096_platform_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct device *dev = &pdev->dev;
 	int ret;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card = snd_soc_card_alloc(dev);
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card || !card_driver)
 		return -ENOMEM;
 
-	card->driver_name = "apq8096";
-	card->dev = dev;
-	card->owner = THIS_MODULE;
-	dev_set_drvdata(dev, card);
-	ret = qcom_snd_parse_of(card);
+	card_driver->driver_name = "apq8096";
+	card_driver->owner = THIS_MODULE;
+	ret = qcom_snd_parse_of(card, card_driver);
 	if (ret)
 		return ret;
 
-	apq8096_add_be_ops(card);
-	return devm_snd_soc_register_card(dev, card);
+	apq8096_add_be_ops(card_driver);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static const struct of_device_id msm_snd_apq8096_dt_match[] = {

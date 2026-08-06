@@ -29,7 +29,7 @@
 #define MI2S_BCLK_RATE		1536000
 
 struct sc7280_snd_data {
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	u32 pri_mi2s_clk_count;
 	struct snd_soc_jack hs_jack;
 	struct snd_soc_jack hdmi_jack;
@@ -344,39 +344,40 @@ static int sc7280_snd_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 static int sc7280_snd_platform_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct sc7280_snd_data *data;
 	struct device *dev = &pdev->dev;
 	struct snd_soc_dai_link *link;
 	int ret, i;
 
+	card = snd_soc_card_alloc(dev);
 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-	if (!data)
+	if (!card || !data)
 		return -ENOMEM;
 
-	card = &data->card;
 	snd_soc_card_set_drvdata(card, data);
 
-	card->owner = THIS_MODULE;
-	card->driver_name = "SC7280";
-	card->dev = dev;
+	card_driver = &data->card_driver;
+	card_driver->owner = THIS_MODULE;
+	card_driver->driver_name = "SC7280";
 
-	card->dapm_widgets = sc7280_snd_widgets;
-	card->num_dapm_widgets = ARRAY_SIZE(sc7280_snd_widgets);
-	card->controls = sc7280_snd_controls;
-	card->num_controls = ARRAY_SIZE(sc7280_snd_controls);
+	card_driver->dapm_widgets = sc7280_snd_widgets;
+	card_driver->num_dapm_widgets = ARRAY_SIZE(sc7280_snd_widgets);
+	card_driver->controls = sc7280_snd_controls;
+	card_driver->num_controls = ARRAY_SIZE(sc7280_snd_controls);
 
-	ret = qcom_snd_parse_of(card);
+	ret = qcom_snd_parse_of(card, card_driver);
 	if (ret)
 		return ret;
 
-	for_each_card_prelinks(card, i, link) {
+	for_each_card_driver_prelinks(card_driver, i, link) {
 		link->init = sc7280_init;
 		link->ops = &sc7280_ops;
 		if (link->no_pcm == 1)
 			link->be_hw_params_fixup = sc7280_snd_be_hw_params_fixup;
 	}
 
-	return devm_snd_soc_register_card(dev, card);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static const struct of_device_id sc7280_snd_device_id[]  = {
