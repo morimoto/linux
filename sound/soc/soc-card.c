@@ -1362,19 +1362,18 @@ struct snd_soc_card *snd_soc_card_alloc(struct device *dev)
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_alloc);
 
-/* REMOVE ME */
-/**
- * snd_soc_register_card - Register a card with the ASoC core
- *
- * @card: Card to register
- *
- */
-int snd_soc_register_card(struct snd_soc_card *card)
+int snd_soc_card_register_c(struct snd_soc_card *card, struct snd_soc_card_driver *driver)
 {
-	if (!card->name || !card->dev)
-		return -EINVAL;
+	if (!card->name)
+		snd_soc_card_set_name(card, driver->default_name);
+	if (!card->long_name)
+		snd_soc_card_set_long_name(card, driver->default_long_name);
+	if (!card->components)
+		snd_soc_card_set_components(card, driver->default_components);
 
-	card->dapm = snd_soc_dapm_alloc(card->dev);
+	card->driver		= driver;
+	card->instantiated	= 0;
+	card->dapm		= snd_soc_dapm_alloc(card->dev);
 	if (!card->dapm)
 		return -ENOMEM;
 
@@ -1389,7 +1388,6 @@ int snd_soc_register_card(struct snd_soc_card *card)
 	INIT_LIST_HEAD(&card->unbind_list);
 	INIT_LIST_HEAD(&card->rtd_list_head);
 
-	card->instantiated = 0;
 	mutex_init(&card->mutex);
 	mutex_init(&card->dapm_mutex);
 	mutex_init(&card->pcm_mutex);
@@ -1397,49 +1395,6 @@ int snd_soc_register_card(struct snd_soc_card *card)
 	guard(mutex)(&client_mutex);
 
 	return snd_soc_card_bind_call(card);
-}
-EXPORT_SYMBOL_GPL(snd_soc_register_card);
-
-int snd_soc_card_register_c(struct snd_soc_card *card, struct snd_soc_card_driver *driver)
-{
-	if (!card->name)
-		snd_soc_card_set_name(card, driver->default_name);
-	if (!card->long_name)
-		snd_soc_card_set_long_name(card, driver->default_long_name);
-	if (!card->components)
-		snd_soc_card_set_components(card, driver->default_components);
-
-	card->driver	= driver;
-
-	/*
-	 * REMOVE ME
-	 *
-	 * To keep compatible, use driver settings as-is for now.
-	 */
-	card->driver_name			= driver->driver_name;
-
-	card->dai_link				= driver->dai_link;
-	card->num_links				= driver->num_links;
-	card->codec_conf			= driver->codec_conf;
-	card->num_configs			= driver->num_configs;
-	card->aux_dev				= driver->aux_dev;
-	card->num_aux_devs			= driver->num_aux_devs;
-	card->controls				= driver->controls;
-	card->num_controls			= driver->num_controls;
-	card->dapm_widgets			= driver->dapm_widgets;
-	card->num_dapm_widgets			= driver->num_dapm_widgets;
-	card->dapm_routes			= driver->dapm_routes;
-	card->num_dapm_routes			= driver->num_dapm_routes;
-	card->of_dapm_widgets			= driver->of_dapm_widgets;
-	card->num_of_dapm_widgets		= driver->num_of_dapm_widgets;
-	card->of_dapm_routes			= driver->of_dapm_routes;
-	card->num_of_dapm_routes		= driver->num_of_dapm_routes;
-	card->of_ignore_suspend_widgets		= driver->of_ignore_suspend_widgets;
-	card->num_of_ignore_suspend_widgets	= driver->num_of_ignore_suspend_widgets;
-	card->fully_routed			= driver->fully_routed;
-	card->component_chaining		= driver->component_chaining;
-
-	return snd_soc_register_card(card);
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_register_c);
 
@@ -1470,22 +1425,6 @@ void snd_soc_card_unregister(struct snd_soc_card *card)
 	dev_dbg(card->dev, "ASoC: Unregistered card '%s'\n", card->name);
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_unregister);
-
-/* REMOVE ME */
-/**
- * devm_snd_soc_register_card - resource managed card registration
- * @dev: Device used to manage card
- * @card: Card to register
- *
- * Register a card with automatic unregistration when the device is
- * unregistered.
- */
-int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card *card)
-{
-	card->devres_dev = dev;
-	return snd_soc_register_card(card);
-}
-EXPORT_SYMBOL_GPL(devm_snd_soc_register_card);
 
 int devm_snd_soc_card_register_c(struct snd_soc_card *card, struct snd_soc_card_driver *driver)
 {
@@ -1587,86 +1526,6 @@ int snd_soc_card_driver_of_parse_simple_widgets(struct device *dev,
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_driver_of_parse_simple_widgets);
 
-/* REMOVE ME */
-int snd_soc_card_of_parse_simple_widgets(struct snd_soc_card *card, const char *propname)
-{
-	struct device_node *np = card->dev->of_node;
-	struct snd_soc_dapm_widget *widgets;
-	const char *template, *wname;
-	int i, j, num_widgets;
-
-	num_widgets = of_property_count_strings(np, propname);
-	if (num_widgets < 0) {
-		dev_err(card->dev,
-			"ASoC: Property '%s' does not exist\n",	propname);
-		return -EINVAL;
-	}
-	if (!num_widgets) {
-		dev_err(card->dev, "ASoC: Property '%s's length is zero\n",
-			propname);
-		return -EINVAL;
-	}
-	if (num_widgets & 1) {
-		dev_err(card->dev,
-			"ASoC: Property '%s' length is not even\n", propname);
-		return -EINVAL;
-	}
-
-	num_widgets /= 2;
-
-	widgets = devm_kcalloc(card->dev, num_widgets, sizeof(*widgets),
-			       GFP_KERNEL);
-	if (!widgets) {
-		dev_err(card->dev,
-			"ASoC: Could not allocate memory for widgets\n");
-		return -ENOMEM;
-	}
-
-	for (i = 0; i < num_widgets; i++) {
-		int ret = of_property_read_string_index(np, propname,
-							2 * i, &template);
-		if (ret) {
-			dev_err(card->dev,
-				"ASoC: Property '%s' index %d read error:%d\n",
-				propname, 2 * i, ret);
-			return -EINVAL;
-		}
-
-		for (j = 0; j < ARRAY_SIZE(simple_widgets); j++) {
-			if (!strncmp(template, simple_widgets[j].name,
-				     strlen(simple_widgets[j].name))) {
-				widgets[i] = simple_widgets[j];
-				break;
-			}
-		}
-
-		if (j >= ARRAY_SIZE(simple_widgets)) {
-			dev_err(card->dev,
-				"ASoC: DAPM widget '%s' is not supported\n",
-				template);
-			return -EINVAL;
-		}
-
-		ret = of_property_read_string_index(np, propname,
-						    (2 * i) + 1,
-						    &wname);
-		if (ret) {
-			dev_err(card->dev,
-				"ASoC: Property '%s' index %d read error:%d\n",
-				propname, (2 * i) + 1, ret);
-			return -EINVAL;
-		}
-
-		widgets[i].name = wname;
-	}
-
-	card->of_dapm_widgets = widgets;
-	card->num_of_dapm_widgets = num_widgets;
-
-	return 0;
-}
-EXPORT_SYMBOL_GPL(snd_soc_card_of_parse_simple_widgets);
-
 /* Retrieve a card's name from device tree */
 int snd_soc_card_of_parse_name(struct snd_soc_card *card, const char *propname)
 {
@@ -1748,57 +1607,6 @@ int snd_soc_card_driver_of_parse_pin_switches(struct device *dev,
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_driver_of_parse_pin_switches);
 
-/* REMOVE ME */
-int snd_soc_card_of_parse_pin_switches(struct snd_soc_card *card, const char *propname)
-{
-	const unsigned int nb_controls_max = 16;
-	const char **strings, *control_name;
-	struct snd_kcontrol_new *controls;
-	struct device *dev = card->dev;
-	unsigned int i, nb_controls;
-	int ret;
-
-	if (!of_property_present(dev->of_node, propname))
-		return 0;
-
-	strings = devm_kcalloc(dev, nb_controls_max,
-			       sizeof(*strings), GFP_KERNEL);
-	if (!strings)
-		return -ENOMEM;
-
-	ret = of_property_read_string_array(dev->of_node, propname,
-					    strings, nb_controls_max);
-	if (ret < 0)
-		return ret;
-
-	nb_controls = (unsigned int)ret;
-
-	controls = devm_kcalloc(dev, nb_controls,
-				sizeof(*controls), GFP_KERNEL);
-	if (!controls)
-		return -ENOMEM;
-
-	for (i = 0; i < nb_controls; i++) {
-		control_name = devm_kasprintf(dev, GFP_KERNEL,
-					      "%s Switch", strings[i]);
-		if (!control_name)
-			return -ENOMEM;
-
-		controls[i].iface = SNDRV_CTL_ELEM_IFACE_MIXER;
-		controls[i].name = control_name;
-		controls[i].info = snd_soc_dapm_info_pin_switch;
-		controls[i].get = snd_soc_dapm_get_pin_switch;
-		controls[i].put = snd_soc_dapm_put_pin_switch;
-		controls[i].private_value = (unsigned long)strings[i];
-	}
-
-	card->controls = controls;
-	card->num_controls = nb_controls;
-
-	return 0;
-}
-EXPORT_SYMBOL_GPL(snd_soc_card_of_parse_pin_switches);
-
 int snd_soc_card_driver_of_parse_audio_routing(struct device *dev,
 					       struct snd_soc_card_driver *card_driver,
 					       const char *propname)
@@ -1846,57 +1654,6 @@ int snd_soc_card_driver_of_parse_audio_routing(struct device *dev,
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_driver_of_parse_audio_routing);
 
-/* REMOVE ME */
-int snd_soc_card_of_parse_audio_routing(struct snd_soc_card *card, const char *propname)
-{
-	struct device_node *np = card->dev->of_node;
-	int num_routes;
-	struct snd_soc_dapm_route *routes;
-	int i;
-
-	num_routes = of_property_count_strings(np, propname);
-	if (num_routes < 0 || num_routes & 1) {
-		dev_err(card->dev,
-			"ASoC: Property '%s' does not exist or its length is not even\n",
-			propname);
-		return -EINVAL;
-	}
-	num_routes /= 2;
-
-	routes = devm_kcalloc(card->dev, num_routes, sizeof(*routes),
-			      GFP_KERNEL);
-	if (!routes) {
-		dev_err(card->dev,
-			"ASoC: Could not allocate DAPM route table\n");
-		return -ENOMEM;
-	}
-
-	for (i = 0; i < num_routes; i++) {
-		int ret = of_property_read_string_index(np, propname,
-							2 * i, &routes[i].sink);
-		if (ret) {
-			dev_err(card->dev,
-				"ASoC: Property '%s' index %d could not be read: %d\n",
-				propname, 2 * i, ret);
-			return -EINVAL;
-		}
-		ret = of_property_read_string_index(np, propname,
-						    (2 * i) + 1, &routes[i].source);
-		if (ret) {
-			dev_err(card->dev,
-				"ASoC: Property '%s' index %d could not be read: %d\n",
-				propname, (2 * i) + 1, ret);
-			return -EINVAL;
-		}
-	}
-
-	card->num_of_dapm_routes = num_routes;
-	card->of_dapm_routes = routes;
-
-	return 0;
-}
-EXPORT_SYMBOL_GPL(snd_soc_card_of_parse_audio_routing);
-
 int snd_soc_card_driver_of_parse_aux_devs(struct device *dev,
 					  struct snd_soc_card_driver *card_driver,
 					  const char *propname)
@@ -1930,38 +1687,6 @@ int snd_soc_card_driver_of_parse_aux_devs(struct device *dev,
 	return 0;
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_driver_of_parse_aux_devs);
-
-/* REMOVE ME */
-int snd_soc_card_of_parse_aux_devs(struct snd_soc_card *card, const char *propname)
-{
-	struct device_node *node = card->dev->of_node;
-	struct snd_soc_aux_dev *aux;
-	int num, i;
-
-	num = of_count_phandle_with_args(node, propname, NULL);
-	if (num == -ENOENT) {
-		return 0;
-	} else if (num < 0) {
-		dev_err(card->dev, "ASOC: Property '%s' could not be read: %d\n",
-			propname, num);
-		return num;
-	}
-
-	aux = devm_kcalloc(card->dev, num, sizeof(*aux), GFP_KERNEL);
-	if (!aux)
-		return -ENOMEM;
-	card->aux_dev = aux;
-	card->num_aux_devs = num;
-
-	for_each_card_pre_auxs(card, i, aux) {
-		aux->dlc.of_node = of_parse_phandle(node, propname, i);
-		if (!aux->dlc.of_node)
-			return -EINVAL;
-	}
-
-	return 0;
-}
-EXPORT_SYMBOL_GPL(snd_soc_card_of_parse_aux_devs);
 
 int snd_soc_card_driver_of_parse_ignore_suspend_widgets(struct device *dev,
 							struct snd_soc_card_driver *card_driver,
@@ -2001,45 +1726,6 @@ int snd_soc_card_driver_of_parse_ignore_suspend_widgets(struct device *dev,
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_driver_of_parse_ignore_suspend_widgets);
 
-/* REMOVE ME */
-int snd_soc_card_of_parse_ignore_suspend_widgets(struct snd_soc_card *card, const char *propname)
-{
-	struct device_node *np = card->dev->of_node;
-	int num_widgets;
-	const char **widgets;
-	int i;
-
-	num_widgets = of_property_count_strings(np, propname);
-	if (num_widgets < 0) {
-		dev_err(card->dev,
-			"ASoC: Property '%s' does not exist\n", propname);
-		return -EINVAL;
-	}
-
-	widgets = devm_kcalloc(card->dev, num_widgets, sizeof(char *), GFP_KERNEL);
-	if (!widgets)
-		return -ENOMEM;
-
-	for (i = 0; i < num_widgets; i++) {
-		const char *name;
-		int ret = of_property_read_string_index(np, propname, i, &name);
-
-		if (ret) {
-			dev_err(card->dev,
-				"ASoC: Property '%s' could not be read: %d\n",
-				propname, ret);
-			return -EINVAL;
-		}
-		widgets[i] = name;
-	}
-
-	card->num_of_ignore_suspend_widgets = num_widgets;
-	card->of_ignore_suspend_widgets = widgets;
-
-	return 0;
-}
-EXPORT_SYMBOL_GPL(snd_soc_card_of_parse_ignore_suspend_widgets);
-
 int snd_soc_card_driver_fixup_dai_links_platform_name(struct device *dev,
 						      struct snd_soc_card_driver *card_driver,
 						      const char *platform_name)
@@ -2071,38 +1757,6 @@ int snd_soc_card_driver_fixup_dai_links_platform_name(struct device *dev,
 	return 0;
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_driver_fixup_dai_links_platform_name);
-
-/* REMOVE ME */
-int snd_soc_card_fixup_dai_links_platform_name(struct snd_soc_card *card,
-					       const char *platform_name)
-{
-	struct snd_soc_dai_link *dai_link;
-	const char *name;
-	int i;
-
-	if (!platform_name) /* nothing to do */
-		return 0;
-
-	/* set platform name for each dailink */
-	for_each_card_prelinks(card, i, dai_link) {
-		/* only single platform is supported for now */
-		if (dai_link->num_platforms != 1)
-			return -EINVAL;
-
-		if (!dai_link->platforms)
-			return -EINVAL;
-
-		name = devm_kstrdup(card->dev, platform_name, GFP_KERNEL);
-		if (!name)
-			return -ENOMEM;
-
-		/* only single platform is supported for now */
-		dai_link->platforms->name = name;
-	}
-
-	return 0;
-}
-EXPORT_SYMBOL_GPL(snd_soc_card_fixup_dai_links_platform_name);
 
 #define SOC_CARD_LIST_ENTRY(member)						\
 struct list_head* snd_soc_card_to_##member##_list(struct snd_soc_card *card)	\

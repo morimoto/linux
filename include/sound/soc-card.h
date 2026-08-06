@@ -229,16 +229,6 @@ SOC_CARD_LIST_HEAD_DEFINE(dapm_dirty);
 	     ((i) < (card_driver)->num_aux_devs) && ((aux) = &(card_driver)->aux_dev[i]); \
 	     (i)++)
 
-/* REMOVE ME */
-#define for_each_card_prelinks(card, i, link)				\
-	for ((i) = 0;							\
-	     ((i) < (card)->num_links) && ((link) = &(card)->dai_link[i]); \
-	     (i)++)
-#define for_each_card_pre_auxs(card, i, aux)				\
-	for ((i) = 0;							\
-	     ((i) < (card)->num_aux_devs) && ((aux) = &(card)->aux_dev[i]); \
-	     (i)++)
-
 #define for_each_card_rtds(card, rtd)					\
 	list_for_each_entry(rtd, snd_soc_card_to_rtd_list_head(card), rtd_list)
 #define for_each_card_rtds_safe(card, rtd, _rtd)			\
@@ -266,18 +256,5 @@ SOC_CARD_LIST_HEAD_DEFINE(dapm_dirty);
 	list_for_each_entry(w, snd_soc_card_to_widget_list_head(card), widget_list)
 #define for_each_card_widgets_safe(card, w, _w)				\
 	list_for_each_entry_safe(w, _w, snd_soc_card_to_widget_list_head(card), widget_list)
-
-/* REMOVE ME */
-#define snd_soc_card_set_drvdata	snd_soc_card_set_priv
-#define snd_soc_card_get_drvdata	snd_soc_card_to_priv
-#define snd_soc_get_pcm_runtime		snd_soc_card_to_rtd
-
-int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card *card);
-int snd_soc_card_of_parse_simple_widgets(struct snd_soc_card *card, const char *propname);
-int snd_soc_card_of_parse_pin_switches(struct snd_soc_card *card, const char *propname);
-int snd_soc_card_of_parse_audio_routing(struct snd_soc_card *card, const char *propname);
-int snd_soc_card_of_parse_aux_devs(struct snd_soc_card *card, const char *propname);
-int snd_soc_card_of_parse_ignore_suspend_widgets(struct snd_soc_card *card, const char *propname);
-int snd_soc_card_fixup_dai_links_platform_name(struct snd_soc_card *card, const char *platform_name);
 
 #endif /* __SOC_CARD_H */
