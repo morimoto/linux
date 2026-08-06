@@ -1128,3 +1128,18 @@ int snd_soc_card_bind_call(struct snd_soc_card *card)
 		return devm_card_bind(card->devres_dev, card);
 	return snd_soc_card_bind(card);
 }
+
+void snd_soc_card_mutex_lock_root(struct snd_soc_card *card)
+{
+	mutex_lock_nested(&card->mutex, SND_SOC_CARD_CLASS_ROOT);
+}
+
+void snd_soc_card_mutex_lock(struct snd_soc_card *card)
+{
+	mutex_lock_nested(&card->mutex, SND_SOC_CARD_CLASS_RUNTIME);
+}
+
+void snd_soc_card_mutex_unlock(struct snd_soc_card *card)
+{
+	mutex_unlock(&card->mutex);
+}
