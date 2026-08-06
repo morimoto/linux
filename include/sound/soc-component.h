@@ -272,6 +272,23 @@ struct snd_soc_component {
 	     snd_soc_dai_to_list(dai) != &(component)->dai_list;		\
 	     dai = _dai, _dai = snd_soc_dai_from_list(snd_soc_dai_to_list(_dai)->next))
 
+int snd_soc_component_register_c(struct snd_soc_component *component,
+				 const struct snd_soc_component_driver *component_driver,
+				 struct snd_soc_dai_driver *dai_drv, int num_dai);
+int snd_soc_component_register_d(struct device *dev,
+				 const struct snd_soc_component_driver *component_driver,
+				 struct snd_soc_dai_driver *dai_drv, int num_dai);
+#define snd_soc_component_register(x, ...) _Generic((x),		\
+struct device * :		snd_soc_component_register_d, \
+struct snd_soc_component * :	snd_soc_component_register_c)(x, __VA_ARGS__)
+
+int devm_snd_soc_component_register(struct device *dev,
+				    const struct snd_soc_component_driver *component_driver,
+				    struct snd_soc_dai_driver *dai_drv, int num_dai);
+#define snd_soc_component_unregister(dev) snd_soc_component_unregister_by_driver(dev, NULL)
+void snd_soc_component_unregister_by_driver(struct device *dev,
+					    const struct snd_soc_component_driver *component_driver);
+
 struct snd_soc_dapm_context *snd_soc_component_to_dapm(struct snd_soc_component *component);
 
 struct snd_soc_component *snd_soc_component_alloc(struct device *dev);
@@ -448,5 +465,9 @@ void snd_soc_pcm_component_delay(struct snd_pcm_substream *substream,
 #define snd_soc_lookup_component_nolocked		snd_soc_component_lookup_nolock
 #define snd_soc_lookup_component			snd_soc_component_lookup
 #define snd_soc_lookup_component_by_name		snd_soc_component_lookup_by_name
+#define snd_soc_register_component			snd_soc_component_register
+#define snd_soc_unregister_component(dev)		snd_soc_component_unregister_by_driver(dev, NULL)
+#define snd_soc_unregister_component_by_driver		snd_soc_component_unregister_by_driver
+#define devm_snd_soc_register_component			devm_snd_soc_component_register
 
 #endif /* __SOC_COMPONENT_H */
