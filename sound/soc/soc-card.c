@@ -124,6 +124,184 @@ static void soc_card_fill_dummy_dai(struct snd_soc_card *card)
 	}
 }
 
+static int soc_init_pcm_runtime(struct snd_soc_card *card,
+				struct snd_soc_pcm_runtime *rtd)
+{
+	struct snd_soc_dai_link *dai_link = rtd->dai_link;
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	int ret;
+
+	/* do machine specific initialization */
+	ret = snd_soc_link_init(rtd);
+	if (ret < 0)
+		return ret;
+
+	ret = snd_soc_runtime_set_dai_fmt(rtd, snd_soc_dai_auto_select_format(rtd));
+	if (ret)
+		goto err;
+
+	/* add DPCM sysfs entries */
+	soc_dpcm_debugfs_add(rtd);
+
+	/* create compress_device if possible */
+	ret = snd_soc_dai_compress_new(cpu_dai, rtd);
+	if (ret != -ENOTSUPP)
+		goto err;
+
+	/* create the pcm */
+	ret = soc_new_pcm(rtd);
+	if (ret < 0) {
+		dev_err(card->dev, "ASoC: can't create pcm %s :%d\n",
+			dai_link->stream_name, ret);
+		goto err;
+	}
+
+	ret = snd_soc_pcm_dai_new(rtd);
+	if (ret < 0)
+		goto err;
+
+	rtd->initialized = true;
+
+	return 0;
+err:
+	snd_soc_link_exit(rtd);
+	return ret;
+}
+
+static void soc_remove_link_dais(struct snd_soc_card *card)
+{
+	struct snd_soc_pcm_runtime *rtd;
+	int order;
+
+	for_each_comp_order(order) {
+		for_each_card_rtds(card, rtd) {
+			/* remove all rtd connected DAIs in good order */
+			snd_soc_pcm_dai_remove(rtd, order);
+		}
+	}
+}
+
+static int soc_probe_link_dais(struct snd_soc_card *card)
+{
+	struct snd_soc_pcm_runtime *rtd;
+	int order, ret;
+
+	for_each_comp_order(order) {
+		for_each_card_rtds(card, rtd) {
+			/* probe all rtd connected DAIs in good order */
+			ret = snd_soc_pcm_dai_probe(rtd, order);
+			if (ret)
+				return ret;
+		}
+	}
+
+	return 0;
+}
+
+static void soc_remove_link_components(struct snd_soc_card *card)
+{
+	struct snd_soc_component *component;
+	struct snd_soc_pcm_runtime *rtd;
+	int i, order;
+
+	for_each_comp_order(order) {
+		for_each_card_rtds(card, rtd) {
+			for_each_rtd_components(rtd, i, component) {
+				if (component->driver->remove_order != order)
+					continue;
+
+				snd_soc_component_remove(component, 1);
+			}
+		}
+	}
+}
+
+static int soc_probe_link_components(struct snd_soc_card *card)
+{
+	struct snd_soc_component *component;
+	struct snd_soc_pcm_runtime *rtd;
+	int i, ret, order;
+
+	for_each_comp_order(order) {
+		for_each_card_rtds(card, rtd) {
+			for_each_rtd_components(rtd, i, component) {
+				if (component->driver->probe_order != order)
+					continue;
+
+				ret = snd_soc_component_probe(card, component);
+				if (ret < 0)
+					return ret;
+			}
+		}
+	}
+
+	return 0;
+}
+
+static void soc_unbind_aux_dev(struct snd_soc_card *card)
+{
+	struct snd_soc_component *component, *_component;
+
+	for_each_card_auxs_safe(card, component, _component) {
+		/* for snd_soc_component_init() */
+		snd_soc_component_set_aux(component, NULL);
+		list_del(&component->card_aux_list);
+	}
+}
+
+static int soc_bind_aux_dev(struct snd_soc_card *card)
+{
+	struct snd_soc_component *component;
+	struct snd_soc_aux_dev *aux;
+	int i;
+
+	for_each_card_pre_auxs(card, i, aux) {
+		/* codecs, usually analog devices */
+		component = soc_find_component(&aux->dlc);
+		if (!component)
+			return -EPROBE_DEFER;
+
+		/* for snd_soc_component_init() */
+		snd_soc_component_set_aux(component, aux);
+		/* see for_each_card_auxs */
+		list_add(&component->card_aux_list, &card->aux_comp_list);
+	}
+	return 0;
+}
+
+static int soc_probe_aux_devices(struct snd_soc_card *card)
+{
+	struct snd_soc_component *component;
+	int order;
+	int ret;
+
+	for_each_comp_order(order) {
+		for_each_card_auxs(card, component) {
+			if (component->driver->probe_order != order)
+				continue;
+
+			ret = snd_soc_component_probe(card, component);
+			if (ret < 0)
+				return ret;
+		}
+	}
+
+	return 0;
+}
+
+static void soc_remove_aux_devices(struct snd_soc_card *card)
+{
+	struct snd_soc_component *comp, *_comp;
+	int order;
+
+	for_each_comp_order(order) {
+		for_each_card_auxs_safe(card, comp, _comp) {
+			if (comp->driver->remove_order == order)
+				snd_soc_component_remove(comp, 1);
+		}
+	}
+}
+
 struct snd_kcontrol *snd_soc_card_get_kcontrol(struct snd_soc_card *soc_card,
 					       const char *name)
 {
