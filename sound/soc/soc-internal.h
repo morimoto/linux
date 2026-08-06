@@ -142,6 +142,17 @@ int snd_soc_component_device_link_add(struct snd_soc_component *component);
 void snd_soc_component_set_aux(struct snd_soc_component *component, struct snd_soc_aux_dev *aux);
 int snd_soc_component_init(struct snd_soc_component *component);
 int snd_soc_component_is_dummy(struct snd_soc_component *component);
+#define snd_soc_component_module_get_when_probe(component)	\
+	snd_soc_component_module_get(component, NULL, 0)
+#define snd_soc_component_module_get_when_open(component, substream)	\
+	snd_soc_component_module_get(component, substream, 1)
+int snd_soc_component_module_get(struct snd_soc_component *component, void *mark, int upon_open);
+#define snd_soc_component_module_put_when_remove(component)	\
+	snd_soc_component_module_put(component, NULL, 0, 0)
+#define snd_soc_component_module_put_when_close(component, substream, rollback) \
+	snd_soc_component_module_put(component, substream, 1, rollback)
+void snd_soc_component_module_put(struct snd_soc_component *component, void *mark, int upon_open,
+				  int rollback);
 
 #define for_each_component(component)							\
 	for (component = snd_soc_component_from_component_total_list(snd_soc_component_total_list_head()->next);	\
