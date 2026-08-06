@@ -215,8 +215,6 @@ int snd_soc_dai_add_controls(struct snd_soc_dai *dai,
 
 int snd_soc_dai_active(const struct snd_soc_dai *dai);
 
-int snd_soc_pcm_dai_probe(struct snd_soc_pcm_runtime *rtd, int order);
-int snd_soc_pcm_dai_remove(struct snd_soc_pcm_runtime *rtd, int order);
 int snd_soc_pcm_dai_new(struct snd_soc_pcm_runtime *rtd);
 int snd_soc_pcm_dai_prepare(struct snd_pcm_substream *substream);
 int snd_soc_pcm_dai_trigger(struct snd_pcm_substream *substream, int cmd,
