@@ -1199,13 +1199,11 @@ unsigned int snd_soc_dai_stream_tdm_mask_get(const struct snd_soc_dai *dai, int 
 {
 	return dai->stream[stream].tdm_mask;
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_stream_tdm_mask_get);
 
 void snd_soc_dai_stream_tdm_mask_set(struct snd_soc_dai *dai, int stream, unsigned int tdm_mask)
 {
 	dai->stream[stream].tdm_mask = tdm_mask;
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_stream_tdm_mask_set);
 
 /**
  * snd_soc_dai_set_stream() - Configures a DAI for stream operation
