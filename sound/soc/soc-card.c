@@ -87,6 +87,11 @@ int snd_soc_card_connect_rtd(struct snd_soc_card *card, struct snd_soc_pcm_runti
 }
 
 #ifdef CONFIG_DEBUG_FS
+struct dentry *snd_soc_card_to_debugfs_root(struct snd_soc_card *card)
+{
+	return card->debugfs_card_root;
+}
+
 static void snd_soc_card_debugfs_init(struct snd_soc_card *card)
 {
 	card->debugfs_card_root = debugfs_create_dir(card->name,
