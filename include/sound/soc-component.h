@@ -319,30 +319,6 @@ int snd_soc_component_notify_control(struct snd_soc_component *component,
 				     const char * const ctl);
 
 /* component driver ops */
-int snd_soc_component_compr_open(struct snd_soc_component *component,
-				 struct snd_compr_stream *cstream);
-void snd_soc_component_compr_free(struct snd_soc_component *component,
-				  struct snd_compr_stream *cstream,
-				  int rollback);
-int snd_soc_component_compr_trigger(struct snd_compr_stream *cstream, int cmd);
-int snd_soc_component_compr_set_params(struct snd_compr_stream *cstream,
-				       struct snd_compr_params *params);
-int snd_soc_component_compr_get_params(struct snd_compr_stream *cstream,
-				       struct snd_codec *params);
-int snd_soc_component_compr_get_caps(struct snd_compr_stream *cstream,
-				     struct snd_compr_caps *caps);
-int snd_soc_component_compr_get_codec_caps(struct snd_compr_stream *cstream,
-					   struct snd_compr_codec_caps *codec);
-int snd_soc_component_compr_ack(struct snd_compr_stream *cstream, size_t bytes);
-int snd_soc_component_compr_pointer(struct snd_compr_stream *cstream,
-				    struct snd_compr_tstamp64 *tstamp);
-int snd_soc_component_compr_copy(struct snd_compr_stream *cstream,
-				 char __user *buf, size_t count);
-int snd_soc_component_compr_set_metadata(struct snd_compr_stream *cstream,
-					 struct snd_compr_metadata *metadata);
-int snd_soc_component_compr_get_metadata(struct snd_compr_stream *cstream,
-					 struct snd_compr_metadata *metadata);
-
 int snd_soc_pcm_component_pointer(struct snd_pcm_substream *substream);
 int snd_soc_pcm_component_ioctl(struct snd_pcm_substream *substream,
 				unsigned int cmd, void *arg);
