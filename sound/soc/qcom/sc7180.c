@@ -28,7 +28,7 @@
 #define DRIVER_NAME "SC7180"
 
 struct sc7180_snd_data {
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	u32 pri_mi2s_clk_count;
 	struct snd_soc_jack hs_jack;
 	struct snd_soc_jack hdmi_jack;
@@ -492,6 +492,7 @@ static const struct snd_soc_dapm_route sc7180_snd_dual_mic_audio_route[] = {
 static int sc7180_snd_platform_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct sc7180_snd_data *data;
 	struct device *dev = &pdev->dev;
 	struct snd_soc_dai_link *link;
@@ -499,29 +500,32 @@ static int sc7180_snd_platform_probe(struct platform_device *pdev)
 	int i;
 	bool qdsp = false, no_headphone = false;
 
+	card = snd_soc_card_alloc(dev);
+	if (!card)
+		return -ENOMEM;
+
 	/* Allocate the private data */
 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
 	if (!data)
 		return -ENOMEM;
 
-	card = &data->card;
 	snd_soc_card_set_drvdata(card, data);
 
-	card->owner = THIS_MODULE;
-	card->driver_name = DRIVER_NAME;
-	card->dev = dev;
-	card->dapm_widgets = sc7180_snd_widgets;
-	card->num_dapm_widgets = ARRAY_SIZE(sc7180_snd_widgets);
-	card->controls = sc7180_snd_controls;
-	card->num_controls = ARRAY_SIZE(sc7180_snd_controls);
+	card_driver = &data->card_driver;
+	card_driver->owner = THIS_MODULE;
+	card_driver->driver_name = DRIVER_NAME;
+	card_driver->dapm_widgets = sc7180_snd_widgets;
+	card_driver->num_dapm_widgets = ARRAY_SIZE(sc7180_snd_widgets);
+	card_driver->controls = sc7180_snd_controls;
+	card_driver->num_controls = ARRAY_SIZE(sc7180_snd_controls);
 
 	if (of_property_present(dev->of_node, "dmic-gpios")) {
-		card->dapm_widgets = sc7180_snd_dual_mic_widgets,
-		card->num_dapm_widgets = ARRAY_SIZE(sc7180_snd_dual_mic_widgets),
-		card->controls = sc7180_snd_dual_mic_controls,
-		card->num_controls = ARRAY_SIZE(sc7180_snd_dual_mic_controls),
-		card->dapm_routes = sc7180_snd_dual_mic_audio_route,
-		card->num_dapm_routes = ARRAY_SIZE(sc7180_snd_dual_mic_audio_route),
+		card_driver->dapm_widgets = sc7180_snd_dual_mic_widgets;
+		card_driver->num_dapm_widgets = ARRAY_SIZE(sc7180_snd_dual_mic_widgets);
+		card_driver->controls = sc7180_snd_dual_mic_controls;
+		card_driver->num_controls = ARRAY_SIZE(sc7180_snd_dual_mic_controls);
+		card_driver->dapm_routes = sc7180_snd_dual_mic_audio_route;
+		card_driver->num_dapm_routes = ARRAY_SIZE(sc7180_snd_dual_mic_audio_route);
 		data->dmic_sel = devm_gpiod_get(&pdev->dev, "dmic", GPIOD_OUT_LOW);
 		if (IS_ERR(data->dmic_sel)) {
 			dev_err(&pdev->dev, "DMIC gpio failed err=%ld\n", PTR_ERR(data->dmic_sel));
@@ -531,17 +535,17 @@ static int sc7180_snd_platform_probe(struct platform_device *pdev)
 
 	if (of_device_is_compatible(dev->of_node, "google,sc7180-coachz")) {
 		no_headphone = true;
-		card->dapm_widgets = sc7180_adau7002_snd_widgets;
-		card->num_dapm_widgets = ARRAY_SIZE(sc7180_adau7002_snd_widgets);
+		card_driver->dapm_widgets = sc7180_adau7002_snd_widgets;
+		card_driver->num_dapm_widgets = ARRAY_SIZE(sc7180_adau7002_snd_widgets);
 	} else if (of_device_is_compatible(dev->of_node, "qcom,sc7180-qdsp6-sndcard")) {
 		qdsp = true;
 	}
 
-	ret = qcom_snd_parse_of(card);
+	ret = qcom_snd_parse_of(card, card_driver);
 	if (ret)
 		return ret;
 
-	for_each_card_prelinks(card, i, link) {
+	for_each_card_driver_prelinks(card_driver, i, link) {
 		if (no_headphone) {
 			link->ops = &sc7180_adau7002_ops;
 			link->init = sc7180_adau7002_init;
@@ -557,7 +561,7 @@ static int sc7180_snd_platform_probe(struct platform_device *pdev)
 		}
 	}
 
-	return devm_snd_soc_register_card(dev, card);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static const struct of_device_id sc7180_snd_device_id[]  = {

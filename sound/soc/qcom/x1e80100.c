@@ -164,12 +164,12 @@ static const struct snd_soc_ops x1e80100_be_ops = {
 	.prepare = x1e80100_snd_prepare,
 };
 
-static void x1e80100_add_be_ops(struct snd_soc_card *card)
+static void x1e80100_add_be_ops(struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *link;
 	int i;
 
-	for_each_card_prelinks(card, i, link) {
+	for_each_card_driver_prelinks(card_driver, i, link) {
 		if (link->no_pcm == 1) {
 			link->init = x1e80100_snd_init;
 			link->be_hw_params_fixup = x1e80100_be_hw_params_fixup;
@@ -181,31 +181,31 @@ static void x1e80100_add_be_ops(struct snd_soc_card *card)
 static int x1e80100_platform_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct x1e80100_snd_data *data;
 	struct device *dev = &pdev->dev;
 	int ret;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card = snd_soc_card_alloc(dev);
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card || !card_driver)
 		return -ENOMEM;
 	/* Allocate the private data */
 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
 	if (!data)
 		return -ENOMEM;
 
-	card->owner = THIS_MODULE;
-	card->dev = dev;
-	dev_set_drvdata(dev, card);
+	card_driver->owner = THIS_MODULE;
 	snd_soc_card_set_drvdata(card, data);
 
-	ret = qcom_snd_parse_of(card);
+	ret = qcom_snd_parse_of(card, card_driver);
 	if (ret)
 		return ret;
 
-	card->driver_name = of_device_get_match_data(dev);
-	x1e80100_add_be_ops(card);
+	card_driver->driver_name = of_device_get_match_data(dev);
+	x1e80100_add_be_ops(card_driver);
 
-	return devm_snd_soc_register_card(dev, card);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static const struct of_device_id snd_x1e80100_dt_match[] = {
