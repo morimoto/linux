@@ -521,12 +521,12 @@ static const struct snd_kcontrol_new sdm845_snd_controls[] = {
 	SOC_DAPM_PIN_SWITCH("Headset Mic"),
 };
 
-static void sdm845_add_ops(struct snd_soc_card *card)
+static void sdm845_add_ops(struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *link;
 	int i;
 
-	for_each_card_prelinks(card, i, link) {
+	for_each_card_driver_prelinks(card_driver, i, link) {
 		if (link->no_pcm == 1) {
 			link->ops = &sdm845_be_ops;
 			link->be_hw_params_fixup = sdm845_be_hw_params_fixup;
@@ -538,12 +538,14 @@ static void sdm845_add_ops(struct snd_soc_card *card)
 static int sdm845_snd_platform_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct sdm845_snd_data *data;
 	struct device *dev = &pdev->dev;
 	int ret;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card = snd_soc_card_alloc(dev);
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card || !card_driver)
 		return -ENOMEM;
 
 	/* Allocate the private data */
@@ -551,22 +553,20 @@ static int sdm845_snd_platform_probe(struct platform_device *pdev)
 	if (!data)
 		return -ENOMEM;
 
-	card->driver_name = DRIVER_NAME;
-	card->dapm_widgets = sdm845_snd_widgets;
-	card->num_dapm_widgets = ARRAY_SIZE(sdm845_snd_widgets);
-	card->controls = sdm845_snd_controls;
-	card->num_controls = ARRAY_SIZE(sdm845_snd_controls);
-	card->dev = dev;
-	card->owner = THIS_MODULE;
-	dev_set_drvdata(dev, card);
-	ret = qcom_snd_parse_of(card);
+	card_driver->driver_name = DRIVER_NAME;
+	card_driver->dapm_widgets = sdm845_snd_widgets;
+	card_driver->num_dapm_widgets = ARRAY_SIZE(sdm845_snd_widgets);
+	card_driver->controls = sdm845_snd_controls;
+	card_driver->num_controls = ARRAY_SIZE(sdm845_snd_controls);
+	card_driver->owner = THIS_MODULE;
+	ret = qcom_snd_parse_of(card, card_driver);
 	if (ret)
 		return ret;
 
 	snd_soc_card_set_drvdata(card, data);
 
-	sdm845_add_ops(card);
-	return devm_snd_soc_register_card(dev, card);
+	sdm845_add_ops(card_driver);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static const struct of_device_id sdm845_snd_device_id[]  = {

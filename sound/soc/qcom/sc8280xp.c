@@ -376,12 +376,12 @@ static const struct snd_soc_ops sc8280xp_be_ops = {
 	.prepare = sc8280xp_snd_prepare,
 };
 
-static void sc8280xp_add_be_ops(struct snd_soc_card *card)
+static void sc8280xp_add_be_ops(struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *link;
 	int i;
 
-	for_each_card_prelinks(card, i, link) {
+	for_each_card_driver_prelinks(card_driver, i, link) {
 		if (link->no_pcm == 1) {
 			link->init = sc8280xp_snd_init;
 			link->be_hw_params_fixup = sc8280xp_be_hw_params_fixup;
@@ -393,12 +393,14 @@ static void sc8280xp_add_be_ops(struct snd_soc_card *card)
 static int sc8280xp_platform_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct sc8280xp_snd_data *data;
 	struct device *dev = &pdev->dev;
 	int ret;
 
-	card = devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-	if (!card)
+	card = snd_soc_card_alloc(dev);
+	card_driver = devm_kzalloc(dev, sizeof(*card_driver), GFP_KERNEL);
+	if (!card || !card_driver)
 		return -ENOMEM;
 
 	/* Allocate the private data */
@@ -410,24 +412,22 @@ static int sc8280xp_platform_probe(struct platform_device *pdev)
 	if (!data->priv)
 		return -ENODEV;
 
-	card->owner = THIS_MODULE;
-	card->dev = dev;
-	dev_set_drvdata(dev, card);
 	snd_soc_card_set_drvdata(card, data);
-	card->dapm_widgets = data->priv->dapm_widgets;
-	card->num_dapm_widgets = data->priv->num_dapm_widgets;
-	card->dapm_routes = data->priv->dapm_routes;
-	card->num_dapm_routes = data->priv->num_dapm_routes;
-	card->controls = data->priv->controls;
-	card->num_controls = data->priv->num_controls;
+	card_driver->owner = THIS_MODULE;
+	card_driver->dapm_widgets = data->priv->dapm_widgets;
+	card_driver->num_dapm_widgets = data->priv->num_dapm_widgets;
+	card_driver->dapm_routes = data->priv->dapm_routes;
+	card_driver->num_dapm_routes = data->priv->num_dapm_routes;
+	card_driver->controls = data->priv->controls;
+	card_driver->num_controls = data->priv->num_controls;
+	card_driver->driver_name = data->priv->driver_name;
 
-	ret = qcom_snd_parse_of(card);
+	ret = qcom_snd_parse_of(card, card_driver);
 	if (ret)
 		return ret;
 
-	card->driver_name = data->priv->driver_name;
-	sc8280xp_add_be_ops(card);
-	return devm_snd_soc_register_card(dev, card);
+	sc8280xp_add_be_ops(card_driver);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static struct qcom_snd_soc_common ayaneo_ps2_priv_data = {
