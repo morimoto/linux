@@ -319,7 +319,6 @@ int snd_soc_component_notify_control(struct snd_soc_component *component,
 				     const char * const ctl);
 
 /* component driver ops */
-int snd_soc_component_is_suspended(struct snd_soc_component *component);
 int snd_soc_component_of_xlate_dai_id(struct snd_soc_component *component,
 				      struct device_node *ep);
 int snd_soc_component_of_xlate_dai_name(struct snd_soc_component *component,
