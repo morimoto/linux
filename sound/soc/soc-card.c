@@ -1076,7 +1076,6 @@ int snd_soc_card_add_dai_link(struct snd_soc_card *card,
 
 	return soc_card_ret(card, ret);
 }
-EXPORT_SYMBOL_GPL(snd_soc_card_add_dai_link);
 
 void snd_soc_card_remove_dai_link(struct snd_soc_card *card,
 				  struct snd_soc_dai_link *dai_link)
@@ -1084,7 +1083,6 @@ void snd_soc_card_remove_dai_link(struct snd_soc_card *card,
 	if (card->driver->remove_dai_link)
 		card->driver->remove_dai_link(card, dai_link);
 }
-EXPORT_SYMBOL_GPL(snd_soc_card_remove_dai_link);
 
 void snd_soc_card_set_topology_name(struct snd_soc_card *card, const char *prefix)
 {
