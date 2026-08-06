@@ -9,46 +9,6 @@
 #include <sound/soc.h>
 #include <sound/dmaengine_pcm.h>
 
-static void devm_component_release(struct device *dev, void *res)
-{
-	const struct snd_soc_component_driver **cmpnt_drv = res;
-
-	snd_soc_component_unregister_by_driver(dev, *cmpnt_drv);
-}
-
-/**
- * devm_snd_soc_component_register - resource managed component registration
- * @dev: Device used to manage component
- * @cmpnt_drv: Component driver
- * @dai_drv: DAI driver
- * @num_dai: Number of DAIs to register
- *
- * Register a component with automatic unregistration when the device is
- * unregistered.
- */
-int devm_snd_soc_component_register(struct device *dev,
-			 const struct snd_soc_component_driver *cmpnt_drv,
-			 struct snd_soc_dai_driver *dai_drv, int num_dai)
-{
-	const struct snd_soc_component_driver **ptr;
-	int ret;
-
-	ptr = devres_alloc(devm_component_release, sizeof(*ptr), GFP_KERNEL);
-	if (!ptr)
-		return -ENOMEM;
-
-	ret = snd_soc_component_register(dev, cmpnt_drv, dai_drv, num_dai);
-	if (ret == 0) {
-		*ptr = cmpnt_drv;
-		devres_add(dev, ptr);
-	} else {
-		devres_free(ptr);
-	}
-
-	return ret;
-}
-EXPORT_SYMBOL_GPL(devm_snd_soc_component_register);
-
 /**
  * devm_snd_soc_register_card - resource managed card registration
  * @dev: Device used to manage card
