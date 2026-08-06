@@ -122,6 +122,8 @@ int snd_soc_dai_compr_get_metadata(struct snd_soc_dai *dai, struct snd_compr_str
 				   struct snd_compr_metadata *metadata);
 int snd_soc_dai_matches_args(const struct snd_soc_dai *dai, const struct of_phandle_args *args2);
 int snd_soc_dai_matches_dlc(struct snd_soc_dai *dai, const struct snd_soc_dai_link_component *dlc);
+unsigned int snd_soc_dai_stream_tdm_mask_get(const struct snd_soc_dai *dai, int stream);
+void snd_soc_dai_stream_tdm_mask_set(struct snd_soc_dai *dai, int stream, unsigned int tdm_mask);
 
 /*
  * In soc-component
