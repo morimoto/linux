@@ -184,7 +184,6 @@ int snd_soc_dai_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio);
 void snd_soc_dai_set_bclk_clk(struct snd_soc_dai *dai, struct clk *bclk);
 
 /* Digital Audio interface formatting */
-unsigned int snd_soc_dai_auto_select_format(const struct snd_soc_pcm_runtime *rtd);
 int snd_soc_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt);
 
 int snd_soc_dai_set_tdm_slot(struct snd_soc_dai *dai,
