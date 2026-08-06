@@ -16,7 +16,7 @@ struct qcom_snd_tdm_slot_cfg {
 	unsigned int slot_width;
 };
 
-int qcom_snd_parse_of(struct snd_soc_card *card);
+int qcom_snd_parse_of(struct snd_soc_card *card, struct snd_soc_card_driver *card_driver);
 int qcom_snd_get_dai_tdm_slots(struct snd_soc_pcm_runtime *rtd,
 			       struct qcom_snd_tdm_slot_cfg *cpu_cfg,
 			       struct qcom_snd_tdm_slot_cfg *codec_cfg);
