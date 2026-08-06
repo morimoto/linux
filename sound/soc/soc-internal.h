@@ -47,6 +47,7 @@ void snd_soc_card_dpcm_mutex_assert_held(struct snd_soc_card *card);
 void snd_soc_card_flush_all_delayed_work(struct snd_soc_card *card);
 int snd_soc_card_connect_rtd(struct snd_soc_card *card, struct snd_soc_pcm_runtime *rtd);
 #ifdef CONFIG_PM_SLEEP
+int snd_soc_card_suspend(struct snd_soc_card *card);
 int snd_soc_card_resume(struct snd_soc_card *card);
 #endif
 #ifdef CONFIG_DEBUG_FS
