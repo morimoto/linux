@@ -104,6 +104,22 @@ int snd_soc_pcm_dai_prepare(struct snd_pcm_substream *substream);
 int snd_soc_pcm_dai_trigger(struct snd_pcm_substream *substream, int cmd, int rollback);
 void snd_soc_pcm_dai_delay(struct snd_pcm_substream *substream,
 			   snd_pcm_sframes_t *cpu_delay, snd_pcm_sframes_t *codec_delay);
+int snd_soc_dai_compr_startup(struct snd_soc_dai *dai, struct snd_compr_stream *cstream);
+void snd_soc_dai_compr_shutdown(struct snd_soc_dai *dai, struct snd_compr_stream *cstream,
+				int rollback);
+int snd_soc_dai_compr_trigger(struct snd_soc_dai *dai, struct snd_compr_stream *cstream, int cmd);
+int snd_soc_dai_compr_set_params(struct snd_soc_dai *dai, struct snd_compr_stream *cstream,
+				 struct snd_compr_params *params);
+int snd_soc_dai_compr_get_params(struct snd_soc_dai *dai, struct snd_compr_stream *cstream,
+				 struct snd_codec *params);
+int snd_soc_dai_compr_ack(struct snd_soc_dai *dai, struct snd_compr_stream *cstream,
+			  size_t bytes);
+int snd_soc_dai_compr_pointer(struct snd_soc_dai *dai, struct snd_compr_stream *cstream,
+			      struct snd_compr_tstamp64 *tstamp);
+int snd_soc_dai_compr_set_metadata(struct snd_soc_dai *dai, struct snd_compr_stream *cstream,
+				   struct snd_compr_metadata *metadata);
+int snd_soc_dai_compr_get_metadata(struct snd_soc_dai *dai, struct snd_compr_stream *cstream,
+				   struct snd_compr_metadata *metadata);
 
 /*
  * In soc-component
