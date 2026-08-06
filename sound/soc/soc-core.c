@@ -1231,7 +1231,7 @@ int snd_soc_register_card(struct snd_soc_card *card)
 
 	guard(mutex)(&client_mutex);
 
-	return call_soc_bind_card(card);
+	return snd_soc_card_bind_call(card);
 }
 EXPORT_SYMBOL_GPL(snd_soc_register_card);
 
@@ -1245,7 +1245,7 @@ void snd_soc_unregister_card(struct snd_soc_card *card)
 {
 	guard(mutex)(&client_mutex);
 
-	soc_card_unbind(card, false);
+	snd_soc_card_unbind(card, false);
 
 	dev_dbg(card->dev, "ASoC: Unregistered card '%s'\n", card->name);
 }
@@ -1403,7 +1403,7 @@ static void snd_soc_del_component_unlocked(struct snd_soc_component *component)
 	snd_soc_unregister_dais(component);
 
 	if (card)
-		soc_card_unbind(card, true);
+		snd_soc_card_unbind(card, true);
 
 	list_del(&component->list);
 }
@@ -1468,7 +1468,7 @@ static int soc_component_add(struct snd_soc_component *component,
 	/* see for_each_component */
 	list_add(&component->list, snd_soc_component_get_list_head());
 
-	soc_card_rebind();
+	snd_soc_card_rebind();
 
 err_cleanup:
 	if (ret < 0)

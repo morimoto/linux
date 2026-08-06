@@ -889,7 +889,7 @@ static void snd_soc_remove_device_links(struct snd_soc_card *card)
 	}
 }
 
-void soc_card_unbind(struct snd_soc_card *card, bool reuse)
+void snd_soc_card_unbind(struct snd_soc_card *card, bool reuse)
 {
 	if (snd_soc_card_is_instantiated(card)) {
 		card->instantiated = false;
@@ -906,7 +906,7 @@ void soc_card_unbind(struct snd_soc_card *card, bool reuse)
 		list_del(&card->list);
 }
 
-int soc_card_bind(struct snd_soc_card *card)
+int snd_soc_card_bind(struct snd_soc_card *card)
 {
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_component *component;
@@ -1100,12 +1100,12 @@ probe_end:
 	return ret;
 }
 
-void soc_card_rebind(void)
+void snd_soc_card_rebind(void)
 {
 	struct snd_soc_card *card, *c;
 
 	list_for_each_entry_safe(card, c, &unbind_card_list, list)
-		call_soc_bind_card(card);
+		snd_soc_card_bind_call(card);
 }
 
 static void devm_card_bind_release(struct device *dev, void *res)
@@ -1125,7 +1125,7 @@ static int devm_card_bind(struct device *dev, struct snd_soc_card *card)
 	if (!ptr)
 		return -ENOMEM;
 
-	ret = soc_card_bind(card);
+	ret = snd_soc_card_bind(card);
 	if (ret == 0) {
 		*ptr = card;
 		devres_add(dev, ptr);
@@ -1136,9 +1136,9 @@ static int devm_card_bind(struct device *dev, struct snd_soc_card *card)
 	return ret;
 }
 
-int call_soc_bind_card(struct snd_soc_card *card)
+int snd_soc_card_bind_call(struct snd_soc_card *card)
 {
 	if (card->devres_dev)
 		return devm_card_bind(card->devres_dev, card);
-	return soc_card_bind(card);
+	return snd_soc_card_bind(card);
 }

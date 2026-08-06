@@ -33,10 +33,10 @@ void soc_dapm_suspend_resume(struct snd_soc_card *card, int event);
 /*
  * In soc-card
  */
-void soc_card_unbind(struct snd_soc_card *card, bool reuse);
-int soc_card_bind(struct snd_soc_card *card);
-void soc_card_rebind(void);
-int call_soc_bind_card(struct snd_soc_card *card);
+void snd_soc_card_unbind(struct snd_soc_card *card, bool reuse);
+int snd_soc_card_bind(struct snd_soc_card *card);
+void snd_soc_card_rebind(void);
+int snd_soc_card_bind_call(struct snd_soc_card *card);
 
 /*
  * In soc-dai
