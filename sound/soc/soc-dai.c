@@ -956,7 +956,6 @@ int snd_soc_dai_compr_startup(struct snd_soc_dai *dai,
 
 	return soc_dai_ret(dai, ret);
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_compr_startup);
 
 void snd_soc_dai_compr_shutdown(struct snd_soc_dai *dai,
 				struct snd_compr_stream *cstream,
@@ -972,7 +971,6 @@ void snd_soc_dai_compr_shutdown(struct snd_soc_dai *dai,
 	/* remove marked cstream */
 	soc_dai_mark_pop(dai, compr_startup);
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_compr_shutdown);
 
 int snd_soc_dai_compr_trigger(struct snd_soc_dai *dai,
 			      struct snd_compr_stream *cstream, int cmd)
@@ -985,7 +983,6 @@ int snd_soc_dai_compr_trigger(struct snd_soc_dai *dai,
 
 	return soc_dai_ret(dai, ret);
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_compr_trigger);
 
 int snd_soc_dai_compr_set_params(struct snd_soc_dai *dai,
 				 struct snd_compr_stream *cstream,
@@ -999,7 +996,6 @@ int snd_soc_dai_compr_set_params(struct snd_soc_dai *dai,
 
 	return soc_dai_ret(dai, ret);
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_compr_set_params);
 
 int snd_soc_dai_compr_get_params(struct snd_soc_dai *dai,
 				 struct snd_compr_stream *cstream,
@@ -1013,7 +1009,6 @@ int snd_soc_dai_compr_get_params(struct snd_soc_dai *dai,
 
 	return soc_dai_ret(dai, ret);
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_compr_get_params);
 
 int snd_soc_dai_compr_ack(struct snd_soc_dai *dai,
 			  struct snd_compr_stream *cstream,
@@ -1027,7 +1022,6 @@ int snd_soc_dai_compr_ack(struct snd_soc_dai *dai,
 
 	return soc_dai_ret(dai, ret);
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_compr_ack);
 
 int snd_soc_dai_compr_pointer(struct snd_soc_dai *dai,
 			      struct snd_compr_stream *cstream,
@@ -1041,7 +1035,6 @@ int snd_soc_dai_compr_pointer(struct snd_soc_dai *dai,
 
 	return soc_dai_ret(dai, ret);
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_compr_pointer);
 
 int snd_soc_dai_compr_set_metadata(struct snd_soc_dai *dai,
 				   struct snd_compr_stream *cstream,
@@ -1055,7 +1048,6 @@ int snd_soc_dai_compr_set_metadata(struct snd_soc_dai *dai,
 
 	return soc_dai_ret(dai, ret);
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_compr_set_metadata);
 
 int snd_soc_dai_compr_get_metadata(struct snd_soc_dai *dai,
 				   struct snd_compr_stream *cstream,
@@ -1069,7 +1061,6 @@ int snd_soc_dai_compr_get_metadata(struct snd_soc_dai *dai,
 
 	return soc_dai_ret(dai, ret);
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_compr_get_metadata);
 
 /**
  * snd_soc_dai_add_controls - add an array of controls to a DAI.
