@@ -1572,3 +1572,222 @@ void snd_soc_component_of_put(struct snd_soc_dai_link_component *component)
 		component->of_node = NULL;
 	}
 }
+
+/**
+ * snd_soc_component_unregister_dais - Unregister DAIs from the ASoC core
+ *
+ * @component: The component for which the DAIs should be unregistered
+ */
+static void snd_soc_component_unregister_dais(struct snd_soc_component *component)
+{
+	struct snd_soc_dai *dai, *_dai;
+
+	for_each_component_dais_safe(component, dai, _dai)
+		snd_soc_unregister_dai(dai);
+}
+
+/**
+ * snd_soc_component_register_dais - Register a DAI with the ASoC core
+ *
+ * @component: The component the DAIs are registered for
+ * @dai_drv: DAI driver to use for the DAIs
+ * @count: Number of DAIs
+ */
+static int snd_soc_component_register_dais(struct snd_soc_component *component,
+					   struct snd_soc_dai_driver *dai_drv,
+					   size_t count)
+{
+	struct snd_soc_dai *dai;
+	unsigned int i;
+	int ret;
+
+	for (i = 0; i < count; i++) {
+		dai = snd_soc_register_dai(component, dai_drv + i, count == 1 &&
+					   component->driver->legacy_dai_naming);
+		if (dai == NULL) {
+			ret = -ENOMEM;
+			goto err;
+		}
+	}
+
+	return 0;
+
+err:
+	snd_soc_component_unregister_dais(component);
+
+	return ret;
+}
+
+#define ENDIANNESS_MAP(name)						\
+	(SNDRV_PCM_FMTBIT_##name##LE | SNDRV_PCM_FMTBIT_##name##BE)
+static u64 endianness_format_map[] = {
+	ENDIANNESS_MAP(S16_),
+	ENDIANNESS_MAP(U16_),
+	ENDIANNESS_MAP(S24_),
+	ENDIANNESS_MAP(U24_),
+	ENDIANNESS_MAP(S32_),
+	ENDIANNESS_MAP(U32_),
+	ENDIANNESS_MAP(S24_3),
+	ENDIANNESS_MAP(U24_3),
+	ENDIANNESS_MAP(S20_3),
+	ENDIANNESS_MAP(U20_3),
+	ENDIANNESS_MAP(S18_3),
+	ENDIANNESS_MAP(U18_3),
+	ENDIANNESS_MAP(FLOAT_),
+	ENDIANNESS_MAP(FLOAT64_),
+	ENDIANNESS_MAP(IEC958_SUBFRAME_),
+};
+
+/*
+ * Fix up the DAI formats for endianness: codecs don't actually see
+ * the endianness of the data but we're using the CPU format
+ * definitions which do need to include endianness so we ensure that
+ * codec DAIs always have both big and little endian variants set.
+ */
+static void convert_endianness_formats(struct snd_soc_pcm_stream *stream)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(endianness_format_map); i++)
+		if (stream->formats & endianness_format_map[i])
+			stream->formats |= endianness_format_map[i];
+}
+
+static void snd_soc_component_del(struct snd_soc_component *component)
+{
+	struct snd_soc_card *card = component->card;
+
+	snd_soc_component_unregister_dais(component);
+
+	if (card)
+		snd_soc_card_unbind(card, true);
+
+	list_del(&component->list);
+}
+
+static int snd_soc_component_initialize(struct snd_soc_component *component,
+					const struct snd_soc_component_driver *driver)
+{
+	struct device *dev = component->dev;
+
+	component->dapm = snd_soc_dapm_alloc(dev);
+	if (!component->dapm)
+		return -ENOMEM;
+
+	INIT_LIST_HEAD(&component->dai_list);
+	INIT_LIST_HEAD(&component->dobj_list);
+	INIT_LIST_HEAD(&component->card_list);
+	INIT_LIST_HEAD(&component->list);
+	INIT_LIST_HEAD(&component->card_aux_list);
+	mutex_init(&component->io_mutex);
+
+	if (!component->name) {
+		component->name = snd_soc_fmt_single_name(dev, NULL);
+		if (!component->name) {
+			dev_err(dev, "ASoC: Failed to allocate name\n");
+			return -ENOMEM;
+		}
+	}
+
+	component->driver	= driver;
+
+	return 0;
+}
+
+static int snd_soc_component_add(struct snd_soc_component *component,
+				 struct snd_soc_dai_driver *dai_drv,
+				 int num_dai)
+{
+	int ret;
+	int i;
+	guard(mutex)(&client_mutex);
+
+	if (component->driver->endianness) {
+		for (i = 0; i < num_dai; i++) {
+			convert_endianness_formats(&dai_drv[i].playback);
+			convert_endianness_formats(&dai_drv[i].capture);
+		}
+	}
+
+	ret = snd_soc_component_register_dais(component, dai_drv, num_dai);
+	if (ret < 0) {
+		dev_err(component->dev, "ASoC: Failed to register DAIs: %d\n",
+			ret);
+		goto err_cleanup;
+	}
+
+	if (!component->driver->write && !component->driver->read) {
+		if (!component->regmap)
+			component->regmap = dev_get_regmap(component->dev,
+							   NULL);
+	}
+
+	/* see for_each_component */
+	list_add(&component->list, snd_soc_component_get_list_head());
+
+	snd_soc_card_rebind();
+
+err_cleanup:
+	if (ret < 0)
+		snd_soc_component_del(component);
+
+	return ret;
+}
+
+int snd_soc_component_register_c(struct snd_soc_component *component,
+				 const struct snd_soc_component_driver *component_driver,
+				 struct snd_soc_dai_driver *dai_drv,
+				 int num_dai)
+{
+	int ret;
+
+	ret = snd_soc_component_initialize(component, component_driver);
+	if (ret < 0)
+		return ret;
+
+	return snd_soc_component_add(component, dai_drv, num_dai);
+}
+EXPORT_SYMBOL_GPL(snd_soc_component_register_c);
+
+int snd_soc_component_register_d(struct device *dev,
+				 const struct snd_soc_component_driver *component_driver,
+				 struct snd_soc_dai_driver *dai_drv,
+				 int num_dai)
+{
+	struct snd_soc_component *component;
+
+	component = snd_soc_component_alloc(dev);
+	if (!component)
+		return -ENOMEM;
+
+	return snd_soc_component_register_c(component, component_driver, dai_drv, num_dai);
+}
+EXPORT_SYMBOL_GPL(snd_soc_component_register_d);
+
+/**
+ * snd_soc_component_unregister_by_driver - Unregister component using a given driver
+ * from the ASoC core
+ *
+ * @dev: The device to unregister
+ * @component_driver: The component driver to unregister
+ */
+void snd_soc_component_unregister_by_driver(struct device *dev,
+					    const struct snd_soc_component_driver *component_driver)
+{
+	const char *driver_name = NULL;
+
+	if (component_driver)
+		driver_name = component_driver->name;
+
+	guard(mutex)(&client_mutex);
+
+	while (1) {
+		struct snd_soc_component *component = snd_soc_component_lookup(dev, driver_name);
+
+		if (!component)
+			break;
+
+		snd_soc_component_del(component);
+	}
+}
+EXPORT_SYMBOL_GPL(snd_soc_component_unregister_by_driver);
