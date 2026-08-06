@@ -22,11 +22,6 @@ struct device_link;
 #define SND_SOC_COMP_ORDER_LATE		 1
 #define SND_SOC_COMP_ORDER_LAST		 2
 
-#define for_each_comp_order(order)		\
-	for (order  = SND_SOC_COMP_ORDER_FIRST;	\
-	     order <= SND_SOC_COMP_ORDER_LAST;	\
-	     order++)
-
 /* component interface */
 struct snd_compress_ops {
 	int (*open)(struct snd_soc_component *component,
