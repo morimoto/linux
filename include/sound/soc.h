@@ -428,10 +428,7 @@ struct snd_soc_jack_pin;
 #include <sound/soc-dpcm.h>
 #include <sound/soc-topology.h>
 
-int snd_soc_register_card(struct snd_soc_card *card);
-void snd_soc_unregister_card(struct snd_soc_card *card);
 int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card *card);
-#define devm_snd_soc_register_deferrable_card(d, c) devm_snd_soc_register_card(d, c)
 #ifdef CONFIG_PM_SLEEP
 int snd_soc_suspend(struct device *dev);
 int snd_soc_resume(struct device *dev);
@@ -1419,5 +1416,9 @@ static inline void _snd_soc_dapm_mutex_assert_held_d(struct snd_soc_dapm_context
 #define snd_soc_unregister_dai				snd_soc_dai_unregister
 #define snd_soc_add_component_controls			snd_soc_component_add_controls
 #define snd_soc_add_card_controls			snd_soc_card_add_controls
+#define devm_snd_soc_register_deferrable_card		devm_snd_soc_register_card
+
+int snd_soc_register_card(struct snd_soc_card *card);
+void snd_soc_unregister_card(struct snd_soc_card *card);
 
 #endif
