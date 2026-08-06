@@ -247,7 +247,6 @@ const char *snd_soc_component_name_prefix(struct snd_soc_component *component);
 void snd_soc_component_set_priv(struct snd_soc_component *component, void *priv);
 void *snd_soc_component_to_priv(struct snd_soc_component *component);
 
-int snd_soc_component_init(struct snd_soc_component *component);
 int snd_soc_component_is_dummy(struct snd_soc_component *component);
 
 struct snd_soc_component *snd_soc_component_lookup_nolock(struct device *dev,
