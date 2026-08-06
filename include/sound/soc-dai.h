@@ -218,32 +218,6 @@ void snd_soc_dai_resume(struct snd_soc_dai *dai);
 int snd_soc_dai_active(const struct snd_soc_dai *dai);
 unsigned int snd_soc_dai_active_stream(const struct snd_soc_dai *dai, int stream);
 
-int snd_soc_dai_compr_startup(struct snd_soc_dai *dai,
-			      struct snd_compr_stream *cstream);
-void snd_soc_dai_compr_shutdown(struct snd_soc_dai *dai,
-				struct snd_compr_stream *cstream,
-				int rollback);
-int snd_soc_dai_compr_trigger(struct snd_soc_dai *dai,
-			      struct snd_compr_stream *cstream, int cmd);
-int snd_soc_dai_compr_set_params(struct snd_soc_dai *dai,
-				 struct snd_compr_stream *cstream,
-				 struct snd_compr_params *params);
-int snd_soc_dai_compr_get_params(struct snd_soc_dai *dai,
-				 struct snd_compr_stream *cstream,
-				 struct snd_codec *params);
-int snd_soc_dai_compr_ack(struct snd_soc_dai *dai,
-			  struct snd_compr_stream *cstream,
-			  size_t bytes);
-int snd_soc_dai_compr_pointer(struct snd_soc_dai *dai,
-			      struct snd_compr_stream *cstream,
-			      struct snd_compr_tstamp64 *tstamp);
-int snd_soc_dai_compr_set_metadata(struct snd_soc_dai *dai,
-				   struct snd_compr_stream *cstream,
-				   struct snd_compr_metadata *metadata);
-int snd_soc_dai_compr_get_metadata(struct snd_soc_dai *dai,
-				   struct snd_compr_stream *cstream,
-				   struct snd_compr_metadata *metadata);
-
 int snd_soc_dai_matches_args(const struct snd_soc_dai *dai,
 			     const struct of_phandle_args *args2);
 int snd_soc_dai_matches_dlc(struct snd_soc_dai *dai,
