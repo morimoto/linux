@@ -13,11 +13,11 @@ static void devm_component_release(struct device *dev, void *res)
 {
 	const struct snd_soc_component_driver **cmpnt_drv = res;
 
-	snd_soc_unregister_component_by_driver(dev, *cmpnt_drv);
+	snd_soc_component_unregister_by_driver(dev, *cmpnt_drv);
 }
 
 /**
- * devm_snd_soc_register_component - resource managed component registration
+ * devm_snd_soc_component_register - resource managed component registration
  * @dev: Device used to manage component
  * @cmpnt_drv: Component driver
  * @dai_drv: DAI driver
@@ -26,7 +26,7 @@ static void devm_component_release(struct device *dev, void *res)
  * Register a component with automatic unregistration when the device is
  * unregistered.
  */
-int devm_snd_soc_register_component(struct device *dev,
+int devm_snd_soc_component_register(struct device *dev,
 			 const struct snd_soc_component_driver *cmpnt_drv,
 			 struct snd_soc_dai_driver *dai_drv, int num_dai)
 {
@@ -37,7 +37,7 @@ int devm_snd_soc_register_component(struct device *dev,
 	if (!ptr)
 		return -ENOMEM;
 
-	ret = snd_soc_register_component(dev, cmpnt_drv, dai_drv, num_dai);
+	ret = snd_soc_component_register(dev, cmpnt_drv, dai_drv, num_dai);
 	if (ret == 0) {
 		*ptr = cmpnt_drv;
 		devres_add(dev, ptr);
@@ -47,7 +47,7 @@ int devm_snd_soc_register_component(struct device *dev,
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(devm_snd_soc_register_component);
+EXPORT_SYMBOL_GPL(devm_snd_soc_component_register);
 
 /**
  * devm_snd_soc_register_card - resource managed card registration
