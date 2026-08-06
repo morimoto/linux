@@ -342,6 +342,7 @@ static const struct fw_map r8a78000_cpg_fw_map[] = {
 	{ 0x010a0000, r8a78000_cpg_fw_4_28_0 },	/* SCP FW SDKv4.28.0 */
 	{ 0x010d0000, r8a78000_cpg_fw_4_31_0 },	/* SCP FW SDKv4.31.0 */
 	{ 0x010e0000, r8a78000_cpg_fw_4_31_0 },	/* SCP FW SDKv4.32.0 */
+	{ 0x01100000, r8a78000_cpg_fw_4_31_0 },	/* SCP FW SDKv4.36.0 */
 	{ 0, NULL }
 };
 
