@@ -215,7 +215,6 @@ int snd_soc_dai_add_controls(struct snd_soc_dai *dai,
 
 int snd_soc_dai_active(const struct snd_soc_dai *dai);
 
-int snd_soc_pcm_dai_prepare(struct snd_pcm_substream *substream);
 int snd_soc_pcm_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 			    int rollback);
 void snd_soc_pcm_dai_delay(struct snd_pcm_substream *substream,
