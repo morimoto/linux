@@ -95,6 +95,7 @@ void snd_soc_dai_hw_free(struct snd_soc_dai *dai, struct snd_pcm_substream *subs
 int snd_soc_dai_startup(struct snd_soc_dai *dai, struct snd_pcm_substream *substream);
 void snd_soc_dai_shutdown(struct snd_soc_dai *dai, struct snd_pcm_substream *substream,
 			  int rollback);
+int snd_soc_dai_compress_new(struct snd_soc_dai *dai, struct snd_soc_pcm_runtime *rtd);
 
 /*
  * In soc-component
