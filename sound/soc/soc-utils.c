@@ -14,6 +14,7 @@
 #include <sound/pcm.h>
 #include <sound/pcm_params.h>
 #include <sound/soc.h>
+#include "soc-internal.h"
 
 int snd_soc_ret(const struct device *dev, int ret, const char *fmt, ...)
 {
