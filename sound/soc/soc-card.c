@@ -876,3 +876,258 @@ int snd_soc_card_add_controls(struct snd_soc_card *soc_card,
 	return snd_soc_add_controls(card, soc_card->dev, controls, num_controls, NULL, soc_card);
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_add_controls);
+
+static void snd_soc_remove_device_links(struct snd_soc_card *card)
+{
+	struct snd_soc_component *component;
+
+	for_each_card_components(card, component) {
+		if (component->card_device_link) {
+			device_link_del(component->card_device_link);
+			component->card_device_link = NULL;
+		}
+	}
+}
+
+static void snd_soc_unbind_card(struct snd_soc_card *card)
+{
+	if (snd_soc_card_is_instantiated(card)) {
+		card->instantiated = false;
+
+		snd_soc_remove_device_links(card);
+
+		soc_cleanup_card_resources(card);
+	}
+}
+
+static int snd_soc_bind_card(struct snd_soc_card *card)
+{
+	struct snd_soc_pcm_runtime *rtd;
+	struct snd_soc_component *component;
+	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
+	int ret;
+
+	snd_soc_card_mutex_lock_root(card);
+	snd_soc_fill_dummy_dai(card);
+
+	snd_soc_dapm_init(dapm, card, NULL);
+	list_del_init(&card->list);
+
+	/* check whether any platform is ignore machine FE and using topology */
+	soc_check_tplg_fes(card);
+
+	/* bind aux_devs too */
+	ret = soc_bind_aux_dev(card);
+	if (ret < 0)
+		goto probe_end;
+
+	/* add predefined DAI links to the list */
+	card->num_rtd = 0;
+	ret = snd_soc_add_pcm_runtimes(card, card->dai_link, card->num_links);
+	if (ret < 0)
+		goto probe_end;
+
+	/* card bind complete so register a sound card */
+	ret = snd_card_new(card->dev, SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1,
+			   card->owner, 0, &card->snd_card);
+	if (ret < 0) {
+		dev_err(card->dev,
+			"ASoC: can't create sound card for card %s: %d\n",
+			card->name, ret);
+		goto probe_end;
+	}
+
+	soc_init_card_debugfs(card);
+
+	soc_resume_init(card);
+
+	ret = snd_soc_dapm_new_controls(dapm, card->dapm_widgets,
+					card->num_dapm_widgets);
+	if (ret < 0)
+		goto probe_end;
+
+	ret = snd_soc_dapm_new_controls(dapm, card->of_dapm_widgets,
+					card->num_of_dapm_widgets);
+	if (ret < 0)
+		goto probe_end;
+
+	/* initialise the sound card only once */
+	ret = snd_soc_card_probe(card);
+	if (ret < 0)
+		goto probe_end;
+
+	/* probe all components used by DAI links on this card */
+	ret = soc_probe_link_components(card);
+	if (ret < 0) {
+		if (ret != -EPROBE_DEFER) {
+			dev_err(card->dev,
+				"ASoC: failed to instantiate card %d\n", ret);
+		}
+		goto probe_end;
+	}
+
+	/* probe auxiliary components */
+	ret = soc_probe_aux_devices(card);
+	if (ret < 0) {
+		dev_err(card->dev,
+			"ASoC: failed to probe aux component %d\n", ret);
+		goto probe_end;
+	}
+
+	/* probe all DAI links on this card */
+	ret = soc_probe_link_dais(card);
+	if (ret < 0) {
+		dev_err(card->dev,
+			"ASoC: failed to instantiate card %d\n", ret);
+		goto probe_end;
+	}
+
+	for_each_card_rtds(card, rtd) {
+		ret = soc_init_pcm_runtime(card, rtd);
+		if (ret < 0)
+			goto probe_end;
+	}
+
+	snd_soc_dapm_link_dai_widgets(card);
+	snd_soc_dapm_connect_dai_link_widgets(card);
+
+	ret = snd_soc_add_card_controls(card, card->controls,
+					card->num_controls);
+	if (ret < 0)
+		goto probe_end;
+
+	ret = snd_soc_dapm_add_routes(dapm, card->dapm_routes,
+				      card->num_dapm_routes);
+	if (ret < 0)
+		goto probe_end;
+
+	ret = snd_soc_dapm_add_routes(dapm, card->of_dapm_routes,
+				      card->num_of_dapm_routes);
+	if (ret < 0)
+		goto probe_end;
+
+	/* try to set some sane longname if DMI is available */
+	snd_soc_set_dmi_name(card);
+
+	soc_setup_card_name(card, card->snd_card->shortname,
+			    card->name, NULL);
+	soc_setup_card_name(card, card->snd_card->longname,
+			    card->long_name, card->name);
+	soc_setup_card_name(card, card->snd_card->driver,
+			    card->driver_name, card->name);
+
+	if (card->components) {
+		/* the current implementation of snd_component_add() accepts */
+		/* multiple components in the string separated by space, */
+		/* but the string collision (identical string) check might */
+		/* not work correctly */
+		ret = snd_component_add(card->snd_card, card->components);
+		if (ret < 0) {
+			dev_err(card->dev, "ASoC: %s snd_component_add() failed: %d\n",
+				card->name, ret);
+			goto probe_end;
+		}
+	}
+
+	/*
+	 * Add device_link from card to component so that system_suspend
+	 * will be done in the correct order. The card must suspend first
+	 * to stop audio activity before the components suspend.
+	 *
+	 * If a driver pair already have a link in the opposite direction
+	 * they must manage their own suspend order.
+	 */
+	for_each_card_components(card, component) {
+		if (card->dev == component->dev)
+			continue;
+
+		component->card_device_link = device_link_add(card->dev,
+							      component->dev,
+							      DL_FLAG_STATELESS);
+		if (!component->card_device_link) {
+			dev_warn(card->dev, "Could not create device link to %s\n",
+				 dev_name(component->dev));
+		}
+	}
+
+	ret = snd_soc_card_late_probe(card);
+	if (ret < 0)
+		goto probe_end;
+
+	ret = snd_soc_dapm_ignore_suspend_widgets(card);
+	if (ret < 0)
+		goto probe_end;
+
+	snd_soc_dapm_new_widgets(card);
+	for_each_card_components(card, component) {
+		ret = snd_soc_component_fixup_controls(component);
+		if (ret < 0)
+			goto probe_end;
+	}
+	snd_soc_card_fixup_controls(card);
+
+	ret = snd_card_register(card->snd_card);
+	if (ret < 0) {
+		dev_err(card->dev, "ASoC: failed to register soundcard %d\n",
+			ret);
+		goto probe_end;
+	}
+
+	card->instantiated = 1;
+	snd_soc_dapm_mark_endpoints_dirty(card);
+	snd_soc_dapm_sync(dapm);
+
+	/* deactivate pins to sleep state */
+	for_each_card_components(card, component)
+		if (!snd_soc_component_active(component))
+			pinctrl_pm_select_sleep_state(component->dev);
+
+probe_end:
+	if (ret < 0) {
+		snd_soc_remove_device_links(card);
+		soc_cleanup_card_resources(card);
+	}
+
+	if (ret == -EPROBE_DEFER) {
+		list_add(&card->list, &unbind_card_list);
+		ret = 0;
+	}
+	snd_soc_card_mutex_unlock(card);
+
+	return ret;
+}
+
+static void devm_card_bind_release(struct device *dev, void *res)
+{
+	snd_soc_unregister_card(*(struct snd_soc_card **)res);
+}
+
+static int devm_snd_soc_bind_card(struct device *dev, struct snd_soc_card *card)
+{
+	struct snd_soc_card **ptr;
+	int ret;
+
+	/* The procedure may be called many times during the lifetime of the card. */
+	devres_destroy(dev, devm_card_bind_release, NULL, NULL);
+
+	ptr = devres_alloc(devm_card_bind_release, sizeof(*ptr), GFP_KERNEL);
+	if (!ptr)
+		return -ENOMEM;
+
+	ret = snd_soc_bind_card(card);
+	if (ret == 0) {
+		*ptr = card;
+		devres_add(dev, ptr);
+	} else {
+		devres_free(ptr);
+	}
+
+	return ret;
+}
+
+static int call_soc_bind_card(struct snd_soc_card *card)
+{
+	if (card->devres_dev)
+		return devm_snd_soc_bind_card(card->devres_dev, card);
+	return snd_soc_bind_card(card);
+}
