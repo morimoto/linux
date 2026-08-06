@@ -447,22 +447,6 @@ static inline int snd_soc_resume(struct device *dev)
 }
 #endif
 int snd_soc_poweroff(struct device *dev);
-int snd_soc_register_component_c(struct snd_soc_component *component,
-			 const struct snd_soc_component_driver *component_driver,
-			 struct snd_soc_dai_driver *dai_drv, int num_dai);
-int snd_soc_register_component_d(struct device *dev,
-			       const struct snd_soc_component_driver *component_driver,
-			       struct snd_soc_dai_driver *dai_drv, int num_dai);
-#define snd_soc_register_component(x, ...) _Generic((x),		\
-struct device * :		snd_soc_register_component_d, \
-struct snd_soc_component * :	snd_soc_register_component_c)(x, __VA_ARGS__)
-
-int devm_snd_soc_register_component(struct device *dev,
-			 const struct snd_soc_component_driver *component_driver,
-			 struct snd_soc_dai_driver *dai_drv, int num_dai);
-#define snd_soc_unregister_component(dev) snd_soc_unregister_component_by_driver(dev, NULL)
-void snd_soc_unregister_component_by_driver(struct device *dev,
-			 const struct snd_soc_component_driver *component_driver);
 
 int soc_new_pcm(struct snd_soc_pcm_runtime *rtd);
 #ifdef CONFIG_SND_SOC_COMPRESS
