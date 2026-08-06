@@ -624,7 +624,6 @@ int snd_soc_dai_prepare(struct snd_soc_dai *dai,
 
 	return soc_dai_ret(dai, ret);
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_prepare);
 
 int snd_soc_dai_mute_is_ctrled_at_trigger(struct snd_soc_dai *dai)
 {
