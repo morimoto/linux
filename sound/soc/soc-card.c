@@ -247,11 +247,30 @@ static void snd_soc_card_resume_init(struct snd_soc_card *card)
 	INIT_WORK(&card->deferred_resume_work, snd_soc_card_resume_deferred);
 }
 
-int snd_soc_card_deferred_resume(struct snd_soc_card *card)
+static int snd_soc_card_deferred_resume(struct snd_soc_card *card)
 {
 	return schedule_work(&card->deferred_resume_work);
 }
 
+int snd_soc_card_resume(struct snd_soc_card *card)
+{
+	struct snd_soc_component *component;
+
+	/* If the card is not initialized yet there is nothing to do */
+	if (!snd_soc_card_is_instantiated(card))
+		return 0;
+
+	/* activate pins from sleep state */
+	for_each_card_components(card, component)
+		if (snd_soc_component_active(component))
+			pinctrl_pm_select_default_state(snd_soc_component_to_dev(component));
+
+	dev_dbg(card->dev, "ASoC: Scheduling resume work\n");
+	if (!snd_soc_card_deferred_resume(card))
+		dev_err(card->dev, "ASoC: resume work item may be lost\n");
+
+	return 0;
+}
 #else
 static inline void snd_soc_card_resume_init(struct snd_soc_card *card) { }
 #endif /* CONFIG_PM_SLEEP */

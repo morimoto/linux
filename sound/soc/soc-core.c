@@ -542,22 +542,8 @@ EXPORT_SYMBOL_GPL(snd_soc_suspend);
 int snd_soc_resume(struct device *dev)
 {
 	struct snd_soc_card *card = dev_get_drvdata(dev);
-	struct snd_soc_component *component;
 
-	/* If the card is not initialized yet there is nothing to do */
-	if (!snd_soc_card_is_instantiated(card))
-		return 0;
-
-	/* activate pins from sleep state */
-	for_each_card_components(card, component)
-		if (snd_soc_component_active(component))
-			pinctrl_pm_select_default_state(snd_soc_component_to_dev(component));
-
-	dev_dbg(dev, "ASoC: Scheduling resume work\n");
-	if (!snd_soc_card_deferred_resume(card))
-		dev_err(dev, "ASoC: resume work item may be lost\n");
-
-	return 0;
+	return snd_soc_card_resume(card);
 }
 EXPORT_SYMBOL_GPL(snd_soc_resume);
 
