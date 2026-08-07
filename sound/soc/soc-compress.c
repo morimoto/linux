@@ -19,7 +19,6 @@
 #include <sound/soc.h>
 #include <sound/initval.h>
 #include <sound/soc-dpcm.h>
-#include <sound/soc-link.h>
 #include "soc-internal.h"
 
 static int snd_soc_compr_components_open(struct snd_compr_stream *cstream)
