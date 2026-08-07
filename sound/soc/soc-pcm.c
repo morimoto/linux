@@ -24,7 +24,6 @@
 #include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/soc-dpcm.h>
-#include <sound/soc-link.h>
 #include <sound/initval.h>
 #include "soc-internal.h"
 
