@@ -6,7 +6,7 @@
 // Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 //
 #include <sound/soc.h>
-#include <sound/soc-link.h>
+#include "soc-internal.h"
 
 #define soc_link_ret(rtd, ret) _soc_link_ret(rtd, __func__, ret)
 static inline int _soc_link_ret(struct snd_soc_pcm_runtime *rtd,
@@ -181,7 +181,6 @@ int snd_soc_link_compr_startup(struct snd_compr_stream *cstream)
 
 	return soc_link_ret(rtd, ret);
 }
-EXPORT_SYMBOL_GPL(snd_soc_link_compr_startup);
 
 void snd_soc_link_compr_shutdown(struct snd_compr_stream *cstream,
 				 int rollback)
@@ -197,7 +196,6 @@ void snd_soc_link_compr_shutdown(struct snd_compr_stream *cstream,
 
 	soc_link_mark_pop(rtd, compr_startup);
 }
-EXPORT_SYMBOL_GPL(snd_soc_link_compr_shutdown);
 
 int snd_soc_link_compr_set_params(struct snd_compr_stream *cstream)
 {
@@ -210,4 +208,3 @@ int snd_soc_link_compr_set_params(struct snd_compr_stream *cstream)
 
 	return soc_link_ret(rtd, ret);
 }
-EXPORT_SYMBOL_GPL(snd_soc_link_compr_set_params);
