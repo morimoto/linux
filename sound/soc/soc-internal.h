@@ -182,6 +182,26 @@ int snd_soc_component_compr_set_metadata(struct snd_compr_stream *cstream,
 					 struct snd_compr_metadata *metadata);
 int snd_soc_component_compr_get_metadata(struct snd_compr_stream *cstream,
 					 struct snd_compr_metadata *metadata);
+int snd_soc_pcm_component_pointer(struct snd_pcm_substream *substream);
+int snd_soc_pcm_component_ioctl(struct snd_pcm_substream *substream, unsigned int cmd, void *arg);
+int snd_soc_pcm_component_sync_stop(struct snd_pcm_substream *substream);
+int snd_soc_pcm_component_copy(struct snd_pcm_substream *substream, int channel, unsigned long pos,
+			       struct iov_iter *iter, unsigned long bytes);
+struct page *snd_soc_pcm_component_page(struct snd_pcm_substream *substream, unsigned long offset);
+int snd_soc_pcm_component_mmap(struct snd_pcm_substream *substream, struct vm_area_struct *vma);
+int snd_soc_pcm_component_new(struct snd_soc_pcm_runtime *rtd);
+void snd_soc_pcm_component_free(struct snd_soc_pcm_runtime *rtd);
+int snd_soc_pcm_component_prepare(struct snd_pcm_substream *substream);
+int snd_soc_pcm_component_hw_params(struct snd_pcm_substream *substream,
+				    struct snd_pcm_hw_params *params);
+void snd_soc_pcm_component_hw_free(struct snd_pcm_substream *substream, int rollback);
+int snd_soc_pcm_component_trigger(struct snd_pcm_substream *substream, int cmd, int rollback);
+int snd_soc_pcm_component_pm_runtime_get(struct snd_soc_pcm_runtime *rtd, void *stream);
+void snd_soc_pcm_component_pm_runtime_put(struct snd_soc_pcm_runtime *rtd, void *stream,
+					  int rollback);
+int snd_soc_pcm_component_ack(struct snd_pcm_substream *substream);
+void snd_soc_pcm_component_delay(struct snd_pcm_substream *substream,
+				 snd_pcm_sframes_t *cpu_delay, snd_pcm_sframes_t *codec_delay);
 
 #define for_each_component(component)							\
 	for (component = snd_soc_component_from_component_total_list(snd_soc_component_total_list_head()->next);	\
