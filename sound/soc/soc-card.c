@@ -13,7 +13,6 @@
 #include <linux/rwsem.h>
 #include <sound/initval.h>
 #include <sound/soc.h>
-#include <sound/soc-link.h>
 #include <sound/jack.h>
 #include "soc-internal.h"
 
