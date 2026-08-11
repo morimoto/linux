@@ -362,8 +362,8 @@ static void ravb_ptp_sync_irqs(struct net_device *ndev)
 
 	synchronize_irq(ndev->irq);
 	if (priv->info->err_mgmt_irqs) {
-		synchronize_irq(priv->erra_irq);
-		synchronize_irq(priv->mgmta_irq);
+		synchronize_irq(priv->err_irq);
+		synchronize_irq(priv->mgmt_irq);
 	}
 }
 
