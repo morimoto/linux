@@ -55,8 +55,6 @@
 
 	The feature of (A)/(B) are same as "Branch". See above.
 	These tags are added when the last version digit was 0 or 5.
-	These tree are well-tested by Renesas Test team since Aug 2026
-	(The tags before that were not).
 	# You can see the tag which last version digit was not 0 or 5.
 	# These are mile stone for Android or other branch.
 	If you *not* update frequently, we recommend to use "Tag", instead of "Branch".
