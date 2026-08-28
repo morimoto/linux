@@ -999,6 +999,43 @@ static struct reset_controller_dev *__reset_find_rcdev(const struct of_phandle_a
 	return NULL;
 }
 
+static struct reset_control *
+__reset_control_get_from_provider(const struct of_phandle_args *args,
+				  bool gpio_fallback,
+				  enum reset_control_flags flags)
+{
+	struct reset_controller_dev *rcdev;
+	struct reset_control *rstc;
+	int rstc_id;
+
+	mutex_lock(&reset_list_mutex);
+	rcdev = __reset_find_rcdev(args, gpio_fallback);
+	if (!rcdev) {
+		rstc = ERR_PTR(-EPROBE_DEFER);
+		goto out_unlock;
+	}
+
+	if (WARN_ON(args->args_count != rcdev->of_reset_n_cells)) {
+		rstc = ERR_PTR(-EINVAL);
+		goto out_unlock;
+	}
+
+	rstc_id = rcdev->of_xlate(rcdev, args);
+	if (rstc_id < 0) {
+		rstc = ERR_PTR(rstc_id);
+		goto out_unlock;
+	}
+
+	flags &= ~RESET_CONTROL_FLAGS_BIT_OPTIONAL;
+
+	/* reset_list_mutex also protects the rcdev's reset_control list */
+	rstc = __reset_control_get_internal(rcdev, rstc_id, flags);
+
+out_unlock:
+	mutex_unlock(&reset_list_mutex);
+	return rstc;
+}
+
 struct reset_control *
 __of_reset_control_get(struct device_node *node, const char *id, int index,
 		       enum reset_control_flags flags)
@@ -1006,9 +1043,7 @@ __of_reset_control_get(struct device_node *node, const char *id, int index,
 	bool optional = flags & RESET_CONTROL_FLAGS_BIT_OPTIONAL;
 	bool gpio_fallback = false;
 	struct reset_control *rstc;
-	struct reset_controller_dev *rcdev;
 	struct of_phandle_args args;
-	int rstc_id;
 	int ret;
 
 	if (!node)
@@ -1049,31 +1084,9 @@ __of_reset_control_get(struct device_node *node, const char *id, int index,
 		}
 	}
 
-	mutex_lock(&reset_list_mutex);
-	rcdev = __reset_find_rcdev(&args, gpio_fallback);
-	if (!rcdev) {
-		rstc = ERR_PTR(-EPROBE_DEFER);
-		goto out_unlock;
-	}
-
-	if (WARN_ON(args.args_count != rcdev->of_reset_n_cells)) {
-		rstc = ERR_PTR(-EINVAL);
-		goto out_unlock;
-	}
-
-	rstc_id = rcdev->of_xlate(rcdev, &args);
-	if (rstc_id < 0) {
-		rstc = ERR_PTR(rstc_id);
-		goto out_unlock;
-	}
-
-	flags &= ~RESET_CONTROL_FLAGS_BIT_OPTIONAL;
-
 	/* reset_list_mutex also protects the rcdev's reset_control list */
-	rstc = __reset_control_get_internal(rcdev, rstc_id, flags);
+	rstc = __reset_control_get_from_provider(&args, gpio_fallback, flags);
 
-out_unlock:
-	mutex_unlock(&reset_list_mutex);
 out_put:
 	of_node_put(args.np);
 
