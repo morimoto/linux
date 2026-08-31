@@ -153,8 +153,8 @@ static struct snd_soc_dai_link rk_dailink = {
 	SND_SOC_DAILINK_REG(audio),
 };
 
-static struct snd_soc_card snd_soc_card_rk = {
-	.name = "ROCKCHIP-I2S",
+static struct snd_soc_card_driver snd_soc_card_rk = {
+	.default_name = "ROCKCHIP-I2S",
 	.dai_link = &rk_dailink,
 	.num_links = 1,
 	.num_aux_devs = 0,
@@ -167,17 +167,17 @@ static struct snd_soc_card snd_soc_card_rk = {
 static int snd_rk_mc_probe(struct platform_device *pdev)
 {
 	int ret;
-	struct snd_soc_card *card = &snd_soc_card_rk;
+	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver = &snd_soc_card_rk;
 	struct device_node *np = pdev->dev.of_node;
 	struct rk_drvdata *machine;
 	struct of_phandle_args args;
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	machine = devm_kzalloc(&pdev->dev, sizeof(struct rk_drvdata),
 			       GFP_KERNEL);
-	if (!machine)
+	if (!card || !machine)
 		return -ENOMEM;
-
-	card->dev = &pdev->dev;
 
 	machine->gpio_hp_en = devm_gpiod_get_optional(&pdev->dev, "rockchip,hp-en", GPIOD_OUT_LOW);
 	if (IS_ERR(machine->gpio_hp_en))
@@ -219,13 +219,13 @@ static int snd_rk_mc_probe(struct platform_device *pdev)
 
 	rk_dailink.platforms->of_node = rk_dailink.cpus->of_node;
 
-	ret = snd_soc_of_parse_audio_routing(card, "rockchip,routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(&pdev->dev,
+							 card_driver, "rockchip,routing");
 	if (ret)
 		return ret;
 
 	snd_soc_card_set_drvdata(card, machine);
-
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret,
 				     "Soc register card failed\n");
