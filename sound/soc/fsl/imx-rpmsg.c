@@ -82,8 +82,8 @@ static const struct snd_soc_ops imx_rpmsg_ops = {
 static int imx_rpmsg_late_probe(struct snd_soc_card *card)
 {
 	struct imx_rpmsg *data = snd_soc_card_get_drvdata(card);
-	struct snd_soc_pcm_runtime *rtd = list_first_entry(&card->rtd_list,
-							   struct snd_soc_pcm_runtime, list);
+	struct snd_soc_pcm_runtime *rtd = list_first_entry(&card->rtd_list_head,
+							   struct snd_soc_pcm_runtime, rtd_list);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct device *dev = card->dev;
 	int ret;
