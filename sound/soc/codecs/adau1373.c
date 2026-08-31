@@ -568,7 +568,8 @@ static int adau1373_pll_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct adau1373 *adau1373 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1373 *adau1373 = dev_get_drvdata(dev);
 	unsigned int pll_id = w->name[3] - '1';
 	unsigned int val;
 
@@ -840,7 +841,8 @@ static int adau1373_check_aif_clk(struct snd_soc_dapm_widget *source,
 	struct snd_soc_dapm_widget *sink)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
-	struct adau1373 *adau1373 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1373 *adau1373 = dev_get_drvdata(dev);
 	unsigned int dai;
 	const char *clk;
 
@@ -861,7 +863,8 @@ static int adau1373_check_src(struct snd_soc_dapm_widget *source,
 	struct snd_soc_dapm_widget *sink)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
-	struct adau1373 *adau1373 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1373 *adau1373 = dev_get_drvdata(dev);
 	unsigned int dai;
 
 	dai = sink->name[3] - '1';
@@ -1049,9 +1052,11 @@ static const struct snd_soc_dapm_route adau1373_dapm_routes[] = {
 static int adau1373_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct adau1373 *adau1373 = snd_soc_component_get_drvdata(component);
-	struct adau1373_dai *adau1373_dai = &adau1373->dais[dai->id];
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1373 *adau1373 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
+	struct adau1373_dai *adau1373_dai = &adau1373->dais[dai_id];
 	unsigned int div;
 	unsigned int freq;
 	unsigned int ctrl;
@@ -1089,7 +1094,7 @@ static int adau1373_hw_params(struct snd_pcm_substream *substream,
 
 	adau1373_dai->enable_src = (div != 0);
 
-	regmap_update_bits(adau1373->regmap, ADAU1373_BCLKDIV(dai->id),
+	regmap_update_bits(adau1373->regmap, ADAU1373_BCLKDIV(dai_id),
 		ADAU1373_BCLKDIV_SR_MASK | ADAU1373_BCLKDIV_BCLK_MASK,
 		(div << 2) | ADAU1373_BCLKDIV_64);
 
@@ -1110,15 +1115,17 @@ static int adau1373_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	return regmap_update_bits(adau1373->regmap, ADAU1373_DAI(dai->id),
+	return regmap_update_bits(adau1373->regmap, ADAU1373_DAI(dai_id),
 			ADAU1373_DAI_WLEN_MASK, ctrl);
 }
 
 static int adau1373_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct adau1373 *adau1373 = snd_soc_component_get_drvdata(component);
-	struct adau1373_dai *adau1373_dai = &adau1373->dais[dai->id];
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1373 *adau1373 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
+	struct adau1373_dai *adau1373_dai = &adau1373->dais[dai_id];
 	unsigned int ctrl;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -1167,7 +1174,7 @@ static int adau1373_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
-	regmap_update_bits(adau1373->regmap, ADAU1373_DAI(dai->id),
+	regmap_update_bits(adau1373->regmap, ADAU1373_DAI(dai_id),
 		~ADAU1373_DAI_WLEN_MASK, ctrl);
 
 	return 0;
@@ -1176,8 +1183,11 @@ static int adau1373_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int adau1373_set_dai_sysclk(struct snd_soc_dai *dai,
 	int clk_id, unsigned int freq, int dir)
 {
-	struct adau1373 *adau1373 = snd_soc_component_get_drvdata(dai->component);
-	struct adau1373_dai *adau1373_dai = &adau1373->dais[dai->id];
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1373 *adau1373 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
+	struct adau1373_dai *adau1373_dai = &adau1373->dais[dai_id];
 
 	switch (clk_id) {
 	case ADAU1373_CLK_SRC_PLL1:
@@ -1190,7 +1200,7 @@ static int adau1373_set_dai_sysclk(struct snd_soc_dai *dai,
 	adau1373_dai->sysclk = freq;
 	adau1373_dai->clk_src = clk_id;
 
-	regmap_update_bits(adau1373->regmap, ADAU1373_BCLKDIV(dai->id),
+	regmap_update_bits(adau1373->regmap, ADAU1373_BCLKDIV(dai_id),
 		ADAU1373_BCLKDIV_SOURCE, clk_id << 5);
 
 	return 0;
@@ -1283,7 +1293,8 @@ static struct snd_soc_dai_driver adau1373_dai_driver[] = {
 static int adau1373_set_pll(struct snd_soc_component *component, int pll_id,
 	int source, unsigned int freq_in, unsigned int freq_out)
 {
-	struct adau1373 *adau1373 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1373 *adau1373 = dev_get_drvdata(dev);
 	unsigned int dpll_div = 0;
 	uint8_t pll_regs[5];
 	int ret;
@@ -1387,7 +1398,8 @@ static int adau1373_get_micbias(unsigned int val,
 
 static int adau1373_probe(struct snd_soc_component *component)
 {
-	struct adau1373 *adau1373 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1373 *adau1373 = dev_get_drvdata(dev);
 	unsigned int val;
 	int i;
 
@@ -1396,7 +1408,7 @@ static int adau1373_probe(struct snd_soc_component *component)
 					   adau1373->drc_setting[i]);
 	}
 
-	snd_soc_add_component_controls(component, adau1373_drc_controls,
+	snd_soc_component_add_controls(component, adau1373_drc_controls,
 				       adau1373->num_drc);
 
 	val = 0;
@@ -1419,7 +1431,7 @@ static int adau1373_probe(struct snd_soc_component *component)
 		     (adau1373->micbias2 << ADAU1373_EP_CTRL_MICBIAS2_OFFSET));
 
 	if (!adau1373->lineout_differential) {
-		snd_soc_add_component_controls(component, adau1373_lineout2_controls,
+		snd_soc_component_add_controls(component, adau1373_lineout2_controls,
 			ARRAY_SIZE(adau1373_lineout2_controls));
 	}
 
@@ -1432,7 +1444,8 @@ static int adau1373_probe(struct snd_soc_component *component)
 static int adau1373_set_bias_level(struct snd_soc_component *component,
 	enum snd_soc_bias_level level)
 {
-	struct adau1373 *adau1373 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1373 *adau1373 = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
@@ -1453,7 +1466,8 @@ static int adau1373_set_bias_level(struct snd_soc_component *component,
 
 static int adau1373_resume(struct snd_soc_component *component)
 {
-	struct adau1373 *adau1373 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1373 *adau1373 = dev_get_drvdata(dev);
 
 	regcache_sync(adau1373->regmap);
 
@@ -1604,7 +1618,7 @@ static int adau1373_i2c_probe(struct i2c_client *client)
 	if (ret)
 		return ret;
 
-	ret = devm_snd_soc_register_component(&client->dev,
+	ret = devm_snd_soc_component_register(&client->dev,
 			&adau1373_component_driver,
 			adau1373_dai_driver, ARRAY_SIZE(adau1373_dai_driver));
 	return ret;

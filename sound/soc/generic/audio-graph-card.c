@@ -44,7 +44,7 @@ static int graph_outdrv_event(struct snd_soc_dapm_widget *w,
 			      int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct simple_util_priv *priv = snd_soc_card_get_drvdata(card);
+	struct simple_util_priv *priv = snd_soc_card_to_priv(card);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -75,9 +75,12 @@ static const struct snd_soc_ops graph_ops = {
 static bool soc_component_is_pcm(struct snd_soc_dai_link_component *dlc)
 {
 	struct snd_soc_dai *dai = snd_soc_find_dai_with_mutex(dlc);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	const struct snd_soc_component_driver *component_driver = snd_soc_component_to_driver(component);
 
-	if (dai && (dai->component->driver->pcm_new ||
-		    (dai->driver->ops && dai->driver->ops->pcm_new)))
+	if (dai && (component_driver->pcm_new ||
+		    (dai_driver->ops && dai_driver->ops->pcm_new)))
 		return true;
 
 	return false;

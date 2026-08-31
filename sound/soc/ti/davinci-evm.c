@@ -30,8 +30,7 @@ static int evm_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *soc_card = rtd->card;
-	struct snd_soc_card_drvdata_davinci *drvdata =
-		snd_soc_card_get_drvdata(soc_card);
+	struct snd_soc_card_drvdata_davinci *drvdata = snd_soc_card_to_priv(soc_card);
 
 	if (drvdata->mclk)
 		return clk_prepare_enable(drvdata->mclk);
@@ -43,8 +42,7 @@ static void evm_shutdown(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *soc_card = rtd->card;
-	struct snd_soc_card_drvdata_davinci *drvdata =
-		snd_soc_card_get_drvdata(soc_card);
+	struct snd_soc_card_drvdata_davinci *drvdata = snd_soc_card_to_priv(soc_card);
 
 	clk_disable_unprepare(drvdata->mclk);
 }
@@ -58,7 +56,7 @@ static int evm_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_card *soc_card = rtd->card;
 	int ret = 0;
 	unsigned sysclk = ((struct snd_soc_card_drvdata_davinci *)
-			   snd_soc_card_get_drvdata(soc_card))->sysclk;
+			   snd_soc_card_to_priv(soc_card))->sysclk;
 
 	/* set the codec system clock */
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, sysclk, SND_SOC_CLOCK_OUT);
@@ -113,8 +111,10 @@ static const struct snd_soc_dapm_route audio_map[] = {
 static int evm_aic3x_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(rtd->card);
-	struct device_node *np = card->dev->of_node;
+	struct device *dev = snd_soc_card_to_dev(card);
+	struct device_node *np = dev->of_node;
 	int ret;
 
 	/* Add davinci-evm specific widgets */
@@ -122,7 +122,8 @@ static int evm_aic3x_init(struct snd_soc_pcm_runtime *rtd)
 				  ARRAY_SIZE(aic3x_dapm_widgets));
 
 	if (np) {
-		ret = snd_soc_of_parse_audio_routing(card, "ti,audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(dev,
+						card_driver, "ti,audio-routing");
 		if (ret)
 			return ret;
 	} else {

@@ -255,7 +255,7 @@ static int j721e_rule_rate(struct snd_pcm_hw_params *params,
 static int j721e_audio_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct j721e_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct j721e_priv *priv = snd_soc_card_to_priv(rtd->card);
 	unsigned int domain_id = rtd->dai_link->id;
 	struct j721e_audio_domain *domain = &priv->audio_domains[domain_id];
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
@@ -314,7 +314,7 @@ static int j721e_audio_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct j721e_priv *priv = snd_soc_card_get_drvdata(card);
+	struct j721e_priv *priv = snd_soc_card_to_priv(card);
 	unsigned int domain_id = rtd->dai_link->id;
 	struct j721e_audio_domain *domain = &priv->audio_domains[domain_id];
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
@@ -376,7 +376,7 @@ static int j721e_audio_hw_params(struct snd_pcm_substream *substream,
 static void j721e_audio_shutdown(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct j721e_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct j721e_priv *priv = snd_soc_card_to_priv(rtd->card);
 	unsigned int domain_id = rtd->dai_link->id;
 	struct j721e_audio_domain *domain = &priv->audio_domains[domain_id];
 
@@ -397,7 +397,7 @@ static const struct snd_soc_ops j721e_audio_ops = {
 
 static int j721e_audio_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct j721e_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct j721e_priv *priv = snd_soc_card_to_priv(rtd->card);
 	unsigned int domain_id = rtd->dai_link->id;
 	struct j721e_audio_domain *domain = &priv->audio_domains[domain_id];
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
@@ -871,7 +871,7 @@ static int j721e_soc_probe(struct platform_device *pdev)
 	card_driver->num_dapm_routes = ARRAY_SIZE(j721e_cpb_dapm_routes);
 	card_driver->fully_routed = 1;
 
-	ret = snd_soc_of_parse_card_name(card, "model");
+	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret)
 		return ret;
 
@@ -895,7 +895,7 @@ static int j721e_soc_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 
 	mutex_init(&priv->mutex);
 	ret = devm_snd_soc_card_register(card, card_driver);

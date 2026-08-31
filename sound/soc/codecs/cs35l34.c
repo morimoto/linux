@@ -234,7 +234,8 @@ static int cs35l34_sdin_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l34_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l34_private *priv = dev_get_drvdata(dev);
 	int ret;
 
 	switch (event) {
@@ -246,7 +247,7 @@ static int cs35l34_sdin_event(struct snd_soc_dapm_widget *w,
 		ret = regmap_update_bits(priv->regmap, CS35L34_PWRCTL1,
 						CS35L34_PDN_ALL, 0);
 		if (ret < 0) {
-			dev_err(component->dev, "Cannot set Power bits %d\n", ret);
+			dev_err(dev, "Cannot set Power bits %d\n", ret);
 			return ret;
 		}
 		usleep_range(5000, 5100);
@@ -268,8 +269,9 @@ static int cs35l34_sdin_event(struct snd_soc_dapm_widget *w,
 static int cs35l34_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs35l34_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l34_private *priv = dev_get_drvdata(dev);
 	unsigned int reg, bit_pos;
 	int slot, slot_num;
 
@@ -339,7 +341,8 @@ static int cs35l34_main_amp_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l34_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l34_private *priv = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -379,7 +382,8 @@ static int cs35l34_mclk_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l34_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l34_private *priv = dev_get_drvdata(dev);
 	int ret, i;
 	unsigned int reg;
 
@@ -520,8 +524,9 @@ static int cs35l34_get_mclk_coeff(int mclk, int srate)
 
 static int cs35l34_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs35l34_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l34_private *priv = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -542,15 +547,16 @@ static int cs35l34_pcm_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs35l34_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l34_private *priv = dev_get_drvdata(dev);
 	int srate = params_rate(params);
 	int ret;
 
 	int coeff = cs35l34_get_mclk_coeff(priv->mclk_int, srate);
 
 	if (coeff < 0) {
-		dev_err(component->dev, "ERROR: Invalid mclk %d and/or srate %d\n",
+		dev_err(dev, "ERROR: Invalid mclk %d and/or srate %d\n",
 			priv->mclk_int, srate);
 		return coeff;
 	}
@@ -558,7 +564,7 @@ static int cs35l34_pcm_hw_params(struct snd_pcm_substream *substream,
 	ret = regmap_update_bits(priv->regmap, CS35L34_ADSP_CLK_CTL,
 		CS35L34_ADSP_RATE, cs35l34_mclk_coeffs[coeff].adsp_rate);
 	if (ret != 0)
-		dev_err(component->dev, "Failed to set clock state %d\n", ret);
+		dev_err(dev, "Failed to set clock state %d\n", ret);
 
 	return ret;
 }
@@ -566,7 +572,7 @@ static int cs35l34_pcm_hw_params(struct snd_pcm_substream *substream,
 static int cs35l34_set_tristate(struct snd_soc_dai *dai, int tristate)
 {
 
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (tristate)
 		snd_soc_component_update_bits(component, CS35L34_PWRCTL3,
@@ -580,8 +586,9 @@ static int cs35l34_set_tristate(struct snd_soc_dai *dai, int tristate)
 static int cs35l34_dai_set_sysclk(struct snd_soc_dai *dai,
 				int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs35l34_private *cs35l34 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l34_private *cs35l34 = dev_get_drvdata(dev);
 	unsigned int value;
 
 	switch (freq) {
@@ -610,7 +617,7 @@ static int cs35l34_dai_set_sysclk(struct snd_soc_dai *dai,
 		cs35l34->mclk_int = freq / 2;
 	break;
 	default:
-		dev_err(component->dev, "ERROR: Invalid Frequency %d\n", freq);
+		dev_err(dev, "ERROR: Invalid Frequency %d\n", freq);
 		cs35l34->mclk_int = 0;
 		return -EINVAL;
 	}
@@ -652,6 +659,7 @@ static int cs35l34_boost_inductor(struct cs35l34_private *cs35l34,
 	unsigned int inductor)
 {
 	struct snd_soc_component *component = cs35l34->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	switch (inductor) {
 	case 1000: /* 1 uH */
@@ -683,7 +691,7 @@ static int cs35l34_boost_inductor(struct cs35l34_private *cs35l34,
 		regmap_write(cs35l34->regmap, CS35L34_BST_CONV_SW_FREQ, 3);
 		break;
 	default:
-		dev_err(component->dev, "%s Invalid Inductor Value %d uH\n",
+		dev_err(dev, "%s Invalid Inductor Value %d uH\n",
 			__func__, inductor);
 		return -EINVAL;
 	}
@@ -693,9 +701,10 @@ static int cs35l34_boost_inductor(struct cs35l34_private *cs35l34,
 static int cs35l34_probe(struct snd_soc_component *component)
 {
 	int ret = 0;
-	struct cs35l34_private *cs35l34 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l34_private *cs35l34 = dev_get_drvdata(dev);
 
-	pm_runtime_get_sync(component->dev);
+	pm_runtime_get_sync(dev);
 
 	/* Set over temperature warning attenuation to 6 dB */
 	regmap_update_bits(cs35l34->regmap, CS35L34_PROTECT_CTL,
@@ -748,7 +757,7 @@ static int cs35l34_probe(struct snd_soc_component *component)
 		regmap_update_bits(cs35l34->regmap, CS35L34_ADSP_TDM_CTL,
 			1, 1);
 
-	pm_runtime_put_sync(component->dev);
+	pm_runtime_put_sync(dev);
 
 	return ret;
 }
@@ -843,6 +852,7 @@ static irqreturn_t cs35l34_irq_thread(int irq, void *data)
 {
 	struct cs35l34_private *cs35l34 = data;
 	struct snd_soc_component *component = cs35l34->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int sticky1, sticky2, sticky3, sticky4;
 	unsigned int mask1, mask2, mask3, mask4, current1;
 
@@ -865,11 +875,11 @@ static irqreturn_t cs35l34_irq_thread(int irq, void *data)
 	regmap_read(cs35l34->regmap, CS35L34_INT_STATUS_1, &current1);
 
 	if (sticky1 & CS35L34_CAL_ERR) {
-		dev_err(component->dev, "Cal error\n");
+		dev_err(dev, "Cal error\n");
 
 		/* error is no longer asserted; safe to reset */
 		if (!(current1 & CS35L34_CAL_ERR)) {
-			dev_dbg(component->dev, "Cal error release\n");
+			dev_dbg(dev, "Cal error release\n");
 			regmap_update_bits(cs35l34->regmap,
 					CS35L34_PROT_RELEASE_CTL,
 					CS35L34_CAL_ERR_RLS, 0);
@@ -885,15 +895,14 @@ static irqreturn_t cs35l34_irq_thread(int irq, void *data)
 	}
 
 	if (sticky1 & CS35L34_ALIVE_ERR)
-		dev_err(component->dev, "Alive error\n");
+		dev_err(dev, "Alive error\n");
 
 	if (sticky1 & CS35L34_AMP_SHORT) {
-		dev_crit(component->dev, "Amp short error\n");
+		dev_crit(dev, "Amp short error\n");
 
 		/* error is no longer asserted; safe to reset */
 		if (!(current1 & CS35L34_AMP_SHORT)) {
-			dev_dbg(component->dev,
-				"Amp short error release\n");
+			dev_dbg(dev, "Amp short error release\n");
 			regmap_update_bits(cs35l34->regmap,
 					CS35L34_PROT_RELEASE_CTL,
 					CS35L34_SHORT_RLS, 0);
@@ -908,12 +917,11 @@ static irqreturn_t cs35l34_irq_thread(int irq, void *data)
 	}
 
 	if (sticky1 & CS35L34_OTW) {
-		dev_crit(component->dev, "Over temperature warning\n");
+		dev_crit(dev, "Over temperature warning\n");
 
 		/* error is no longer asserted; safe to reset */
 		if (!(current1 & CS35L34_OTW)) {
-			dev_dbg(component->dev,
-				"Over temperature warning release\n");
+			dev_dbg(dev, "Over temperature warning release\n");
 			regmap_update_bits(cs35l34->regmap,
 					CS35L34_PROT_RELEASE_CTL,
 					CS35L34_OTW_RLS, 0);
@@ -928,12 +936,11 @@ static irqreturn_t cs35l34_irq_thread(int irq, void *data)
 	}
 
 	if (sticky1 & CS35L34_OTE) {
-		dev_crit(component->dev, "Over temperature error\n");
+		dev_crit(dev, "Over temperature error\n");
 
 		/* error is no longer asserted; safe to reset */
 		if (!(current1 & CS35L34_OTE)) {
-			dev_dbg(component->dev,
-				"Over temperature error release\n");
+			dev_dbg(dev, "Over temperature error release\n");
 			regmap_update_bits(cs35l34->regmap,
 					CS35L34_PROT_RELEASE_CTL,
 					CS35L34_OTE_RLS, 0);
@@ -948,7 +955,7 @@ static irqreturn_t cs35l34_irq_thread(int irq, void *data)
 	}
 
 	if (sticky3 & CS35L34_BST_HIGH) {
-		dev_crit(component->dev, "VBST too high error; powering off!\n");
+		dev_crit(dev, "VBST too high error; powering off!\n");
 		regmap_update_bits(cs35l34->regmap, CS35L34_PWRCTL2,
 				CS35L34_PDN_AMP, CS35L34_PDN_AMP);
 		regmap_update_bits(cs35l34->regmap, CS35L34_PWRCTL1,
@@ -956,7 +963,7 @@ static irqreturn_t cs35l34_irq_thread(int irq, void *data)
 	}
 
 	if (sticky3 & CS35L34_LBST_SHORT) {
-		dev_crit(component->dev, "LBST short error; powering off!\n");
+		dev_crit(dev, "LBST short error; powering off!\n");
 		regmap_update_bits(cs35l34->regmap, CS35L34_PWRCTL2,
 				CS35L34_PDN_AMP, CS35L34_PDN_AMP);
 		regmap_update_bits(cs35l34->regmap, CS35L34_PWRCTL1,
@@ -1089,7 +1096,7 @@ static int cs35l34_i2c_probe(struct i2c_client *i2c_client)
 	pm_runtime_set_active(&i2c_client->dev);
 	pm_runtime_enable(&i2c_client->dev);
 
-	ret = devm_snd_soc_register_component(&i2c_client->dev,
+	ret = devm_snd_soc_component_register(&i2c_client->dev,
 			&soc_component_dev_cs35l34, &cs35l34_dai, 1);
 	if (ret < 0) {
 		dev_err(&i2c_client->dev,

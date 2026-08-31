@@ -327,12 +327,12 @@ static int da7210_put_alc_sw(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	if (ucontrol->value.integer.value[0]) {
 		/* Check if noise suppression is enabled */
 		if (snd_soc_component_read(component, DA7210_CONTROL) & DA7210_NOISE_SUP_EN) {
-			dev_dbg(component->dev,
-				"Disable noise suppression to enable ALC\n");
+			dev_dbg(dev, "Disable noise suppression to enable ALC\n");
 			return -EINVAL;
 		}
 	}
@@ -755,8 +755,9 @@ static int da7210_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct da7210_priv *da7210 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7210_priv *da7210 = dev_get_drvdata(dev);
 	u32 dai_cfg1;
 	u32 fs, sysclk;
 
@@ -869,8 +870,9 @@ static int da7210_hw_params(struct snd_pcm_substream *substream,
  */
 static int da7210_set_dai_fmt(struct snd_soc_dai *codec_dai, u32 fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct da7210_priv *da7210 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7210_priv *da7210 = dev_get_drvdata(dev);
 	u32 dai_cfg1;
 	u32 dai_cfg3;
 
@@ -926,7 +928,7 @@ static int da7210_set_dai_fmt(struct snd_soc_dai *codec_dai, u32 fmt)
 
 static int da7210_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u8 mute_reg = snd_soc_component_read(component, DA7210_DAC_HPF) & 0xFB;
 
 	if (mute)
@@ -942,8 +944,9 @@ static int da7210_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int da7210_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct da7210_priv *da7210 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct da7210_priv *da7210 = dev_get_drvdata(dai_dev);
 
 	switch (clk_id) {
 	case DA7210_CLKSRC_MCLK:
@@ -958,13 +961,13 @@ static int da7210_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 			da7210->mclk_rate = freq;
 			return 0;
 		default:
-			dev_err(codec_dai->dev, "Unsupported MCLK value %d\n",
+			dev_err(dai_dev, "Unsupported MCLK value %d\n",
 				freq);
 			return -EINVAL;
 		}
 		break;
 	default:
-		dev_err(codec_dai->dev, "Unknown clock source %d\n", clk_id);
+		dev_err(dai_dev, "Unknown clock source %d\n", clk_id);
 		return -EINVAL;
 	}
 }
@@ -985,8 +988,9 @@ static int da7210_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int da7210_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 			      int source, unsigned int fref, unsigned int fout)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct da7210_priv *da7210 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct da7210_priv *da7210 = dev_get_drvdata(dai_dev);
 
 	u8 pll_div1, pll_div2, pll_div3, cnt;
 
@@ -1026,7 +1030,7 @@ static int da7210_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 						    DA7210_SC_MST_EN);
 	return 0;
 err:
-	dev_err(codec_dai->dev, "Unsupported PLL input frequency %d\n", fref);
+	dev_err(dai_dev, "Unsupported PLL input frequency %d\n", fref);
 	return -EINVAL;
 }
 
@@ -1071,9 +1075,10 @@ static struct snd_soc_dai_driver da7210_dai = {
 
 static int da7210_probe(struct snd_soc_component *component)
 {
-	struct da7210_priv *da7210 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7210_priv *da7210 = dev_get_drvdata(dev);
 
-	dev_info(component->dev, "DA7210 Audio Codec %s\n", DA7210_VERSION);
+	dev_info(dev, "DA7210 Audio Codec %s\n", DA7210_VERSION);
 
 	da7210->mclk_rate       = 0;    /* This will be set from set_sysclk() */
 	da7210->master          = 0;    /* This will be set from set_fmt() */
@@ -1164,7 +1169,7 @@ static int da7210_probe(struct snd_soc_component *component)
 	/* Activate all enabled subsystem */
 	snd_soc_component_write(component, DA7210_STARTUP1, DA7210_SC_MST_EN);
 
-	dev_info(component->dev, "DA7210 Audio Codec %s\n", DA7210_VERSION);
+	dev_info(dev, "DA7210 Audio Codec %s\n", DA7210_VERSION);
 
 	return 0;
 }
@@ -1236,7 +1241,7 @@ static int da7210_i2c_probe(struct i2c_client *i2c)
 	if (ret != 0)
 		dev_warn(&i2c->dev, "Failed to apply regmap patch: %d\n", ret);
 
-	ret =  devm_snd_soc_register_component(&i2c->dev,
+	ret =  devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_da7210, &da7210_dai, 1);
 	if (ret < 0)
 		dev_err(&i2c->dev, "Failed to register component: %d\n", ret);
@@ -1322,7 +1327,7 @@ static int da7210_spi_probe(struct spi_device *spi)
 	if (ret != 0)
 		dev_warn(&spi->dev, "Failed to apply regmap patch: %d\n", ret);
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 			&soc_component_dev_da7210, &da7210_dai, 1);
 
 	return ret;

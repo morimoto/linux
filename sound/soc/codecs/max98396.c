@@ -346,8 +346,9 @@ static void max98396_global_enable_onoff(struct regmap *regmap, bool onoff)
 
 static int max98396_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct max98396_priv *max98396 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98396_priv *max98396 = dev_get_drvdata(dev);
 	unsigned int format_mask, format = 0;
 	unsigned int bclk_pol = 0;
 	int ret, status;
@@ -357,7 +358,7 @@ static int max98396_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	format_mask = MAX98396_PCM_MODE_CFG_FORMAT_MASK |
 		      MAX98396_PCM_MODE_CFG_LRCLKEDGE;
 
-	dev_dbg(component->dev, "%s: fmt 0x%08X\n", __func__, fmt);
+	dev_dbg(dev, "%s: fmt 0x%08X\n", __func__, fmt);
 
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
 	case SND_SOC_DAIFMT_NB_NF:
@@ -374,7 +375,7 @@ static int max98396_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 		break;
 
 	default:
-		dev_err(component->dev, "DAI invert mode %d unsupported\n",
+		dev_err(dev, "DAI invert mode %d unsupported\n",
 			fmt & SND_SOC_DAIFMT_INV_MASK);
 		return -EINVAL;
 	}
@@ -394,7 +395,7 @@ static int max98396_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 		format |= MAX98396_PCM_FORMAT_TDM_MODE0;
 		break;
 	default:
-		dev_err(component->dev, "DAI format %d unsupported\n",
+		dev_err(dev, "DAI format %d unsupported\n",
 			fmt & SND_SOC_DAIFMT_FORMAT_MASK);
 		return -EINVAL;
 	}
@@ -505,8 +506,9 @@ static int max98396_dai_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98396_priv *max98396 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98396_priv *max98396 = dev_get_drvdata(dev);
 	unsigned int sampling_rate = 0;
 	unsigned int chan_sz = 0;
 	int ret, reg, status, bsel = 0;
@@ -524,13 +526,11 @@ static int max98396_dai_hw_params(struct snd_pcm_substream *substream,
 		chan_sz = MAX98396_PCM_MODE_CFG_CHANSZ_32;
 		break;
 	default:
-		dev_err(component->dev, "format unsupported %d\n",
-			params_format(params));
+		dev_err(dev, "format unsupported %d\n", params_format(params));
 		goto err;
 	}
 
-	dev_dbg(component->dev, "format supported %d",
-		params_format(params));
+	dev_dbg(dev, "format supported %d", params_format(params));
 
 	/* sampling rate configuration */
 	switch (params_rate(params)) {
@@ -571,15 +571,13 @@ static int max98396_dai_hw_params(struct snd_pcm_substream *substream,
 		sampling_rate = MAX98396_PCM_SR_192000;
 		break;
 	default:
-		dev_err(component->dev, "rate %d not supported\n",
-			params_rate(params));
+		dev_err(dev, "rate %d not supported\n", params_rate(params));
 		goto err;
 	}
 
 	if (max98396->tdm_mode) {
 		if (params_rate(params) > max98396->tdm_max_samplerate) {
-			dev_err(component->dev, "TDM sample rate %d too high",
-				params_rate(params));
+			dev_err(dev, "TDM sample rate %d too high", params_rate(params));
 			goto err;
 		}
 	} else {
@@ -588,8 +586,7 @@ static int max98396_dai_hw_params(struct snd_pcm_substream *substream,
 						params_channels(params),
 						snd_pcm_format_width(params_format(params)));
 		if (ret < 0) {
-			dev_err(component->dev,
-				"no PCM config for %d channels, format %d\n",
+			dev_err(dev, "no PCM config for %d channels, format %d\n",
 				params_channels(params), params_format(params));
 			goto err;
 		}
@@ -597,8 +594,7 @@ static int max98396_dai_hw_params(struct snd_pcm_substream *substream,
 		bsel = max98396_pcm_configs[ret].bsel;
 
 		if (params_rate(params) > max98396_pcm_configs[ret].max_sr) {
-			dev_err(component->dev, "sample rate %d too high",
-				params_rate(params));
+			dev_err(dev, "sample rate %d too high", params_rate(params));
 			goto err;
 		}
 	}
@@ -667,9 +663,9 @@ static int max98396_dai_tdm_slot(struct snd_soc_dai *dai,
 				 unsigned int tx_mask, unsigned int rx_mask,
 				 int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98396_priv *max98396 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98396_priv *max98396 = dev_get_drvdata(dev);
 	int bsel;
 	unsigned int chan_sz = 0;
 	int ret, status;
@@ -684,8 +680,7 @@ static int max98396_dai_tdm_slot(struct snd_soc_dai *dai,
 	/* BCLK configuration */
 	ret = max98396_pcm_config_index(slots, slots, slot_width);
 	if (ret < 0) {
-		dev_err(component->dev, "no TDM config for %d slots %d bits\n",
-			slots, slot_width);
+		dev_err(dev, "no TDM config for %d slots %d bits\n", slots, slot_width);
 		return -EINVAL;
 	}
 
@@ -704,8 +699,7 @@ static int max98396_dai_tdm_slot(struct snd_soc_dai *dai,
 		chan_sz = MAX98396_PCM_MODE_CFG_CHANSZ_32;
 		break;
 	default:
-		dev_err(component->dev, "slot width %d unsupported\n",
-			slot_width);
+		dev_err(dev, "slot width %d unsupported\n", slot_width);
 		return -EINVAL;
 	}
 
@@ -811,10 +805,9 @@ static const struct snd_soc_dai_ops max98396_dai_ops = {
 static int max98396_dac_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct max98396_priv *max98396 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98396_priv *max98396 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -966,7 +959,8 @@ static int max98396_mux_get(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
-	struct max98396_priv *max98396 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98396_priv *max98396 = dev_get_drvdata(dev);
 	int reg, val;
 
 	if (max98396->device_id == CODEC_TYPE_MAX98396)
@@ -986,7 +980,8 @@ static int max98396_mux_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
-	struct max98396_priv *max98396 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98396_priv *max98396 = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int *item = ucontrol->value.enumerated.item;
 	int reg, val;
@@ -1120,7 +1115,8 @@ static int max98396_adc_value_get(struct snd_kcontrol *kcontrol,
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
-	struct max98396_priv *max98396 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98396_priv *max98396 = dev_get_drvdata(dev);
 	int ret;
 	u8 val[2];
 	int reg = mc->reg;
@@ -1386,11 +1382,11 @@ static void max98396_reset(struct max98396_priv *max98396, struct device *dev)
 
 static int max98396_probe(struct snd_soc_component *component)
 {
-	struct max98396_priv *max98396 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98396_priv *max98396 = dev_get_drvdata(dev);
 
 	/* Software Reset */
-	max98396_reset(max98396, component->dev);
+	max98396_reset(max98396, dev);
 
 	/* L/R mix configuration */
 	if (max98396->device_id == CODEC_TYPE_MAX98396) {
@@ -1527,8 +1523,7 @@ static int max98396_probe(struct snd_soc_component *component)
 				   MAX98396_DMON_DURATION_MASK, 3);
 		break;
 	default:
-		dev_err(component->dev, "Invalid DMON duration %d\n",
-			max98396->dmon_duration);
+		dev_err(dev, "Invalid DMON duration %d\n", max98396->dmon_duration);
 	}
 
 	switch (max98396->dmon_stuck_threshold) {
@@ -1557,8 +1552,7 @@ static int max98396_probe(struct snd_soc_component *component)
 				   3 << MAX98396_DMON_STUCK_THRESH_SHIFT);
 		break;
 	default:
-		dev_err(component->dev, "Invalid DMON stuck threshold %d\n",
-			max98396->dmon_stuck_threshold);
+		dev_err(dev, "Invalid DMON stuck threshold %d\n", max98396->dmon_stuck_threshold);
 	}
 
 	switch (max98396->dmon_mag_threshold) {
@@ -1570,8 +1564,7 @@ static int max98396_probe(struct snd_soc_component *component)
 					<< MAX98396_DMON_MAG_THRESH_SHIFT);
 		break;
 	default:
-		dev_err(component->dev, "Invalid DMON magnitude threshold %d\n",
-			max98396->dmon_mag_threshold);
+		dev_err(dev, "Invalid DMON magnitude threshold %d\n", max98396->dmon_mag_threshold);
 	}
 
 	/* Speaker Amplifier PCM RX Enable by default */
@@ -1885,12 +1878,12 @@ static int max98396_i2c_probe(struct i2c_client *i2c)
 
 	/* codec registration */
 	if (max98396->device_id == CODEC_TYPE_MAX98396)
-		ret = devm_snd_soc_register_component(&i2c->dev,
+		ret = devm_snd_soc_component_register(&i2c->dev,
 						      &soc_codec_dev_max98396,
 						      max98396_dai,
 						      ARRAY_SIZE(max98396_dai));
 	else
-		ret = devm_snd_soc_register_component(&i2c->dev,
+		ret = devm_snd_soc_component_register(&i2c->dev,
 						      &soc_codec_dev_max98397,
 						      max98397_dai,
 						      ARRAY_SIZE(max98397_dai));

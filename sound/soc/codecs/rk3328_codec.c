@@ -64,8 +64,9 @@ static int rk3328_codec_reset(struct rk3328_codec_priv *rk3328)
 
 static int rk3328_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct rk3328_codec_priv *rk3328 =
-		snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3328_codec_priv *rk3328 = dev_get_drvdata(dev);
 	unsigned int val;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -108,8 +109,9 @@ static int rk3328_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 static int rk3328_mute_stream(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct rk3328_codec_priv *rk3328 =
-		snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3328_codec_priv *rk3328 = dev_get_drvdata(dev);
 	unsigned int val;
 
 	if (mute)
@@ -265,8 +267,9 @@ static int rk3328_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct rk3328_codec_priv *rk3328 =
-		snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3328_codec_priv *rk3328 = dev_get_drvdata(dev);
 	unsigned int val = 0;
 
 	switch (params_format(params)) {
@@ -297,8 +300,9 @@ static int rk3328_hw_params(struct snd_pcm_substream *substream,
 static int rk3328_pcm_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct rk3328_codec_priv *rk3328 =
-		snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3328_codec_priv *rk3328 = dev_get_drvdata(dev);
 
 	return rk3328_codec_open_playback(rk3328);
 }
@@ -306,8 +310,9 @@ static int rk3328_pcm_startup(struct snd_pcm_substream *substream,
 static void rk3328_pcm_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct rk3328_codec_priv *rk3328 =
-		snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3328_codec_priv *rk3328 = dev_get_drvdata(dev);
 
 	rk3328_codec_close_playback(rk3328);
 }
@@ -360,8 +365,8 @@ static struct snd_soc_dai_driver rk3328_dai[] = {
 
 static int rk3328_codec_probe(struct snd_soc_component *component)
 {
-	struct rk3328_codec_priv *rk3328 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3328_codec_priv *rk3328 = dev_get_drvdata(dev);
 
 	rk3328_codec_reset(rk3328);
 	rk3328_codec_power_on(rk3328, 0);
@@ -371,8 +376,8 @@ static int rk3328_codec_probe(struct snd_soc_component *component)
 
 static void rk3328_codec_remove(struct snd_soc_component *component)
 {
-	struct rk3328_codec_priv *rk3328 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3328_codec_priv *rk3328 = dev_get_drvdata(dev);
 
 	rk3328_codec_close_playback(rk3328);
 	rk3328_codec_power_off(rk3328, 0);
@@ -490,7 +495,7 @@ static int rk3328_platform_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, rk3328);
 
-	return devm_snd_soc_register_component(&pdev->dev, &soc_codec_rk3328,
+	return devm_snd_soc_component_register(&pdev->dev, &soc_codec_rk3328,
 					       rk3328_dai,
 					       ARRAY_SIZE(rk3328_dai));
 }

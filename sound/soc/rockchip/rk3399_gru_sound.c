@@ -67,6 +67,7 @@ static int rockchip_sound_max98357a_hw_params(struct snd_pcm_substream *substrea
 			     struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	unsigned int mclk;
 	int ret;
 
@@ -74,8 +75,7 @@ static int rockchip_sound_max98357a_hw_params(struct snd_pcm_substream *substrea
 
 	ret = snd_soc_dai_set_sysclk(snd_soc_rtd_to_cpu(rtd, 0), 0, mclk, 0);
 	if (ret) {
-		dev_err(rtd->card->dev, "%s() error setting sysclk to %u: %d\n",
-				__func__, mclk, ret);
+		dev_err(dev, "%s() error setting sysclk to %u: %d\n", __func__, mclk, ret);
 		return ret;
 	}
 
@@ -88,6 +88,7 @@ static int rockchip_sound_rt5514_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	unsigned int mclk;
 	int ret;
 
@@ -96,14 +97,14 @@ static int rockchip_sound_rt5514_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_sysclk(cpu_dai, 0, mclk,
 				     SND_SOC_CLOCK_OUT);
 	if (ret < 0) {
-		dev_err(rtd->card->dev, "Can't set cpu clock out %d\n", ret);
+		dev_err(dev, "Can't set cpu clock out %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5514_SCLK_S_MCLK,
 				     mclk, SND_SOC_CLOCK_IN);
 	if (ret) {
-		dev_err(rtd->card->dev, "%s() error setting sysclk to %u: %d\n",
+		dev_err(dev, "%s() error setting sysclk to %u: %d\n",
 				__func__, params_rate(params) * 512, ret);
 		return ret;
 	}
@@ -120,6 +121,8 @@ static int rockchip_sound_da7219_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+	struct device *codec_dev = snd_soc_component_to_dev(codec_component);
 	int mclk, ret;
 
 	/* in bypass mode, the mclk has to be one of the frequencies below */
@@ -146,20 +149,20 @@ static int rockchip_sound_da7219_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_sysclk(cpu_dai, 0, mclk,
 				     SND_SOC_CLOCK_OUT);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "Can't set cpu clock out %d\n", ret);
+		dev_err(codec_dev, "Can't set cpu clock out %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, mclk,
 				     SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "Can't set codec clock in %d\n", ret);
+		dev_err(codec_dev, "Can't set codec clock in %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_MCLK, 0, 0);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "Can't set pll sysclk mclk %d\n", ret);
+		dev_err(codec_dev, "Can't set pll sysclk mclk %d\n", ret);
 		return ret;
 	}
 
@@ -170,15 +173,16 @@ static struct snd_soc_jack cdn_dp_card_jack;
 
 static int rockchip_sound_cdndp_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	struct snd_soc_card *card = rtd->card;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	/* Enable jack detection. */
 	ret = snd_soc_card_jack_new(card, "DP Jack", SND_JACK_LINEOUT,
 				    &cdn_dp_card_jack);
 	if (ret) {
-		dev_err(card->dev, "Can't create DP Jack %d\n", ret);
+		dev_err(dev, "Can't create DP Jack %d\n", ret);
 		return ret;
 	}
 
@@ -187,21 +191,22 @@ static int rockchip_sound_cdndp_init(struct snd_soc_pcm_runtime *rtd)
 
 static int rockchip_sound_da7219_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	/* We need default MCLK and PLL settings for the accessory detection */
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, 12288000,
 				     SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "Init can't set codec clock in %d\n", ret);
+		dev_err(dev, "Init can't set codec clock in %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_MCLK, 0, 0);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "Init can't set pll sysclk mclk %d\n", ret);
+		dev_err(dev, "Init can't set pll sysclk mclk %d\n", ret);
 		return ret;
 	}
 
@@ -215,7 +220,7 @@ static int rockchip_sound_da7219_init(struct snd_soc_pcm_runtime *rtd)
 					 ARRAY_SIZE(rockchip_sound_jack_pins));
 
 	if (ret) {
-		dev_err(rtd->card->dev, "New Headset Jack failed! (%d)\n", ret);
+		dev_err(snd_soc_card_to_dev(rtd->card), "New Headset Jack failed! (%d)\n", ret);
 		return ret;
 	}
 
@@ -237,6 +242,7 @@ static int rockchip_sound_dmic_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	unsigned int mclk;
 	int ret;
 
@@ -244,7 +250,7 @@ static int rockchip_sound_dmic_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_dai_set_sysclk(snd_soc_rtd_to_cpu(rtd, 0), 0, mclk, 0);
 	if (ret) {
-		dev_err(rtd->card->dev, "%s() error setting sysclk to %u: %d\n",
+		dev_err(dev, "%s() error setting sysclk to %u: %d\n",
 				__func__, mclk, ret);
 		return ret;
 	}

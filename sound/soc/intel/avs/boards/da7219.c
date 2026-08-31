@@ -31,23 +31,24 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
 	struct snd_soc_dai *codec_dai;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret = 0;
 
 	codec_dai = snd_soc_card_get_codec_dai(card, DA7219_DAI_NAME);
 	if (!codec_dai) {
-		dev_err(card->dev, "Codec dai not found. Unable to set/unset codec pll\n");
+		dev_err(dev, "Codec dai not found. Unable to set/unset codec pll\n");
 		return -EIO;
 	}
 
 	if (SND_SOC_DAPM_EVENT_OFF(event)) {
 		ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_MCLK, 0, 0);
 		if (ret)
-			dev_err(card->dev, "failed to stop PLL: %d\n", ret);
+			dev_err(dev, "failed to stop PLL: %d\n", ret);
 	} else if (SND_SOC_DAPM_EVENT_ON(event)) {
 		ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_PLL_SRM,
 					  0, DA7219_PLL_FREQ_OUT_98304);
 		if (ret)
-			dev_err(card->dev, "failed to start PLL: %d\n", ret);
+			dev_err(dev, "failed to start PLL: %d\n", ret);
 	}
 
 	return ret;
@@ -91,15 +92,16 @@ static const struct snd_soc_jack_pin card_headset_pins[] = {
 static int avs_da7219_codec_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(runtime, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct snd_soc_card *card = runtime->card;
 	struct snd_soc_jack_pin *pins;
 	struct snd_soc_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int num_pins;
 	int clk_freq;
 	int ret;
 
-	jack = snd_soc_card_get_drvdata(card);
+	jack = snd_soc_card_to_priv(card);
 	if (soc_intel_is_apl())
 		clk_freq = 19200000;
 	else /* kbl */
@@ -107,12 +109,12 @@ static int avs_da7219_codec_init(struct snd_soc_pcm_runtime *runtime)
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, DA7219_CLKSRC_MCLK, clk_freq, SND_SOC_CLOCK_IN);
 	if (ret) {
-		dev_err(card->dev, "can't set codec sysclk configuration\n");
+		dev_err(dev, "can't set codec sysclk configuration\n");
 		return ret;
 	}
 
 	num_pins = ARRAY_SIZE(card_headset_pins);
-	pins = devm_kmemdup_array(card->dev, card_headset_pins, num_pins,
+	pins = devm_kmemdup_array(dev, card_headset_pins, num_pins,
 				  sizeof(card_headset_pins[0]), GFP_KERNEL);
 	if (!pins)
 		return -ENOMEM;
@@ -127,7 +129,7 @@ static int avs_da7219_codec_init(struct snd_soc_pcm_runtime *runtime)
 					 SND_JACK_BTN_3 | SND_JACK_LINEOUT,
 					 jack, pins, num_pins);
 	if (ret) {
-		dev_err(card->dev, "Headset Jack creation failed: %d\n", ret);
+		dev_err(dev, "Headset Jack creation failed: %d\n", ret);
 		return ret;
 	}
 
@@ -141,7 +143,8 @@ static int avs_da7219_codec_init(struct snd_soc_pcm_runtime *runtime)
 
 static void avs_da7219_codec_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	snd_soc_component_set_jack(snd_soc_rtd_to_codec(rtd, 0)->component, NULL, NULL);
+	snd_soc_component_set_jack(snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0)),
+				   NULL, NULL);
 }
 
 static int
@@ -254,7 +257,7 @@ static int avs_da7219_probe(struct platform_device *pdev)
 	card_driver->dapm_routes = card_base_routes;
 	card_driver->num_dapm_routes = ARRAY_SIZE(card_base_routes);
 	card_driver->fully_routed = true;
-	snd_soc_card_set_drvdata(card, jack);
+	snd_soc_card_set_priv(card, jack);
 
 	return devm_snd_soc_card_register(card, card_driver);
 }

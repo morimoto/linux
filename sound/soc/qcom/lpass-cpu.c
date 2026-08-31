@@ -69,12 +69,15 @@ static int lpass_cpu_init_i2sctl_bitfields(struct device *dev,
 static int lpass_cpu_daiops_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 		unsigned int freq, int dir)
 {
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	int ret;
 
-	ret = clk_set_rate(drvdata->mi2s_osr_clk[dai->driver->id], freq);
+	ret = clk_set_rate(drvdata->mi2s_osr_clk[dai_driver->id], freq);
 	if (ret)
-		dev_err(dai->dev, "error setting mi2s osrclk to %u: %d\n",
+		dev_err(dev, "error setting mi2s osrclk to %u: %d\n",
 			freq, ret);
 
 	return ret;
@@ -83,18 +86,21 @@ static int lpass_cpu_daiops_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 static int lpass_cpu_daiops_startup(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	int ret;
 
-	ret = clk_prepare_enable(drvdata->mi2s_osr_clk[dai->driver->id]);
+	ret = clk_prepare_enable(drvdata->mi2s_osr_clk[dai_driver->id]);
 	if (ret) {
-		dev_err(dai->dev, "error in enabling mi2s osr clk: %d\n", ret);
+		dev_err(dev, "error in enabling mi2s osr clk: %d\n", ret);
 		return ret;
 	}
-	ret = clk_prepare(drvdata->mi2s_bit_clk[dai->driver->id]);
+	ret = clk_prepare(drvdata->mi2s_bit_clk[dai_driver->id]);
 	if (ret) {
-		dev_err(dai->dev, "error in enabling mi2s bit clk: %d\n", ret);
-		clk_disable_unprepare(drvdata->mi2s_osr_clk[dai->driver->id]);
+		dev_err(dev, "error in enabling mi2s bit clk: %d\n", ret);
+		clk_disable_unprepare(drvdata->mi2s_osr_clk[dai_driver->id]);
 		return ret;
 	}
 	return 0;
@@ -103,11 +109,14 @@ static int lpass_cpu_daiops_startup(struct snd_pcm_substream *substream,
 static void lpass_cpu_daiops_shutdown(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct lpaif_i2sctl *i2sctl = drvdata->i2sctl;
-	unsigned int id = dai->driver->id;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	unsigned int id = dai_driver->id;
 
-	clk_disable_unprepare(drvdata->mi2s_osr_clk[dai->driver->id]);
+	clk_disable_unprepare(drvdata->mi2s_osr_clk[id]);
 	/*
 	 * Ensure LRCLK is disabled even in device node validation.
 	 * Will not impact if disabled in lpass_cpu_daiops_trigger()
@@ -123,20 +132,23 @@ static void lpass_cpu_daiops_shutdown(struct snd_pcm_substream *substream,
 	 * lpass_cpu_daiops_shutdown. It's paired with the clk_enable in
 	 * lpass_cpu_daiops_prepare.
 	 */
-	if (drvdata->mi2s_was_prepared[dai->driver->id]) {
-		drvdata->mi2s_was_prepared[dai->driver->id] = false;
-		clk_disable(drvdata->mi2s_bit_clk[dai->driver->id]);
+	if (drvdata->mi2s_was_prepared[id]) {
+		drvdata->mi2s_was_prepared[id] = false;
+		clk_disable(drvdata->mi2s_bit_clk[id]);
 	}
 
-	clk_unprepare(drvdata->mi2s_bit_clk[dai->driver->id]);
+	clk_unprepare(drvdata->mi2s_bit_clk[id]);
 }
 
 static int lpass_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct lpaif_i2sctl *i2sctl = drvdata->i2sctl;
-	unsigned int id = dai->driver->id;
+	unsigned int id = dai_driver->id;
 	snd_pcm_format_t format = params_format(params);
 	unsigned int channels = params_channels(params);
 	unsigned int rate = params_rate(params);
@@ -146,21 +158,21 @@ static int lpass_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 
 	bitwidth = snd_pcm_format_width(format);
 	if (bitwidth < 0) {
-		dev_err(dai->dev, "invalid bit width given: %d\n", bitwidth);
+		dev_err(dev, "invalid bit width given: %d\n", bitwidth);
 		return bitwidth;
 	}
 
 	ret = regmap_fields_write(i2sctl->loopback, id,
 				 LPAIF_I2SCTL_LOOPBACK_DISABLE);
 	if (ret) {
-		dev_err(dai->dev, "error updating loopback field: %d\n", ret);
+		dev_err(dev, "error updating loopback field: %d\n", ret);
 		return ret;
 	}
 
 	ret = regmap_fields_write(i2sctl->wssrc, id,
 				 LPAIF_I2SCTL_WSSRC_INTERNAL);
 	if (ret) {
-		dev_err(dai->dev, "error updating wssrc field: %d\n", ret);
+		dev_err(dev, "error updating wssrc field: %d\n", ret);
 		return ret;
 	}
 
@@ -175,13 +187,13 @@ static int lpass_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 		regval = LPAIF_I2SCTL_BITWIDTH_32;
 		break;
 	default:
-		dev_err(dai->dev, "invalid bitwidth given: %d\n", bitwidth);
+		dev_err(dev, "invalid bitwidth given: %d\n", bitwidth);
 		return -EINVAL;
 	}
 
 	ret = regmap_fields_write(i2sctl->bitwidth, id, regval);
 	if (ret) {
-		dev_err(dai->dev, "error updating bitwidth field: %d\n", ret);
+		dev_err(dev, "error updating bitwidth field: %d\n", ret);
 		return ret;
 	}
 
@@ -191,7 +203,7 @@ static int lpass_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 		mode = drvdata->mi2s_capture_sd_mode[id];
 
 	if (!mode) {
-		dev_err(dai->dev, "no line is assigned\n");
+		dev_err(dev, "no line is assigned\n");
 		return -EINVAL;
 	}
 
@@ -212,7 +224,7 @@ static int lpass_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 		break;
 	case 4:
 		if (mode < LPAIF_I2SCTL_MODE_QUAD01) {
-			dev_err(dai->dev, "cannot configure 4 channels with mode %d\n",
+			dev_err(dev, "cannot configure 4 channels with mode %d\n",
 				mode);
 			return -EINVAL;
 		}
@@ -226,7 +238,7 @@ static int lpass_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 		break;
 	case 6:
 		if (mode < LPAIF_I2SCTL_MODE_6CH) {
-			dev_err(dai->dev, "cannot configure 6 channels with mode %d\n",
+			dev_err(dev, "cannot configure 6 channels with mode %d\n",
 				mode);
 			return -EINVAL;
 		}
@@ -239,13 +251,13 @@ static int lpass_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 		break;
 	case 8:
 		if (mode < LPAIF_I2SCTL_MODE_8CH) {
-			dev_err(dai->dev, "cannot configure 8 channels with mode %d\n",
+			dev_err(dev, "cannot configure 8 channels with mode %d\n",
 				mode);
 			return -EINVAL;
 		}
 		break;
 	default:
-		dev_err(dai->dev, "invalid channels given: %u\n", channels);
+		dev_err(dev, "invalid channels given: %u\n", channels);
 		return -EINVAL;
 	}
 
@@ -253,7 +265,7 @@ static int lpass_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 		ret = regmap_fields_write(i2sctl->spkmode, id,
 					 LPAIF_I2SCTL_SPKMODE(mode));
 		if (ret) {
-			dev_err(dai->dev, "error writing to i2sctl spkr mode: %d\n",
+			dev_err(dev, "error writing to i2sctl spkr mode: %d\n",
 				ret);
 			return ret;
 		}
@@ -267,7 +279,7 @@ static int lpass_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 		ret = regmap_fields_write(i2sctl->micmode, id,
 					 LPAIF_I2SCTL_MICMODE(mode));
 		if (ret) {
-			dev_err(dai->dev, "error writing to i2sctl mic mode: %d\n",
+			dev_err(dev, "error writing to i2sctl mic mode: %d\n",
 				ret);
 			return ret;
 		}
@@ -280,7 +292,7 @@ static int lpass_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (ret) {
-		dev_err(dai->dev, "error writing to i2sctl channels mode: %d\n",
+		dev_err(dev, "error writing to i2sctl channels mode: %d\n",
 			ret);
 		return ret;
 	}
@@ -288,7 +300,7 @@ static int lpass_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 	ret = clk_set_rate(drvdata->mi2s_bit_clk[id],
 			   rate * bitwidth * 2);
 	if (ret) {
-		dev_err(dai->dev, "error setting mi2s bitclk to %u: %d\n",
+		dev_err(dev, "error setting mi2s bitclk to %u: %d\n",
 			rate * bitwidth * 2, ret);
 		return ret;
 	}
@@ -299,9 +311,12 @@ static int lpass_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 static int lpass_cpu_daiops_trigger(struct snd_pcm_substream *substream,
 		int cmd, struct snd_soc_dai *dai)
 {
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct lpaif_i2sctl *i2sctl = drvdata->i2sctl;
-	unsigned int id = dai->driver->id;
+	unsigned int id = dai_driver->id;
 	int ret = -EINVAL;
 
 	switch (cmd) {
@@ -328,12 +343,12 @@ static int lpass_cpu_daiops_trigger(struct snd_pcm_substream *substream,
 						 LPAIF_I2SCTL_MICEN_ENABLE);
 		}
 		if (ret)
-			dev_err(dai->dev, "error writing to i2sctl reg: %d\n",
+			dev_err(dev, "error writing to i2sctl reg: %d\n",
 				ret);
 
 		ret = clk_enable(drvdata->mi2s_bit_clk[id]);
 		if (ret) {
-			dev_err(dai->dev, "error in enabling mi2s bit clk: %d\n", ret);
+			dev_err(dev, "error in enabling mi2s bit clk: %d\n", ret);
 			clk_disable(drvdata->mi2s_osr_clk[id]);
 			return ret;
 		}
@@ -353,10 +368,10 @@ static int lpass_cpu_daiops_trigger(struct snd_pcm_substream *substream,
 						 LPAIF_I2SCTL_MICEN_DISABLE);
 		}
 		if (ret)
-			dev_err(dai->dev, "error writing to i2sctl reg: %d\n",
+			dev_err(dev, "error writing to i2sctl reg: %d\n",
 				ret);
 
-		clk_disable(drvdata->mi2s_bit_clk[dai->driver->id]);
+		clk_disable(drvdata->mi2s_bit_clk[dai_driver->id]);
 
 		break;
 	}
@@ -367,9 +382,12 @@ static int lpass_cpu_daiops_trigger(struct snd_pcm_substream *substream,
 static int lpass_cpu_daiops_prepare(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct lpaif_i2sctl *i2sctl = drvdata->i2sctl;
-	unsigned int id = dai->driver->id;
+	unsigned int id = dai_driver->id;
 	int ret;
 
 	/*
@@ -384,7 +402,7 @@ static int lpass_cpu_daiops_prepare(struct snd_pcm_substream *substream,
 		ret = regmap_fields_write(i2sctl->micen, id, LPAIF_I2SCTL_MICEN_ENABLE);
 
 	if (ret) {
-		dev_err(dai->dev, "error writing to i2sctl reg: %d\n", ret);
+		dev_err(dev, "error writing to i2sctl reg: %d\n", ret);
 		return ret;
 	}
 
@@ -393,13 +411,13 @@ static int lpass_cpu_daiops_prepare(struct snd_pcm_substream *substream,
 	 * be called multiple times. It's paired with the clk_disable in
 	 * lpass_cpu_daiops_shutdown.
 	 */
-	if (!drvdata->mi2s_was_prepared[dai->driver->id]) {
+	if (!drvdata->mi2s_was_prepared[dai_driver->id]) {
 		ret = clk_enable(drvdata->mi2s_bit_clk[id]);
 		if (ret) {
-			dev_err(dai->dev, "error in enabling mi2s bit clk: %d\n", ret);
+			dev_err(dev, "error in enabling mi2s bit clk: %d\n", ret);
 			return ret;
 		}
-		drvdata->mi2s_was_prepared[dai->driver->id] = true;
+		drvdata->mi2s_was_prepared[dai_driver->id] = true;
 	}
 	return 0;
 }
@@ -407,10 +425,13 @@ static int lpass_cpu_daiops_prepare(struct snd_pcm_substream *substream,
 static int lpass_cpu_daiops_pcm_new(struct snd_soc_pcm_runtime *rtd, struct snd_soc_dai *dai)
 {
 	int ret;
-	struct snd_soc_dai_driver *drv = dai->driver;
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_dai_driver *drv = snd_soc_dai_to_driver(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	if (drvdata->mi2s_playback_sd_mode[dai->id] == LPAIF_I2SCTL_MODE_QUAD01) {
+	if (drvdata->mi2s_playback_sd_mode[dai_id] == LPAIF_I2SCTL_MODE_QUAD01) {
 		ret =  snd_pcm_add_chmap_ctls(rtd->pcm, SNDRV_PCM_STREAM_PLAYBACK,
 				lpass_quad_chmaps, drv->playback.channels_max, 0,
 				NULL);
@@ -423,14 +444,17 @@ static int lpass_cpu_daiops_pcm_new(struct snd_soc_pcm_runtime *rtd, struct snd_
 
 static int lpass_cpu_daiops_probe(struct snd_soc_dai *dai)
 {
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	int ret;
 
 	/* ensure audio hardware is disabled */
 	ret = regmap_write(drvdata->lpaif_map,
-			LPAIF_I2SCTL_REG(drvdata->variant, dai->driver->id), 0);
+			LPAIF_I2SCTL_REG(drvdata->variant, dai_driver->id), 0);
 	if (ret)
-		dev_err(dai->dev, "error writing to i2sctl reg: %d\n", ret);
+		dev_err(dev, "error writing to i2sctl reg: %d\n", ret);
 
 	return ret;
 }
@@ -462,7 +486,8 @@ static int asoc_qcom_of_xlate_dai_name(struct snd_soc_component *component,
 				   const struct of_phandle_args *args,
 				   const char **dai_name)
 {
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	const struct lpass_variant *variant = drvdata->variant;
 	int id = args->args[0];
 	int ret = -EINVAL;
@@ -1260,7 +1285,7 @@ int asoc_qcom_lpass_cpu_platform_probe(struct platform_device *pdev)
 			return ret;
 		}
 	}
-	ret = devm_snd_soc_register_component(dev,
+	ret = devm_snd_soc_component_register(dev,
 					      &lpass_cpu_comp_driver,
 					      variant->dai_driver,
 					      variant->num_dai);

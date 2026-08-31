@@ -182,11 +182,12 @@ static int ntp8835_load_firmware(struct ntp8835_priv *ntp8835)
 
 static int ntp8835_snd_suspend(struct snd_soc_component *component)
 {
-	struct ntp8835_priv *ntp8835 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ntp8835_priv *ntp8835 = dev_get_drvdata(dev);
 
-	regcache_cache_only(component->regmap, true);
+	snd_soc_component_regcache_cache_only(component, true);
 
-	regmap_multi_reg_write_bypassed(component->regmap,
+	snd_soc_component_regmap_multi_reg_write_bypassed(component,
 					ntp8835_sound_off,
 					ARRAY_SIZE(ntp8835_sound_off));
 
@@ -197,7 +198,7 @@ static int ntp8835_snd_suspend(struct snd_soc_component *component)
 	fsleep(500);
 	reset_control_assert(ntp8835->reset);
 
-	regcache_mark_dirty(component->regmap);
+	snd_soc_component_regcache_mark_dirty(component);
 	clk_disable_unprepare(ntp8835->mclk);
 
 	return 0;
@@ -205,7 +206,8 @@ static int ntp8835_snd_suspend(struct snd_soc_component *component)
 
 static int ntp8835_snd_resume(struct snd_soc_component *component)
 {
-	struct ntp8835_priv *ntp8835 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ntp8835_priv *ntp8835 = dev_get_drvdata(dev);
 	int ret;
 
 	ntp8835_reset_gpio(ntp8835);
@@ -213,7 +215,7 @@ static int ntp8835_snd_resume(struct snd_soc_component *component)
 	if (ret)
 		return ret;
 
-	regmap_multi_reg_write_bypassed(component->regmap,
+	snd_soc_component_regmap_multi_reg_write_bypassed(component,
 					ntp8835_sound_on,
 					ARRAY_SIZE(ntp8835_sound_on));
 
@@ -223,8 +225,8 @@ static int ntp8835_snd_resume(struct snd_soc_component *component)
 		return ret;
 	}
 
-	regcache_cache_only(component->regmap, false);
-	snd_soc_component_cache_sync(component);
+	snd_soc_component_regcache_cache_only(component, false);
+	snd_soc_component_regcache_sync(component);
 
 	return 0;
 }
@@ -232,10 +234,10 @@ static int ntp8835_snd_resume(struct snd_soc_component *component)
 static int ntp8835_probe(struct snd_soc_component *component)
 {
 	int ret;
-	struct ntp8835_priv *ntp8835 = snd_soc_component_get_drvdata(component);
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ntp8835_priv *ntp8835 = dev_get_drvdata(dev);
 
-	ret = snd_soc_add_component_controls(component, ntp8835_vol_control,
+	ret = snd_soc_component_add_controls(component, ntp8835_vol_control,
 					     ARRAY_SIZE(ntp8835_vol_control));
 	if (ret)
 		return dev_err_probe(dev, ret, "Failed to add controls\n");
@@ -265,7 +267,8 @@ static int ntp8835_set_component_sysclk(struct snd_soc_component *component,
 				       int clk_id, int source,
 				       unsigned int freq, int dir)
 {
-	struct ntp8835_priv *ntp8835 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ntp8835_priv *ntp8835 = dev_get_drvdata(dev);
 
 	switch (freq) {
 	case 12288000:
@@ -275,7 +278,7 @@ static int ntp8835_set_component_sysclk(struct snd_soc_component *component,
 		break;
 	default:
 		ntp8835->mclk_rate = 0;
-		dev_err(component->dev, "Unsupported MCLK value: %u", freq);
+		dev_err(dev, "Unsupported MCLK value: %u", freq);
 		return -EINVAL;
 	}
 
@@ -297,8 +300,9 @@ static int ntp8835_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ntp8835_priv *ntp8835 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ntp8835_priv *ntp8835 = dev_get_drvdata(dev);
 	unsigned int input_fmt = 0;
 	unsigned int gsa_fmt = 0;
 	unsigned int gsa_fmt_mask;
@@ -370,8 +374,9 @@ static int ntp8835_hw_params(struct snd_pcm_substream *substream,
 
 static int ntp8835_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ntp8835_priv *ntp8835 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ntp8835_priv *ntp8835 = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
@@ -447,7 +452,7 @@ static int ntp8835_i2c_probe(struct i2c_client *i2c)
 		return dev_err_probe(&i2c->dev, PTR_ERR(regmap),
 				     "Failed to allocate regmap\n");
 
-	ret = devm_snd_soc_register_component(&i2c->dev, &soc_component_ntp8835,
+	ret = devm_snd_soc_component_register(&i2c->dev, &soc_component_ntp8835,
 					      &ntp8835_dai, 1);
 	if (ret)
 		return dev_err_probe(&i2c->dev, ret,

@@ -66,6 +66,8 @@ static int rk_aif1_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+	struct device *codec_dev = snd_soc_component_to_dev(codec_component);
 	int mclk;
 
 	switch (params_rate(params)) {
@@ -91,14 +93,14 @@ static int rk_aif1_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_sysclk(cpu_dai, 0, mclk,
 				     SND_SOC_CLOCK_OUT);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "Can't set codec clock %d\n", ret);
+		dev_err(codec_dev, "Can't set codec clock %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, mclk,
 				     SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "Can't set codec clock %d\n", ret);
+		dev_err(codec_dev, "Can't set codec clock %d\n", ret);
 		return ret;
 	}
 
@@ -108,6 +110,7 @@ static int rk_aif1_hw_params(struct snd_pcm_substream *substream,
 static int rk_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_card *card = runtime->card;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	/* Enable Headset and 4 Buttons Jack detection */
@@ -119,11 +122,11 @@ static int rk_init(struct snd_soc_pcm_runtime *runtime)
 					 headset_jack_pins,
 					 ARRAY_SIZE(headset_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "New Headset Jack failed! (%d)\n", ret);
+		dev_err(dev, "New Headset Jack failed! (%d)\n", ret);
 		return ret;
 	}
 
-	return rt5645_set_jack_detect(snd_soc_rtd_to_codec(runtime, 0)->component,
+	return rt5645_set_jack_detect(snd_soc_dai_to_component(snd_soc_rtd_to_codec(runtime, 0)),
 				     &headset_jack,
 				     &headset_jack,
 				     &headset_jack);
@@ -193,7 +196,7 @@ static int snd_rk_mc_probe(struct platform_device *pdev)
 
 	rk_dailink.platforms->of_node = rk_dailink.cpus->of_node;
 
-	ret = snd_soc_of_parse_card_name(card, "rockchip,model");
+	ret = snd_soc_card_of_parse_name(card, "rockchip,model");
 	if (ret)
 		goto put_cpu_of_node;
 

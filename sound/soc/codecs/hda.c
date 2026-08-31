@@ -82,6 +82,7 @@ capture_dais:
 
 static int hda_codec_register_dais(struct hda_codec *codec, struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_soc_dai_driver *drvs = NULL;
 	struct snd_soc_dapm_context *dapm;
 	struct hda_pcm *pcm;
@@ -101,20 +102,21 @@ static int hda_codec_register_dais(struct hda_codec *codec, struct snd_soc_compo
 	list_for_each_entry(pcm, &codec->pcm_list_head, list) {
 		struct snd_soc_dai *dai;
 
-		dai = snd_soc_register_dai(component, drvs, false);
+		dai = snd_soc_dai_register(component, drvs, false);
 		if (!dai) {
-			dev_err(component->dev, "register dai for %s failed\n", pcm->name);
+			dev_err(dev, "register dai for %s failed\n", pcm->name);
 			return -EINVAL;
 		}
 
 		ret = snd_soc_dapm_new_dai_widgets(dapm, dai);
 		if (ret < 0) {
-			dev_err(component->dev, "create widgets failed: %d\n", ret);
-			snd_soc_unregister_dai(dai);
+			dev_err(dev, "create widgets failed: %d\n", ret);
+			snd_soc_dai_unregister(dai);
 			return ret;
 		}
 
-		snd_soc_dai_init_dma_data(dai, &pcm->stream[0], &pcm->stream[1]);
+		snd_soc_dai_stream_dma_data_set_playback(dai, &pcm->stream[0]);
+		snd_soc_dai_stream_dma_data_set_capture(dai,  &pcm->stream[1]);
 		drvs++;
 	}
 
@@ -128,16 +130,17 @@ static void hda_codec_unregister_dais(struct hda_codec *codec,
 	struct hda_pcm *pcm;
 
 	for_each_component_dais_safe(component, dai, save) {
+		struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 		int stream;
 
 		list_for_each_entry(pcm, &codec->pcm_list_head, list) {
-			if (strcmp(dai->driver->name, pcm->name))
+			if (strcmp(dai_driver->name, pcm->name))
 				continue;
 
 			for_each_pcm_streams(stream)
-				snd_soc_dapm_free_widget(snd_soc_dai_get_widget(dai, stream));
+				snd_soc_dapm_free_widget(snd_soc_dai_stream_widget_get(dai, stream));
 
-			snd_soc_unregister_dai(dai);
+			snd_soc_dai_unregister(dai);
 			break;
 		}
 	}
@@ -171,7 +174,10 @@ EXPORT_SYMBOL_GPL(hda_codec_probe_complete);
 /* Expects codec with usage_count=1 and status=suspended */
 static int hda_codec_probe(struct snd_soc_component *component)
 {
-	struct hda_codec *codec = dev_to_hda_codec(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(component);
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(soc_card);
+	struct hda_codec *codec = dev_to_hda_codec(dev);
 	struct hda_codec_driver *driver = hda_codec_to_driver(codec);
 	struct hdac_device *hdev = &codec->core;
 	struct hdac_bus *bus = hdev->bus;
@@ -194,7 +200,7 @@ static int hda_codec_probe(struct snd_soc_component *component)
 		snd_hdac_display_power(bus, hdev->addr, true);
 	snd_hdac_ext_bus_link_get(bus, hlink);
 
-	ret = snd_hda_codec_device_new(codec->bus, component->card->snd_card, hdev->addr, codec,
+	ret = snd_hda_codec_device_new(codec->bus, snd_card, hdev->addr, codec,
 				       false);
 	if (ret < 0) {
 		dev_err(&hdev->dev, "codec create failed: %d\n", ret);
@@ -266,7 +272,8 @@ device_new_err:
 /* Leaves codec with usage_count=1 and status=suspended */
 static void hda_codec_remove(struct snd_soc_component *component)
 {
-	struct hda_codec *codec = dev_to_hda_codec(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct hda_codec *codec = dev_to_hda_codec(dev);
 	struct hda_codec_driver *driver = hda_codec_to_driver(codec);
 	struct hdac_device *hdev = &codec->core;
 	struct hdac_bus *bus = hdev->bus;
@@ -370,7 +377,7 @@ static int hda_hdev_attach(struct hdac_device *hdev)
 		comp_drv->num_dapm_routes = ARRAY_SIZE(hda_dapm_routes);
 	}
 
-	return snd_soc_register_component(&hdev->dev, comp_drv, &card_binder_dai, 1);
+	return snd_soc_component_register(&hdev->dev, comp_drv, &card_binder_dai, 1);
 }
 
 static int hda_hdev_detach(struct hdac_device *hdev)
@@ -380,7 +387,7 @@ static int hda_hdev_detach(struct hdac_device *hdev)
 	if (codec->core.registered)
 		cancel_delayed_work_sync(&codec->jackpoll_work);
 
-	snd_soc_unregister_component(&hdev->dev);
+	snd_soc_component_unregister(&hdev->dev);
 
 	return 0;
 }

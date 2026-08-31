@@ -322,7 +322,9 @@ static irqreturn_t mchp_i2s_mcc_interrupt(int irq, void *dev_id)
 static int mchp_i2s_mcc_set_sysclk(struct snd_soc_dai *dai,
 				   int clk_id, unsigned int freq, int dir)
 {
-	struct mchp_i2s_mcc_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_i2s_mcc_dev *dev = dev_get_drvdata(dai_dev);
 
 	dev_dbg(dev->dev, "%s() clk_id=%d freq=%u dir=%d\n",
 		__func__, clk_id, freq, dir);
@@ -339,7 +341,9 @@ static int mchp_i2s_mcc_set_sysclk(struct snd_soc_dai *dai,
 static int mchp_i2s_mcc_set_bclk_ratio(struct snd_soc_dai *dai,
 				       unsigned int ratio)
 {
-	struct mchp_i2s_mcc_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_i2s_mcc_dev *dev = dev_get_drvdata(dai_dev);
 
 	dev_dbg(dev->dev, "%s() ratio=%u\n", __func__, ratio);
 
@@ -350,7 +354,9 @@ static int mchp_i2s_mcc_set_bclk_ratio(struct snd_soc_dai *dai,
 
 static int mchp_i2s_mcc_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct mchp_i2s_mcc_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_i2s_mcc_dev *dev = dev_get_drvdata(dai_dev);
 
 	dev_dbg(dev->dev, "%s() fmt=%#x\n", __func__, fmt);
 
@@ -376,7 +382,9 @@ static int mchp_i2s_mcc_set_dai_tdm_slot(struct snd_soc_dai *dai,
 					 unsigned int rx_mask,
 					 int slots, int slot_width)
 {
-	struct mchp_i2s_mcc_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_i2s_mcc_dev *dev = dev_get_drvdata(dai_dev);
 
 	dev_dbg(dev->dev,
 		"%s() tx_mask=0x%08x rx_mask=0x%08x slots=%d width=%d\n",
@@ -532,7 +540,9 @@ static int mchp_i2s_mcc_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
 	unsigned long rate = 0;
-	struct mchp_i2s_mcc_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_i2s_mcc_dev *dev = dev_get_drvdata(dai_dev);
 	int sample_bytes = params_physical_width(params) / 8;
 	int period_bytes = params_period_size(params) *
 		params_channels(params) * sample_bytes;
@@ -760,7 +770,9 @@ static int mchp_i2s_mcc_hw_params(struct snd_pcm_substream *substream,
 static int mchp_i2s_mcc_hw_free(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct mchp_i2s_mcc_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_i2s_mcc_dev *dev = dev_get_drvdata(dai_dev);
 	bool is_playback = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 	long err;
 
@@ -816,7 +828,9 @@ static int mchp_i2s_mcc_hw_free(struct snd_pcm_substream *substream,
 static int mchp_i2s_mcc_trigger(struct snd_pcm_substream *substream, int cmd,
 				struct snd_soc_dai *dai)
 {
-	struct mchp_i2s_mcc_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_i2s_mcc_dev *dev = dev_get_drvdata(dai_dev);
 	bool is_playback = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 	u32 cr = 0;
 	u32 iera = 0, ierb = 0;
@@ -887,7 +901,9 @@ static int mchp_i2s_mcc_trigger(struct snd_pcm_substream *substream, int cmd,
 static int mchp_i2s_mcc_startup(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct mchp_i2s_mcc_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_i2s_mcc_dev *dev = dev_get_drvdata(dai_dev);
 
 	/* Software reset the IP if it's not running */
 	if (!mchp_i2s_mcc_is_running(dev)) {
@@ -900,14 +916,17 @@ static int mchp_i2s_mcc_startup(struct snd_pcm_substream *substream,
 
 static int mchp_i2s_mcc_dai_probe(struct snd_soc_dai *dai)
 {
-	struct mchp_i2s_mcc_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_i2s_mcc_dev *dev = dev_get_drvdata(dai_dev);
 
 	init_waitqueue_head(&dev->wq_txrdy);
 	init_waitqueue_head(&dev->wq_rxrdy);
 	dev->tx_rdy = 1;
 	dev->rx_rdy = 1;
 
-	snd_soc_dai_init_dma_data(dai, &dev->playback, &dev->capture);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &dev->playback);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &dev->capture);
 
 	return 0;
 }
@@ -1098,7 +1117,7 @@ static int mchp_i2s_mcc_probe(struct platform_device *pdev)
 		return err;
 	}
 
-	err = devm_snd_soc_register_component(&pdev->dev,
+	err = devm_snd_soc_component_register(&pdev->dev,
 					      &mchp_i2s_mcc_component,
 					      &mchp_i2s_mcc_dai, 1);
 	if (err) {

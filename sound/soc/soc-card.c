@@ -210,7 +210,7 @@ static void snd_soc_card_fill_dummy_dai(struct snd_soc_card *card)
 	 * Fill it as dummy DAI in case of CPU/Codec here.
 	 * Do nothing for Platform.
 	 */
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card->driver, i, dai_link) {
 		if (dai_link->num_cpus == 0 && dai_link->cpus) {
 			dai_link->num_cpus	= 1;
 			dai_link->cpus		= &snd_soc_dummy_dlc;
@@ -305,7 +305,9 @@ static void snd_soc_card_link_components_remove(struct snd_soc_card *card)
 	for_each_comp_order(order) {
 		for_each_card_rtds(card, rtd) {
 			for_each_rtd_components(rtd, i, component) {
-				if (component->driver->remove_order != order)
+				const struct snd_soc_component_driver *driver = snd_soc_component_to_driver(component);
+
+				if (driver->remove_order != order)
 					continue;
 
 				snd_soc_component_remove(component, 1);
@@ -323,7 +325,9 @@ static int snd_soc_card_link_components_probe(struct snd_soc_card *card)
 	for_each_comp_order(order) {
 		for_each_card_rtds(card, rtd) {
 			for_each_rtd_components(rtd, i, component) {
-				if (component->driver->probe_order != order)
+				const struct snd_soc_component_driver *driver = snd_soc_component_to_driver(component);
+
+				if (driver->probe_order != order)
 					continue;
 
 				ret = snd_soc_component_probe(card, component);
@@ -343,7 +347,7 @@ static void snd_soc_card_aux_unbind(struct snd_soc_card *card)
 	for_each_card_auxs_safe(card, component, _component) {
 		/* for snd_soc_component_init() */
 		snd_soc_component_set_aux(component, NULL);
-		list_del(&component->aux_list);
+		list_del(snd_soc_component_to_aux_list(component));
 	}
 }
 
@@ -353,7 +357,7 @@ static int snd_soc_card_aux_bind(struct snd_soc_card *card)
 	struct snd_soc_aux_dev *aux;
 	int i;
 
-	for_each_card_pre_auxs(card, i, aux) {
+	for_each_card_driver_pre_auxs(card->driver, i, aux) {
 		/* codecs, usually analog devices */
 		component = soc_find_component(&aux->dlc);
 		if (!component)
@@ -362,7 +366,7 @@ static int snd_soc_card_aux_bind(struct snd_soc_card *card)
 		/* for snd_soc_component_init() */
 		snd_soc_component_set_aux(component, aux);
 		/* see for_each_card_auxs */
-		list_add(&component->aux_list, &card->aux_list_head);
+		list_add(snd_soc_component_to_aux_list(component), &card->aux_list_head);
 	}
 	return 0;
 }
@@ -375,7 +379,9 @@ static int snd_soc_card_aux_probe(struct snd_soc_card *card)
 
 	for_each_comp_order(order) {
 		for_each_card_auxs(card, component) {
-			if (component->driver->probe_order != order)
+			const struct snd_soc_component_driver *driver = snd_soc_component_to_driver(component);
+
+			if (driver->probe_order != order)
 				continue;
 
 			ret = snd_soc_component_probe(card, component);
@@ -394,7 +400,9 @@ static void snd_soc_card_aux_remove(struct snd_soc_card *card)
 
 	for_each_comp_order(order) {
 		for_each_card_auxs_safe(card, comp, _comp) {
-			if (comp->driver->remove_order == order)
+			const struct snd_soc_component_driver *driver = snd_soc_component_to_driver(comp);
+
+			if (driver->remove_order == order)
 				snd_soc_component_remove(comp, 1);
 		}
 	}
@@ -571,21 +579,23 @@ static void soc_card_check_tplg_fes(struct snd_soc_card *card)
 	int i;
 
 	for_each_component(component) {
+		const struct snd_soc_component_driver *component_driver = snd_soc_component_to_driver(component);
+		struct device *component_dev = snd_soc_component_to_dev(component);
 
 		/* does this component override BEs ? */
-		if (!component->driver->ignore_machine)
+		if (!component_driver->ignore_machine)
 			continue;
 
 		/* for this machine ? */
-		if (!strcmp(component->driver->ignore_machine,
+		if (!strcmp(component_driver->ignore_machine,
 			    card->dev->driver->name))
 			goto match;
-		if (strcmp(component->driver->ignore_machine,
+		if (strcmp(component_driver->ignore_machine,
 			   dev_name(card->dev)))
 			continue;
 	match:
 		/* machine matches, so override the rtd data */
-		for_each_card_prelinks(card, i, dai_link) {
+		for_each_card_driver_prelinks(card->driver, i, dai_link) {
 
 			/* ignore this FE */
 			if (dai_link->dynamic) {
@@ -602,10 +612,10 @@ static void soc_card_check_tplg_fes(struct snd_soc_card *card)
 				continue;
 			}
 
-			if (component->dev->of_node)
-				dai_link->platforms->of_node = component->dev->of_node;
+			if (component_dev->of_node)
+				dai_link->platforms->of_node = component_dev->of_node;
 			else
-				dai_link->platforms->name = component->name;
+				dai_link->platforms->name = snd_soc_component_name(component);
 
 			/* convert non BE into BE */
 			dai_link->no_pcm = 1;
@@ -615,8 +625,7 @@ static void soc_card_check_tplg_fes(struct snd_soc_card *card)
 			 * see
 			 *	snd_soc_link_be_hw_params_fixup()
 			 */
-			dai_link->be_hw_params_fixup =
-				component->driver->be_hw_params_fixup;
+			dai_link->be_hw_params_fixup = component_driver->be_hw_params_fixup;
 
 			/*
 			 * most BE links don't set stream name, so set it to
@@ -627,7 +636,7 @@ static void soc_card_check_tplg_fes(struct snd_soc_card *card)
 		}
 
 		/* Inform userspace we are using alternate topology */
-		snd_soc_card_set_topology_name(card, component->driver->topology_name_prefix);
+		snd_soc_card_set_topology_name(card, component_driver->topology_name_prefix);
 	}
 }
 
@@ -797,8 +806,8 @@ int snd_soc_card_suspend_pre(struct snd_soc_card *card)
 {
 	int ret = 0;
 
-	if (card->suspend_pre)
-		ret = card->suspend_pre(card);
+	if (card->driver->suspend_pre)
+		ret = card->driver->suspend_pre(card);
 
 	return soc_card_ret(card, ret);
 }
@@ -807,8 +816,8 @@ int snd_soc_card_suspend_post(struct snd_soc_card *card)
 {
 	int ret = 0;
 
-	if (card->suspend_post)
-		ret = card->suspend_post(card);
+	if (card->driver->suspend_post)
+		ret = card->driver->suspend_post(card);
 
 	return soc_card_ret(card, ret);
 }
@@ -817,8 +826,8 @@ int snd_soc_card_resume_pre(struct snd_soc_card *card)
 {
 	int ret = 0;
 
-	if (card->resume_pre)
-		ret = card->resume_pre(card);
+	if (card->driver->resume_pre)
+		ret = card->driver->resume_pre(card);
 
 	return soc_card_ret(card, ret);
 }
@@ -827,16 +836,16 @@ int snd_soc_card_resume_post(struct snd_soc_card *card)
 {
 	int ret = 0;
 
-	if (card->resume_post)
-		ret = card->resume_post(card);
+	if (card->driver->resume_post)
+		ret = card->driver->resume_post(card);
 
 	return soc_card_ret(card, ret);
 }
 
 int snd_soc_card_probe(struct snd_soc_card *card)
 {
-	if (card->probe) {
-		int ret = card->probe(card);
+	if (card->driver->probe) {
+		int ret = card->driver->probe(card);
 
 		if (ret < 0)
 			return soc_card_ret(card, ret);
@@ -858,15 +867,15 @@ int snd_soc_card_probe(struct snd_soc_card *card)
 
 static int soc_card_late_probe(struct snd_soc_card *card)
 {
-	if (card->late_probe) {
-		int ret = card->late_probe(card);
+	if (card->driver->late_probe) {
+		int ret = card->driver->late_probe(card);
 
 		if (ret < 0)
 			return soc_card_ret(card, ret);
 	}
 
 	/*
-	 * It has "card->probe" and "card->late_probe" callbacks,
+	 * It has "card->driver->probe" and "card->driver->late_probe" callbacks,
 	 * and "late_probe" callback is called after "probe".
 	 * This means, we can set "card->probed" flag afer "late_probe"
 	 * for all cases.
@@ -882,8 +891,8 @@ static int soc_card_late_probe(struct snd_soc_card *card)
 
 void snd_soc_card_fixup_controls(struct snd_soc_card *card)
 {
-	if (card->fixup_controls)
-		card->fixup_controls(card);
+	if (card->driver->fixup_controls)
+		card->driver->fixup_controls(card);
 }
 
 int snd_soc_card_remove(struct snd_soc_card *card)
@@ -891,8 +900,8 @@ int snd_soc_card_remove(struct snd_soc_card *card)
 	int ret = 0;
 
 	if (card->probed &&
-	    card->remove)
-		ret = card->remove(card);
+	    card->driver->remove)
+		ret = card->driver->remove(card);
 
 	card->probed = 0;
 
@@ -905,8 +914,8 @@ int snd_soc_card_set_bias_level(struct snd_soc_card *card,
 {
 	int ret = 0;
 
-	if (card->set_bias_level)
-		ret = card->set_bias_level(card, dapm, level);
+	if (card->driver->set_bias_level)
+		ret = card->driver->set_bias_level(card, dapm, level);
 
 	return soc_card_ret(card, ret);
 }
@@ -917,8 +926,8 @@ int snd_soc_card_set_bias_level_post(struct snd_soc_card *card,
 {
 	int ret = 0;
 
-	if (card->set_bias_level_post)
-		ret = card->set_bias_level_post(card, dapm, level);
+	if (card->driver->set_bias_level_post)
+		ret = card->driver->set_bias_level_post(card, dapm, level);
 
 	return soc_card_ret(card, ret);
 }
@@ -928,8 +937,8 @@ int snd_soc_card_add_dai_link(struct snd_soc_card *card,
 {
 	int ret = 0;
 
-	if (card->add_dai_link)
-		ret = card->add_dai_link(card, dai_link);
+	if (card->driver->add_dai_link)
+		ret = card->driver->add_dai_link(card, dai_link);
 
 	return soc_card_ret(card, ret);
 }
@@ -938,8 +947,8 @@ EXPORT_SYMBOL_GPL(snd_soc_card_add_dai_link);
 void snd_soc_card_remove_dai_link(struct snd_soc_card *card,
 				  struct snd_soc_dai_link *dai_link)
 {
-	if (card->remove_dai_link)
-		card->remove_dai_link(card, dai_link);
+	if (card->driver->remove_dai_link)
+		card->driver->remove_dai_link(card, dai_link);
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_remove_dai_link);
 
@@ -1024,13 +1033,14 @@ int snd_soc_card_bind(struct snd_soc_card *card)
 
 	/* add predefined DAI links to the list */
 	card->num_rtd = 0;
-	ret = snd_soc_add_pcm_runtimes(card, card->dai_link, card->num_links);
+	ret = snd_soc_add_pcm_runtimes(card, card->driver->dai_link,
+					     card->driver->num_links);
 	if (ret < 0)
 		goto probe_end;
 
 	/* card bind complete so register a sound card */
 	ret = snd_card_new(card->dev, SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1,
-			   card->owner, 0, &snd_card);
+			   card->driver->owner, 0, &snd_card);
 	if (ret < 0) {
 		dev_err(card->dev,
 			"ASoC: can't create sound card for card %s: %d\n",
@@ -1043,13 +1053,13 @@ int snd_soc_card_bind(struct snd_soc_card *card)
 
 	snd_soc_card_resume_init(card);
 
-	ret = snd_soc_dapm_new_controls(dapm, card->dapm_widgets,
-					card->num_dapm_widgets);
+	ret = snd_soc_dapm_new_controls(dapm, card->driver->dapm_widgets,
+					      card->driver->num_dapm_widgets);
 	if (ret < 0)
 		goto probe_end;
 
-	ret = snd_soc_dapm_new_controls(dapm, card->of_dapm_widgets,
-					card->num_of_dapm_widgets);
+	ret = snd_soc_dapm_new_controls(dapm, card->driver->of_dapm_widgets,
+					      card->driver->num_of_dapm_widgets);
 	if (ret < 0)
 		goto probe_end;
 
@@ -1093,18 +1103,18 @@ int snd_soc_card_bind(struct snd_soc_card *card)
 	snd_soc_dapm_link_dai_widgets(card);
 	snd_soc_dapm_connect_dai_link_widgets(card);
 
-	ret = snd_soc_add_card_controls(card, card->controls,
-					card->num_controls);
+	ret = snd_soc_card_add_controls(card, card->driver->controls,
+					      card->driver->num_controls);
 	if (ret < 0)
 		goto probe_end;
 
-	ret = snd_soc_dapm_add_routes(dapm, card->dapm_routes,
-				      card->num_dapm_routes);
+	ret = snd_soc_dapm_add_routes(dapm, card->driver->dapm_routes,
+					    card->driver->num_dapm_routes);
 	if (ret < 0)
 		goto probe_end;
 
-	ret = snd_soc_dapm_add_routes(dapm, card->of_dapm_routes,
-				      card->num_of_dapm_routes);
+	ret = snd_soc_dapm_add_routes(dapm, card->driver->of_dapm_routes,
+					    card->driver->num_of_dapm_routes);
 	if (ret < 0)
 		goto probe_end;
 
@@ -1113,7 +1123,7 @@ int snd_soc_card_bind(struct snd_soc_card *card)
 
 	soc_card_setup_name(card, snd_card->shortname,	card->name,		NULL);
 	soc_card_setup_name(card, snd_card->longname,	card->long_name,	card->name);
-	soc_card_setup_name(card, snd_card->driver,	card->driver_name,	card->name);
+	soc_card_setup_name(card, snd_card->driver,	card->driver->driver_name, card->name);
 
 	if (card->components) {
 		/* the current implementation of snd_component_add() accepts */
@@ -1169,8 +1179,7 @@ int snd_soc_card_bind(struct snd_soc_card *card)
 	/* deactivate pins to sleep state */
 	for_each_card_components(card, component)
 		if (!snd_soc_component_active(component))
-			pinctrl_pm_select_sleep_state(component->dev);
-
+			pinctrl_pm_select_sleep_state(snd_soc_component_to_dev(component));
 probe_end:
 	if (ret < 0) {
 		snd_soc_remove_device_links(card);
@@ -1196,7 +1205,7 @@ void snd_soc_card_rebind(void)
 
 static void devm_card_bind_release(struct device *dev, void *res)
 {
-	snd_soc_unregister_card(*(struct snd_soc_card **)res);
+	snd_soc_card_unregister(*(struct snd_soc_card **)res);
 }
 
 static int devm_card_bind(struct device *dev, struct snd_soc_card *card)
@@ -1321,7 +1330,9 @@ struct snd_soc_dai *snd_soc_card_get_codec_dai(struct snd_soc_card *card,
 	struct snd_soc_pcm_runtime *rtd;
 
 	for_each_card_rtds(card, rtd) {
-		if (!strcmp(snd_soc_rtd_to_codec(rtd, 0)->name, dai_name))
+		const struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
+
+		if (!strcmp(snd_soc_dai_name(dai), dai_name))
 			return snd_soc_rtd_to_codec(rtd, 0);
 	}
 

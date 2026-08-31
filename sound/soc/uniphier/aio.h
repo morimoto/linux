@@ -298,9 +298,11 @@ struct uniphier_aio_chip {
 
 static inline struct uniphier_aio *uniphier_priv(struct snd_soc_dai *dai)
 {
-	struct uniphier_aio_chip *chip = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uniphier_aio_chip *chip = dev_get_drvdata(dev);
 
-	return &chip->aios[dai->id];
+	return &chip->aios[snd_soc_dai_id(dai)];
 }
 
 int uniphier_aiodma_soc_register_platform(struct platform_device *pdev);

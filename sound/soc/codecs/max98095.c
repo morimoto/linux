@@ -352,7 +352,8 @@ static int max98095_mic1pre_set(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	unsigned int sel = ucontrol->value.integer.value[0];
 
 	max98095->mic1pre = sel;
@@ -366,7 +367,8 @@ static int max98095_mic1pre_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = max98095->mic1pre;
 	return 0;
@@ -376,7 +378,8 @@ static int max98095_mic2pre_set(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	unsigned int sel = ucontrol->value.integer.value[0];
 
 	max98095->mic2pre = sel;
@@ -390,7 +393,8 @@ static int max98095_mic2pre_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = max98095->mic2pre;
 	return 0;
@@ -597,7 +601,8 @@ static int max98095_mic_event(struct snd_soc_dapm_widget *w,
 			     struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -627,7 +632,8 @@ static int max98095_line_pga(struct snd_soc_dapm_widget *w,
 			     int event, u8 channel)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	u8 *state;
 
 	if (WARN_ON(!(channel == 1 || channel == 2)))
@@ -940,8 +946,9 @@ static int max98095_dai1_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params,
 				   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct max98095_cdata *cdata;
 	unsigned long long ni;
 	unsigned int rate;
@@ -974,7 +981,7 @@ static int max98095_dai1_hw_params(struct snd_pcm_substream *substream,
 	/* Configure NI when operating as master */
 	if (snd_soc_component_read(component, M98095_02A_DAI1_FORMAT) & M98095_DAI_MAS) {
 		if (max98095->sysclk == 0) {
-			dev_err(component->dev, "Invalid system clock frequency\n");
+			dev_err(dev, "Invalid system clock frequency\n");
 			return -EINVAL;
 		}
 		ni = 65536ULL * (rate < 50000 ? 96ULL : 48ULL)
@@ -1001,8 +1008,9 @@ static int max98095_dai2_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params,
 				   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct max98095_cdata *cdata;
 	unsigned long long ni;
 	unsigned int rate;
@@ -1035,7 +1043,7 @@ static int max98095_dai2_hw_params(struct snd_pcm_substream *substream,
 	/* Configure NI when operating as master */
 	if (snd_soc_component_read(component, M98095_034_DAI2_FORMAT) & M98095_DAI_MAS) {
 		if (max98095->sysclk == 0) {
-			dev_err(component->dev, "Invalid system clock frequency\n");
+			dev_err(dev, "Invalid system clock frequency\n");
 			return -EINVAL;
 		}
 		ni = 65536ULL * (rate < 50000 ? 96ULL : 48ULL)
@@ -1062,8 +1070,9 @@ static int max98095_dai3_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params,
 				   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct max98095_cdata *cdata;
 	unsigned long long ni;
 	unsigned int rate;
@@ -1096,7 +1105,7 @@ static int max98095_dai3_hw_params(struct snd_pcm_substream *substream,
 	/* Configure NI when operating as master */
 	if (snd_soc_component_read(component, M98095_03E_DAI3_FORMAT) & M98095_DAI_MAS) {
 		if (max98095->sysclk == 0) {
-			dev_err(component->dev, "Invalid system clock frequency\n");
+			dev_err(dev, "Invalid system clock frequency\n");
 			return -EINVAL;
 		}
 		ni = 65536ULL * (rate < 50000 ? 96ULL : 48ULL)
@@ -1122,8 +1131,9 @@ static int max98095_dai3_hw_params(struct snd_pcm_substream *substream,
 static int max98095_dai_set_sysclk(struct snd_soc_dai *dai,
 				   int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dai_dev);
 
 	/* Requested clock frequency is already setup */
 	if (freq == max98095->sysclk)
@@ -1146,11 +1156,11 @@ static int max98095_dai_set_sysclk(struct snd_soc_dai *dai,
 	} else if ((freq >= 40000000) && (freq < 60000000)) {
 		snd_soc_component_write(component, M98095_026_SYS_CLK, 0x30);
 	} else {
-		dev_err(component->dev, "Invalid master clock frequency\n");
+		dev_err(dai_dev, "Invalid master clock frequency\n");
 		return -EINVAL;
 	}
 
-	dev_dbg(dai->dev, "Clock source is %d at %uHz\n", clk_id, freq);
+	dev_dbg(dai_dev, "Clock source is %d at %uHz\n", clk_id, freq);
 
 	max98095->sysclk = freq;
 	return 0;
@@ -1159,8 +1169,9 @@ static int max98095_dai_set_sysclk(struct snd_soc_dai *dai,
 static int max98095_dai1_set_fmt(struct snd_soc_dai *codec_dai,
 				 unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct max98095_cdata *cdata;
 	u8 regval = 0;
 
@@ -1182,7 +1193,7 @@ static int max98095_dai1_set_fmt(struct snd_soc_dai *codec_dai,
 			regval |= M98095_DAI_MAS;
 			break;
 		default:
-			dev_err(component->dev, "Clock mode unsupported");
+			dev_err(dev, "Clock mode unsupported");
 			return -EINVAL;
 		}
 
@@ -1225,8 +1236,9 @@ static int max98095_dai1_set_fmt(struct snd_soc_dai *codec_dai,
 static int max98095_dai2_set_fmt(struct snd_soc_dai *codec_dai,
 				 unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct max98095_cdata *cdata;
 	u8 regval = 0;
 
@@ -1248,7 +1260,7 @@ static int max98095_dai2_set_fmt(struct snd_soc_dai *codec_dai,
 			regval |= M98095_DAI_MAS;
 			break;
 		default:
-			dev_err(component->dev, "Clock mode unsupported");
+			dev_err(dev, "Clock mode unsupported");
 			return -EINVAL;
 		}
 
@@ -1292,8 +1304,9 @@ static int max98095_dai2_set_fmt(struct snd_soc_dai *codec_dai,
 static int max98095_dai3_set_fmt(struct snd_soc_dai *codec_dai,
 				 unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct max98095_cdata *cdata;
 	u8 regval = 0;
 
@@ -1315,7 +1328,7 @@ static int max98095_dai3_set_fmt(struct snd_soc_dai *codec_dai,
 			regval |= M98095_DAI_MAS;
 			break;
 		default:
-			dev_err(component->dev, "Clock mode unsupported");
+			dev_err(dev, "Clock mode unsupported");
 			return -EINVAL;
 		}
 
@@ -1359,7 +1372,8 @@ static int max98095_dai3_set_fmt(struct snd_soc_dai *codec_dai,
 static int max98095_set_bias_level(struct snd_soc_component *component,
 				   enum snd_soc_bias_level level)
 {
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -1392,7 +1406,7 @@ static int max98095_set_bias_level(struct snd_soc_component *component,
 			ret = regcache_sync(max98095->regmap);
 
 			if (ret != 0) {
-				dev_err(component->dev, "Failed to sync cache: %d\n", ret);
+				dev_err(dev, "Failed to sync cache: %d\n", ret);
 				return ret;
 			}
 		}
@@ -1502,7 +1516,8 @@ static int max98095_put_eq_enum(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct max98095_pdata *pdata = max98095->pdata;
 	int channel = max98095_get_eq_channel(kcontrol->id.name);
 	struct max98095_cdata *cdata;
@@ -1535,7 +1550,7 @@ static int max98095_put_eq_enum(struct snd_kcontrol *kcontrol,
 		}
 	}
 
-	dev_dbg(component->dev, "Selected %s/%dHz for %dHz sample rate\n",
+	dev_dbg(dev, "Selected %s/%dHz for %dHz sample rate\n",
 		pdata->eq_cfg[best].name,
 		pdata->eq_cfg[best].rate, fs);
 
@@ -1568,7 +1583,8 @@ static int max98095_get_eq_enum(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	int channel = max98095_get_eq_channel(kcontrol->id.name);
 	struct max98095_cdata *cdata;
 
@@ -1580,7 +1596,8 @@ static int max98095_get_eq_enum(struct snd_kcontrol *kcontrol,
 
 static void max98095_handle_eq_pdata(struct snd_soc_component *component)
 {
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct max98095_pdata *pdata = max98095->pdata;
 	struct max98095_eq_cfg *cfg;
 	unsigned int cfgcnt;
@@ -1633,9 +1650,9 @@ static void max98095_handle_eq_pdata(struct snd_soc_component *component)
 	max98095->eq_enum.texts = max98095->eq_texts;
 	max98095->eq_enum.items = max98095->eq_textcnt;
 
-	ret = snd_soc_add_component_controls(component, controls, ARRAY_SIZE(controls));
+	ret = snd_soc_component_add_controls(component, controls, ARRAY_SIZE(controls));
 	if (ret != 0)
-		dev_err(component->dev, "Failed to add EQ control: %d\n", ret);
+		dev_err(dev, "Failed to add EQ control: %d\n", ret);
 }
 
 static const char *bq_mode_name[] = {"Biquad1 Mode", "Biquad2 Mode"};
@@ -1643,11 +1660,12 @@ static const char *bq_mode_name[] = {"Biquad1 Mode", "Biquad2 Mode"};
 static int max98095_get_bq_channel(struct snd_soc_component *component,
 				   const char *name)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = match_string(bq_mode_name, ARRAY_SIZE(bq_mode_name), name);
 	if (ret < 0)
-		dev_err(component->dev, "Bad biquad channel name '%s'\n", name);
+		dev_err(dev, "Bad biquad channel name '%s'\n", name);
 	return ret;
 }
 
@@ -1655,7 +1673,8 @@ static int max98095_put_bq_enum(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct max98095_pdata *pdata = max98095->pdata;
 	int channel = max98095_get_bq_channel(component, kcontrol->id.name);
 	struct max98095_cdata *cdata;
@@ -1688,7 +1707,7 @@ static int max98095_put_bq_enum(struct snd_kcontrol *kcontrol,
 		}
 	}
 
-	dev_dbg(component->dev, "Selected %s/%dHz for %dHz sample rate\n",
+	dev_dbg(dev, "Selected %s/%dHz for %dHz sample rate\n",
 		pdata->bq_cfg[best].name,
 		pdata->bq_cfg[best].rate, fs);
 
@@ -1718,7 +1737,8 @@ static int max98095_get_bq_enum(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	int channel = max98095_get_bq_channel(component, kcontrol->id.name);
 	struct max98095_cdata *cdata;
 
@@ -1733,7 +1753,8 @@ static int max98095_get_bq_enum(struct snd_kcontrol *kcontrol,
 
 static void max98095_handle_bq_pdata(struct snd_soc_component *component)
 {
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct max98095_pdata *pdata = max98095->pdata;
 	struct max98095_biquad_cfg *cfg;
 	unsigned int cfgcnt;
@@ -1787,19 +1808,20 @@ static void max98095_handle_bq_pdata(struct snd_soc_component *component)
 	max98095->bq_enum.texts = max98095->bq_texts;
 	max98095->bq_enum.items = max98095->bq_textcnt;
 
-	ret = snd_soc_add_component_controls(component, controls, ARRAY_SIZE(controls));
+	ret = snd_soc_component_add_controls(component, controls, ARRAY_SIZE(controls));
 	if (ret != 0)
-		dev_err(component->dev, "Failed to add Biquad control: %d\n", ret);
+		dev_err(dev, "Failed to add Biquad control: %d\n", ret);
 }
 
 static void max98095_handle_pdata(struct snd_soc_component *component)
 {
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct max98095_pdata *pdata = max98095->pdata;
 	u8 regval = 0;
 
 	if (!pdata) {
-		dev_dbg(component->dev, "No platform data\n");
+		dev_dbg(dev, "No platform data\n");
 		return;
 	}
 
@@ -1824,7 +1846,8 @@ static void max98095_handle_pdata(struct snd_soc_component *component)
 static irqreturn_t max98095_report_jack(int irq, void *data)
 {
 	struct snd_soc_component *component = data;
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	unsigned int value;
 	int hp_report = 0;
 	int mic_report = 0;
@@ -1863,7 +1886,8 @@ static irqreturn_t max98095_report_jack(int irq, void *data)
 
 static int max98095_jack_detect_enable(struct snd_soc_component *component)
 {
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	int ret = 0;
 	int detect_enable = M98095_JDEN;
 	unsigned int slew = M98095_DEFAULT_SLEW_DELAY;
@@ -1876,14 +1900,14 @@ static int max98095_jack_detect_enable(struct snd_soc_component *component)
 
 	ret = snd_soc_component_write(component, M98095_08E_JACK_DC_SLEW, slew);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to cfg auto detect %d\n", ret);
+		dev_err(dev, "Failed to cfg auto detect %d\n", ret);
 		return ret;
 	}
 
 	/* configure auto detection to be enabled */
 	ret = snd_soc_component_write(component, M98095_089_JACK_DET_AUTO, detect_enable);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to cfg auto detect %d\n", ret);
+		dev_err(dev, "Failed to cfg auto detect %d\n", ret);
 		return ret;
 	}
 
@@ -1892,12 +1916,13 @@ static int max98095_jack_detect_enable(struct snd_soc_component *component)
 
 static int max98095_jack_detect_disable(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
 	/* configure auto detection to be disabled */
 	ret = snd_soc_component_write(component, M98095_089_JACK_DET_AUTO, 0x0);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to cfg auto detect %d\n", ret);
+		dev_err(dev, "Failed to cfg auto detect %d\n", ret);
 		return ret;
 	}
 
@@ -1907,8 +1932,9 @@ static int max98095_jack_detect_disable(struct snd_soc_component *component)
 int max98095_jack_detect(struct snd_soc_component *component,
 	struct snd_soc_jack *hp_jack, struct snd_soc_jack *mic_jack)
 {
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
-	struct i2c_client *client = to_i2c_client(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
+	struct i2c_client *client = to_i2c_client(dev);
 	int ret = 0;
 
 	max98095->headphone_jack = hp_jack;
@@ -1924,7 +1950,7 @@ int max98095_jack_detect(struct snd_soc_component *component,
 	ret = snd_soc_component_update_bits(component, M98095_013_JACK_INT_EN,
 		M98095_IDDONE, M98095_IDDONE);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to cfg jack irqs %d\n", ret);
+		dev_err(dev, "Failed to cfg jack irqs %d\n", ret);
 		return ret;
 	}
 
@@ -1936,7 +1962,8 @@ EXPORT_SYMBOL_GPL(max98095_jack_detect);
 #ifdef CONFIG_PM
 static int max98095_suspend(struct snd_soc_component *component)
 {
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	if (max98095->headphone_jack || max98095->mic_jack)
@@ -1949,8 +1976,9 @@ static int max98095_suspend(struct snd_soc_component *component)
 
 static int max98095_resume(struct snd_soc_component *component)
 {
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
-	struct i2c_client *client = to_i2c_client(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
+	struct i2c_client *client = to_i2c_client(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	snd_soc_dapm_force_bias_level(dapm, SND_SOC_BIAS_STANDBY);
@@ -1969,19 +1997,20 @@ static int max98095_resume(struct snd_soc_component *component)
 
 static int max98095_reset(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int i, ret;
 
 	/* Gracefully reset the DSP core and the codec hardware
 	 * in a proper sequence */
 	ret = snd_soc_component_write(component, M98095_00F_HOST_CFG, 0);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to reset DSP: %d\n", ret);
+		dev_err(dev, "Failed to reset DSP: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_component_write(component, M98095_097_PWR_SYS, 0);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to reset component: %d\n", ret);
+		dev_err(dev, "Failed to reset component: %d\n", ret);
 		return ret;
 	}
 
@@ -1990,7 +2019,7 @@ static int max98095_reset(struct snd_soc_component *component)
 	for (i = M98095_010_HOST_INT_CFG; i < M98095_REG_MAX_CACHED; i++) {
 		ret = snd_soc_component_write(component, i, snd_soc_component_read(component, i));
 		if (ret < 0) {
-			dev_err(component->dev, "Failed to reset: %d\n", ret);
+			dev_err(dev, "Failed to reset: %d\n", ret);
 			return ret;
 		}
 	}
@@ -2000,12 +2029,13 @@ static int max98095_reset(struct snd_soc_component *component)
 
 static int max98095_probe(struct snd_soc_component *component)
 {
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
 	struct max98095_cdata *cdata;
 	struct i2c_client *client;
 	int ret = 0;
 
-	max98095->mclk = devm_clk_get(component->dev, "mclk");
+	max98095->mclk = devm_clk_get(dev, "mclk");
 	if (IS_ERR(max98095->mclk))
 		if (PTR_ERR(max98095->mclk) == -EPROBE_DEFER)
 			return -EPROBE_DEFER;
@@ -2013,7 +2043,7 @@ static int max98095_probe(struct snd_soc_component *component)
 	/* reset the codec, the DSP core, and disable all interrupts */
 	max98095_reset(component);
 
-	client = to_i2c_client(component->dev);
+	client = to_i2c_client(dev);
 
 	/* initialize private data */
 
@@ -2050,18 +2080,18 @@ static int max98095_probe(struct snd_soc_component *component)
 			IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING |
 			IRQF_ONESHOT, "max98095", component);
 		if (ret) {
-			dev_err(component->dev, "Failed to request IRQ: %d\n", ret);
+			dev_err(dev, "Failed to request IRQ: %d\n", ret);
 			goto err_access;
 		}
 	}
 
 	ret = snd_soc_component_read(component, M98095_0FF_REV_ID);
 	if (ret < 0) {
-		dev_err(component->dev, "Failure reading hardware revision: %d\n",
+		dev_err(dev, "Failure reading hardware revision: %d\n",
 			ret);
 		goto err_irq;
 	}
-	dev_info(component->dev, "Hardware revision: %c\n", ret - 0x40 + 'A');
+	dev_info(dev, "Hardware revision: %c\n", ret - 0x40 + 'A');
 
 	snd_soc_component_write(component, M98095_097_PWR_SYS, M98095_PWRSV);
 
@@ -2101,8 +2131,9 @@ err_access:
 
 static void max98095_remove(struct snd_soc_component *component)
 {
-	struct max98095_priv *max98095 = snd_soc_component_get_drvdata(component);
-	struct i2c_client *client = to_i2c_client(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98095_priv *max98095 = dev_get_drvdata(dev);
+	struct i2c_client *client = to_i2c_client(dev);
 
 	if (max98095->headphone_jack || max98095->mic_jack)
 		max98095_jack_detect_disable(component);
@@ -2157,7 +2188,7 @@ static int max98095_i2c_probe(struct i2c_client *i2c)
 	i2c_set_clientdata(i2c, max98095);
 	max98095->pdata = i2c->dev.platform_data;
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 				     &soc_component_dev_max98095,
 				     max98095_dai, ARRAY_SIZE(max98095_dai));
 	return ret;

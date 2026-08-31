@@ -112,7 +112,9 @@ static void spacemit_i2s_init(struct spacemit_i2s_dev *i2s)
 static int spacemit_i2s_startup(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct spacemit_i2s_dev *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spacemit_i2s_dev *i2s = dev_get_drvdata(dev);
 
 	switch (i2s->dai_fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
@@ -144,7 +146,9 @@ static int spacemit_i2s_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct spacemit_i2s_dev *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spacemit_i2s_dev *i2s = dev_get_drvdata(dev);
 	struct snd_dmaengine_dai_dma_data *dma_data;
 	u32 data_width, data_bits;
 	unsigned long bclk_rate;
@@ -227,7 +231,9 @@ static int spacemit_i2s_hw_params(struct snd_pcm_substream *substream,
 static int spacemit_i2s_set_sysclk(struct snd_soc_dai *cpu_dai, int clk_id,
 				   unsigned int freq, int dir)
 {
-	struct spacemit_i2s_dev *i2s = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spacemit_i2s_dev *i2s = dev_get_drvdata(dev);
 	int ret;
 
 	if (freq == 0)
@@ -245,7 +251,9 @@ static int spacemit_i2s_set_sysclk(struct snd_soc_dai *cpu_dai, int clk_id,
 static int spacemit_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 				unsigned int fmt)
 {
-	struct spacemit_i2s_dev *i2s = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spacemit_i2s_dev *i2s = dev_get_drvdata(dev);
 	u32 sspsp_val;
 
 	sspsp_val = readl(i2s->base + SSPSP);
@@ -278,7 +286,9 @@ static int spacemit_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 static int spacemit_i2s_trigger(struct snd_pcm_substream *substream,
 				int cmd, struct snd_soc_dai *dai)
 {
-	struct spacemit_i2s_dev *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spacemit_i2s_dev *i2s = dev_get_drvdata(dev);
 	u32 val;
 
 	switch (cmd) {
@@ -313,11 +323,14 @@ static int spacemit_i2s_trigger(struct snd_pcm_substream *substream,
 
 static int spacemit_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct spacemit_i2s_dev *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spacemit_i2s_dev *i2s = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai,
-				  i2s->has_playback ? &i2s->playback_dma_data : NULL,
-				  i2s->has_capture ? &i2s->capture_dma_data : NULL);
+	if (i2s->has_playback)
+		snd_soc_dai_stream_dma_data_set_playback(dai, &i2s->playback_dma_data);
+	if (i2s->has_capture)
+		snd_soc_dai_stream_dma_data_set_capture(dai,  &i2s->capture_dma_data);
 
 	reset_control_deassert(i2s->reset);
 
@@ -328,7 +341,9 @@ static int spacemit_i2s_dai_probe(struct snd_soc_dai *dai)
 
 static int spacemit_i2s_dai_remove(struct snd_soc_dai *dai)
 {
-	struct spacemit_i2s_dev *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spacemit_i2s_dev *i2s = dev_get_drvdata(dev);
 
 	reset_control_assert(i2s->reset);
 
@@ -479,7 +494,7 @@ static int spacemit_i2s_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	ret = devm_snd_soc_register_component(i2s->dev,
+	ret = devm_snd_soc_component_register(i2s->dev,
 					      &spacemit_i2s_component,
 					      dai, 1);
 	if (ret)

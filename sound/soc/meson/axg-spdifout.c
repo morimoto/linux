@@ -88,7 +88,9 @@ static void axg_spdifout_disable(struct regmap *map)
 static int axg_spdifout_trigger(struct snd_pcm_substream *substream, int cmd,
 				struct snd_soc_dai *dai)
 {
-	struct axg_spdifout *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_spdifout *priv = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -110,7 +112,9 @@ static int axg_spdifout_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int axg_spdifout_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct axg_spdifout *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_spdifout *priv = dev_get_drvdata(dev);
 
 	/* Use spdif valid bit to perform digital mute */
 	regmap_update_bits(priv->map, SPDIFOUT_CTRL0, SPDIFOUT_CTRL0_VSET,
@@ -122,7 +126,9 @@ static int axg_spdifout_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int axg_spdifout_sample_fmt(struct snd_pcm_hw_params *params,
 				   struct snd_soc_dai *dai)
 {
-	struct axg_spdifout *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_spdifout *priv = dev_get_drvdata(dev);
 	unsigned int val;
 
 	/* Set the samples spdifout will pull from the FIFO */
@@ -134,7 +140,7 @@ static int axg_spdifout_sample_fmt(struct snd_pcm_hw_params *params,
 		val = SPDIFOUT_CTRL0_MASK(0x3);
 		break;
 	default:
-		dev_err(dai->dev, "too many channels for spdif dai: %u\n",
+		dev_err(dev, "too many channels for spdif dai: %u\n",
 			params_channels(params));
 		return -EINVAL;
 	}
@@ -157,7 +163,7 @@ static int axg_spdifout_sample_fmt(struct snd_pcm_hw_params *params,
 		val = SPDIFOUT_CTRL1_TYPE(4);
 		break;
 	default:
-		dev_err(dai->dev, "Unsupported physical width: %u\n",
+		dev_err(dev, "Unsupported physical width: %u\n",
 			params_physical_width(params));
 		return -EINVAL;
 	}
@@ -179,7 +185,9 @@ static int axg_spdifout_sample_fmt(struct snd_pcm_hw_params *params,
 static int axg_spdifout_set_chsts(struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct axg_spdifout *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_spdifout *priv = dev_get_drvdata(dev);
 	unsigned int offset;
 	int ret;
 	u8 cs[4];
@@ -187,7 +195,7 @@ static int axg_spdifout_set_chsts(struct snd_pcm_hw_params *params,
 
 	ret = snd_pcm_create_iec958_consumer_hw_params(params, cs, 4);
 	if (ret < 0) {
-		dev_err(dai->dev, "Creating IEC958 channel status failed %d\n",
+		dev_err(dev, "Creating IEC958 channel status failed %d\n",
 			ret);
 		return ret;
 	}
@@ -216,26 +224,28 @@ static int axg_spdifout_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct axg_spdifout *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_spdifout *priv = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 	int ret;
 
 	/* 2 * 32bits per subframe * 2 channels = 128 */
 	ret = clk_set_rate(priv->mclk, rate * 128);
 	if (ret) {
-		dev_err(dai->dev, "failed to set spdif clock\n");
+		dev_err(dev, "failed to set spdif clock\n");
 		return ret;
 	}
 
 	ret = axg_spdifout_sample_fmt(params, dai);
 	if (ret) {
-		dev_err(dai->dev, "failed to setup sample format\n");
+		dev_err(dev, "failed to setup sample format\n");
 		return ret;
 	}
 
 	ret = axg_spdifout_set_chsts(params, dai);
 	if (ret) {
-		dev_err(dai->dev, "failed to setup channel status words\n");
+		dev_err(dev, "failed to setup channel status words\n");
 		return ret;
 	}
 
@@ -245,13 +255,15 @@ static int axg_spdifout_hw_params(struct snd_pcm_substream *substream,
 static int axg_spdifout_startup(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct axg_spdifout *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_spdifout *priv = dev_get_drvdata(dev);
 	int ret;
 
 	/* Clock the spdif output block */
 	ret = clk_prepare_enable(priv->pclk);
 	if (ret) {
-		dev_err(dai->dev, "failed to enable pclk\n");
+		dev_err(dev, "failed to enable pclk\n");
 		return ret;
 	}
 
@@ -278,7 +290,9 @@ static int axg_spdifout_startup(struct snd_pcm_substream *substream,
 static void axg_spdifout_shutdown(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct axg_spdifout *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_spdifout *priv = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(priv->pclk);
 }
@@ -351,7 +365,8 @@ static const struct snd_kcontrol_new axg_spdifout_controls[] = {
 static int axg_spdifout_set_bias_level(struct snd_soc_component *component,
 				       enum snd_soc_bias_level level)
 {
-	struct axg_spdifout *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_spdifout *priv = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	enum snd_soc_bias_level now = snd_soc_dapm_get_bias_level(dapm);
 	int ret = 0;
@@ -429,7 +444,7 @@ static int axg_spdifout_probe(struct platform_device *pdev)
 	if (IS_ERR(priv->mclk))
 		return dev_err_probe(dev, PTR_ERR(priv->mclk), "failed to get mclk\n");
 
-	return devm_snd_soc_register_component(dev, &axg_spdifout_component_drv,
+	return devm_snd_soc_component_register(dev, &axg_spdifout_component_drv,
 			axg_spdifout_dai_drv, ARRAY_SIZE(axg_spdifout_dai_drv));
 }
 

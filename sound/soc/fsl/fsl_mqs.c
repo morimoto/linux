@@ -104,8 +104,9 @@ static int fsl_mqs_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct fsl_mqs *mqs_priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_mqs *mqs_priv = dev_get_drvdata(dev);
 	unsigned long mclk_rate;
 	int div, res;
 	int lrclk;
@@ -128,7 +129,7 @@ static int fsl_mqs_hw_params(struct snd_pcm_substream *substream,
 		regmap_update_bits(mqs_priv->regmap, mqs_priv->soc->ctrl_off,
 				   mqs_priv->soc->osr_mask, 0);
 	} else {
-		dev_err(component->dev, "can't get proper divider\n");
+		dev_err(dev, "can't get proper divider\n");
 	}
 
 	return 0;
@@ -164,8 +165,9 @@ static int fsl_mqs_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int fsl_mqs_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct fsl_mqs *mqs_priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_mqs *mqs_priv = dev_get_drvdata(dev);
 
 	regmap_update_bits(mqs_priv->regmap, mqs_priv->soc->ctrl_off,
 			   mqs_priv->soc->en_mask,
@@ -176,8 +178,9 @@ static int fsl_mqs_startup(struct snd_pcm_substream *substream,
 static void fsl_mqs_shutdown(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct fsl_mqs *mqs_priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_mqs *mqs_priv = dev_get_drvdata(dev);
 
 	regmap_update_bits(mqs_priv->regmap, mqs_priv->soc->ctrl_off,
 			   mqs_priv->soc->en_mask, 0);
@@ -301,7 +304,7 @@ static int fsl_mqs_probe(struct platform_device *pdev)
 	dev_set_drvdata(&pdev->dev, mqs_priv);
 	pm_runtime_enable(&pdev->dev);
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &soc_codec_fsl_mqs,
+	ret = devm_snd_soc_component_register(&pdev->dev, &soc_codec_fsl_mqs,
 			&fsl_mqs_dai, 1);
 	if (ret)
 		return ret;

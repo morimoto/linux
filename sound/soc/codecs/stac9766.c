@@ -164,7 +164,7 @@ static const struct snd_kcontrol_new stac9766_snd_ac97_controls[] = {
 static int ac97_analog_prepare(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	unsigned short reg;
 
@@ -182,7 +182,7 @@ static int ac97_analog_prepare(struct snd_pcm_substream *substream,
 static int ac97_digital_prepare(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	unsigned short reg;
 
@@ -215,7 +215,8 @@ static int stac9766_set_bias_level(struct snd_soc_component *component,
 
 static int stac9766_component_resume(struct snd_soc_component *component)
 {
-	struct snd_ac97 *ac97 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_ac97 *ac97 = dev_get_drvdata(dev);
 
 	return snd_ac97_reset(ac97, true, STAC9766_VENDOR_ID,
 		STAC9766_VENDOR_ID_MASK);
@@ -270,6 +271,7 @@ static struct snd_soc_dai_driver stac9766_dai[] = {
 
 static int stac9766_component_probe(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_ac97 *ac97;
 	struct regmap *regmap;
 	int ret;
@@ -285,8 +287,8 @@ static int stac9766_component_probe(struct snd_soc_component *component)
 		goto err_free_ac97;
 	}
 
-	snd_soc_component_init_regmap(component, regmap);
-	snd_soc_component_set_drvdata(component, ac97);
+	snd_soc_component_regmap_init(component, regmap);
+	dev_set_drvdata(dev, ac97);
 
 	return 0;
 err_free_ac97:
@@ -296,9 +298,10 @@ err_free_ac97:
 
 static void stac9766_component_remove(struct snd_soc_component *component)
 {
-	struct snd_ac97 *ac97 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_ac97 *ac97 = dev_get_drvdata(dev);
 
-	snd_soc_component_exit_regmap(component);
+	snd_soc_component_regmap_exit(component);
 	snd_soc_free_ac97_component(ac97);
 }
 
@@ -317,7 +320,7 @@ static const struct snd_soc_component_driver soc_component_dev_stac9766 = {
 
 static int stac9766_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&soc_component_dev_stac9766, stac9766_dai, ARRAY_SIZE(stac9766_dai));
 }
 

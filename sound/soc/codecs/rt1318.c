@@ -482,7 +482,8 @@ static int rt1318_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt1318_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_priv *rt1318 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -505,7 +506,8 @@ static int rt1318_dvol_put(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1318_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_priv *rt1318 = dev_get_drvdata(dev);
 
 	rt1318->rt1318_dvol = ucontrol->value.integer.value[0];
 
@@ -528,7 +530,8 @@ static int rt1318_dvol_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1318_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_priv *rt1318 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rt1318->rt1318_dvol;
 
@@ -573,7 +576,8 @@ static int rt1318_get_clk_info(int sclk, int rate)
 
 static int rt1318_clk_ip_info(struct snd_soc_component *component, int lrclk)
 {
-	struct rt1318_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_priv *rt1318 = dev_get_drvdata(dev);
 
 	switch (lrclk) {
 	case RT1318_LRCLK_48000:
@@ -594,7 +598,7 @@ static int rt1318_clk_ip_info(struct snd_soc_component *component, int lrclk)
 				RT1318_SRCIN_TCON4 | RT1318_DACLK_TCON1);
 		break;
 	default:
-		dev_err(component->dev, "Unsupported clock rate.\n");
+		dev_err(dev, "Unsupported clock rate.\n");
 		return -EINVAL;
 	}
 
@@ -604,20 +608,21 @@ static int rt1318_clk_ip_info(struct snd_soc_component *component, int lrclk)
 static int rt1318_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1318_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_priv *rt1318 = dev_get_drvdata(dev);
 	int data_len = 0, ch_len = 0;
 	int pre_div, ret;
 
 	rt1318->lrck = params_rate(params);
 	pre_div = rt1318_get_clk_info(rt1318->sysclk, rt1318->lrck);
 	if (pre_div < 0) {
-		dev_err(component->dev, "Unsupported clock setting\n");
+		dev_err(dev, "Unsupported clock setting\n");
 		return -EINVAL;
 	}
 	ret = rt1318_clk_ip_info(component, rt1318->lrck);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupported clock setting\n");
+		dev_err(dev, "Unsupported clock setting\n");
 		return -EINVAL;
 	}
 
@@ -678,8 +683,9 @@ static int rt1318_hw_params(struct snd_pcm_substream *substream,
 
 static int rt1318_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1318_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_priv *rt1318 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0, reg_val2 = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
@@ -723,8 +729,9 @@ static int rt1318_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt1318_set_dai_sysclk(struct snd_soc_dai *dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1318_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_priv *rt1318 = dev_get_drvdata(dev);
 	int reg_val = 0;
 
 	if (freq == rt1318->sysclk && clk_id == rt1318->sysclk_src)
@@ -756,13 +763,13 @@ static int rt1318_set_dai_sysclk(struct snd_soc_dai *dai,
 		reg_val |= RT1318_SYSCLK_RC3;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clock id (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock id (%d)\n", clk_id);
 		return -EINVAL;
 	}
 
 	rt1318->sysclk = freq;
 	rt1318->sysclk_src = clk_id;
-	dev_dbg(dai->dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
+	dev_dbg(dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
 	regmap_update_bits(rt1318->regmap, RT1318_CLK1,
 			RT1318_SYSCLK_SEL_MASK, reg_val);
 
@@ -865,13 +872,14 @@ code_find:
 static int rt1318_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1318_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_priv *rt1318 = dev_get_drvdata(dev);
 	struct rt1318_pll_code pll_code;
 	int ret;
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 		rt1318->pll_in = 0;
 		rt1318->pll_out = 0;
 		return 0;
@@ -915,17 +923,17 @@ static int rt1318_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			RT1318_PLLIN_MASK, RT1318_PLLIN_SDW4);
 		break;
 	default:
-		dev_err(component->dev, "Unknown PLL source %d\n", source);
+		dev_err(dev, "Unknown PLL source %d\n", source);
 		return -EINVAL;
 	}
 
 	ret = rt1318_pll_calc(freq_in, freq_out, &pll_code);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupport input clock %d\n", freq_in);
+		dev_err(dev, "Unsupport input clock %d\n", freq_in);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "bypass=%d m=%d n=%d k=%d\n",
+	dev_dbg(dev, "bypass=%d m=%d n=%d k=%d\n",
 		pll_code.m_bp, (pll_code.m_bp ? 0 : pll_code.m_code),
 		pll_code.n_code, pll_code.k_code);
 
@@ -948,8 +956,9 @@ static int rt1318_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 static int rt1318_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1318_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_priv *rt1318 = dev_get_drvdata(dev);
 	unsigned int cn = 0, cl = 0, rx_slotnum;
 	int ret = 0, first_bit;
 
@@ -999,7 +1008,7 @@ static int rt1318_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	rx_slotnum = hweight_long(rx_mask);
 	if (rx_slotnum != 1) {
 		ret = -EINVAL;
-		dev_err(component->dev, "too many rx slots or zero slot\n");
+		dev_err(dev, "too many rx slots or zero slot\n");
 		goto _set_tdm_err_;
 	}
 
@@ -1043,7 +1052,8 @@ _set_tdm_err_:
 
 static int rt1318_probe(struct snd_soc_component *component)
 {
-	struct rt1318_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_priv *rt1318 = dev_get_drvdata(dev);
 
 	rt1318->component = component;
 
@@ -1055,7 +1065,8 @@ static int rt1318_probe(struct snd_soc_component *component)
 
 static void rt1318_remove(struct snd_soc_component *component)
 {
-	struct rt1318_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_priv *rt1318 = dev_get_drvdata(dev);
 
 	cancel_work_sync(&rt1318->cali_work);
 }
@@ -1063,7 +1074,8 @@ static void rt1318_remove(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int rt1318_suspend(struct snd_soc_component *component)
 {
-	struct rt1318_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_priv *rt1318 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt1318->regmap, true);
 	regcache_mark_dirty(rt1318->regmap);
@@ -1072,7 +1084,8 @@ static int rt1318_suspend(struct snd_soc_component *component)
 
 static int rt1318_resume(struct snd_soc_component *component)
 {
-	struct rt1318_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_priv *rt1318 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt1318->regmap, false);
 	regcache_sync(rt1318->regmap);
@@ -1196,6 +1209,7 @@ static void rt1318_calibration_sequence(struct rt1318_priv *rt1318)
 
 static void rt1318_r0_calculate(struct rt1318_priv *rt1318)
 {
+	struct device *dev = snd_soc_component_to_dev(rt1318->component);
 	unsigned int r0_l, r0_l_byte0, r0_l_byte1, r0_l_byte2, r0_l_byte3;
 	unsigned int r0_r, r0_r_byte0, r0_r_byte1, r0_r_byte2, r0_r_byte3;
 	unsigned int r0_l_integer, r0_l_factor, r0_r_integer, r0_r_factor;
@@ -1217,8 +1231,8 @@ static void rt1318_r0_calculate(struct rt1318_priv *rt1318)
 	r0_r_integer = format / r0_r;
 	r0_r_factor = (format * 10) / r0_r - r0_r_integer * 10;
 
-	dev_dbg(rt1318->component->dev, "r0_l_ch:%d.%d ohm\n", r0_l_integer, r0_l_factor);
-	dev_dbg(rt1318->component->dev, "r0_r_ch:%d.%d ohm\n", r0_r_integer, r0_r_factor);
+	dev_dbg(dev, "r0_l_ch:%d.%d ohm\n", r0_l_integer, r0_l_factor);
+	dev_dbg(dev, "r0_r_ch:%d.%d ohm\n", r0_r_integer, r0_r_factor);
 }
 
 static void rt1318_r0_restore(struct rt1318_priv *rt1318)
@@ -1251,6 +1265,7 @@ static void rt1318_r0_restore(struct rt1318_priv *rt1318)
 
 static int rt1318_calibrate(struct rt1318_priv *rt1318)
 {
+	struct device *dev = snd_soc_component_to_dev(rt1318->component);
 	int chk_cnt = 30, count = 0;
 	int val, val2;
 
@@ -1265,7 +1280,7 @@ static int rt1318_calibrate(struct rt1318_priv *rt1318)
 		val = (val >> 1) & 0x1;
 		val2 = (val2 >> 1) & 0x1;
 		if (val & val2) {
-			dev_dbg(rt1318->component->dev, "Calibration done.\n");
+			dev_dbg(dev, "Calibration done.\n");
 			break;
 		}
 		count++;
@@ -1287,6 +1302,7 @@ static void rt1318_calibration_work(struct work_struct *work)
 {
 	struct rt1318_priv *rt1318 =
 		container_of(work, struct rt1318_priv, cali_work);
+	struct device *dev = snd_soc_component_to_dev(rt1318->component);
 	int ret;
 
 	if (rt1318->pdata.init_r0_l && rt1318->pdata.init_r0_r)
@@ -1295,7 +1311,7 @@ static void rt1318_calibration_work(struct work_struct *work)
 		ret = rt1318_calibrate(rt1318);
 		if (ret == RT1318_R0_IN_RANGE)
 			rt1318_r0_calculate(rt1318);
-		dev_dbg(rt1318->component->dev, "Calibrate R0 result:%d\n", ret);
+		dev_dbg(dev, "Calibrate R0 result:%d\n", ret);
 	}
 }
 
@@ -1342,7 +1358,7 @@ static int rt1318_i2c_probe(struct i2c_client *i2c)
 
 	INIT_WORK(&rt1318->cali_work, rt1318_calibration_work);
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 		&soc_component_dev_rt1318, rt1318_dai, ARRAY_SIZE(rt1318_dai));
 }
 

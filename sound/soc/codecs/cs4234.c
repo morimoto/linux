@@ -85,7 +85,8 @@ static int cs4234_dac14_grp_delay_put(struct snd_kcontrol *kctrl,
 				      struct snd_ctl_elem_value *uctrl)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kctrl);
-	struct cs4234 *cs4234 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4234 *cs4234 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	unsigned int val = 0;
 	int ret = 0;
@@ -95,14 +96,14 @@ static int cs4234_dac14_grp_delay_put(struct snd_kcontrol *kctrl,
 	regmap_read(cs4234->regmap, CS4234_ADC_CTRL2, &val);
 	if ((val & 0x0F) != 0x0F) { // are all the ADCs powerdown
 		ret = -EBUSY;
-		dev_err(component->dev, "Can't change group delay while ADC are ON\n");
+		dev_err(dev, "Can't change group delay while ADC are ON\n");
 		goto exit;
 	}
 
 	regmap_read(cs4234->regmap, CS4234_DAC_CTRL4, &val);
 	if ((val & 0x1F) != 0x1F) { // are all the DACs powerdown
 		ret = -EBUSY;
-		dev_err(component->dev, "Can't change group delay while DAC are ON\n");
+		dev_err(dev, "Can't change group delay while DAC are ON\n");
 		goto exit;
 	}
 
@@ -124,7 +125,8 @@ static void cs4234_vq_ramp_done(struct work_struct *work)
 static int cs4234_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct cs4234 *cs4234 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4234 *cs4234 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -286,8 +288,9 @@ static const struct snd_kcontrol_new cs4234_snd_controls[] = {
 
 static int cs4234_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int format)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs4234 *cs4234 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4234 *cs4234 = dev_get_drvdata(dev);
 	unsigned int sp_ctrl = 0;
 
 	cs4234->format = format & SND_SOC_DAIFMT_FORMAT_MASK;
@@ -302,7 +305,7 @@ static int cs4234_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int format
 		sp_ctrl |= CS4234_TDM << CS4234_SP_FORMAT_SHIFT;
 		break;
 	default:
-		dev_err(component->dev, "Unsupported dai format\n");
+		dev_err(dev, "Unsupported dai format\n");
 		return -EINVAL;
 	}
 
@@ -311,13 +314,13 @@ static int cs4234_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int format
 		break;
 	case SND_SOC_DAIFMT_CBP_CFP:
 		if (cs4234->format == SND_SOC_DAIFMT_DSP_A) {
-			dev_err(component->dev, "Unsupported DSP A format in master mode\n");
+			dev_err(dev, "Unsupported DSP A format in master mode\n");
 			return -EINVAL;
 		}
 		sp_ctrl |= CS4234_MST_SLV_MASK;
 		break;
 	default:
-		dev_err(component->dev, "Unsupported master/slave mode\n");
+		dev_err(dev, "Unsupported master/slave mode\n");
 		return -EINVAL;
 	}
 
@@ -328,7 +331,7 @@ static int cs4234_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int format
 		sp_ctrl |= CS4234_INVT_SCLK_MASK;
 		break;
 	default:
-		dev_err(component->dev, "Unsupported inverted clock setting\n");
+		dev_err(dev, "Unsupported inverted clock setting\n");
 		return -EINVAL;
 	}
 
@@ -343,8 +346,9 @@ static int cs4234_dai_hw_params(struct snd_pcm_substream *sub,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs4234 *cs4234 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4234 *cs4234 = dev_get_drvdata(dev);
 	unsigned int mclk_mult, double_speed = 0;
 	int ret = 0, rate_ad, sample_width;
 
@@ -368,7 +372,7 @@ static int cs4234_dai_hw_params(struct snd_pcm_substream *sub,
 				   ((mclk_mult / 128) - 2) << CS4234_MCLK_RATE_SHIFT);
 		break;
 	default:
-		dev_err(component->dev, "Unsupported mclk/lrclk rate\n");
+		dev_err(dev, "Unsupported mclk/lrclk rate\n");
 		return -EINVAL;
 	}
 
@@ -386,7 +390,7 @@ static int cs4234_dai_hw_params(struct snd_pcm_substream *sub,
 		rate_ad = CS4234_32K;
 		break;
 	default:
-		dev_err(component->dev, "Unsupported LR clock\n");
+		dev_err(dev, "Unsupported LR clock\n");
 		return -EINVAL;
 	}
 	regmap_update_bits(cs4234->regmap, CS4234_CLOCK_SP, CS4234_BASE_RATE_MASK,
@@ -407,7 +411,7 @@ static int cs4234_dai_hw_params(struct snd_pcm_substream *sub,
 		sample_width = 3;
 		break;
 	default:
-		dev_err(component->dev, "Unsupported sample width\n");
+		dev_err(dev, "Unsupported sample width\n");
 		return -EINVAL;
 	}
 	if (sub->stream == SNDRV_PCM_STREAM_CAPTURE)
@@ -463,8 +467,9 @@ static int cs4234_dai_rule_rate(struct snd_pcm_hw_params *params, struct snd_pcm
 
 static int cs4234_dai_startup(struct snd_pcm_substream *sub, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *comp = dai->component;
-	struct cs4234 *cs4234 = snd_soc_component_get_drvdata(comp);
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct cs4234 *cs4234 = dev_get_drvdata(dev);
 	int i, ret;
 
 	switch (cs4234->format) {
@@ -498,7 +503,7 @@ static int cs4234_dai_startup(struct snd_pcm_substream *sub, struct snd_soc_dai 
 		cs4234->rate_constraint.nrats = 1;
 		break;
 	default:
-		dev_err(comp->dev, "Startup unsupported DAI format\n");
+		dev_err(dev, "Startup unsupported DAI format\n");
 		return -EINVAL;
 	}
 
@@ -522,13 +527,14 @@ static int cs4234_dai_startup(struct snd_pcm_substream *sub, struct snd_soc_dai 
 static int cs4234_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				   unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs4234 *cs4234 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4234 *cs4234 = dev_get_drvdata(dev);
 	unsigned int slot_offset, dac5_slot, dac5_mask_group;
 	uint8_t dac5_masks[4];
 
 	if (slot_width != 32) {
-		dev_err(component->dev, "Unsupported slot width\n");
+		dev_err(dev, "Unsupported slot width\n");
 		return -EINVAL;
 	}
 
@@ -536,7 +542,7 @@ static int cs4234_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask
 	slot_offset = ffs(tx_mask) - 1;
 	tx_mask >>= slot_offset;
 	if ((slot_offset % 4) || ((tx_mask != 0x0F) && (tx_mask != 0x1F))) {
-		dev_err(component->dev, "Unsupported tx slots allocation\n");
+		dev_err(dev, "Unsupported tx slots allocation\n");
 		return -EINVAL;
 	}
 
@@ -843,7 +849,7 @@ static int cs4234_i2c_probe(struct i2c_client *i2c_client)
 	memcpy(&cs4234->rate_dividers, &cs4234_dividers, sizeof(cs4234_dividers));
 	cs4234->rate_constraint.rats = cs4234->rate_dividers;
 
-	ret = snd_soc_register_component(dev, &soc_component_cs4234, cs4234_dai,
+	ret = snd_soc_component_register(dev, &soc_component_cs4234, cs4234_dai,
 					 ARRAY_SIZE(cs4234_dai));
 	if (ret < 0) {
 		dev_err(dev, "Failed to register component:%d\n", ret);
@@ -864,7 +870,7 @@ static void cs4234_i2c_remove(struct i2c_client *i2c_client)
 	struct cs4234 *cs4234 = i2c_get_clientdata(i2c_client);
 	struct device *dev = &i2c_client->dev;
 
-	snd_soc_unregister_component(dev);
+	snd_soc_component_unregister(dev);
 	pm_runtime_disable(dev);
 	cs4234_shutdown(cs4234);
 }

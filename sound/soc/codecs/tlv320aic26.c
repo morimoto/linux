@@ -65,8 +65,9 @@ static int aic26_hw_params(struct snd_pcm_substream *substream,
 			   struct snd_pcm_hw_params *params,
 			   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aic26 *aic26 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic26 *aic26 = dev_get_drvdata(dev);
 	int fsref, divisor, wlen, pval, jval, dval, qval;
 	u16 reg;
 
@@ -136,8 +137,9 @@ static int aic26_hw_params(struct snd_pcm_substream *substream,
  */
 static int aic26_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aic26 *aic26 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic26 *aic26 = dev_get_drvdata(dev);
 	u16 reg;
 
 	dev_dbg(&aic26->spi->dev, "aic26_mute(dai=%p, mute=%i)\n",
@@ -155,8 +157,9 @@ static int aic26_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int aic26_set_sysclk(struct snd_soc_dai *codec_dai,
 			    int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct aic26 *aic26 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic26 *aic26 = dev_get_drvdata(dev);
 
 	dev_dbg(&aic26->spi->dev, "aic26_set_sysclk(dai=%p, clk_id==%i,"
 		" freq=%i, dir=%i)\n",
@@ -172,8 +175,9 @@ static int aic26_set_sysclk(struct snd_soc_dai *codec_dai,
 
 static int aic26_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct aic26 *aic26 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic26 *aic26 = dev_get_drvdata(dev);
 
 	dev_dbg(&aic26->spi->dev, "aic26_set_fmt(dai=%p, fmt==%i)\n",
 		codec_dai, fmt);
@@ -302,7 +306,8 @@ static DEVICE_ATTR_RW(keyclick);
  */
 static int aic26_probe(struct snd_soc_component *component)
 {
-	struct aic26 *aic26 = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic26 *aic26 = dev_get_drvdata(dev);
 	int ret, reg;
 
 	aic26->component = component;
@@ -321,16 +326,18 @@ static int aic26_probe(struct snd_soc_component *component)
 
 	/* Register the sysfs files for debugging */
 	/* Create SysFS files */
-	ret = device_create_file(component->dev, &dev_attr_keyclick);
+	ret = device_create_file(dev, &dev_attr_keyclick);
 	if (ret)
-		dev_info(component->dev, "error creating sysfs files\n");
+		dev_info(dev, "error creating sysfs files\n");
 
 	return 0;
 }
 
 static void aic26_remove(struct snd_soc_component *component)
 {
-	device_remove_file(component->dev, &dev_attr_keyclick);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	device_remove_file(dev, &dev_attr_keyclick);
 }
 
 static const struct snd_soc_component_driver aic26_soc_component_dev = {
@@ -377,7 +384,7 @@ static int aic26_spi_probe(struct spi_device *spi)
 	dev_set_drvdata(&spi->dev, aic26);
 	aic26->clock_provider = 1;
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 			&aic26_soc_component_dev, &aic26_dai, 1);
 	return ret;
 }

@@ -358,7 +358,7 @@ static int preallocate_idma_buffer(struct snd_pcm *pcm, int stream)
 static int idma_new(struct snd_soc_component *component,
 		    struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(rtd->card);
 	struct snd_pcm *pcm = rtd->pcm;
 	int ret;
 
@@ -401,7 +401,7 @@ static int asoc_idma_platform_probe(struct platform_device *pdev)
 	if (idma_irq < 0)
 		return idma_irq;
 
-	return devm_snd_soc_register_component(&pdev->dev, &asoc_idma_platform,
+	return devm_snd_soc_component_register(&pdev->dev, &asoc_idma_platform,
 					       NULL, 0);
 }
 

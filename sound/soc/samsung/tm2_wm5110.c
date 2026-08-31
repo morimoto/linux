@@ -32,8 +32,9 @@ struct tm2_machine_priv {
 
 static int tm2_start_sysclk(struct snd_soc_card *card)
 {
-	struct tm2_machine_priv *priv = snd_soc_card_get_drvdata(card);
+	struct tm2_machine_priv *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_component *component = priv->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = snd_soc_component_set_pll(component, WM5110_FLL1_REFCLK,
@@ -41,7 +42,7 @@ static int tm2_start_sysclk(struct snd_soc_card *card)
 				    MCLK_RATE,
 				    priv->sysclk_rate);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to set FLL1 source: %d\n", ret);
+		dev_err(dev, "Failed to set FLL1 source: %d\n", ret);
 		return ret;
 	}
 
@@ -50,7 +51,7 @@ static int tm2_start_sysclk(struct snd_soc_card *card)
 				    MCLK_RATE,
 				    priv->sysclk_rate);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to start FLL1: %d\n", ret);
+		dev_err(dev, "Failed to start FLL1: %d\n", ret);
 		return ret;
 	}
 
@@ -59,7 +60,7 @@ static int tm2_start_sysclk(struct snd_soc_card *card)
 				       priv->sysclk_rate,
 				       SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to set SYSCLK source: %d\n", ret);
+		dev_err(dev, "Failed to set SYSCLK source: %d\n", ret);
 		return ret;
 	}
 
@@ -68,20 +69,21 @@ static int tm2_start_sysclk(struct snd_soc_card *card)
 
 static int tm2_stop_sysclk(struct snd_soc_card *card)
 {
-	struct tm2_machine_priv *priv = snd_soc_card_get_drvdata(card);
+	struct tm2_machine_priv *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_component *component = priv->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = snd_soc_component_set_pll(component, WM5110_FLL1, 0, 0, 0);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to stop FLL1: %d\n", ret);
+		dev_err(dev, "Failed to stop FLL1: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_component_set_sysclk(component, ARIZONA_CLK_SYSCLK,
 				       ARIZONA_CLK_SRC_FLL1, 0, 0);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to stop SYSCLK: %d\n", ret);
+		dev_err(dev, "Failed to stop SYSCLK: %d\n", ret);
 		return ret;
 	}
 
@@ -92,8 +94,9 @@ static int tm2_aif1_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
-	struct tm2_machine_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tm2_machine_priv *priv = snd_soc_card_to_priv(rtd->card);
 
 	switch (params_rate(params)) {
 	case 4000:
@@ -117,8 +120,7 @@ static int tm2_aif1_hw_params(struct snd_pcm_substream *substream,
 		priv->sysclk_rate = 135475200U;
 		break;
 	default:
-		dev_err(component->dev, "Not supported sample rate: %d\n",
-			params_rate(params));
+		dev_err(dev, "Not supported sample rate: %d\n", params_rate(params));
 		return -EINVAL;
 	}
 
@@ -133,7 +135,8 @@ static int tm2_aif2_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int asyncclk_rate;
 	int ret;
 
@@ -149,8 +152,7 @@ static int tm2_aif2_hw_params(struct snd_pcm_substream *substream,
 		asyncclk_rate = 45158400U;
 		break;
 	default:
-		dev_err(component->dev, "Not supported sample rate: %d\n",
-			params_rate(params));
+		dev_err(dev, "Not supported sample rate: %d\n", params_rate(params));
 		return -EINVAL;
 	}
 
@@ -159,7 +161,7 @@ static int tm2_aif2_hw_params(struct snd_pcm_substream *substream,
 				    MCLK_RATE,
 				    asyncclk_rate);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to set FLL2 source: %d\n", ret);
+		dev_err(dev, "Failed to set FLL2 source: %d\n", ret);
 		return ret;
 	}
 
@@ -168,7 +170,7 @@ static int tm2_aif2_hw_params(struct snd_pcm_substream *substream,
 				    MCLK_RATE,
 				    asyncclk_rate);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to start FLL2: %d\n", ret);
+		dev_err(dev, "Failed to start FLL2: %d\n", ret);
 		return ret;
 	}
 
@@ -177,7 +179,7 @@ static int tm2_aif2_hw_params(struct snd_pcm_substream *substream,
 				       asyncclk_rate,
 				       SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to set ASYNCCLK source: %d\n", ret);
+		dev_err(dev, "Failed to set ASYNCCLK source: %d\n", ret);
 		return ret;
 	}
 
@@ -187,14 +189,15 @@ static int tm2_aif2_hw_params(struct snd_pcm_substream *substream,
 static int tm2_aif2_hw_free(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	/* disable FLL2 */
 	ret = snd_soc_component_set_pll(component, WM5110_FLL2, ARIZONA_FLL_SRC_MCLK1,
 				    0, 0);
 	if (ret < 0)
-		dev_err(component->dev, "Failed to stop FLL2: %d\n", ret);
+		dev_err(dev, "Failed to stop FLL2: %d\n", ret);
 
 	return ret;
 }
@@ -209,12 +212,13 @@ static int tm2_hdmi_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	unsigned int bfs;
 	int bitwidth, ret;
 
 	bitwidth = snd_pcm_format_width(params_format(params));
 	if (bitwidth < 0) {
-		dev_err(rtd->card->dev, "Invalid bit-width: %d\n", bitwidth);
+		dev_err(dev, "Invalid bit-width: %d\n", bitwidth);
 		return bitwidth;
 	}
 
@@ -226,7 +230,7 @@ static int tm2_hdmi_hw_params(struct snd_pcm_substream *substream,
 		bfs = 32;
 		break;
 	default:
-		dev_err(rtd->card->dev, "Unsupported bit-width: %d\n", bitwidth);
+		dev_err(dev, "Unsupported bit-width: %d\n", bitwidth);
 		return -EINVAL;
 	}
 
@@ -236,7 +240,7 @@ static int tm2_hdmi_hw_params(struct snd_pcm_substream *substream,
 	case 192000:
 		break;
 	default:
-		dev_err(rtd->card->dev, "Unsupported sample rate: %d\n",
+		dev_err(dev, "Unsupported sample rate: %d\n",
 			params_rate(params));
 		return -EINVAL;
 	}
@@ -261,7 +265,7 @@ static int tm2_mic_bias(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct tm2_machine_priv *priv = snd_soc_card_get_drvdata(card);
+	struct tm2_machine_priv *priv = snd_soc_card_to_priv(card);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -279,12 +283,14 @@ static int tm2_set_bias_level(struct snd_soc_card *card,
 				struct snd_soc_dapm_context *dapm,
 				enum snd_soc_bias_level level)
 {
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	struct snd_soc_dapm_context *card_dapm = snd_soc_card_to_dapm(card);
-	struct snd_soc_pcm_runtime *rtd;
+	struct snd_soc_pcm_runtime *rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[0]);
+	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[0]);
-
-	if (snd_soc_dapm_to_dev(dapm) != snd_soc_rtd_to_codec(rtd, 0)->dev)
+	if (snd_soc_dapm_to_dev(dapm) != dev)
 		return 0;
 
 	switch (level) {
@@ -306,30 +312,39 @@ static struct snd_soc_aux_dev tm2_speaker_amp_dev;
 
 static int tm2_late_probe(struct snd_soc_card *card)
 {
-	struct tm2_machine_priv *priv = snd_soc_card_get_drvdata(card);
+	struct tm2_machine_priv *priv = snd_soc_card_to_priv(card);
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	unsigned int ch_map[] = { 0, 1 };
 	struct snd_soc_dai *amp_pdm_dai;
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *aif1_dai;
 	struct snd_soc_dai *aif2_dai;
+	struct snd_soc_component *aif1_component;
+	struct snd_soc_component *aif2_component;
+	struct device *aif1_dev;
+	struct device *aif2_dev;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[TM2_DAI_AIF1]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[TM2_DAI_AIF1]);
 	aif1_dai = snd_soc_rtd_to_codec(rtd, 0);
-	priv->component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	aif1_component = snd_soc_dai_to_component(aif1_dai);
+	aif1_dev = snd_soc_component_to_dev(aif1_component);
+	priv->component = aif1_component;
 
 	ret = snd_soc_dai_set_sysclk(aif1_dai, ARIZONA_CLK_SYSCLK, 0, 0);
 	if (ret < 0) {
-		dev_err(aif1_dai->dev, "Failed to set SYSCLK: %d\n", ret);
+		dev_err(aif1_dev, "Failed to set SYSCLK: %d\n", ret);
 		return ret;
 	}
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[TM2_DAI_AIF2]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[TM2_DAI_AIF2]);
 	aif2_dai = snd_soc_rtd_to_codec(rtd, 0);
+	aif2_component = snd_soc_dai_to_component(aif2_dai);
+	aif2_dev = snd_soc_component_to_dev(aif2_component);
 
 	ret = snd_soc_dai_set_sysclk(aif2_dai, ARIZONA_CLK_ASYNCCLK, 0, 0);
 	if (ret < 0) {
-		dev_err(aif2_dai->dev, "Failed to set ASYNCCLK: %d\n", ret);
+		dev_err(aif2_dev, "Failed to set ASYNCCLK: %d\n", ret);
 		return ret;
 	}
 
@@ -379,7 +394,7 @@ static const struct snd_soc_dapm_widget tm2_dapm_widgets[] = {
 };
 
 static const struct snd_soc_component_driver tm2_component = {
-	.name	= "tm2-audio",
+	.name = "tm2-audio",
 };
 
 static struct snd_soc_dai_driver tm2_ext_dai[] = {
@@ -510,7 +525,7 @@ static int tm2_probe(struct platform_device *pdev)
 	if (!card || !priv)
 		return -ENOMEM;
 
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 
 	priv->gpio_mic_bias = devm_gpiod_get(dev, "mic-bias", GPIOD_OUT_HIGH);
 	if (IS_ERR(priv->gpio_mic_bias)) {
@@ -518,7 +533,7 @@ static int tm2_probe(struct platform_device *pdev)
 		return PTR_ERR(priv->gpio_mic_bias);
 	}
 
-	ret = snd_soc_of_parse_card_name(card, "model");
+	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret < 0) {
 		dev_err(dev, "Card name is not specified\n");
 		return ret;
@@ -609,7 +624,7 @@ static int tm2_probe(struct platform_device *pdev)
 		}
 	}
 
-	ret = devm_snd_soc_register_component(dev, &tm2_component,
+	ret = devm_snd_soc_component_register(dev, &tm2_component,
 				tm2_ext_dai, ARRAY_SIZE(tm2_ext_dai));
 	if (ret < 0) {
 		dev_err(dev, "Failed to register component: %d\n", ret);

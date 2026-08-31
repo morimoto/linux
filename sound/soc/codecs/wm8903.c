@@ -268,7 +268,8 @@ static int wm8903_dcs_event(struct snd_soc_dapm_widget *w,
 			    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm8903_priv *wm8903 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8903_priv *wm8903 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -289,13 +290,14 @@ static int wm8903_dcs_event(struct snd_soc_dapm_widget *w,
 static void wm8903_seq_notifier(struct snd_soc_component *component,
 				enum snd_soc_dapm_type event, int subseq)
 {
-	struct wm8903_priv *wm8903 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8903_priv *wm8903 = dev_get_drvdata(dev);
 	int dcs_mode = WM8903_DCS_MODE_WRITE_STOP;
 	int i, val;
 
 	/* Complete any pending DC servo starts */
 	if (wm8903->dcs_pending) {
-		dev_dbg(component->dev, "Starting DC servo for %x\n",
+		dev_dbg(dev, "Starting DC servo for %x\n",
 			wm8903->dcs_pending);
 
 		/* If we've no cached values then we need to do startup */
@@ -304,14 +306,14 @@ static void wm8903_seq_notifier(struct snd_soc_component *component,
 				continue;
 
 			if (wm8903->dcs_cache[i]) {
-				dev_dbg(component->dev,
+				dev_dbg(dev,
 					"Restore DC servo %d value %x\n",
 					3 - i, wm8903->dcs_cache[i]);
 
 				snd_soc_component_write(component, WM8903_DC_SERVO_4 + i,
 					      wm8903->dcs_cache[i] & 0xff);
 			} else {
-				dev_dbg(component->dev,
+				dev_dbg(dev,
 					"Calibrate DC servo %d\n", 3 - i);
 				dcs_mode = WM8903_DCS_MODE_START_STOP;
 			}
@@ -344,8 +346,7 @@ static void wm8903_seq_notifier(struct snd_soc_component *component,
 
 				val = snd_soc_component_read(component,
 						   WM8903_DC_SERVO_READBACK_1 + i);
-				dev_dbg(component->dev, "DC servo %d: %x\n",
-					3 - i, val);
+				dev_dbg(dev, "DC servo %d: %x\n", 3 - i, val);
 				wm8903->dcs_cache[i] = val;
 			}
 			break;
@@ -371,7 +372,8 @@ static int wm8903_class_w_put(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
-	struct wm8903_priv *wm8903 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8903_priv *wm8903 = dev_get_drvdata(dev);
 	u16 reg;
 	int ret;
 
@@ -380,7 +382,7 @@ static int wm8903_class_w_put(struct snd_kcontrol *kcontrol,
 	/* Turn it off if we're about to enable bypass */
 	if (ucontrol->value.integer.value[0]) {
 		if (wm8903->class_w_users == 0) {
-			dev_dbg(component->dev, "Disabling Class W\n");
+			dev_dbg(dev, "Disabling Class W\n");
 			snd_soc_component_write(component, WM8903_CLASS_W_0, reg &
 				     ~(WM8903_CP_DYN_FREQ | WM8903_CP_DYN_V));
 		}
@@ -393,14 +395,14 @@ static int wm8903_class_w_put(struct snd_kcontrol *kcontrol,
 	/* If we've just disabled the last bypass path turn Class W on */
 	if (!ucontrol->value.integer.value[0]) {
 		if (wm8903->class_w_users == 1) {
-			dev_dbg(component->dev, "Enabling Class W\n");
+			dev_dbg(dev, "Enabling Class W\n");
 			snd_soc_component_write(component, WM8903_CLASS_W_0, reg |
 				     WM8903_CP_DYN_FREQ | WM8903_CP_DYN_V);
 		}
 		wm8903->class_w_users--;
 	}
 
-	dev_dbg(component->dev, "Bypass use count now %d\n",
+	dev_dbg(dev, "Bypass use count now %d\n",
 		wm8903->class_w_users);
 
 	return ret;
@@ -415,7 +417,8 @@ static int wm8903_deemph[] = { 0, 32000, 44100, 48000 };
 
 static int wm8903_set_deemph(struct snd_soc_component *component)
 {
-	struct wm8903_priv *wm8903 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8903_priv *wm8903 = dev_get_drvdata(dev);
 	int val, i, best;
 
 	/* If we're using deemphasis select the nearest available sample
@@ -435,8 +438,7 @@ static int wm8903_set_deemph(struct snd_soc_component *component)
 		val = 0;
 	}
 
-	dev_dbg(component->dev, "Set deemphasis %d (%dHz)\n",
-		best, wm8903_deemph[best]);
+	dev_dbg(dev, "Set deemphasis %d (%dHz)\n", best, wm8903_deemph[best]);
 
 	return snd_soc_component_update_bits(component, WM8903_DAC_DIGITAL_1,
 				   WM8903_DEEMPH_MASK, val);
@@ -446,7 +448,8 @@ static int wm8903_get_deemph(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8903_priv *wm8903 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8903_priv *wm8903 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wm8903->deemph;
 
@@ -457,7 +460,8 @@ static int wm8903_put_deemph(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8903_priv *wm8903 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8903_priv *wm8903 = dev_get_drvdata(dev);
 	unsigned int deemph = ucontrol->value.integer.value[0];
 
 	if (deemph > 1)
@@ -1099,6 +1103,7 @@ static int wm8903_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
@@ -1169,7 +1174,7 @@ static int wm8903_set_bias_level(struct snd_soc_component *component,
 			/* By default no bypass paths are enabled so
 			 * enable Class W support.
 			 */
-			dev_dbg(component->dev, "Enabling Class W\n");
+			dev_dbg(dev, "Enabling Class W\n");
 			snd_soc_component_update_bits(component, WM8903_CLASS_W_0,
 					    WM8903_CP_DYN_FREQ |
 					    WM8903_CP_DYN_V,
@@ -1212,8 +1217,9 @@ static int wm8903_set_bias_level(struct snd_soc_component *component,
 static int wm8903_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8903_priv *wm8903 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8903_priv *wm8903 = dev_get_drvdata(dev);
 
 	wm8903->sysclk = freq;
 
@@ -1223,7 +1229,7 @@ static int wm8903_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int wm8903_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			      unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 aif1 = snd_soc_component_read(component, WM8903_AUDIO_INTERFACE_1);
 
 	aif1 &= ~(WM8903_LRCLK_DIR | WM8903_BCLK_DIR | WM8903_AIF_FMT_MASK |
@@ -1309,7 +1315,7 @@ static int wm8903_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 static int wm8903_mute(struct snd_soc_dai *codec_dai, int mute, int direction)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 reg;
 
 	reg = snd_soc_component_read(component, WM8903_DAC_DIGITAL_1);
@@ -1439,8 +1445,9 @@ static int wm8903_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8903_priv *wm8903 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8903_priv *wm8903 = dev_get_drvdata(dev);
 	int fs = params_rate(params);
 	int bclk;
 	int bclk_div;
@@ -1475,7 +1482,7 @@ static int wm8903_hw_params(struct snd_pcm_substream *substream,
 		}
 	}
 
-	dev_dbg(component->dev, "DSP fs = %dHz\n", sample_rates[dsp_config].rate);
+	dev_dbg(dev, "DSP fs = %dHz\n", sample_rates[dsp_config].rate);
 	clock1 &= ~WM8903_SAMPLE_RATE_MASK;
 	clock1 |= sample_rates[dsp_config].value;
 
@@ -1501,8 +1508,7 @@ static int wm8903_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	dev_dbg(component->dev, "MCLK = %dHz, target sample rate = %dHz\n",
-		wm8903->sysclk, fs);
+	dev_dbg(dev, "MCLK = %dHz, target sample rate = %dHz\n", wm8903->sysclk, fs);
 
 	/* We may not have an MCLK which allows us to generate exactly
 	 * the clock we want, particularly with USB derived inputs, so
@@ -1536,12 +1542,12 @@ static int wm8903_hw_params(struct snd_pcm_substream *substream,
 	clock1 |= clk_sys_ratios[clk_config].rate << WM8903_CLK_SYS_RATE_SHIFT;
 	clock1 |= clk_sys_ratios[clk_config].mode << WM8903_CLK_SYS_MODE_SHIFT;
 
-	dev_dbg(component->dev, "CLK_SYS_RATE=%x, CLK_SYS_MODE=%x div=%d\n",
+	dev_dbg(dev, "CLK_SYS_RATE=%x, CLK_SYS_MODE=%x div=%d\n",
 		clk_sys_ratios[clk_config].rate,
 		clk_sys_ratios[clk_config].mode,
 		clk_sys_ratios[clk_config].div);
 
-	dev_dbg(component->dev, "Actual CLK_SYS = %dHz\n", clk_sys);
+	dev_dbg(dev, "Actual CLK_SYS = %dHz\n", clk_sys);
 
 	/* We may not get quite the right frequency if using
 	 * approximate clocks so look for the closest match that is
@@ -1561,7 +1567,7 @@ static int wm8903_hw_params(struct snd_pcm_substream *substream,
 	aif2 &= ~WM8903_BCLK_DIV_MASK;
 	aif3 &= ~WM8903_LRCLK_RATE_MASK;
 
-	dev_dbg(component->dev, "BCLK ratio %d for %dHz - actual BCLK = %dHz\n",
+	dev_dbg(dev, "BCLK ratio %d for %dHz - actual BCLK = %dHz\n",
 		bclk_divs[bclk_div].ratio / 10, bclk,
 		(clk_sys * 10) / bclk_divs[bclk_div].ratio);
 
@@ -1601,11 +1607,11 @@ static int wm8903_hw_params(struct snd_pcm_substream *substream,
 int wm8903_mic_detect(struct snd_soc_component *component, struct snd_soc_jack *jack,
 		      int det, int shrt)
 {
-	struct wm8903_priv *wm8903 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8903_priv *wm8903 = dev_get_drvdata(dev);
 	int irq_mask = WM8903_MICDET_EINT | WM8903_MICSHRT_EINT;
 
-	dev_dbg(component->dev, "Enabling microphone detection: %x %x\n",
-		det, shrt);
+	dev_dbg(dev, "Enabling microphone detection: %x %x\n", det, shrt);
 
 	/* Store the configuration */
 	wm8903->mic_jack = jack;
@@ -1782,7 +1788,8 @@ static struct snd_soc_dai_driver wm8903_dai = {
 
 static int wm8903_resume(struct snd_soc_component *component)
 {
-	struct wm8903_priv *wm8903 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8903_priv *wm8903 = dev_get_drvdata(dev);
 
 	regcache_sync(wm8903->regmap);
 
@@ -2191,7 +2198,7 @@ static int wm8903_i2c_probe(struct i2c_client *i2c)
 			   WM8903_DAC_MUTEMODE | WM8903_DAC_MUTE,
 			   WM8903_DAC_MUTEMODE | WM8903_DAC_MUTE);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8903, &wm8903_dai, 1);
 	if (ret != 0)
 		goto err;

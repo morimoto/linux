@@ -120,9 +120,12 @@ static int mtk_dai_pcm_configure(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
 	struct snd_pcm_runtime * const runtime = substream->runtime;
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_pcmif_priv *pcmif_priv;
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int slave_mode;
 	unsigned int lrck_inv;
 	unsigned int bck_inv;
@@ -133,12 +136,12 @@ static int mtk_dai_pcm_configure(struct snd_pcm_substream *substream,
 	int fs = 0;
 	int mode = 0;
 
-	if (dai->id != MT8195_AFE_IO_PCM)
+	if (dai_id != MT8195_AFE_IO_PCM)
 		return -EINVAL;
 
 	snd_soc_dai_symmetric_get_params(dai, NULL, NULL, &bit_width);
 
-	pcmif_priv = afe_priv->dai_priv[dai->id];
+	pcmif_priv = afe_priv->dai_priv[dai_id];
 
 	slave_mode = pcmif_priv->slave_mode;
 	lrck_inv = pcmif_priv->lrck_inv;
@@ -225,11 +228,14 @@ static int mtk_dai_pcm_configure(struct snd_pcm_substream *substream,
 static int mtk_dai_pcm_prepare(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct snd_soc_dapm_widget *p = snd_soc_dai_get_widget_playback(dai);
-	struct snd_soc_dapm_widget *c = snd_soc_dai_get_widget_capture(dai);
+	struct snd_soc_dapm_widget *p = snd_soc_dai_stream_widget_get_playback(dai);
+	struct snd_soc_dapm_widget *c = snd_soc_dai_stream_widget_get_capture(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	int dai_id = snd_soc_dai_id(dai);
 
-	dev_dbg(dai->dev, "%s(), id %d, stream %d, widget active p %d, c %d\n",
-		__func__, dai->id, substream->stream,
+	dev_dbg(dev, "%s(), id %d, stream %d, widget active p %d, c %d\n",
+		__func__, dai_id, substream->stream,
 		p->active, c->active);
 
 	if (p->active || c->active)
@@ -240,16 +246,19 @@ static int mtk_dai_pcm_prepare(struct snd_pcm_substream *substream,
 
 static int mtk_dai_pcm_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
-	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_pcmif_priv *pcmif_priv;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	struct mt8195_afe_private *afe_priv = afe->platform_priv;
+	int dai_id = snd_soc_dai_id(dai);
 
-	dev_dbg(dai->dev, "%s fmt 0x%x\n", __func__, fmt);
+	dev_dbg(dev, "%s fmt 0x%x\n", __func__, fmt);
 
-	if (dai->id != MT8195_AFE_IO_PCM)
+	if (dai_id != MT8195_AFE_IO_PCM)
 		return -EINVAL;
 
-	pcmif_priv = afe_priv->dai_priv[dai->id];
+	pcmif_priv = afe_priv->dai_priv[dai_id];
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:

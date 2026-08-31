@@ -408,6 +408,7 @@ struct wm8978_pll_div {
 static void pll_factors(struct snd_soc_component *component,
 		struct wm8978_pll_div *pll_div, unsigned int target, unsigned int source)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	u64 k_part;
 	unsigned int k, n_div, n_mod;
 
@@ -421,9 +422,7 @@ static void pll_factors(struct snd_soc_component *component,
 	}
 
 	if (n_div < 6 || n_div > 12)
-		dev_warn(component->dev,
-			 "WM8978 N value exceeds recommended range! N = %u\n",
-			 n_div);
+		dev_warn(dev, "WM8978 N value exceeds recommended range! N = %u\n", n_div);
 
 	pll_div->n = n_div;
 	n_mod = target - source * n_div;
@@ -470,7 +469,8 @@ static int wm8978_enum_mclk(unsigned int f_out, unsigned int f_mclk,
  */
 static int wm8978_configure_pll(struct snd_soc_component *component)
 {
-	struct wm8978_priv *wm8978 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8978_priv *wm8978 = dev_get_drvdata(dev);
 	struct wm8978_pll_div pll_div;
 	unsigned int f_opclk = wm8978->f_opclk, f_mclk = wm8978->f_mclk,
 		f_256fs = wm8978->f_256fs;
@@ -502,7 +502,7 @@ static int wm8978_configure_pll(struct snd_soc_component *component)
 		else
 			opclk_div = 1;
 
-		dev_dbg(component->dev, "%s: OPCLKDIV=%d\n", __func__, opclk_div);
+		dev_dbg(dev, "%s: OPCLKDIV=%d\n", __func__, opclk_div);
 
 		snd_soc_component_update_bits(component, WM8978_GPIO_CONTROL, 0x30,
 				    (opclk_div - 1) << 4);
@@ -530,12 +530,12 @@ static int wm8978_configure_pll(struct snd_soc_component *component)
 
 	f2 = wm8978->f_pllout * 4;
 
-	dev_dbg(component->dev, "%s: f_MCLK=%uHz, f_PLLOUT=%uHz\n", __func__,
+	dev_dbg(dev, "%s: f_MCLK=%uHz, f_PLLOUT=%uHz\n", __func__,
 		wm8978->f_mclk, wm8978->f_pllout);
 
 	pll_factors(component, &pll_div, f2, wm8978->f_mclk);
 
-	dev_dbg(component->dev, "%s: calculated PLL N=0x%x, K=0x%x, div2=%d\n",
+	dev_dbg(dev, "%s: calculated PLL N=0x%x, K=0x%x, div2=%d\n",
 		__func__, pll_div.n, pll_div.k, pll_div.div2);
 
 	/* Turn PLL off for configuration... */
@@ -562,8 +562,9 @@ static int wm8978_configure_pll(struct snd_soc_component *component)
 static int wm8978_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 				 int div_id, int div)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8978_priv *wm8978 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8978_priv *wm8978 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (div_id) {
@@ -596,7 +597,7 @@ static int wm8978_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 		return -EINVAL;
 	}
 
-	dev_dbg(component->dev, "%s: ID %d, value %u\n", __func__, div_id, div);
+	dev_dbg(dev, "%s: ID %d, value %u\n", __func__, div_id, div);
 
 	return ret;
 }
@@ -607,11 +608,12 @@ static int wm8978_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 static int wm8978_set_dai_sysclk(struct snd_soc_dai *codec_dai, int clk_id,
 				 unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8978_priv *wm8978 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8978_priv *wm8978 = dev_get_drvdata(dev);
 	int ret = 0;
 
-	dev_dbg(component->dev, "%s: ID %d, freq %u\n", __func__, clk_id, freq);
+	dev_dbg(dev, "%s: ID %d, freq %u\n", __func__, clk_id, freq);
 
 	if (freq) {
 		wm8978->f_mclk = freq;
@@ -648,7 +650,9 @@ static int wm8978_set_dai_sysclk(struct snd_soc_dai *codec_dai, int clk_id,
  */
 static int wm8978_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	/*
 	 * BCLK polarity mask = 0x100, LRC clock polarity mask = 0x80,
 	 * Data Format mask = 0x18: all will be calculated anew
@@ -656,7 +660,7 @@ static int wm8978_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	u16 iface = snd_soc_component_read(component, WM8978_AUDIO_INTERFACE) & ~0x198;
 	u16 clk = snd_soc_component_read(component, WM8978_CLOCKING);
 
-	dev_dbg(component->dev, "%s\n", __func__);
+	dev_dbg(dev, "%s\n", __func__);
 
 	/* set master/slave audio interface */
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -717,8 +721,9 @@ static int wm8978_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8978_priv *wm8978 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8978_priv *wm8978 = dev_get_drvdata(dev);
 	/* Word length mask = 0x60 */
 	u16 iface_ctl = snd_soc_component_read(component, WM8978_AUDIO_INTERFACE) & ~0x60;
 	/* Sampling rate mask = 0xe (for filters) */
@@ -809,12 +814,12 @@ static int wm8978_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (diff)
-		dev_warn(component->dev, "Imprecise sampling rate: %uHz%s\n",
+		dev_warn(dev, "Imprecise sampling rate: %uHz%s\n",
 			f_sel * mclk_denominator[best] / mclk_numerator[best] / 256,
 			wm8978->sysclk == WM8978_MCLK ?
 			", consider using PLL" : "");
 
-	dev_dbg(component->dev, "%s: width %d, rate %u, MCLK divisor #%d\n", __func__,
+	dev_dbg(dev, "%s: width %d, rate %u, MCLK divisor #%d\n", __func__,
 		params_width(params), params_rate(params), best);
 
 	/* MCLK divisor mask = 0xe0 */
@@ -838,9 +843,10 @@ static int wm8978_hw_params(struct snd_pcm_substream *substream,
 
 static int wm8978_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	dev_dbg(component->dev, "%s: %d\n", __func__, mute);
+	dev_dbg(dev, "%s: %d\n", __func__, mute);
 
 	if (mute)
 		snd_soc_component_update_bits(component, WM8978_DAC_CONTROL, 0x40, 0x40);
@@ -854,6 +860,7 @@ static int wm8978_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u16 power1 = snd_soc_component_read(component, WM8978_POWER_MANAGEMENT_1) & ~3;
 
 	switch (level) {
@@ -884,7 +891,7 @@ static int wm8978_set_bias_level(struct snd_soc_component *component,
 		break;
 	}
 
-	dev_dbg(component->dev, "%s: %d, %x\n", __func__, level, power1);
+	dev_dbg(dev, "%s: %d, %x\n", __func__, level, power1);
 
 	return 0;
 }
@@ -936,7 +943,8 @@ static struct snd_soc_dai_driver wm8978_dai = {
 
 static int wm8978_suspend(struct snd_soc_component *component)
 {
-	struct wm8978_priv *wm8978 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8978_priv *wm8978 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	snd_soc_dapm_force_bias_level(dapm, SND_SOC_BIAS_OFF);
@@ -950,7 +958,8 @@ static int wm8978_suspend(struct snd_soc_component *component)
 
 static int wm8978_resume(struct snd_soc_component *component)
 {
-	struct wm8978_priv *wm8978 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8978_priv *wm8978 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	/* Sync reg_cache with the hardware */
@@ -986,7 +995,8 @@ static const int update_reg[] = {
 
 static int wm8978_probe(struct snd_soc_component *component)
 {
-	struct wm8978_priv *wm8978 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8978_priv *wm8978 = dev_get_drvdata(dev);
 	int i;
 
 	/*
@@ -1060,7 +1070,7 @@ static int wm8978_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8978, &wm8978_dai, 1);
 	if (ret != 0) {
 		dev_err(&i2c->dev, "Failed to register CODEC: %d\n", ret);

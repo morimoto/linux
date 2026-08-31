@@ -180,15 +180,16 @@ static const struct snd_kcontrol_new max98371_snd_controls[] = {
 static int max98371_dai_set_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct max98371_priv *max98371 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98371_priv *max98371 = dev_get_drvdata(dev);
 	unsigned int val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBC_CFC:
 		break;
 	default:
-		dev_err(component->dev, "DAI clock mode unsupported");
+		dev_err(dev, "DAI clock mode unsupported");
 		return -EINVAL;
 	}
 
@@ -203,7 +204,7 @@ static int max98371_dai_set_fmt(struct snd_soc_dai *codec_dai,
 		val |= MAX98371_DAI_LEFT;
 		break;
 	default:
-		dev_err(component->dev, "DAI wrong mode unsupported");
+		dev_err(dev, "DAI wrong mode unsupported");
 		return -EINVAL;
 	}
 	regmap_update_bits(max98371->regmap, MAX98371_FMT,
@@ -215,8 +216,9 @@ static int max98371_dai_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params,
 		struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98371_priv *max98371 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98371_priv *max98371 = dev_get_drvdata(dev);
 	int blr_clk_ratio, ch_size, channels = params_channels(params);
 	int rate = params_rate(params);
 
@@ -397,7 +399,7 @@ static int max98371_i2c_probe(struct i2c_client *i2c)
 	}
 	dev_info(&i2c->dev, "device version %x\n", reg);
 
-	ret = devm_snd_soc_register_component(&i2c->dev, &max98371_component,
+	ret = devm_snd_soc_component_register(&i2c->dev, &max98371_component,
 			max98371_dai, ARRAY_SIZE(max98371_dai));
 	if (ret < 0) {
 		dev_err(&i2c->dev, "Failed to register component: %d\n", ret);

@@ -163,7 +163,9 @@ static int ad1836_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params,
 		struct snd_soc_dai *dai)
 {
-	struct ad1836_priv *ad1836 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ad1836_priv *ad1836 = dev_get_drvdata(dev);
 	int word_len = 0;
 
 	/* bit size */
@@ -235,7 +237,8 @@ static struct snd_soc_dai_driver ad183x_dais[] = {
 #ifdef CONFIG_PM
 static int ad1836_suspend(struct snd_soc_component *component)
 {
-	struct ad1836_priv *ad1836 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ad1836_priv *ad1836 = dev_get_drvdata(dev);
 	/* reset clock control mode */
 	return regmap_update_bits(ad1836->regmap, AD1836_ADC_CTRL2,
 		AD1836_ADC_SERFMT_MASK, 0);
@@ -243,7 +246,8 @@ static int ad1836_suspend(struct snd_soc_component *component)
 
 static int ad1836_resume(struct snd_soc_component *component)
 {
-	struct ad1836_priv *ad1836 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ad1836_priv *ad1836 = dev_get_drvdata(dev);
 	/* restore clock control mode */
 	return regmap_update_bits(ad1836->regmap, AD1836_ADC_CTRL2,
 		AD1836_ADC_SERFMT_MASK, AD1836_ADC_AUX);
@@ -255,7 +259,8 @@ static int ad1836_resume(struct snd_soc_component *component)
 
 static int ad1836_probe(struct snd_soc_component *component)
 {
-	struct ad1836_priv *ad1836 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ad1836_priv *ad1836 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int num_dacs, num_adcs;
 	int ret = 0;
@@ -282,7 +287,7 @@ static int ad1836_probe(struct snd_soc_component *component)
 	if (ad1836->type == AD1836) {
 		/* left/right diff:PGA/MUX */
 		regmap_write(ad1836->regmap, AD1836_ADC_CTRL3, 0x3A);
-		ret = snd_soc_add_component_controls(component, ad1836_controls,
+		ret = snd_soc_component_add_controls(component, ad1836_controls,
 				ARRAY_SIZE(ad1836_controls));
 		if (ret)
 			return ret;
@@ -290,11 +295,11 @@ static int ad1836_probe(struct snd_soc_component *component)
 		regmap_write(ad1836->regmap, AD1836_ADC_CTRL3, 0x00);
 	}
 
-	ret = snd_soc_add_component_controls(component, ad183x_dac_controls, num_dacs * 2);
+	ret = snd_soc_component_add_controls(component, ad183x_dac_controls, num_dacs * 2);
 	if (ret)
 		return ret;
 
-	ret = snd_soc_add_component_controls(component, ad183x_adc_controls, num_adcs);
+	ret = snd_soc_component_add_controls(component, ad183x_adc_controls, num_adcs);
 	if (ret)
 		return ret;
 
@@ -318,7 +323,8 @@ static int ad1836_probe(struct snd_soc_component *component)
 /* power down chip */
 static void ad1836_remove(struct snd_soc_component *component)
 {
-	struct ad1836_priv *ad1836 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ad1836_priv *ad1836 = dev_get_drvdata(dev);
 	/* reset clock control mode */
 	regmap_update_bits(ad1836->regmap, AD1836_ADC_CTRL2,
 		AD1836_ADC_SERFMT_MASK, 0);
@@ -385,7 +391,7 @@ static int ad1836_spi_probe(struct spi_device *spi)
 
 	spi_set_drvdata(spi, ad1836);
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 			&soc_component_dev_ad1836, &ad183x_dais[ad1836->type], 1);
 	return ret;
 }

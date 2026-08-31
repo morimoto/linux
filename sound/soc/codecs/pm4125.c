@@ -227,7 +227,8 @@ static void pm4125_io_init(struct regmap *regmap)
 
 static int pm4125_global_mbias_disable(struct snd_soc_component *component)
 {
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 
 	if (atomic_dec_and_test(&pm4125->gloal_mbias_cnt)) {
 
@@ -244,7 +245,8 @@ static int pm4125_global_mbias_disable(struct snd_soc_component *component)
 
 static int pm4125_global_mbias_enable(struct snd_soc_component *component)
 {
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 
 	if (atomic_inc_return(&pm4125->gloal_mbias_cnt) == 1) {
 		snd_soc_component_write_field(component, PM4125_ANA_MBIAS_EN,
@@ -332,7 +334,8 @@ static int pm4125_codec_hphl_dac_event(struct snd_soc_dapm_widget *w,
 				       struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -398,7 +401,8 @@ static int pm4125_codec_hphr_dac_event(struct snd_soc_dapm_widget *w,
 				       struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -497,7 +501,8 @@ static int pm4125_codec_enable_hphl_wdt_irq(struct snd_soc_dapm_widget *w,
 					    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -516,7 +521,8 @@ static int pm4125_codec_enable_hphr_wdt_irq(struct snd_soc_dapm_widget *w,
 					    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -647,7 +653,8 @@ static int pm4125_codec_enable_adc(struct snd_soc_dapm_widget *w,
 				   struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -716,13 +723,14 @@ static int pm4125_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 static int pm4125_micbias_control(struct snd_soc_component *component, int micb_num, int req,
 				  bool is_dapm)
 {
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 	int micb_index = micb_num - 1;
 	u16 micb_reg;
 	u8 pullup_mask = 0, enable_mask = 0;
 
 	if ((micb_index < 0) || (micb_index > PM4125_MAX_MICBIAS - 1)) {
-		dev_err(component->dev, "%s: Invalid micbias index, micb_ind:%d\n",
+		dev_err(dev, "%s: Invalid micbias index, micb_ind:%d\n",
 			__func__, micb_index);
 		return -EINVAL;
 	}
@@ -742,8 +750,7 @@ static int pm4125_micbias_control(struct snd_soc_component *component, int micb_
 		pullup_mask = 0x02;
 		break;
 	default:
-		dev_err(component->dev, "%s: Invalid micbias number: %d\n",
-			__func__, micb_num);
+		dev_err(dev, "%s: Invalid micbias number: %d\n", __func__, micb_num);
 		return -EINVAL;
 	}
 
@@ -869,7 +876,8 @@ static int pm4125_connect_port(struct pm4125_sdw_priv *sdw_priv, u8 port_idx, u8
 static int pm4125_get_compander(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc;
 	bool hphr;
 
@@ -883,7 +891,8 @@ static int pm4125_get_compander(struct snd_kcontrol *kcontrol, struct snd_ctl_el
 static int pm4125_set_compander(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 	struct pm4125_sdw_priv *sdw_priv = pm4125->sdw_priv[AIF1_PB];
 	int value = ucontrol->value.integer.value[0];
 	struct soc_mixer_control *mc;
@@ -916,7 +925,8 @@ static int pm4125_get_swr_port(struct snd_kcontrol *kcontrol, struct snd_ctl_ele
 {
 	struct soc_mixer_control *mixer = (struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 	struct pm4125_sdw_priv *sdw_priv;
 	int dai_id = mixer->shift;
 	int ch_idx = mixer->reg;
@@ -934,7 +944,8 @@ static int pm4125_set_swr_port(struct snd_kcontrol *kcontrol, struct snd_ctl_ele
 {
 	struct soc_mixer_control *mixer = (struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 	struct pm4125_sdw_priv *sdw_priv;
 	int dai_id = mixer->shift;
 	int ch_idx = mixer->reg;
@@ -970,10 +981,11 @@ static void pm4125_mbhc_program_btn_thr(struct snd_soc_component *component,
 					int *btn_low, int *btn_high,
 					int num_btn, bool is_micbias)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int i, vth;
 
 	if (num_btn > WCD_MBHC_DEF_BUTTONS) {
-		dev_err(component->dev, "%s: invalid number of buttons: %d\n",
+		dev_err(dev, "%s: invalid number of buttons: %d\n",
 			__func__, num_btn);
 		return;
 	}
@@ -992,7 +1004,8 @@ static const struct wcd_mbhc_cb mbhc_cb = {
 
 static int pm4125_mbhc_init(struct snd_soc_component *component)
 {
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 	struct wcd_mbhc_intr *intr_ids = &pm4125->intr_ids;
 
 	intr_ids->mbhc_sw_intr = regmap_irq_get_virq(pm4125->irq_chip, PM4125_IRQ_MBHC_SW_DET);
@@ -1022,7 +1035,8 @@ static int pm4125_mbhc_init(struct snd_soc_component *component)
 
 static void pm4125_mbhc_deinit(struct snd_soc_component *component)
 {
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 
 	wcd_mbhc_deinit(pm4125->wcd_mbhc);
 }
@@ -1309,15 +1323,15 @@ static int pm4125_irq_init(struct pm4125_priv *pm4125, struct device *dev)
 
 static int pm4125_soc_codec_probe(struct snd_soc_component *component)
 {
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 	int i, ret;
 
 	ret = sdw_slave_wait_for_init(pm4125->tx_sdw_dev, 5000);
 	if (ret)
 		return ret;
 
-	snd_soc_component_init_regmap(component, pm4125->regmap);
+	snd_soc_component_regmap_init(component, pm4125->regmap);
 	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0)
 		return ret;
@@ -1351,14 +1365,15 @@ static int pm4125_soc_codec_probe(struct snd_soc_component *component)
 
 	ret = pm4125_mbhc_init(component);
 	if (ret)
-		dev_err(component->dev, "mbhc initialization failed\n");
+		dev_err(dev, "mbhc initialization failed\n");
 
 	return ret;
 }
 
 static void pm4125_soc_codec_remove(struct snd_soc_component *component)
 {
-	struct pm4125_priv *pm4125 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 
 	pm4125_mbhc_deinit(component);
 	free_irq(pm4125->hphl_pdm_wd_int, pm4125);
@@ -1368,7 +1383,8 @@ static void pm4125_soc_codec_remove(struct snd_soc_component *component)
 static int pm4125_codec_set_jack(struct snd_soc_component *comp, struct snd_soc_jack *jack,
 				 void *data)
 {
-	struct pm4125_priv *pm4125 = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	if (jack)
@@ -1397,24 +1413,33 @@ static int pm4125_codec_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct pm4125_priv *pm4125 = dev_get_drvdata(dai->dev);
-	struct pm4125_sdw_priv *sdw_priv = pm4125->sdw_priv[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dai_dev);
+	struct pm4125_sdw_priv *sdw_priv = pm4125->sdw_priv[dai_id];
 
 	return pm4125_sdw_hw_params(sdw_priv, substream, params, dai);
 }
 
 static int pm4125_codec_free(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	struct pm4125_priv *pm4125 = dev_get_drvdata(dai->dev);
-	struct pm4125_sdw_priv *sdw_priv = pm4125->sdw_priv[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dai_dev);
+	struct pm4125_sdw_priv *sdw_priv = pm4125->sdw_priv[dai_id];
 
 	return sdw_stream_remove_slave(sdw_priv->sdev, sdw_priv->sruntime);
 }
 
 static int pm4125_codec_set_sdw_stream(struct snd_soc_dai *dai, void *stream, int direction)
 {
-	struct pm4125_priv *pm4125 = dev_get_drvdata(dai->dev);
-	struct pm4125_sdw_priv *sdw_priv = pm4125->sdw_priv[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dai_dev);
+	struct pm4125_sdw_priv *sdw_priv = pm4125->sdw_priv[dai_id];
 
 	sdw_priv->sruntime = stream;
 
@@ -1425,14 +1450,17 @@ static int pm4125_get_channel_map(const struct snd_soc_dai *dai,
 				  unsigned int *tx_num, unsigned int *tx_slot,
 				  unsigned int *rx_num, unsigned int *rx_slot)
 {
-	struct pm4125_priv *pm4125 = dev_get_drvdata(dai->dev);
-	struct pm4125_sdw_priv *sdw_priv = pm4125->sdw_priv[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct pm4125_priv *pm4125 = dev_get_drvdata(dai_dev);
+	struct pm4125_sdw_priv *sdw_priv = pm4125->sdw_priv[dai_id];
 	int i;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case AIF1_PB:
 		if (!rx_slot || !rx_num) {
-			dev_err(dai->dev, "Invalid rx_slot %p or rx_num %p\n", rx_slot, rx_num);
+			dev_err(dai_dev, "Invalid rx_slot %p or rx_num %p\n", rx_slot, rx_num);
 			return -EINVAL;
 		}
 
@@ -1443,7 +1471,7 @@ static int pm4125_get_channel_map(const struct snd_soc_dai *dai,
 		break;
 	case AIF1_CAP:
 		if (!tx_slot || !tx_num) {
-			dev_err(dai->dev, "Invalid tx_slot %p or tx_num %p\n", tx_slot, tx_num);
+			dev_err(dai_dev, "Invalid tx_slot %p or tx_num %p\n", tx_slot, tx_num);
 			return -EINVAL;
 		}
 
@@ -1577,7 +1605,7 @@ static int pm4125_bind(struct device *dev)
 
 	pm4125_set_micbias_data(dev, pm4125);
 
-	ret = snd_soc_register_component(dev, &soc_codec_dev_pm4125,
+	ret = snd_soc_component_register(dev, &soc_codec_dev_pm4125,
 					 pm4125_dais, ARRAY_SIZE(pm4125_dais));
 	if (!ret)
 		return ret;
@@ -1603,7 +1631,7 @@ static void pm4125_unbind(struct device *dev)
 {
 	struct pm4125_priv *pm4125 = dev_get_drvdata(dev);
 
-	snd_soc_unregister_component(dev);
+	snd_soc_component_unregister(dev);
 	devm_regmap_del_irq_chip(dev, irq_find_mapping(pm4125->virq, 0),
 				 pm4125->irq_chip);
 	device_link_remove(dev, pm4125->txdev);

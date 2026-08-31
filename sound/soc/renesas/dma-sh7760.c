@@ -120,7 +120,9 @@ static int camelot_pcm_open(struct snd_soc_component *component,
 			    struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct camelot_pcm *cam = &cam_pcm_data[snd_soc_rtd_to_cpu(rtd, 0)->id];
+	struct snd_soc_dai *cpu = snd_soc_rtd_to_cpu(rtd, 0);
+	int id = snd_soc_dai_id(cpu);
+	struct camelot_pcm *cam = &cam_pcm_data[id];
 	int recv = substream->stream == SNDRV_PCM_STREAM_PLAYBACK ? 0:1;
 	int ret, dmairq;
 
@@ -132,8 +134,7 @@ static int camelot_pcm_open(struct snd_soc_component *component,
 		cam->rx_ss = substream;
 		ret = dmabrg_request_irq(dmairq, camelot_rxdma, cam);
 		if (unlikely(ret)) {
-			pr_debug("audio unit %d irqs already taken!\n",
-			     snd_soc_rtd_to_cpu(rtd, 0)->id);
+			pr_debug("audio unit %d irqs already taken!\n", id);
 			return -EBUSY;
 		}
 		(void)dmabrg_request_irq(dmairq + 1,camelot_rxdma, cam);
@@ -141,8 +142,7 @@ static int camelot_pcm_open(struct snd_soc_component *component,
 		cam->tx_ss = substream;
 		ret = dmabrg_request_irq(dmairq, camelot_txdma, cam);
 		if (unlikely(ret)) {
-			pr_debug("audio unit %d irqs already taken!\n",
-			     snd_soc_rtd_to_cpu(rtd, 0)->id);
+			pr_debug("audio unit %d irqs already taken!\n", id);
 			return -EBUSY;
 		}
 		(void)dmabrg_request_irq(dmairq + 1, camelot_txdma, cam);
@@ -154,7 +154,8 @@ static int camelot_pcm_close(struct snd_soc_component *component,
 			     struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct camelot_pcm *cam = &cam_pcm_data[snd_soc_rtd_to_cpu(rtd, 0)->id];
+	struct snd_soc_dai *cpu = snd_soc_rtd_to_cpu(rtd, 0);
+	struct camelot_pcm *cam = &cam_pcm_data[snd_soc_dai_id(cpu)];
 	int recv = substream->stream == SNDRV_PCM_STREAM_PLAYBACK ? 0:1;
 	int dmairq;
 
@@ -176,7 +177,8 @@ static int camelot_hw_params(struct snd_soc_component *component,
 			     struct snd_pcm_hw_params *hw_params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct camelot_pcm *cam = &cam_pcm_data[snd_soc_rtd_to_cpu(rtd, 0)->id];
+	struct snd_soc_dai *cpu = snd_soc_rtd_to_cpu(rtd, 0);
+	struct camelot_pcm *cam = &cam_pcm_data[snd_soc_dai_id(cpu)];
 	int recv = substream->stream == SNDRV_PCM_STREAM_PLAYBACK ? 0:1;
 
 	if (recv) {
@@ -194,7 +196,8 @@ static int camelot_prepare(struct snd_soc_component *component,
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct camelot_pcm *cam = &cam_pcm_data[snd_soc_rtd_to_cpu(rtd, 0)->id];
+	struct snd_soc_dai *cpu = snd_soc_rtd_to_cpu(rtd, 0);
+	struct camelot_pcm *cam = &cam_pcm_data[snd_soc_dai_id(cpu)];
 
 	pr_debug("PCM data: addr %pad len %zu\n", &runtime->dma_addr,
 		 runtime->dma_bytes);
@@ -242,7 +245,8 @@ static int camelot_trigger(struct snd_soc_component *component,
 			   struct snd_pcm_substream *substream, int cmd)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct camelot_pcm *cam = &cam_pcm_data[snd_soc_rtd_to_cpu(rtd, 0)->id];
+	struct snd_soc_dai *cpu = snd_soc_rtd_to_cpu(rtd, 0);
+	struct camelot_pcm *cam = &cam_pcm_data[snd_soc_dai_id(cpu)];
 	int recv = substream->stream == SNDRV_PCM_STREAM_PLAYBACK ? 0:1;
 
 	switch (cmd) {
@@ -270,7 +274,8 @@ static snd_pcm_uframes_t camelot_pos(struct snd_soc_component *component,
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct camelot_pcm *cam = &cam_pcm_data[snd_soc_rtd_to_cpu(rtd, 0)->id];
+	struct snd_soc_dai *cpu = snd_soc_rtd_to_cpu(rtd, 0);
+	struct camelot_pcm *cam = &cam_pcm_data[snd_soc_dai_id(cpu)];
 	int recv = substream->stream == SNDRV_PCM_STREAM_PLAYBACK ? 0:1;
 	unsigned long pos;
 
@@ -316,7 +321,7 @@ static const struct snd_soc_component_driver sh7760_soc_component = {
 
 static int sh7760_soc_platform_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev, &sh7760_soc_component,
+	return devm_snd_soc_component_register(&pdev->dev, &sh7760_soc_component,
 					       NULL, 0);
 }
 

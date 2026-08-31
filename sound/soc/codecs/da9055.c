@@ -1047,8 +1047,9 @@ static int da9055_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct da9055_priv *da9055 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da9055_priv *da9055 = dev_get_drvdata(dev);
 	u8 aif_ctrl, fs;
 	u32 sysclk;
 
@@ -1155,8 +1156,9 @@ static int da9055_hw_params(struct snd_pcm_substream *substream,
 /* Set DAI mode and Format */
 static int da9055_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct da9055_priv *da9055 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da9055_priv *da9055 = dev_get_drvdata(dev);
 	u8 aif_clk_mode, aif_ctrl, mode;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -1212,7 +1214,7 @@ static int da9055_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 
 static int da9055_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (mute) {
 		snd_soc_component_update_bits(component, DA9055_DAC_L_CTRL,
@@ -1235,8 +1237,9 @@ static int da9055_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int da9055_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct da9055_priv *da9055 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct da9055_priv *da9055 = dev_get_drvdata(dai_dev);
 
 	switch (clk_id) {
 	case DA9055_CLKSRC_MCLK:
@@ -1253,13 +1256,13 @@ static int da9055_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 			da9055->mclk_rate = freq;
 			return 0;
 		default:
-			dev_err(codec_dai->dev, "Unsupported MCLK value %d\n",
+			dev_err(dai_dev, "Unsupported MCLK value %d\n",
 				freq);
 			return -EINVAL;
 		}
 		break;
 	default:
-		dev_err(codec_dai->dev, "Unknown clock source %d\n", clk_id);
+		dev_err(dai_dev, "Unknown clock source %d\n", clk_id);
 		return -EINVAL;
 	}
 }
@@ -1278,8 +1281,9 @@ static int da9055_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int da9055_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 			      int source, unsigned int fref, unsigned int fout)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct da9055_priv *da9055 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct da9055_priv *da9055 = dev_get_drvdata(dai_dev);
 
 	u8 pll_frac_top, pll_frac_bot, pll_integer, cnt;
 
@@ -1313,7 +1317,7 @@ static int da9055_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 
 	return 0;
 pll_err:
-	dev_err(codec_dai->dev, "Error in setting up PLL\n");
+	dev_err(dai_dev, "Error in setting up PLL\n");
 	return -EINVAL;
 }
 
@@ -1385,7 +1389,8 @@ static int da9055_set_bias_level(struct snd_soc_component *component,
 
 static int da9055_probe(struct snd_soc_component *component)
 {
-	struct da9055_priv *da9055 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da9055_priv *da9055 = dev_get_drvdata(dev);
 
 	/* Enable all Gain Ramps */
 	snd_soc_component_update_bits(component, DA9055_AUX_L_CTRL,
@@ -1504,7 +1509,7 @@ static int da9055_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_da9055, &da9055_dai, 1);
 	if (ret < 0) {
 		dev_err(&i2c->dev, "Failed to register da9055 component: %d\n",

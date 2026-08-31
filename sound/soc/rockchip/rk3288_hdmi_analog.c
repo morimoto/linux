@@ -32,7 +32,7 @@ static int rk_hp_power(struct snd_soc_dapm_widget *w,
 		       struct snd_kcontrol *k, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct rk_drvdata *machine = snd_soc_card_get_drvdata(card);
+	struct rk_drvdata *machine = snd_soc_card_to_priv(card);
 
 	gpiod_set_value_cansleep(machine->gpio_hp_en,
 				 SND_SOC_DAPM_EVENT_ON(event));
@@ -65,6 +65,8 @@ static int rk_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+	struct device *codec_dev = snd_soc_component_to_dev(codec_component);
 	int mclk;
 
 	switch (params_rate(params)) {
@@ -94,14 +96,14 @@ static int rk_hw_params(struct snd_pcm_substream *substream,
 				     SND_SOC_CLOCK_OUT);
 
 	if (ret && ret != -ENOTSUPP) {
-		dev_err(codec_dai->dev, "Can't set cpu clock %d\n", ret);
+		dev_err(codec_dev, "Can't set cpu clock %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, mclk,
 				     SND_SOC_CLOCK_IN);
 	if (ret && ret != -ENOTSUPP) {
-		dev_err(codec_dai->dev, "Can't set codec clock %d\n", ret);
+		dev_err(codec_dev, "Can't set codec clock %d\n", ret);
 		return ret;
 	}
 
@@ -117,7 +119,7 @@ static struct snd_soc_jack_gpio rk_hp_jack_gpio = {
 static int rk_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_card *card = runtime->card;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 
 	/* Enable optional Headset Jack detection */
 	if (of_property_present(dev->of_node, "rockchip,hp-det-gpios")) {
@@ -184,7 +186,7 @@ static int snd_rk_mc_probe(struct platform_device *pdev)
 		return PTR_ERR(machine->gpio_hp_en);
 	gpiod_set_consumer_name(machine->gpio_hp_en, "hp_en");
 
-	ret = snd_soc_of_parse_card_name(card, "rockchip,model");
+	ret = snd_soc_card_of_parse_name(card, "rockchip,model");
 	if (ret)
 		return ret;
 
@@ -224,7 +226,7 @@ static int snd_rk_mc_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	snd_soc_card_set_drvdata(card, machine);
+	snd_soc_card_set_priv(card, machine);
 	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret,

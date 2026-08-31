@@ -312,7 +312,7 @@ static void pll_factors(struct pll_ *pll_div,
 static int wm8974_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 		int source, unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct pll_ pll_div;
 	u16 reg;
 
@@ -349,7 +349,7 @@ static int wm8974_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 static int wm8974_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 		int div_id, int div)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 reg;
 
 	switch (div_id) {
@@ -406,8 +406,9 @@ static unsigned int wm8974_get_mclkdiv(unsigned int f_in, unsigned int f_out,
 
 static int wm8974_update_clocks(struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8974_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8974_priv *priv = dev_get_drvdata(dev);
 	unsigned int fs256;
 	unsigned int fpll = 0;
 	unsigned int f;
@@ -438,8 +439,9 @@ static int wm8974_update_clocks(struct snd_soc_dai *dai)
 static int wm8974_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 				 unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8974_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8974_priv *priv = dev_get_drvdata(dev);
 
 	if (dir != SND_SOC_CLOCK_IN)
 		return -EINVAL;
@@ -452,7 +454,7 @@ static int wm8974_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 static int wm8974_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 iface = 0;
 	u16 clk = snd_soc_component_read(component, WM8974_CLOCK) & 0x1fe;
 
@@ -514,8 +516,9 @@ static int wm8974_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8974_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8974_priv *priv = dev_get_drvdata(dev);
 	u16 iface = snd_soc_component_read(component, WM8974_IFACE) & 0x19f;
 	u16 adn = snd_soc_component_read(component, WM8974_ADD) & 0x1f1;
 	int err;
@@ -569,7 +572,7 @@ static int wm8974_pcm_hw_params(struct snd_pcm_substream *substream,
 
 static int wm8974_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 mute_reg = snd_soc_component_read(component, WM8974_DAC) & 0xffbf;
 
 	if (mute)
@@ -584,6 +587,7 @@ static int wm8974_set_bias_level(struct snd_soc_component *component,
 	enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u16 power1 = snd_soc_component_read(component, WM8974_POWER1) & ~0x3;
 
 	switch (level) {
@@ -597,7 +601,7 @@ static int wm8974_set_bias_level(struct snd_soc_component *component,
 		power1 |= WM8974_POWER1_BIASEN | WM8974_POWER1_BUFIOEN;
 
 		if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF) {
-			regcache_sync(dev_get_regmap(component->dev, NULL));
+			regcache_sync(dev_get_regmap(dev, NULL));
 
 			/* Initial cap charge at VMID 5k */
 			snd_soc_component_write(component, WM8974_POWER1, power1 | 0x3);
@@ -675,11 +679,12 @@ static const struct regmap_config wm8974_regmap = {
 
 static int wm8974_probe(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
 	ret = wm8974_reset(component);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to issue reset\n");
+		dev_err(dev, "Failed to issue reset\n");
 		return ret;
 	}
 
@@ -717,7 +722,7 @@ static int wm8974_i2c_probe(struct i2c_client *i2c)
 	if (IS_ERR(regmap))
 		return PTR_ERR(regmap);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8974, &wm8974_dai, 1);
 
 	return ret;

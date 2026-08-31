@@ -334,10 +334,11 @@ static int tlv320aic23_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 iface_reg;
 	int ret;
-	struct aic23 *aic23 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic23 *aic23 = dev_get_drvdata(dev);
 	u32 sample_rate_adc = aic23->requested_adc;
 	u32 sample_rate_dac = aic23->requested_dac;
 	u32 sample_rate = params_rate(params);
@@ -379,7 +380,7 @@ static int tlv320aic23_hw_params(struct snd_pcm_substream *substream,
 static int tlv320aic23_pcm_prepare(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	/* set active */
 	snd_soc_component_write(component, TLV320AIC23_ACTIVE, 0x0001);
@@ -390,8 +391,9 @@ static int tlv320aic23_pcm_prepare(struct snd_pcm_substream *substream,
 static void tlv320aic23_shutdown(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aic23 *aic23 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic23 *aic23 = dev_get_drvdata(dev);
 
 	/* deactivate */
 	if (!snd_soc_component_active(component)) {
@@ -406,7 +408,7 @@ static void tlv320aic23_shutdown(struct snd_pcm_substream *substream,
 
 static int tlv320aic23_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 reg;
 
 	reg = snd_soc_component_read(component, TLV320AIC23_DIGT);
@@ -424,7 +426,7 @@ static int tlv320aic23_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int tlv320aic23_set_dai_fmt(struct snd_soc_dai *codec_dai,
 				   unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 iface_reg;
 
 	iface_reg = snd_soc_component_read(component, TLV320AIC23_DIGT_FMT) & (~0x03);
@@ -470,7 +472,9 @@ static int tlv320aic23_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int tlv320aic23_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				      int clk_id, unsigned int freq, int dir)
 {
-	struct aic23 *aic23 = snd_soc_dai_get_drvdata(codec_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic23 *aic23 = dev_get_drvdata(dev);
 	aic23->mclk = freq;
 	return 0;
 }
@@ -545,7 +549,9 @@ static struct snd_soc_dai_driver tlv320aic23_dai = {
 
 static int tlv320aic23_resume(struct snd_soc_component *component)
 {
-	struct aic23 *aic23 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic23 *aic23 = dev_get_drvdata(dev);
+
 	regcache_mark_dirty(aic23->regmap);
 	regcache_sync(aic23->regmap);
 
@@ -612,7 +618,7 @@ int tlv320aic23_probe(struct device *dev, struct regmap *regmap)
 
 	dev_set_drvdata(dev, aic23);
 
-	return devm_snd_soc_register_component(dev,
+	return devm_snd_soc_component_register(dev,
 				      &soc_component_dev_tlv320aic23,
 				      &tlv320aic23_dai, 1);
 }

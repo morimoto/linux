@@ -212,7 +212,8 @@ static int adav80x_dapm_sysclk_check(struct snd_soc_dapm_widget *source,
 			 struct snd_soc_dapm_widget *sink)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 	const char *clk;
 
 	switch (adav80x->clk_src) {
@@ -236,7 +237,8 @@ static int adav80x_dapm_pll_check(struct snd_soc_dapm_widget *source,
 			 struct snd_soc_dapm_widget *sink)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 
 	return adav80x->pll_src == ADAV80X_PLL_SRC_XTAL;
 }
@@ -282,7 +284,8 @@ static const struct snd_soc_dapm_route adav80x_dapm_routes[] = {
 
 static int adav80x_set_deemph(struct snd_soc_component *component)
 {
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 	unsigned int val;
 
 	if (adav80x->deemph) {
@@ -315,7 +318,8 @@ static int adav80x_put_deemph(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 	unsigned int deemph = ucontrol->value.integer.value[0];
 
 	if (deemph > 1)
@@ -330,7 +334,8 @@ static int adav80x_get_deemph(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = adav80x->deemph;
 	return 0;
@@ -364,10 +369,12 @@ static unsigned int adav80x_port_ctrl_regs[2][2] = {
 
 static int adav80x_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 	unsigned int capture = 0x00;
 	unsigned int playback = 0x00;
+	int dai_id = snd_soc_dai_id(dai);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -404,13 +411,13 @@ static int adav80x_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
-	regmap_update_bits(adav80x->regmap, adav80x_port_ctrl_regs[dai->id][0],
+	regmap_update_bits(adav80x->regmap, adav80x_port_ctrl_regs[dai_id][0],
 		ADAV80X_CAPTURE_MODE_MASK | ADAV80X_CAPTURE_MODE_MASTER,
 		capture);
-	regmap_write(adav80x->regmap, adav80x_port_ctrl_regs[dai->id][1],
+	regmap_write(adav80x->regmap, adav80x_port_ctrl_regs[dai_id][1],
 		playback);
 
-	adav80x->dai_fmt[dai->id] = fmt & SND_SOC_DAIFMT_FORMAT_MASK;
+	adav80x->dai_fmt[dai_id] = fmt & SND_SOC_DAIFMT_FORMAT_MASK;
 
 	return 0;
 }
@@ -418,7 +425,8 @@ static int adav80x_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int adav80x_set_adc_clock(struct snd_soc_component *component,
 		unsigned int sample_rate)
 {
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 	unsigned int val;
 
 	if (sample_rate <= 48000)
@@ -435,7 +443,8 @@ static int adav80x_set_adc_clock(struct snd_soc_component *component,
 static int adav80x_set_dac_clock(struct snd_soc_component *component,
 		unsigned int sample_rate)
 {
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 	unsigned int val;
 
 	if (sample_rate <= 48000)
@@ -453,8 +462,10 @@ static int adav80x_set_dac_clock(struct snd_soc_component *component,
 static int adav80x_set_capture_pcm_format(struct snd_soc_component *component,
 		struct snd_soc_dai *dai, struct snd_pcm_hw_params *params)
 {
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 	unsigned int val;
+	int dai_id = snd_soc_dai_id(dai);
 
 	switch (params_width(params)) {
 	case 16:
@@ -473,7 +484,7 @@ static int adav80x_set_capture_pcm_format(struct snd_soc_component *component,
 		return -EINVAL;
 	}
 
-	regmap_update_bits(adav80x->regmap, adav80x_port_ctrl_regs[dai->id][0],
+	regmap_update_bits(adav80x->regmap, adav80x_port_ctrl_regs[dai_id][0],
 		ADAV80X_CAPTURE_WORD_LEN_MASK, val);
 
 	return 0;
@@ -482,10 +493,12 @@ static int adav80x_set_capture_pcm_format(struct snd_soc_component *component,
 static int adav80x_set_playback_pcm_format(struct snd_soc_component *component,
 		struct snd_soc_dai *dai, struct snd_pcm_hw_params *params)
 {
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int val;
 
-	if (adav80x->dai_fmt[dai->id] != SND_SOC_DAIFMT_RIGHT_J)
+	if (adav80x->dai_fmt[dai_id] != SND_SOC_DAIFMT_RIGHT_J)
 		return 0;
 
 	switch (params_width(params)) {
@@ -505,7 +518,7 @@ static int adav80x_set_playback_pcm_format(struct snd_soc_component *component,
 		return -EINVAL;
 	}
 
-	regmap_update_bits(adav80x->regmap, adav80x_port_ctrl_regs[dai->id][1],
+	regmap_update_bits(adav80x->regmap, adav80x_port_ctrl_regs[dai_id][1],
 		ADAV80X_PLAYBACK_MODE_MASK, val);
 
 	return 0;
@@ -514,8 +527,9 @@ static int adav80x_set_playback_pcm_format(struct snd_soc_component *component,
 static int adav80x_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 
 	if (rate * 256 != adav80x->sysclk)
@@ -538,7 +552,8 @@ static int adav80x_set_sysclk(struct snd_soc_component *component,
 			      int clk_id, int source,
 			      unsigned int freq, int dir)
 {
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	if (dir == SND_SOC_CLOCK_IN) {
@@ -623,7 +638,8 @@ static int adav80x_set_pll(struct snd_soc_component *component, int pll_id,
 		int source, unsigned int freq_in, unsigned int freq_out)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 	unsigned int pll_ctrl1 = 0;
 	unsigned int pll_ctrl2 = 0;
 	unsigned int pll_src;
@@ -698,7 +714,8 @@ static int adav80x_set_pll(struct snd_soc_component *component, int pll_id,
 static int adav80x_set_bias_level(struct snd_soc_component *component,
 		enum snd_soc_bias_level level)
 {
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 	unsigned int mask = ADAV80X_DAC_CTRL1_PD;
 
 	switch (level) {
@@ -723,8 +740,9 @@ static int adav80x_set_bias_level(struct snd_soc_component *component,
 static int adav80x_dai_startup(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 
 	if (!snd_soc_component_active(component) || !adav80x->rate)
 		return 0;
@@ -736,8 +754,9 @@ static int adav80x_dai_startup(struct snd_pcm_substream *substream,
 static void adav80x_dai_shutdown(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 
 	if (!snd_soc_component_active(component))
 		adav80x->rate = 0;
@@ -811,7 +830,8 @@ static struct snd_soc_dai_driver adav80x_dais[] = {
 static int adav80x_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 
 	/* Force PLLs on for SYSCLK output */
 	snd_soc_dapm_force_enable_pin(dapm, "PLL1");
@@ -827,7 +847,8 @@ static int adav80x_probe(struct snd_soc_component *component)
 
 static int adav80x_resume(struct snd_soc_component *component)
 {
-	struct adav80x *adav80x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adav80x *adav80x = dev_get_drvdata(dev);
 
 	regcache_sync(adav80x->regmap);
 
@@ -866,7 +887,7 @@ int adav80x_bus_probe(struct device *dev, struct regmap *regmap)
 	dev_set_drvdata(dev, adav80x);
 	adav80x->regmap = regmap;
 
-	return devm_snd_soc_register_component(dev, &adav80x_component_driver,
+	return devm_snd_soc_component_register(dev, &adav80x_component_driver,
 		adav80x_dais, ARRAY_SIZE(adav80x_dais));
 }
 EXPORT_SYMBOL_GPL(adav80x_bus_probe);

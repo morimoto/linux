@@ -145,6 +145,10 @@ static int rk_aif1_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct device *codec_dev = snd_soc_component_to_dev(codec_component);
 	int mclk;
 
 	switch (params_rate(params)) {
@@ -170,7 +174,7 @@ static int rk_aif1_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_sysclk(cpu_dai, 0, mclk,
 				     SND_SOC_CLOCK_OUT);
 	if (ret) {
-		dev_err(cpu_dai->dev, "Can't set cpu dai clock %d\n", ret);
+		dev_err(cpu_dev, "Can't set cpu dai clock %d\n", ret);
 		return ret;
 	}
 
@@ -182,7 +186,7 @@ static int rk_aif1_hw_params(struct snd_pcm_substream *substream,
 		return 0;
 
 	if (ret) {
-		dev_err(codec_dai->dev, "Can't set codec dai clock %d\n", ret);
+		dev_err(codec_dev, "Can't set codec dai clock %d\n", ret);
 		return ret;
 	}
 
@@ -224,14 +228,15 @@ static struct snd_soc_jack rk_hdmi_jack;
 static int rk_hdmi_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_card *card = runtime->card;
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(runtime, 0)->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(runtime, 0));
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	/* enable jack detection */
 	ret = snd_soc_card_jack_new(card, "HDMI Jack", SND_JACK_LINEOUT,
 				    &rk_hdmi_jack);
 	if (ret) {
-		dev_err(card->dev, "Can't new HDMI Jack %d\n", ret);
+		dev_err(dev, "Can't new HDMI Jack %d\n", ret);
 		return ret;
 	}
 
@@ -340,10 +345,11 @@ static struct snd_soc_card_driver rockchip_max98090_hdmi_card_driver = {
 
 static int rk_98090_headset_init(struct snd_soc_component *component)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
 	int ret;
 
 	/* Enable Headset and 4 Buttons Jack detection */
-	ret = snd_soc_card_jack_new_pins(component->card, "Headset Jack",
+	ret = snd_soc_card_jack_new_pins(card, "Headset Jack",
 					 SND_JACK_HEADSET |
 					 SND_JACK_BTN_0 | SND_JACK_BTN_1 |
 					 SND_JACK_BTN_2 | SND_JACK_BTN_3,
@@ -430,7 +436,7 @@ static int snd_rk_mc_probe(struct platform_device *pdev)
 	}
 
 	/* Parse card name. */
-	ret = snd_soc_of_parse_card_name(card, "rockchip,model");
+	ret = snd_soc_card_of_parse_name(card, "rockchip,model");
 	if (ret)
 		return ret;
 

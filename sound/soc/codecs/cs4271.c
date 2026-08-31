@@ -195,8 +195,9 @@ static const struct snd_soc_dapm_route cs4271_dapm_routes[] = {
 static int cs4271_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs4271_private *cs4271 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4271_private *cs4271 = dev_get_drvdata(dev);
 
 	cs4271->mclk = freq;
 	return 0;
@@ -205,8 +206,9 @@ static int cs4271_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int cs4271_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			      unsigned int format)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs4271_private *cs4271 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4271_private *cs4271 = dev_get_drvdata(dev);
 	unsigned int val = 0;
 	int ret;
 
@@ -219,7 +221,7 @@ static int cs4271_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		val |= CS4271_MODE1_MASTER;
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI format\n");
+		dev_err(dev, "Invalid DAI format\n");
 		return -EINVAL;
 	}
 
@@ -239,7 +241,7 @@ static int cs4271_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			return ret;
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI format\n");
+		dev_err(dev, "Invalid DAI format\n");
 		return -EINVAL;
 	}
 
@@ -254,7 +256,8 @@ static int cs4271_deemph[] = {0, 44100, 48000, 32000};
 
 static int cs4271_set_deemph(struct snd_soc_component *component)
 {
-	struct cs4271_private *cs4271 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4271_private *cs4271 = dev_get_drvdata(dev);
 	int i, ret;
 	int val = CS4271_DACCTL_DEM_DIS;
 
@@ -279,7 +282,8 @@ static int cs4271_get_deemph(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs4271_private *cs4271 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4271_private *cs4271 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = cs4271->deemph;
 	return 0;
@@ -289,7 +293,8 @@ static int cs4271_put_deemph(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs4271_private *cs4271 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4271_private *cs4271 = dev_get_drvdata(dev);
 
 	cs4271->deemph = ucontrol->value.integer.value[0];
 	return cs4271_set_deemph(component);
@@ -338,8 +343,9 @@ static int cs4271_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs4271_private *cs4271 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4271_private *cs4271 = dev_get_drvdata(dev);
 	int i, ret;
 	unsigned int ratio, val;
 
@@ -354,9 +360,9 @@ static int cs4271_hw_params(struct snd_pcm_substream *substream,
 		 */
 
 		if ((substream->stream == SNDRV_PCM_STREAM_PLAYBACK &&
-		     !snd_soc_dai_stream_active(dai, SNDRV_PCM_STREAM_CAPTURE)) ||
+		     !snd_soc_dai_active_stream(dai, SNDRV_PCM_STREAM_CAPTURE)) ||
 		    (substream->stream == SNDRV_PCM_STREAM_CAPTURE &&
-		     !snd_soc_dai_stream_active(dai, SNDRV_PCM_STREAM_PLAYBACK))) {
+		     !snd_soc_dai_active_stream(dai, SNDRV_PCM_STREAM_PLAYBACK))) {
 			ret = regmap_update_bits(cs4271->regmap, CS4271_MODE2,
 						 CS4271_MODE2_PDN,
 						 CS4271_MODE2_PDN);
@@ -388,7 +394,7 @@ static int cs4271_hw_params(struct snd_pcm_substream *substream,
 			break;
 
 	if (i == CS4271_NR_RATIOS) {
-		dev_err(component->dev, "Invalid sample rate\n");
+		dev_err(dev, "Invalid sample rate\n");
 		return -EINVAL;
 	}
 
@@ -404,8 +410,9 @@ static int cs4271_hw_params(struct snd_pcm_substream *substream,
 
 static int cs4271_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs4271_private *cs4271 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4271_private *cs4271 = dev_get_drvdata(dev);
 	int ret;
 	int val_a = 0;
 	int val_b = 0;
@@ -490,7 +497,8 @@ static struct snd_soc_dai_driver cs4271_dai = {
 
 static int cs4271_reset(struct snd_soc_component *component)
 {
-	struct cs4271_private *cs4271 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4271_private *cs4271 = dev_get_drvdata(dev);
 
 	gpiod_direction_output(cs4271->reset, 1);
 	mdelay(1);
@@ -504,7 +512,8 @@ static int cs4271_reset(struct snd_soc_component *component)
 static int cs4271_soc_suspend(struct snd_soc_component *component)
 {
 	int ret;
-	struct cs4271_private *cs4271 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4271_private *cs4271 = dev_get_drvdata(dev);
 
 	/* Set power-down bit */
 	ret = regmap_update_bits(cs4271->regmap, CS4271_MODE2,
@@ -522,18 +531,19 @@ static int cs4271_soc_suspend(struct snd_soc_component *component)
 static int cs4271_soc_resume(struct snd_soc_component *component)
 {
 	int ret;
-	struct cs4271_private *cs4271 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4271_private *cs4271 = dev_get_drvdata(dev);
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(cs4271->supplies),
 				    cs4271->supplies);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to enable regulators: %d\n", ret);
+		dev_err(dev, "Failed to enable regulators: %d\n", ret);
 		return ret;
 	}
 
 	ret = clk_prepare_enable(cs4271->clk);
 	if (ret) {
-		dev_err(component->dev, "Failed to enable clk: %d\n", ret);
+		dev_err(dev, "Failed to enable clk: %d\n", ret);
 		goto err_disable_regulators;
 	}
 
@@ -575,20 +585,21 @@ EXPORT_SYMBOL_GPL(cs4271_dt_ids);
 
 static int cs4271_component_probe(struct snd_soc_component *component)
 {
-	struct cs4271_private *cs4271 = snd_soc_component_get_drvdata(component);
-	struct cs4271_platform_data *cs4271plat = component->dev->platform_data;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4271_private *cs4271 = dev_get_drvdata(dev);
+	struct cs4271_platform_data *cs4271plat = dev->platform_data;
 	int ret;
 	bool amutec_eq_bmutec;
 
-	amutec_eq_bmutec = of_property_read_bool(component->dev->of_node,
+	amutec_eq_bmutec = of_property_read_bool(dev->of_node,
 						 "cirrus,amutec-eq-bmutec");
-	cs4271->enable_soft_reset = of_property_read_bool(component->dev->of_node,
+	cs4271->enable_soft_reset = of_property_read_bool(dev->of_node,
 							  "cirrus,enable-soft-reset");
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(cs4271->supplies),
 				    cs4271->supplies);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to enable regulators: %d\n", ret);
+		dev_err(dev, "Failed to enable regulators: %d\n", ret);
 		return ret;
 	}
 
@@ -599,7 +610,7 @@ static int cs4271_component_probe(struct snd_soc_component *component)
 
 	ret = clk_prepare_enable(cs4271->clk);
 	if (ret) {
-		dev_err(component->dev, "Failed to enable clk: %d\n", ret);
+		dev_err(dev, "Failed to enable clk: %d\n", ret);
 		goto err_disable_regulators;
 	}
 
@@ -640,7 +651,8 @@ err_disable_regulators:
 
 static void cs4271_component_remove(struct snd_soc_component *component)
 {
-	struct cs4271_private *cs4271 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4271_private *cs4271 = dev_get_drvdata(dev);
 
 	/* Set codec to the reset state */
 	gpiod_set_value(cs4271->reset, 1);
@@ -727,7 +739,7 @@ int cs4271_probe(struct device *dev, struct regmap *regmap)
 	dev_set_drvdata(dev, cs4271);
 	cs4271->regmap = regmap;
 
-	return devm_snd_soc_register_component(dev, &soc_component_dev_cs4271,
+	return devm_snd_soc_component_register(dev, &soc_component_dev_cs4271,
 					       &cs4271_dai, 1);
 }
 EXPORT_SYMBOL_GPL(cs4271_probe);

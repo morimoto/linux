@@ -306,8 +306,9 @@ static int ssm2602_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params,
 	struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ssm2602_priv *ssm2602 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2602_priv *ssm2602 = dev_get_drvdata(dev);
 	int srate = ssm2602_get_coeff(ssm2602->sysclk, params_rate(params));
 	unsigned int iface;
 
@@ -341,8 +342,9 @@ static int ssm2602_hw_params(struct snd_pcm_substream *substream,
 static int ssm2602_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ssm2602_priv *ssm2602 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2602_priv *ssm2602 = dev_get_drvdata(dev);
 
 	if (ssm2602->sysclk_constraints) {
 		snd_pcm_hw_constraint_list(substream->runtime, 0,
@@ -355,7 +357,9 @@ static int ssm2602_startup(struct snd_pcm_substream *substream,
 
 static int ssm2602_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct ssm2602_priv *ssm2602 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2602_priv *ssm2602 = dev_get_drvdata(dev);
 
 	if (mute)
 		regmap_update_bits(ssm2602->regmap, SSM2602_APDIGI,
@@ -370,8 +374,9 @@ static int ssm2602_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int ssm2602_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct ssm2602_priv *ssm2602 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2602_priv *ssm2602 = dev_get_drvdata(dev);
 
 	if (dir == SND_SOC_CLOCK_IN) {
 		if (clk_id != SSM2602_SYSCLK)
@@ -428,7 +433,9 @@ static int ssm2602_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int ssm2602_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct ssm2602_priv *ssm2602 = snd_soc_component_get_drvdata(codec_dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2602_priv *ssm2602 = dev_get_drvdata(dev);
 	unsigned int iface = 0;
 
 	/* set master/slave audio interface */
@@ -487,7 +494,8 @@ static int ssm2602_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int ssm2602_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct ssm2602_priv *ssm2602 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2602_priv *ssm2602 = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
@@ -566,7 +574,8 @@ static struct snd_soc_dai_driver ssm2602_dai = {
 
 static int ssm2602_resume(struct snd_soc_component *component)
 {
-	struct ssm2602_priv *ssm2602 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2602_priv *ssm2602 = dev_get_drvdata(dev);
 
 	regcache_sync(ssm2602->regmap);
 
@@ -576,7 +585,8 @@ static int ssm2602_resume(struct snd_soc_component *component)
 static int ssm2602_component_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct ssm2602_priv *ssm2602 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2602_priv *ssm2602 = dev_get_drvdata(dev);
 	int ret;
 
 	regmap_update_bits(ssm2602->regmap, SSM2602_LOUT1V,
@@ -584,7 +594,7 @@ static int ssm2602_component_probe(struct snd_soc_component *component)
 	regmap_update_bits(ssm2602->regmap, SSM2602_ROUT1V,
 			    ROUT1V_RLHP_BOTH, ROUT1V_RLHP_BOTH);
 
-	ret = snd_soc_add_component_controls(component, ssm2602_snd_controls,
+	ret = snd_soc_component_add_controls(component, ssm2602_snd_controls,
 			ARRAY_SIZE(ssm2602_snd_controls));
 	if (ret)
 		return ret;
@@ -614,12 +624,13 @@ static int ssm2604_component_probe(struct snd_soc_component *component)
 
 static int ssm260x_component_probe(struct snd_soc_component *component)
 {
-	struct ssm2602_priv *ssm2602 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2602_priv *ssm2602 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = regmap_write(ssm2602->regmap, SSM2602_RESET, 0);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to issue reset: %d\n", ret);
+		dev_err(dev, "Failed to issue reset: %d\n", ret);
 		return ret;
 	}
 
@@ -697,7 +708,7 @@ int ssm2602_probe(struct device *dev, enum ssm2602_type type,
 	ssm2602->type = type;
 	ssm2602->regmap = regmap;
 
-	return devm_snd_soc_register_component(dev, &soc_component_dev_ssm2602,
+	return devm_snd_soc_component_register(dev, &soc_component_dev_ssm2602,
 		&ssm2602_dai, 1);
 }
 EXPORT_SYMBOL_GPL(ssm2602_probe);

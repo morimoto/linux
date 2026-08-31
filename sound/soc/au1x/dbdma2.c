@@ -185,7 +185,8 @@ out:
 static inline struct au1xpsc_audio_dmadata *to_dmadata(struct snd_pcm_substream *ss,
 						       struct snd_soc_component *component)
 {
-	struct au1xpsc_audio_dmadata *pcd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct au1xpsc_audio_dmadata *pcd = dev_get_drvdata(dev);
 	return &pcd[ss->stream];
 }
 
@@ -281,7 +282,7 @@ static int au1xpsc_pcm_open(struct snd_soc_component *component,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	int stype = substream->stream, *dmaids;
 
-	dmaids = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	dmaids = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 	if (!dmaids)
 		return -ENODEV;	/* whoa, has ordering changed? */
 
@@ -301,7 +302,7 @@ static int au1xpsc_pcm_close(struct snd_soc_component *component,
 static int au1xpsc_pcm_new(struct snd_soc_component *component,
 			   struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(rtd->card);
 	struct snd_pcm *pcm = rtd->pcm;
 
 	snd_pcm_set_managed_buffer_all(pcm, SNDRV_DMA_TYPE_DEV,
@@ -334,7 +335,7 @@ static int au1xpsc_pcm_drvprobe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, dmadata);
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 					&au1xpsc_soc_component, NULL, 0);
 }
 

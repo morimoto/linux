@@ -656,7 +656,8 @@ static int adcx140_phase_calib_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *value)
 {
 	struct snd_soc_component *codec = snd_kcontrol_chip(kcontrol);
-	struct adcx140_priv *adcx140 = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct adcx140_priv *adcx140 = dev_get_drvdata(dev);
 
 	value->value.integer.value[0] = adcx140->phase_calib_on ? 1 : 0;
 
@@ -668,7 +669,8 @@ static int adcx140_phase_calib_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *value)
 {
 	struct snd_soc_component *codec = snd_kcontrol_chip(kcontrol);
-	struct adcx140_priv *adcx140 = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct adcx140_priv *adcx140 = dev_get_drvdata(dev);
 
 	bool v = value->value.integer.value[0] ? true : false;
 
@@ -769,8 +771,9 @@ static int adcx140_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct adcx140_priv *adcx140 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adcx140_priv *adcx140 = dev_get_drvdata(dev);
 	u8 data = 0;
 
 	switch (params_physical_width(params)) {
@@ -787,7 +790,7 @@ static int adcx140_hw_params(struct snd_pcm_substream *substream,
 		data = ADCX140_32_BIT_WORD;
 		break;
 	default:
-		dev_err(component->dev, "%s: Unsupported width %d\n",
+		dev_err(dev, "%s: Unsupported width %d\n",
 			__func__, params_physical_width(params));
 		return -EINVAL;
 	}
@@ -805,8 +808,9 @@ static int adcx140_hw_params(struct snd_pcm_substream *substream,
 static int adcx140_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			       unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct adcx140_priv *adcx140 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adcx140_priv *adcx140 = dev_get_drvdata(dev);
 	u8 iface_reg1 = 0;
 	u8 iface_reg2 = 0;
 	int offset = 0;
@@ -820,7 +824,7 @@ static int adcx140_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	case SND_SOC_DAIFMT_CBC_CFC:
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI clock provider\n");
+		dev_err(dev, "Invalid DAI clock provider\n");
 		return -EINVAL;
 	}
 
@@ -840,7 +844,7 @@ static int adcx140_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		inverted_bclk = true;
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI interface format\n");
+		dev_err(dev, "Invalid DAI interface format\n");
 		return -EINVAL;
 	}
 
@@ -856,7 +860,7 @@ static int adcx140_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	case SND_SOC_DAIFMT_NB_NF:
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI clock signal polarity\n");
+		dev_err(dev, "Invalid DAI clock signal polarity\n");
 		return -EINVAL;
 	}
 
@@ -888,15 +892,16 @@ static int adcx140_set_dai_tdm_slot(struct snd_soc_dai *codec_dai,
 				  unsigned int tx_mask, unsigned int rx_mask,
 				  int slots, int slot_width)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct adcx140_priv *adcx140 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adcx140_priv *adcx140 = dev_get_drvdata(dev);
 
 	/*
 	 * The chip itself supports arbitrary masks, but the driver currently
 	 * only supports adjacent slots beginning at the first slot.
 	 */
 	if (tx_mask != GENMASK(__fls(tx_mask), 0)) {
-		dev_err(component->dev, "Only lower adjacent slots are supported\n");
+		dev_err(dev, "Only lower adjacent slots are supported\n");
 		return -EINVAL;
 	}
 
@@ -907,7 +912,7 @@ static int adcx140_set_dai_tdm_slot(struct snd_soc_dai *codec_dai,
 	case 32:
 		break;
 	default:
-		dev_err(component->dev, "Unsupported slot width %d\n", slot_width);
+		dev_err(dev, "Unsupported slot width %d\n", slot_width);
 		return -EINVAL;
 	}
 
@@ -1009,7 +1014,8 @@ static int adcx140_configure_gpio(struct adcx140_priv *adcx140)
 
 static int adcx140_codec_probe(struct snd_soc_component *component)
 {
-	struct adcx140_priv *adcx140 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adcx140_priv *adcx140 = dev_get_drvdata(dev);
 	int sleep_cfg_val = ADCX140_WAKE_DEV;
 	u32 bias_source;
 	u32 vref_source;
@@ -1199,7 +1205,8 @@ static int adcx140_pwr_on(struct adcx140_priv *adcx140)
 static int adcx140_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
-	struct adcx140_priv *adcx140 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adcx140_priv *adcx140 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	enum snd_soc_bias_level prev_level = snd_soc_dapm_get_bias_level(dapm);
 
@@ -1332,7 +1339,7 @@ static int adcx140_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, adcx140);
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 					       &soc_codec_driver_adcx140,
 					       adcx140_dai_driver, 1);
 }

@@ -26,7 +26,7 @@ struct custom_priv {
 
 static int custom_card_probe(struct snd_soc_card *card)
 {
-	struct simple_util_priv *simple_priv = snd_soc_card_get_drvdata(card);
+	struct simple_util_priv *simple_priv = snd_soc_card_to_priv(card);
 	struct custom_priv *custom_priv = simple_to_custom(simple_priv);
 	struct device *dev = simple_priv_to_dev(simple_priv);
 
@@ -122,7 +122,7 @@ static struct graph2_custom_hooks custom_hooks = {
 static int custom_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct simple_util_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct simple_util_priv *priv = snd_soc_card_to_priv(rtd->card);
 	struct device *dev = simple_priv_to_dev(priv);
 
 	dev_info(dev, "custom startup\n");

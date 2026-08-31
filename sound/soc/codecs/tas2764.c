@@ -144,7 +144,8 @@ static int tas2764_update_pwr_ctrl(struct tas2764_priv *tas2764)
 #ifdef CONFIG_PM
 static int tas2764_codec_suspend(struct snd_soc_component *component)
 {
-	struct tas2764_priv *tas2764 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2764_priv *tas2764 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = snd_soc_component_update_bits(component, TAS2764_PWR_CTRL,
@@ -167,7 +168,8 @@ static int tas2764_codec_suspend(struct snd_soc_component *component)
 
 static int tas2764_codec_resume(struct snd_soc_component *component)
 {
-	struct tas2764_priv *tas2764 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2764_priv *tas2764 = dev_get_drvdata(dev);
 	int ret;
 
 	if (tas2764->sdz_gpio) {
@@ -231,8 +233,9 @@ static const struct snd_soc_dapm_route tas2764_audio_map[] = {
 
 static int tas2764_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct tas2764_priv *tas2764 =
-			snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2764_priv *tas2764 = dev_get_drvdata(dev);
 	int ret;
 
 	if (!mute) {
@@ -367,8 +370,9 @@ static int tas2764_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2764_priv *tas2764 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2764_priv *tas2764 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = tas2764_set_bitwidth(tas2764, params_format(params));
@@ -380,8 +384,9 @@ static int tas2764_hw_params(struct snd_pcm_substream *substream,
 
 static int tas2764_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2764_priv *tas2764 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2764_priv *tas2764 = dev_get_drvdata(dev);
 	u8 tdm_rx_start_slot = 0, asi_cfg_0 = 0, asi_cfg_1 = 0, asi_cfg_4 = 0;
 	int ret;
 
@@ -451,8 +456,9 @@ static int tas2764_set_dai_tdm_slot(struct snd_soc_dai *dai,
 				unsigned int rx_mask,
 				int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2764_priv *tas2764 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2764_priv *tas2764 = dev_get_drvdata(dev);
 	int left_slot, right_slot;
 	int slots_cfg;
 	int slot_size;
@@ -535,8 +541,9 @@ static int tas2764_set_dai_tdm_idle(struct snd_soc_dai *dai,
 				    unsigned int tx_mask, unsigned int rx_mask,
 				    int tx_mode, int rx_mode)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2764_priv *tas2764 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2764_priv *tas2764 = dev_get_drvdata(dev);
 	int ret;
 
 	/* We don't support setting anything on SDIN */
@@ -592,7 +599,9 @@ static int tas2764_set_dai_tdm_idle(struct snd_soc_dai *dai,
 /* The SDOUT idle slot mask must be cropped based on the BCLK ratio */
 static int tas2764_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 {
-	struct tas2764_priv *tas2764 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2764_priv *tas2764 = dev_get_drvdata(dev);
 
 	if (!tas2764->idle_slot_config.tx_mask)
 		return 0;
@@ -780,7 +789,8 @@ static const struct hwmon_chip_info tas2764_hwmon_chip_info = {
 
 static int tas2764_codec_probe(struct snd_soc_component *component)
 {
-	struct tas2764_priv *tas2764 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2764_priv *tas2764 = dev_get_drvdata(dev);
 	int ret, i;
 
 	tas2764->component = component;
@@ -1041,7 +1051,7 @@ static int tas2764_i2c_probe(struct i2c_client *client)
 	}
 
 
-	return devm_snd_soc_register_component(tas2764->dev,
+	return devm_snd_soc_component_register(tas2764->dev,
 					       &soc_component_driver_tas2764,
 					       tas2764_dai_driver,
 					       ARRAY_SIZE(tas2764_dai_driver));

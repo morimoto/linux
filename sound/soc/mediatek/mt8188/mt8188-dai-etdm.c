@@ -245,13 +245,16 @@ static bool is_valid_etdm_dai(int dai_id)
 
 static int is_cowork_mode(struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	int dai_id = snd_soc_dai_id(dai);
 
-	if (!is_valid_etdm_dai(dai->id))
+	if (!is_valid_etdm_dai(dai_id))
 		return -EINVAL;
-	etdm_data = afe_priv->dai_priv[dai->id];
+	etdm_data = afe_priv->dai_priv[dai_id];
 
 	return (etdm_data->cowork_slv_count > 0 ||
 		etdm_data->cowork_source_id != COWORK_ETDM_NONE);
@@ -277,18 +280,21 @@ static int sync_to_dai_id(int source_sel)
 
 static int get_etdm_cowork_master_id(struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	int id = snd_soc_dai_id(dai);
 	int dai_id;
 
-	if (!is_valid_etdm_dai(dai->id))
+	if (!is_valid_etdm_dai(id))
 		return -EINVAL;
-	etdm_data = afe_priv->dai_priv[dai->id];
+	etdm_data = afe_priv->dai_priv[id];
 	dai_id = etdm_data->cowork_source_id;
 
 	if (dai_id == COWORK_ETDM_NONE)
-		dai_id = dai->id;
+		dai_id = id;
 
 	return dai_id;
 }
@@ -456,7 +462,8 @@ static int mtk_afe_etdm_apll_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = sink;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mtk_dai_etdm_priv *etdm_priv;
 	int cur_apll;
 	int need_apll;
@@ -478,7 +485,8 @@ static int mtk_afe_mclk_apll_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = sink;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mtk_dai_etdm_priv *etdm_priv;
 	int cur_apll;
 
@@ -494,7 +502,8 @@ static int mtk_etdm_mclk_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = sink;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_priv;
 	int mclk_id;
@@ -527,7 +536,8 @@ static int mtk_etdm_cowork_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = sink;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_priv;
 	int source_id;
@@ -569,10 +579,10 @@ static int mtk_apll_event(struct snd_soc_dapm_widget *w,
 			  int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
-	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
-		__func__, w->name, event);
+	dev_dbg(dev, "%s(), name %s, event 0x%x\n", __func__, w->name, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -599,7 +609,8 @@ static int mtk_etdm_mclk_event(struct snd_soc_dapm_widget *w,
 			       int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	int mclk_id = get_etdm_id_by_name(afe, w->name);
 
 	if (mclk_id < 0) {
@@ -607,8 +618,7 @@ static int mtk_etdm_mclk_event(struct snd_soc_dapm_widget *w,
 		return 0;
 	}
 
-	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
-		__func__, w->name, event);
+	dev_dbg(dev, "%s(), name %s, event 0x%x\n", __func__, w->name, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -629,10 +639,10 @@ static int mtk_dptx_mclk_event(struct snd_soc_dapm_widget *w,
 			       int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
-	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
-		__func__, w->name, event);
+	dev_dbg(dev, "%s(), name %s, event 0x%x\n", __func__, w->name, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -653,7 +663,8 @@ static int mtk_etdm_cg_event(struct snd_soc_dapm_widget *w,
 			     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	int etdm_id;
 	int cg_id;
@@ -670,8 +681,7 @@ static int mtk_etdm_cg_event(struct snd_soc_dapm_widget *w,
 		return 0;
 	}
 
-	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
-		__func__, w->name, event);
+	dev_dbg(dev, "%s(), name %s, event 0x%x\n", __func__, w->name, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -692,11 +702,11 @@ static int mtk_etdm3_cg_event(struct snd_soc_dapm_widget *w,
 			      int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 
-	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
-		__func__, w->name, event);
+	dev_dbg(dev, "%s(), name %s, event 0x%x\n", __func__, w->name, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -1014,7 +1024,8 @@ static int mt8188_etdm_clk_src_sel_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int source = ucontrol->value.enumerated.item[0];
 	unsigned int val;
 	unsigned int old_val;
@@ -1062,7 +1073,8 @@ static int mt8188_etdm_clk_src_sel_get(struct snd_kcontrol *kcontrol,
 				       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int value;
 	unsigned int reg;
 	unsigned int mask;
@@ -2176,9 +2188,12 @@ static int mtk_dai_etdm_hw_params(struct snd_pcm_substream *substream,
 	unsigned int rate = params_rate(params);
 	unsigned int bit_width = params_width(params);
 	unsigned int channels = params_channels(params);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *mst_etdm_data;
+	int dai_id = snd_soc_dai_id(dai);
 	int mst_dai_id;
 	int slv_dai_id;
 	int ret;
@@ -2214,14 +2229,14 @@ static int mtk_dai_etdm_hw_params(struct snd_pcm_substream *substream,
 				return ret;
 		}
 	} else {
-		if (!is_valid_etdm_dai(dai->id))
+		if (!is_valid_etdm_dai(dai_id))
 			return -EINVAL;
-		mst_etdm_data = afe_priv->dai_priv[dai->id];
+		mst_etdm_data = afe_priv->dai_priv[dai_id];
 		if (mst_etdm_data->slots)
 			channels = mst_etdm_data->slots;
 
 		ret = mtk_dai_etdm_configure(afe, rate, channels,
-					     bit_width, dai->id);
+					     bit_width, dai_id);
 		if (ret)
 			return ret;
 	}
@@ -2272,17 +2287,20 @@ static int mtk_dai_etdm_cal_mclk(struct mtk_base_afe *afe, int freq, int dai_id)
 static int mtk_dai_etdm_set_sysclk(struct snd_soc_dai *dai,
 				   int clk_id, unsigned int freq, int dir)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	int id = snd_soc_dai_id(dai);
 	int dai_id;
 
-	dev_dbg(dai->dev, "%s id %d freq %u, dir %d\n",
-		__func__, dai->id, freq, dir);
+	dev_dbg(dev, "%s id %d freq %u, dir %d\n",
+		__func__, id, freq, dir);
 	if (is_cowork_mode(dai))
 		dai_id = get_etdm_cowork_master_id(dai);
 	else
-		dai_id = dai->id;
+		dai_id = id;
 
 	if (!is_valid_etdm_dai(dai_id))
 		return -EINVAL;
@@ -2295,22 +2313,25 @@ static int mtk_dai_etdm_set_tdm_slot(struct snd_soc_dai *dai,
 				     unsigned int tx_mask, unsigned int rx_mask,
 				     int slots, int slot_width)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	int id = snd_soc_dai_id(dai);
 	int dai_id;
 
 	if (is_cowork_mode(dai))
 		dai_id = get_etdm_cowork_master_id(dai);
 	else
-		dai_id = dai->id;
+		dai_id = id;
 
 	if (!is_valid_etdm_dai(dai_id))
 		return -EINVAL;
 	etdm_data = afe_priv->dai_priv[dai_id];
 
-	dev_dbg(dai->dev, "%s id %d slot_width %d\n",
-		__func__, dai->id, slot_width);
+	dev_dbg(dev, "%s id %d slot_width %d\n",
+		__func__, id, slot_width);
 
 	etdm_data->slots = slots;
 	etdm_data->lrck_width = slot_width;
@@ -2319,13 +2340,16 @@ static int mtk_dai_etdm_set_tdm_slot(struct snd_soc_dai *dai,
 
 static int mtk_dai_etdm_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	int dai_id = snd_soc_dai_id(dai);
 
-	if (!is_valid_etdm_dai(dai->id))
+	if (!is_valid_etdm_dai(dai_id))
 		return -EINVAL;
-	etdm_data = afe_priv->dai_priv[dai->id];
+	etdm_data = afe_priv->dai_priv[dai_id];
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
@@ -2414,20 +2438,23 @@ static int mtk_dai_hdmitx_dptx_hw_params(struct snd_pcm_substream *substream,
 					 struct snd_pcm_hw_params *params,
 					 struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
 	unsigned int rate = params_rate(params);
 	unsigned int channels = params_channels(params);
 	snd_pcm_format_t format = params_format(params);
 	int width = snd_pcm_format_physical_width(format);
+	int dai_id = snd_soc_dai_id(dai);
 
-	if (!is_valid_etdm_dai(dai->id))
+	if (!is_valid_etdm_dai(dai_id))
 		return -EINVAL;
-	etdm_data = afe_priv->dai_priv[dai->id];
+	etdm_data = afe_priv->dai_priv[dai_id];
 
 	/* dptx configure */
-	if (dai->id == MT8188_AFE_IO_DPTX) {
+	if (dai_id == MT8188_AFE_IO_DPTX) {
 		regmap_update_bits(afe->regmap, AFE_DPTX_CON,
 				   AFE_DPTX_CON_CH_EN_MASK,
 				   mtk_dai_get_dptx_ch_en(channels));
@@ -2448,7 +2475,7 @@ static int mtk_dai_hdmitx_dptx_hw_params(struct snd_pcm_substream *substream,
 		etdm_data->data_mode = MTK_DAI_ETDM_DATA_MULTI_PIN;
 	}
 
-	return mtk_dai_etdm_configure(afe, rate, channels, width, dai->id);
+	return mtk_dai_etdm_configure(afe, rate, channels, width, dai_id);
 }
 
 static int mtk_dai_hdmitx_dptx_set_sysclk(struct snd_soc_dai *dai,
@@ -2456,19 +2483,22 @@ static int mtk_dai_hdmitx_dptx_set_sysclk(struct snd_soc_dai *dai,
 					  unsigned int freq,
 					  int dir)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	int dai_id = snd_soc_dai_id(dai);
 
-	if (!is_valid_etdm_dai(dai->id))
+	if (!is_valid_etdm_dai(dai_id))
 		return -EINVAL;
-	etdm_data = afe_priv->dai_priv[dai->id];
+	etdm_data = afe_priv->dai_priv[dai_id];
 
-	dev_dbg(dai->dev, "%s id %d freq %u, dir %d\n",
-		__func__, dai->id, freq, dir);
+	dev_dbg(dev, "%s id %d freq %u, dir %d\n",
+		__func__, dai_id, freq, dir);
 
 	etdm_data->mclk_dir = dir;
-	return mtk_dai_etdm_cal_mclk(afe, freq, dai->id);
+	return mtk_dai_etdm_cal_mclk(afe, freq, dai_id);
 }
 
 static const u64 mtk_dai_selectable_formats =

@@ -251,12 +251,12 @@ int simple_util_parse_card_name(struct simple_util_priv *priv,
 		prefix = "";
 
 	/* Parse the card name from DT */
-	ret = snd_soc_of_parse_card_name(card, "label");
+	ret = snd_soc_card_of_parse_name(card, "label");
 	if (ret < 0 || !snd_soc_card_name(card)) {
 		char prop[128];
 
 		snprintf(prop, sizeof(prop), "%sname", prefix);
-		ret = snd_soc_of_parse_card_name(card, prop);
+		ret = snd_soc_card_of_parse_name(card, prop);
 		if (ret < 0)
 			goto end;
 	}
@@ -338,7 +338,7 @@ static int simple_check_fixed_sysclk(struct device *dev,
 int simple_util_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct simple_util_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct simple_util_priv *priv = snd_soc_card_to_priv(rtd->card);
 	struct simple_dai_props *props = runtime_simple_priv_to_props(priv, rtd);
 	struct simple_util_dai *dai;
 	unsigned int fixed_sysclk = 0;
@@ -400,7 +400,7 @@ EXPORT_SYMBOL_GPL(simple_util_startup);
 void simple_util_shutdown(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct simple_util_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct simple_util_priv *priv = snd_soc_card_to_priv(rtd->card);
 	struct simple_dai_props *props = runtime_simple_priv_to_props(priv, rtd);
 	struct simple_util_dai *dai;
 	int i;
@@ -491,7 +491,7 @@ int simple_util_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct simple_util_dai *pdai;
 	struct snd_soc_dai *sdai;
-	struct simple_util_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct simple_util_priv *priv = snd_soc_card_to_priv(rtd->card);
 	struct simple_dai_props *props = runtime_simple_priv_to_props(priv, rtd);
 	enum simple_util_sysclk_order order = props->sysclk_order;
 	unsigned int mclk, mclk_fs = 0;
@@ -582,7 +582,7 @@ EXPORT_SYMBOL_GPL(simple_util_hw_params);
 int simple_util_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 				   struct snd_pcm_hw_params *params)
 {
-	struct simple_util_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct simple_util_priv *priv = snd_soc_card_to_priv(rtd->card);
 	struct simple_dai_props *dai_props = runtime_simple_priv_to_props(priv, rtd);
 	struct simple_util_data *data = &dai_props->adata;
 	struct snd_interval *rate = hw_param_interval(params, SNDRV_PCM_HW_PARAM_RATE);
@@ -606,6 +606,8 @@ EXPORT_SYMBOL_GPL(simple_util_be_hw_params_fixup);
 static int simple_init_dai(struct simple_util_priv *priv,
 			   struct snd_soc_dai *dai, struct simple_util_dai *simple_dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	if (!simple_dai)
@@ -615,7 +617,7 @@ static int simple_init_dai(struct simple_util_priv *priv,
 		ret = snd_soc_dai_set_sysclk(dai, 0, simple_dai->sysclk,
 					     simple_dai->clk_direction);
 		if (ret && ret != -ENOTSUPP) {
-			dev_err(dai->dev, "simple-card: set_sysclk error\n");
+			dev_err(dev, "simple-card: set_sysclk error\n");
 			goto end;
 		}
 	}
@@ -627,7 +629,7 @@ static int simple_init_dai(struct simple_util_priv *priv,
 					       simple_dai->slots,
 					       simple_dai->slot_width);
 		if (ret && ret != -ENOTSUPP) {
-			dev_err(dai->dev, "simple-card: set_tdm_slot error\n");
+			dev_err(dev, "simple-card: set_tdm_slot error\n");
 			goto end;
 		}
 	}
@@ -638,7 +640,7 @@ end:
 
 static inline int simple_component_is_codec(struct snd_soc_component *component)
 {
-	return component->driver->endianness;
+	return snd_soc_component_to_driver(component)->endianness;
 }
 
 static int simple_init_for_codec2codec(struct simple_util_priv *priv,
@@ -699,7 +701,7 @@ end:
 
 int simple_util_dai_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct simple_util_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct simple_util_priv *priv = snd_soc_card_to_priv(rtd->card);
 	struct simple_dai_props *props = runtime_simple_priv_to_props(priv, rtd);
 	struct simple_util_dai *dai;
 	int i, ret;
@@ -778,7 +780,7 @@ int simple_util_init_jack(struct snd_soc_card *card,
 			  int is_hp, char *prefix,
 			  char *pin)
 {
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct gpio_desc *desc;
 	char prop[128];
 	char *pin_name;
@@ -831,8 +833,9 @@ EXPORT_SYMBOL_GPL(simple_util_init_jack);
 
 int simple_util_init_aux_jacks(struct snd_soc_card *card, char *prefix)
 {
-	struct simple_util_priv *priv = snd_soc_card_get_drvdata(card);
+	struct simple_util_priv *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_component *component;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int found_jack_index = 0;
 	int type = 0;
 	int num = 0;
@@ -849,7 +852,7 @@ int simple_util_init_aux_jacks(struct snd_soc_card *card, char *prefix)
 	if (num < 1)
 		return 0;
 
-	priv->aux_jacks = devm_kcalloc(card->dev, num,
+	priv->aux_jacks = devm_kcalloc(dev, num,
 				       sizeof(struct snd_soc_jack), GFP_KERNEL);
 	if (!priv->aux_jacks)
 		return simple_ret(priv, -ENOMEM);
@@ -867,7 +870,7 @@ int simple_util_init_aux_jacks(struct snd_soc_card *card, char *prefix)
 
 		/* create jack */
 		jack = &(priv->aux_jacks[found_jack_index++]);
-		snprintf(id, sizeof(id), "%s-jack", component->name);
+		snprintf(id, sizeof(id), "%s-jack", snd_soc_component_name(component));
 		ret = snd_soc_card_jack_new(card, id, type, jack);
 		if (ret)
 			continue;
@@ -1001,7 +1004,7 @@ EXPORT_SYMBOL_GPL(simple_util_init_priv);
 void simple_util_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
-	struct simple_util_priv *priv = snd_soc_card_get_drvdata(card);
+	struct simple_util_priv *priv = snd_soc_card_to_priv(card);
 
 	simple_util_clean_reference(priv);
 }
@@ -1009,7 +1012,7 @@ EXPORT_SYMBOL_GPL(simple_util_remove);
 
 int graph_util_card_probe(struct snd_soc_card *card)
 {
-	struct simple_util_priv *priv = snd_soc_card_get_drvdata(card);
+	struct simple_util_priv *priv = snd_soc_card_to_priv(card);
 	int ret;
 
 	ret = simple_util_init_hp(card, &priv->hp_jack, NULL);

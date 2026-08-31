@@ -321,7 +321,8 @@ static int tas675x_set_rtldg_thresh(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct tas675x_priv *tas = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct tas675x_priv *tas = dev_get_drvdata(dev);
 	const struct tas675x_reg_param *t =
 		(const struct tas675x_reg_param *)kcontrol->private_value;
 	u32 val = ucontrol->value.integer.value[0];
@@ -350,7 +351,8 @@ static int tas675x_get_rtldg_thresh(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct tas675x_priv *tas = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct tas675x_priv *tas = dev_get_drvdata(dev);
 	const struct tas675x_reg_param *t =
 		(const struct tas675x_reg_param *)kcontrol->private_value;
 	u32 val = 0;
@@ -376,7 +378,8 @@ static int tas675x_set_dcldg_trigger(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct tas675x_priv *tas = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct tas675x_priv *tas = dev_get_drvdata(dev);
 	unsigned int state, state34;
 	int ret;
 
@@ -492,7 +495,8 @@ static int tas675x_set_acldg_trigger(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct tas675x_priv *tas = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct tas675x_priv *tas = dev_get_drvdata(dev);
 	unsigned int state, state34;
 	int ret;
 
@@ -574,7 +578,8 @@ static int tas675x_get_rtldg_impedance(struct snd_kcontrol *kcontrol,
 				       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct tas675x_priv *tas = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct tas675x_priv *tas = dev_get_drvdata(dev);
 	unsigned int msb_reg = (unsigned int)kcontrol->private_value;
 	u8 buf[2];
 	int ret;
@@ -602,7 +607,8 @@ static int tas675x_get_dc_resistance(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct tas675x_priv *tas = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct tas675x_priv *tas = dev_get_drvdata(dev);
 	unsigned int lsb_reg = (unsigned int)kcontrol->private_value;
 	unsigned int msb, lsb, shift;
 	int ret;
@@ -1124,9 +1130,11 @@ static int tas675x_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas675x_priv *tas = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas675x_priv *tas = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
+	int dai_id = snd_soc_dai_id(dai);
 	u8 word_length;
 
 	/*
@@ -1135,8 +1143,7 @@ static int tas675x_hw_params(struct snd_pcm_substream *substream,
 	 */
 	if ((READ_ONCE(tas->active_playback_dais) || READ_ONCE(tas->active_capture_dais)) &&
 	    tas->rate && tas->rate != rate) {
-		dev_err(component->dev,
-			"Rate %u conflicts with active rate %u\n",
+		dev_err(dev, "Rate %u conflicts with active rate %u\n",
 			rate, tas->rate);
 		return -EINVAL;
 	}
@@ -1166,14 +1173,12 @@ static int tas675x_hw_params(struct snd_pcm_substream *substream,
 		if (rate > 96000) {
 			unsigned int val;
 
-			regmap_read(component->regmap, TAS675X_RTLDG_EN_REG,
-				    &val);
+			val = snd_soc_component_read(component, TAS675X_RTLDG_EN_REG);
 			if (val & TAS675X_RTLDG_CH_EN_MASK) {
 				tas->saved_rtldg_en = val;
-				dev_dbg(component->dev,
-					"Sample rate %dHz > 96kHz: Auto-disabling RTLDG\n",
+				dev_dbg(dev, "Sample rate %dHz > 96kHz: Auto-disabling RTLDG\n",
 					rate);
-				regmap_update_bits(component->regmap,
+				snd_soc_component_update_bits(component,
 						   TAS675X_RTLDG_EN_REG,
 						   TAS675X_RTLDG_CH_EN_MASK,
 						   0x00);
@@ -1184,12 +1189,10 @@ static int tas675x_hw_params(struct snd_pcm_substream *substream,
 			/*
 			 * Respect overrides and only restore if RTLDG is still auto-disabled
 			 */
-			regmap_read(component->regmap, TAS675X_RTLDG_EN_REG,
-				    &cur);
+			cur = snd_soc_component_read(component, TAS675X_RTLDG_EN_REG);
 			if (!(cur & TAS675X_RTLDG_CH_EN_MASK)) {
-				dev_dbg(component->dev,
-					"Restoring RTLDG config after high-rate stream\n");
-				regmap_update_bits(component->regmap,
+				dev_dbg(dev, "Restoring RTLDG config after high-rate stream\n");
+				snd_soc_component_update_bits(component,
 						   TAS675X_RTLDG_EN_REG,
 						   TAS675X_RTLDG_CH_EN_MASK,
 						   TAS675X_RTLDG_CH_EN_MASK &
@@ -1199,19 +1202,19 @@ static int tas675x_hw_params(struct snd_pcm_substream *substream,
 		}
 
 		/* Set SDIN word length (audio path + low-latency path) */
-		regmap_update_bits(component->regmap, TAS675X_SDIN_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_SDIN_CTRL_REG,
 				   TAS675X_SDIN_WL_MASK,
 				   FIELD_PREP(TAS675X_SDIN_AUDIO_WL_MASK, word_length) |
 				   FIELD_PREP(TAS675X_SDIN_LL_WL_MASK, word_length));
 	} else {
 		/* Set SDOUT word length (VPREDICT + ISENSE) for capture */
-		regmap_update_bits(component->regmap, TAS675X_SDOUT_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_SDOUT_CTRL_REG,
 				   TAS675X_SDOUT_WL_MASK,
 				   FIELD_PREP(TAS675X_SDOUT_VP_WL_MASK, word_length) |
 				   FIELD_PREP(TAS675X_SDOUT_IS_WL_MASK, word_length));
 	}
 
-	tas675x_program_slot_offsets(tas, dai->id,
+	tas675x_program_slot_offsets(tas, dai_id,
 				     tas->slot_width ?: params_width(params));
 
 	tas->rate = rate;
@@ -1221,8 +1224,10 @@ static int tas675x_hw_params(struct snd_pcm_substream *substream,
 
 static int tas675x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas675x_priv *tas = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas675x_priv *tas = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	bool tdm_mode = false, i2s_mode = false;
 
 	/* Enforce Clocking Direction (Codec is strictly a consumer) */
@@ -1230,22 +1235,22 @@ static int tas675x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	case SND_SOC_DAIFMT_BC_FC:
 		break;
 	default:
-		dev_err(component->dev, "Unsupported clock provider format\n");
+		dev_err(dev, "Unsupported clock provider format\n");
 		return -EINVAL;
 	}
 
 	/* SCLK polarity: NB_NF or IB_NF only (no FSYNC inversion support) */
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
 	case SND_SOC_DAIFMT_NB_NF:
-		regmap_update_bits(component->regmap, TAS675X_SCLK_INV_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_SCLK_INV_CTRL_REG,
 				   TAS675X_SCLK_INV_MASK, 0x00);
 		break;
 	case SND_SOC_DAIFMT_IB_NF:
-		regmap_update_bits(component->regmap, TAS675X_SCLK_INV_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_SCLK_INV_CTRL_REG,
 				   TAS675X_SCLK_INV_MASK, TAS675X_SCLK_INV_MASK);
 		break;
 	default:
-		dev_err(component->dev, "Unsupported clock inversion\n");
+		dev_err(dev, "Unsupported clock inversion\n");
 		return -EINVAL;
 	}
 
@@ -1254,65 +1259,65 @@ static int tas675x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	case SND_SOC_DAIFMT_I2S:
 		i2s_mode = true;
 		tas->bclk_offset = 0;
-		regmap_update_bits(component->regmap, TAS675X_AUDIO_IF_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_AUDIO_IF_CTRL_REG,
 				   TAS675X_TDM_EN_BIT | TAS675X_SAP_FMT_MASK |
 				   TAS675X_FS_PULSE_MASK,
 				   TAS675X_SAP_FMT_I2S);
-		regmap_update_bits(component->regmap, TAS675X_SDOUT_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_SDOUT_CTRL_REG,
 				   TAS675X_SDOUT_SELECT_MASK,
 				   TAS675X_SDOUT_SELECT_NON_TDM);
 		break;
 	case SND_SOC_DAIFMT_RIGHT_J:
 		tas->bclk_offset = 0;
-		regmap_update_bits(component->regmap, TAS675X_AUDIO_IF_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_AUDIO_IF_CTRL_REG,
 				   TAS675X_TDM_EN_BIT | TAS675X_SAP_FMT_MASK |
 				   TAS675X_FS_PULSE_MASK,
 				   TAS675X_SAP_FMT_RIGHT_J);
-		regmap_update_bits(component->regmap, TAS675X_SDOUT_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_SDOUT_CTRL_REG,
 				   TAS675X_SDOUT_SELECT_MASK,
 				   TAS675X_SDOUT_SELECT_NON_TDM);
 		break;
 	case SND_SOC_DAIFMT_LEFT_J:
 		tas->bclk_offset = 0;
-		regmap_update_bits(component->regmap, TAS675X_AUDIO_IF_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_AUDIO_IF_CTRL_REG,
 				   TAS675X_TDM_EN_BIT | TAS675X_SAP_FMT_MASK |
 				   TAS675X_FS_PULSE_MASK,
 				   TAS675X_SAP_FMT_LEFT_J);
-		regmap_update_bits(component->regmap, TAS675X_SDOUT_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_SDOUT_CTRL_REG,
 				   TAS675X_SDOUT_SELECT_MASK,
 				   TAS675X_SDOUT_SELECT_NON_TDM);
 		break;
 	case SND_SOC_DAIFMT_DSP_A:
 		tdm_mode = true;
 		tas->bclk_offset = 1;
-		regmap_update_bits(component->regmap, TAS675X_AUDIO_IF_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_AUDIO_IF_CTRL_REG,
 				   TAS675X_TDM_EN_BIT | TAS675X_SAP_FMT_MASK |
 				   TAS675X_FS_PULSE_MASK,
 				   TAS675X_TDM_EN_BIT | TAS675X_SAP_FMT_TDM |
 				   TAS675X_FS_PULSE_SHORT);
-		regmap_update_bits(component->regmap, TAS675X_SDOUT_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_SDOUT_CTRL_REG,
 				   TAS675X_SDOUT_SELECT_MASK,
 				   TAS675X_SDOUT_SELECT_TDM_SDOUT1);
 		break;
 	case SND_SOC_DAIFMT_DSP_B:
 		tdm_mode = true;
 		tas->bclk_offset = 0;
-		regmap_update_bits(component->regmap, TAS675X_AUDIO_IF_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_AUDIO_IF_CTRL_REG,
 				   TAS675X_TDM_EN_BIT | TAS675X_SAP_FMT_MASK |
 				   TAS675X_FS_PULSE_MASK,
 				   TAS675X_TDM_EN_BIT | TAS675X_SAP_FMT_TDM |
 				   TAS675X_FS_PULSE_SHORT);
-		regmap_update_bits(component->regmap, TAS675X_SDOUT_CTRL_REG,
+		snd_soc_component_update_bits(component, TAS675X_SDOUT_CTRL_REG,
 				   TAS675X_SDOUT_SELECT_MASK,
 				   TAS675X_SDOUT_SELECT_TDM_SDOUT1);
 		break;
 	default:
-		dev_err(component->dev, "Unsupported DAI format\n");
+		dev_err(dev, "Unsupported DAI format\n");
 		return -EINVAL;
 	}
 
 	/* Setup Vpredict and Isense outputs */
-	if (dai->id == 2) {
+	if (dai_id == 2) {
 		unsigned int sdout_en = 0;
 
 		if (tdm_mode) {
@@ -1321,15 +1326,14 @@ static int tas675x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 				sdout_en |= TAS675X_SDOUT_EN_VPREDICT;
 			if (tas->isense_slot >= 0)
 				sdout_en |= TAS675X_SDOUT_EN_ISENSE;
-			regmap_update_bits(component->regmap,
+			snd_soc_component_update_bits(component,
 					   TAS675X_SDOUT_EN_REG,
 					   TAS675X_SDOUT_EN_VPREDICT |
 					   TAS675X_SDOUT_EN_ISENSE,
 					   sdout_en);
 			if (tas->vpredict_slot >= 0 && tas->isense_slot >= 0 &&
 			    abs(tas->vpredict_slot - tas->isense_slot) < 4)
-				dev_warn(component->dev,
-					 "ti,vpredict-slot-no and ti,isense-slot-no overlaps (each occupies 4 consecutive slots)\n");
+				dev_warn(dev, "ti,vpredict-slot-no and ti,isense-slot-no overlaps (each occupies 4 consecutive slots)\n");
 		} else if (i2s_mode) {
 			/* I2S: only one source at a time; Vpredict takes priority */
 			if (tas->vpredict_slot >= 0)
@@ -1338,7 +1342,7 @@ static int tas675x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 			else if (tas->isense_slot >= 0)
 				sdout_en = TAS675X_SDOUT_NON_TDM_SEL_ISENSE |
 					   TAS675X_SDOUT_EN_NON_TDM_ALL;
-			regmap_update_bits(component->regmap,
+			snd_soc_component_update_bits(component,
 					   TAS675X_SDOUT_EN_REG,
 					   TAS675X_SDOUT_NON_TDM_SEL_MASK |
 					   TAS675X_SDOUT_EN_NON_TDM_ALL,
@@ -1346,8 +1350,7 @@ static int tas675x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 			if (sdout_en &&
 			    tas->gpio1_func != TAS675X_GPIO_SEL_SDOUT2 &&
 			    tas->gpio2_func != TAS675X_GPIO_SEL_SDOUT2)
-				dev_warn(component->dev,
-					 "sdout enabled in I2S mode but no GPIO configured as SDOUT2; Ch3/Ch4 will be absent\n");
+				dev_warn(dev, "sdout enabled in I2S mode but no GPIO configured as SDOUT2; Ch3/Ch4 will be absent\n");
 		}
 	}
 
@@ -1357,7 +1360,9 @@ static int tas675x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int tas675x_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				unsigned int rx_mask, int slots, int slot_width)
 {
-	struct tas675x_priv *tas = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas675x_priv *tas = dev_get_drvdata(dev);
 
 	if (slots == 0) {
 		tas->slot_width = 0;
@@ -1373,16 +1378,18 @@ static int tas675x_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 
 static int tas675x_mute_stream(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas675x_priv *tas = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas675x_priv *tas = dev_get_drvdata(dev);
 	unsigned int discard;
+	int dai_id = snd_soc_dai_id(dai);
 	int ret;
 
 	if (direction == SNDRV_PCM_STREAM_CAPTURE) {
 		if (mute)
-			clear_bit(dai->id, &tas->active_capture_dais);
+			clear_bit(dai_id, &tas->active_capture_dais);
 		else
-			set_bit(dai->id, &tas->active_capture_dais);
+			set_bit(dai_id, &tas->active_capture_dais);
 		return 0;
 	}
 
@@ -1392,9 +1399,9 @@ static int tas675x_mute_stream(struct snd_soc_dai *dai, int mute, int direction)
 	 * Only transition to SLEEP when ALL are muted.
 	 */
 	if (mute)
-		clear_bit(dai->id, &tas->active_playback_dais);
+		clear_bit(dai_id, &tas->active_playback_dais);
 	else
-		set_bit(dai->id, &tas->active_playback_dais);
+		set_bit(dai_id, &tas->active_playback_dais);
 
 	/* Last playback stream */
 	if (mute && !READ_ONCE(tas->active_playback_dais)) {
@@ -2132,7 +2139,7 @@ static int tas675x_i2c_probe(struct i2c_client *client)
 	pm_runtime_mark_last_busy(tas->dev);
 	pm_runtime_enable(tas->dev);
 
-	ret = devm_snd_soc_register_component(tas->dev, &soc_codec_dev_tas675x,
+	ret = devm_snd_soc_component_register(tas->dev, &soc_codec_dev_tas675x,
 					      tas675x_dais, ARRAY_SIZE(tas675x_dais));
 	if (ret)
 		goto err_pm_disable;

@@ -304,7 +304,8 @@ static int sma1307_force_mute_get(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = (int)sma1307->force_mute_status;
 
@@ -315,7 +316,8 @@ static int sma1307_force_mute_put(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	bool change = false, val = (bool)ucontrol->value.integer.value[0];
 
 	if (sma1307->force_mute_status == val) {
@@ -332,7 +334,8 @@ static int sma1307_tdm_slot_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	int val1, val2;
 
 	regmap_read(sma1307->regmap, SMA1307_A5_TDM1, &val1);
@@ -365,7 +368,8 @@ static int sma1307_tdm_slot_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	int val = (int)ucontrol->value.integer.value[0];
 	bool change;
 
@@ -418,7 +422,8 @@ static int sma1307_sw_ot1_prot_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = (int)sma1307->sw_ot1_prot;
 
@@ -429,7 +434,8 @@ static int sma1307_sw_ot1_prot_put(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	bool change = false, val = (bool)ucontrol->value.integer.value[0];
 
 	if (sma1307->sw_ot1_prot == val)
@@ -446,7 +452,8 @@ static int sma1307_check_fault_status_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = (int)sma1307->check_fault_status;
 
@@ -457,7 +464,8 @@ static int sma1307_check_fault_status_put(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	bool change = false, val = (bool)ucontrol->value.integer.value[0];
 
 	if (sma1307->check_fault_status == val) {
@@ -474,7 +482,8 @@ static int sma1307_check_fault_period_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = sma1307->check_fault_period;
 
@@ -485,7 +494,8 @@ static int sma1307_check_fault_period_put(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	bool change = false;
@@ -507,14 +517,16 @@ static int sma1307_reset_put(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(component);
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(soc_card);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	regmap_update_bits(sma1307->regmap, SMA1307_00_SYSTEM_CTRL,
 				   SMA1307_RESET_MASK, SMA1307_RESET_ON);
 	sma1307_reset(component);
 
-	snd_ctl_notify(component->card->snd_card, SNDRV_CTL_EVENT_MASK_VALUE,
-					&kcontrol->id);
+	snd_ctl_notify(snd_card, SNDRV_CTL_EVENT_MASK_VALUE, &kcontrol->id);
 
 	return true;
 }
@@ -534,7 +546,8 @@ static int sma1307_binary_mode_put(struct snd_kcontrol *kcontrol,
 
 static void sma1307_startup(struct snd_soc_component *component)
 {
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	regmap_update_bits(sma1307->regmap, SMA1307_A2_TOP_MAN1,
 				   SMA1307_PLL_MASK, SMA1307_PLL_ON);
@@ -567,7 +580,8 @@ static void sma1307_startup(struct snd_soc_component *component)
 
 static void sma1307_shutdown(struct snd_soc_component *component)
 {
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	/* for SMA1307A */
 	cancel_delayed_work_sync(&sma1307->check_fault_work);
@@ -588,9 +602,9 @@ static void sma1307_shutdown(struct snd_soc_component *component)
 static int sma1307_aif_in_event(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-	    snd_soc_dapm_to_component(w->dapm);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	unsigned int mux = sma1307->dapm_aif_in;
 
 	switch (event) {
@@ -637,9 +651,9 @@ static int sma1307_aif_in_event(struct snd_soc_dapm_widget *w,
 static int sma1307_sdo_setting_event(struct snd_soc_dapm_widget *w,
 				     struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-	    snd_soc_dapm_to_component(w->dapm);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	unsigned int mux = sma1307->dapm_sdo_setting;
 
 	switch (event) {
@@ -711,9 +725,9 @@ static int sma1307_sdo_setting_event(struct snd_soc_dapm_widget *w,
 static int sma1307_aif_out_event(struct snd_soc_dapm_widget *w,
 				 struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-	    snd_soc_dapm_to_component(w->dapm);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	unsigned int mux = 0, val = 0, mask = 0;
 
 	if (!strcmp(w->name, SMA1307_AIF_OUT0_NAME)) {
@@ -741,9 +755,9 @@ static int sma1307_aif_out_event(struct snd_soc_dapm_widget *w,
 static int sma1307_sdo_event(struct snd_soc_dapm_widget *w,
 			     struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-	    snd_soc_dapm_to_component(w->dapm);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -792,7 +806,8 @@ static int sma1307_dapm_aif_in_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = (unsigned int)sma1307->dapm_aif_in;
 	snd_soc_dapm_put_enum_double(kcontrol, ucontrol);
@@ -805,7 +820,8 @@ static int sma1307_dapm_aif_in_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	int val = (int)ucontrol->value.enumerated.item[0];
 	bool change;
 
@@ -830,7 +846,8 @@ static int sma1307_dapm_sdo_setting_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] =
 	    (unsigned int)sma1307->dapm_sdo_setting;
@@ -844,7 +861,8 @@ static int sma1307_dapm_sdo_setting_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	int val = (int)ucontrol->value.enumerated.item[0];
 	bool change;
 
@@ -869,7 +887,8 @@ static int sma1307_dapm_aif_out_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	unsigned int val = 0;
 
 	if (!strcmp(kcontrol->id.name, SMA1307_AIF_OUT0_NAME)) {
@@ -892,7 +911,8 @@ static int sma1307_dapm_aif_out_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	int val = (int)ucontrol->value.enumerated.item[0];
 	bool change;
 
@@ -929,7 +949,8 @@ static int sma1307_dapm_sdo_enable_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = (long)sma1307->dapm_sdo_en;
 	snd_soc_dapm_put_volsw(kcontrol, ucontrol);
@@ -942,7 +963,8 @@ static int sma1307_dapm_sdo_enable_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	int val = (int)ucontrol->value.integer.value[0];
 	bool change;
 
@@ -1122,23 +1144,22 @@ static const struct snd_soc_dapm_route sma1307_audio_map[] = {
 static void sma1307_setup_pll(struct snd_soc_component *component,
 			      unsigned int bclk)
 {
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	int i = 0;
 
-	dev_dbg(component->dev, "%s: BCLK = %dHz\n", __func__, bclk);
+	dev_dbg(dev, "%s: BCLK = %dHz\n", __func__, bclk);
 
 	if (sma1307->sys_clk_id == SMA1307_PLL_CLKIN_MCLK) {
-		dev_warn(component->dev, "%s: MCLK is not supported\n",
-			 __func__);
+		dev_warn(dev, "%s: MCLK is not supported\n", __func__);
 	} else if (sma1307->sys_clk_id == SMA1307_PLL_CLKIN_BCLK) {
 		for (i = 0; i < sma1307->num_of_pll_matches; i++) {
 			if (sma1307->pll_matches[i].input_clk == bclk)
 				break;
 		}
 		if (i == sma1307->num_of_pll_matches) {
-			dev_warn(component->dev,
-				 "%s: No matching value between pll table and SCK\n",
+			dev_warn(dev, "%s: No matching value between pll table and SCK\n",
 				 __func__);
 			return;
 		}
@@ -1162,8 +1183,9 @@ static int sma1307_dai_hw_params_amp(struct snd_pcm_substream *substream,
 				     struct snd_pcm_hw_params *params,
 				     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	unsigned int bclk = 0;
 
 	if (sma1307->format == SND_SOC_DAIFMT_DSP_A)
@@ -1172,8 +1194,7 @@ static int sma1307_dai_hw_params_amp(struct snd_pcm_substream *substream,
 		bclk = params_rate(params) * params_physical_width(params)
 		    * params_channels(params);
 
-	dev_dbg(component->dev,
-		 "%s: rate = %d : bit size = %d : channel = %d\n",
+	dev_dbg(dev, "%s: rate = %d : bit size = %d : channel = %d\n",
 		 __func__, params_rate(params), params_width(params),
 		 params_channels(params));
 
@@ -1196,13 +1217,12 @@ static int sma1307_dai_hw_params_amp(struct snd_pcm_substream *substream,
 			break;
 
 		case 96000:
-			dev_warn(component->dev,
-				 "%s: %d rate not support SDO\n", __func__,
+			dev_warn(dev, "%s: %d rate not support SDO\n", __func__,
 				 params_rate(params));
 			break;
 
 		default:
-			dev_err(component->dev, "%s: not support rate : %d\n",
+			dev_err(dev, "%s: not support rate : %d\n",
 				__func__, params_rate(params));
 
 			return -EINVAL;
@@ -1242,8 +1262,7 @@ static int sma1307_dai_hw_params_amp(struct snd_pcm_substream *substream,
 						   SMA1307_DATA_24BIT);
 			break;
 		default:
-			dev_err(component->dev,
-				"%s: not support data bit : %d\n", __func__,
+			dev_err(dev, "%s: not support data bit : %d\n", __func__,
 				params_format(params));
 			return -EINVAL;
 		}
@@ -1304,8 +1323,7 @@ static int sma1307_dai_hw_params_amp(struct snd_pcm_substream *substream,
 	case 32:
 		break;
 	default:
-		dev_err(component->dev,
-			"%s: not support data bit : %d\n", __func__,
+		dev_err(dev, "%s: not support data bit : %d\n", __func__,
 			params_format(params));
 		return -EINVAL;
 	}
@@ -1316,8 +1334,9 @@ static int sma1307_dai_hw_params_amp(struct snd_pcm_substream *substream,
 static int sma1307_dai_set_sysclk_amp(struct snd_soc_dai *dai,
 				      int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	switch (clk_id) {
 	case SMA1307_EXTERNAL_CLOCK_19_2:
@@ -1326,8 +1345,7 @@ static int sma1307_dai_set_sysclk_amp(struct snd_soc_dai *dai,
 	case SMA1307_PLL_CLKIN_BCLK:
 		break;
 	default:
-		dev_err(component->dev, "%s: Invalid clk id: %d\n",
-			__func__, clk_id);
+		dev_err(dev, "%s: Invalid clk id: %d\n", __func__, clk_id);
 		return -EINVAL;
 	}
 	sma1307->sys_clk_id = clk_id;
@@ -1337,14 +1355,14 @@ static int sma1307_dai_set_sysclk_amp(struct snd_soc_dai *dai,
 
 static int sma1307_dai_set_fmt_amp(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 
 	case SND_SOC_DAIFMT_CBC_CFC:
-		dev_dbg(component->dev,
-			 "%s: %s\n", __func__, "I2S/TDM Device mode");
+		dev_dbg(dev, "%s: %s\n", __func__, "I2S/TDM Device mode");
 		regmap_update_bits(sma1307->regmap,
 					   SMA1307_01_INPUT_CTRL1,
 					   SMA1307_CONTROLLER_DEVICE_MASK,
@@ -1352,8 +1370,7 @@ static int sma1307_dai_set_fmt_amp(struct snd_soc_dai *dai, unsigned int fmt)
 		break;
 
 	case SND_SOC_DAIFMT_CBP_CFP:
-		dev_dbg(component->dev,
-			 "%s: %s\n", __func__, "I2S/TDM Controller mode");
+		dev_dbg(dev, "%s: %s\n", __func__, "I2S/TDM Controller mode");
 		regmap_update_bits(sma1307->regmap,
 					   SMA1307_01_INPUT_CTRL1,
 					   SMA1307_CONTROLLER_DEVICE_MASK,
@@ -1361,9 +1378,7 @@ static int sma1307_dai_set_fmt_amp(struct snd_soc_dai *dai, unsigned int fmt)
 		break;
 
 	default:
-		dev_err(component->dev,
-			"%s: Unsupported Controller/Device : 0x%x\n",
-			__func__, fmt);
+		dev_err(dev, "%s: Unsupported Controller/Device : 0x%x\n", __func__, fmt);
 		return -EINVAL;
 	}
 
@@ -1376,25 +1391,21 @@ static int sma1307_dai_set_fmt_amp(struct snd_soc_dai *dai, unsigned int fmt)
 		sma1307->format = fmt & SND_SOC_DAIFMT_FORMAT_MASK;
 		break;
 	default:
-		dev_err(component->dev,
-			"%s: Unsupported Audio Interface Format : 0x%x\n",
-			__func__, fmt);
+		dev_err(dev, "%s: Unsupported Audio Interface Format : 0x%x\n", __func__, fmt);
 		return -EINVAL;
 	}
 
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
 
 	case SND_SOC_DAIFMT_IB_NF:
-		dev_dbg(component->dev, "%s: %s\n",
-			 __func__, "Invert BCLK + Normal Frame");
+		dev_dbg(dev, "%s: %s\n", __func__, "Invert BCLK + Normal Frame");
 		regmap_update_bits(sma1307->regmap,
 					   SMA1307_01_INPUT_CTRL1,
 					   SMA1307_SCK_RISING_MASK,
 					   SMA1307_SCK_RISING_EDGE);
 		break;
 	case SND_SOC_DAIFMT_IB_IF:
-		dev_dbg(component->dev, "%s: %s\n",
-			 __func__, "Invert BCLK + Invert Frame");
+		dev_dbg(dev, "%s: %s\n", __func__, "Invert BCLK + Invert Frame");
 		regmap_update_bits(sma1307->regmap,
 					   SMA1307_01_INPUT_CTRL1,
 					   SMA1307_LEFTPOL_MASK
@@ -1403,21 +1414,17 @@ static int sma1307_dai_set_fmt_amp(struct snd_soc_dai *dai, unsigned int fmt)
 					   | SMA1307_SCK_RISING_EDGE);
 		break;
 	case SND_SOC_DAIFMT_NB_IF:
-		dev_dbg(component->dev, "%s: %s\n",
-			 __func__, "Normal BCLK + Invert Frame");
+		dev_dbg(dev, "%s: %s\n", __func__, "Normal BCLK + Invert Frame");
 		regmap_update_bits(sma1307->regmap,
 					   SMA1307_01_INPUT_CTRL1,
 					   SMA1307_LEFTPOL_MASK,
 					   SMA1307_HIGH_FIRST_CH);
 		break;
 	case SND_SOC_DAIFMT_NB_NF:
-		dev_dbg(component->dev, "%s: %s\n",
-			 __func__, "Normal BCLK + Normal Frame");
+		dev_dbg(dev, "%s: %s\n", __func__, "Normal BCLK + Normal Frame");
 		break;
 	default:
-		dev_err(component->dev,
-			"%s: Unsupported Bit & Frameclock : 0x%x\n",
-			__func__, fmt);
+		dev_err(dev, "%s: Unsupported Bit & Frameclock : 0x%x\n", __func__, fmt);
 		return -EINVAL;
 	}
 
@@ -1428,11 +1435,11 @@ static int sma1307_dai_set_tdm_slot(struct snd_soc_dai *dai,
 				    unsigned int tx_mask, unsigned int rx_mask,
 				    int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
-	dev_dbg(component->dev, "%s: slots = %d, slot_width - %d\n",
-		 __func__, slots, slot_width);
+	dev_dbg(dev, "%s: slots = %d, slot_width - %d\n", __func__, slots, slot_width);
 
 	sma1307->frame_size = slot_width * slots;
 
@@ -1459,8 +1466,7 @@ static int sma1307_dai_set_tdm_slot(struct snd_soc_dai *dai,
 					   SMA1307_TDM_DL_32);
 		break;
 	default:
-		dev_err(component->dev, "%s: not support TDM %d slot_width\n",
-			__func__, slot_width);
+		dev_err(dev, "%s: not support TDM %d slot_width\n", __func__, slot_width);
 		return -EINVAL;
 	}
 
@@ -1478,8 +1484,7 @@ static int sma1307_dai_set_tdm_slot(struct snd_soc_dai *dai,
 					   SMA1307_TDM_N_SLOT_8);
 		break;
 	default:
-		dev_err(component->dev, "%s: not support TDM %d slots\n",
-			__func__, slots);
+		dev_err(dev, "%s: not support TDM %d slots\n", __func__, slots);
 		return -EINVAL;
 	}
 
@@ -1489,7 +1494,7 @@ static int sma1307_dai_set_tdm_slot(struct snd_soc_dai *dai,
 					   SMA1307_TDM_SLOT0_RX_POS_MASK,
 					   sma1307->tdm_slot0_rx << 3);
 	else
-		dev_err(component->dev, "%s: Incorrect tdm-slot0-rx %d set\n",
+		dev_err(dev, "%s: Incorrect tdm-slot0-rx %d set\n",
 			__func__, sma1307->tdm_slot0_rx);
 
 	if (sma1307->tdm_slot1_rx < slots)
@@ -1498,7 +1503,7 @@ static int sma1307_dai_set_tdm_slot(struct snd_soc_dai *dai,
 					   SMA1307_TDM_SLOT1_RX_POS_MASK,
 					   sma1307->tdm_slot1_rx);
 	else
-		dev_err(component->dev, "%s: Incorrect tdm-slot1-rx %d set\n",
+		dev_err(dev, "%s: Incorrect tdm-slot1-rx %d set\n",
 			__func__, sma1307->tdm_slot1_rx);
 
 	if (sma1307->tdm_slot0_tx < slots)
@@ -1507,7 +1512,7 @@ static int sma1307_dai_set_tdm_slot(struct snd_soc_dai *dai,
 					   SMA1307_TDM_SLOT0_TX_POS_MASK,
 					   sma1307->tdm_slot0_tx << 3);
 	else
-		dev_err(component->dev, "%s: Incorrect tdm-slot0-tx %d set\n",
+		dev_err(dev, "%s: Incorrect tdm-slot0-tx %d set\n",
 			__func__, sma1307->tdm_slot0_tx);
 
 	if (sma1307->tdm_slot1_tx < slots)
@@ -1516,7 +1521,7 @@ static int sma1307_dai_set_tdm_slot(struct snd_soc_dai *dai,
 					   SMA1307_TDM_SLOT1_TX_POS_MASK,
 					   sma1307->tdm_slot1_tx);
 	else
-		dev_err(component->dev, "%s: Incorrect tdm-slot1-tx %d set\n",
+		dev_err(dev, "%s: Incorrect tdm-slot1-tx %d set\n",
 			__func__, sma1307->tdm_slot1_tx);
 
 	return 0;
@@ -1525,21 +1530,21 @@ static int sma1307_dai_set_tdm_slot(struct snd_soc_dai *dai,
 static int sma1307_dai_mute_stream(struct snd_soc_dai *dai, int mute,
 				   int stream)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 
 	if (stream == SNDRV_PCM_STREAM_CAPTURE)
 		return 0;
 	if (mute) {
-		dev_dbg(component->dev, "%s: %s\n", __func__, "MUTE");
+		dev_dbg(dev, "%s: %s\n", __func__, "MUTE");
 		regmap_update_bits(sma1307->regmap,
 					   SMA1307_0E_MUTE_VOL_CTRL,
 					   SMA1307_SPK_MUTE_MASK,
 					   SMA1307_SPK_MUTE);
 	} else {
 		if (!sma1307->force_mute_status) {
-			dev_dbg(component->dev, "%s: %s\n", __func__,
-					 "UNMUTE");
+			dev_dbg(dev, "%s: %s\n", __func__, "UNMUTE");
 			regmap_update_bits(sma1307->regmap,
 						SMA1307_0E_MUTE_VOL_CTRL,
 						SMA1307_SPK_MUTE_MASK,
@@ -1797,20 +1802,19 @@ static void sma1307_setting_loaded(struct sma1307_priv *sma1307, const char *fil
 
 static void sma1307_reset(struct snd_soc_component *component)
 {
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	unsigned int status = 0;
 
 	regmap_read(sma1307->regmap, SMA1307_FF_DEVICE_INDEX, &status);
 
 	sma1307->rev_num = status & SMA1307_REV_NUM_STATUS;
-	dev_dbg(component->dev, "%s: SMA1307 Revision %d\n",
-			 __func__, sma1307->rev_num);
+	dev_dbg(dev, "%s: SMA1307 Revision %d\n", __func__, sma1307->rev_num);
 	regmap_read(sma1307->regmap, SMA1307_99_OTP_TRM2, &sma1307->otp_trm2);
 	regmap_read(sma1307->regmap, SMA1307_9A_OTP_TRM3, &sma1307->otp_trm3);
 
 	if ((sma1307->otp_trm2 & SMA1307_OTP_STAT_MASK) != SMA1307_OTP_STAT_1)
-		dev_warn(component->dev, "%s: SMA1307 OTP Status Fail\n",
-			 __func__);
+		dev_warn(dev, "%s: SMA1307 OTP Status Fail\n", __func__);
 
 	/* Register Initial Value Setting */
 	sma1307_setting_loaded(sma1307, setting_file);
@@ -1827,7 +1831,8 @@ static void sma1307_reset(struct snd_soc_component *component)
 
 static void sma1307_set_binary(struct snd_soc_component *component)
 {
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	int i = 0, mode = 0;
 
 	for (i = 0; i < (sma1307->set.def_size); i++) {
@@ -1853,7 +1858,8 @@ static void sma1307_set_binary(struct snd_soc_component *component)
 
 static void sma1307_set_default(struct snd_soc_component *component)
 {
-	struct sma1307_priv *sma1307 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1307_priv *sma1307 = dev_get_drvdata(dev);
 	int i = 0;
 
 	for (i = 0; i < (unsigned int)ARRAY_SIZE(sma1307_reg_def); i++)
@@ -1873,7 +1879,7 @@ static int sma1307_probe(struct snd_soc_component *component)
 
 	sma1307_amp_component = component;
 
-	snd_soc_add_component_controls(component, sma1307_binary_mode_control,
+	snd_soc_component_add_controls(component, sma1307_binary_mode_control,
 			ARRAY_SIZE(sma1307_binary_mode_control));
 	sma1307_reset(component);
 
@@ -2001,7 +2007,7 @@ static int sma1307_i2c_probe(struct i2c_client *client)
 
 	i2c_set_clientdata(client, sma1307);
 
-	ret = devm_snd_soc_register_component(&client->dev,
+	ret = devm_snd_soc_component_register(&client->dev,
 					      &sma1307_component, sma1307_dai,
 					      1);
 

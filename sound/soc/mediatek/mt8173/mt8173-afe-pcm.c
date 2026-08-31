@@ -294,7 +294,9 @@ static void mt8173_afe_dais_disable_clks(struct mtk_base_afe *afe,
 static int mt8173_afe_i2s_startup(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	if (snd_soc_dai_active(dai))
 		return 0;
@@ -307,7 +309,9 @@ static int mt8173_afe_i2s_startup(struct snd_pcm_substream *substream,
 static void mt8173_afe_i2s_shutdown(struct snd_pcm_substream *substream,
 				    struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	if (snd_soc_dai_active(dai))
 		return;
@@ -321,8 +325,10 @@ static void mt8173_afe_i2s_shutdown(struct snd_pcm_substream *substream,
 static int mt8173_afe_i2s_prepare(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_pcm_runtime * const runtime = substream->runtime;
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8173_afe_private *afe_priv = afe->platform_priv;
 	int ret;
 
@@ -343,7 +349,9 @@ static int mt8173_afe_i2s_prepare(struct snd_pcm_substream *substream,
 static int mt8173_afe_hdmi_startup(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8173_afe_private *afe_priv = afe->platform_priv;
 
 	if (snd_soc_dai_active(dai))
@@ -357,7 +365,9 @@ static int mt8173_afe_hdmi_startup(struct snd_pcm_substream *substream,
 static void mt8173_afe_hdmi_shutdown(struct snd_pcm_substream *substream,
 				     struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8173_afe_private *afe_priv = afe->platform_priv;
 
 	if (snd_soc_dai_active(dai))
@@ -370,8 +380,10 @@ static void mt8173_afe_hdmi_shutdown(struct snd_pcm_substream *substream,
 static int mt8173_afe_hdmi_prepare(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_pcm_runtime * const runtime = substream->runtime;
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8173_afe_private *afe_priv = afe->platform_priv;
 
 	unsigned int val;
@@ -433,9 +445,11 @@ static int mt8173_afe_hdmi_prepare(struct snd_pcm_substream *substream,
 static int mt8173_afe_hdmi_trigger(struct snd_pcm_substream *substream, int cmd,
 				   struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
-	dev_info(afe->dev, "%s cmd=%d %s\n", __func__, cmd, dai->name);
+	dev_info(afe->dev, "%s cmd=%d %s\n", __func__, cmd, snd_soc_dai_name(dai));
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -483,8 +497,10 @@ static int mt8173_memif_fs(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_component *component = snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
-	struct mtk_base_afe_memif *memif = &afe->memif[snd_soc_rtd_to_cpu(rtd, 0)->id];
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	struct mtk_base_afe_memif *memif = &afe->memif[snd_soc_dai_id(cpu_dai)];
 	int fs;
 
 	if (memif->data->id == MT8173_AFE_MEMIF_DAI ||
@@ -1137,18 +1153,18 @@ static int mt8173_afe_pcm_dev_probe(struct platform_device *pdev)
 	afe->runtime_resume = mt8173_afe_runtime_resume;
 	afe->runtime_suspend = mt8173_afe_runtime_suspend;
 
-	ret = devm_snd_soc_register_component(dev, &mtk_afe_pcm_platform,
+	ret = devm_snd_soc_component_register(dev, &mtk_afe_pcm_platform,
 					      NULL, 0);
 	if (ret)
 		goto err_pm_disable;
 
-	ret = snd_soc_register_component(dev, &mt8173_afe_pcm_dai_component,
+	ret = snd_soc_component_register(dev, &mt8173_afe_pcm_dai_component,
 				    mt8173_afe_pcm_dais,
 				    ARRAY_SIZE(mt8173_afe_pcm_dais));
 	if (ret)
 		goto err_pm_disable;
 
-	ret = snd_soc_register_component(dev, &mt8173_afe_hdmi_dai_component,
+	ret = snd_soc_component_register(dev, &mt8173_afe_hdmi_dai_component,
 				    mt8173_afe_hdmi_dais,
 				    ARRAY_SIZE(mt8173_afe_hdmi_dais));
 	if (ret)
@@ -1165,7 +1181,7 @@ static int mt8173_afe_pcm_dev_probe(struct platform_device *pdev)
 	return 0;
 
 err_cleanup_components:
-	snd_soc_unregister_component(dev);
+	snd_soc_component_unregister(dev);
 err_pm_disable:
 	pm_runtime_disable(dev);
 	return ret;
@@ -1175,7 +1191,7 @@ static void mt8173_afe_pcm_dev_remove(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 
-	snd_soc_unregister_component(dev);
+	snd_soc_component_unregister(dev);
 
 	pm_runtime_disable(dev);
 	if (!pm_runtime_status_suspended(dev))

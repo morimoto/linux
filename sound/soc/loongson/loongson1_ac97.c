@@ -183,8 +183,11 @@ static int ls1x_ac97_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *cpu_dai)
 {
-	struct ls1x_ac97 *ac97 = dev_get_drvdata(cpu_dai->dev);
-	struct snd_dmaengine_dai_dma_data *dma_data = snd_soc_dai_get_dma_data(cpu_dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ls1x_ac97 *ac97 = dev_get_drvdata(dev);
+	struct snd_dmaengine_dai_dma_data *dma_data =
+		snd_soc_dai_stream_dma_data_get(cpu_dai, substream);
 
 	switch (params_channels(params)) {
 	case 1:
@@ -194,7 +197,7 @@ static int ls1x_ac97_hw_params(struct snd_pcm_substream *substream,
 		dma_data->addr |= LS1X_AC97_DMA_STEREO;
 		break;
 	default:
-		dev_err(cpu_dai->dev, "unsupported channels! %d\n", params_channels(params));
+		dev_err(dev, "unsupported channels! %d\n", params_channels(params));
 		return -EINVAL;
 	}
 
@@ -224,7 +227,7 @@ static int ls1x_ac97_hw_params(struct snd_pcm_substream *substream,
 					   M_SW_16_BITS | R_SW_16_BITS | L_SW_16_BITS);
 		break;
 	default:
-		dev_err(cpu_dai->dev, "unsupported format! %d\n", params_format(params));
+		dev_err(dev, "unsupported format! %d\n", params_format(params));
 		return -EINVAL;
 	}
 
@@ -233,7 +236,9 @@ static int ls1x_ac97_hw_params(struct snd_pcm_substream *substream,
 
 static int ls1x_ac97_dai_probe(struct snd_soc_dai *cpu_dai)
 {
-	struct ls1x_ac97 *ac97 = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ls1x_ac97 *ac97 = dev_get_drvdata(dev);
 
 	ac97->capture_dma_data.addr = ac97->rx_dma_base & LS1X_AC97_DMA_DADDR_MASK;
 	ac97->capture_dma_data.addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
@@ -245,8 +250,9 @@ static int ls1x_ac97_dai_probe(struct snd_soc_dai *cpu_dai)
 	ac97->playback_dma_data.addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
 	ac97->playback_dma_data.fifo_size = LS1X_AC97_DMA_FIFO_SIZE;
 
-	snd_soc_dai_init_dma_data(cpu_dai, &ac97->playback_dma_data, &ac97->capture_dma_data);
-	snd_soc_dai_set_drvdata(cpu_dai, ac97);
+	snd_soc_dai_stream_dma_data_set_playback(cpu_dai, &ac97->playback_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(cpu_dai,  &ac97->capture_dma_data);
+	dev_set_drvdata(dev, ac97);
 
 	return 0;
 }
@@ -329,7 +335,7 @@ static int ls1x_ac97_probe(struct platform_device *pdev)
 	if (ret)
 		dev_err_probe(dev, ret, "failed to register PCM\n");
 
-	ret = devm_snd_soc_register_component(dev, &ls1x_ac97_component,
+	ret = devm_snd_soc_component_register(dev, &ls1x_ac97_component,
 					      ls1x_ac97_dai, ARRAY_SIZE(ls1x_ac97_dai));
 	if (ret)
 		dev_err_probe(dev, ret, "failed to register DAI\n");

@@ -171,8 +171,9 @@ static int ak5558_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak5558_priv *ak5558 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak5558_priv *ak5558 = dev_get_drvdata(dev);
 	u8 bits;
 	int pcm_width = max(params_physical_width(params), ak5558->slot_width);
 
@@ -194,7 +195,8 @@ static int ak5558_hw_params(struct snd_pcm_substream *substream,
 
 static int ak5558_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u8 format;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -205,7 +207,7 @@ static int ak5558_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	case SND_SOC_DAIFMT_CBC_CFP:
 	case SND_SOC_DAIFMT_CBP_CFC:
 	default:
-		dev_err(dai->dev, "Clock mode unsupported");
+		dev_err(dev, "Clock mode unsupported");
 		return -EINVAL;
 	}
 
@@ -233,8 +235,9 @@ static int ak5558_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			       unsigned int rx_mask, int slots,
 			       int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak5558_priv *ak5558 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak5558_priv *ak5558 = dev_get_drvdata(dev);
 	int tdm_mode;
 
 	ak5558->slots = slots;
@@ -335,7 +338,8 @@ static void ak5558_reset(struct ak5558_priv *ak5558, bool active)
 
 static int ak5558_probe(struct snd_soc_component *component)
 {
-	struct ak5558_priv *ak5558 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak5558_priv *ak5558 = dev_get_drvdata(dev);
 
 	ak5558_reset(ak5558, false);
 	return ak5558_set_mcki(component);
@@ -343,7 +347,8 @@ static int ak5558_probe(struct snd_soc_component *component)
 
 static void ak5558_remove(struct snd_soc_component *component)
 {
-	struct ak5558_priv *ak5558 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak5558_priv *ak5558 = dev_get_drvdata(dev);
 
 	ak5558_reset(ak5558, true);
 }
@@ -468,12 +473,12 @@ static int ak5558_i2c_probe(struct i2c_client *i2c)
 	dev_id = (uintptr_t)of_device_get_match_data(&i2c->dev);
 	switch (dev_id) {
 	case AK5552:
-		ret = devm_snd_soc_register_component(&i2c->dev,
+		ret = devm_snd_soc_component_register(&i2c->dev,
 						      &soc_codec_dev_ak5552,
 						      &ak5552_dai, 1);
 		break;
 	case AK5558:
-		ret = devm_snd_soc_register_component(&i2c->dev,
+		ret = devm_snd_soc_component_register(&i2c->dev,
 						      &soc_codec_dev_ak5558,
 						      &ak5558_dai, 1);
 		break;

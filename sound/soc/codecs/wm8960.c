@@ -183,7 +183,8 @@ static const int deemph_settings[] = { 0, 32000, 44100, 48000 };
 
 static int wm8960_set_deemph(struct snd_soc_component *component)
 {
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 	int val, i, best;
 
 	/* If we're using deemphasis select the nearest available sample
@@ -202,7 +203,7 @@ static int wm8960_set_deemph(struct snd_soc_component *component)
 		val = 0;
 	}
 
-	dev_dbg(component->dev, "Set deemphasis %d\n", val);
+	dev_dbg(dev, "Set deemphasis %d\n", val);
 
 	return snd_soc_component_update_bits(component, WM8960_DACCTL1,
 				   0x6, val);
@@ -212,7 +213,8 @@ static int wm8960_get_deemph(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wm8960->deemph;
 	return 0;
@@ -222,7 +224,8 @@ static int wm8960_put_deemph(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 	unsigned int deemph = ucontrol->value.integer.value[0];
 
 	if (deemph > 1)
@@ -486,7 +489,9 @@ static const struct snd_soc_dapm_route audio_paths_capless[] = {
 
 static int wm8960_add_widgets(struct snd_soc_component *component)
 {
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 	struct wm8960_data *pdata = &wm8960->pdata;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	struct snd_soc_dapm_widget *w;
@@ -518,7 +523,7 @@ static int wm8960_add_widgets(struct snd_soc_component *component)
 	 * list each time to find the desired power state do so now
 	 * and save the result.
 	 */
-	list_for_each_entry(w, &component->card->widget_list_head, widget_list) {
+	for_each_card_widgets(card, w) {
 		if (w->dapm != dapm)
 			continue;
 		if (strcmp(w->name, "LOUT1 PGA") == 0)
@@ -528,14 +533,14 @@ static int wm8960_add_widgets(struct snd_soc_component *component)
 		if (strcmp(w->name, "OUT3 VMID") == 0)
 			wm8960->out3 = w;
 	}
-	
+
 	return 0;
 }
 
 static int wm8960_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 iface = 0;
 
 	/* set master/slave audio interface */
@@ -702,7 +707,8 @@ static
 int wm8960_configure_pll(struct snd_soc_component *component, int freq_in,
 			 int *sysclk_idx, int *dac_idx, int *bclk_idx)
 {
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 	int sysclk, bclk, lrclk, freq_out;
 	int diff, closest, best_freq_out;
 	int i, j, k;
@@ -753,7 +759,8 @@ int wm8960_configure_pll(struct snd_soc_component *component, int freq_in,
 }
 static int wm8960_configure_clocking(struct snd_soc_component *component)
 {
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 	int freq_out, freq_in;
 	u16 iface1 = snd_soc_component_read(component, WM8960_IFACE1);
 	int i, j, k;
@@ -767,13 +774,12 @@ static int wm8960_configure_clocking(struct snd_soc_component *component)
 	 * this if statement.
 	 */
 	if (!(iface1 & (1 << 6)) && !wm8960->sysclk) {
-		dev_warn(component->dev,
-			 "slave mode, but proceeding with no clock configuration\n");
+		dev_warn(dev, "slave mode, but proceeding with no clock configuration\n");
 		return 0;
 	}
 
 	if (wm8960->clk_id != WM8960_SYSCLK_MCLK && !wm8960->freq_in) {
-		dev_err(component->dev, "No MCLK configured\n");
+		dev_err(dev, "No MCLK configured\n");
 		return -EINVAL;
 	}
 
@@ -791,7 +797,7 @@ static int wm8960_configure_clocking(struct snd_soc_component *component)
 	} else if (wm8960->sysclk) {
 		freq_out = wm8960->sysclk;
 	} else {
-		dev_err(component->dev, "No SYSCLK configured\n");
+		dev_err(dev, "No SYSCLK configured\n");
 		return -EINVAL;
 	}
 
@@ -800,14 +806,14 @@ static int wm8960_configure_clocking(struct snd_soc_component *component)
 		if (ret >= 0) {
 			goto configure_clock;
 		} else if (wm8960->clk_id != WM8960_SYSCLK_AUTO) {
-			dev_err(component->dev, "failed to configure clock\n");
+			dev_err(dev, "failed to configure clock\n");
 			return -EINVAL;
 		}
 	}
 
 	freq_out = wm8960_configure_pll(component, freq_in, &i, &j, &k);
 	if (freq_out < 0) {
-		dev_err(component->dev, "failed to configure clock via PLL\n");
+		dev_err(dev, "failed to configure clock via PLL\n");
 		return freq_out;
 	}
 	wm8960_set_pll(component, freq_in, freq_out);
@@ -830,8 +836,9 @@ static int wm8960_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 	u16 iface = snd_soc_component_read(component, WM8960_IFACE1) & 0xfff3;
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	int i;
@@ -858,8 +865,7 @@ static int wm8960_hw_params(struct snd_pcm_substream *substream,
 		}
 		fallthrough;
 	default:
-		dev_err(component->dev, "unsupported width %d\n",
-			params_width(params));
+		dev_err(dev, "unsupported width %d\n", params_width(params));
 		return -EINVAL;
 	}
 
@@ -889,8 +895,9 @@ static int wm8960_hw_params(struct snd_pcm_substream *substream,
 static int wm8960_hw_free(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 
 	wm8960->is_stream_in_use[tx] = false;
@@ -900,7 +907,7 @@ static int wm8960_hw_free(struct snd_pcm_substream *substream,
 
 static int wm8960_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (mute)
 		snd_soc_component_update_bits(component, WM8960_DACCTL1, 0x8, 0x8);
@@ -912,7 +919,8 @@ static int wm8960_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int wm8960_set_bias_level_out3(struct snd_soc_component *component,
 				      enum snd_soc_bias_level level)
 {
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	u16 pm2 = snd_soc_component_read(component, WM8960_POWER2);
 	int ret;
@@ -928,9 +936,7 @@ static int wm8960_set_bias_level_out3(struct snd_soc_component *component,
 			if (!IS_ERR(wm8960->mclk)) {
 				ret = clk_prepare_enable(wm8960->mclk);
 				if (ret) {
-					dev_err(component->dev,
-						"Failed to enable MCLK: %d\n",
-						ret);
+					dev_err(dev, "Failed to enable MCLK: %d\n", ret);
 					return ret;
 				}
 			}
@@ -1009,7 +1015,8 @@ static int wm8960_set_bias_level_out3(struct snd_soc_component *component,
 static int wm8960_set_bias_level_capless(struct snd_soc_component *component,
 					 enum snd_soc_bias_level level)
 {
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	u16 pm2 = snd_soc_component_read(component, WM8960_POWER2);
 	int reg, ret;
@@ -1057,9 +1064,7 @@ static int wm8960_set_bias_level_capless(struct snd_soc_component *component,
 			if (!IS_ERR(wm8960->mclk)) {
 				ret = clk_prepare_enable(wm8960->mclk);
 				if (ret) {
-					dev_err(component->dev,
-						"Failed to enable MCLK: %d\n",
-						ret);
+					dev_err(dev, "Failed to enable MCLK: %d\n", ret);
 					return ret;
 				}
 			}
@@ -1254,8 +1259,9 @@ static int wm8960_set_pll(struct snd_soc_component *component,
 static int wm8960_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 		int source, unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 
 	wm8960->freq_in = freq_in;
 
@@ -1268,7 +1274,7 @@ static int wm8960_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 static int wm8960_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 		int div_id, int div)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 reg;
 
 	switch (div_id) {
@@ -1302,7 +1308,8 @@ static int wm8960_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 static int wm8960_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 
 	return wm8960->set_bias_level(component, level);
 }
@@ -1310,8 +1317,9 @@ static int wm8960_set_bias_level(struct snd_soc_component *component,
 static int wm8960_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 					unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 
 	switch (clk_id) {
 	case WM8960_SYSCLK_MCLK:
@@ -1384,7 +1392,8 @@ static struct snd_soc_dai_driver wm8960_dai = {
 
 static int wm8960_probe(struct snd_soc_component *component)
 {
-	struct wm8960_priv *wm8960 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8960_priv *wm8960 = dev_get_drvdata(dev);
 	struct wm8960_data *pdata = &wm8960->pdata;
 
 	if (pdata->capless)
@@ -1392,7 +1401,7 @@ static int wm8960_probe(struct snd_soc_component *component)
 	else
 		wm8960->set_bias_level = wm8960_set_bias_level_out3;
 
-	snd_soc_add_component_controls(component, wm8960_snd_controls,
+	snd_soc_component_add_controls(component, wm8960_snd_controls,
 				     ARRAY_SIZE(wm8960_snd_controls));
 	wm8960_add_widgets(component);
 
@@ -1544,7 +1553,7 @@ static int wm8960_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, wm8960);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8960, &wm8960_dai, 1);
 	if (ret)
 		goto bulk_disable;

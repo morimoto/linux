@@ -119,7 +119,7 @@ static int loongson_i2s_plat_probe(struct platform_device *pdev)
 		fsleep(200);
 	}
 
-	ret = devm_snd_soc_register_component(dev, &loongson_i2s_edma_component,
+	ret = devm_snd_soc_component_register(dev, &loongson_i2s_edma_component,
 					      &loongson_i2s_dai, 1);
 	if (ret)
 		return dev_err_probe(dev, ret, "failed to register DAI\n");

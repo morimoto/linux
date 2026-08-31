@@ -48,6 +48,8 @@ static int migor_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 	unsigned int rate = params_rate(params);
 
@@ -66,7 +68,7 @@ static int migor_hw_params(struct snd_pcm_substream *substream,
 	 * recalculates the frequency table
 	 */
 	clk_set_rate(&siumckb_clk, codec_freq);
-	dev_dbg(codec_dai->dev, "%s: configure %luHz\n", __func__, codec_freq);
+	dev_dbg(dev, "%s: configure %luHz\n", __func__, codec_freq);
 
 	ret = snd_soc_dai_set_sysclk(snd_soc_rtd_to_cpu(rtd, 0), SIU_CLKB_EXT,
 				     codec_freq / 2, SND_SOC_CLOCK_IN);
@@ -81,6 +83,8 @@ static int migor_hw_free(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	if (use_count) {
 		use_count--;
@@ -89,7 +93,7 @@ static int migor_hw_free(struct snd_pcm_substream *substream)
 			snd_soc_dai_set_sysclk(codec_dai, WM8978_PLL, 0,
 					       SND_SOC_CLOCK_IN);
 	} else {
-		dev_dbg(codec_dai->dev, "Unbalanced hw_free!\n");
+		dev_dbg(dev, "Unbalanced hw_free!\n");
 	}
 
 	return 0;

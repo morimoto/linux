@@ -889,9 +889,9 @@ static int create_sdw_dailink(struct snd_soc_card *card,
 			      struct snd_soc_dai_link **dai_links,
 			      int *be_id, struct snd_soc_codec_conf **codec_conf)
 {
-	struct device *dev = card->dev;
-	struct snd_soc_acpi_mach *mach = dev_get_platdata(card->dev);
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct device *dev = snd_soc_card_to_dev(card);
+	struct snd_soc_acpi_mach *mach = dev_get_platdata(dev);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct snd_soc_acpi_mach_params *mach_params = &mach->mach_params;
 	struct intel_mc_ctx *intel_ctx = (struct intel_mc_ctx *)ctx->private;
 	struct asoc_sdw_endpoint *sof_end;
@@ -1037,7 +1037,7 @@ static int create_sdw_dailinks(struct snd_soc_card *card,
 			       struct asoc_sdw_dailink *sof_dais,
 			       struct snd_soc_codec_conf **codec_conf)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct intel_mc_ctx *intel_ctx = (struct intel_mc_ctx *)ctx->private;
 	int ret, i;
 
@@ -1068,7 +1068,7 @@ static int create_ssp_dailinks(struct snd_soc_card *card,
 			       struct asoc_sdw_codec_info *ssp_info,
 			       unsigned long ssp_mask)
 {
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int i, j = 0;
 	int ret;
 
@@ -1104,7 +1104,7 @@ static int create_ssp_dailinks(struct snd_soc_card *card,
 static int create_dmic_dailinks(struct snd_soc_card *card,
 				struct snd_soc_dai_link **dai_links, int *be_id)
 {
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	ret = asoc_sdw_init_simple_dai_link(dev, *dai_links, be_id, "dmic01",
@@ -1135,8 +1135,8 @@ static int create_hdmi_dailinks(struct snd_soc_card *card,
 				struct snd_soc_dai_link **dai_links, int *be_id,
 				int hdmi_num)
 {
-	struct device *dev = card->dev;
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct device *dev = snd_soc_card_to_dev(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct intel_mc_ctx *intel_ctx = (struct intel_mc_ctx *)ctx->private;
 	int i, ret;
 
@@ -1177,7 +1177,7 @@ static int create_hdmi_dailinks(struct snd_soc_card *card,
 static int create_bt_dailinks(struct snd_soc_card *card,
 			      struct snd_soc_dai_link **dai_links, int *be_id)
 {
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct snd_soc_acpi_mach *mach = dev_get_platdata(dev);
 	char *cpu_dai_name;
 	char *name;
@@ -1209,7 +1209,7 @@ static int create_bt_dailinks(struct snd_soc_card *card,
 static int create_echoref_dailink(struct snd_soc_card *card,
 				  struct snd_soc_dai_link **dai_links, int *be_id)
 {
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 	char *name = devm_kasprintf(dev, GFP_KERNEL, "Loopback_Virtual");
 
@@ -1237,10 +1237,10 @@ static int create_echoref_dailink(struct snd_soc_card *card,
 static int sof_card_dai_links_create(struct snd_soc_card *card,
 				     struct snd_soc_card_driver *card_driver)
 {
-	struct device *dev = card->dev;
-	struct snd_soc_acpi_mach *mach = dev_get_platdata(card->dev);
+	struct device *dev = snd_soc_card_to_dev(card);
+	struct snd_soc_acpi_mach *mach = dev_get_platdata(dev);
 	int sdw_be_num = 0, ssp_num = 0, dmic_num = 0, bt_num = 0;
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct intel_mc_ctx *intel_ctx = (struct intel_mc_ctx *)ctx->private;
 	struct snd_soc_acpi_mach_params *mach_params = &mach->mach_params;
 	struct snd_soc_codec_conf *codec_conf;
@@ -1417,7 +1417,7 @@ err_dai:
 
 static int sof_sdw_card_late_probe(struct snd_soc_card *card)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct intel_mc_ctx *intel_ctx = (struct intel_mc_ctx *)ctx->private;
 	int ret = 0;
 
@@ -1434,7 +1434,7 @@ static int sof_sdw_card_late_probe(struct snd_soc_card *card)
 static int sof_sdw_add_dai_link(struct snd_soc_card *card,
 				struct snd_soc_dai_link *link)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct intel_mc_ctx *intel_ctx = (struct intel_mc_ctx *)ctx->private;
 
 	/* Ignore the HDMI PCM link if iDisp is not present */

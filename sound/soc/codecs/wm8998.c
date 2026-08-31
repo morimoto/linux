@@ -39,6 +39,7 @@ static int wm8998_asrc_ev(struct snd_soc_dapm_widget *w,
 			  int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int val;
 
 	switch (event) {
@@ -54,16 +55,13 @@ static int wm8998_asrc_ev(struct snd_soc_dapm_widget *w,
 			val = snd_soc_component_read(component,
 					   ARIZONA_SAMPLE_RATE_1 + val);
 			if (val >= 0x11) {
-				dev_warn(component->dev,
-					 "Unsupported ASRC rate1 (%s)\n",
+				dev_warn(dev, "Unsupported ASRC rate1 (%s)\n",
 					 arizona_sample_rate_val_to_name(val));
 				return -EINVAL;
 			}
 			break;
 		default:
-			dev_err(component->dev,
-				"Illegal ASRC rate1 selector (0x%x)\n",
-				val);
+			dev_err(dev, "Illegal ASRC rate1 selector (0x%x)\n", val);
 			return -EINVAL;
 		}
 
@@ -78,16 +76,13 @@ static int wm8998_asrc_ev(struct snd_soc_dapm_widget *w,
 			val = snd_soc_component_read(component,
 					   ARIZONA_ASYNC_SAMPLE_RATE_1 + val);
 			if (val >= 0x11) {
-				dev_warn(component->dev,
-					 "Unsupported ASRC rate2 (%s)\n",
+				dev_warn(dev, "Unsupported ASRC rate2 (%s)\n",
 					 arizona_sample_rate_val_to_name(val));
 				return -EINVAL;
 			}
 			break;
 		default:
-			dev_err(component->dev,
-				"Illegal ASRC rate2 selector (0x%x)\n",
-				val);
+			dev_err(dev, "Illegal ASRC rate2 selector (0x%x)\n", val);
 			return -EINVAL;
 		}
 		break;
@@ -103,7 +98,8 @@ static int wm8998_inmux_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8998_priv *wm8998 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8998_priv *wm8998 = dev_get_drvdata(dev);
 	struct arizona *arizona = wm8998->core.arizona;
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int mode_reg, mode_index;
@@ -1258,7 +1254,8 @@ static struct snd_soc_dai_driver wm8998_dai[] = {
 static int wm8998_set_fll(struct snd_soc_component *component, int fll_id,
 			  int source, unsigned int Fref, unsigned int Fout)
 {
-	struct wm8998_priv *wm8998 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8998_priv *wm8998 = dev_get_drvdata(dev);
 
 	switch (fll_id) {
 	case WM8998_FLL1:
@@ -1278,13 +1275,14 @@ static int wm8998_set_fll(struct snd_soc_component *component, int fll_id,
 
 static int wm8998_component_probe(struct snd_soc_component *component)
 {
-	struct wm8998_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8998_priv *priv = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	struct arizona *arizona = priv->core.arizona;
 	int ret;
 
 	arizona->dapm = dapm;
-	snd_soc_component_init_regmap(component, arizona->regmap);
+	snd_soc_component_regmap_init(component, arizona->regmap);
 
 	ret = arizona_init_spk(component);
 	if (ret < 0)
@@ -1299,7 +1297,8 @@ static int wm8998_component_probe(struct snd_soc_component *component)
 
 static void wm8998_component_remove(struct snd_soc_component *component)
 {
-	struct wm8998_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8998_priv *priv = dev_get_drvdata(dev);
 
 	priv->core.arizona->dapm = NULL;
 }
@@ -1389,7 +1388,7 @@ static int wm8998_probe(struct platform_device *pdev)
 	if (ret < 0)
 		goto err_pm_disable;
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &soc_component_dev_wm8998,
 					      wm8998_dai,
 					      ARRAY_SIZE(wm8998_dai));

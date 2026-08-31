@@ -46,6 +46,8 @@ static int smdk_wm8994_pcm_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
 	unsigned long mclk_freq;
 	int rfs, ret;
 
@@ -54,7 +56,7 @@ static int smdk_wm8994_pcm_hw_params(struct snd_pcm_substream *substream,
 		rfs = 512;
 		break;
 	default:
-		dev_err(cpu_dai->dev, "%s:%d Sampling Rate %u not supported!\n",
+		dev_err(cpu_dev, "%s:%d Sampling Rate %u not supported!\n",
 		__func__, __LINE__, params_rate(params));
 		return -EINVAL;
 	}

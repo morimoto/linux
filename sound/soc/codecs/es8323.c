@@ -444,8 +444,9 @@ static inline int get_coeff(int mclk, int rate)
 static int es8323_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct es8323_priv *es8323 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8323_priv *es8323 = dev_get_drvdata(dev);
 
 	switch (freq) {
 	case 11289600:
@@ -474,7 +475,7 @@ static int es8323_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 
 static int es8323_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u8 format_mode, inv_mode;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -543,8 +544,9 @@ static int es8323_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 static int es8323_pcm_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8323_priv *es8323 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8323_priv *es8323 = dev_get_drvdata(dev);
 
 	if (es8323->sysclk) {
 		snd_pcm_hw_constraint_list(substream->runtime, 0,
@@ -559,8 +561,9 @@ static int es8323_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8323_priv *es8323 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8323_priv *es8323 = dev_get_drvdata(dev);
 	u8 wl_mode, fs;
 	int coeff;
 
@@ -568,7 +571,7 @@ static int es8323_pcm_hw_params(struct snd_pcm_substream *substream,
 	if (coeff < 0) {
 		coeff = get_coeff(es8323->sysclk / 2, params_rate(params));
 		if (coeff < 0) {
-			dev_err(component->dev,
+			dev_err(dev,
 				"Unable to configure sample rate %dHz with %dHz MCLK\n",
 				params_rate(params), es8323->sysclk);
 			return coeff;
@@ -617,7 +620,9 @@ static int es8323_pcm_hw_params(struct snd_pcm_substream *substream,
 
 static int es8323_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	return snd_soc_component_update_bits(dai->component, ES8323_DACCONTROL3,
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	return snd_soc_component_update_bits(component, ES8323_DACCONTROL3,
 					     ES8323_DACCONTROL3_DACMUTE,
 					     mute ? ES8323_DACCONTROL3_DACMUTE : 0);
 }
@@ -668,21 +673,22 @@ static struct snd_soc_dai_driver es8323_dai = {
 
 static int es8323_probe(struct snd_soc_component *component)
 {
-	struct es8323_priv *es8323 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8323_priv *es8323 = dev_get_drvdata(dev);
 	int ret;
 
-	es8323->mclk = devm_clk_get_optional(component->dev, "mclk");
+	es8323->mclk = devm_clk_get_optional(dev, "mclk");
 	if (IS_ERR(es8323->mclk)) {
-		dev_err(component->dev, "unable to get mclk\n");
+		dev_err(dev, "unable to get mclk\n");
 		return PTR_ERR(es8323->mclk);
 	}
 
 	if (!es8323->mclk)
-		dev_warn(component->dev, "assuming static mclk\n");
+		dev_warn(dev, "assuming static mclk\n");
 
 	ret = clk_prepare_enable(es8323->mclk);
 	if (ret) {
-		dev_err(component->dev, "unable to enable mclk\n");
+		dev_err(dev, "unable to enable mclk\n");
 		return ret;
 	}
 
@@ -695,7 +701,8 @@ static int es8323_probe(struct snd_soc_component *component)
 static int es8323_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct es8323_priv *es8323 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8323_priv *es8323 = dev_get_drvdata(dev);
 	int ret;
 
 	switch (level) {
@@ -725,7 +732,8 @@ static int es8323_set_bias_level(struct snd_soc_component *component,
 
 static void es8323_remove(struct snd_soc_component *component)
 {
-	struct es8323_priv *es8323 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8323_priv *es8323 = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(es8323->mclk);
 	es8323_set_bias_level(component, SND_SOC_BIAS_OFF);
@@ -733,7 +741,8 @@ static void es8323_remove(struct snd_soc_component *component)
 
 static int es8323_suspend(struct snd_soc_component *component)
 {
-	struct es8323_priv *es8323 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8323_priv *es8323 = dev_get_drvdata(dev);
 
 	regcache_cache_only(es8323->regmap, true);
 	regcache_mark_dirty(es8323->regmap);
@@ -743,7 +752,8 @@ static int es8323_suspend(struct snd_soc_component *component)
 
 static int es8323_resume(struct snd_soc_component *component)
 {
-	struct es8323_priv *es8323 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8323_priv *es8323 = dev_get_drvdata(dev);
 
 	regcache_cache_only(es8323->regmap, false);
 	regcache_sync(es8323->regmap);
@@ -793,7 +803,7 @@ static int es8323_i2c_probe(struct i2c_client *i2c_client)
 	if (IS_ERR(es8323->regmap))
 		return PTR_ERR(es8323->regmap);
 
-	return devm_snd_soc_register_component(dev,
+	return devm_snd_soc_component_register(dev,
 					       &soc_component_dev_es8323,
 					       &es8323_dai, 1);
 }

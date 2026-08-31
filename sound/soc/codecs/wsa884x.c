@@ -1588,7 +1588,8 @@ static int wsa884x_dev_mode_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa884x_priv *wsa884x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa884x_priv *wsa884x = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = wsa884x->dev_mode;
 
@@ -1599,7 +1600,8 @@ static int wsa884x_dev_mode_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa884x_priv *wsa884x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa884x_priv *wsa884x = dev_get_drvdata(dev);
 
 	if (wsa884x->dev_mode == ucontrol->value.enumerated.item[0])
 		return 0;
@@ -1613,7 +1615,8 @@ static int wsa884x_get_swr_port(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct wsa884x_priv *wsa884x = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wsa884x_priv *wsa884x = dev_get_drvdata(dev);
 	struct soc_mixer_control *mixer = (struct soc_mixer_control *)kcontrol->private_value;
 	int portidx = mixer->reg;
 
@@ -1626,7 +1629,8 @@ static int wsa884x_set_swr_port(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct wsa884x_priv *wsa884x = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wsa884x_priv *wsa884x = dev_get_drvdata(dev);
 	struct soc_mixer_control *mixer = (struct soc_mixer_control *)kcontrol->private_value;
 	int portidx = mixer->reg;
 
@@ -1647,9 +1651,10 @@ static int wsa884x_set_swr_port(struct snd_kcontrol *kcontrol,
 
 static int wsa884x_codec_probe(struct snd_soc_component *comp)
 {
-	struct wsa884x_priv *wsa884x = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wsa884x_priv *wsa884x = dev_get_drvdata(dev);
 
-	snd_soc_component_init_regmap(comp, wsa884x->regmap);
+	snd_soc_component_regmap_init(comp, wsa884x->regmap);
 
 	return 0;
 }
@@ -1697,7 +1702,8 @@ static int wsa884x_spkr_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wsa884x_priv *wsa884x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa884x_priv *wsa884x = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -1770,7 +1776,9 @@ static int wsa884x_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct wsa884x_priv *wsa884x = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa884x_priv *wsa884x = dev_get_drvdata(dev);
 	int i;
 
 	wsa884x->active_ports = 0;
@@ -1792,7 +1800,9 @@ static int wsa884x_hw_params(struct snd_pcm_substream *substream,
 static int wsa884x_hw_free(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct wsa884x_priv *wsa884x = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa884x_priv *wsa884x = dev_get_drvdata(dev);
 
 	sdw_stream_remove_slave(wsa884x->slave, wsa884x->sruntime);
 
@@ -1801,7 +1811,7 @@ static int wsa884x_hw_free(struct snd_pcm_substream *substream,
 
 static int wsa884x_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (mute) {
 		snd_soc_component_write_field(component, WSA884X_DRE_CTL_1,
@@ -1826,7 +1836,9 @@ static int wsa884x_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 static int wsa884x_set_stream(struct snd_soc_dai *dai,
 			      void *stream, int direction)
 {
-	struct wsa884x_priv *wsa884x = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa884x_priv *wsa884x = dev_get_drvdata(dev);
 
 	wsa884x->sruntime = stream;
 
@@ -2126,7 +2138,7 @@ static int wsa884x_probe(struct sdw_slave *pdev,
 	pm_runtime_set_active(dev);
 	pm_runtime_enable(dev);
 
-	return devm_snd_soc_register_component(dev,
+	return devm_snd_soc_component_register(dev,
 					       &wsa884x_component_drv,
 					       wsa884x_dais,
 					       ARRAY_SIZE(wsa884x_dais));

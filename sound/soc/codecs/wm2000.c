@@ -600,7 +600,8 @@ static int wm2000_anc_mode_get(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm2000_priv *wm2000 = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm2000_priv *wm2000 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wm2000->anc_active;
 
@@ -611,7 +612,8 @@ static int wm2000_anc_mode_put(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm2000_priv *wm2000 = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm2000_priv *wm2000 = dev_get_drvdata(dev);
 	unsigned int anc_active = ucontrol->value.integer.value[0];
 
 	if (anc_active > 1)
@@ -628,7 +630,8 @@ static int wm2000_speaker_get(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm2000_priv *wm2000 = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm2000_priv *wm2000 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wm2000->spk_ena;
 
@@ -639,7 +642,8 @@ static int wm2000_speaker_put(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm2000_priv *wm2000 = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm2000_priv *wm2000 = dev_get_drvdata(dev);
 	unsigned int val = ucontrol->value.integer.value[0];
 
 	if (val > 1)
@@ -666,7 +670,8 @@ static int wm2000_anc_power_event(struct snd_soc_dapm_widget *w,
 				  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm2000_priv *wm2000 = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm2000_priv *wm2000 = dev_get_drvdata(dev);
 
 	guard(mutex)(&wm2000->lock);
 
@@ -703,14 +708,16 @@ static const struct snd_soc_dapm_route wm2000_audio_map[] = {
 #ifdef CONFIG_PM
 static int wm2000_suspend(struct snd_soc_component *component)
 {
-	struct wm2000_priv *wm2000 = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm2000_priv *wm2000 = dev_get_drvdata(dev);
 
 	return wm2000_anc_transition(wm2000, ANC_OFF);
 }
 
 static int wm2000_resume(struct snd_soc_component *component)
 {
-	struct wm2000_priv *wm2000 = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm2000_priv *wm2000 = dev_get_drvdata(dev);
 
 	return wm2000_anc_set_mode(wm2000);
 }
@@ -761,7 +768,8 @@ static const struct regmap_config wm2000_regmap = {
 
 static int wm2000_probe(struct snd_soc_component *component)
 {
-	struct wm2000_priv *wm2000 = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm2000_priv *wm2000 = dev_get_drvdata(dev);
 
 	/* This will trigger a transition to standby mode by default */
 	wm2000_anc_set_mode(wm2000);
@@ -771,7 +779,8 @@ static int wm2000_probe(struct snd_soc_component *component)
 
 static void wm2000_remove(struct snd_soc_component *component)
 {
-	struct wm2000_priv *wm2000 = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm2000_priv *wm2000 = dev_get_drvdata(dev);
 
 	wm2000_anc_transition(wm2000, ANC_OFF);
 }
@@ -903,7 +912,7 @@ static int wm2000_i2c_probe(struct i2c_client *i2c)
 
 	wm2000_reset(wm2000);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 					&soc_component_dev_wm2000, NULL, 0);
 
 err_supplies:

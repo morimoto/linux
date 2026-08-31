@@ -1133,7 +1133,8 @@ static int wsa_dev_mode_get(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa883x_priv *wsa883x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa883x_priv *wsa883x = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = wsa883x->dev_mode;
 
@@ -1144,7 +1145,8 @@ static int wsa_dev_mode_put(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa883x_priv *wsa883x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa883x_priv *wsa883x = dev_get_drvdata(dev);
 
 	if (wsa883x->dev_mode == ucontrol->value.enumerated.item[0])
 		return 0;
@@ -1164,7 +1166,8 @@ static int wsa883x_get_swr_port(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct wsa883x_priv *data = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wsa883x_priv *data = dev_get_drvdata(dev);
 	struct soc_mixer_control *mixer = (struct soc_mixer_control *)kcontrol->private_value;
 	int portidx = mixer->reg;
 
@@ -1177,7 +1180,8 @@ static int wsa883x_set_swr_port(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct wsa883x_priv *data = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wsa883x_priv *data = dev_get_drvdata(dev);
 	struct soc_mixer_control *mixer = (struct soc_mixer_control *)kcontrol->private_value;
 	int portidx = mixer->reg;
 
@@ -1200,7 +1204,8 @@ static int wsa883x_get_comp_offset(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa883x_priv *wsa883x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa883x_priv *wsa883x = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wsa883x->comp_offset;
 
@@ -1211,7 +1216,8 @@ static int wsa883x_set_comp_offset(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa883x_priv *wsa883x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa883x_priv *wsa883x = dev_get_drvdata(dev);
 
 	if (wsa883x->comp_offset == ucontrol->value.integer.value[0])
 		return 0;
@@ -1223,9 +1229,10 @@ static int wsa883x_set_comp_offset(struct snd_kcontrol *kcontrol,
 
 static int wsa883x_codec_probe(struct snd_soc_component *comp)
 {
-	struct wsa883x_priv *wsa883x = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wsa883x_priv *wsa883x = dev_get_drvdata(dev);
 
-	snd_soc_component_init_regmap(comp, wsa883x->regmap);
+	snd_soc_component_regmap_init(comp, wsa883x->regmap);
 
 	return 0;
 }
@@ -1234,7 +1241,8 @@ static int wsa883x_spkr_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wsa883x_priv *wsa883x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa883x_priv *wsa883x = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -1338,7 +1346,9 @@ static int wsa883x_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct wsa883x_priv *wsa883x = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa883x_priv *wsa883x = dev_get_drvdata(dev);
 	int i;
 
 	wsa883x->active_ports = 0;
@@ -1360,7 +1370,9 @@ static int wsa883x_hw_params(struct snd_pcm_substream *substream,
 static int wsa883x_hw_free(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct wsa883x_priv *wsa883x = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa883x_priv *wsa883x = dev_get_drvdata(dev);
 
 	sdw_stream_remove_slave(wsa883x->slave, wsa883x->sruntime);
 
@@ -1370,7 +1382,9 @@ static int wsa883x_hw_free(struct snd_pcm_substream *substream,
 static int wsa883x_set_sdw_stream(struct snd_soc_dai *dai,
 				  void *stream, int direction)
 {
-	struct wsa883x_priv *wsa883x = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa883x_priv *wsa883x = dev_get_drvdata(dev);
 
 	wsa883x->sruntime = stream;
 
@@ -1379,7 +1393,7 @@ static int wsa883x_set_sdw_stream(struct snd_soc_dai *dai,
 
 static int wsa883x_digital_mute(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (mute) {
 		snd_soc_component_write_field(component, WSA883X_DRE_CTL_1,
@@ -1670,7 +1684,7 @@ static int wsa883x_probe(struct sdw_slave *pdev,
 	pm_runtime_set_active(dev);
 	pm_runtime_enable(dev);
 
-	ret = devm_snd_soc_register_component(dev,
+	ret = devm_snd_soc_component_register(dev,
 					      &wsa883x_component_drv,
 					       wsa883x_dais,
 					       ARRAY_SIZE(wsa883x_dais));

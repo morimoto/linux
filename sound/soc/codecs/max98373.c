@@ -21,7 +21,8 @@ static int max98373_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct max98373_priv *max98373 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98373_priv *max98373 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -177,7 +178,8 @@ static int max98373_feedback_get(struct snd_kcontrol *kcontrol,
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
-	struct max98373_priv *max98373 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98373_priv *max98373 = dev_get_drvdata(dev);
 	int i;
 
 	if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF) {
@@ -352,10 +354,11 @@ EXPORT_SYMBOL_GPL(max98373_reset);
 
 static int max98373_probe(struct snd_soc_component *component)
 {
-	struct max98373_priv *max98373 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98373_priv *max98373 = dev_get_drvdata(dev);
 
 	/* Software Reset */
-	max98373_reset(max98373, component->dev);
+	max98373_reset(max98373, dev);
 
 	/* IV default slot configuration */
 	regmap_write(max98373->regmap,
@@ -442,9 +445,10 @@ EXPORT_SYMBOL_GPL(soc_codec_dev_max98373);
 
 static int max98373_sdw_probe(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 

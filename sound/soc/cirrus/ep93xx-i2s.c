@@ -196,10 +196,12 @@ static irqreturn_t ep93xx_i2s_interrupt(int irq, void *dev_id)
 
 static int ep93xx_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct ep93xx_i2s_info *info = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ep93xx_i2s_info *info = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai,	&info->dma_params_tx,
-					&info->dma_params_rx);
+	snd_soc_dai_stream_dma_data_set_playback(dai,	&info->dma_params_tx);
+	snd_soc_dai_stream_dma_data_set_capture(dai,	&info->dma_params_rx);
 
 	return 0;
 }
@@ -207,7 +209,9 @@ static int ep93xx_i2s_dai_probe(struct snd_soc_dai *dai)
 static int ep93xx_i2s_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct ep93xx_i2s_info *info = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ep93xx_i2s_info *info = dev_get_drvdata(dev);
 
 	return ep93xx_i2s_enable(info, substream->stream);
 }
@@ -215,7 +219,9 @@ static int ep93xx_i2s_startup(struct snd_pcm_substream *substream,
 static void ep93xx_i2s_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct ep93xx_i2s_info *info = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ep93xx_i2s_info *info = dev_get_drvdata(dev);
 
 	ep93xx_i2s_disable(info, substream->stream);
 }
@@ -223,7 +229,9 @@ static void ep93xx_i2s_shutdown(struct snd_pcm_substream *substream,
 static int ep93xx_i2s_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 				  unsigned int fmt)
 {
-	struct ep93xx_i2s_info *info = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ep93xx_i2s_info *info = dev_get_drvdata(dev);
 	unsigned int clk_cfg;
 	unsigned int txlin_ctrl = 0;
 	unsigned int rxlin_ctrl = 0;
@@ -300,7 +308,9 @@ static int ep93xx_i2s_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct ep93xx_i2s_info *info = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ep93xx_i2s_info *info = dev_get_drvdata(dev);
 	unsigned word_len, div, sdiv, lrdiv;
 	int err;
 
@@ -358,7 +368,9 @@ static int ep93xx_i2s_hw_params(struct snd_pcm_substream *substream,
 static int ep93xx_i2s_set_sysclk(struct snd_soc_dai *cpu_dai, int clk_id,
 				 unsigned int freq, int dir)
 {
-	struct ep93xx_i2s_info *info = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ep93xx_i2s_info *info = dev_get_drvdata(dev);
 
 	if (dir == SND_SOC_CLOCK_IN || clk_id != 0)
 		return -EINVAL;
@@ -371,7 +383,8 @@ static int ep93xx_i2s_set_sysclk(struct snd_soc_dai *cpu_dai, int clk_id,
 #ifdef CONFIG_PM
 static int ep93xx_i2s_suspend(struct snd_soc_component *component)
 {
-	struct ep93xx_i2s_info *info = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ep93xx_i2s_info *info = dev_get_drvdata(dev);
 
 	if (!snd_soc_component_active(component))
 		return 0;
@@ -384,7 +397,8 @@ static int ep93xx_i2s_suspend(struct snd_soc_component *component)
 
 static int ep93xx_i2s_resume(struct snd_soc_component *component)
 {
-	struct ep93xx_i2s_info *info = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ep93xx_i2s_info *info = dev_get_drvdata(dev);
 	int err;
 
 	if (!snd_soc_component_active(component))
@@ -491,7 +505,7 @@ static int ep93xx_i2s_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, info);
 
-	err = devm_snd_soc_register_component(&pdev->dev, &ep93xx_i2s_component,
+	err = devm_snd_soc_component_register(&pdev->dev, &ep93xx_i2s_component,
 					 &ep93xx_i2s_dai, 1);
 	if (err)
 		goto fail_put_lrclk;

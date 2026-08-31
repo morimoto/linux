@@ -87,10 +87,11 @@ static int fsl_audmix_state_trans(struct snd_soc_component *comp,
 				  unsigned int *mask, unsigned int *ctr,
 				  const struct fsl_audmix_state prm)
 {
-	struct fsl_audmix *priv = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_audmix *priv = dev_get_drvdata(dev);
 	/* Enforce all required TDMs are started */
 	if ((priv->tdms & prm.tdms) != prm.tdms) {
-		dev_dbg(comp->dev, "%s", prm.msg);
+		dev_dbg(dev, "%s", prm.msg);
 		return -EINVAL;
 	}
 
@@ -112,7 +113,8 @@ static int fsl_audmix_put_mix_clk_src(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct fsl_audmix *priv = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_audmix *priv = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int *item = ucontrol->value.enumerated.item;
 	unsigned int reg_val, val, mix_clk;
@@ -126,23 +128,19 @@ static int fsl_audmix_put_mix_clk_src(struct snd_kcontrol *kcontrol,
 			>> FSL_AUDMIX_CTR_MIXCLK_SHIFT);
 	val = snd_soc_enum_item_to_val(e, item[0]);
 
-	dev_dbg(comp->dev, "TDMs=x%08x, val=x%08x\n", priv->tdms, val);
+	dev_dbg(dev, "TDMs=x%08x, val=x%08x\n", priv->tdms, val);
 
 	/**
 	 * Ensure the current selected mixer clock is available
 	 * for configuration propagation
 	 */
 	if (!(priv->tdms & BIT(mix_clk))) {
-		dev_err(comp->dev,
-			"Started TDM%d needed for config propagation!\n",
-			mix_clk + 1);
+		dev_err(dev, "Started TDM%d needed for config propagation!\n", mix_clk + 1);
 		return -EINVAL;
 	}
 
 	if (!(priv->tdms & BIT(val))) {
-		dev_err(comp->dev,
-			"The selected clock source has no TDM%d enabled!\n",
-			val + 1);
+		dev_err(dev, "The selected clock source has no TDM%d enabled!\n", val + 1);
 		return -EINVAL;
 	}
 
@@ -153,7 +151,8 @@ static int fsl_audmix_put_out_src(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct fsl_audmix *priv = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_audmix *priv = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int *item = ucontrol->value.enumerated.item;
 	u32 out_src, mix_clk;
@@ -175,7 +174,7 @@ static int fsl_audmix_put_out_src(struct snd_kcontrol *kcontrol,
 	/* "To" state */
 	val = snd_soc_enum_item_to_val(e, item[0]);
 
-	dev_dbg(comp->dev, "TDMs=x%08x, val=x%08x\n", priv->tdms, val);
+	dev_dbg(dev, "TDMs=x%08x, val=x%08x\n", priv->tdms, val);
 
 	/* Check if state is changing ... */
 	if (out_src == val)
@@ -185,9 +184,7 @@ static int fsl_audmix_put_out_src(struct snd_kcontrol *kcontrol,
 	 * for configuration propagation
 	 */
 	if (!(priv->tdms & BIT(mix_clk))) {
-		dev_err(comp->dev,
-			"Started TDM%d needed for config propagation!\n",
-			mix_clk + 1);
+		dev_err(dev, "Started TDM%d needed for config propagation!\n", mix_clk + 1);
 		return -EINVAL;
 	}
 
@@ -244,7 +241,7 @@ static const struct snd_kcontrol_new fsl_audmix_snd_controls[] = {
 
 static int fsl_audmix_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *comp = dai->component;
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
 	u32 mask = 0, ctr = 0;
 
 	/* AUDMIX is working in DSP_A format only */
@@ -285,7 +282,10 @@ static int fsl_audmix_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int fsl_audmix_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 				  struct snd_soc_dai *dai)
 {
-	struct fsl_audmix *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_audmix *priv = dev_get_drvdata(dev);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 
 	/* Capture stream shall not be handled */
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE)
@@ -296,13 +296,13 @@ static int fsl_audmix_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 	case SNDRV_PCM_TRIGGER_RESUME:
 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
 		scoped_guard(spinlock_irqsave, &priv->lock)
-			priv->tdms |= BIT(dai->driver->id);
+			priv->tdms |= BIT(dai_driver->id);
 		break;
 	case SNDRV_PCM_TRIGGER_STOP:
 	case SNDRV_PCM_TRIGGER_SUSPEND:
 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
 		scoped_guard(spinlock_irqsave, &priv->lock)
-			priv->tdms &= ~BIT(dai->driver->id);
+			priv->tdms &= ~BIT(dai_driver->id);
 		break;
 	default:
 		return -EINVAL;
@@ -508,7 +508,7 @@ static int fsl_audmix_probe(struct platform_device *pdev)
 	/* To enable regmap cache only when runtime PM enabled */
 	pm_runtime_put(dev);
 
-	ret = devm_snd_soc_register_component(dev, &fsl_audmix_component,
+	ret = devm_snd_soc_component_register(dev, &fsl_audmix_component,
 					      fsl_audmix_dai,
 					      ARRAY_SIZE(fsl_audmix_dai));
 	if (ret) {

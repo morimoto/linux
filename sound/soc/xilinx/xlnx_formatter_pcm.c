@@ -314,7 +314,8 @@ static irqreturn_t xlnx_s2mm_irq_handler(int irq, void *arg)
 static int xlnx_formatter_set_sysclk(struct snd_soc_component *component,
 				     int clk_id, int source, unsigned int freq, int dir)
 {
-	struct xlnx_pcm_drv_data *adata = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct xlnx_pcm_drv_data *adata = dev_get_drvdata(dev);
 
 	adata->sysclk = freq;
 	return 0;
@@ -328,7 +329,8 @@ static int xlnx_formatter_pcm_open(struct snd_soc_component *component,
 	u32 ch_count_mask, ch_count_shift, data_xfer_mode, data_xfer_shift;
 	struct xlnx_pcm_stream_param *stream_data;
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	struct xlnx_pcm_drv_data *adata = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct xlnx_pcm_drv_data *adata = dev_get_drvdata(dev);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK &&
 	    !adata->mm2s_presence)
@@ -367,8 +369,7 @@ static int xlnx_formatter_pcm_open(struct snd_soc_component *component,
 
 	stream_data->xfer_mode = (val & data_xfer_mode) >> data_xfer_shift;
 	stream_data->ch_limit = (val & ch_count_mask) >> ch_count_shift;
-	dev_info(component->dev,
-		 "stream %d : format = %d mode = %d ch_limit = %d\n",
+	dev_info(dev, "stream %d : format = %d mode = %d ch_limit = %d\n",
 		 substream->stream, stream_data->interleaved,
 		 stream_data->xfer_mode, stream_data->ch_limit);
 
@@ -380,8 +381,7 @@ static int xlnx_formatter_pcm_open(struct snd_soc_component *component,
 					 SNDRV_PCM_HW_PARAM_PERIOD_BYTES,
 					 XLNX_AUD_ALIGN_BYTES);
 	if (err) {
-		dev_err(component->dev,
-			"Unable to set constraint on period bytes\n");
+		dev_err(dev, "Unable to set constraint on period bytes\n");
 		goto error;
 	}
 
@@ -390,8 +390,7 @@ static int xlnx_formatter_pcm_open(struct snd_soc_component *component,
 					 SNDRV_PCM_HW_PARAM_BUFFER_BYTES,
 					 XLNX_AUD_ALIGN_BYTES);
 	if (err) {
-		dev_err(component->dev,
-			"Unable to set constraint on buffer bytes\n");
+		dev_err(dev, "Unable to set constraint on buffer bytes\n");
 		goto error;
 	}
 
@@ -399,8 +398,7 @@ static int xlnx_formatter_pcm_open(struct snd_soc_component *component,
 	err = snd_pcm_hw_constraint_integer(runtime,
 					    SNDRV_PCM_HW_PARAM_PERIODS);
 	if (err < 0) {
-		dev_err(component->dev,
-			"Unable to set constraint on periods to be integer\n");
+		dev_err(dev, "Unable to set constraint on periods to be integer\n");
 		goto error;
 	}
 
@@ -424,12 +422,13 @@ static int xlnx_formatter_pcm_close(struct snd_soc_component *component,
 				    struct snd_pcm_substream *substream)
 {
 	int ret;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct xlnx_pcm_stream_param *stream_data =
 			substream->runtime->private_data;
 
 	ret = xlnx_formatter_pcm_reset(stream_data->mmio);
 	if (ret) {
-		dev_err(component->dev, "audio formatter reset failed\n");
+		dev_err(dev, "audio formatter reset failed\n");
 		goto err_reset;
 	}
 	xlnx_formatter_disable_irqs(stream_data->mmio, substream->stream);
@@ -464,7 +463,8 @@ static int xlnx_formatter_pcm_hw_params(struct snd_soc_component *component,
 	u64 size;
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct xlnx_pcm_stream_param *stream_data = runtime->private_data;
-	struct xlnx_pcm_drv_data *adata = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct xlnx_pcm_drv_data *adata = dev_get_drvdata(dev);
 
 	active_ch = params_channels(params);
 	if (active_ch > stream_data->ch_limit)
@@ -475,7 +475,7 @@ static int xlnx_formatter_pcm_hw_params(struct snd_soc_component *component,
 		unsigned int mclk_fs = adata->sysclk / params_rate(params);
 
 		if (adata->sysclk % params_rate(params) != 0) {
-			dev_warn(component->dev, "sysclk %u not divisible by rate %u\n",
+			dev_warn(dev, "sysclk %u not divisible by rate %u\n",
 				 adata->sysclk, params_rate(params));
 			return -EINVAL;
 		}
@@ -492,8 +492,7 @@ static int xlnx_formatter_pcm_hw_params(struct snd_soc_component *component,
 			aes_reg2_val = readl(stream_data->mmio +
 					     XLNX_AUD_CH_STS_START + 0x4);
 
-			xlnx_parse_aes_params(aes_reg1_val, aes_reg2_val,
-					      component->dev);
+			xlnx_parse_aes_params(aes_reg1_val, aes_reg2_val, dev);
 		}
 	}
 
@@ -571,8 +570,10 @@ static int xlnx_formatter_pcm_trigger(struct snd_soc_component *component,
 static int xlnx_formatter_pcm_new(struct snd_soc_component *component,
 				  struct snd_soc_pcm_runtime *rtd)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	snd_pcm_set_managed_buffer_all(rtd->pcm,
-			SNDRV_DMA_TYPE_DEV, component->dev,
+			SNDRV_DMA_TYPE_DEV, dev,
 			xlnx_pcm_hardware.buffer_bytes_max,
 			xlnx_pcm_hardware.buffer_bytes_max);
 	return 0;
@@ -677,7 +678,7 @@ static int xlnx_formatter_pcm_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(dev, aud_drv_data);
 
-	ret = devm_snd_soc_register_component(dev, &xlnx_asoc_component,
+	ret = devm_snd_soc_component_register(dev, &xlnx_asoc_component,
 					      NULL, 0);
 	if (ret) {
 		dev_err(dev, "pcm platform device register failed\n");

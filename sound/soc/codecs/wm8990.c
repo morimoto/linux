@@ -843,7 +843,7 @@ static void pll_factors(struct _pll_div *pll_div, unsigned int target,
 static int wm8990_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 		int source, unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct _pll_div pll_div;
 
 	if (freq_in && freq_out) {
@@ -876,8 +876,9 @@ static int wm8990_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 static int wm8990_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8990_priv *wm8990 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8990_priv *wm8990 = dev_get_drvdata(dev);
 
 	wm8990->sysclk = freq;
 	return 0;
@@ -889,7 +890,7 @@ static int wm8990_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int wm8990_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 audio1, audio3;
 
 	audio1 = snd_soc_component_read(component, WM8990_AUDIO_INTERFACE_1);
@@ -942,7 +943,7 @@ static int wm8990_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int wm8990_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 		int div_id, int div)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
 	switch (div_id) {
 	case WM8990_MCLK_DIV:
@@ -975,7 +976,7 @@ static int wm8990_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 audio1 = snd_soc_component_read(component, WM8990_AUDIO_INTERFACE_1);
 
 	audio1 &= ~WM8990_AIF_WL_MASK;
@@ -1000,7 +1001,7 @@ static int wm8990_hw_params(struct snd_pcm_substream *substream,
 
 static int wm8990_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 val;
 
 	val  = snd_soc_component_read(component, WM8990_DAC_CTRL) & ~WM8990_DAC_MUTE;
@@ -1016,7 +1017,8 @@ static int wm8990_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int wm8990_set_bias_level(struct snd_soc_component *component,
 	enum snd_soc_bias_level level)
 {
-	struct wm8990_priv *wm8990 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8990_priv *wm8990 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -1034,7 +1036,7 @@ static int wm8990_set_bias_level(struct snd_soc_component *component,
 		if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF) {
 			ret = regcache_sync(wm8990->regmap);
 			if (ret < 0) {
-				dev_err(component->dev, "Failed to sync cache: %d\n", ret);
+				dev_err(dev, "Failed to sync cache: %d\n", ret);
 				return ret;
 			}
 
@@ -1243,7 +1245,7 @@ static int wm8990_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, wm8990);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8990, &wm8990_dai, 1);
 
 	return ret;

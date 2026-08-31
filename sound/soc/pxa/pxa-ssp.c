@@ -73,7 +73,9 @@ static void pxa_ssp_set_dma_params(struct ssp_device *ssp, int width4,
 static int pxa_ssp_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *cpu_dai)
 {
-	struct ssp_priv *priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssp_priv *priv = dev_get_drvdata(dev);
 	struct ssp_device *ssp = priv->ssp;
 	struct snd_dmaengine_dai_dma_data *dma;
 	int ret = 0;
@@ -91,7 +93,7 @@ static int pxa_ssp_startup(struct snd_pcm_substream *substream,
 	dma->chan_name = substream->stream == SNDRV_PCM_STREAM_PLAYBACK ?
 		"tx" : "rx";
 
-	snd_soc_dai_set_dma_data(cpu_dai, substream, dma);
+	snd_soc_dai_stream_dma_data_set(cpu_dai, substream, dma);
 
 	return ret;
 }
@@ -99,7 +101,9 @@ static int pxa_ssp_startup(struct snd_pcm_substream *substream,
 static void pxa_ssp_shutdown(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *cpu_dai)
 {
-	struct ssp_priv *priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssp_priv *priv = dev_get_drvdata(dev);
 	struct ssp_device *ssp = priv->ssp;
 
 	if (!snd_soc_dai_active(cpu_dai)) {
@@ -109,15 +113,16 @@ static void pxa_ssp_shutdown(struct snd_pcm_substream *substream,
 
 	clk_disable_unprepare(priv->extclk);
 
-	kfree(snd_soc_dai_get_dma_data(cpu_dai, substream));
-	snd_soc_dai_set_dma_data(cpu_dai, substream, NULL);
+	kfree(snd_soc_dai_stream_dma_data_get(cpu_dai, substream));
+	snd_soc_dai_stream_dma_data_set(cpu_dai, substream, NULL);
 }
 
 #ifdef CONFIG_PM
 
 static int pxa_ssp_suspend(struct snd_soc_component *component)
 {
-	struct ssp_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssp_priv *priv = dev_get_drvdata(dev);
 	struct ssp_device *ssp = priv->ssp;
 
 	if (!snd_soc_component_active(component))
@@ -135,7 +140,8 @@ static int pxa_ssp_suspend(struct snd_soc_component *component)
 
 static int pxa_ssp_resume(struct snd_soc_component *component)
 {
-	struct ssp_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssp_priv *priv = dev_get_drvdata(dev);
 	struct ssp_device *ssp = priv->ssp;
 	uint32_t sssr = SSSR_ROR | SSSR_TUR | SSSR_BCE;
 
@@ -184,7 +190,9 @@ static void pxa_ssp_set_scr(struct ssp_device *ssp, u32 div)
 static int pxa_ssp_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
 	int clk_id, unsigned int freq, int dir)
 {
-	struct ssp_priv *priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssp_priv *priv = dev_get_drvdata(dev);
 	struct ssp_device *ssp = priv->ssp;
 
 	u32 sscr0 = pxa_ssp_read_reg(ssp, SSCR0) &
@@ -207,7 +215,7 @@ static int pxa_ssp_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
 
 	dev_dbg(ssp->dev,
 		"pxa_ssp_set_dai_sysclk id: %d, clk_id %d, freq %u\n",
-		cpu_dai->id, clk_id, freq);
+		snd_soc_dai_id(cpu_dai), clk_id, freq);
 
 	switch (clk_id) {
 	case PXA_SSP_CLK_NET_PLL:
@@ -318,7 +326,9 @@ static int pxa_ssp_set_pll(struct ssp_priv *priv, unsigned int freq)
 static int pxa_ssp_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai,
 	unsigned int tx_mask, unsigned int rx_mask, int slots, int slot_width)
 {
-	struct ssp_priv *priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssp_priv *priv = dev_get_drvdata(dev);
 	struct ssp_device *ssp = priv->ssp;
 	u32 sscr0;
 
@@ -353,7 +363,9 @@ static int pxa_ssp_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai,
 static int pxa_ssp_set_dai_tristate(struct snd_soc_dai *cpu_dai,
 	int tristate)
 {
-	struct ssp_priv *priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssp_priv *priv = dev_get_drvdata(dev);
 	struct ssp_device *ssp = priv->ssp;
 	u32 sscr1;
 
@@ -370,7 +382,9 @@ static int pxa_ssp_set_dai_tristate(struct snd_soc_dai *cpu_dai,
 static int pxa_ssp_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 			       unsigned int fmt)
 {
-	struct ssp_priv *priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssp_priv *priv = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_BC_FC:
@@ -532,7 +546,9 @@ static int pxa_ssp_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *cpu_dai)
 {
-	struct ssp_priv *priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssp_priv *priv = dev_get_drvdata(dev);
 	struct ssp_device *ssp = priv->ssp;
 	int chn = params_channels(params);
 	u32 sscr0, sspsp;
@@ -543,7 +559,7 @@ static int pxa_ssp_hw_params(struct snd_pcm_substream *substream,
 	int bclk = rate * chn * (width / 8);
 	int ret;
 
-	dma_data = snd_soc_dai_get_dma_data(cpu_dai, substream);
+	dma_data = snd_soc_dai_stream_dma_data_get(cpu_dai, substream);
 
 	/* Network mode with one active slot (ttsa == 1) can be used
 	 * to force 16-bit frame width on the wire (for S16_LE), even
@@ -708,7 +724,9 @@ static int pxa_ssp_trigger(struct snd_pcm_substream *substream, int cmd,
 			   struct snd_soc_dai *cpu_dai)
 {
 	int ret = 0;
-	struct ssp_priv *priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssp_priv *priv = dev_get_drvdata(dev);
 	struct ssp_device *ssp = priv->ssp;
 	int val;
 
@@ -745,7 +763,8 @@ static int pxa_ssp_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int pxa_ssp_probe(struct snd_soc_dai *dai)
 {
-	struct device *dev = dai->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct ssp_priv *priv;
 	int ret;
 
@@ -775,7 +794,7 @@ static int pxa_ssp_probe(struct snd_soc_dai *dai)
 			goto err_priv;
 		}
 	} else {
-		priv->ssp = pxa_ssp_request(dai->id + 1, "SoC audio");
+		priv->ssp = pxa_ssp_request(snd_soc_dai_id(dai) + 1, "SoC audio");
 		if (priv->ssp == NULL) {
 			ret = -ENODEV;
 			goto err_priv;
@@ -783,7 +802,7 @@ static int pxa_ssp_probe(struct snd_soc_dai *dai)
 	}
 
 	priv->dai_fmt = (unsigned int) -1;
-	snd_soc_dai_set_drvdata(dai, priv);
+	dev_set_drvdata(dev, priv);
 
 	return 0;
 
@@ -794,7 +813,9 @@ err_priv:
 
 static int pxa_ssp_remove(struct snd_soc_dai *dai)
 {
-	struct ssp_priv *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssp_priv *priv = dev_get_drvdata(dev);
 
 	pxa_ssp_free(priv->ssp);
 	kfree(priv);
@@ -873,7 +894,7 @@ MODULE_DEVICE_TABLE(of, pxa_ssp_of_ids);
 
 static int asoc_ssp_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev, &pxa_ssp_component,
+	return devm_snd_soc_component_register(&pdev->dev, &pxa_ssp_component,
 					       &pxa_ssp_dai, 1);
 }
 

@@ -233,7 +233,8 @@ static_assert(ARRAY_SIZE(cs48l32_rate_val) == ARRAY_SIZE(cs48l32_rate_text));
 static int cs48l32_rate_put(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	int ret;
 
 	/* Prevent any mixer mux changes while we do this */
@@ -321,7 +322,8 @@ static int cs48l32_inmux_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *) kcontrol->private_value;
 	unsigned int mux, src_val, in_type;
 	int ret;
@@ -387,6 +389,7 @@ static int cs48l32_dmode_put(struct snd_kcontrol *kcontrol,
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
 	struct soc_enum *e = (struct soc_enum *) kcontrol->private_value;
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int mode;
 	int ret, result;
 
@@ -398,8 +401,7 @@ static int cs48l32_dmode_put(struct snd_kcontrol *kcontrol,
 						    CS48L32_ADC1x_INT_ENA_FRC_MASK,
 						    CS48L32_ADC1x_INT_ENA_FRC_MASK);
 		if (ret < 0) {
-			dev_err(component->dev,
-				"Failed to set ADC1L_INT_ENA_FRC: %d\n", ret);
+			dev_err(dev, "Failed to set ADC1L_INT_ENA_FRC: %d\n", ret);
 			return ret;
 		}
 
@@ -408,8 +410,7 @@ static int cs48l32_dmode_put(struct snd_kcontrol *kcontrol,
 						    CS48L32_ADC1x_INT_ENA_FRC_MASK,
 						    CS48L32_ADC1x_INT_ENA_FRC_MASK);
 		if (ret < 0) {
-			dev_err(component->dev,
-				"Failed to set ADC1R_INT_ENA_FRC: %d\n", ret);
+			dev_err(dev, "Failed to set ADC1R_INT_ENA_FRC: %d\n", ret);
 			return ret;
 		}
 
@@ -418,7 +419,7 @@ static int cs48l32_dmode_put(struct snd_kcontrol *kcontrol,
 						       BIT(CS48L32_IN1_MODE_SHIFT),
 						       0);
 		if (result < 0) {
-			dev_err(component->dev, "Failed to set input mode: %d\n", result);
+			dev_err(dev, "Failed to set input mode: %d\n", result);
 			return result;
 		}
 
@@ -429,8 +430,7 @@ static int cs48l32_dmode_put(struct snd_kcontrol *kcontrol,
 						    CS48L32_ADC1x_INT_ENA_FRC_MASK,
 						    0);
 		if (ret < 0) {
-			dev_err(component->dev,
-				"Failed to clear ADC1L_INT_ENA_FRC: %d\n", ret);
+			dev_err(dev, "Failed to clear ADC1L_INT_ENA_FRC: %d\n", ret);
 			return ret;
 		}
 
@@ -439,8 +439,7 @@ static int cs48l32_dmode_put(struct snd_kcontrol *kcontrol,
 						    CS48L32_ADC1x_INT_ENA_FRC_MASK,
 						    0);
 		if (ret < 0) {
-			dev_err(component->dev,
-				"Failed to clear ADC1R_INT_ENA_FRC: %d\n", ret);
+			dev_err(dev, "Failed to clear ADC1R_INT_ENA_FRC: %d\n", ret);
 			return ret;
 		}
 
@@ -912,7 +911,8 @@ static int cs48l32_lhpf_coeff_put(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	__be32 *data = (__be32 *)ucontrol->value.bytes.data;
 	s16 val = (s16)be32_to_cpu(*data);
 
@@ -947,7 +947,8 @@ static int cs48l32_eq_mode_get(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *) kcontrol->private_value;
 	unsigned int item;
 
@@ -962,7 +963,8 @@ static int cs48l32_eq_mode_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *) kcontrol->private_value;
 	unsigned int *item = ucontrol->value.enumerated.item;
 	unsigned int val;
@@ -1000,7 +1002,8 @@ static int cs48l32_eq_coeff_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct cs48l32_eq_control *params = (void *)kcontrol->private_value;
 	__be16 *coeffs;
 	unsigned int coeff_idx;
@@ -1026,7 +1029,8 @@ static int cs48l32_eq_coeff_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct cs48l32_eq_control *params = (void *)kcontrol->private_value;
 	__be16 *coeffs;
 	unsigned int coeff_idx;
@@ -1062,7 +1066,8 @@ static int cs48l32_dsp_rate_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *) kcontrol->private_value;
 	unsigned int cached_rate;
 	const unsigned int rate_num = e->mask;
@@ -1083,7 +1088,8 @@ static int cs48l32_dsp_rate_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *) kcontrol->private_value;
 	const unsigned int rate_num = e->mask;
 	const unsigned int item = ucontrol->value.enumerated.item[0];
@@ -1272,7 +1278,8 @@ static int cs48l32_dsp_freq_update(struct snd_soc_dapm_widget *w, unsigned int f
 				   unsigned int freqsel_reg)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct regmap *regmap = cs48l32_codec->core.regmap;
 	struct wm_adsp *dsp = &cs48l32_codec->dsp;
 	int ret;
@@ -1283,7 +1290,7 @@ static int cs48l32_dsp_freq_update(struct snd_soc_dapm_widget *w, unsigned int f
 
 	ret = regmap_read(regmap, freq_reg, &freq);
 	if (ret) {
-		dev_err(component->dev, "Failed to read #%x: %d\n", freq_reg, ret);
+		dev_err(dev, "Failed to read #%x: %d\n", freq_reg, ret);
 		return ret;
 	}
 
@@ -1292,14 +1299,13 @@ static int cs48l32_dsp_freq_update(struct snd_soc_dapm_widget *w, unsigned int f
 
 		ret = regmap_read(regmap, freqsel_reg, &freq_sel);
 		if (ret) {
-			dev_err(component->dev, "Failed to read #%x: %d\n", freqsel_reg, ret);
+			dev_err(dev, "Failed to read #%x: %d\n", freqsel_reg, ret);
 			return ret;
 		}
 		freq_sel = (freq_sel & CS48L32_SYSCLK_FREQ_MASK) >> CS48L32_SYSCLK_FREQ_SHIFT;
 
 		if (freq_sts != freq_sel) {
-			dev_err(component->dev, "SYSCLK FREQ (#%x) != FREQ STS (#%x)\n",
-				freq_sel, freq_sts);
+			dev_err(dev, "SYSCLK FREQ (#%x) != FREQ STS (#%x)\n", freq_sel, freq_sts);
 			return -ETIMEDOUT;
 		}
 	}
@@ -1310,7 +1316,7 @@ static int cs48l32_dsp_freq_update(struct snd_soc_dapm_widget *w, unsigned int f
 	ret = regmap_write(dsp->cs_dsp.regmap,
 			   dsp->cs_dsp.base + CS48L32_DSP_CLOCK_FREQ_OFFS, freq);
 	if (ret) {
-		dev_err(component->dev, "Failed to set HALO clock freq: %d\n", ret);
+		dev_err(dev, "Failed to set HALO clock freq: %d\n", ret);
 		return ret;
 	}
 
@@ -1424,7 +1430,8 @@ static int cs48l32_get_sysclk_setting(unsigned int freq)
 
 static int cs48l32_set_pdm_fllclk(struct snd_soc_component *component, int source)
 {
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct regmap *regmap = cs48l32_codec->core.regmap;
 	unsigned int val;
 
@@ -1449,7 +1456,8 @@ static int cs48l32_set_pdm_fllclk(struct snd_soc_component *component, int sourc
 static int cs48l32_set_sysclk(struct snd_soc_component *component, int clk_id, int source,
 			      unsigned int freq, int dir)
 {
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct regmap *regmap = cs48l32_codec->core.regmap;
 	char *name;
 	unsigned int reg;
@@ -1841,7 +1849,8 @@ static int cs48l32_init_fll(struct cs48l32_fll *fll)
 static int cs48l32_set_fll(struct snd_soc_component *component, int fll_id,
 			   int source, unsigned int fref, unsigned int fout)
 {
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 
 	switch (fll_id) {
 	case CS48L32_FLL1_REFCLK:
@@ -1855,12 +1864,13 @@ static int cs48l32_set_fll(struct snd_soc_component *component, int fll_id,
 
 static int cs48l32_asp_dai_probe(struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct regmap *regmap = cs48l32_codec->core.regmap;
 	unsigned int pin_reg, last_pin_reg, hiz_reg;
 
-	switch (dai->id) {
+	switch (snd_soc_dai_id(dai)) {
 	case 1:
 		pin_reg = CS48L32_GPIO3_CTRL1;
 		hiz_reg = CS48L32_ASP1_CONTROL3;
@@ -1884,11 +1894,12 @@ static int cs48l32_asp_dai_probe(struct snd_soc_dai *dai)
 
 static int cs48l32_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct regmap *regmap = cs48l32_codec->core.regmap;
 	unsigned int val = 0U;
-	unsigned int base = dai->driver->base;
+	unsigned int base = snd_soc_dai_to_driver(dai)->base;
 	unsigned int mask = CS48L32_ASP_FMT_MASK | CS48L32_ASP_BCLK_INV_MASK |
 			    CS48L32_ASP_BCLK_MSTR_MASK |
 			    CS48L32_ASP_FSYNC_INV_MASK |
@@ -2025,9 +2036,11 @@ static const struct snd_pcm_hw_constraint_list cs48l32_constraint = {
 
 static int cs48l32_startup(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
-	struct cs48l32_dai_priv *dai_priv = &cs48l32_codec->dai[dai->id - 1];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
+	struct cs48l32_dai_priv *dai_priv = &cs48l32_codec->dai[dai_id - 1];
 	unsigned int base_rate;
 
 	if (!substream->runtime)
@@ -2060,9 +2073,11 @@ static int cs48l32_hw_params_rate(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
-	struct cs48l32_dai_priv *dai_priv = &cs48l32_codec->dai[dai->id - 1];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
+	struct cs48l32_dai_priv *dai_priv = &cs48l32_codec->dai[dai_id - 1];
 	unsigned int sr_val, sr_reg, rate;
 
 	rate = params_rate(params);
@@ -2126,11 +2141,12 @@ static int cs48l32_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct regmap *regmap = cs48l32_codec->core.regmap;
-	int base = dai->driver->base;
-	int dai_id = dai->id - 1;
+	int base = snd_soc_dai_to_driver(dai)->base;
+	int dai_id = snd_soc_dai_id(dai) - 1;
 	unsigned int rate = params_rate(params);
 	unsigned int dataw = snd_pcm_format_width(params_format(params));
 	unsigned int asp_state = 0;
@@ -2236,10 +2252,12 @@ static const char *cs48l32_dai_clk_str(int clk_id)
 static int cs48l32_dai_set_sysclk(struct snd_soc_dai *dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
-	struct cs48l32_dai_priv *dai_priv = &cs48l32_codec->dai[dai->id - 1];
-	unsigned int base = dai->driver->base;
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
+	struct cs48l32_dai_priv *dai_priv = &cs48l32_codec->dai[dai_id - 1];
+	unsigned int base = snd_soc_dai_to_driver(dai)->base;
 	unsigned int current_asp_rate, target_asp_rate;
 	int ret;
 
@@ -2301,8 +2319,9 @@ static void cs48l32_set_channels_to_mask(struct snd_soc_dai *dai,
 					 unsigned int base,
 					 int channels, unsigned int mask)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct regmap *regmap = cs48l32_codec->core.regmap;
 	int slot, i, j = 0, shift;
 	unsigned int frame_ctls[2] = {0, 0};
@@ -2335,14 +2354,17 @@ static void cs48l32_set_channels_to_mask(struct snd_soc_dai *dai,
 static int cs48l32_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
-	int base = dai->driver->base;
-	int rx_max_chan = dai->driver->playback.channels_max;
-	int tx_max_chan = dai->driver->capture.channels_max;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	int base = dai_driver->base;
+	int rx_max_chan = dai_driver->playback.channels_max;
+	int tx_max_chan = dai_driver->capture.channels_max;
 
 	/* Only support TDM for the physical ASPs */
-	if (dai->id > CS48L32_MAX_ASP)
+	if (dai_id > CS48L32_MAX_ASP)
 		return -EINVAL;
 
 	if (slots == 0) {
@@ -2355,8 +2377,8 @@ static int cs48l32_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	cs48l32_set_channels_to_mask(dai, base + CS48L32_ASP_FRAME_CONTROL5,
 				   rx_max_chan, rx_mask);
 
-	cs48l32_codec->tdm_width[dai->id - 1] = slot_width;
-	cs48l32_codec->tdm_slots[dai->id - 1] = slots;
+	cs48l32_codec->tdm_width[dai_id - 1] = slot_width;
+	cs48l32_codec->tdm_slots[dai_id - 1] = slots;
 
 	return 0;
 }
@@ -2386,7 +2408,8 @@ static int cs48l32_sysclk_ev(struct snd_soc_dapm_widget *w,
 			     struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 
 	cs48l32_spin_sysclk(cs48l32_codec);
 
@@ -2396,7 +2419,8 @@ static int cs48l32_sysclk_ev(struct snd_soc_dapm_widget *w,
 static int cs48l32_in_ev(struct snd_soc_dapm_widget *w, struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	unsigned int reg;
 
 	if (w->shift % 2)
@@ -2472,7 +2496,8 @@ static int cs48l32_in_put_volsw(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	int ret;
 
 	ret = snd_soc_put_volsw(kcontrol, ucontrol);
@@ -2509,7 +2534,8 @@ static int cs48l32_eq_ev(struct snd_soc_dapm_widget *w,
 			 struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct regmap *regmap = cs48l32_codec->core.regmap;
 	unsigned int mode = cs48l32_codec->eq_mode[w->shift];
 	unsigned int reg;
@@ -2822,7 +2848,8 @@ static int cs48l32_dsp_mem_ev(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -3290,12 +3317,15 @@ static int cs48l32_compr_open(struct snd_soc_component *component,
 			      struct snd_compr_stream *stream)
 {
 	struct snd_soc_pcm_runtime *rtd = stream->private_data;
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
+	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
+	const char *dai_name = snd_soc_dai_name(dai);
 
-	if (strcmp(snd_soc_rtd_to_codec(rtd, 0)->name, "cs48l32-dsp-trace") &&
-	    strcmp(snd_soc_rtd_to_codec(rtd, 0)->name, "cs48l32-dsp-voicectrl")) {
+	if (strcmp(dai_name, "cs48l32-dsp-trace") &&
+	    strcmp(dai_name, "cs48l32-dsp-voicectrl")) {
 		dev_err(cs48l32_codec->core.dev, "No suitable compressed stream for DAI '%s'\n",
-			snd_soc_rtd_to_codec(rtd, 0)->name);
+			dai_name);
 		return -EINVAL;
 	}
 
@@ -3411,7 +3441,8 @@ static struct snd_soc_dai_driver cs48l32_dai[] = {
 
 static int cs48l32_init_inputs(struct snd_soc_component *component)
 {
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	struct regmap *regmap = cs48l32_codec->core.regmap;
 	unsigned int ana_mode_l, ana_mode_r, dig_mode;
 	int i;
@@ -3508,10 +3539,11 @@ out:
 
 static int cs48l32_component_probe(struct snd_soc_component *component)
 {
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 	int i, ret;
 
-	snd_soc_component_init_regmap(component, cs48l32_codec->core.regmap);
+	snd_soc_component_regmap_init(component, cs48l32_codec->core.regmap);
 
 	ret = cs48l32_init_inputs(component);
 	if (ret)
@@ -3537,7 +3569,8 @@ static int cs48l32_component_probe(struct snd_soc_component *component)
 
 static void cs48l32_component_remove(struct snd_soc_component *component)
 {
-	struct cs48l32_codec *cs48l32_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs48l32_codec *cs48l32_codec = dev_get_drvdata(dev);
 
 	/* Mask DSP IRQs */
 	regmap_set_bits(cs48l32_codec->core.regmap, CS48L32_IRQ1_MASK_7,
@@ -3710,7 +3743,7 @@ static int cs48l32_create_codec_component(struct cs48l32_codec *cs48l32_codec)
 	if (ret)
 		goto err_dsp;
 
-	ret = devm_snd_soc_register_component(cs48l32_codec->core.dev,
+	ret = devm_snd_soc_component_register(cs48l32_codec->core.dev,
 					      &cs48l32_soc_component_drv,
 					      cs48l32_dai,
 					      ARRAY_SIZE(cs48l32_dai));

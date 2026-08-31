@@ -534,7 +534,7 @@ skip_dsp_init:
 	sdev->first_boot = false;
 
 	/* now register audio DSP platform driver and dai */
-	ret = devm_snd_soc_register_component(sdev->dev, &sdev->plat_drv,
+	ret = devm_snd_soc_component_register(sdev->dev, &sdev->plat_drv,
 					      sof_ops(sdev)->drv,
 					      sof_ops(sdev)->num_drv);
 	if (ret < 0) {

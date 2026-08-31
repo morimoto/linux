@@ -466,8 +466,9 @@ static int fll_factors(struct _fll_div *fll_div, unsigned int Fref,
 static int _wm8993_set_fll(struct snd_soc_component *component, int fll_id, int source,
 			  unsigned int Fref, unsigned int Fout)
 {
-	struct wm8993_priv *wm8993 = snd_soc_component_get_drvdata(component);
-	struct i2c_client *i2c = to_i2c_client(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8993_priv *wm8993 = dev_get_drvdata(dev);
+	struct i2c_client *i2c = to_i2c_client(dev);
 	u16 reg1, reg4, reg5;
 	struct _fll_div fll_div;
 	unsigned long time_left;
@@ -479,7 +480,7 @@ static int _wm8993_set_fll(struct snd_soc_component *component, int fll_id, int 
 
 	/* Disable the FLL */
 	if (Fout == 0) {
-		dev_dbg(component->dev, "FLL disabled\n");
+		dev_dbg(dev, "FLL disabled\n");
 		wm8993->fll_fref = 0;
 		wm8993->fll_fout = 0;
 
@@ -510,7 +511,7 @@ static int _wm8993_set_fll(struct snd_soc_component *component, int fll_id, int 
 		break;
 
 	default:
-		dev_err(component->dev, "Unknown FLL ID %d\n", fll_id);
+		dev_err(dev, "Unknown FLL ID %d\n", fll_id);
 		return -EINVAL;
 	}
 
@@ -556,9 +557,9 @@ static int _wm8993_set_fll(struct snd_soc_component *component, int fll_id, int 
 
 	time_left = wait_for_completion_timeout(&wm8993->fll_lock, time_left);
 	if (i2c->irq && !time_left)
-		dev_warn(component->dev, "Timed out waiting for FLL\n");
+		dev_warn(dev, "Timed out waiting for FLL\n");
 
-	dev_dbg(component->dev, "FLL enabled at %dHz->%dHz\n", Fref, Fout);
+	dev_dbg(dev, "FLL enabled at %dHz->%dHz\n", Fref, Fout);
 
 	wm8993->fll_fref = Fref;
 	wm8993->fll_fout = Fout;
@@ -570,18 +571,21 @@ static int _wm8993_set_fll(struct snd_soc_component *component, int fll_id, int 
 static int wm8993_set_fll(struct snd_soc_dai *dai, int fll_id, int source,
 			  unsigned int Fref, unsigned int Fout)
 {
-	return _wm8993_set_fll(dai->component, fll_id, source, Fref, Fout);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	return _wm8993_set_fll(component, fll_id, source, Fref, Fout);
 }
 
 static int configure_clock(struct snd_soc_component *component)
 {
-	struct wm8993_priv *wm8993 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8993_priv *wm8993 = dev_get_drvdata(dev);
 	unsigned int reg;
 
 	/* This should be done on init() for bypass paths */
 	switch (wm8993->sysclk_source) {
 	case WM8993_SYSCLK_MCLK:
-		dev_dbg(component->dev, "Using %dHz MCLK\n", wm8993->mclk_rate);
+		dev_dbg(dev, "Using %dHz MCLK\n", wm8993->mclk_rate);
 
 		reg = snd_soc_component_read(component, WM8993_CLOCKING_2);
 		reg &= ~(WM8993_MCLK_DIV | WM8993_SYSCLK_SRC);
@@ -596,8 +600,7 @@ static int configure_clock(struct snd_soc_component *component)
 		break;
 
 	case WM8993_SYSCLK_FLL:
-		dev_dbg(component->dev, "Using %dHz FLL clock\n",
-			wm8993->fll_fout);
+		dev_dbg(dev, "Using %dHz FLL clock\n", wm8993->fll_fout);
 
 		reg = snd_soc_component_read(component, WM8993_CLOCKING_2);
 		reg |= WM8993_SYSCLK_SRC;
@@ -612,11 +615,11 @@ static int configure_clock(struct snd_soc_component *component)
 		break;
 
 	default:
-		dev_err(component->dev, "System clock not configured\n");
+		dev_err(dev, "System clock not configured\n");
 		return -EINVAL;
 	}
 
-	dev_dbg(component->dev, "CLK_SYS is %dHz\n", wm8993->sysclk_rate);
+	dev_dbg(dev, "CLK_SYS is %dHz\n", wm8993->sysclk_rate);
 
 	return 0;
 }
@@ -972,7 +975,8 @@ static const struct snd_soc_dapm_route routes[] = {
 static int wm8993_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm8993_priv *wm8993 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8993_priv *wm8993 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -1068,8 +1072,9 @@ static int wm8993_set_bias_level(struct snd_soc_component *component,
 static int wm8993_set_sysclk(struct snd_soc_dai *codec_dai,
 			     int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8993_priv *wm8993 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8993_priv *wm8993 = dev_get_drvdata(dev);
 
 	switch (clk_id) {
 	case WM8993_SYSCLK_MCLK:
@@ -1089,8 +1094,9 @@ static int wm8993_set_sysclk(struct snd_soc_dai *codec_dai,
 static int wm8993_set_dai_fmt(struct snd_soc_dai *dai,
 			      unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8993_priv *wm8993 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8993_priv *wm8993 = dev_get_drvdata(dev);
 	unsigned int aif1 = snd_soc_component_read(component, WM8993_AUDIO_INTERFACE_1);
 	unsigned int aif4 = snd_soc_component_read(component, WM8993_AUDIO_INTERFACE_4);
 
@@ -1186,8 +1192,9 @@ static int wm8993_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8993_priv *wm8993 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8993_priv *wm8993 = dev_get_drvdata(dev);
 	int ret, i, best, best_val, cur_val;
 	unsigned int clocking1, clocking3, aif1, aif4;
 
@@ -1207,7 +1214,7 @@ static int wm8993_hw_params(struct snd_pcm_substream *substream,
 	wm8993->fs = params_rate(params);
 	wm8993->bclk = 2 * wm8993->fs;
 	if (wm8993->tdm_slots) {
-		dev_dbg(component->dev, "Configuring for %d %d bit TDM slots\n",
+		dev_dbg(dev, "Configuring for %d %d bit TDM slots\n",
 			wm8993->tdm_slots, wm8993->tdm_width);
 		wm8993->bclk *= wm8993->tdm_width * wm8993->tdm_slots;
 	} else {
@@ -1232,7 +1239,7 @@ static int wm8993_hw_params(struct snd_pcm_substream *substream,
 		}
 	}
 
-	dev_dbg(component->dev, "Target BCLK is %dHz\n", wm8993->bclk);
+	dev_dbg(dev, "Target BCLK is %dHz\n", wm8993->bclk);
 
 	ret = configure_clock(component);
 	if (ret != 0)
@@ -1250,8 +1257,7 @@ static int wm8993_hw_params(struct snd_pcm_substream *substream,
 			best_val = cur_val;
 		}
 	}
-	dev_dbg(component->dev, "Selected CLK_SYS_RATIO of %d\n",
-		clk_sys_rates[best].ratio);
+	dev_dbg(dev, "Selected CLK_SYS_RATIO of %d\n", clk_sys_rates[best].ratio);
 	clocking3 |= (clk_sys_rates[best].clk_sys_rate
 		      << WM8993_CLK_SYS_RATE_SHIFT);
 
@@ -1266,8 +1272,7 @@ static int wm8993_hw_params(struct snd_pcm_substream *substream,
 			best_val = cur_val;
 		}
 	}
-	dev_dbg(component->dev, "Selected SAMPLE_RATE of %dHz\n",
-		sample_rates[best].rate);
+	dev_dbg(dev, "Selected SAMPLE_RATE of %dHz\n", sample_rates[best].rate);
 	clocking3 |= (sample_rates[best].sample_rate
 		      << WM8993_SAMPLE_RATE_SHIFT);
 
@@ -1285,12 +1290,12 @@ static int wm8993_hw_params(struct snd_pcm_substream *substream,
 		}
 	}
 	wm8993->bclk = (wm8993->sysclk_rate * 10) / bclk_divs[best].div;
-	dev_dbg(component->dev, "Selected BCLK_DIV of %d for %dHz BCLK\n",
+	dev_dbg(dev, "Selected BCLK_DIV of %d for %dHz BCLK\n",
 		bclk_divs[best].div, wm8993->bclk);
 	clocking1 |= bclk_divs[best].bclk_div << WM8993_BCLK_DIV_SHIFT;
 
 	/* LRCLK is a simple fraction of BCLK */
-	dev_dbg(component->dev, "LRCLK_RATE is %d\n", wm8993->bclk / wm8993->fs);
+	dev_dbg(dev, "LRCLK_RATE is %d\n", wm8993->bclk / wm8993->fs);
 	aif4 |= wm8993->bclk / wm8993->fs;
 
 	snd_soc_component_write(component, WM8993_CLOCKING_1, clocking1);
@@ -1316,8 +1321,7 @@ static int wm8993_hw_params(struct snd_pcm_substream *substream,
 		}
 		s = &wm8993->pdata.retune_configs[best];
 
-		dev_dbg(component->dev, "ReTune Mobile %s tuned for %dHz\n",
-			s->name, s->rate);
+		dev_dbg(dev, "ReTune Mobile %s tuned for %dHz\n", s->name, s->rate);
 
 		/* Disable EQ while we reconfigure */
 		snd_soc_component_update_bits(component, WM8993_EQ1, WM8993_EQ_ENA, 0);
@@ -1333,7 +1337,7 @@ static int wm8993_hw_params(struct snd_pcm_substream *substream,
 
 static int wm8993_mute(struct snd_soc_dai *codec_dai, int mute, int direction)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	unsigned int reg;
 
 	reg = snd_soc_component_read(component, WM8993_DAC_CTRL);
@@ -1351,8 +1355,9 @@ static int wm8993_mute(struct snd_soc_dai *codec_dai, int mute, int direction)
 static int wm8993_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			       unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8993_priv *wm8993 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8993_priv *wm8993 = dev_get_drvdata(dev);
 	int aif1 = 0;
 	int aif2 = 0;
 
@@ -1501,7 +1506,8 @@ static struct snd_soc_dai_driver wm8993_dai = {
 
 static int wm8993_probe(struct snd_soc_component *component)
 {
-	struct wm8993_priv *wm8993 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8993_priv *wm8993 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	wm8993->hubs_data.hp_startup_mode = 1;
@@ -1534,13 +1540,13 @@ static int wm8993_probe(struct snd_soc_component *component)
 				      wm8993->pdata.micbias1_lvl,
 				      wm8993->pdata.micbias2_lvl);
 
-	snd_soc_add_component_controls(component, wm8993_snd_controls,
+	snd_soc_component_add_controls(component, wm8993_snd_controls,
 			     ARRAY_SIZE(wm8993_snd_controls));
 	if (wm8993->pdata.num_retune_configs != 0) {
-		dev_dbg(component->dev, "Using ReTune Mobile\n");
+		dev_dbg(dev, "Using ReTune Mobile\n");
 	} else {
-		dev_dbg(component->dev, "No ReTune Mobile, using normal EQ\n");
-		snd_soc_add_component_controls(component, wm8993_eq_controls,
+		dev_dbg(dev, "No ReTune Mobile, using normal EQ\n");
+		snd_soc_component_add_controls(component, wm8993_eq_controls,
 				     ARRAY_SIZE(wm8993_eq_controls));
 	}
 
@@ -1565,7 +1571,8 @@ static int wm8993_probe(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int wm8993_suspend(struct snd_soc_component *component)
 {
-	struct wm8993_priv *wm8993 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8993_priv *wm8993 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int fll_fout = wm8993->fll_fout;
 	int fll_fref  = wm8993->fll_fref;
@@ -1574,7 +1581,7 @@ static int wm8993_suspend(struct snd_soc_component *component)
 	/* Stop the FLL in an orderly fashion */
 	ret = _wm8993_set_fll(component, 0, 0, 0, 0);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to stop FLL\n");
+		dev_err(dev, "Failed to stop FLL\n");
 		return ret;
 	}
 
@@ -1588,7 +1595,8 @@ static int wm8993_suspend(struct snd_soc_component *component)
 
 static int wm8993_resume(struct snd_soc_component *component)
 {
-	struct wm8993_priv *wm8993 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8993_priv *wm8993 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -1605,7 +1613,7 @@ static int wm8993_resume(struct snd_soc_component *component)
 		ret = _wm8993_set_fll(component, 0, wm8993->fll_src,
 				     fll_fref, fll_fout);
 		if (ret != 0)
-			dev_err(component->dev, "Failed to restart FLL\n");
+			dev_err(dev, "Failed to restart FLL\n");
 	}
 
 	return 0;
@@ -1727,7 +1735,7 @@ static int wm8993_i2c_probe(struct i2c_client *i2c)
 
 	regcache_cache_only(wm8993->regmap, true);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8993, &wm8993_dai, 1);
 	if (ret != 0) {
 		dev_err(&i2c->dev, "Failed to register CODEC: %d\n", ret);

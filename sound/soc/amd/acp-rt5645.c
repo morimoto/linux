@@ -60,11 +60,11 @@ static int cz_aif1_hw_params(struct snd_pcm_substream *substream,
 static int cz_init(struct snd_soc_pcm_runtime *rtd)
 {
 	int ret;
-	struct snd_soc_card *card;
+	struct snd_soc_card *card = rtd->card;
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct snd_soc_component *codec;
 
-	codec = snd_soc_rtd_to_codec(rtd, 0)->component;
-	card = rtd->card;
+	codec = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	ret = snd_soc_card_jack_new_pins(card, "Headset Jack",
 					 SND_JACK_HEADPHONE | SND_JACK_MICROPHONE |
@@ -74,7 +74,7 @@ static int cz_init(struct snd_soc_pcm_runtime *rtd)
 					 cz_jack_pins,
 					 ARRAY_SIZE(cz_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+		dev_err(dev, "HP jack creation failed %d\n", ret);
 		return ret;
 	}
 

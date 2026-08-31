@@ -132,7 +132,8 @@ static int cs530x_put_volsw_vu(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct cs530x_priv *cs530x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs530x_priv *cs530x = dev_get_drvdata(dev);
 	struct regmap *regmap = cs530x->regmap;
 	int ret;
 
@@ -270,7 +271,8 @@ static int cs530x_adc_event(struct snd_soc_dapm_widget *w,
 			    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs530x_priv *cs530x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs530x_priv *cs530x = dev_get_drvdata(dev);
 	struct regmap *regmap = cs530x->regmap;
 
 	switch (event) {
@@ -356,7 +358,8 @@ static int cs530x_dac_event(struct snd_soc_dapm_widget *w,
 			    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs530x_priv *cs530x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs530x_priv *cs530x = dev_get_drvdata(dev);
 	struct regmap *regmap = cs530x->regmap;
 
 	switch (event) {
@@ -524,7 +527,7 @@ static void cs530x_add_12_adc_widgets(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
-	snd_soc_add_component_controls(component,
+	snd_soc_component_add_controls(component,
 				       cs530x_in_1_to_2_controls,
 				       ARRAY_SIZE(cs530x_in_1_to_2_controls));
 
@@ -539,7 +542,7 @@ static void cs530x_add_34_adc_widgets(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
-	snd_soc_add_component_controls(component,
+	snd_soc_component_add_controls(component,
 				       cs530x_in_3_to_4_controls,
 				       ARRAY_SIZE(cs530x_in_3_to_4_controls));
 
@@ -671,7 +674,7 @@ static void cs530x_add_12_dac_widgets(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
-	snd_soc_add_component_controls(component,
+	snd_soc_component_add_controls(component,
 				       cs530x_out_1_to_2_controls,
 				       ARRAY_SIZE(cs530x_out_1_to_2_controls));
 
@@ -686,7 +689,7 @@ static void cs530x_add_34_dac_widgets(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
-	snd_soc_add_component_controls(component,
+	snd_soc_component_add_controls(component,
 				       cs530x_out_3_to_4_controls,
 				       ARRAY_SIZE(cs530x_out_3_to_4_controls));
 
@@ -699,7 +702,8 @@ static void cs530x_add_34_dac_widgets(struct snd_soc_component *component)
 
 static int cs530x_set_bclk(struct snd_soc_component *component, const int freq)
 {
-	struct cs530x_priv *cs530x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs530x_priv *cs530x = dev_get_drvdata(dev);
 	struct regmap *regmap = cs530x->regmap;
 	unsigned int bclk_val;
 
@@ -721,11 +725,11 @@ static int cs530x_set_bclk(struct snd_soc_component *component, const int freq)
 		bclk_val = CS530X_BCLK_24P5792_24P576;
 		break;
 	default:
-		dev_err(component->dev, "Invalid BCLK frequency %d\n", freq);
+		dev_err(dev, "Invalid BCLK frequency %d\n", freq);
 		return -EINVAL;
 	}
 
-	dev_dbg(component->dev, "BCLK frequency is %d\n", freq);
+	dev_dbg(dev, "BCLK frequency is %d\n", freq);
 
 	return regmap_update_bits(regmap, CS530X_ASP_CFG,
 				  CS530X_ASP_BCLK_FREQ_MASK, bclk_val);
@@ -734,7 +738,8 @@ static int cs530x_set_bclk(struct snd_soc_component *component, const int freq)
 static int cs530x_set_pll_refclk(struct snd_soc_component *component,
 				 const unsigned int freq)
 {
-	struct cs530x_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs530x_priv *priv = dev_get_drvdata(dev);
 	struct regmap *regmap = priv->regmap;
 	unsigned int refclk;
 
@@ -756,7 +761,7 @@ static int cs530x_set_pll_refclk(struct snd_soc_component *component,
 		refclk = CS530X_REFCLK_24P5792_24P576;
 		break;
 	default:
-		dev_err(component->dev, "Invalid PLL refclk %d\n", freq);
+		dev_err(dev, "Invalid PLL refclk %d\n", freq);
 		return -EINVAL;
 	}
 
@@ -768,8 +773,9 @@ static int cs530x_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs530x_priv *cs530x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs530x_priv *cs530x = dev_get_drvdata(dev);
 	struct regmap *regmap = cs530x->regmap;
 	int ret = 0, fs = params_rate(params), bclk;
 	unsigned int fs_val;
@@ -799,7 +805,7 @@ static int cs530x_hw_params(struct snd_pcm_substream *substream,
 		fs_val = CS530X_FS_705P6K_768K;
 		break;
 	default:
-		dev_err(component->dev, "Invalid sample rate %d\n", fs);
+		dev_err(dev, "Invalid sample rate %d\n", fs);
 		return -EINVAL;
 	}
 
@@ -809,7 +815,7 @@ static int cs530x_hw_params(struct snd_pcm_substream *substream,
 
 	if (regmap_test_bits(regmap, CS530X_SIGNAL_PATH_CFG,
 			     CS530X_TDM_EN_MASK)) {
-		dev_dbg(component->dev, "Configuring for %d %d bit TDM slots\n",
+		dev_dbg(dev, "Configuring for %d %d bit TDM slots\n",
 			cs530x->tdm_slots, cs530x->tdm_width);
 		bclk = snd_soc_tdm_params_to_bclk(params,
 						  cs530x->tdm_width,
@@ -831,8 +837,9 @@ static int cs530x_hw_params(struct snd_pcm_substream *substream,
 
 static int cs530x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs530x_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs530x_priv *priv = dev_get_drvdata(dev);
 	struct regmap *regmap = priv->regmap;
 	unsigned int asp_fmt, asp_cfg = 0;
 
@@ -881,6 +888,8 @@ static int cs530x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static bool cs530x_check_mclk_freq(struct snd_soc_component *component,
 				   const unsigned int freq)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	switch (freq) {
 	case 24576000:
 	case 22579200:
@@ -888,7 +897,7 @@ static bool cs530x_check_mclk_freq(struct snd_soc_component *component,
 	case 11289600:
 		return true;
 	default:
-		dev_err(component->dev, "Invalid MCLK %d\n", freq);
+		dev_err(dev, "Invalid MCLK %d\n", freq);
 		return false;
 	}
 }
@@ -896,8 +905,9 @@ static bool cs530x_check_mclk_freq(struct snd_soc_component *component,
 static int cs530x_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			       unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs530x_priv *cs530x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs530x_priv *cs530x = dev_get_drvdata(dev);
 	struct regmap *regmap = cs530x->regmap;
 	unsigned int val;
 
@@ -933,7 +943,7 @@ static int cs530x_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 		val = CS530X_14_15_TDM_SLOT_VAL;
 		break;
 	default:
-		dev_err(component->dev, "Invalid TX slot(s) 0x%x\n", tx_mask);
+		dev_err(dev, "Invalid TX slot(s) 0x%x\n", tx_mask);
 		return -EINVAL;
 	}
 
@@ -981,7 +991,8 @@ static int cs530x_set_pll(struct snd_soc_component *component, int pll_id,
 			  int source, unsigned int freq_in,
 			  unsigned int freq_out)
 {
-	struct cs530x_priv *cs530x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs530x_priv *cs530x = dev_get_drvdata(dev);
 	struct regmap *regmap = cs530x->regmap;
 	unsigned int sysclk_src;
 	int ret;
@@ -1005,7 +1016,7 @@ static int cs530x_set_pll(struct snd_soc_component *component, int pll_id,
 	case CS530X_PLL_SRC_BCLK:
 		break;
 	default:
-		dev_err(component->dev, "Invalid PLL source %d\n", source);
+		dev_err(dev, "Invalid PLL source %d\n", source);
 		return -EINVAL;
 	}
 
@@ -1015,7 +1026,8 @@ static int cs530x_set_pll(struct snd_soc_component *component, int pll_id,
 
 static int cs530x_component_probe(struct snd_soc_component *component)
 {
-	struct cs530x_priv *cs530x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs530x_priv *cs530x = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int num_widgets;
 
@@ -1035,7 +1047,7 @@ static int cs530x_component_probe(struct snd_soc_component *component)
 		cs530x_add_34_dac_widgets(component);
 
 		num_widgets = ARRAY_SIZE(cs530x_out_sum_4ch_controls);
-		snd_soc_add_component_controls(component,
+		snd_soc_component_add_controls(component,
 					       cs530x_out_sum_4ch_controls,
 					       num_widgets);
 		break;
@@ -1044,12 +1056,12 @@ static int cs530x_component_probe(struct snd_soc_component *component)
 		cs530x_add_34_dac_widgets(component);
 
 		num_widgets = ARRAY_SIZE(cs530x_out_5_to_8_controls);
-		snd_soc_add_component_controls(component,
+		snd_soc_component_add_controls(component,
 					       cs530x_out_5_to_8_controls,
 					       num_widgets);
 
 		num_widgets = ARRAY_SIZE(cs530x_out_sum_8ch_controls);
-		snd_soc_add_component_controls(component,
+		snd_soc_component_add_controls(component,
 					       cs530x_out_sum_8ch_controls,
 					       num_widgets);
 
@@ -1068,7 +1080,7 @@ static int cs530x_component_probe(struct snd_soc_component *component)
 		cs530x_add_34_adc_widgets(component);
 
 		num_widgets = ARRAY_SIZE(cs530x_in_sum_4ch_controls);
-		snd_soc_add_component_controls(component,
+		snd_soc_component_add_controls(component,
 					       cs530x_in_sum_4ch_controls,
 					       num_widgets);
 		break;
@@ -1077,12 +1089,12 @@ static int cs530x_component_probe(struct snd_soc_component *component)
 		cs530x_add_34_adc_widgets(component);
 
 		num_widgets = ARRAY_SIZE(cs530x_in_5_to_8_controls);
-		snd_soc_add_component_controls(component,
+		snd_soc_component_add_controls(component,
 					       cs530x_in_5_to_8_controls,
 					       num_widgets);
 
 		num_widgets = ARRAY_SIZE(cs530x_in_sum_8ch_controls);
-		snd_soc_add_component_controls(component,
+		snd_soc_component_add_controls(component,
 					       cs530x_in_sum_8ch_controls,
 					       num_widgets);
 
@@ -1094,8 +1106,7 @@ static int cs530x_component_probe(struct snd_soc_component *component)
 					ARRAY_SIZE(adc_ch5_8_routes));
 		break;
 	default:
-		dev_err(component->dev, "Invalid device type %d\n",
-			cs530x->devtype);
+		dev_err(dev, "Invalid device type %d\n", cs530x->devtype);
 		return -EINVAL;
 	}
 
@@ -1128,20 +1139,21 @@ static bool cs530x_mclk_freq_is_valid(struct cs530x_priv *cs530x,
 static int cs530x_set_sysclk(struct snd_soc_component *component, int clk_id,
 			     int source, unsigned int freq, int dir)
 {
-	struct cs530x_priv *cs530x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs530x_priv *cs530x = dev_get_drvdata(dev);
 	struct regmap *regmap = cs530x->regmap;
 
 	switch (source) {
 	case CS530X_SYSCLK_SRC_MCLK:
 		if (!cs530x_mclk_freq_is_valid(cs530x, freq)) {
-			dev_err(component->dev, "Invalid MCLK source rate %d\n", freq);
+			dev_err(dev, "Invalid MCLK source rate %d\n", freq);
 			return -EINVAL;
 		}
 		break;
 	case CS530X_SYSCLK_SRC_PLL:
 		break;
 	default:
-		dev_err(component->dev, "Invalid sysclk source: %d\n", source);
+		dev_err(dev, "Invalid sysclk source: %d\n", source);
 		return -EINVAL;
 	}
 
@@ -1345,7 +1357,7 @@ int cs530x_probe(struct cs530x_priv *cs530x)
 		cs530x->dev_dai->playback.channels_max = cs530x->num_dacs;
 	}
 
-	ret = devm_snd_soc_register_component(dev,
+	ret = devm_snd_soc_component_register(dev,
 					      &soc_component_dev_cs530x,
 					      cs530x->dev_dai, 1);
 	if (ret) {

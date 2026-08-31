@@ -87,7 +87,7 @@ static const struct snd_pcm_hardware rt5677_spi_pcm_hardware = {
 static struct snd_soc_dai_driver rt5677_spi_dai = {
 	/* The DAI name "rt5677-dsp-cpu-dai" is not used. The actual DAI name
 	 * registered with ASoC is the name of the device "spi-RT5677AA:00",
-	 * because we only have one DAI. See snd_soc_register_dais().
+	 * because we only have one DAI. See snd_soc_dai_register().
 	 */
 	.name = "rt5677-dsp-cpu-dai",
 	.id = 0,
@@ -114,12 +114,11 @@ static int rt5677_spi_pcm_close(
 		struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_soc_component *codec_component =
-			snd_soc_rtdcom_lookup(rtd, "rt5677");
-	struct rt5677_priv *rt5677 =
-			snd_soc_component_get_drvdata(codec_component);
-	struct rt5677_dsp *rt5677_dsp =
-			snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *codec_component = snd_soc_rtdcom_lookup(rtd, "rt5677");
+	struct device *codec_dev = snd_soc_component_to_dev(codec_component);
+	struct device *dsp_dev = snd_soc_component_to_dev(component);
+	struct rt5677_priv *rt5677 = dev_get_drvdata(codec_dev);
+	struct rt5677_dsp *rt5677_dsp = dev_get_drvdata(dsp_dev);
 
 	cancel_delayed_work_sync(&rt5677_dsp->copy_work);
 	rt5677->set_dsp_vad(codec_component, false);
@@ -131,8 +130,8 @@ static int rt5677_spi_hw_params(
 		struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *hw_params)
 {
-	struct rt5677_dsp *rt5677_dsp =
-			snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5677_dsp *rt5677_dsp = dev_get_drvdata(dev);
 
 	guard(mutex)(&rt5677_dsp->dma_lock);
 	rt5677_dsp->substream = substream;
@@ -144,8 +143,8 @@ static int rt5677_spi_hw_free(
 		struct snd_soc_component *component,
 		struct snd_pcm_substream *substream)
 {
-	struct rt5677_dsp *rt5677_dsp =
-			snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5677_dsp *rt5677_dsp = dev_get_drvdata(dev);
 
 	guard(mutex)(&rt5677_dsp->dma_lock);
 	rt5677_dsp->substream = NULL;
@@ -158,12 +157,11 @@ static int rt5677_spi_prepare(
 		struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_soc_component *rt5677_component =
-			snd_soc_rtdcom_lookup(rtd, "rt5677");
-	struct rt5677_priv *rt5677 =
-			snd_soc_component_get_drvdata(rt5677_component);
-	struct rt5677_dsp *rt5677_dsp =
-			snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *rt5677_component = snd_soc_rtdcom_lookup(rtd, "rt5677");
+	struct device *rt5677_dev = snd_soc_component_to_dev(rt5677_component);
+	struct device *dsp_dev = snd_soc_component_to_dev(component);
+	struct rt5677_priv *rt5677 = dev_get_drvdata(rt5677_dev);
+	struct rt5677_dsp *rt5677_dsp = dev_get_drvdata(dsp_dev);
 
 	rt5677->set_dsp_vad(rt5677_component, true);
 	rt5677_dsp->dma_offset = 0;
@@ -176,8 +174,8 @@ static snd_pcm_uframes_t rt5677_spi_pcm_pointer(
 		struct snd_pcm_substream *substream)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	struct rt5677_dsp *rt5677_dsp =
-			snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5677_dsp *rt5677_dsp = dev_get_drvdata(dev);
 
 	return bytes_to_frames(runtime, rt5677_dsp->dma_offset);
 }
@@ -378,17 +376,18 @@ static int rt5677_spi_pcm_new(struct snd_soc_component *component,
 
 static int rt5677_spi_pcm_probe(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct rt5677_dsp *rt5677_dsp;
 
-	rt5677_dsp = devm_kzalloc(component->dev, sizeof(*rt5677_dsp),
-			GFP_KERNEL);
+	rt5677_dsp = devm_kzalloc(dev, sizeof(*rt5677_dsp), GFP_KERNEL);
 	if (!rt5677_dsp)
 		return -ENOMEM;
 	rt5677_dsp->dev = &g_spi->dev;
 	mutex_init(&rt5677_dsp->dma_lock);
 	INIT_DELAYED_WORK(&rt5677_dsp->copy_work, rt5677_spi_copy_work);
 
-	snd_soc_component_set_drvdata(component, rt5677_dsp);
+	dev_set_drvdata(dev, rt5677_dsp);
+
 	return 0;
 }
 
@@ -600,7 +599,7 @@ static int rt5677_spi_probe(struct spi_device *spi)
 
 	g_spi = spi;
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 					      &rt5677_spi_dai_component,
 					      &rt5677_spi_dai, 1);
 	if (ret < 0)

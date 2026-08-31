@@ -270,9 +270,11 @@ static irqreturn_t xtfpga_i2s_threaded_irq_handler(int irq, void *dev_id)
 static int xtfpga_i2s_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct xtfpga_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct xtfpga_i2s *i2s = dev_get_drvdata(dev);
 
-	snd_soc_dai_set_dma_data(dai, substream, i2s);
+	snd_soc_dai_stream_dma_data_set(dai, substream, i2s);
 	return 0;
 }
 
@@ -280,7 +282,9 @@ static int xtfpga_i2s_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct xtfpga_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct xtfpga_i2s *i2s = dev_get_drvdata(dev);
 	unsigned srate = params_rate(params);
 	unsigned channels = params_channels(params);
 	unsigned period_size = params_period_size(params);
@@ -373,7 +377,7 @@ static int xtfpga_pcm_open(struct snd_soc_component *component,
 	void *p;
 
 	snd_soc_set_runtime_hwparams(substream, &xtfpga_pcm_hardware);
-	p = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	p = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 	runtime->private_data = p;
 
 	return 0;
@@ -466,7 +470,7 @@ static snd_pcm_uframes_t xtfpga_pcm_pointer(struct snd_soc_component *component,
 static int xtfpga_pcm_new(struct snd_soc_component *component,
 			  struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(rtd->card);
 	size_t size = xtfpga_pcm_hardware.buffer_bytes_max;
 
 	snd_pcm_set_managed_buffer_all(rtd->pcm, SNDRV_DMA_TYPE_DEV,
@@ -575,7 +579,7 @@ static int xtfpga_i2s_probe(struct platform_device *pdev)
 	if (err < 0)
 		return err;
 
-	err = devm_snd_soc_register_component(&pdev->dev,
+	err = devm_snd_soc_component_register(&pdev->dev,
 					      &xtfpga_i2s_component,
 					      xtfpga_i2s_dai,
 					      ARRAY_SIZE(xtfpga_i2s_dai));

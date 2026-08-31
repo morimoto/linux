@@ -35,11 +35,14 @@ static void __lpass_get_dmactl_handle(struct snd_pcm_substream *substream, struc
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *rt = substream->runtime;
 	struct lpass_pcm_data *pcm_data = rt->private_data;
 	const struct lpass_variant *v = drvdata->variant;
-	unsigned int dai_id = cpu_dai->driver->id;
+	struct snd_soc_dai_driver *cpu_dai_driver = snd_soc_dai_to_driver(cpu_dai);
+	unsigned int dai_id = cpu_dai_driver->id;
 
 	switch (dai_id) {
 	case LPASS_CDC_DMA_RX0 ... LPASS_CDC_DMA_RX9:
@@ -127,8 +130,9 @@ static int __lpass_platform_codec_intf_init(struct snd_soc_dai *dai,
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
 	struct lpaif_dmactl *dmactl = NULL;
 	struct device *dev = soc_runtime->dev;
+	struct snd_soc_dai_driver *cpu_dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	int ret, id, codec_intf;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = cpu_dai_driver->id;
 
 	codec_intf = __lpass_get_codec_dma_intf_type(dai_id);
 	if (codec_intf < 0) {
@@ -171,10 +175,13 @@ static int __lpass_platform_codec_intf_init(struct snd_soc_dai *dai,
 static int lpass_cdc_dma_daiops_startup(struct snd_pcm_substream *substream,
 				    struct snd_soc_dai *dai)
 {
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
+	int dai_id = snd_soc_dai_id(dai);
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case LPASS_CDC_DMA_RX0 ... LPASS_CDC_DMA_RX9:
 	case LPASS_CDC_DMA_TX0 ... LPASS_CDC_DMA_TX8:
 		clk_set_rate(drvdata->codec_mem0, CODEC_MEM_HZ_NORMAL);
@@ -185,7 +192,7 @@ static int lpass_cdc_dma_daiops_startup(struct snd_pcm_substream *substream,
 		clk_prepare_enable(drvdata->va_mem0);
 		break;
 	default:
-		dev_err(soc_runtime->dev, "%s: invalid  interface: %d\n", __func__, dai->id);
+		dev_err(soc_runtime->dev, "%s: invalid  interface: %d\n", __func__, dai_id);
 		break;
 	}
 	return 0;
@@ -194,10 +201,13 @@ static int lpass_cdc_dma_daiops_startup(struct snd_pcm_substream *substream,
 static void lpass_cdc_dma_daiops_shutdown(struct snd_pcm_substream *substream,
 				      struct snd_soc_dai *dai)
 {
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
+	int dai_id = snd_soc_dai_id(dai);
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case LPASS_CDC_DMA_RX0 ... LPASS_CDC_DMA_RX9:
 	case LPASS_CDC_DMA_TX0 ... LPASS_CDC_DMA_TX8:
 		clk_disable_unprepare(drvdata->codec_mem0);
@@ -206,7 +216,7 @@ static void lpass_cdc_dma_daiops_shutdown(struct snd_pcm_substream *substream,
 		clk_disable_unprepare(drvdata->va_mem0);
 		break;
 	default:
-		dev_err(soc_runtime->dev, "%s: invalid  interface: %d\n", __func__, dai->id);
+		dev_err(soc_runtime->dev, "%s: invalid  interface: %d\n", __func__, dai_id);
 		break;
 	}
 }

@@ -166,7 +166,9 @@ static int mt8365_dai_configure_dmic(struct mtk_base_afe *afe,
 static int mt8365_dai_dmic_startup(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	mt8365_afe_enable_main_clk(afe);
 
@@ -183,7 +185,9 @@ static int mt8365_dai_dmic_startup(struct snd_pcm_substream *substream,
 static void mt8365_dai_dmic_shutdown(struct snd_pcm_substream *substream,
 				     struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	mt8365_dai_disable_dmic(afe, substream, dai);
 	audio_dmic_adda_disable(afe);
@@ -200,7 +204,9 @@ static void mt8365_dai_dmic_shutdown(struct snd_pcm_substream *substream,
 static int mt8365_dai_dmic_prepare(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	mt8365_dai_configure_dmic(afe, substream, dai);
 	mt8365_dai_enable_dmic(afe, substream, dai);

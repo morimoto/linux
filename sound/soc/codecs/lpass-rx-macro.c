@@ -1685,7 +1685,8 @@ static int rx_macro_int_dem_inp_mux_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_widget *widget = snd_soc_dapm_kcontrol_to_widget(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(widget->dapm);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned short look_ahead_dly_reg;
 	unsigned int val;
@@ -1729,10 +1730,12 @@ static int rx_macro_set_prim_interpolator_rate(struct snd_soc_dai *dai,
 	u16 int_mux_cfg0, int_mux_cfg1;
 	u16 int_fs_reg;
 	u8 inp0_sel, inp1_sel, inp2_sel;
-	struct snd_soc_component *component = dai->component;
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	for_each_set_bit(port, &rx->active_ch_mask[dai->id], RX_MACRO_PORTS_MAX) {
+	for_each_set_bit(port, &rx->active_ch_mask[dai_id], RX_MACRO_PORTS_MAX) {
 		int_1_mix1_inp = port;
 		int_mux_cfg0 = CDC_RX_INP_MUX_RX_INT0_CFG0;
 		/*
@@ -1774,10 +1777,12 @@ static int rx_macro_set_mix_interpolator_rate(struct snd_soc_dai *dai,
 	u32 j, port;
 	u16 int_mux_cfg1, int_fs_reg;
 	u8 int_mux_cfg1_val;
-	struct snd_soc_component *component = dai->component;
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	for_each_set_bit(port, &rx->active_ch_mask[dai->id], RX_MACRO_PORTS_MAX) {
+	for_each_set_bit(port, &rx->active_ch_mask[dai_id], RX_MACRO_PORTS_MAX) {
 		int_2_inp = port;
 
 		int_mux_cfg1 = CDC_RX_INP_MUX_RX_INT0_CFG1;
@@ -1820,19 +1825,21 @@ static int rx_macro_hw_params(struct snd_pcm_substream *substream,
 			      struct snd_pcm_hw_params *params,
 			      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int ret;
 
 	switch (substream->stream) {
 	case SNDRV_PCM_STREAM_PLAYBACK:
 		ret = rx_macro_set_interpolator_rate(dai, params_rate(params));
 		if (ret) {
-			dev_err(component->dev, "%s: cannot set sample rate: %u\n",
+			dev_err(dev, "%s: cannot set sample rate: %u\n",
 				__func__, params_rate(params));
 			return ret;
 		}
-		rx->bit_width[dai->id] = params_width(params);
+		rx->bit_width[dai_id] = params_width(params);
 		break;
 	default:
 		break;
@@ -1844,16 +1851,18 @@ static int rx_macro_get_channel_map(const struct snd_soc_dai *dai,
 				    unsigned int *tx_num, unsigned int *tx_slot,
 				    unsigned int *rx_num, unsigned int *rx_slot)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	u16 val, mask = 0, cnt = 0, temp;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RX_MACRO_AIF1_PB:
 	case RX_MACRO_AIF2_PB:
 	case RX_MACRO_AIF3_PB:
 	case RX_MACRO_AIF4_PB:
-		for_each_set_bit(temp, &rx->active_ch_mask[dai->id],
+		for_each_set_bit(temp, &rx->active_ch_mask[dai_id],
 			 RX_MACRO_PORTS_MAX) {
 			mask |= (1 << temp);
 			if (++cnt == RX_MACRO_MAX_DMA_CH_PER_PORT)
@@ -1874,7 +1883,7 @@ static int rx_macro_get_channel_map(const struct snd_soc_dai *dai,
 		if ((mask & 0x10) || (mask & 0x20))
 			mask = 0x1;
 		*rx_slot = mask;
-		*rx_num = rx->active_ch_cnt[dai->id];
+		*rx_num = rx->active_ch_cnt[dai_id];
 		break;
 	case RX_MACRO_AIF_ECHO:
 		val = snd_soc_component_read(component,	CDC_RX_INP_MUX_RX_MIX_CFG4);
@@ -1896,7 +1905,7 @@ static int rx_macro_get_channel_map(const struct snd_soc_dai *dai,
 		*tx_num = cnt;
 		break;
 	default:
-		dev_err(component->dev, "%s: Invalid AIF\n", __func__);
+		dev_err(dev, "%s: Invalid AIF\n", __func__);
 		break;
 	}
 	return 0;
@@ -1904,8 +1913,10 @@ static int rx_macro_get_channel_map(const struct snd_soc_dai *dai,
 
 static int rx_macro_digital_mute(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	u32 port, j, reg, mix_reg, int_mux_cfg0, int_mux_cfg1;
 	u32 mask, val;
 	u8 int_mux_cfg0_val, int_mux_cfg1_val;
@@ -1931,7 +1942,7 @@ static int rx_macro_digital_mute(struct snd_soc_dai *dai, int mute, int stream)
 		int_mux_cfg0_val = snd_soc_component_read(component, int_mux_cfg0);
 		int_mux_cfg1_val = snd_soc_component_read(component, int_mux_cfg1);
 
-		for_each_set_bit(port, &rx->active_ch_mask[dai->id], RX_MACRO_PORTS_MAX) {
+		for_each_set_bit(port, &rx->active_ch_mask[dai_id], RX_MACRO_PORTS_MAX) {
 			if (((int_mux_cfg0_val & 0x0f) == port + INTn_1_INP_SEL_RX0) ||
 			    ((int_mux_cfg0_val >> 4) == port + INTn_1_INP_SEL_RX0) ||
 			    ((int_mux_cfg1_val >> 4) == port + INTn_1_INP_SEL_RX0)) {
@@ -2080,7 +2091,8 @@ static int rx_macro_mclk_event(struct snd_soc_dapm_widget *w,
 			       struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (event) {
@@ -2089,7 +2101,7 @@ static int rx_macro_mclk_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_POST_PMD:
 		return rx_macro_mclk_enable(rx, false);
 	default:
-		dev_err(component->dev, "%s: invalid DAPM event %d\n", __func__, event);
+		dev_err(dev, "%s: invalid DAPM event %d\n", __func__, event);
 		ret = -EINVAL;
 	}
 	return ret;
@@ -2139,7 +2151,8 @@ static int rx_macro_enable_main_path(struct snd_soc_dapm_widget *w,
 					int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 	u16 gain_reg, reg;
 
 	reg = CDC_RX_RXn_RX_PATH_CTL(rx, w->shift);
@@ -2402,7 +2415,8 @@ static int rx_macro_config_classh(struct snd_soc_component *component,
 static void rx_macro_hd2_control(struct snd_soc_component *component,
 				 u16 interp_idx, int event)
 {
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 	u16 hd2_scale_reg, hd2_enable_reg;
 
 	switch (interp_idx) {
@@ -2436,7 +2450,8 @@ static int rx_macro_get_compander(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	int comp = ((struct soc_mixer_control *) kcontrol->private_value)->shift;
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rx->comp_enabled[comp];
 	return 0;
@@ -2448,7 +2463,8 @@ static int rx_macro_set_compander(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	int comp = ((struct soc_mixer_control *)  kcontrol->private_value)->shift;
 	int value = ucontrol->value.integer.value[0];
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	rx->comp_enabled[comp] = value;
 
@@ -2460,7 +2476,8 @@ static int rx_macro_mux_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_widget *widget = snd_soc_dapm_kcontrol_to_widget(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(widget->dapm);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] =
 			rx->rx_port_value[widget->shift];
@@ -2477,14 +2494,15 @@ static int rx_macro_mux_put(struct snd_kcontrol *kcontrol,
 	u32 rx_port_value = ucontrol->value.enumerated.item[0];
 	unsigned int dai_id;
 	u32 aif_rst;
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	aif_rst = rx->rx_port_value[widget->shift];
 	if (!rx_port_value) {
 		if (aif_rst == 0)
 			return 0;
 		if (aif_rst > RX_MACRO_AIF4_PB) {
-			dev_err(component->dev, "%s: Invalid AIF reset\n", __func__);
+			dev_err(dev, "%s: Invalid AIF reset\n", __func__);
 			return 0;
 		}
 	}
@@ -2512,9 +2530,7 @@ static int rx_macro_mux_put(struct snd_kcontrol *kcontrol,
 		rx->active_ch_cnt[dai_id]++;
 		break;
 	default:
-		dev_err(component->dev,
-			"%s:Invalid AIF_ID for RX_MACRO MUX %d\n",
-			__func__, rx_port_value);
+		dev_err(dev, "%s:Invalid AIF_ID for RX_MACRO MUX %d\n", __func__, rx_port_value);
 		goto err;
 	}
 
@@ -2548,7 +2564,8 @@ static int rx_macro_get_ear_mode(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rx->is_ear_mode_on;
 	return 0;
@@ -2558,7 +2575,8 @@ static int rx_macro_put_ear_mode(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	rx->is_ear_mode_on = (!ucontrol->value.integer.value[0] ? false : true);
 	return 0;
@@ -2568,7 +2586,8 @@ static int rx_macro_get_hph_hd2_mode(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rx->hph_hd2_mode;
 	return 0;
@@ -2578,7 +2597,8 @@ static int rx_macro_put_hph_hd2_mode(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	rx->hph_hd2_mode = ucontrol->value.integer.value[0];
 	return 0;
@@ -2588,7 +2608,8 @@ static int rx_macro_get_hph_pwr_mode(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = rx->hph_pwr_mode;
 	return 0;
@@ -2598,7 +2619,8 @@ static int rx_macro_put_hph_pwr_mode(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	rx->hph_pwr_mode = ucontrol->value.enumerated.item[0];
 	return 0;
@@ -2608,7 +2630,8 @@ static int rx_macro_soft_clip_enable_get(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rx->is_softclip_on;
 
@@ -2619,7 +2642,8 @@ static int rx_macro_soft_clip_enable_put(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	rx->is_softclip_on = ucontrol->value.integer.value[0];
 
@@ -2630,7 +2654,8 @@ static int rx_macro_aux_hpf_mode_get(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rx->is_aux_hpf_on;
 
@@ -2641,7 +2666,8 @@ static int rx_macro_aux_hpf_mode_put(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	rx->is_aux_hpf_on = ucontrol->value.integer.value[0];
 
@@ -2704,7 +2730,8 @@ static int rx_macro_enable_interp_clk(struct snd_soc_component *component,
 				      int event, int interp_idx)
 {
 	u16 main_reg, dsm_reg, rx_cfg2_reg;
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	main_reg = CDC_RX_RXn_RX_PATH_CTL(rx, interp_idx);
 	dsm_reg = CDC_RX_RXn_RX_PATH_DSM_CTL(rx, interp_idx);
@@ -2775,7 +2802,8 @@ static int rx_macro_enable_mix_path(struct snd_soc_dapm_widget *w,
 				    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 	u16 gain_reg, mix_reg;
 
 	gain_reg = CDC_RX_RXn_RX_VOL_MIX_CTL(rx, w->shift);
@@ -2810,7 +2838,8 @@ static int rx_macro_enable_rx_path_clk(struct snd_soc_dapm_widget *w,
 				       struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -3103,6 +3132,7 @@ static int rx_macro_enable_echo(struct snd_soc_dapm_widget *w,
 				int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u16 val, ec_hq_reg;
 	int ec_tx = -1;
 
@@ -3119,8 +3149,7 @@ static int rx_macro_enable_echo(struct snd_soc_dapm_widget *w,
 		ec_tx = (val & 0x0f) - 1;
 
 	if (ec_tx < 0 || (ec_tx >= RX_MACRO_EC_MUX_MAX)) {
-		dev_err(component->dev, "%s: EC mix control not set correctly\n",
-			__func__);
+		dev_err(dev, "%s: EC mix control not set correctly\n", __func__);
 		return -EINVAL;
 	}
 	ec_hq_reg = CDC_RX_EC_REF_HQ0_EC_REF_HQ_PATH_CTL +
@@ -3610,13 +3639,14 @@ static const struct snd_soc_dapm_route rx_audio_map[] = {
 static int rx_macro_component_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rx_macro *rx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rx_macro *rx = dev_get_drvdata(dev);
 	const struct snd_soc_dapm_widget *widgets;
 	const struct snd_kcontrol_new *controls;
 	unsigned int num_controls, num_widgets;
 	int ret;
 
-	snd_soc_component_init_regmap(component, rx->regmap);
+	snd_soc_component_regmap_init(component, rx->regmap);
 
 	snd_soc_component_update_bits(component, CDC_RX_RXn_RX_PATH_SEC7(rx, 0),
 				      CDC_RX_DSM_OUT_DELAY_SEL_MASK,
@@ -3663,7 +3693,7 @@ static int rx_macro_component_probe(struct snd_soc_component *component)
 
 	rx->component = component;
 
-	ret = snd_soc_add_component_controls(component, controls, num_controls);
+	ret = snd_soc_component_add_controls(component, controls, num_controls);
 	if (ret)
 		return ret;
 
@@ -3907,7 +3937,7 @@ static int rx_macro_probe(struct platform_device *pdev)
 	regmap_update_bits(rx->regmap, CDC_RX_CLK_RST_CTRL_SWR_CONTROL,
 			   CDC_RX_SWR_RESET_MASK, 0);
 
-	ret = devm_snd_soc_register_component(dev, &rx_macro_component_drv,
+	ret = devm_snd_soc_component_register(dev, &rx_macro_component_drv,
 					      rx_macro_dai,
 					      ARRAY_SIZE(rx_macro_dai));
 	if (ret)

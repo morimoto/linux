@@ -563,7 +563,8 @@ static const struct snd_soc_dapm_route wm8985_aux_dapm_routes[] = {
 
 static int wm8985_add_widgets(struct snd_soc_component *component)
 {
-	struct wm8985_priv *wm8985 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8985_priv *wm8985 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (wm8985->dev_type) {
@@ -573,7 +574,7 @@ static int wm8985_add_widgets(struct snd_soc_component *component)
 		break;
 
 	case WM8985:
-		snd_soc_add_component_controls(component, wm8985_specific_snd_controls,
+		snd_soc_component_add_controls(component, wm8985_specific_snd_controls,
 			ARRAY_SIZE(wm8985_specific_snd_controls));
 
 		snd_soc_dapm_new_controls(dapm, wm8985_dapm_widgets,
@@ -651,7 +652,7 @@ static int wm8985_reset(struct snd_soc_component *component)
 
 static int wm8985_dac_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	return snd_soc_component_update_bits(component, WM8985_DAC_CONTROL,
 				   WM8985_SOFTMUTE_MASK,
@@ -660,10 +661,9 @@ static int wm8985_dac_mute(struct snd_soc_dai *dai, int mute, int direction)
 
 static int wm8985_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u16 format, master, bcp, lrp;
-
-	component = dai->component;
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
@@ -680,7 +680,7 @@ static int wm8985_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		format = 0x3;
 		break;
 	default:
-		dev_err(dai->dev, "Unknown dai format\n");
+		dev_err(dev, "Unknown dai format\n");
 		return -EINVAL;
 	}
 
@@ -695,7 +695,7 @@ static int wm8985_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		master = 0;
 		break;
 	default:
-		dev_err(dai->dev, "Unknown master/slave configuration\n");
+		dev_err(dev, "Unknown master/slave configuration\n");
 		return -EINVAL;
 	}
 
@@ -732,7 +732,7 @@ static int wm8985_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		lrp = 1;
 		break;
 	default:
-		dev_err(dai->dev, "Unknown polarity configuration\n");
+		dev_err(dev, "Unknown polarity configuration\n");
 		return -EINVAL;
 	}
 
@@ -748,14 +748,14 @@ static int wm8985_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *dai)
 {
 	int i;
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct wm8985_priv *wm8985;
 	u16 blen, srate_idx;
 	unsigned int tmp;
 	int srate_best;
 
-	component = dai->component;
-	wm8985 = snd_soc_component_get_drvdata(component);
+	wm8985 = dev_get_drvdata(dev);
 
 	wm8985->bclk = snd_soc_params_to_bclk(params);
 	if ((int)wm8985->bclk < 0)
@@ -775,7 +775,7 @@ static int wm8985_hw_params(struct snd_pcm_substream *substream,
 		blen = 0x3;
 		break;
 	default:
-		dev_err(dai->dev, "Unsupported word length %u\n",
+		dev_err(dev, "Unsupported word length %u\n",
 			params_width(params));
 		return -EINVAL;
 	}
@@ -796,12 +796,12 @@ static int wm8985_hw_params(struct snd_pcm_substream *substream,
 		srate_best = abs(srates[i] - params_rate(params));
 	}
 
-	dev_dbg(dai->dev, "Selected SRATE = %d\n", srates[srate_idx]);
+	dev_dbg(dev, "Selected SRATE = %d\n", srates[srate_idx]);
 	snd_soc_component_update_bits(component, WM8985_ADDITIONAL_CONTROL,
 			    WM8985_SR_MASK, srate_idx << WM8985_SR_SHIFT);
 
-	dev_dbg(dai->dev, "Target BCLK = %uHz\n", wm8985->bclk);
-	dev_dbg(dai->dev, "SYSCLK = %uHz\n", wm8985->sysclk);
+	dev_dbg(dev, "Target BCLK = %uHz\n", wm8985->bclk);
+	dev_dbg(dev, "SYSCLK = %uHz\n", wm8985->sysclk);
 
 	for (i = 0; i < ARRAY_SIZE(fs_ratios); ++i) {
 		if (wm8985->sysclk / params_rate(params)
@@ -810,12 +810,12 @@ static int wm8985_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (i == ARRAY_SIZE(fs_ratios)) {
-		dev_err(dai->dev, "Unable to configure MCLK ratio %u/%u\n",
+		dev_err(dev, "Unable to configure MCLK ratio %u/%u\n",
 			wm8985->sysclk, params_rate(params));
 		return -EINVAL;
 	}
 
-	dev_dbg(dai->dev, "MCLK ratio = %dfs\n", fs_ratios[i].ratio);
+	dev_dbg(dev, "MCLK ratio = %dfs\n", fs_ratios[i].ratio);
 	snd_soc_component_update_bits(component, WM8985_CLOCK_GEN_CONTROL,
 			    WM8985_MCLKDIV_MASK, i << WM8985_MCLKDIV_SHIFT);
 
@@ -827,11 +827,11 @@ static int wm8985_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (i == ARRAY_SIZE(bclk_divs)) {
-		dev_err(dai->dev, "No matching BCLK divider found\n");
+		dev_err(dev, "No matching BCLK divider found\n");
 		return -EINVAL;
 	}
 
-	dev_dbg(dai->dev, "BCLK div = %d\n", i);
+	dev_dbg(dev, "BCLK div = %d\n", i);
 	snd_soc_component_update_bits(component, WM8985_CLOCK_GEN_CONTROL,
 			    WM8985_BCLKDIV_MASK, i << WM8985_BCLKDIV_SHIFT);
 	return 0;
@@ -884,10 +884,9 @@ static int wm8985_set_pll(struct snd_soc_dai *dai, int pll_id,
 			  unsigned int freq_out)
 {
 	int ret;
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct pll_div pll_div;
 
-	component = dai->component;
 	if (!freq_in || !freq_out) {
 		/* disable the PLL */
 		snd_soc_component_update_bits(component, WM8985_POWER_MANAGEMENT_1,
@@ -918,11 +917,11 @@ static int wm8985_set_pll(struct snd_soc_dai *dai, int pll_id,
 static int wm8985_set_sysclk(struct snd_soc_dai *dai,
 			     int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct wm8985_priv *wm8985;
 
-	component = dai->component;
-	wm8985 = snd_soc_component_get_drvdata(component);
+	wm8985 = dev_get_drvdata(dev);
 
 	switch (clk_id) {
 	case WM8985_CLKSRC_MCLK:
@@ -936,7 +935,7 @@ static int wm8985_set_sysclk(struct snd_soc_dai *dai,
 				    WM8985_CLKSEL_MASK, WM8985_CLKSEL);
 		break;
 	default:
-		dev_err(dai->dev, "Unknown clock source %d\n", clk_id);
+		dev_err(dev, "Unknown clock source %d\n", clk_id);
 		return -EINVAL;
 	}
 
@@ -949,9 +948,9 @@ static int wm8985_set_bias_level(struct snd_soc_component *component,
 {
 	int ret;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8985_priv *wm8985;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8985_priv *wm8985 = dev_get_drvdata(dev);
 
-	wm8985 = snd_soc_component_get_drvdata(component);
 	switch (level) {
 	case SND_SOC_BIAS_ON:
 	case SND_SOC_BIAS_PREPARE:
@@ -965,9 +964,7 @@ static int wm8985_set_bias_level(struct snd_soc_component *component,
 			ret = regulator_bulk_enable(ARRAY_SIZE(wm8985->supplies),
 						    wm8985->supplies);
 			if (ret) {
-				dev_err(component->dev,
-					"Failed to enable supplies: %d\n",
-					ret);
+				dev_err(dev, "Failed to enable supplies: %d\n", ret);
 				return ret;
 			}
 
@@ -1027,31 +1024,30 @@ static int wm8985_set_bias_level(struct snd_soc_component *component,
 static int wm8985_probe(struct snd_soc_component *component)
 {
 	size_t i;
-	struct wm8985_priv *wm8985;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8985_priv *wm8985 = dev_get_drvdata(dev);
 	int ret;
-
-	wm8985 = snd_soc_component_get_drvdata(component);
 
 	for (i = 0; i < ARRAY_SIZE(wm8985->supplies); i++)
 		wm8985->supplies[i].supply = wm8985_supply_names[i];
 
-	ret = devm_regulator_bulk_get(component->dev, ARRAY_SIZE(wm8985->supplies),
+	ret = devm_regulator_bulk_get(dev, ARRAY_SIZE(wm8985->supplies),
 				 wm8985->supplies);
 	if (ret) {
-		dev_err(component->dev, "Failed to request supplies: %d\n", ret);
+		dev_err(dev, "Failed to request supplies: %d\n", ret);
 		return ret;
 	}
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(wm8985->supplies),
 				    wm8985->supplies);
 	if (ret) {
-		dev_err(component->dev, "Failed to enable supplies: %d\n", ret);
+		dev_err(dev, "Failed to enable supplies: %d\n", ret);
 		return ret;
 	}
 
 	ret = wm8985_reset(component);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to issue reset: %d\n", ret);
+		dev_err(dev, "Failed to issue reset: %d\n", ret);
 		goto err_reg_enable;
 	}
 
@@ -1172,7 +1168,7 @@ static int wm8985_spi_probe(struct spi_device *spi)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 				     &soc_component_dev_wm8985, &wm8985_dai, 1);
 	return ret;
 }
@@ -1208,7 +1204,7 @@ static int wm8985_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 				     &soc_component_dev_wm8985, &wm8985_dai, 1);
 	return ret;
 }

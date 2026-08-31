@@ -47,7 +47,7 @@ static int
 aiu_encoder_spdif_trigger(struct snd_pcm_substream *substream, int cmd,
 			  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -96,8 +96,9 @@ static int aiu_encoder_spdif_hw_params(struct snd_pcm_substream *substream,
 				       struct snd_pcm_hw_params *params,
 				       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aiu *aiu = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aiu *aiu = dev_get_drvdata(dev);
 	unsigned int val = 0, mrate;
 	int ret;
 
@@ -113,7 +114,7 @@ static int aiu_encoder_spdif_hw_params(struct snd_pcm_substream *substream,
 		val |= AIU_958_MISC_MODE_32BITS;
 		break;
 	default:
-		dev_err(dai->dev, "Unsupported physical width\n");
+		dev_err(dev, "Unsupported physical width\n");
 		return -EINVAL;
 	}
 
@@ -129,7 +130,7 @@ static int aiu_encoder_spdif_hw_params(struct snd_pcm_substream *substream,
 	/* Set the stream channel status word */
 	ret = aiu_encoder_spdif_setup_cs_word(component, params);
 	if (ret) {
-		dev_err(dai->dev, "failed to set channel status word\n");
+		dev_err(dev, "failed to set channel status word\n");
 		return ret;
 	}
 
@@ -143,7 +144,7 @@ static int aiu_encoder_spdif_hw_params(struct snd_pcm_substream *substream,
 	mrate = params_rate(params) * 128 * AIU_958_INTERNAL_DIV;
 	ret = clk_set_rate(aiu->spdif.clks[MCLK].clk, mrate);
 	if (ret) {
-		dev_err(dai->dev, "failed to set mclk rate\n");
+		dev_err(dev, "failed to set mclk rate\n");
 		return ret;
 	}
 
@@ -155,7 +156,7 @@ static int aiu_encoder_spdif_hw_params(struct snd_pcm_substream *substream,
 static int aiu_encoder_spdif_hw_free(struct snd_pcm_substream *substream,
 				     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	aiu_encoder_spdif_divider_enable(component, false);
 
@@ -165,7 +166,9 @@ static int aiu_encoder_spdif_hw_free(struct snd_pcm_substream *substream,
 static int aiu_encoder_spdif_startup(struct snd_pcm_substream *substream,
 				     struct snd_soc_dai *dai)
 {
-	struct aiu *aiu = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aiu *aiu = dev_get_drvdata(dev);
 	int ret;
 
 	/*
@@ -187,7 +190,7 @@ static int aiu_encoder_spdif_startup(struct snd_pcm_substream *substream,
 
 	ret = clk_bulk_prepare_enable(aiu->spdif.clk_num, aiu->spdif.clks);
 	if (ret)
-		dev_err(dai->dev, "failed to enable spdif clocks\n");
+		dev_err(dev, "failed to enable spdif clocks\n");
 
 	return ret;
 }
@@ -195,7 +198,9 @@ static int aiu_encoder_spdif_startup(struct snd_pcm_substream *substream,
 static void aiu_encoder_spdif_shutdown(struct snd_pcm_substream *substream,
 				       struct snd_soc_dai *dai)
 {
-	struct aiu *aiu = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aiu *aiu = dev_get_drvdata(dev);
 
 	clk_bulk_disable_unprepare(aiu->spdif.clk_num, aiu->spdif.clks);
 }

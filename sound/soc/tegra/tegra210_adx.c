@@ -87,7 +87,9 @@ static void tegra210_adx_write_map_ram(struct tegra210_adx *adx)
 static int tegra210_adx_startup(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct tegra210_adx *adx = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_adx *adx = dev_get_drvdata(dev);
 	unsigned int val;
 	int err;
 
@@ -95,7 +97,7 @@ static int tegra210_adx_startup(struct snd_pcm_substream *substream,
 	err = regmap_read_poll_timeout(adx->regmap, TEGRA210_ADX_STATUS,
 				       val, !(val & 0x1), 10, 10000);
 	if (err < 0) {
-		dev_err(dai->dev, "failed to stop ADX, err = %d\n", err);
+		dev_err(dev, "failed to stop ADX, err = %d\n", err);
 		return err;
 	}
 
@@ -112,7 +114,7 @@ static int tegra210_adx_startup(struct snd_pcm_substream *substream,
 	err = regmap_read_poll_timeout(adx->regmap, TEGRA210_ADX_SOFT_RESET,
 				       val, !(val & 0x1), 10, 10000);
 	if (err < 0) {
-		dev_err(dai->dev, "failed to reset ADX, err = %d\n", err);
+		dev_err(dev, "failed to reset ADX, err = %d\n", err);
 		return err;
 	}
 
@@ -146,14 +148,16 @@ static int tegra210_adx_set_audio_cif(struct snd_soc_dai *dai,
 				      snd_pcm_format_t format,
 				      unsigned int reg)
 {
-	struct tegra210_adx *adx = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_adx *adx = dev_get_drvdata(dev);
 	struct tegra_cif_conf cif_conf;
 	int audio_bits;
 
 	memset(&cif_conf, 0, sizeof(struct tegra_cif_conf));
 
 	if (channels < 1 || channels > adx->soc_data->max_ch) {
-		dev_err(dai->dev, "invalid channels: %u (max %u)\n",
+		dev_err(dev, "invalid channels: %u (max %u)\n",
 			channels, adx->soc_data->max_ch);
 		return -EINVAL;
 	}
@@ -170,7 +174,7 @@ static int tegra210_adx_set_audio_cif(struct snd_soc_dai *dai,
 		audio_bits = TEGRA_ACIF_BITS_32;
 		break;
 	default:
-		dev_err(dai->dev, "unsupported format: %d\n", format);
+		dev_err(dev, "unsupported format: %d\n", format);
 		return -EINVAL;
 	}
 
@@ -191,9 +195,11 @@ static int tegra210_adx_out_hw_params(struct snd_pcm_substream *substream,
 				      struct snd_pcm_hw_params *params,
 				      struct snd_soc_dai *dai)
 {
+	int dai_id = snd_soc_dai_id(dai);
+
 	return tegra210_adx_set_audio_cif(dai, params_channels(params),
 			params_format(params),
-			TEGRA210_ADX_TX1_CIF_CTRL + ((dai->id - 1) * TEGRA210_ADX_AUDIOCIF_CH_STRIDE));
+			TEGRA210_ADX_TX1_CIF_CTRL + ((dai_id - 1) * TEGRA210_ADX_AUDIOCIF_CH_STRIDE));
 }
 
 static int tegra210_adx_in_hw_params(struct snd_pcm_substream *substream,
@@ -209,7 +215,8 @@ static int tegra210_adx_get_byte_map(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_adx *adx = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_adx *adx = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 
@@ -222,7 +229,8 @@ static int tegra210_adx_put_byte_map(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_adx *adx = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_adx *adx = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	unsigned int value = ucontrol->value.integer.value[0];
@@ -495,10 +503,11 @@ static struct snd_kcontrol_new tegra264_adx_controls[] = {
 
 static int tegra210_adx_component_probe(struct snd_soc_component *component)
 {
-	struct tegra210_adx *adx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_adx *adx = dev_get_drvdata(dev);
 
 	if (adx->soc_data->num_controls)
-		return snd_soc_add_component_controls(component, adx->soc_data->controls,
+		return snd_soc_component_add_controls(component, adx->soc_data->controls,
 						      adx->soc_data->num_controls);
 
 	return 0;
@@ -715,7 +724,7 @@ static int tegra210_adx_platform_probe(struct platform_device *pdev)
 	tegra210_adx_dais[TEGRA_ADX_IN_DAI_ID].playback.channels_max =
 			adx->soc_data->max_ch;
 
-	err = devm_snd_soc_register_component(dev, &tegra210_adx_cmpnt,
+	err = devm_snd_soc_component_register(dev, &tegra210_adx_cmpnt,
 					      tegra210_adx_dais,
 					      ARRAY_SIZE(tegra210_adx_dais));
 	if (err)

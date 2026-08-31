@@ -36,7 +36,8 @@ struct rk817_codec_priv {
 
 static int rk817_init(struct snd_soc_component *component)
 {
-	struct rk817_codec_priv *rk817 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk817_codec_priv *rk817 = dev_get_drvdata(dev);
 
 	snd_soc_component_write(component, RK817_CODEC_DDAC_POPD_DACST, 0x02);
 	snd_soc_component_write(component, RK817_CODEC_DDAC_SR_LMT0, 0x02);
@@ -288,8 +289,9 @@ static const struct snd_soc_dapm_route rk817_dapm_routes[] = {
 static int rk817_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct rk817_codec_priv *rk817 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk817_codec_priv *rk817 = dev_get_drvdata(dev);
 
 	rk817->stereo_sysclk = freq;
 
@@ -299,7 +301,8 @@ static int rk817_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int rk817_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			     unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int i2s_mst = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -310,7 +313,7 @@ static int rk817_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		i2s_mst |= RK817_I2S_MODE_MST;
 		break;
 	default:
-		dev_err(component->dev, "%s : set master mask failed!\n", __func__);
+		dev_err(dev, "%s : set master mask failed!\n", __func__);
 		return -EINVAL;
 	}
 
@@ -324,7 +327,7 @@ static int rk817_hw_params(struct snd_pcm_substream *substream,
 			   struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	switch (params_format(params)) {
 	case SNDRV_PCM_FORMAT_S16_LE:
@@ -349,7 +352,7 @@ static int rk817_hw_params(struct snd_pcm_substream *substream,
 
 static int rk817_digital_mute(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (mute)
 		snd_soc_component_update_bits(component,
@@ -413,10 +416,11 @@ static struct snd_soc_dai_driver rk817_dai[] = {
 
 static int rk817_probe(struct snd_soc_component *component)
 {
-	struct rk817_codec_priv *rk817 = snd_soc_component_get_drvdata(component);
-	struct rk808 *rk808 = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk817_codec_priv *rk817 = dev_get_drvdata(dev);
+	struct rk808 *rk808 = dev_get_drvdata(dev->parent);
 
-	snd_soc_component_init_regmap(component, rk808->regmap);
+	snd_soc_component_regmap_init(component, rk808->regmap);
 	rk817->component = component;
 
 	snd_soc_component_write(component, RK817_CODEC_DTOP_LPT_SRST, 0x40);
@@ -434,7 +438,7 @@ static int rk817_probe(struct snd_soc_component *component)
 
 static void rk817_remove(struct snd_soc_component *component)
 {
-	snd_soc_component_exit_regmap(component);
+	snd_soc_component_regmap_exit(component);
 }
 
 static const struct snd_soc_component_driver soc_codec_dev_rk817 = {
@@ -501,7 +505,7 @@ static int rk817_platform_probe(struct platform_device *pdev)
 		goto err_;
 	}
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &soc_codec_dev_rk817,
+	ret = devm_snd_soc_component_register(&pdev->dev, &soc_codec_dev_rk817,
 					      rk817_dai, ARRAY_SIZE(rk817_dai));
 	if (ret < 0) {
 		dev_err(&pdev->dev, "%s() register codec error %d\n",

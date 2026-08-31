@@ -131,7 +131,7 @@ static int dai_list_show(struct seq_file *m, void *v)
 
 	for_each_component(component)
 		for_each_component_dais(component, dai)
-			seq_printf(m, "%s\n", dai->name);
+			seq_printf(m, "%s\n", snd_soc_dai_name(dai));
 
 	return 0;
 }
@@ -143,7 +143,7 @@ static int component_list_show(struct seq_file *m, void *v)
 	guard(mutex)(&client_mutex);
 
 	for_each_component(component)
-		seq_printf(m, "%s\n", component->name);
+		seq_printf(m, "%s\n", snd_soc_component_name(component));
 
 	return 0;
 }
@@ -226,7 +226,7 @@ struct snd_soc_component *snd_soc_rtdcom_lookup(struct snd_soc_pcm_runtime *rtd,
 	 * to 1 rtd, this function will return 1st found component.
 	 */
 	for_each_rtd_components(rtd, i, component) {
-		const char *component_name = component->driver->name;
+		const char *component_name = snd_soc_component_to_driver(component)->name;
 
 		if (!component_name)
 			continue;
@@ -248,14 +248,15 @@ EXPORT_SYMBOL_GPL(snd_soc_rtdcom_lookup);
 void snd_soc_close_delayed_work(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_dai_driver *codec_driver = snd_soc_dai_to_driver(codec_dai);
 	int playback = SNDRV_PCM_STREAM_PLAYBACK;
 
 	snd_soc_dpcm_mutex_lock(rtd);
 
 	dev_dbg(rtd->dev,
 		"ASoC: pop wq checking: %s status: %s waiting: %s\n",
-		codec_dai->driver->playback.stream_name,
-		snd_soc_dai_stream_active(codec_dai, playback) ?
+		codec_driver->playback.stream_name,
+		snd_soc_dai_active_stream(codec_dai, playback) ?
 		"active" : "inactive",
 		str_yes_no(rtd->pop_wait));
 
@@ -331,7 +332,7 @@ static struct snd_soc_pcm_runtime *soc_new_pcm_runtime(
 	if (!dev)
 		return NULL;
 
-	dev->parent	= card->dev;
+	dev->parent	= snd_soc_card_to_dev(card);
 	dev->release	= soc_release_rtd_dev;
 
 	dev_set_name(dev, "%s", dai_link->name);
@@ -417,7 +418,7 @@ void soc_playback_digital_mute(struct snd_soc_card *card, int mute)
 			continue;
 
 		for_each_rtd_dais(rtd, i, dai) {
-			if (snd_soc_dai_stream_active(dai, playback))
+			if (snd_soc_dai_active_stream(dai, playback))
 				snd_soc_dai_digital_mute(dai, mute, playback);
 		}
 	}
@@ -442,6 +443,7 @@ void soc_dapm_suspend_resume(struct snd_soc_card *card, int event)
 int snd_soc_suspend(struct device *dev)
 {
 	struct snd_soc_card *card = dev_get_drvdata(dev);
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(card);
 	struct snd_soc_component *component;
 	struct snd_soc_pcm_runtime *rtd;
 	int i;
@@ -454,10 +456,10 @@ int snd_soc_suspend(struct device *dev)
 	 * Due to the resume being scheduled into a workqueue we could
 	 * suspend before that's finished - wait for it to complete.
 	 */
-	snd_power_wait(card->snd_card);
+	snd_power_wait(snd_card);
 
 	/* we're going to block userspace touching us until resume completes */
-	snd_power_change_state(card->snd_card, SNDRV_CTL_POWER_D3hot);
+	snd_power_change_state(snd_card, SNDRV_CTL_POWER_D3hot);
 
 	/* mute any active DACs */
 	soc_playback_digital_mute(card, 1);
@@ -489,6 +491,7 @@ int snd_soc_suspend(struct device *dev)
 
 		for_each_rtd_components(rtd, i, component) {
 			struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+			struct device *component_dev = snd_soc_component_to_dev(component);
 
 			/*
 			 * ignore if component was already suspended
@@ -509,7 +512,7 @@ int snd_soc_suspend(struct device *dev)
 				 * otherwise fall through.
 				 */
 				if (!snd_soc_dapm_get_idle_bias(dapm)) {
-					dev_dbg(component->dev,
+					dev_dbg(component_dev,
 						"ASoC: idle_bias_off CODEC on over suspend\n");
 					break;
 				}
@@ -517,13 +520,12 @@ int snd_soc_suspend(struct device *dev)
 
 			case SND_SOC_BIAS_OFF:
 				snd_soc_component_suspend(component);
-				if (component->regmap)
-					regcache_mark_dirty(component->regmap);
+				snd_soc_component_regcache_mark_dirty(component);
 				/* deactivate pins to sleep state */
-				pinctrl_pm_select_sleep_state(component->dev);
+				pinctrl_pm_select_sleep_state(component_dev);
 				break;
 			default:
-				dev_dbg(component->dev,
+				dev_dbg(component_dev,
 					"ASoC: COMPONENT is on over suspend\n");
 				break;
 			}
@@ -549,7 +551,7 @@ int snd_soc_resume(struct device *dev)
 	/* activate pins from sleep state */
 	for_each_card_components(card, component)
 		if (snd_soc_component_active(component))
-			pinctrl_pm_select_default_state(component->dev);
+			pinctrl_pm_select_default_state(snd_soc_component_to_dev(component));
 
 	dev_dbg(dev, "ASoC: Scheduling resume work\n");
 	if (!snd_soc_card_deferred_resume(card))
@@ -643,6 +645,7 @@ static int soc_dai_link_sanity_check(struct snd_soc_card *card,
 {
 	int i;
 	struct snd_soc_dai_link_component *dlc;
+	struct device *dev = snd_soc_card_to_dev(card);
 
 	/* Codec check */
 	for_each_link_codecs(link, i, dlc) {
@@ -718,23 +721,23 @@ static int soc_dai_link_sanity_check(struct snd_soc_card *card,
 	return 0;
 
 component_invalid:
-	dev_err(card->dev, "ASoC: Both Component name/of_node are set for %s\n", link->name);
+	dev_err(dev, "ASoC: Both Component name/of_node are set for %s\n", link->name);
 	return -EINVAL;
 
 component_empty:
-	dev_err(card->dev, "ASoC: Neither Component name/of_node are set for %s\n", link->name);
+	dev_err(dev, "ASoC: Neither Component name/of_node are set for %s\n", link->name);
 	return -EINVAL;
 
 component_not_found:
-	dev_dbg(card->dev, "ASoC: Component %s not found for link %s\n", dlc->name, link->name);
+	dev_dbg(dev, "ASoC: Component %s not found for link %s\n", dlc->name, link->name);
 	return -EPROBE_DEFER;
 
 dai_empty:
-	dev_err(card->dev, "ASoC: DAI name is not set for %s\n", link->name);
+	dev_err(dev, "ASoC: DAI name is not set for %s\n", link->name);
 	return -EINVAL;
 
 component_dai_empty:
-	dev_err(card->dev, "ASoC: Neither DAI/Component name/of_node are set for %s\n", link->name);
+	dev_err(dev, "ASoC: Neither DAI/Component name/of_node are set for %s\n", link->name);
 	return -EINVAL;
 }
 
@@ -773,6 +776,7 @@ static int snd_soc_compensate_channel_connection_map(struct snd_soc_card *card,
 						     struct snd_soc_dai_link *dai_link)
 {
 	struct snd_soc_dai_link_ch_map *ch_maps;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int i;
 
 	/*
@@ -785,7 +789,7 @@ static int snd_soc_compensate_channel_connection_map(struct snd_soc_card *card,
 	/* it should have ch_maps if connection was N:M */
 	if (dai_link->num_cpus > 1 && dai_link->num_codecs > 1 &&
 	    dai_link->num_cpus != dai_link->num_codecs && !dai_link->ch_maps) {
-		dev_err(card->dev, "need to have ch_maps when N:M connection (%s)",
+		dev_err(dev, "need to have ch_maps when N:M connection (%s)",
 			dai_link->name);
 		return -EINVAL;
 	}
@@ -797,7 +801,7 @@ static int snd_soc_compensate_channel_connection_map(struct snd_soc_card *card,
 	/* check default map size */
 	if (dai_link->num_cpus   > MAX_DEFAULT_CH_MAP_SIZE ||
 	    dai_link->num_codecs > MAX_DEFAULT_CH_MAP_SIZE) {
-		dev_err(card->dev, "soc-core.c needs update default_connection_maps");
+		dev_err(dev, "soc-core.c needs update default_connection_maps");
 		return -EINVAL;
 	}
 
@@ -810,11 +814,11 @@ static int snd_soc_compensate_channel_connection_map(struct snd_soc_card *card,
 		dai_link->ch_maps = default_ch_map_1codec;	/* for N:1 */
 
 sanity_check:
-	dev_dbg(card->dev, "dai_link %s\n", dai_link->stream_name);
+	dev_dbg(dev, "dai_link %s\n", dai_link->stream_name);
 	for_each_link_ch_maps(dai_link, i, ch_maps) {
 		if ((ch_maps->cpu   >= dai_link->num_cpus) ||
 		    (ch_maps->codec >= dai_link->num_codecs)) {
-			dev_err(card->dev,
+			dev_err(dev,
 				"unexpected dai_link->ch_maps[%d] index (cpu(%d/%d) codec(%d/%d))",
 				i,
 				ch_maps->cpu,	dai_link->num_cpus,
@@ -822,7 +826,7 @@ sanity_check:
 			return -EINVAL;
 		}
 
-		dev_dbg(card->dev, "  [%d] cpu%d <-> codec%d\n",
+		dev_dbg(dev, "  [%d] cpu%d <-> codec%d\n",
 			i, ch_maps->cpu, ch_maps->codec);
 	}
 
@@ -870,6 +874,7 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai_link_component *codec, *platform, *cpu;
 	struct snd_soc_component *component;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int i, id, ret;
 
 	lockdep_assert_held(&client_mutex);
@@ -884,7 +889,7 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 	if (dai_link->ignore)
 		return 0;
 
-	dev_dbg(card->dev, "ASoC: binding %s\n", dai_link->name);
+	dev_dbg(dev, "ASoC: binding %s\n", dai_link->name);
 
 	ret = soc_dai_link_sanity_check(card, dai_link);
 	if (ret < 0)
@@ -895,25 +900,29 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 		return -ENOMEM;
 
 	for_each_link_cpus(dai_link, i, cpu) {
-		snd_soc_rtd_to_cpu(rtd, i) = snd_soc_find_dai(cpu);
-		if (!snd_soc_rtd_to_cpu(rtd, i)) {
-			dev_info(card->dev, "ASoC: CPU DAI %s not registered\n",
+		struct snd_soc_dai *cpu_dai = snd_soc_find_dai(cpu);
+
+		snd_soc_rtd_to_cpu(rtd, i) = cpu_dai;
+		if (!cpu_dai) {
+			dev_info(dev, "ASoC: CPU DAI %s not registered\n",
 				 cpu->dai_name);
 			goto _err_defer;
 		}
-		snd_soc_rtd_add_component(rtd, snd_soc_rtd_to_cpu(rtd, i)->component);
+		snd_soc_rtd_add_component(rtd, snd_soc_dai_to_component(cpu_dai));
 	}
 
 	/* Find CODEC from registered CODECs */
 	for_each_link_codecs(dai_link, i, codec) {
-		snd_soc_rtd_to_codec(rtd, i) = snd_soc_find_dai(codec);
-		if (!snd_soc_rtd_to_codec(rtd, i)) {
-			dev_info(card->dev, "ASoC: CODEC DAI %s not registered\n",
+		struct snd_soc_dai *codec_dai = snd_soc_find_dai(codec);
+
+		snd_soc_rtd_to_codec(rtd, i) = codec_dai;
+		if (!codec_dai) {
+			dev_info(dev, "ASoC: CODEC DAI %s not registered\n",
 				 codec->dai_name);
 			goto _err_defer;
 		}
 
-		snd_soc_rtd_add_component(rtd, snd_soc_rtd_to_codec(rtd, i)->component);
+		snd_soc_rtd_add_component(rtd, snd_soc_dai_to_component(codec_dai));
 	}
 
 	/* Find PLATFORM from registered PLATFORMs */
@@ -922,7 +931,8 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 			if (!snd_soc_component_matches_dlc(component, platform))
 				continue;
 
-			if (snd_soc_component_is_dummy(component) && component->num_dai)
+			if (snd_soc_component_is_dummy(component) &&
+			    snd_soc_component_num_dai(component))
 				continue;
 
 			snd_soc_rtd_add_component(rtd, component);
@@ -941,11 +951,13 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 	 */
 	id = rtd->id;
 	for_each_rtd_components(rtd, i, component) {
-		if (!component->driver->use_dai_pcm_id)
+		const struct snd_soc_component_driver *driver = snd_soc_component_to_driver(component);
+
+		if (!driver->use_dai_pcm_id)
 			continue;
 
 		if (rtd->dai_link->no_pcm)
-			id += component->driver->be_pcm_base;
+			id += driver->be_pcm_base;
 		else
 			id = rtd->dai_link->id;
 	}
@@ -1082,7 +1094,7 @@ int snd_soc_poweroff(struct device *dev)
 
 	/* deactivate pins to sleep state */
 	for_each_card_components(card, component)
-		pinctrl_pm_select_sleep_state(component->dev);
+		pinctrl_pm_select_sleep_state(snd_soc_component_to_dev(component));
 
 	return 0;
 }
@@ -1552,8 +1564,9 @@ int snd_soc_get_dlc(const struct of_phandle_args *args, struct snd_soc_dai_link_
 
 	for_each_component(pos) {
 		struct device_node *component_of_node = snd_soc_component_to_node(pos);
+		int num_dai = snd_soc_component_num_dai(pos);
 
-		if (component_of_node != args->np || !pos->num_dai)
+		if (component_of_node != args->np || !num_dai)
 			continue;
 
 		ret = snd_soc_component_of_xlate_dai_name(pos, args, &dlc->dai_name);
@@ -1573,7 +1586,7 @@ int snd_soc_get_dlc(const struct of_phandle_args *args, struct snd_soc_dai_link_
 				break;
 			}
 
-			if (id < 0 || id >= pos->num_dai) {
+			if (id < 0 || id >= num_dai) {
 				ret = -EINVAL;
 				continue;
 			}
@@ -1804,6 +1817,7 @@ err:
 	snd_soc_of_put_dai_link_cpus(dai_link);
 	dai_link->cpus = NULL;
 	dai_link->num_cpus = 0;
+
 	return ret;
 }
 EXPORT_SYMBOL_GPL(snd_soc_of_get_dai_link_cpus);

@@ -81,7 +81,7 @@ static int gtm601_platform_probe(struct platform_device *pdev)
 
 	dai_driver = of_device_get_match_data(&pdev->dev);
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&soc_component_dev_gtm601,
 			(struct snd_soc_dai_driver *)dai_driver, 1);
 }

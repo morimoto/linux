@@ -28,12 +28,13 @@ static struct device_node *qcom_snd_get_link_node(struct snd_soc_pcm_runtime *rt
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_card *card = rtd->card;
 	struct of_phandle_args args;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
-	if (!card->dev || !card->dev->of_node)
+	if (!dev || !dev->of_node)
 		return NULL;
 
-	for_each_available_child_of_node_scoped(card->dev->of_node, np) {
+	for_each_available_child_of_node_scoped(dev->of_node, np) {
 		struct device_node *cpu_np __free(device_node) =
 			of_get_child_by_name(np, "cpu");
 
@@ -46,7 +47,7 @@ static struct device_node *qcom_snd_get_link_node(struct snd_soc_pcm_runtime *rt
 			continue;
 
 		if (args.np == rtd->dai_link->cpus[0].of_node &&
-		    args.args_count == 1 && args.args[0] == cpu_dai->id) {
+		    args.args_count == 1 && args.args[0] == snd_soc_dai_id(cpu_dai)) {
 			of_node_put(args.np);
 			return of_node_get(np);
 		}
@@ -180,16 +181,16 @@ EXPORT_SYMBOL_GPL(qcom_snd_apply_dai_tdm_slots);
 
 int qcom_snd_parse_of(struct snd_soc_card *card, struct snd_soc_card_driver *card_driver)
 {
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct snd_soc_dai_link *link;
 	struct of_phandle_args args;
 	struct snd_soc_dai_link_component *dlc;
 	int ret, num_links;
 
-	ret = snd_soc_of_parse_card_name(card, "model");
-	if (ret == 0 && !card->name)
+	ret = snd_soc_card_of_parse_name(card, "model");
+	if (ret == 0 && !snd_soc_card_name(card))
 		/* Deprecated, only for compatibility with old device trees */
-		ret = snd_soc_of_parse_card_name(card, "qcom,model");
+		ret = snd_soc_card_of_parse_name(card, "qcom,model");
 	if (ret) {
 		dev_err(dev, "Error parsing card name: %d\n", ret);
 		return ret;
@@ -348,6 +349,7 @@ int qcom_snd_wcd_jack_setup(struct snd_soc_pcm_runtime *rtd,
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_card *card = rtd->card;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int rval, i;
 
 	if (!*jack_setup) {
@@ -361,7 +363,7 @@ int qcom_snd_wcd_jack_setup(struct snd_soc_pcm_runtime *rtd,
 					     ARRAY_SIZE(qcom_headset_jack_pins));
 
 		if (rval < 0) {
-			dev_err(card->dev, "Unable to add Headphone Jack\n");
+			dev_err(dev, "Unable to add Headphone Jack\n");
 			return rval;
 		}
 
@@ -372,17 +374,17 @@ int qcom_snd_wcd_jack_setup(struct snd_soc_pcm_runtime *rtd,
 		*jack_setup = true;
 	}
 
-	switch (cpu_dai->id) {
+	switch (snd_soc_dai_id(cpu_dai)) {
 	case LPI_MI2S_RX_0:
 	case TX_CODEC_DMA_TX_0:
 	case TX_CODEC_DMA_TX_1:
 	case TX_CODEC_DMA_TX_2:
 	case TX_CODEC_DMA_TX_3:
 		for_each_rtd_codec_dais(rtd, i, codec_dai) {
-			rval = snd_soc_component_set_jack(codec_dai->component,
+			rval = snd_soc_component_set_jack(snd_soc_dai_to_component(codec_dai),
 							  jack, NULL);
 			if (rval != 0 && rval != -ENOTSUPP) {
-				dev_warn(card->dev, "Failed to set jack: %d\n", rval);
+				dev_warn(dev, "Failed to set jack: %d\n", rval);
 				return rval;
 			}
 		}
@@ -402,6 +404,7 @@ int qcom_snd_dp_jack_setup(struct snd_soc_pcm_runtime *rtd,
 {
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_card *card = rtd->card;
+	struct device *dev = snd_soc_card_to_dev(card);
 	char jack_name[NAME_SIZE];
 	int rval, i;
 
@@ -411,9 +414,9 @@ int qcom_snd_dp_jack_setup(struct snd_soc_pcm_runtime *rtd,
 		return rval;
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-		rval = snd_soc_component_set_jack(codec_dai->component, dp_jack, NULL);
+		rval = snd_soc_component_set_jack(snd_soc_dai_to_component(codec_dai), dp_jack, NULL);
 		if (rval != 0 && rval != -ENOTSUPP) {
-			dev_warn(card->dev, "Failed to set jack: %d\n", rval);
+			dev_warn(dev, "Failed to set jack: %d\n", rval);
 			return rval;
 		}
 	}

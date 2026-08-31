@@ -261,8 +261,9 @@ static int pcm186x_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm186x_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm186x_priv *priv = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 	snd_pcm_format_t format = params_format(params);
 	unsigned int width = params_width(params);
@@ -272,7 +273,7 @@ static int pcm186x_hw_params(struct snd_pcm_substream *substream,
 	u8 tdm_tx_sel = 0;
 	u8 pcm_cfg = 0;
 
-	dev_dbg(component->dev, "%s() rate=%u format=0x%x width=%u channels=%u\n",
+	dev_dbg(dev, "%s() rate=%u format=0x%x width=%u channels=%u\n",
 		__func__, rate, format, width, channels);
 
 	switch (width) {
@@ -343,7 +344,7 @@ static int pcm186x_hw_params(struct snd_pcm_substream *substream,
 	if (priv->is_provider_mode) {
 		div_bck = priv->sysclk / (div_lrck * rate);
 
-		dev_dbg(component->dev,
+		dev_dbg(dev,
 			"%s() master_clk=%u div_bck=%u div_lrck=%u\n",
 			__func__, priv->sysclk, div_bck, div_lrck);
 
@@ -356,17 +357,18 @@ static int pcm186x_hw_params(struct snd_pcm_substream *substream,
 
 static int pcm186x_set_fmt(struct snd_soc_dai *dai, unsigned int format)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm186x_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm186x_priv *priv = dev_get_drvdata(dev);
 	u8 clk_ctrl = 0;
 	u8 pcm_cfg = 0;
 
-	dev_dbg(component->dev, "%s() format=0x%x\n", __func__, format);
+	dev_dbg(dev, "%s() format=0x%x\n", __func__, format);
 
 	switch (format & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
 		if (!priv->sysclk) {
-			dev_err(component->dev, "operating in provider mode requires sysclock to be configured\n");
+			dev_err(dev, "operating in provider mode requires sysclock to be configured\n");
 			return -EINVAL;
 		}
 		clk_ctrl |= PCM186X_CLK_CTRL_MST_MODE;
@@ -376,7 +378,7 @@ static int pcm186x_set_fmt(struct snd_soc_dai *dai, unsigned int format)
 		priv->is_provider_mode = false;
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI master/slave interface\n");
+		dev_err(dev, "Invalid DAI master/slave interface\n");
 		return -EINVAL;
 	}
 
@@ -385,7 +387,7 @@ static int pcm186x_set_fmt(struct snd_soc_dai *dai, unsigned int format)
 	case SND_SOC_DAIFMT_NB_NF:
 		break;
 	default:
-		dev_err(component->dev, "Inverted DAI clocks not supported\n");
+		dev_err(dev, "Inverted DAI clocks not supported\n");
 		return -EINVAL;
 	}
 
@@ -408,7 +410,7 @@ static int pcm186x_set_fmt(struct snd_soc_dai *dai, unsigned int format)
 		pcm_cfg = PCM186X_PCM_CFG_FMT_TDM;
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI format\n");
+		dev_err(dev, "Invalid DAI format\n");
 		return -EINVAL;
 	}
 
@@ -426,16 +428,17 @@ static int pcm186x_set_fmt(struct snd_soc_dai *dai, unsigned int format)
 static int pcm186x_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm186x_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm186x_priv *priv = dev_get_drvdata(dev);
 	unsigned int first_slot, last_slot, tdm_offset;
 
-	dev_dbg(component->dev,
+	dev_dbg(dev,
 		"%s() tx_mask=0x%x rx_mask=0x%x slots=%d slot_width=%d\n",
 		__func__, tx_mask, rx_mask, slots, slot_width);
 
 	if (!tx_mask) {
-		dev_err(component->dev, "tdm tx mask must not be 0\n");
+		dev_err(dev, "tdm tx mask must not be 0\n");
 		return -EINVAL;
 	}
 
@@ -443,14 +446,14 @@ static int pcm186x_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	last_slot = __fls(tx_mask);
 
 	if (last_slot - first_slot != hweight32(tx_mask) - 1) {
-		dev_err(component->dev, "tdm tx mask must be contiguous\n");
+		dev_err(dev, "tdm tx mask must be contiguous\n");
 		return -EINVAL;
 	}
 
 	tdm_offset = first_slot * slot_width;
 
 	if (tdm_offset > 255) {
-		dev_err(component->dev, "tdm tx slot selection out of bounds\n");
+		dev_err(dev, "tdm tx slot selection out of bounds\n");
 		return -EINVAL;
 	}
 
@@ -462,10 +465,11 @@ static int pcm186x_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 static int pcm186x_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 				  unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm186x_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm186x_priv *priv = dev_get_drvdata(dev);
 
-	dev_dbg(component->dev, "%s() clk_id=%d freq=%u dir=%d\n",
+	dev_dbg(dev, "%s() clk_id=%d freq=%u dir=%d\n",
 		__func__, clk_id, freq, dir);
 
 	priv->sysclk = freq;
@@ -515,7 +519,8 @@ static struct snd_soc_dai_driver pcm1865_dai = {
 
 static int pcm186x_power_on(struct snd_soc_component *component)
 {
-	struct pcm186x_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm186x_priv *priv = dev_get_drvdata(dev);
 	int ret = 0;
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(priv->supplies),
@@ -526,7 +531,7 @@ static int pcm186x_power_on(struct snd_soc_component *component)
 	regcache_cache_only(priv->regmap, false);
 	ret = regcache_sync(priv->regmap);
 	if (ret) {
-		dev_err(component->dev, "Failed to restore cache\n");
+		dev_err(dev, "Failed to restore cache\n");
 		regcache_cache_only(priv->regmap, true);
 		regulator_bulk_disable(ARRAY_SIZE(priv->supplies),
 				       priv->supplies);
@@ -541,7 +546,8 @@ static int pcm186x_power_on(struct snd_soc_component *component)
 
 static int pcm186x_power_off(struct snd_soc_component *component)
 {
-	struct pcm186x_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm186x_priv *priv = dev_get_drvdata(dev);
 
 	snd_soc_component_update_bits(component, PCM186X_POWER_CTRL,
 			    PCM186X_PWR_CTRL_PWRDN, PCM186X_PWR_CTRL_PWRDN);
@@ -556,8 +562,9 @@ static int pcm186x_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	dev_dbg(component->dev, "## %s: %d -> %d\n", __func__,
+	dev_dbg(dev, "## %s: %d -> %d\n", __func__,
 		snd_soc_dapm_get_bias_level(dapm), level);
 
 	switch (level) {
@@ -691,13 +698,13 @@ int pcm186x_probe(struct device *dev, enum pcm186x_type type, int irq,
 	switch (type) {
 	case PCM1865:
 	case PCM1864:
-		ret = devm_snd_soc_register_component(dev, &soc_codec_dev_pcm1865,
+		ret = devm_snd_soc_component_register(dev, &soc_codec_dev_pcm1865,
 					     &pcm1865_dai, 1);
 		break;
 	case PCM1863:
 	case PCM1862:
 	default:
-		ret = devm_snd_soc_register_component(dev, &soc_codec_dev_pcm1863,
+		ret = devm_snd_soc_component_register(dev, &soc_codec_dev_pcm1863,
 					     &pcm1863_dai, 1);
 	}
 	if (ret) {

@@ -120,7 +120,9 @@ static const struct regmap_sdw_mbq_cfg class_function_mbq_config = {
 static int class_function_startup(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct class_function_drv *drv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct class_function_drv *drv = dev_get_drvdata(dev);
 
 	return sdca_asoc_set_constraints(drv->dev, drv->regmap, drv->function,
 					 substream, dai);
@@ -130,8 +132,10 @@ static int class_function_sdw_add_peripheral(struct snd_pcm_substream *substream
 					     struct snd_pcm_hw_params *params,
 					     struct snd_soc_dai *dai)
 {
-	struct class_function_drv *drv = snd_soc_component_get_drvdata(dai->component);
-	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct class_function_drv *drv = dev_get_drvdata(dev);
+	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 	struct sdw_slave *sdw = dev_to_sdw_dev(drv->dev->parent);
 	struct sdw_stream_config sconfig = {0};
 	struct sdw_port_config pconfig = {0};
@@ -165,8 +169,10 @@ static int class_function_sdw_add_peripheral(struct snd_pcm_substream *substream
 static int class_function_sdw_remove_peripheral(struct snd_pcm_substream *substream,
 						struct snd_soc_dai *dai)
 {
-	struct class_function_drv *drv = snd_soc_component_get_drvdata(dai->component);
-	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct class_function_drv *drv = dev_get_drvdata(dev);
+	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 	struct sdw_slave *sdw = dev_to_sdw_dev(drv->dev->parent);
 
 	if (!sdw_stream)
@@ -178,7 +184,7 @@ static int class_function_sdw_remove_peripheral(struct snd_pcm_substream *substr
 static int class_function_sdw_set_stream(struct snd_soc_dai *dai, void *sdw_stream,
 					 int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -193,7 +199,8 @@ static const struct snd_soc_dai_ops class_function_sdw_ops = {
 
 static int class_function_component_fixup_controls(struct snd_soc_component *component)
 {
-	struct class_function_drv *drv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct class_function_drv *drv = dev_get_drvdata(dev);
 	struct sdca_class_drv *core = drv->core;
 
 	return sdca_irq_populate(drv->function, component, core->irq_info);
@@ -201,16 +208,18 @@ static int class_function_component_fixup_controls(struct snd_soc_component *com
 
 static void class_function_component_remove(struct snd_soc_component *component)
 {
-	struct class_function_drv *drv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct class_function_drv *drv = dev_get_drvdata(dev);
 	struct sdca_class_drv *core = drv->core;
 
-	sdca_irq_cleanup(component->dev, drv->function, core->irq_info);
+	sdca_irq_cleanup(dev, drv->function, core->irq_info);
 }
 
 static int class_function_set_jack(struct snd_soc_component *component,
 				   struct snd_soc_jack *jack, void *d)
 {
-	struct class_function_drv *drv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct class_function_drv *drv = dev_get_drvdata(dev);
 	struct sdca_class_drv *core = drv->core;
 
 	return sdca_jack_set_jack(core->irq_info, jack);
@@ -394,7 +403,7 @@ static int class_function_probe(struct auxiliary_device *auxdev,
 	if (ret)
 		return ret;
 
-	ret = devm_snd_soc_register_component(dev, cmp_drv, dais, num_dais);
+	ret = devm_snd_soc_component_register(dev, cmp_drv, dais, num_dais);
 	if (ret)
 		return dev_err_probe(dev, ret, "failed to register component\n");
 

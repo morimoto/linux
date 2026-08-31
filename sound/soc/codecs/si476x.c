@@ -65,7 +65,9 @@ static const struct snd_soc_dapm_route si476x_dapm_routes[] = {
 static int si476x_codec_set_dai_fmt(struct snd_soc_dai *codec_dai,
 				    unsigned int fmt)
 {
-	struct si476x_core *core = i2c_mfd_cell_to_core(codec_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct si476x_core *core = i2c_mfd_cell_to_core(dev);
 	int err;
 	u16 format = 0;
 
@@ -131,14 +133,14 @@ static int si476x_codec_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 	si476x_core_lock(core);
 
-	err = snd_soc_component_update_bits(codec_dai->component, SI476X_DIGITAL_IO_OUTPUT_FORMAT,
+	err = snd_soc_component_update_bits(component, SI476X_DIGITAL_IO_OUTPUT_FORMAT,
 				  SI476X_DIGITAL_IO_OUTPUT_FORMAT_MASK,
 				  format);
 
 	si476x_core_unlock(core);
 
 	if (err < 0) {
-		dev_err(codec_dai->component->dev, "Failed to set output format\n");
+		dev_err(dev, "Failed to set output format\n");
 		return err;
 	}
 
@@ -149,12 +151,14 @@ static int si476x_codec_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct si476x_core *core = i2c_mfd_cell_to_core(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct si476x_core *core = i2c_mfd_cell_to_core(dev);
 	int rate, width, err;
 
 	rate = params_rate(params);
 	if (rate < 32000 || rate > 48000) {
-		dev_err(dai->component->dev, "Rate: %d is not supported\n", rate);
+		dev_err(dev, "Rate: %d is not supported\n", rate);
 		return -EINVAL;
 	}
 
@@ -177,19 +181,19 @@ static int si476x_codec_hw_params(struct snd_pcm_substream *substream,
 
 	si476x_core_lock(core);
 
-	err = snd_soc_component_write(dai->component, SI476X_DIGITAL_IO_OUTPUT_SAMPLE_RATE,
+	err = snd_soc_component_write(component, SI476X_DIGITAL_IO_OUTPUT_SAMPLE_RATE,
 			    rate);
 	if (err < 0) {
-		dev_err(dai->component->dev, "Failed to set sample rate\n");
+		dev_err(dev, "Failed to set sample rate\n");
 		goto out;
 	}
 
-	err = snd_soc_component_update_bits(dai->component, SI476X_DIGITAL_IO_OUTPUT_FORMAT,
+	err = snd_soc_component_update_bits(component, SI476X_DIGITAL_IO_OUTPUT_FORMAT,
 				  SI476X_DIGITAL_IO_OUTPUT_WIDTH_MASK,
 				  (width << SI476X_DIGITAL_IO_SLOT_SIZE_SHIFT) |
 				  (width << SI476X_DIGITAL_IO_SAMPLE_SIZE_SHIFT));
 	if (err < 0) {
-		dev_err(dai->component->dev, "Failed to set output width\n");
+		dev_err(dev, "Failed to set output width\n");
 		goto out;
 	}
 
@@ -243,8 +247,9 @@ static struct snd_soc_dai_driver si476x_dai = {
 
 static int si476x_probe(struct snd_soc_component *component)
 {
-	snd_soc_component_init_regmap(component,
-				dev_get_regmap(component->dev->parent, NULL));
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	snd_soc_component_regmap_init(component, dev_get_regmap(dev->parent, NULL));
 
 	return 0;
 }
@@ -262,7 +267,7 @@ static const struct snd_soc_component_driver soc_component_dev_si476x = {
 
 static int si476x_platform_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 				      &soc_component_dev_si476x,
 				      &si476x_dai, 1);
 }

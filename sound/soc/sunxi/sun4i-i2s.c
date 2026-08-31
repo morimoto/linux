@@ -340,7 +340,9 @@ static int sun4i_i2s_set_clk_rate(struct snd_soc_dai *dai,
 				  unsigned int slots,
 				  unsigned int slot_width)
 {
-	struct sun4i_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_i2s *i2s = dev_get_drvdata(dev);
 	unsigned int oversample_rate, clk_rate, bclk_parent_rate;
 	int bclk_div, mclk_div;
 	int ret;
@@ -368,7 +370,7 @@ static int sun4i_i2s_set_clk_rate(struct snd_soc_dai *dai,
 		break;
 
 	default:
-		dev_err(dai->dev, "Unsupported sample rate: %u\n", rate);
+		dev_err(dev, "Unsupported sample rate: %u\n", rate);
 		return -EINVAL;
 	}
 
@@ -378,7 +380,7 @@ static int sun4i_i2s_set_clk_rate(struct snd_soc_dai *dai,
 
 	oversample_rate = i2s->mclk_freq / rate;
 	if (!sun4i_i2s_oversample_is_valid(oversample_rate)) {
-		dev_err(dai->dev, "Unsupported oversample rate: %d\n",
+		dev_err(dev, "Unsupported oversample rate: %d\n",
 			oversample_rate);
 		return -EINVAL;
 	}
@@ -387,13 +389,13 @@ static int sun4i_i2s_set_clk_rate(struct snd_soc_dai *dai,
 	bclk_div = sun4i_i2s_get_bclk_div(i2s, bclk_parent_rate,
 					  rate, slots, slot_width);
 	if (bclk_div < 0) {
-		dev_err(dai->dev, "Unsupported BCLK divider: %d\n", bclk_div);
+		dev_err(dev, "Unsupported BCLK divider: %d\n", bclk_div);
 		return -EINVAL;
 	}
 
 	mclk_div = sun4i_i2s_get_mclk_div(i2s, clk_rate, i2s->mclk_freq);
 	if (mclk_div < 0) {
-		dev_err(dai->dev, "Unsupported MCLK divider: %d\n", mclk_div);
+		dev_err(dev, "Unsupported MCLK divider: %d\n", mclk_div);
 		return -EINVAL;
 	}
 
@@ -594,7 +596,9 @@ static int sun4i_i2s_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *dai)
 {
-	struct sun4i_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_i2s *i2s = dev_get_drvdata(dev);
 	unsigned int word_size = params_width(params);
 	unsigned int slot_width = params_physical_width(params);
 	unsigned int channels = params_channels(params);
@@ -612,7 +616,7 @@ static int sun4i_i2s_hw_params(struct snd_pcm_substream *substream,
 
 	ret = i2s->variant->set_chan_cfg(i2s, channels, slots, slot_width);
 	if (ret < 0) {
-		dev_err(dai->dev, "Invalid channel configuration\n");
+		dev_err(dev, "Invalid channel configuration\n");
 		return ret;
 	}
 
@@ -631,7 +635,7 @@ static int sun4i_i2s_hw_params(struct snd_pcm_substream *substream,
 		width = DMA_SLAVE_BUSWIDTH_4_BYTES;
 		break;
 	default:
-		dev_err(dai->dev, "Unsupported physical sample width: %d\n",
+		dev_err(dev, "Unsupported physical sample width: %d\n",
 			params_physical_width(params));
 		return -EINVAL;
 	}
@@ -945,12 +949,14 @@ static int sun50i_h6_i2s_set_soc_fmt(const struct sun4i_i2s *i2s,
 
 static int sun4i_i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct sun4i_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_i2s *i2s = dev_get_drvdata(dev);
 	int ret;
 
 	ret = i2s->variant->set_fmt(i2s, fmt);
 	if (ret) {
-		dev_err(dai->dev, "Unsupported format configuration\n");
+		dev_err(dev, "Unsupported format configuration\n");
 		return ret;
 	}
 
@@ -1030,7 +1036,9 @@ static void sun4i_i2s_stop_playback(struct sun4i_i2s *i2s)
 static int sun4i_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 			     struct snd_soc_dai *dai)
 {
-	struct sun4i_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_i2s *i2s = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -1061,7 +1069,9 @@ static int sun4i_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 static int sun4i_i2s_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 				unsigned int freq, int dir)
 {
-	struct sun4i_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_i2s *i2s = dev_get_drvdata(dev);
 
 	if (clk_id != 0)
 		return -EINVAL;
@@ -1075,7 +1085,9 @@ static int sun4i_i2s_set_tdm_slot(struct snd_soc_dai *dai,
 				  unsigned int tx_mask, unsigned int rx_mask,
 				  int slots, int slot_width)
 {
-	struct sun4i_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_i2s *i2s = dev_get_drvdata(dev);
 
 	if (slots > 8)
 		return -EINVAL;
@@ -1088,18 +1100,21 @@ static int sun4i_i2s_set_tdm_slot(struct snd_soc_dai *dai,
 
 static int sun4i_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct sun4i_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_i2s *i2s = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai,
-				  &i2s->playback_dma_data,
-				  &i2s->capture_dma_data);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &i2s->playback_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &i2s->capture_dma_data);
 
 	return 0;
 }
 
 static int sun4i_i2s_dai_startup(struct snd_pcm_substream *sub, struct snd_soc_dai *dai)
 {
-	struct sun4i_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_i2s *i2s = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *runtime = sub->runtime;
 
 	return snd_pcm_hw_constraint_mask64(runtime, SNDRV_PCM_HW_PARAM_FORMAT,
@@ -1620,7 +1635,7 @@ static int sun4i_i2s_probe(struct platform_device *pdev)
 		goto err_suspend;
 	}
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &sun4i_i2s_component,
 					      &sun4i_i2s_dai, 1);
 	if (ret) {

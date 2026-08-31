@@ -219,7 +219,9 @@ static void bcm2835_i2s_clear_fifos(struct bcm2835_i2s_dev *dev,
 static int bcm2835_i2s_set_dai_fmt(struct snd_soc_dai *dai,
 				      unsigned int fmt)
 {
-	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct bcm2835_i2s_dev *dev = dev_get_drvdata(dai_dev);
 	dev->fmt = fmt;
 	return 0;
 }
@@ -227,7 +229,9 @@ static int bcm2835_i2s_set_dai_fmt(struct snd_soc_dai *dai,
 static int bcm2835_i2s_set_dai_bclk_ratio(struct snd_soc_dai *dai,
 				      unsigned int ratio)
 {
-	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct bcm2835_i2s_dev *dev = dev_get_drvdata(dai_dev);
 
 	if (!ratio) {
 		dev->tdm_slots = 0;
@@ -250,7 +254,9 @@ static int bcm2835_i2s_set_dai_tdm_slot(struct snd_soc_dai *dai,
 	unsigned int tx_mask, unsigned int rx_mask,
 	int slots, int width)
 {
-	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct bcm2835_i2s_dev *dev = dev_get_drvdata(dai_dev);
 
 	if (slots) {
 		if (slots < 0 || width < 0)
@@ -330,7 +336,9 @@ static int bcm2835_i2s_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct bcm2835_i2s_dev *dev = dev_get_drvdata(dai_dev);
 	unsigned int data_length, data_delay, framesync_length;
 	unsigned int slots, slot_width, odd_slot_offset;
 	int frame_length, bclk_rate;
@@ -617,7 +625,9 @@ static int bcm2835_i2s_hw_params(struct snd_pcm_substream *substream,
 static int bcm2835_i2s_prepare(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct bcm2835_i2s_dev *dev = dev_get_drvdata(dai_dev);
 	uint32_t cs_reg;
 
 	/*
@@ -660,7 +670,9 @@ static void bcm2835_i2s_stop(struct bcm2835_i2s_dev *dev,
 static int bcm2835_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 			       struct snd_soc_dai *dai)
 {
-	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct bcm2835_i2s_dev *dev = dev_get_drvdata(dai_dev);
 	uint32_t mask;
 
 	switch (cmd) {
@@ -693,7 +705,9 @@ static int bcm2835_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 static int bcm2835_i2s_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct bcm2835_i2s_dev *dev = dev_get_drvdata(dai_dev);
 
 	if (snd_soc_dai_active(dai))
 		return 0;
@@ -718,7 +732,9 @@ static int bcm2835_i2s_startup(struct snd_pcm_substream *substream,
 static void bcm2835_i2s_shutdown(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct bcm2835_i2s_dev *dev = dev_get_drvdata(dai_dev);
 
 	bcm2835_i2s_stop(dev, substream, dai);
 
@@ -739,11 +755,12 @@ static void bcm2835_i2s_shutdown(struct snd_pcm_substream *substream,
 
 static int bcm2835_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct bcm2835_i2s_dev *dev = dev_get_drvdata(dai_dev);
 
-	snd_soc_dai_init_dma_data(dai,
-				  &dev->dma_data[SNDRV_PCM_STREAM_PLAYBACK],
-				  &dev->dma_data[SNDRV_PCM_STREAM_CAPTURE]);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &dev->dma_data[SNDRV_PCM_STREAM_PLAYBACK]);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &dev->dma_data[SNDRV_PCM_STREAM_CAPTURE]);
 
 	return 0;
 }
@@ -905,7 +922,7 @@ static int bcm2835_i2s_probe(struct platform_device *pdev)
 	dev->dev = &pdev->dev;
 	dev_set_drvdata(&pdev->dev, dev);
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 			&bcm2835_i2s_component, &bcm2835_i2s_dai, 1);
 	if (ret) {
 		dev_err(&pdev->dev, "Could not register DAI: %d\n", ret);

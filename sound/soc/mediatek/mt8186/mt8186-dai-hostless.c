@@ -76,7 +76,9 @@ static const struct snd_soc_dapm_route mtk_dai_hostless_routes[] = {
 static int mtk_dai_hostless_startup(struct snd_pcm_substream *substream,
 				    struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	int ret;
 

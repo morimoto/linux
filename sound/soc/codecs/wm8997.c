@@ -82,7 +82,8 @@ static int wm8997_sysclk_ev(struct snd_soc_dapm_widget *w,
 			    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 	struct regmap *regmap = arizona->regmap;
 	const struct reg_default *patch = NULL;
 	int i, patch_size;
@@ -926,7 +927,8 @@ static const struct snd_soc_dapm_route wm8997_dapm_routes[] = {
 static int wm8997_set_fll(struct snd_soc_component *component, int fll_id,
 			  int source, unsigned int Fref, unsigned int Fout)
 {
-	struct wm8997_priv *wm8997 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8997_priv *wm8997 = dev_get_drvdata(dev);
 
 	switch (fll_id) {
 	case WM8997_FLL1:
@@ -1056,11 +1058,12 @@ static struct snd_soc_dai_driver wm8997_dai[] = {
 static int wm8997_component_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8997_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8997_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->core.arizona;
 	int ret;
 
-	snd_soc_component_init_regmap(component, arizona->regmap);
+	snd_soc_component_regmap_init(component, arizona->regmap);
 
 	ret = arizona_init_spk(component);
 	if (ret < 0)
@@ -1075,7 +1078,8 @@ static int wm8997_component_probe(struct snd_soc_component *component)
 
 static void wm8997_component_remove(struct snd_soc_component *component)
 {
-	struct wm8997_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8997_priv *priv = dev_get_drvdata(dev);
 
 	priv->core.arizona->dapm = NULL;
 }
@@ -1173,7 +1177,7 @@ static int wm8997_probe(struct platform_device *pdev)
 	if (ret < 0)
 		goto err_jack_codec_dev;
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &soc_component_dev_wm8997,
 					      wm8997_dai,
 					      ARRAY_SIZE(wm8997_dai));

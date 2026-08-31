@@ -68,8 +68,9 @@ static int snd_soc_ac97_gpio_direction_in(struct gpio_chip *chip,
 					  unsigned int offset)
 {
 	struct snd_soc_component *component = gpio_to_component(chip);
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	dev_dbg(component->dev, "set gpio %d to output\n", offset);
+	dev_dbg(dev, "set gpio %d to output\n", offset);
 	return snd_soc_component_update_bits(component, AC97_GPIO_CFG,
 				   1 << offset, 1 << offset);
 }
@@ -77,11 +78,12 @@ static int snd_soc_ac97_gpio_direction_in(struct gpio_chip *chip,
 static int snd_soc_ac97_gpio_get(struct gpio_chip *chip, unsigned int offset)
 {
 	struct snd_soc_component *component = gpio_to_component(chip);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = snd_soc_component_read(component, AC97_GPIO_STATUS);
 
-	dev_dbg(component->dev, "get gpio %d : %d\n", offset,
+	dev_dbg(dev, "get gpio %d : %d\n", offset,
 		ret & (1 << offset));
 
 	return !!(ret & (1 << offset));
@@ -92,12 +94,13 @@ static int snd_soc_ac97_gpio_set(struct gpio_chip *chip, unsigned int offset,
 {
 	struct snd_ac97_gpio_priv *gpio_priv = gpiochip_get_data(chip);
 	struct snd_soc_component *component = gpio_to_component(chip);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	gpio_priv->gpios_set &= ~(1 << offset);
 	gpio_priv->gpios_set |= (!!value) << offset;
 	snd_soc_component_write(component, AC97_GPIO_STATUS,
 				gpio_priv->gpios_set);
-	dev_dbg(component->dev, "set gpio %d to %d\n", offset, !!value);
+	dev_dbg(dev, "set gpio %d to %d\n", offset, !!value);
 
 	return 0;
 }
@@ -106,9 +109,10 @@ static int snd_soc_ac97_gpio_direction_out(struct gpio_chip *chip,
 				     unsigned offset, int value)
 {
 	struct snd_soc_component *component = gpio_to_component(chip);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
-	dev_dbg(component->dev, "set gpio %d to output\n", offset);
+	dev_dbg(dev, "set gpio %d to output\n", offset);
 
 	ret = snd_soc_ac97_gpio_set(chip, offset, value);
 	if (ret)
@@ -132,22 +136,23 @@ static const struct gpio_chip snd_soc_ac97_gpio_chip = {
 static int snd_soc_ac97_init_gpio(struct snd_ac97 *ac97,
 				  struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_ac97_gpio_priv *gpio_priv;
 	int ret;
 
-	gpio_priv = devm_kzalloc(component->dev, sizeof(*gpio_priv), GFP_KERNEL);
+	gpio_priv = devm_kzalloc(dev, sizeof(*gpio_priv), GFP_KERNEL);
 	if (!gpio_priv)
 		return -ENOMEM;
 	ac97->gpio_priv = gpio_priv;
 	gpio_priv->component = component;
 	gpio_priv->gpio_chip = snd_soc_ac97_gpio_chip;
 	gpio_priv->gpio_chip.ngpio = AC97_NUM_GPIOS;
-	gpio_priv->gpio_chip.parent = component->dev;
+	gpio_priv->gpio_chip.parent = dev;
 	gpio_priv->gpio_chip.base = -1;
 
 	ret = gpiochip_add_data(&gpio_priv->gpio_chip, gpio_priv);
 	if (ret != 0)
-		dev_err(component->dev, "Failed to add GPIOs: %d\n", ret);
+		dev_err(dev, "Failed to add GPIOs: %d\n", ret);
 	return ret;
 }
 
@@ -179,6 +184,7 @@ static void snd_soc_ac97_free_gpio(struct snd_ac97 *ac97)
  */
 struct snd_ac97 *snd_soc_alloc_ac97_component(struct snd_soc_component *component)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
 	struct snd_ac97 *ac97;
 
 	ac97 = kzalloc_obj(struct snd_ac97);
@@ -189,12 +195,12 @@ struct snd_ac97 *snd_soc_alloc_ac97_component(struct snd_soc_component *componen
 	ac97->num = 0;
 
 	ac97->dev.bus = &ac97_bus_type;
-	ac97->dev.parent = component->card->dev;
+	ac97->dev.parent = snd_soc_card_to_dev(card);
 	ac97->dev.release = soc_ac97_device_release;
 
 	dev_set_name(&ac97->dev, "%d-%d:%s",
-		     component->card->snd_card->number, 0,
-		     component->name);
+		     snd_soc_card_to_snd_card(card)->number, 0,
+		     snd_soc_component_name(component));
 
 	device_initialize(&ac97->dev);
 
@@ -229,8 +235,7 @@ struct snd_ac97 *snd_soc_new_ac97_component(struct snd_soc_component *component,
 	if (id) {
 		ret = snd_ac97_reset(ac97, false, id, id_mask);
 		if (ret < 0) {
-			dev_err(component->dev, "Failed to reset AC97 device: %d\n",
-				ret);
+			dev_err(&ac97->dev, "Failed to reset AC97 device: %d\n", ret);
 			goto err_put_device;
 		}
 	}

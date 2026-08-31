@@ -59,7 +59,7 @@ static int loongson_asoc_machine_event(struct snd_soc_dapm_widget *w,
 				       struct snd_kcontrol *k, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct loongson_card_data *priv = snd_soc_card_get_drvdata(card);
+	struct loongson_card_data *priv = snd_soc_card_to_priv(card);
 
 	if (!snd_soc_dapm_widget_name_cmp(w, "Speaker"))
 		gpiod_set_value_cansleep(priv->gpiod_spkr_en,
@@ -102,7 +102,7 @@ static struct snd_soc_jack_gpio loongson_asoc_hp_jack_gpio = {
 static int loongson_asoc_machine_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct loongson_card_data *ls_priv = snd_soc_card_get_drvdata(card);
+	struct loongson_card_data *ls_priv = snd_soc_card_to_priv(card);
 	int ret = 0;
 
 	if (!ls_priv->cfg->add_hp_jack || !ls_priv->gpiod_hp_det)
@@ -131,9 +131,11 @@ static int loongson_card_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct loongson_card_data *ls_card = snd_soc_card_get_drvdata(rtd->card);
+	struct loongson_card_data *ls_card = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret, mclk;
 
 	if (!ls_card->mclk_fs)
@@ -142,13 +144,13 @@ static int loongson_card_hw_params(struct snd_pcm_substream *substream,
 	mclk = ls_card->mclk_fs * params_rate(params);
 	ret = snd_soc_dai_set_sysclk(cpu_dai, 0, mclk, SND_SOC_CLOCK_OUT);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "cpu_dai clock not set\n");
+		dev_err(dev, "cpu_dai clock not set\n");
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, mclk, SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "codec_dai clock not set\n");
+		dev_err(dev, "codec_dai clock not set\n");
 		return ret;
 	}
 
@@ -177,14 +179,15 @@ static struct snd_soc_dai_link loongson_dai_links[] = {
 static struct acpi_device *loongson_card_acpi_find_device(struct snd_soc_card *card,
 							  const char *name)
 {
-	struct fwnode_handle *fwnode = card->dev->fwnode;
+	struct device *dev = snd_soc_card_to_dev(card);
+	struct fwnode_handle *fwnode = dev->fwnode;
 	struct fwnode_reference_args args;
 	int status;
 
 	memset(&args, 0, sizeof(args));
 	status = acpi_node_get_property_reference(fwnode, name, 0, &args);
 	if (status || !is_acpi_device_node(args.fwnode)) {
-		dev_err(card->dev, "No matching phy in ACPI table\n");
+		dev_err(dev, "No matching phy in ACPI table\n");
 		return NULL;
 	}
 
@@ -197,6 +200,7 @@ static int loongson_card_parse_acpi(struct snd_soc_card *card,
 	const char *codec_dai_name;
 	struct acpi_device *adev;
 	struct device *phy_dev;
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	int i, ret;
 
 	/* fixup platform name based on reference node */
@@ -214,7 +218,7 @@ static int loongson_card_parse_acpi(struct snd_soc_card *card,
 		return -ENOENT;
 	snprintf(codec_name, sizeof(codec_name), "i2c-%s", acpi_dev_name(adev));
 
-	ret = device_property_read_string(card->dev, "codec-dai-name", &codec_dai_name);
+	ret = device_property_read_string(card_dev, "codec-dai-name", &codec_dai_name);
 	if (ret)
 		return ret;
 
@@ -230,9 +234,9 @@ static int loongson_card_parse_acpi(struct snd_soc_card *card,
 static int loongson_card_parse_of(struct snd_soc_card *card,
 				  struct snd_soc_card_driver *card_driver)
 {
-	struct loongson_card_data *data = snd_soc_card_get_drvdata(card);
+	struct loongson_card_data *data = snd_soc_card_to_priv(card);
 	struct device_node *cpu, *codec;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret, i;
 
 	data->gpiod_hp_det = devm_gpiod_get_optional(dev, "hp-det", GPIOD_IN);
@@ -322,7 +326,7 @@ static int loongson_asoc_card_probe(struct platform_device *pdev)
 		card_driver->num_dapm_widgets = ARRAY_SIZE(loongson_asoc_dapm_widgets);
 	}
 
-	snd_soc_card_set_drvdata(card, ls_priv);
+	snd_soc_card_set_priv(card, ls_priv);
 
 	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret)

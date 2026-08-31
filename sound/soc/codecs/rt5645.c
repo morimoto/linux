@@ -709,7 +709,8 @@ static int rt5645_hweq_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 	struct rt5645_eq_param_s_be16 *eq_param =
 		(struct rt5645_eq_param_s_be16 *)ucontrol->value.bytes.data;
 	int i;
@@ -735,7 +736,8 @@ static int rt5645_hweq_put(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 	struct rt5645_eq_param_s_be16 *eq_param =
 		(struct rt5645_eq_param_s_be16 *)ucontrol->value.bytes.data;
 	int i;
@@ -777,7 +779,8 @@ static int rt5645_spk_put_volsw(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 	int ret;
 
 	regmap_update_bits(rt5645->regmap, RT5645_MICBIAS,
@@ -882,14 +885,15 @@ static int set_dmic_clk(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 	int idx, rate;
 
 	rate = rt5645->sysclk / rl6231_get_pre_div(rt5645->regmap,
 		RT5645_ADDA_CLK1, RT5645_I2S_PD1_SFT);
 	idx = rl6231_calc_dmic_clk(rate);
 	if (idx < 0)
-		dev_err(component->dev, "Failed to set DMIC clock\n");
+		dev_err(dev, "Failed to set DMIC clock\n");
 	else
 		snd_soc_component_update_bits(component, RT5645_DMIC_CTRL1,
 			RT5645_DMIC_CLK_MASK, idx << RT5645_DMIC_CLK_SFT);
@@ -960,7 +964,8 @@ static int is_using_asrc(struct snd_soc_dapm_widget *source,
 
 static int rt5645_enable_hweq(struct snd_soc_component *component)
 {
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 	int i;
 
 	for (i = 0; i < RT5645_HWEQ_NUM; i++) {
@@ -1680,7 +1685,8 @@ static const struct snd_kcontrol_new pdm1_r_vol_control =
 static void hp_amp_power(struct snd_soc_component *component, int on)
 {
 	static int hp_amp_power_count;
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 	int i, val;
 
 	if (on) {
@@ -1783,7 +1789,8 @@ static int rt5645_hp_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -2751,20 +2758,22 @@ static const struct snd_soc_dapm_route rt5645_old_dapm_routes[] = {
 static int rt5645_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int val_len = 0, val_clk, mask_clk, dl_sft;
 	int pre_div, bclk_ms, frame_size;
 
-	rt5645->lrck[dai->id] = params_rate(params);
-	pre_div = rl6231_get_clk_info(rt5645->sysclk, rt5645->lrck[dai->id]);
+	rt5645->lrck[dai_id] = params_rate(params);
+	pre_div = rl6231_get_clk_info(rt5645->sysclk, rt5645->lrck[dai_id]);
 	if (pre_div < 0) {
-		dev_err(component->dev, "Unsupported clock setting\n");
+		dev_err(dev, "Unsupported clock setting\n");
 		return -EINVAL;
 	}
 	frame_size = snd_soc_params_to_frame_size(params);
 	if (frame_size < 0) {
-		dev_err(component->dev, "Unsupported frame size: %d\n", frame_size);
+		dev_err(dev, "Unsupported frame size: %d\n", frame_size);
 		return -EINVAL;
 	}
 
@@ -2778,12 +2787,12 @@ static int rt5645_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	bclk_ms = frame_size > 32;
-	rt5645->bclk[dai->id] = rt5645->lrck[dai->id] * (32 << bclk_ms);
+	rt5645->bclk[dai_id] = rt5645->lrck[dai_id] * (32 << bclk_ms);
 
-	dev_dbg(dai->dev, "bclk is %dHz and lrck is %dHz\n",
-		rt5645->bclk[dai->id], rt5645->lrck[dai->id]);
-	dev_dbg(dai->dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
-				bclk_ms, pre_div, dai->id);
+	dev_dbg(dev, "bclk is %dHz and lrck is %dHz\n",
+		rt5645->bclk[dai_id], rt5645->lrck[dai_id]);
+	dev_dbg(dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
+				bclk_ms, pre_div, dai_id);
 
 	switch (params_width(params)) {
 	case 16:
@@ -2801,7 +2810,7 @@ static int rt5645_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT5645_AIF1:
 		mask_clk = RT5645_I2S_PD1_MASK;
 		val_clk = pre_div << RT5645_I2S_PD1_SFT;
@@ -2818,7 +2827,7 @@ static int rt5645_hw_params(struct snd_pcm_substream *substream,
 		snd_soc_component_update_bits(component, RT5645_ADDA_CLK1, mask_clk, val_clk);
 		break;
 	default:
-		dev_err(component->dev, "Invalid dai->id: %d\n", dai->id);
+		dev_err(dev, "Invalid dai_id: %d\n", dai_id);
 		return -EINVAL;
 	}
 
@@ -2827,9 +2836,11 @@ static int rt5645_hw_params(struct snd_pcm_substream *substream,
 
 static int rt5645_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0, pol_sft;
+	int dai_id = snd_soc_dai_id(dai);
 
 	switch (rt5645->codec_type) {
 	case CODEC_TYPE_RT5650:
@@ -2842,11 +2853,11 @@ static int rt5645_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
-		rt5645->master[dai->id] = 1;
+		rt5645->master[dai_id] = 1;
 		break;
 	case SND_SOC_DAIFMT_CBC_CFC:
 		reg_val |= RT5645_I2S_MS_S;
-		rt5645->master[dai->id] = 0;
+		rt5645->master[dai_id] = 0;
 		break;
 	default:
 		return -EINVAL;
@@ -2877,7 +2888,7 @@ static int rt5645_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	default:
 		return -EINVAL;
 	}
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT5645_AIF1:
 		snd_soc_component_update_bits(component, RT5645_I2S1_SDP,
 			RT5645_I2S_MS_MASK | (1 << pol_sft) |
@@ -2889,7 +2900,7 @@ static int rt5645_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 			RT5645_I2S_DF_MASK, reg_val);
 		break;
 	default:
-		dev_err(component->dev, "Invalid dai->id: %d\n", dai->id);
+		dev_err(dev, "Invalid dai_id: %d\n", dai_id);
 		return -EINVAL;
 	}
 	return 0;
@@ -2898,8 +2909,9 @@ static int rt5645_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt5645_set_dai_sysclk(struct snd_soc_dai *dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0;
 
 	if (freq == rt5645->sysclk && clk_id == rt5645->sysclk_src)
@@ -2916,7 +2928,7 @@ static int rt5645_set_dai_sysclk(struct snd_soc_dai *dai,
 		reg_val |= RT5645_SCLK_SRC_RCCLK;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clock id (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock id (%d)\n", clk_id);
 		return -EINVAL;
 	}
 	snd_soc_component_update_bits(component, RT5645_GLB_CLK,
@@ -2924,7 +2936,7 @@ static int rt5645_set_dai_sysclk(struct snd_soc_dai *dai,
 	rt5645->sysclk = freq;
 	rt5645->sysclk_src = clk_id;
 
-	dev_dbg(dai->dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
+	dev_dbg(dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
 
 	return 0;
 }
@@ -2932,9 +2944,11 @@ static int rt5645_set_dai_sysclk(struct snd_soc_dai *dai,
 static int rt5645_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 	struct rl6231_pll_code pll_code;
+	int dai_id = snd_soc_dai_id(dai);
 	int ret;
 
 	if (source == rt5645->pll_src && freq_in == rt5645->pll_in &&
@@ -2942,7 +2956,7 @@ static int rt5645_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 		return 0;
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 
 		rt5645->pll_in = 0;
 		rt5645->pll_out = 0;
@@ -2958,7 +2972,7 @@ static int rt5645_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 		break;
 	case RT5645_PLL1_S_BCLK1:
 	case RT5645_PLL1_S_BCLK2:
-		switch (dai->id) {
+		switch (dai_id) {
 		case RT5645_AIF1:
 			snd_soc_component_update_bits(component, RT5645_GLB_CLK,
 				RT5645_PLL1_SRC_MASK, RT5645_PLL1_SRC_BCLK1);
@@ -2968,22 +2982,22 @@ static int rt5645_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 				RT5645_PLL1_SRC_MASK, RT5645_PLL1_SRC_BCLK2);
 			break;
 		default:
-			dev_err(component->dev, "Invalid dai->id: %d\n", dai->id);
+			dev_err(dev, "Invalid dai_id: %d\n", dai_id);
 			return -EINVAL;
 		}
 		break;
 	default:
-		dev_err(component->dev, "Unknown PLL source %d\n", source);
+		dev_err(dev, "Unknown PLL source %d\n", source);
 		return -EINVAL;
 	}
 
 	ret = rl6231_pll_calc(freq_in, freq_out, &pll_code);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupported input clock %d\n", freq_in);
+		dev_err(dev, "Unsupported input clock %d\n", freq_in);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "bypass=%d m=%d n=%d k=%d\n",
+	dev_dbg(dev, "bypass=%d m=%d n=%d k=%d\n",
 		pll_code.m_bp, (pll_code.m_bp ? 0 : pll_code.m_code),
 		pll_code.n_code, pll_code.k_code);
 
@@ -3003,8 +3017,9 @@ static int rt5645_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 static int rt5645_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 	unsigned int i_slot_sft, o_slot_sft, i_width_sht, o_width_sht, en_sft;
 	unsigned int mask, val = 0;
 
@@ -3069,7 +3084,8 @@ static int rt5645_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 static int rt5645_set_bias_level(struct snd_soc_component *component,
 			enum snd_soc_bias_level level)
 {
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -3170,7 +3186,9 @@ static void rt5645_enable_push_button_irq(struct snd_soc_component *component,
 static int rt5645_jack_detect(struct snd_soc_component *component, int jack_insert)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 	unsigned int val;
 
 	if (jack_insert) {
@@ -3180,7 +3198,7 @@ static int rt5645_jack_detect(struct snd_soc_component *component, int jack_inse
 		snd_soc_dapm_force_enable_pin(dapm, "LDO2");
 		snd_soc_dapm_force_enable_pin(dapm, "Mic Det Power");
 		snd_soc_dapm_sync(dapm);
-		if (!snd_soc_card_is_instantiated(component->card)) {
+		if (!snd_soc_card_is_instantiated(card)) {
 			/* Power up necessary bits for JD if dapm is
 			   not ready yet */
 			regmap_update_bits(rt5645->regmap, RT5645_PWR_ANLG1,
@@ -3207,7 +3225,7 @@ static int rt5645_jack_detect(struct snd_soc_component *component, int jack_inse
 		msleep(600);
 		regmap_read(rt5645->regmap, RT5645_IN1_CTRL3, &val);
 		val &= 0x7;
-		dev_dbg(component->dev, "val = %d\n", val);
+		dev_dbg(dev, "val = %d\n", val);
 
 		if ((val == 1 || val == 2) && !rt5645->pdata.no_headset_mic) {
 			rt5645->jack_type = SND_JACK_HEADSET;
@@ -3275,7 +3293,8 @@ int rt5645_set_jack_detect(struct snd_soc_component *component,
 	struct snd_soc_jack *hp_jack, struct snd_soc_jack *mic_jack,
 	struct snd_soc_jack *btn_jack)
 {
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 
 	rt5645->hp_jack = hp_jack;
 	rt5645->mic_jack = mic_jack;
@@ -3319,6 +3338,7 @@ static void rt5645_jack_detect_work(struct work_struct *work)
 {
 	struct rt5645_priv *rt5645 =
 		container_of(work, struct rt5645_priv, jack_detect_work.work);
+	struct device *dev = snd_soc_component_to_dev(rt5645->component);
 	int val, btn_type, gpio_state = 0, report = 0;
 
 	if (!rt5645->component)
@@ -3331,7 +3351,7 @@ static void rt5645_jack_detect_work(struct work_struct *work)
 				gpio_state = gpiod_get_value(rt5645->gpiod_hp_det);
 				if (rt5645->pdata.inv_hp_pol)
 					gpio_state ^= 1;
-				dev_dbg(rt5645->component->dev, "gpio_state = %d\n",
+				dev_dbg(dev, "gpio_state = %d\n",
 					gpio_state);
 				report = rt5645_jack_detect(rt5645->component, gpio_state);
 			}
@@ -3388,7 +3408,7 @@ static void rt5645_jack_detect_work(struct work_struct *work)
 				case 0x0000: /* unpressed */
 					break;
 				default:
-					dev_err(rt5645->component->dev,
+					dev_err(dev,
 						"Unexpected button code 0x%04x\n",
 						btn_type);
 					break;
@@ -3447,7 +3467,9 @@ static void rt5645_btn_check_callback(struct timer_list *t)
 static int rt5645_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 
 	rt5645->component = component;
 
@@ -3485,9 +3507,9 @@ static int rt5645_probe(struct snd_soc_component *component)
 	}
 
 	if (rt5645->pdata.long_name)
-		component->card->long_name = rt5645->pdata.long_name;
+		snd_soc_card_set_long_name(card, rt5645->pdata.long_name);
 
-	rt5645->eq_param = devm_kcalloc(component->dev,
+	rt5645->eq_param = devm_kcalloc(dev,
 		RT5645_HWEQ_NUM, sizeof(struct rt5645_eq_param_s),
 		GFP_KERNEL);
 
@@ -3509,7 +3531,8 @@ static void rt5645_remove(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int rt5645_suspend(struct snd_soc_component *component)
 {
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt5645->regmap, true);
 	regcache_mark_dirty(rt5645->regmap);
@@ -3519,7 +3542,8 @@ static int rt5645_suspend(struct snd_soc_component *component)
 
 static int rt5645_resume(struct snd_soc_component *component)
 {
-	struct rt5645_priv *rt5645 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5645_priv *rt5645 = dev_get_drvdata(dev);
 	int ret;
 
 	regcache_cache_only(rt5645->regmap, false);
@@ -4279,7 +4303,7 @@ static int rt5645_i2c_probe(struct i2c_client *i2c)
 		}
 	}
 
-	ret = devm_snd_soc_register_component(&i2c->dev, &soc_component_dev_rt5645,
+	ret = devm_snd_soc_component_register(&i2c->dev, &soc_component_dev_rt5645,
 				     rt5645_dai, ARRAY_SIZE(rt5645_dai));
 	if (ret)
 		goto err_irq;

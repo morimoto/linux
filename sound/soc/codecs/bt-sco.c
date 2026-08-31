@@ -79,7 +79,7 @@ static const struct snd_soc_component_driver soc_component_dev_bt_sco = {
 
 static int bt_sco_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 				      &soc_component_dev_bt_sco,
 				      bt_sco_dai, ARRAY_SIZE(bt_sco_dai));
 }

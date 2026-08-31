@@ -253,8 +253,9 @@ static void sun4i_snd_txctrl_off(struct snd_pcm_substream *substream,
 static int sun4i_spdif_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *cpu_dai)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sun4i_spdif_dev *host = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_spdif_dev *host = dev_get_drvdata(dev);
 
 	if (substream->stream != SNDRV_PCM_STREAM_PLAYBACK)
 		return -EINVAL;
@@ -274,7 +275,9 @@ static int sun4i_spdif_hw_params(struct snd_pcm_substream *substream,
 	u32 mclk_div = 0;
 	unsigned int mclk = 0;
 	u32 reg_val;
-	struct sun4i_spdif_dev *host = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_spdif_dev *host = dev_get_drvdata(dev);
 	struct platform_device *pdev = host->pdev;
 
 	/* Add the PCM and raw data select interface */
@@ -372,7 +375,9 @@ static int sun4i_spdif_trigger(struct snd_pcm_substream *substream, int cmd,
 			       struct snd_soc_dai *dai)
 {
 	int ret = 0;
-	struct sun4i_spdif_dev *host = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_spdif_dev *host = dev_get_drvdata(dev);
 
 	if (substream->stream != SNDRV_PCM_STREAM_PLAYBACK)
 		return -EINVAL;
@@ -425,7 +430,9 @@ static int sun4i_spdif_get_status(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct sun4i_spdif_dev *host = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_spdif_dev *host = dev_get_drvdata(dev);
 	u8 *status = ucontrol->value.iec958.status;
 	unsigned long flags;
 	unsigned int reg;
@@ -453,7 +460,9 @@ static int sun4i_spdif_set_status(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct sun4i_spdif_dev *host = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_spdif_dev *host = dev_get_drvdata(dev);
 	u8 *status = ucontrol->value.iec958.status;
 	unsigned long flags;
 	unsigned int reg;
@@ -507,10 +516,12 @@ static struct snd_kcontrol_new sun4i_spdif_controls[] = {
 
 static int sun4i_spdif_soc_dai_probe(struct snd_soc_dai *dai)
 {
-	struct sun4i_spdif_dev *host = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun4i_spdif_dev *host = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, &host->dma_params_tx, NULL);
-	snd_soc_add_dai_controls(dai, sun4i_spdif_controls,
+	snd_soc_dai_stream_dma_data_set_playback(dai, &host->dma_params_tx);
+	snd_soc_dai_add_controls(dai, sun4i_spdif_controls,
 				 ARRAY_SIZE(sun4i_spdif_controls));
 
 	return 0;
@@ -715,7 +726,7 @@ static int sun4i_spdif_probe(struct platform_device *pdev)
 					     "Failed to get reset\n");
 	}
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 				&sun4i_spdif_component, &sun4i_spdif_dai, 1);
 	if (ret)
 		return ret;

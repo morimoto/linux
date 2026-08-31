@@ -241,7 +241,8 @@ static struct {
 
 static int wm8955_configure_clocking(struct snd_soc_component *component)
 {
-	struct wm8955_priv *wm8955 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8955_priv *wm8955 = dev_get_drvdata(dev);
 	int i, ret, val;
 	int clocking = 0;
 	int srate = 0;
@@ -264,8 +265,7 @@ static int wm8955_configure_clocking(struct snd_soc_component *component)
 
 	/* We should never get here with an unsupported sample rate */
 	if (sr == -1) {
-		dev_err(component->dev, "Sample rate %dHz unsupported\n",
-			wm8955->fs);
+		dev_err(dev, "Sample rate %dHz unsupported\n", wm8955->fs);
 		WARN_ON(sr == -1);
 		return -EINVAL;
 	}
@@ -279,11 +279,9 @@ static int wm8955_configure_clocking(struct snd_soc_component *component)
 
 		/* Use the last divider configuration we saw for the
 		 * sample rate. */
-		ret = wm8955_pll_factors(component->dev, wm8955->mclk_rate,
-					 clock_cfgs[sr].mclk, &pll);
+		ret = wm8955_pll_factors(dev, wm8955->mclk_rate, clock_cfgs[sr].mclk, &pll);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Unable to generate %dHz from %dHz MCLK\n",
+			dev_err(dev, "Unable to generate %dHz from %dHz MCLK\n",
 				wm8955->fs, wm8955->mclk_rate);
 			return -EINVAL;
 		}
@@ -359,7 +357,8 @@ static int deemph_settings[] = { 0, 32000, 44100, 48000 };
 
 static int wm8955_set_deemph(struct snd_soc_component *component)
 {
-	struct wm8955_priv *wm8955 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8955_priv *wm8955 = dev_get_drvdata(dev);
 	int val, i, best;
 
 	/* If we're using deemphasis select the nearest available sample
@@ -378,7 +377,7 @@ static int wm8955_set_deemph(struct snd_soc_component *component)
 		val = 0;
 	}
 
-	dev_dbg(component->dev, "Set deemphasis %d\n", val);
+	dev_dbg(dev, "Set deemphasis %d\n", val);
 
 	return snd_soc_component_update_bits(component, WM8955_DAC_CONTROL,
 				   WM8955_DEEMPH_MASK, val);
@@ -388,7 +387,8 @@ static int wm8955_get_deemph(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8955_priv *wm8955 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8955_priv *wm8955 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wm8955->deemph;
 	return 0;
@@ -398,7 +398,8 @@ static int wm8955_put_deemph(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8955_priv *wm8955 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8955_priv *wm8955 = dev_get_drvdata(dev);
 	unsigned int deemph = ucontrol->value.integer.value[0];
 
 	if (deemph > 1)
@@ -589,8 +590,9 @@ static int wm8955_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8955_priv *wm8955 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8955_priv *wm8955 = dev_get_drvdata(dev);
 	int ret;
 	int wl;
 
@@ -638,8 +640,9 @@ static int wm8955_hw_params(struct snd_pcm_substream *substream,
 static int wm8955_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 			     unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8955_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8955_priv *priv = dev_get_drvdata(dev);
 	int div;
 
 	switch (clk_id) {
@@ -660,14 +663,14 @@ static int wm8955_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 		return -EINVAL;
 	}
 
-	dev_dbg(dai->dev, "Clock source is %d at %uHz\n", clk_id, freq);
+	dev_dbg(dev, "Clock source is %d at %uHz\n", clk_id, freq);
 
 	return 0;
 }
 
 static int wm8955_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 aif = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -747,7 +750,7 @@ static int wm8955_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 static int wm8955_mute(struct snd_soc_dai *codec_dai, int mute, int direction)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	int val;
 
 	if (mute)
@@ -763,7 +766,8 @@ static int wm8955_mute(struct snd_soc_dai *codec_dai, int mute, int direction)
 static int wm8955_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm8955_priv *wm8955 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8955_priv *wm8955 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -788,9 +792,7 @@ static int wm8955_set_bias_level(struct snd_soc_component *component,
 			ret = regulator_bulk_enable(ARRAY_SIZE(wm8955->supplies),
 						    wm8955->supplies);
 			if (ret != 0) {
-				dev_err(component->dev,
-					"Failed to enable supplies: %d\n",
-					ret);
+				dev_err(dev, "Failed to enable supplies: %d\n", ret);
 				return ret;
 			}
 
@@ -887,30 +889,31 @@ static struct snd_soc_dai_driver wm8955_dai = {
 static int wm8955_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8955_priv *wm8955 = snd_soc_component_get_drvdata(component);
-	struct wm8955_pdata *pdata = dev_get_platdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8955_priv *wm8955 = dev_get_drvdata(dev);
+	struct wm8955_pdata *pdata = dev_get_platdata(dev);
 	int ret, i;
 
 	for (i = 0; i < ARRAY_SIZE(wm8955->supplies); i++)
 		wm8955->supplies[i].supply = wm8955_supply_names[i];
 
-	ret = devm_regulator_bulk_get(component->dev, ARRAY_SIZE(wm8955->supplies),
+	ret = devm_regulator_bulk_get(dev, ARRAY_SIZE(wm8955->supplies),
 				 wm8955->supplies);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to request supplies: %d\n", ret);
+		dev_err(dev, "Failed to request supplies: %d\n", ret);
 		return ret;
 	}
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(wm8955->supplies),
 				    wm8955->supplies);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to enable supplies: %d\n", ret);
+		dev_err(dev, "Failed to enable supplies: %d\n", ret);
 		return ret;
 	}
 
 	ret = wm8955_reset(component);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to issue reset: %d\n", ret);
+		dev_err(dev, "Failed to issue reset: %d\n", ret);
 		goto err_enable;
 	}
 
@@ -1008,7 +1011,7 @@ static int wm8955_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, wm8955);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8955, &wm8955_dai, 1);
 
 	return ret;

@@ -127,6 +127,7 @@ static const struct snd_kcontrol_new ssm3515_snd_controls[] = {
 
 static void ssm3515_read_faults(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = snd_soc_component_read(component, SSM3515_STATUS);
@@ -138,7 +139,7 @@ static void ssm3515_read_faults(struct snd_soc_component *component)
 		return;
 	}
 
-	dev_err(component->dev, "device reports:%s%s%s%s%s%s%s\n",
+	dev_err(dev, "device reports:%s%s%s%s%s%s%s\n",
 		FIELD_GET(SSM3515_STATUS_UVLO_REG, ret) ? " voltage regulator fault" : "",
 		FIELD_GET(SSM3515_STATUS_LIM_EG, ret)   ? " limiter engaged" : "",
 		FIELD_GET(SSM3515_STATUS_CLIP, ret)     ? " clipping detected" : "",
@@ -169,9 +170,10 @@ static int ssm3515_probe(struct snd_soc_component *component)
 
 static int ssm3515_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int ret;
 
-	ret = snd_soc_component_update_bits(dai->component,
+	ret = snd_soc_component_update_bits(component,
 					    SSM3515_DAC,
 					    SSM3515_DAC_MUTE,
 					    FIELD_PREP(SSM3515_DAC_MUTE, mute));
@@ -184,7 +186,7 @@ static int ssm3515_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int ret, rateval;
 
 	switch (params_format(params)) {
@@ -236,7 +238,7 @@ static int ssm3515_hw_params(struct snd_pcm_substream *substream,
 
 static int ssm3515_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	bool fpol_inv = false; /* non-inverted: frame starts with low-to-high FSYNC */
 	int ret;
 	u8 sai1 = 0;
@@ -298,7 +300,7 @@ static int ssm3515_set_tdm_slot(struct snd_soc_dai *dai,
 				unsigned int rx_mask,
 				int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int slot, tdm_bclks_val, ret;
 
 	if (tx_mask == 0 || rx_mask != 0)
@@ -347,12 +349,14 @@ static int ssm3515_set_tdm_slot(struct snd_soc_dai *dai,
 static int ssm3515_hw_free(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
 	/*
 	 * We don't get live notification of faults, so at least at
 	 * this time, when playback is over, check if we have tripped
 	 * over anything and if so, log it.
 	 */
-	ssm3515_read_faults(dai->component);
+	ssm3515_read_faults(component);
 	return 0;
 }
 
@@ -433,7 +437,7 @@ static int ssm3515_i2c_probe(struct i2c_client *client)
 				     "performing software reset\n");
 	regmap_reinit_cache(data->regmap, &ssm3515_i2c_regmap);
 
-	return devm_snd_soc_register_component(data->dev,
+	return devm_snd_soc_component_register(data->dev,
 			&ssm3515_asoc_component,
 			&ssm3515_dai_driver, 1);
 }

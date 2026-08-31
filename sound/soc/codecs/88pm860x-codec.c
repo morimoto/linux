@@ -904,7 +904,7 @@ static const struct snd_soc_dapm_route pm860x_dapm_routes[] = {
  */
 static int pm860x_mute_stream(struct snd_soc_dai *codec_dai, int mute, int direction)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	int data = 0, mask = MUTE_LEFT | MUTE_RIGHT;
 
 	if (mute)
@@ -919,7 +919,7 @@ static int pm860x_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned char inf = 0, mask = 0;
 
 	/* bit size */
@@ -961,8 +961,9 @@ static int pm860x_pcm_hw_params(struct snd_pcm_substream *substream,
 static int pm860x_pcm_set_dai_fmt(struct snd_soc_dai *codec_dai,
 				  unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct pm860x_priv *pm860x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm860x_priv *pm860x = dev_get_drvdata(dev);
 	unsigned char inf = 0, mask = 0;
 	int ret = -EINVAL;
 
@@ -1001,8 +1002,9 @@ static int pm860x_pcm_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int pm860x_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct pm860x_priv *pm860x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm860x_priv *pm860x = dev_get_drvdata(dev);
 
 	if (dir == PM860X_CLK_DIR_OUT)
 		pm860x->dir = PM860X_CLK_DIR_OUT;
@@ -1016,7 +1018,7 @@ static int pm860x_i2s_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned char inf;
 
 	/* bit size */
@@ -1066,8 +1068,9 @@ static int pm860x_i2s_hw_params(struct snd_pcm_substream *substream,
 static int pm860x_i2s_set_dai_fmt(struct snd_soc_dai *codec_dai,
 				  unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct pm860x_priv *pm860x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm860x_priv *pm860x = dev_get_drvdata(dev);
 	unsigned char inf = 0, mask = 0;
 
 	mask |= PCM_INF2_BCLK | PCM_INF2_FS | PCM_INF2_MASTER;
@@ -1105,7 +1108,8 @@ static int pm860x_i2s_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int pm860x_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct pm860x_priv *pm860x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm860x_priv *pm860x = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int data;
 
@@ -1210,6 +1214,7 @@ static struct snd_soc_dai_driver pm860x_dai[] = {
 static irqreturn_t pm860x_component_handler(int irq, void *data)
 {
 	struct pm860x_priv *pm860x = data;
+	struct device *dev = snd_soc_component_to_dev(pm860x->component);
 	int status, shrt, report = 0, mic_report = 0;
 	int mask;
 
@@ -1221,7 +1226,7 @@ static irqreturn_t pm860x_component_handler(int irq, void *data)
 #ifndef CONFIG_SND_SOC_88PM860X_MODULE
 	if (status & (HEADSET_STATUS | MIC_STATUS | SHORT_HS1 | SHORT_HS2 |
 		      SHORT_LO1 | SHORT_LO2))
-		trace_snd_soc_jack_irq(dev_name(pm860x->component->dev));
+		trace_snd_soc_jack_irq(dev_name(snd_soc_component_to_dev(pm860x->component)));
 #endif
 
 	if ((pm860x->det.hp_det & SND_JACK_HEADPHONE)
@@ -1247,9 +1252,8 @@ static irqreturn_t pm860x_component_handler(int irq, void *data)
 		snd_soc_jack_report(pm860x->det.mic_jack, SND_JACK_MICROPHONE,
 				    SND_JACK_MICROPHONE);
 
-	dev_dbg(pm860x->component->dev, "headphone report:0x%x, mask:%x\n",
-		report, mask);
-	dev_dbg(pm860x->component->dev, "microphone report:0x%x\n", mic_report);
+	dev_dbg(dev, "headphone report:0x%x, mask:%x\n", report, mask);
+	dev_dbg(dev, "microphone report:0x%x\n", mic_report);
 	return IRQ_HANDLED;
 }
 
@@ -1257,7 +1261,8 @@ int pm860x_hs_jack_detect(struct snd_soc_component *component,
 			  struct snd_soc_jack *jack,
 			  int det, int hook, int hs_shrt, int lo_shrt)
 {
-	struct pm860x_priv *pm860x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm860x_priv *pm860x = dev_get_drvdata(dev);
 	int data;
 
 	pm860x->det.hp_jack = jack;
@@ -1289,7 +1294,8 @@ EXPORT_SYMBOL_GPL(pm860x_hs_jack_detect);
 int pm860x_mic_jack_detect(struct snd_soc_component *component,
 			   struct snd_soc_jack *jack, int det)
 {
-	struct pm860x_priv *pm860x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm860x_priv *pm860x = dev_get_drvdata(dev);
 
 	pm860x->det.mic_jack = jack;
 	pm860x->det.mic_det = det;
@@ -1306,18 +1312,19 @@ EXPORT_SYMBOL_GPL(pm860x_mic_jack_detect);
 
 static int pm860x_probe(struct snd_soc_component *component)
 {
-	struct pm860x_priv *pm860x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm860x_priv *pm860x = dev_get_drvdata(dev);
 	int i, ret;
 
 	pm860x->component = component;
-	snd_soc_component_init_regmap(component,  pm860x->regmap);
+	snd_soc_component_regmap_init(component,  pm860x->regmap);
 
 	for (i = 0; i < 4; i++) {
 		ret = request_threaded_irq(pm860x->irq[i], NULL,
 					   pm860x_component_handler, IRQF_ONESHOT,
 					   pm860x->name[i], pm860x);
 		if (ret < 0) {
-			dev_err(component->dev, "Failed to request IRQ!\n");
+			dev_err(dev, "Failed to request IRQ!\n");
 			goto out;
 		}
 	}
@@ -1332,7 +1339,8 @@ out:
 
 static void pm860x_remove(struct snd_soc_component *component)
 {
-	struct pm860x_priv *pm860x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm860x_priv *pm860x = dev_get_drvdata(dev);
 	int i;
 
 	for (i = 3; i >= 0; i--)
@@ -1383,7 +1391,7 @@ static int pm860x_codec_probe(struct platform_device *pdev)
 		strscpy(pm860x->name[i], res->name, MAX_NAME_LEN);
 	}
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 				     &soc_component_dev_pm860x,
 				     pm860x_dai, ARRAY_SIZE(pm860x_dai));
 	if (ret) {

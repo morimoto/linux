@@ -278,6 +278,8 @@ static irqreturn_t cs42l43_mic_shutter(int irq, void *data)
 {
 	struct cs42l43_codec *priv = data;
 	struct snd_soc_component *component = priv->component;
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(component);
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(soc_card);
 	int i;
 
 	dev_dbg(priv->dev, "Microphone shutter changed\n");
@@ -289,8 +291,7 @@ static irqreturn_t cs42l43_mic_shutter(int irq, void *data)
 		if (!priv->kctl[i])
 			return IRQ_NONE;
 
-		snd_ctl_notify(component->card->snd_card,
-			       SNDRV_CTL_EVENT_MASK_VALUE, &priv->kctl[i]->id);
+		snd_ctl_notify(snd_card, SNDRV_CTL_EVENT_MASK_VALUE, &priv->kctl[i]->id);
 	}
 
 	return IRQ_HANDLED;
@@ -300,6 +301,8 @@ static irqreturn_t cs42l43_spk_shutter(int irq, void *data)
 {
 	struct cs42l43_codec *priv = data;
 	struct snd_soc_component *component = priv->component;
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(component);
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(soc_card);
 
 	dev_dbg(priv->dev, "Speaker shutter changed\n");
 
@@ -309,8 +312,7 @@ static irqreturn_t cs42l43_spk_shutter(int irq, void *data)
 	if (!priv->kctl[0])
 		return IRQ_NONE;
 
-	snd_ctl_notify(component->card->snd_card,
-		       SNDRV_CTL_EVENT_MASK_VALUE, &priv->kctl[0]->id);
+	snd_ctl_notify(snd_card, SNDRV_CTL_EVENT_MASK_VALUE, &priv->kctl[0]->id);
 
 	return IRQ_HANDLED;
 }
@@ -329,11 +331,13 @@ static const struct snd_pcm_hw_constraint_list cs42l43_constraint = {
 
 static int cs42l43_startup(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	struct cs42l43 *cs42l43 = priv->core;
 	int ret;
-	int provider = !dai->id || !!regmap_test_bits(cs42l43->regmap,
+	int dai_id = snd_soc_dai_id(dai);
+	int provider = !dai_id || !!regmap_test_bits(cs42l43->regmap,
 						      CS42L43_ASP_CLK_CONFIG2,
 						      CS42L43_ASP_MASTER_MODE_MASK);
 
@@ -342,7 +346,7 @@ static int cs42l43_startup(struct snd_pcm_substream *substream, struct snd_soc_d
 	else
 		priv->constraint.mask = CS42L43_CONSUMER_RATE_MASK;
 
-	if (cs42l43->variant_id == CS42L43_DEVID_VAL && (dai->id == 3 || dai->id == 4)) {
+	if (cs42l43->variant_id == CS42L43_DEVID_VAL && (dai_id == 3 || dai_id == 4)) {
 		ret = snd_pcm_hw_constraint_minmax(substream->runtime,
 						   SNDRV_PCM_HW_PARAM_CHANNELS,
 						   1, 2);
@@ -383,7 +387,9 @@ static int cs42l43_set_sample_rate(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params,
 				   struct snd_soc_dai *dai)
 {
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	struct cs42l43 *cs42l43 = priv->core;
 	int ret;
 
@@ -404,7 +410,9 @@ static int cs42l43_asp_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	struct cs42l43 *cs42l43 = priv->core;
 	int dsp_mode = !!regmap_test_bits(cs42l43->regmap, CS42L43_ASP_CTRL,
 					  CS42L43_ASP_FSYNC_MODE_MASK);
@@ -491,9 +499,10 @@ static int cs42l43_asp_hw_params(struct snd_pcm_substream *substream,
 
 static int cs42l43_asp_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	struct cs42l43 *cs42l43 = priv->core;
 	int provider = regmap_test_bits(cs42l43->regmap, CS42L43_ASP_CLK_CONFIG2,
 					CS42L43_ASP_MASTER_MODE_MASK);
@@ -602,8 +611,9 @@ static void cs42l43_mask_to_slots(struct cs42l43_codec *priv, unsigned long mask
 static int cs42l43_asp_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				    unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 
 	priv->n_slots = slots;
 	priv->slot_width = slot_width;
@@ -623,8 +633,9 @@ static int cs42l43_asp_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mas
 
 static int cs42l43_dai_probe(struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	static const char * const controls[] = {
 		"Speaker Digital Switch",
 		"Decimator 1 Switch",
@@ -661,8 +672,9 @@ static int cs42l43_dai_probe(struct snd_soc_dai *dai)
 
 static int cs42l43_dai_remove(struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(priv->kctl); i++)
@@ -1193,7 +1205,8 @@ static int cs42l43_eq_get(struct snd_kcontrol *kcontrol,
 			  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 
 	memcpy(ucontrol->value.integer.value, priv->eq_coeffs, sizeof(priv->eq_coeffs));
 
@@ -1205,7 +1218,8 @@ static int cs42l43_eq_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 
 	snd_soc_dapm_mutex_lock(dapm);
 
@@ -1274,7 +1288,8 @@ static int cs42l43_decim_get(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	int ret;
 
 	ret = cs42l43_shutter_get(priv, CS42L43_STATUS_MIC_SHUTTER_MUTE_SHIFT);
@@ -1290,7 +1305,8 @@ static int cs42l43_spk_get(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	int ret;
 
 	ret = cs42l43_shutter_get(priv, CS42L43_STATUS_SPK_SHUTTER_MUTE_SHIFT);
@@ -1306,7 +1322,8 @@ static int cs42l43_spk_put(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	int ret;
 
 	ret = snd_soc_put_volsw(kcontrol, ucontrol);
@@ -1411,7 +1428,8 @@ static int cs42l43_eq_ev(struct snd_soc_dapm_widget *w,
 			 struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	struct cs42l43 *cs42l43 = priv->core;
 	unsigned int val;
 	int i, ret;
@@ -1608,7 +1626,8 @@ static int cs42l43_pll_ev(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	struct cs42l43 *cs42l43 = priv->core;
 	int ret;
 
@@ -1672,7 +1691,8 @@ static int cs42l43_spkr_ev(struct snd_soc_dapm_widget *w,
 			   struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 
 	return cs42l43_dapm_wait_completion(&priv->spkr_startup,
 					    &priv->spkr_shutdown, event,
@@ -1683,7 +1703,8 @@ static int cs42l43_spkl_ev(struct snd_soc_dapm_widget *w,
 			   struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 
 	return cs42l43_dapm_wait_completion(&priv->spkl_startup,
 					    &priv->spkl_shutdown, event,
@@ -1694,7 +1715,8 @@ static int cs42l43_hp_ev(struct snd_soc_dapm_widget *w,
 			 struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	struct cs42l43 *cs42l43 = priv->core;
 	unsigned int mask = 1 << w->shift;
 	unsigned int val = 0;
@@ -1740,7 +1762,8 @@ static int cs42l43_mic_ev(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	struct cs42l43 *cs42l43 = priv->core;
 	unsigned int reg, ramp, mute;
 	unsigned int *val;
@@ -1850,7 +1873,8 @@ static int cs42l43_adc_ev(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	struct cs42l43 *cs42l43 = priv->core;
 	unsigned int mask = 1 << w->shift;
 	unsigned int val = 0;
@@ -2572,7 +2596,8 @@ static const struct snd_soc_dapm_route cs42l43_b_routes[] = {
 static int cs42l43_set_sysclk(struct snd_soc_component *component, int clk_id,
 			      int src, unsigned int freq, int dir)
 {
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	struct cs42l43 *cs42l43 = priv->core;
 
 	guard(mutex)(&cs42l43->pll_lock);
@@ -2583,7 +2608,8 @@ static int cs42l43_set_sysclk(struct snd_soc_component *component, int clk_id,
 static int cs42l43_component_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	unsigned int num_controls, num_widgets, num_routes;
 	const struct snd_soc_dapm_widget *widgets;
 	const struct snd_kcontrol_new *controls;
@@ -2591,7 +2617,7 @@ static int cs42l43_component_probe(struct snd_soc_component *component)
 	struct cs42l43 *cs42l43 = priv->core;
 	int ret;
 
-	snd_soc_component_init_regmap(component, cs42l43->regmap);
+	snd_soc_component_regmap_init(component, cs42l43->regmap);
 
 	cs42l43_mask_to_slots(priv, CS42L43_DEFAULT_SLOTS, priv->tx_slots,
 			      ARRAY_SIZE(priv->tx_slots));
@@ -2622,7 +2648,7 @@ static int cs42l43_component_probe(struct snd_soc_component *component)
 		return -EINVAL;
 	}
 
-	ret = snd_soc_add_component_controls(component, controls, num_controls);
+	ret = snd_soc_component_add_controls(component, controls, num_controls);
 	if (ret)
 		return ret;
 
@@ -2639,7 +2665,8 @@ static int cs42l43_component_probe(struct snd_soc_component *component)
 
 static void cs42l43_component_remove(struct snd_soc_component *component)
 {
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 
 	cs42l43_set_jack(priv->component, NULL, NULL);
 
@@ -2859,7 +2886,7 @@ static int cs42l43_codec_probe(struct platform_device *pdev)
 		goto err_pm;
 	}
 
-	ret = devm_snd_soc_register_component(priv->dev, &cs42l43_component_drv,
+	ret = devm_snd_soc_component_register(priv->dev, &cs42l43_component_drv,
 					      cs42l43_dais, ARRAY_SIZE(cs42l43_dais));
 	if (ret) {
 		dev_err_probe(priv->dev, ret, "Failed to register component\n");

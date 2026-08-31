@@ -47,7 +47,8 @@ static int fsl_easrc_iec958_put_bits(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct fsl_asrc *easrc = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_asrc *easrc = dev_get_drvdata(dev);
 	struct fsl_easrc_priv *easrc_priv = easrc->private;
 	struct soc_mreg_control *mc =
 		(struct soc_mreg_control *)kcontrol->private_value;
@@ -68,7 +69,8 @@ static int fsl_easrc_iec958_get_bits(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct fsl_asrc *easrc = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_asrc *easrc = dev_get_drvdata(dev);
 	struct fsl_easrc_priv *easrc_priv = easrc->private;
 	struct soc_mreg_control *mc =
 		(struct soc_mreg_control *)kcontrol->private_value;
@@ -92,7 +94,8 @@ static int fsl_easrc_get_reg(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_mreg_control *mc =
 		(struct soc_mreg_control *)kcontrol->private_value;
-	struct fsl_asrc *easrc = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_asrc *easrc = dev_get_drvdata(dev);
 	unsigned int *regval = (unsigned int *)ucontrol->value.iec958.status;
 	int ret;
 
@@ -129,12 +132,13 @@ static int fsl_easrc_set_reg(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_mreg_control *mc =
 		(struct soc_mreg_control *)kcontrol->private_value;
-	struct fsl_asrc *easrc = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_asrc *easrc = dev_get_drvdata(dev);
 	unsigned int *regval = (unsigned int *)ucontrol->value.iec958.status;
 	bool changed, changed_all = false;
 	int ret;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret)
 		return ret;
 
@@ -174,7 +178,7 @@ static int fsl_easrc_set_reg(struct snd_kcontrol *kcontrol,
 		goto err;
 	changed_all |= changed;
 err:
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	if (ret != 0)
 		return ret;
@@ -1490,9 +1494,10 @@ static int fsl_easrc_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *dai)
 {
-	struct fsl_asrc *easrc = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_asrc *easrc = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	struct device *dev = &easrc->pdev->dev;
 	struct fsl_asrc_pair *ctx = runtime->private_data;
 	struct fsl_easrc_ctx_priv *ctx_priv = ctx->private;
 	unsigned int channels = params_channels(params);
@@ -1584,11 +1589,13 @@ static int fsl_easrc_hw_free(struct snd_pcm_substream *substream,
 
 static int fsl_easrc_dai_probe(struct snd_soc_dai *cpu_dai)
 {
-	struct fsl_asrc *easrc = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_asrc *easrc = dev_get_drvdata(dai_dev);
 
-	snd_soc_dai_init_dma_data(cpu_dai,
-				  &easrc->dma_params_tx,
-				  &easrc->dma_params_rx);
+	snd_soc_dai_stream_dma_data_set_playback(cpu_dai, &easrc->dma_params_tx);
+	snd_soc_dai_stream_dma_data_set_capture(cpu_dai,  &easrc->dma_params_rx);
+
 	return 0;
 }
 
@@ -1628,9 +1635,7 @@ static const struct snd_soc_component_driver fsl_easrc_component = {
 	.controls		= fsl_easrc_snd_controls,
 	.num_controls		= ARRAY_SIZE(fsl_easrc_snd_controls),
 	.legacy_dai_naming	= 1,
-#ifdef CONFIG_DEBUG_FS
 	.debugfs_prefix		= "easrc",
-#endif
 };
 
 static const struct reg_default fsl_easrc_reg_defaults[] = {
@@ -2244,14 +2249,14 @@ static int fsl_easrc_probe(struct platform_device *pdev)
 
 	regcache_cache_only(easrc->regmap, true);
 
-	ret = devm_snd_soc_register_component(dev, &fsl_easrc_component,
+	ret = devm_snd_soc_component_register(dev, &fsl_easrc_component,
 					      &fsl_easrc_dai, 1);
 	if (ret) {
 		dev_err(dev, "failed to register ASoC DAI\n");
 		goto err_pm_disable;
 	}
 
-	ret = devm_snd_soc_register_component(dev, &fsl_asrc_component,
+	ret = devm_snd_soc_component_register(dev, &fsl_asrc_component,
 					      NULL, 0);
 	if (ret) {
 		dev_err(&pdev->dev, "failed to register ASoC platform\n");
