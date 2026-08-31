@@ -19,7 +19,7 @@
 static char codec_name[SND_ACPI_I2C_ID_LEN];
 
 struct loongson_card_data {
-	struct snd_soc_card snd_card;
+	struct snd_soc_card_driver card_driver;
 	unsigned int mclk_fs;
 	struct gpio_desc *gpiod_hp_det;
 	struct gpio_desc *gpiod_hp_ctl;
@@ -191,9 +191,9 @@ static struct acpi_device *loongson_card_acpi_find_device(struct snd_soc_card *c
 	return to_acpi_device_node(args.fwnode);
 }
 
-static int loongson_card_parse_acpi(struct loongson_card_data *data)
+static int loongson_card_parse_acpi(struct snd_soc_card *card,
+				    struct snd_soc_card_driver *card_driver)
 {
-	struct snd_soc_card *card = &data->snd_card;
 	const char *codec_dai_name;
 	struct acpi_device *adev;
 	struct device *phy_dev;
@@ -218,7 +218,7 @@ static int loongson_card_parse_acpi(struct loongson_card_data *data)
 	if (ret)
 		return ret;
 
-	for (i = 0; i < card->num_links; i++) {
+	for (i = 0; i < card_driver->num_links; i++) {
 		loongson_dai_links[i].platforms->name = dev_name(phy_dev);
 		loongson_dai_links[i].codecs->name = codec_name;
 		loongson_dai_links[i].codecs->dai_name = codec_dai_name;
@@ -227,9 +227,10 @@ static int loongson_card_parse_acpi(struct loongson_card_data *data)
 	return 0;
 }
 
-static int loongson_card_parse_of(struct loongson_card_data *data)
+static int loongson_card_parse_of(struct snd_soc_card *card,
+				  struct snd_soc_card_driver *card_driver)
 {
-	struct snd_soc_card *card = &data->snd_card;
+	struct loongson_card_data *data = snd_soc_card_get_drvdata(card);
 	struct device_node *cpu, *codec;
 	struct device *dev = card->dev;
 	int ret, i;
@@ -247,7 +248,7 @@ static int loongson_card_parse_of(struct loongson_card_data *data)
 		return PTR_ERR(data->gpiod_spkr_en);
 
 	if (data->cfg->add_dapm_routes) {
-		ret = snd_soc_of_parse_audio_routing(card, "audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver, "audio-routing");
 		if (ret)
 			return ret;
 	}
@@ -265,7 +266,7 @@ static int loongson_card_parse_of(struct loongson_card_data *data)
 		return -EINVAL;
 	}
 
-	for (i = 0; i < card->num_links; i++) {
+	for (i = 0; i < card_driver->num_links; i++) {
 		ret = snd_soc_of_get_dlc(cpu, NULL, loongson_dai_links[i].cpus, 0);
 		if (ret < 0) {
 			dev_err(dev, "getting cpu dlc error (%d)\n", ret);
@@ -296,6 +297,7 @@ static int loongson_asoc_card_probe(struct platform_device *pdev)
 	struct loongson_card_data *ls_priv;
 	struct device *dev = &pdev->dev;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	int ret;
 
 	ls_priv = devm_kzalloc(dev, sizeof(*ls_priv), GFP_KERNEL);
@@ -306,21 +308,23 @@ static int loongson_asoc_card_probe(struct platform_device *pdev)
 	if (!ls_priv->cfg)
 		return -EINVAL;
 
-	card = &ls_priv->snd_card;
+	card = snd_soc_card_alloc(dev);
+	if (!card)
+		return -ENOMEM;
 
-	card->dev = dev;
-	card->owner = THIS_MODULE;
-	card->dai_link = loongson_dai_links;
-	card->num_links = ARRAY_SIZE(loongson_dai_links);
+	card_driver = &ls_priv->card_driver;
+	card_driver->owner = THIS_MODULE;
+	card_driver->dai_link = loongson_dai_links;
+	card_driver->num_links = ARRAY_SIZE(loongson_dai_links);
 
 	if (ls_priv->cfg->add_dapm_widgets) {
-		card->dapm_widgets = loongson_asoc_dapm_widgets;
-		card->num_dapm_widgets = ARRAY_SIZE(loongson_asoc_dapm_widgets);
+		card_driver->dapm_widgets = loongson_asoc_dapm_widgets;
+		card_driver->num_dapm_widgets = ARRAY_SIZE(loongson_asoc_dapm_widgets);
 	}
 
 	snd_soc_card_set_drvdata(card, ls_priv);
 
-	ret = device_property_read_string(dev, "model", &card->name);
+	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret)
 		return dev_err_probe(dev, ret, "Error parsing card name\n");
 
@@ -328,12 +332,12 @@ static int loongson_asoc_card_probe(struct platform_device *pdev)
 	if (ret)
 		return dev_err_probe(dev, ret, "Error parsing mclk-fs\n");
 
-	ret = has_acpi_companion(dev) ? loongson_card_parse_acpi(ls_priv)
-				      : loongson_card_parse_of(ls_priv);
+	ret = has_acpi_companion(dev) ? loongson_card_parse_acpi(card, card_driver)
+				      : loongson_card_parse_of(card, card_driver);
 	if (ret)
 		return dev_err_probe(dev, ret, "Error parsing acpi/of properties\n");
 
-	return devm_snd_soc_register_card(dev, card);
+	return devm_snd_soc_card_register(card, card_driver);
 }
 
 static const struct of_device_id loongson_asoc_dt_ids[] = {
