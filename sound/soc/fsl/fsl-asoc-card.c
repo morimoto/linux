@@ -161,7 +161,7 @@ struct fsl_asoc_card_pdata {
  * @pdata: pointer to the per-compatible card platform data
  * @codec_priv: CODEC private data
  * @cpu_priv: CPU private data
- * @card: ASoC card structure
+ * @card_driver: ASoC card driver
  * @constraint_rates: array of supported rates
  * @constraint_channels: array of supported channels
  * @streams: Mask of current active streams
@@ -182,7 +182,7 @@ struct fsl_asoc_card_priv {
 	const struct fsl_asoc_card_pdata *pdata;
 	struct codec_priv codec_priv[2];
 	struct cpu_priv cpu_priv;
-	struct snd_soc_card card;
+	struct snd_soc_card_driver card_driver;
 	const struct snd_pcm_hw_constraint_list *constraint_rates;
 	const struct snd_pcm_hw_constraint_list *constraint_channels;
 	u8 streams;
@@ -631,19 +631,19 @@ static int fsl_asoc_card_spdif_init(struct device_node *codec_np[],
 	if (priv->dai_link[0].playback_only) {
 		priv->dai_link[1].playback_only = true;
 		priv->dai_link[2].playback_only = true;
-		priv->card.dapm_routes = audio_map_tx;
-		priv->card.num_dapm_routes = ARRAY_SIZE(audio_map_tx);
+		priv->card_driver.dapm_routes = audio_map_tx;
+		priv->card_driver.num_dapm_routes = ARRAY_SIZE(audio_map_tx);
 	} else if (priv->dai_link[0].capture_only) {
 		priv->dai_link[1].capture_only = true;
 		priv->dai_link[2].capture_only = true;
-		priv->card.dapm_routes = audio_map_rx;
-		priv->card.num_dapm_routes = ARRAY_SIZE(audio_map_rx);
+		priv->card_driver.dapm_routes = audio_map_rx;
+		priv->card_driver.num_dapm_routes = ARRAY_SIZE(audio_map_rx);
 	}
 
 	// No DAPM routes with old bindings and dummy codec
 	if (!codec_np[0]) {
-		priv->card.dapm_routes = NULL;
-		priv->card.num_dapm_routes = 0;
+		priv->card_driver.dapm_routes = NULL;
+		priv->card_driver.num_dapm_routes = 0;
 	}
 
 	if (codec_np[0] && codec_np[1]) {
@@ -1088,14 +1088,16 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
 	struct fsl_asoc_card_priv *priv;
 	const struct fsl_asoc_card_pdata *pdata;
 	struct snd_soc_dai_link_component *dlc;
+	struct snd_soc_card *card;
 	const char *codec_dai_name[2] = { NULL, NULL };
 	u32 asrc_fmt = 0;
 	int codec_idx;
 	u32 width;
 	int ret;
 
+	card = snd_soc_card_alloc(&pdev->dev);
 	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
+	if (!card || !priv)
 		return -ENOMEM;
 
 	priv->pdev = pdev;
@@ -1166,9 +1168,9 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
 	priv->dai_link[2].codecs = &dlc[8];
 	priv->dai_link[2].num_codecs = 1;
 
-	priv->card.dapm_routes = audio_map;
-	priv->card.num_dapm_routes = ARRAY_SIZE(audio_map);
-	priv->card.driver_name = DRIVER_NAME;
+	priv->card_driver.dapm_routes = audio_map;
+	priv->card_driver.num_dapm_routes = ARRAY_SIZE(audio_map);
+	priv->card_driver.driver_name = DRIVER_NAME;
 
 	for (codec_idx = 0; codec_idx < 2; codec_idx++) {
 		priv->codec_priv[codec_idx].fll_id = -1;
@@ -1203,8 +1205,8 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
 
 	priv->dai_fmt = pdata->dai_fmt;
 
-	priv->card.dapm_routes = pdata->dapm_routes;
-	priv->card.num_dapm_routes = pdata->num_dapm_routes;
+	priv->card_driver.dapm_routes = pdata->dapm_routes;
+	priv->card_driver.num_dapm_routes = pdata->num_dapm_routes;
 
 	if (pdata->probe_init) {
 		ret = pdata->probe_init(codec_np, cpu_np,
@@ -1257,9 +1259,8 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
 	of_node_put(frameprovider);
 
 	/* Initialize sound card */
-	priv->card.dev = &pdev->dev;
-	priv->card.owner = THIS_MODULE;
-	ret = snd_soc_of_parse_card_name(&priv->card, "model");
+	priv->card_driver.owner = THIS_MODULE;
+	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret) {
 		/*
 		 * "model" is required by the DT binding. Enforce it here so
@@ -1268,18 +1269,20 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "Error parsing card name: %d\n", ret);
 		goto asrc_fail;
 	}
-	priv->card.dai_link = priv->dai_link;
-	priv->card.late_probe = fsl_asoc_card_late_probe;
-	priv->card.remove = fsl_asoc_card_card_remove;
-	priv->card.dapm_widgets = fsl_asoc_card_dapm_widgets;
-	priv->card.num_dapm_widgets = ARRAY_SIZE(fsl_asoc_card_dapm_widgets);
+	priv->card_driver.dai_link = priv->dai_link;
+	priv->card_driver.late_probe = fsl_asoc_card_late_probe;
+	priv->card_driver.remove = fsl_asoc_card_card_remove;
+	priv->card_driver.dapm_widgets = fsl_asoc_card_dapm_widgets;
+	priv->card_driver.num_dapm_widgets = ARRAY_SIZE(fsl_asoc_card_dapm_widgets);
 
 	/* Drop the second half of DAPM routes -- ASRC */
 	if (!asrc_pdev)
-		priv->card.num_dapm_routes /= 2;
+		priv->card_driver.num_dapm_routes /= 2;
 
 	if (of_property_present(np, "audio-routing")) {
-		ret = snd_soc_of_parse_audio_routing(&priv->card, "audio-routing");
+		ret = snd_soc_card_driver_of_parse_audio_routing(&pdev->dev,
+								 &priv->card_driver,
+								 "audio-routing");
 		if (ret) {
 			dev_err(&pdev->dev, "failed to parse audio-routing: %d\n", ret);
 			goto asrc_fail;
@@ -1322,7 +1325,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
 
 	priv->dai_link[0].platforms->of_node = cpu_np;
 	priv->dai_link[0].dai_fmt = priv->dai_fmt;
-	priv->card.num_links = 1;
+	priv->card_driver.num_links = 1;
 
 	if (asrc_pdev) {
 		/* DPCM DAI Links only if ASRC exists */
@@ -1338,7 +1341,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
 		priv->dai_link[2].cpus->of_node = cpu_np;
 		priv->dai_link[2].dai_fmt = priv->dai_fmt;
 		priv->dai_link[2].ignore_pmdown_time = 1;
-		priv->card.num_links = 3;
+		priv->card_driver.num_links = 3;
 
 		ret = of_property_read_u32(asrc_np, "fsl,asrc-rate",
 					   &priv->asrc_rate);
@@ -1368,12 +1371,11 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
 	}
 
 	/* Finish card registering */
-	platform_set_drvdata(pdev, priv);
-	snd_soc_card_set_drvdata(&priv->card, priv);
+	snd_soc_card_set_priv(card, priv);
 
-	ret = devm_snd_soc_register_card(&pdev->dev, &priv->card);
+	ret = devm_snd_soc_card_register(card, &priv->card_driver);
 	if (ret) {
-		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card failed\n");
+		dev_err_probe(&pdev->dev, ret, "snd_soc_card_register() failed\n");
 		goto asrc_fail;
 	}
 
