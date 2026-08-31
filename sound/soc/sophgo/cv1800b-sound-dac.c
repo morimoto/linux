@@ -101,7 +101,9 @@ static int cv1800b_dac_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct cv1800b_priv *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_priv *priv = dev_get_drvdata(dev);
 	int ret;
 	unsigned int rate = params_rate(params);
 
@@ -129,7 +131,9 @@ static int cv1800b_dac_hw_params(struct snd_pcm_substream *substream,
 static int cv1800b_dac_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 				   struct snd_soc_dai *dai)
 {
-	struct cv1800b_priv *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_priv *priv = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -183,7 +187,7 @@ static int cv1800b_dac_probe(struct platform_device *pdev)
 		return PTR_ERR(priv->regs);
 
 	platform_set_drvdata(pdev, priv);
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 					       &cv1800b_dac_component,
 					       &cv1800b_dac_dai, 1);
 }

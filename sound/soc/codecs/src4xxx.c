@@ -153,18 +153,20 @@ static const struct snd_soc_component_driver src4xxx_driver = {
 
 static int src4xxx_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct src4xxx *src4xxx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct src4xxx *src4xxx = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int ctrl;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
 		ctrl = SRC4XXX_BUS_MASTER;
-		src4xxx->master[dai->id] = true;
+		src4xxx->master[dai_id] = true;
 		break;
 	case SND_SOC_DAIFMT_CBC_CFC:
 		ctrl = 0;
-		src4xxx->master[dai->id] = false;
+		src4xxx->master[dai_id] = false;
 		break;
 	default:
 		return -EINVAL;
@@ -194,7 +196,7 @@ static int src4xxx_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		break;
 	}
 
-	regmap_update_bits(src4xxx->regmap, SRC4XXX_BUS_FMT(dai->id),
+	regmap_update_bits(src4xxx->regmap, SRC4XXX_BUS_FMT(dai_id),
 		SRC4XXX_BUS_FMT_MS_MASK, ctrl);
 
 	return 0;
@@ -203,11 +205,11 @@ static int src4xxx_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int src4xxx_set_mclk_hz(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct src4xxx *src4xxx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct src4xxx *src4xxx = dev_get_drvdata(dev);
 
-	dev_info(component->dev, "changing mclk rate from %d to %d Hz\n",
-		src4xxx->mclk_hz, freq);
+	dev_info(dev, "changing mclk rate from %d to %d Hz\n", src4xxx->mclk_hz, freq);
 	src4xxx->mclk_hz = freq;
 
 	return 0;
@@ -217,14 +219,16 @@ static int src4xxx_hw_params(struct snd_pcm_substream *substream,
 			struct snd_pcm_hw_params *params,
 			struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct src4xxx *src4xxx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct src4xxx *src4xxx = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int mclk_div;
 	int val, pj, jd, d;
 	int reg;
 	int ret;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case SRC4XXX_PORTB:
 		reg = SRC4XXX_PORTB_CTL_06;
 		break;
@@ -233,21 +237,18 @@ static int src4xxx_hw_params(struct snd_pcm_substream *substream,
 		break;
 	}
 
-	if (src4xxx->master[dai->id]) {
+	if (src4xxx->master[dai_id]) {
 		mclk_div = src4xxx->mclk_hz/params_rate(params);
 		if (src4xxx->mclk_hz != mclk_div*params_rate(params)) {
-			dev_err(component->dev,
-				"mclk %d / rate %d has a remainder.\n",
+			dev_err(dev, "mclk %d / rate %d has a remainder.\n",
 				src4xxx->mclk_hz, params_rate(params));
 			return -EINVAL;
 		}
 
 		val = ((int)mclk_div - 128) / 128;
 		if ((val < 0) | (val > 3)) {
-			dev_err(component->dev,
-				"div register setting %d is out of range\n",
-				val);
-			dev_err(component->dev,
+			dev_err(dev, "div register setting %d is out of range\n", val);
+			dev_err(dev,
 				"unsupported sample rate %d Hz for the master clock of %d Hz\n",
 				params_rate(params), src4xxx->mclk_hz);
 			return -EINVAL;
@@ -258,8 +259,7 @@ static int src4xxx_hw_params(struct snd_pcm_substream *substream,
 			SRC4XXX_TX_CTL_07, SRC4XXX_TX_MCLK_DIV_MASK,
 			val<<SRC4XXX_TX_MCLK_DIV_SHIFT);
 		if (ret) {
-			dev_err(component->dev,
-				"Couldn't set the TX's div register to %d << %d = 0x%x\n",
+			dev_err(dev, "Couldn't set the TX's div register to %d << %d = 0x%x\n",
 				val, SRC4XXX_TX_MCLK_DIV_SHIFT,
 				val<<SRC4XXX_TX_MCLK_DIV_SHIFT);
 			return ret;
@@ -283,7 +283,7 @@ static int src4xxx_hw_params(struct snd_pcm_substream *substream,
 			 * Dummy initialize variables to avoid
 			 * -Wsometimes-uninitialized from clang.
 			 */
-			dev_info(component->dev,
+			dev_info(dev,
 				"Couldn't set the RCV PLL as this master clock rate is unknown. Chosen regmap values may not match real world values.\n");
 			pj = 0x0;
 			jd = 0xff;
@@ -292,26 +292,22 @@ static int src4xxx_hw_params(struct snd_pcm_substream *substream,
 		}
 		ret = regmap_write(src4xxx->regmap, SRC4XXX_RCV_PLL_0F, pj);
 		if (ret < 0)
-			dev_err(component->dev,
-				"Failed to update PLL register 0x%x\n",
+			dev_err(dev, "Failed to update PLL register 0x%x\n",
 				SRC4XXX_RCV_PLL_0F);
 		ret = regmap_write(src4xxx->regmap, SRC4XXX_RCV_PLL_10, jd);
 		if (ret < 0)
-			dev_err(component->dev,
-				"Failed to update PLL register 0x%x\n",
+			dev_err(dev, "Failed to update PLL register 0x%x\n",
 				SRC4XXX_RCV_PLL_10);
 		ret = regmap_write(src4xxx->regmap, SRC4XXX_RCV_PLL_11, d);
 		if (ret < 0)
-			dev_err(component->dev,
-				"Failed to update PLL register 0x%x\n",
+			dev_err(dev, "Failed to update PLL register 0x%x\n",
 				SRC4XXX_RCV_PLL_11);
 
 		ret = regmap_update_bits(src4xxx->regmap,
 			SRC4XXX_TX_CTL_07, SRC4XXX_TX_MCLK_DIV_MASK,
 			val<<SRC4XXX_TX_MCLK_DIV_SHIFT);
 		if (ret < 0) {
-			dev_err(component->dev,
-				"Couldn't set the TX's div register to %d << %d = 0x%x\n",
+			dev_err(dev, "Couldn't set the TX's div register to %d << %d = 0x%x\n",
 				val, SRC4XXX_TX_MCLK_DIV_SHIFT,
 				val<<SRC4XXX_TX_MCLK_DIV_SHIFT);
 			return ret;
@@ -320,7 +316,7 @@ static int src4xxx_hw_params(struct snd_pcm_substream *substream,
 		return regmap_update_bits(src4xxx->regmap, reg,
 					SRC4XXX_MCLK_DIV_MASK, val);
 	} else {
-		dev_info(dai->dev, "not setting up MCLK as not master\n");
+		dev_info(dev, "not setting up MCLK as not master\n");
 	}
 
 	return 0;
@@ -466,7 +462,7 @@ int src4xxx_probe(struct device *dev, struct regmap *regmap,
 	if (ret < 0)
 		dev_err(dev, "Failed to enable mclk rec and div : %d\n", ret);
 
-	ret = devm_snd_soc_register_component(dev, &src4xxx_driver,
+	ret = devm_snd_soc_component_register(dev, &src4xxx_driver,
 			src4xxx_dai_driver, ARRAY_SIZE(src4xxx_dai_driver));
 	if (ret == 0)
 		dev_info(dev, "src4392 probe ok %d\n", ret);

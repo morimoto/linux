@@ -94,12 +94,17 @@ static struct samsung_spdif_info spdif_info;
 static inline struct samsung_spdif_info
 *component_to_info(struct snd_soc_component *component)
 {
-	return snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	return dev_get_drvdata(dev);
 }
 
 static inline struct samsung_spdif_info *to_info(struct snd_soc_dai *cpu_dai)
 {
-	return snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	return dev_get_drvdata(dev);
 }
 
 static void spdif_snd_txctrl(struct samsung_spdif_info *spdif, int on)
@@ -190,7 +195,7 @@ static int spdif_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	snd_soc_dai_set_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream, dma_data);
+	snd_soc_dai_stream_dma_data_set(snd_soc_rtd_to_cpu(rtd, 0), substream, dma_data);
 
 	guard(spinlock_irqsave)(&spdif->lock);
 
@@ -422,7 +427,7 @@ static int spdif_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, spdif);
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 			&samsung_spdif_component, &samsung_spdif_dai, 1);
 	if (ret != 0) {
 		dev_err(&pdev->dev, "fail to register dai\n");

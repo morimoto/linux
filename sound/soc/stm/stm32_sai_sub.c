@@ -667,7 +667,10 @@ static irqreturn_t stm32_sai_isr(int irq, void *devid)
 static int stm32_sai_set_sysclk(struct snd_soc_dai *cpu_dai,
 				int clk_id, unsigned int freq, int dir)
 {
-	struct stm32_sai_sub_data *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 	int ret;
 
 	/*
@@ -675,7 +678,7 @@ static int stm32_sai_set_sysclk(struct snd_soc_dai *cpu_dai,
 	 * Skip calls to the set_sysclk callback that are not relevant during the
 	 * initialization phase.
 	 */
-	if (!snd_soc_card_is_instantiated(cpu_dai->component->card))
+	if (!snd_soc_card_is_instantiated(card))
 		return 0;
 
 	if (dir == SND_SOC_CLOCK_OUT && sai->sai_mclk) {
@@ -706,14 +709,14 @@ static int stm32_sai_set_sysclk(struct snd_soc_dai *cpu_dai,
 
 		ret = clk_set_rate_exclusive(sai->sai_mclk, freq);
 		if (ret) {
-			dev_err(cpu_dai->dev,
+			dev_err(dev,
 				ret == -EBUSY ?
 				"Active streams have incompatible rates" :
 				"Could not set mclk rate\n");
 			return ret;
 		}
 
-		dev_dbg(cpu_dai->dev, "SAI MCLK frequency is %uHz\n", freq);
+		dev_dbg(dev, "SAI MCLK frequency is %uHz\n", freq);
 		sai->mclk_rate = freq;
 	}
 
@@ -723,15 +726,17 @@ static int stm32_sai_set_sysclk(struct snd_soc_dai *cpu_dai,
 static int stm32_sai_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
 				      u32 rx_mask, int slots, int slot_width)
 {
-	struct stm32_sai_sub_data *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 	int slotr, slotr_mask, slot_size;
 
 	if (STM_SAI_PROTOCOL_IS_SPDIF(sai)) {
-		dev_warn(cpu_dai->dev, "Slot setting relevant only for TDM\n");
+		dev_warn(dev, "Slot setting relevant only for TDM\n");
 		return 0;
 	}
 
-	dev_dbg(cpu_dai->dev, "Masks tx/rx:%#x/%#x, slots:%d, width:%d\n",
+	dev_dbg(dev, "Masks tx/rx:%#x/%#x, slots:%d, width:%d\n",
 		tx_mask, rx_mask, slots, slot_width);
 
 	switch (slot_width) {
@@ -773,12 +778,14 @@ static int stm32_sai_set_dai_tdm_slot(struct snd_soc_dai *cpu_dai, u32 tx_mask,
 
 static int stm32_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 {
-	struct stm32_sai_sub_data *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 	int cr1, frcr = 0;
 	int cr1_mask, frcr_mask = 0;
 	int ret;
 
-	dev_dbg(cpu_dai->dev, "fmt %x\n", fmt);
+	dev_dbg(dev, "fmt %x\n", fmt);
 
 	/* Do not generate master by default */
 	cr1 = SAI_XCR1_NODIV;
@@ -816,7 +823,7 @@ static int stm32_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 		frcr |= SAI_XFRCR_FSPOL;
 		break;
 	default:
-		dev_err(cpu_dai->dev, "Unsupported protocol %#x\n",
+		dev_err(dev, "Unsupported protocol %#x\n",
 			fmt & SND_SOC_DAIFMT_FORMAT_MASK);
 		return -EINVAL;
 	}
@@ -841,7 +848,7 @@ static int stm32_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 		frcr ^= SAI_XFRCR_FSPOL;
 		break;
 	default:
-		dev_err(cpu_dai->dev, "Unsupported strobing %#x\n",
+		dev_err(dev, "Unsupported strobing %#x\n",
 			fmt & SND_SOC_DAIFMT_INV_MASK);
 		return -EINVAL;
 	}
@@ -861,14 +868,14 @@ static int stm32_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 		sai->master = true;
 		break;
 	default:
-		dev_err(cpu_dai->dev, "Unsupported mode %#x\n",
+		dev_err(dev, "Unsupported mode %#x\n",
 			fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK);
 		return -EINVAL;
 	}
 
 	/* Set slave mode if sub-block is synchronized with another SAI */
 	if (sai->sync) {
-		dev_dbg(cpu_dai->dev, "Synchronized SAI configured as slave\n");
+		dev_dbg(dev, "Synchronized SAI configured as slave\n");
 		cr1 |= SAI_XCR1_SLAVE;
 		sai->master = false;
 	}
@@ -878,7 +885,7 @@ static int stm32_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 conf_update:
 	ret = stm32_sai_sub_reg_up(sai, STM_SAI_CR1_REGX, cr1_mask, cr1);
 	if (ret < 0) {
-		dev_err(cpu_dai->dev, "Failed to update CR1 register\n");
+		dev_err(dev, "Failed to update CR1 register\n");
 		return ret;
 	}
 
@@ -890,7 +897,9 @@ conf_update:
 static int stm32_sai_startup(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_sai_sub_data *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 	int imr, cr2, ret;
 
 	scoped_guard(spinlock_irqsave, &sai->irq_lock)
@@ -906,7 +915,7 @@ static int stm32_sai_startup(struct snd_pcm_substream *substream,
 
 	ret = clk_prepare_enable(sai->sai_ck);
 	if (ret < 0) {
-		dev_err(cpu_dai->dev, "Failed to enable clock: %d\n", ret);
+		dev_err(dev, "Failed to enable clock: %d\n", ret);
 		return ret;
 	}
 
@@ -936,7 +945,9 @@ static int stm32_sai_set_config(struct snd_soc_dai *cpu_dai,
 				struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params)
 {
-	struct stm32_sai_sub_data *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 	int cr1, cr1_mask, ret;
 
 	/*
@@ -968,7 +979,7 @@ static int stm32_sai_set_config(struct snd_soc_dai *cpu_dai,
 		cr1 = SAI_XCR1_DS_SET(SAI_DATASIZE_32);
 		break;
 	default:
-		dev_err(cpu_dai->dev, "Data format not supported\n");
+		dev_err(dev, "Data format not supported\n");
 		return -EINVAL;
 	}
 
@@ -978,7 +989,7 @@ static int stm32_sai_set_config(struct snd_soc_dai *cpu_dai,
 
 	ret = stm32_sai_sub_reg_up(sai, STM_SAI_CR1_REGX, cr1_mask, cr1);
 	if (ret < 0) {
-		dev_err(cpu_dai->dev, "Failed to update CR1 register\n");
+		dev_err(dev, "Failed to update CR1 register\n");
 		return ret;
 	}
 
@@ -987,7 +998,9 @@ static int stm32_sai_set_config(struct snd_soc_dai *cpu_dai,
 
 static int stm32_sai_set_slots(struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_sai_sub_data *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 	int slotr, slot_sz;
 
 	stm32_sai_sub_reg_rd(sai, STM_SAI_SLOTR_REGX, &slotr);
@@ -1001,7 +1014,7 @@ static int stm32_sai_set_slots(struct snd_soc_dai *cpu_dai)
 		sai->slot_width = sai->data_size;
 
 	if (sai->slot_width < sai->data_size) {
-		dev_err(cpu_dai->dev,
+		dev_err(dev,
 			"Data size %d larger than slot width\n",
 			sai->data_size);
 		return -EINVAL;
@@ -1024,7 +1037,7 @@ static int stm32_sai_set_slots(struct snd_soc_dai *cpu_dai)
 				     SAI_XSLOTR_SLOTEN_SET(sai->slot_mask));
 	}
 
-	dev_dbg(cpu_dai->dev, "Slots %d, slot width %d\n",
+	dev_dbg(dev, "Slots %d, slot width %d\n",
 		sai->slots, sai->slot_width);
 
 	return 0;
@@ -1032,7 +1045,9 @@ static int stm32_sai_set_slots(struct snd_soc_dai *cpu_dai)
 
 static void stm32_sai_set_frame(struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_sai_sub_data *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 	int fs_active, offset, format;
 	int frcr, frcr_mask;
 
@@ -1048,7 +1063,7 @@ static void stm32_sai_set_frame(struct snd_soc_dai *cpu_dai)
 	frcr |= SAI_XFRCR_FSALL_SET((fs_active - 1));
 	frcr_mask = SAI_XFRCR_FRL_MASK | SAI_XFRCR_FSALL_MASK;
 
-	dev_dbg(cpu_dai->dev, "Frame length %d, frame active %d\n",
+	dev_dbg(dev, "Frame length %d, frame active %d\n",
 		sai->fs_length, fs_active);
 
 	stm32_sai_sub_reg_up(sai, STM_SAI_FRCR_REGX, frcr_mask, frcr);
@@ -1117,7 +1132,9 @@ static void stm32_sai_set_iec958_status(struct stm32_sai_sub_data *sai,
 static int stm32_sai_configure_clock(struct snd_soc_dai *cpu_dai,
 				     struct snd_pcm_hw_params *params)
 {
-	struct stm32_sai_sub_data *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 	int div = 0, cr1 = 0;
 	int sai_clk_rate, mclk_ratio, den;
 	unsigned int rate = params_rate(params);
@@ -1168,7 +1185,7 @@ static int stm32_sai_configure_clock(struct snd_soc_dai *cpu_dai,
 				if (mclk_ratio == 512) {
 					cr1 = SAI_XCR1_OSR;
 				} else if (mclk_ratio != 256) {
-					dev_err(cpu_dai->dev,
+					dev_err(dev,
 						"Wrong mclk ratio %d\n",
 						mclk_ratio);
 					return -EINVAL;
@@ -1200,7 +1217,9 @@ static int stm32_sai_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_sai_sub_data *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 	int ret;
 
 	sai->data_size = params_width(params);
@@ -1229,14 +1248,16 @@ static int stm32_sai_hw_params(struct snd_pcm_substream *substream,
 static int stm32_sai_trigger(struct snd_pcm_substream *substream, int cmd,
 			     struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_sai_sub_data *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 	int ret;
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 	case SNDRV_PCM_TRIGGER_RESUME:
 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-		dev_dbg(cpu_dai->dev, "Enable DMA and SAI\n");
+		dev_dbg(dev, "Enable DMA and SAI\n");
 
 		stm32_sai_sub_reg_up(sai, STM_SAI_CR1_REGX,
 				     SAI_XCR1_DMAEN, SAI_XCR1_DMAEN);
@@ -1245,12 +1266,12 @@ static int stm32_sai_trigger(struct snd_pcm_substream *substream, int cmd,
 		ret = stm32_sai_sub_reg_up(sai, STM_SAI_CR1_REGX,
 					   SAI_XCR1_SAIEN, SAI_XCR1_SAIEN);
 		if (ret < 0)
-			dev_err(cpu_dai->dev, "Failed to update CR1 register\n");
+			dev_err(dev, "Failed to update CR1 register\n");
 		break;
 	case SNDRV_PCM_TRIGGER_SUSPEND:
 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
 	case SNDRV_PCM_TRIGGER_STOP:
-		dev_dbg(cpu_dai->dev, "Disable DMA and SAI\n");
+		dev_dbg(dev, "Disable DMA and SAI\n");
 
 		stm32_sai_sub_reg_up(sai, STM_SAI_IMR_REGX,
 				     SAI_XIMR_MASK, 0);
@@ -1263,7 +1284,7 @@ static int stm32_sai_trigger(struct snd_pcm_substream *substream, int cmd,
 					   SAI_XCR1_DMAEN,
 					   (unsigned int)~SAI_XCR1_DMAEN);
 		if (ret < 0)
-			dev_err(cpu_dai->dev, "Failed to update CR1 register\n");
+			dev_err(dev, "Failed to update CR1 register\n");
 
 		if (STM_SAI_PROTOCOL_IS_SPDIF(sai))
 			sai->spdif_frm_cnt = 0;
@@ -1278,7 +1299,9 @@ static int stm32_sai_trigger(struct snd_pcm_substream *substream, int cmd,
 static void stm32_sai_shutdown(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_sai_sub_data *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 
 	stm32_sai_sub_reg_up(sai, STM_SAI_IMR_REGX, SAI_XIMR_MASK, 0);
 
@@ -1299,7 +1322,9 @@ static void stm32_sai_shutdown(struct snd_pcm_substream *substream,
 static int stm32_sai_pcm_new(struct snd_soc_pcm_runtime *rtd,
 			     struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_sai_sub_data *sai = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 	struct snd_kcontrol_new knew = iec958_ctls;
 
 	if (STM_SAI_PROTOCOL_IS_SPDIF(sai)) {
@@ -1313,7 +1338,9 @@ static int stm32_sai_pcm_new(struct snd_soc_pcm_runtime *rtd,
 
 static int stm32_sai_dai_probe(struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_sai_sub_data *sai = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 	int cr1 = 0, cr1_mask, ret;
 
 	sai->cpu_dai = cpu_dai;
@@ -1331,9 +1358,9 @@ static int stm32_sai_dai_probe(struct snd_soc_dai *cpu_dai)
 	sai->dma_params.addr_width = DMA_SLAVE_BUSWIDTH_UNDEFINED;
 
 	if (STM_SAI_IS_PLAYBACK(sai))
-		snd_soc_dai_init_dma_data(cpu_dai, &sai->dma_params, NULL);
+		snd_soc_dai_stream_dma_data_set_playback(cpu_dai, &sai->dma_params);
 	else
-		snd_soc_dai_init_dma_data(cpu_dai, NULL, &sai->dma_params);
+		snd_soc_dai_stream_dma_data_set_capture(cpu_dai, &sai->dma_params);
 
 	/* Next settings are not relevant for spdif mode */
 	if (STM_SAI_PROTOCOL_IS_SPDIF(sai))
@@ -1403,7 +1430,9 @@ static int stm32_sai_pcm_process_spdif(struct snd_pcm_substream *substream,
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct stm32_sai_sub_data *sai = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_sai_sub_data *sai = dev_get_drvdata(dev);
 	int *ptr = (int *)(runtime->dma_area + hwoff +
 			   channel * (runtime->dma_bytes / runtime->channels));
 	ssize_t cnt = bytes_to_samples(runtime, bytes);
@@ -1721,7 +1750,7 @@ static int stm32_sai_sub_probe(struct platform_device *pdev)
 	if (ret)
 		goto err_unprepare_pclk;
 
-	ret = snd_soc_register_component(&pdev->dev, &stm32_component,
+	ret = snd_soc_component_register(&pdev->dev, &stm32_component,
 					 &sai->cpu_dai_drv, 1);
 	if (ret)
 		goto err_deregister_pcm_dma;
@@ -1745,7 +1774,7 @@ static void stm32_sai_sub_remove(struct platform_device *pdev)
 
 	clk_unprepare(sai->pdata->pclk);
 	snd_dmaengine_pcm_unregister(&pdev->dev);
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_component_unregister(&pdev->dev);
 	pm_runtime_disable(&pdev->dev);
 	of_node_put(sai->np_sync_provider);
 }

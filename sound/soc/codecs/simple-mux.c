@@ -36,7 +36,8 @@ static int simple_mux_control_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *c = snd_soc_dapm_to_component(dapm);
-	struct simple_mux *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct simple_mux *priv = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = priv->mux;
 
@@ -49,7 +50,8 @@ static int simple_mux_control_put(struct snd_kcontrol *kcontrol,
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	struct snd_soc_component *c = snd_soc_dapm_to_component(dapm);
-	struct simple_mux *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct simple_mux *priv = dev_get_drvdata(dev);
 
 	if (ucontrol->value.enumerated.item[0] >= e->items)
 		return -EINVAL;
@@ -73,7 +75,8 @@ static int simple_mux_control_put(struct snd_kcontrol *kcontrol,
 static unsigned int simple_mux_read(struct snd_soc_component *component,
 				    unsigned int reg)
 {
-	struct simple_mux *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct simple_mux *priv = dev_get_drvdata(dev);
 
 	return priv->mux;
 }
@@ -85,7 +88,8 @@ static int simple_mux_event(struct snd_soc_dapm_widget *w,
 			    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *c = snd_soc_dapm_to_component(w->dapm);
-	struct simple_mux *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct simple_mux *priv = dev_get_drvdata(dev);
 
 	if (priv->idle_state != MUX_IDLE_AS_IS) {
 		switch (event) {
@@ -166,7 +170,7 @@ static int simple_mux_probe(struct platform_device *pdev)
 	priv->mux_routes[1].control		= priv->mux_texts[0]; // "Input 1"
 	priv->mux_routes[2].control		= priv->mux_texts[1]; // "Input 2"
 
-	return devm_snd_soc_register_component(dev, &priv->mux_driver, NULL, 0);
+	return devm_snd_soc_component_register(dev, &priv->mux_driver, NULL, 0);
 }
 
 #ifdef CONFIG_OF

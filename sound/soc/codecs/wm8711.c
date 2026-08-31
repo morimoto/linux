@@ -155,8 +155,9 @@ static int wm8711_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params,
 	struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8711_priv *wm8711 =  snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8711_priv *wm8711 =  dev_get_drvdata(dev);
 	u16 iface = snd_soc_component_read(component, WM8711_IFACE) & 0xfff3;
 	int i = get_coeff(wm8711->sysclk, params_rate(params));
 	u16 srate = (coeff_div[i].sr << 2) |
@@ -183,7 +184,7 @@ static int wm8711_hw_params(struct snd_pcm_substream *substream,
 static int wm8711_pcm_prepare(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	/* set active */
 	snd_soc_component_write(component, WM8711_ACTIVE, 0x0001);
@@ -194,7 +195,7 @@ static int wm8711_pcm_prepare(struct snd_pcm_substream *substream,
 static void wm8711_shutdown(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	/* deactivate */
 	if (!snd_soc_component_active(component)) {
@@ -205,7 +206,7 @@ static void wm8711_shutdown(struct snd_pcm_substream *substream,
 
 static int wm8711_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 mute_reg = snd_soc_component_read(component, WM8711_APDIGI) & 0xfff7;
 
 	if (mute)
@@ -219,8 +220,9 @@ static int wm8711_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int wm8711_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8711_priv *wm8711 =  snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8711_priv *wm8711 =  dev_get_drvdata(dev);
 
 	switch (freq) {
 	case 11289600:
@@ -237,7 +239,7 @@ static int wm8711_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int wm8711_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 iface = snd_soc_component_read(component, WM8711_IFACE) & 0x000c;
 
 	/* set master/slave audio interface */
@@ -296,7 +298,8 @@ static int wm8711_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int wm8711_set_bias_level(struct snd_soc_component *component,
 	enum snd_soc_bias_level level)
 {
-	struct wm8711_priv *wm8711 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8711_priv *wm8711 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	u16 reg = snd_soc_component_read(component, WM8711_PWR) & 0xff7f;
 
@@ -362,11 +365,12 @@ static struct snd_soc_dai_driver wm8711_dai = {
 
 static int wm8711_probe(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = wm8711_reset(component);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to issue reset\n");
+		dev_err(dev, "Failed to issue reset\n");
 		return ret;
 	}
 
@@ -428,7 +432,7 @@ static int wm8711_spi_probe(struct spi_device *spi)
 
 	spi_set_drvdata(spi, wm8711);
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 			&soc_component_dev_wm8711, &wm8711_dai, 1);
 
 	return ret;
@@ -460,7 +464,7 @@ static int wm8711_i2c_probe(struct i2c_client *client)
 
 	i2c_set_clientdata(client, wm8711);
 
-	ret = devm_snd_soc_register_component(&client->dev,
+	ret = devm_snd_soc_component_register(&client->dev,
 			&soc_component_dev_wm8711, &wm8711_dai, 1);
 
 	return ret;

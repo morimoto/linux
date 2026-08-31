@@ -278,7 +278,8 @@ static const struct snd_soc_dapm_route cs42l84_audio_map[] = {
 
 static int cs42l84_set_jack(struct snd_soc_component *component, struct snd_soc_jack *jk, void *d)
 {
-	struct cs42l84_private *cs42l84 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l84_private *cs42l84 = dev_get_drvdata(dev);
 
 	/* Prevent race with interrupt handler */
 	guard(mutex)(&cs42l84->irq_lock);
@@ -367,7 +368,8 @@ static const struct cs42l84_pll_params pll_ratio_table[] = {
 
 static int cs42l84_pll_config(struct snd_soc_component *component)
 {
-	struct cs42l84_private *cs42l84 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l84_private *cs42l84 = dev_get_drvdata(dev);
 	int i;
 	u32 clk;
 	u32 fsync;
@@ -396,9 +398,7 @@ static int cs42l84_pll_config(struct snd_soc_component *component)
 	fsync = clk / cs42l84->srate;
 	if (((fsync * cs42l84->srate) != clk)
 			|| ((fsync % 2) != 0)) {
-		dev_err(component->dev,
-			"Unsupported bclk %d/sample rate %d\n",
-			clk, cs42l84->srate);
+		dev_err(dev, "Unsupported bclk %d/sample rate %d\n", clk, cs42l84->srate);
 		return -EINVAL;
 	}
 
@@ -494,8 +494,9 @@ static int cs42l84_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l84_private *cs42l84 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l84_private *cs42l84 = dev_get_drvdata(dev);
 	int ret;
 	u32 ccm_samp_rate;
 
@@ -552,8 +553,9 @@ static int cs42l84_pcm_hw_params(struct snd_pcm_substream *substream,
 static int cs42l84_set_sysclk(struct snd_soc_dai *dai,
 				int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l84_private *cs42l84 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l84_private *cs42l84 = dev_get_drvdata(dev);
 	int i;
 
 	if (freq == 0) {
@@ -568,15 +570,16 @@ static int cs42l84_set_sysclk(struct snd_soc_dai *dai,
 		}
 	}
 
-	dev_err(component->dev, "BCLK %u not supported\n", freq);
+	dev_err(dev, "BCLK %u not supported\n", freq);
 
 	return -EINVAL;
 }
 
 static int cs42l84_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l84_private *cs42l84 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l84_private *cs42l84 = dev_get_drvdata(dev);
 	unsigned int regval;
 	int ret;
 
@@ -629,10 +632,10 @@ static int cs42l84_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 							       CS42L84_PLL_LOCK_POLL_US,
 							       CS42L84_PLL_LOCK_TIMEOUT_US);
 				if (ret < 0)
-					dev_warn(component->dev, "PLL failed to lock: %d\n", ret);
+					dev_warn(dev, "PLL failed to lock: %d\n", ret);
 
 				if (regval & CS42L84_PLL_LOCK_STATUS_ERROR)
-					dev_warn(component->dev, "PLL lock error\n");
+					dev_warn(dev, "PLL lock error\n");
 
 				/* PLL must be running to drive glitchless switch logic */
 				snd_soc_component_update_bits(component,
@@ -1065,7 +1068,7 @@ static int cs42l84_i2c_probe(struct i2c_client *i2c_client)
 	cs42l84_set_interrupt_masks(cs42l84, CS42L84_RS_PLUG | CS42L84_RS_UNPLUG);
 
 	/* Register codec for machine driver */
-	ret = devm_snd_soc_register_component(&i2c_client->dev,
+	ret = devm_snd_soc_component_register(&i2c_client->dev,
 			&soc_component_dev_cs42l84, &cs42l84_dai, 1);
 	if (ret < 0)
 		goto err_shutdown;

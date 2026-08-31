@@ -278,7 +278,7 @@ static int ak4642_dai_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
 	int is_play = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (is_play) {
 		/*
@@ -321,7 +321,7 @@ static void ak4642_dai_shutdown(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
 	int is_play = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (is_play) {
 	} else {
@@ -335,8 +335,9 @@ static void ak4642_dai_shutdown(struct snd_pcm_substream *substream,
 static int ak4642_dai_set_sysclk(struct snd_soc_dai *codec_dai,
 	int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct ak4642_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4642_priv *priv = dev_get_drvdata(dev);
 	u8 pll;
 	int extended_freq = 0;
 
@@ -385,7 +386,7 @@ static int ak4642_dai_set_sysclk(struct snd_soc_dai *codec_dai,
 
 static int ak4642_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u8 data;
 	u8 bcko;
 
@@ -468,8 +469,9 @@ static int ak4642_dai_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4642_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4642_priv *priv = dev_get_drvdata(dev);
 	u32 rate = clk_get_rate(priv->mcko);
 
 	if (!rate)
@@ -527,7 +529,8 @@ static struct snd_soc_dai_driver ak4642_dai = {
 
 static int ak4642_suspend(struct snd_soc_component *component)
 {
-	struct regmap *regmap = dev_get_regmap(component->dev, NULL);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct regmap *regmap = dev_get_regmap(dev, NULL);
 
 	regcache_cache_only(regmap, true);
 	regcache_mark_dirty(regmap);
@@ -536,7 +539,8 @@ static int ak4642_suspend(struct snd_soc_component *component)
 
 static int ak4642_resume(struct snd_soc_component *component)
 {
-	struct regmap *regmap = dev_get_regmap(component->dev, NULL);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct regmap *regmap = dev_get_regmap(dev, NULL);
 
 	regcache_cache_only(regmap, false);
 	regcache_sync(regmap);
@@ -544,7 +548,8 @@ static int ak4642_resume(struct snd_soc_component *component)
 }
 static int ak4642_probe(struct snd_soc_component *component)
 {
-	struct ak4642_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4642_priv *priv = dev_get_drvdata(dev);
 
 	if (priv->mcko)
 		ak4642_set_mcko(component, clk_get_rate(priv->mcko));
@@ -665,7 +670,7 @@ static int ak4642_i2c_probe(struct i2c_client *i2c)
 	if (IS_ERR(regmap))
 		return PTR_ERR(regmap);
 
-	return devm_snd_soc_register_component(dev,
+	return devm_snd_soc_component_register(dev,
 				&soc_component_dev_ak4642, &ak4642_dai, 1);
 }
 

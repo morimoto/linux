@@ -199,7 +199,7 @@ static int uniphier_aiodma_mmap(struct snd_soc_component *component,
 static int uniphier_aiodma_new(struct snd_soc_component *component,
 			       struct snd_soc_pcm_runtime *rtd)
 {
-	struct device *dev = rtd->card->snd_card->dev;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	struct snd_pcm *pcm = rtd->pcm;
 	int ret;
 
@@ -267,7 +267,7 @@ int uniphier_aiodma_soc_register_platform(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	return devm_snd_soc_register_component(dev, &uniphier_soc_platform,
+	return devm_snd_soc_component_register(dev, &uniphier_soc_platform,
 					       NULL, 0);
 }
 EXPORT_SYMBOL_GPL(uniphier_aiodma_soc_register_platform);

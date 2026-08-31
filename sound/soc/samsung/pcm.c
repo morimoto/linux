@@ -216,8 +216,9 @@ static void s3c_pcm_snd_rxctrl(struct s3c_pcm_info *pcm, int on)
 static int s3c_pcm_trigger(struct snd_pcm_substream *substream, int cmd,
 			       struct snd_soc_dai *dai)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct s3c_pcm_info *pcm = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct s3c_pcm_info *pcm = dev_get_drvdata(dev);
 
 	dev_dbg(pcm->dev, "Entered %s\n", __func__);
 
@@ -255,8 +256,9 @@ static int s3c_pcm_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *socdai)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct s3c_pcm_info *pcm = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_component *component = snd_soc_dai_to_component(socdai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct s3c_pcm_info *pcm = dev_get_drvdata(dev);
 	void __iomem *regs = pcm->regs;
 	struct clk *clk;
 	int sclk_div, sync_div;
@@ -309,7 +311,9 @@ static int s3c_pcm_hw_params(struct snd_pcm_substream *substream,
 static int s3c_pcm_set_fmt(struct snd_soc_dai *cpu_dai,
 			       unsigned int fmt)
 {
-	struct s3c_pcm_info *pcm = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct s3c_pcm_info *pcm = dev_get_drvdata(dev);
 	void __iomem *regs = pcm->regs;
 	u32 ctl;
 
@@ -370,7 +374,9 @@ static int s3c_pcm_set_fmt(struct snd_soc_dai *cpu_dai,
 static int s3c_pcm_set_clkdiv(struct snd_soc_dai *cpu_dai,
 						int div_id, int div)
 {
-	struct s3c_pcm_info *pcm = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct s3c_pcm_info *pcm = dev_get_drvdata(dev);
 
 	switch (div_id) {
 	case S3C_PCM_SCLK_PER_FS:
@@ -387,7 +393,9 @@ static int s3c_pcm_set_clkdiv(struct snd_soc_dai *cpu_dai,
 static int s3c_pcm_set_sysclk(struct snd_soc_dai *cpu_dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct s3c_pcm_info *pcm = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct s3c_pcm_info *pcm = dev_get_drvdata(dev);
 	void __iomem *regs = pcm->regs;
 	u32 clkctl = readl(regs + S3C_PCM_CLKCTL);
 
@@ -415,9 +423,12 @@ static int s3c_pcm_set_sysclk(struct snd_soc_dai *cpu_dai,
 
 static int s3c_pcm_dai_probe(struct snd_soc_dai *dai)
 {
-	struct s3c_pcm_info *pcm = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct s3c_pcm_info *pcm = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, pcm->dma_playback, pcm->dma_capture);
+	snd_soc_dai_stream_dma_data_set_playback(dai, pcm->dma_playback);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  pcm->dma_capture);
 
 	return 0;
 }
@@ -551,7 +562,7 @@ static int s3c_pcm_dev_probe(struct platform_device *pdev)
 
 	pm_runtime_enable(&pdev->dev);
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &s3c_pcm_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &s3c_pcm_component,
 					 &s3c_pcm_dai[pdev->id], 1);
 	if (ret != 0) {
 		dev_err(&pdev->dev, "failed to get register DAI: %d\n", ret);

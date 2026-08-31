@@ -94,7 +94,8 @@ static int simple_amp_power_event(struct snd_soc_dapm_widget *w,
 				  struct snd_kcontrol *control, int event)
 {
 	struct snd_soc_component *c = snd_soc_dapm_to_component(w->dapm);
-	struct simple_amp *simple_amp = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct simple_amp *simple_amp = dev_get_drvdata(dev);
 	int val;
 
 	switch (event) {
@@ -234,7 +235,7 @@ static int simple_amp_single_add_kcontrol(struct snd_soc_component *component,
 	if (ret)
 		return ret;
 
-	return snd_soc_add_component_controls(component, &control, 1);
+	return snd_soc_component_add_controls(component, &control, 1);
 }
 
 static u32 simple_amp_multi_ranges_kctrl_to_gpio(u32 kctrl_val,
@@ -440,7 +441,7 @@ static int simple_amp_multi_add_kcontrol(struct snd_soc_component *component,
 	if (ret)
 		goto err_free_tlv_array;
 
-	ret = snd_soc_add_component_controls(component, &control, 1);
+	ret = snd_soc_component_add_controls(component, &control, 1);
 	if (ret)
 		goto err_free_tlv_array;
 
@@ -454,8 +455,8 @@ err_free_tlv_array:
 static int simple_amp_add_basic_dapm(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct simple_amp *simple_amp = snd_soc_component_get_drvdata(component);
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct simple_amp *simple_amp = dev_get_drvdata(dev);
 	int ret;
 
 	/* Add basic dapm widgets and routes */
@@ -502,9 +503,9 @@ static const struct simple_amp_supply simple_amp_supplies[] = {
 static int simple_amp_add_power_supplies(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct simple_amp *simple_amp = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct simple_amp *simple_amp = dev_get_drvdata(dev);
 	const struct simple_amp_supply *supply;
-	struct device *dev = component->dev;
 	int ret;
 
 	/*
@@ -540,7 +541,8 @@ static int simple_amp_add_power_supplies(struct snd_soc_component *component)
 
 static int simple_amp_component_probe(struct snd_soc_component *component)
 {
-	struct simple_amp *simple_amp = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct simple_amp *simple_amp = dev_get_drvdata(dev);
 	int ret;
 
 	/* Add basic dapm widgets and routes */
@@ -587,7 +589,8 @@ static int simple_amp_component_probe(struct snd_soc_component *component)
 
 static void simple_amp_component_remove(struct snd_soc_component *component)
 {
-	struct simple_amp *simple_amp = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct simple_amp *simple_amp = dev_get_drvdata(dev);
 
 	kfree(simple_amp->gain.tlv_array);
 	simple_amp->gain.tlv_array = NULL;
@@ -916,7 +919,7 @@ static int simple_amp_probe(struct platform_device *pdev)
 		simple_amp->mute.control_name = "Out Switch";
 	}
 
-	return devm_snd_soc_register_component(dev,
+	return devm_snd_soc_component_register(dev,
 					       &simple_amp_component_driver,
 					       NULL, 0);
 }

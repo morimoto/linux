@@ -63,27 +63,33 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
 	struct snd_soc_dai *dai;
+	struct snd_soc_component *component;
+	struct device *card_dev = snd_soc_card_to_dev(card);
+	struct device *dev;
 	int ret = 0;
 
 	dai = snd_soc_card_get_codec_dai(card, ACP5X_NAU8821_DAI_NAME);
 	if (!dai) {
-		dev_err(card->dev, "Codec dai not found\n");
+		dev_err(card_dev, "Codec dai not found\n");
 		return -EIO;
 	}
+
+	component = snd_soc_dai_to_component(dai);
+	dev = snd_soc_component_to_dev(component);
 
 	if (SND_SOC_DAPM_EVENT_OFF(event)) {
 		ret = snd_soc_dai_set_sysclk(dai, NAU8821_CLK_INTERNAL, 0, SND_SOC_CLOCK_IN);
 		if (ret < 0) {
-			dev_err(card->dev, "set sysclk err = %d\n", ret);
+			dev_err(dev, "set sysclk err = %d\n", ret);
 			return -EIO;
 		}
 	} else {
 		ret = snd_soc_dai_set_sysclk(dai, NAU8821_CLK_FLL_BLK, 0, SND_SOC_CLOCK_IN);
 		if (ret < 0)
-			dev_err(dai->dev, "can't set BLK clock %d\n", ret);
+			dev_err(dev, "can't set BLK clock %d\n", ret);
 		ret = snd_soc_dai_set_pll(dai, 0, 0, ACP5X_NAU8821_BCLK, ACP5X_NAU8821_FREQ_OUT);
 		if (ret < 0)
-			dev_err(dai->dev, "can't set FLL: %d\n", ret);
+			dev_err(dev, "can't set FLL: %d\n", ret);
 	}
 
 	return ret;
@@ -91,7 +97,7 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 
 static int acp5x_8821_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	int ret;
 
 	/*
@@ -144,7 +150,7 @@ static int acp5x_8821_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct acp5x_platform_info *machine = snd_soc_card_get_drvdata(rtd->card);
+	struct acp5x_platform_info *machine = snd_soc_card_to_priv(rtd->card);
 
 	machine->play_i2s_instance = I2S_SP_INSTANCE;
 	machine->cap_i2s_instance = I2S_SP_INSTANCE;
@@ -167,6 +173,9 @@ static int acp5x_nau8821_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *dai = snd_soc_card_get_codec_dai(card, ACP5X_NAU8821_DAI_NAME);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	int ret, bclk;
 
 	if (!dai)
@@ -174,17 +183,17 @@ static int acp5x_nau8821_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_dai_set_sysclk(dai, NAU8821_CLK_FLL_BLK, 0, SND_SOC_CLOCK_IN);
 	if (ret < 0)
-		dev_err(card->dev, "can't set FS clock %d\n", ret);
+		dev_err(card_dev, "can't set FS clock %d\n", ret);
 
 	bclk = snd_soc_params_to_bclk(params);
 	if (bclk < 0) {
-		dev_err(dai->dev, "Fail to get BCLK rate: %d\n", bclk);
+		dev_err(dai_dev, "Fail to get BCLK rate: %d\n", bclk);
 		return bclk;
 	}
 
 	ret = snd_soc_dai_set_pll(dai, 0, 0, bclk, params_rate(params) * 256);
 	if (ret < 0)
-		dev_err(card->dev, "can't set FLL: %d\n", ret);
+		dev_err(card_dev, "can't set FLL: %d\n", ret);
 
 	return ret;
 }
@@ -197,7 +206,7 @@ static const struct snd_soc_ops acp5x_8821_ops = {
 static int acp5x_cs35l41_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct acp5x_platform_info *machine = snd_soc_card_get_drvdata(rtd->card);
+	struct acp5x_platform_info *machine = snd_soc_card_to_priv(rtd->card);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 
 	machine->play_i2s_instance = I2S_HS_INSTANCE;
@@ -229,16 +238,19 @@ static int acp5x_cs35l41_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	for_each_rtd_components(rtd, i, comp) {
-		if (!(strcmp(comp->name, ACP5X_CS35L41_COMP_LNAME)) ||
-		    !(strcmp(comp->name, ACP5X_CS35L41_COMP_RNAME))) {
+		struct device *dev = snd_soc_component_to_dev(comp);
+		const char *name = snd_soc_component_name(comp);
+
+		if (!(strcmp(name, ACP5X_CS35L41_COMP_LNAME)) ||
+		    !(strcmp(name, ACP5X_CS35L41_COMP_RNAME))) {
 			if (!bclk) {
-				dev_err(comp->dev, "Invalid sample rate: 0x%x\n", rate);
+				dev_err(dev, "Invalid sample rate: 0x%x\n", rate);
 				return -EINVAL;
 			}
 
 			ret = snd_soc_component_set_sysclk(comp, 0, 0, bclk, SND_SOC_CLOCK_IN);
 			if (ret) {
-				dev_err(comp->dev, "failed to set SYSCLK: %d\n", ret);
+				dev_err(dev, "failed to set SYSCLK: %d\n", ret);
 				return ret;
 			}
 		}
@@ -331,7 +343,7 @@ static struct snd_soc_card_driver acp5x_8821_35l41_card = {
 static int acp5x_max98388_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct acp5x_platform_info *machine = snd_soc_card_get_drvdata(rtd->card);
+	struct acp5x_platform_info *machine = snd_soc_card_to_priv(rtd->card);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 
 	machine->play_i2s_instance = I2S_HS_INSTANCE;
@@ -464,7 +476,7 @@ static int acp5x_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	card_driver = dmi_id->driver_data;
-	snd_soc_card_set_drvdata(card, machine);
+	snd_soc_card_set_priv(card, machine);
 
 	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)

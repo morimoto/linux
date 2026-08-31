@@ -771,7 +771,8 @@ static int acp_dma_open(struct snd_soc_component *component,
 	u16 bank;
 	int ret = 0;
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	struct audio_drv_data *intr_data = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct audio_drv_data *intr_data = dev_get_drvdata(dev);
 	struct audio_substream_data *adata =
 		kzalloc_obj(struct audio_substream_data);
 	if (!adata)
@@ -798,7 +799,7 @@ static int acp_dma_open(struct snd_soc_component *component,
 	ret = snd_pcm_hw_constraint_integer(runtime,
 					    SNDRV_PCM_HW_PARAM_PERIODS);
 	if (ret < 0) {
-		dev_err(component->dev, "set integer constraint failed\n");
+		dev_err(dev, "set integer constraint failed\n");
 		kfree(adata);
 		return ret;
 	}
@@ -847,10 +848,11 @@ static int acp_dma_hw_params(struct snd_soc_component *component,
 	u32 val = 0;
 	struct snd_pcm_runtime *runtime;
 	struct audio_substream_data *rtd;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_soc_pcm_runtime *prtd = snd_soc_substream_to_rtd(substream);
-	struct audio_drv_data *adata = dev_get_drvdata(component->dev);
+	struct audio_drv_data *adata = dev_get_drvdata(dev);
 	struct snd_soc_card *card = prtd->card;
-	struct acp_platform_info *pinfo = snd_soc_card_get_drvdata(card);
+	struct acp_platform_info *pinfo = snd_soc_card_to_priv(card);
 
 	runtime = substream->runtime;
 	rtd = runtime->private_data;
@@ -1033,10 +1035,10 @@ static snd_pcm_uframes_t acp_dma_pointer(struct snd_soc_component *component,
 	u64 bytescount = 0;
 	u16 dscr;
 	u32 period_bytes, delay;
-
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct audio_substream_data *rtd = runtime->private_data;
-	struct audio_drv_data *adata = dev_get_drvdata(component->dev);
+	struct audio_drv_data *adata = dev_get_drvdata(dev);
 
 	if (!rtd)
 		return -EINVAL;
@@ -1072,7 +1074,8 @@ static snd_pcm_uframes_t acp_dma_pointer(struct snd_soc_component *component,
 static snd_pcm_sframes_t acp_dma_delay(struct snd_soc_component *component,
 				       struct snd_pcm_substream *substream)
 {
-	struct audio_drv_data *adata = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct audio_drv_data *adata = dev_get_drvdata(dev);
 	snd_pcm_sframes_t delay = adata->delay;
 
 	adata->delay = 0;
@@ -1158,8 +1161,9 @@ static int acp_dma_trigger(struct snd_soc_component *component,
 static int acp_dma_new(struct snd_soc_component *component,
 		       struct snd_soc_pcm_runtime *rtd)
 {
-	struct audio_drv_data *adata = dev_get_drvdata(component->dev);
-	struct device *parent = component->dev->parent;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct audio_drv_data *adata = dev_get_drvdata(dev);
+	struct device *parent = dev->parent;
 
 	switch (adata->asic_type) {
 	case CHIP_STONEY:
@@ -1186,7 +1190,8 @@ static int acp_dma_close(struct snd_soc_component *component,
 	u16 bank;
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct audio_substream_data *rtd = runtime->private_data;
-	struct audio_drv_data *adata = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct audio_drv_data *adata = dev_get_drvdata(dev);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		switch (rtd->i2s_instance) {
@@ -1307,7 +1312,7 @@ static int acp_audio_probe(struct platform_device *pdev)
 		return status;
 	}
 
-	status = devm_snd_soc_register_component(&pdev->dev,
+	status = devm_snd_soc_component_register(&pdev->dev,
 						 &acp_asoc_platform, NULL, 0);
 	if (status != 0) {
 		dev_err(&pdev->dev, "Fail to register ALSA platform device\n");

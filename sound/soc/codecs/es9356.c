@@ -51,7 +51,8 @@ struct  es9356_sdw_priv {
 
 static int es9356_sdw_component_probe(struct snd_soc_component *component)
 {
-	struct es9356_sdw_priv *es9356 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9356_sdw_priv *es9356 = dev_get_drvdata(dev);
 
 	es9356->component = component;
 
@@ -190,7 +191,8 @@ static const struct snd_soc_dapm_route es9356_audio_map[] = {
 static int es9356_set_jack_detect(struct snd_soc_component *component,
 	struct snd_soc_jack *hs_jack, void *data)
 {
-	struct es9356_sdw_priv *es9356 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9356_sdw_priv *es9356 = dev_get_drvdata(dev);
 	int ret;
 
 	es9356->hs_jack = hs_jack;
@@ -199,14 +201,14 @@ static int es9356_set_jack_detect(struct snd_soc_component *component,
 	if (!es9356->first_hw_init)
 		return 0;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0) {
 		if (ret != -EACCES) {
-			dev_err(component->dev, "%s: failed to resume %d\n", __func__, ret);
+			dev_err(dev, "%s: failed to resume %d\n", __func__, ret);
 			return ret;
 		}
 		/* pm_runtime not enabled yet */
-		dev_info(component->dev, "%s: skipping jack init for now\n", __func__);
+		dev_info(dev, "%s: skipping jack init for now\n", __func__);
 		return 0;
 	}
 
@@ -214,8 +216,8 @@ static int es9356_set_jack_detect(struct snd_soc_component *component,
 		sdw_write_no_pm(es9356->slave, SDW_SCP_SDCA_INTMASK1,
 			(SDW_SCP_SDCA_INTMASK_SDCA_7 | SDW_SCP_SDCA_INTMASK_SDCA_5 | SDW_SCP_SDCA_INTMASK_SDCA_1));
 
-	pm_runtime_mark_last_busy(component->dev);
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_mark_last_busy(dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return 0;
 }
@@ -234,7 +236,7 @@ static const struct snd_soc_component_driver snd_soc_es9356_sdw_component = {
 static int es9356_sdw_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 				     int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -242,7 +244,7 @@ static int es9356_sdw_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 static void es9356_sdw_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream->stream, NULL);
 }
 
 static int es9356_sdca_button(unsigned int *buffer)
@@ -354,12 +356,14 @@ static void es9356_interrupt_handler(struct work_struct *work)
 {
 	struct es9356_sdw_priv *es9356 =
 		container_of(work, struct es9356_sdw_priv, interrupt_handle_work.work);
+	struct snd_soc_component *component = es9356->component;
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
 	int ret, btn_type = 0;
 
 	if (!es9356->hs_jack)
 		return;
 
-	if (!es9356->component->card || !es9356->component->card->instantiated)
+	if (!snd_soc_card_is_instantiated(card))
 		return;
 
 	/* Handling different types of interrupts based on the mask bit */
@@ -467,13 +471,14 @@ static int es9356_pde_transition_delay(struct es9356_sdw_priv *es9356, unsigned 
 
 static int es9356_power_state(struct snd_soc_dai *dai, unsigned char ps, unsigned int *rate)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es9356_sdw_priv *es9356 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9356_sdw_priv *es9356 = dev_get_drvdata(dev);
 	unsigned char ps0 = 0x0, ps3 = 0x3;
 	unsigned char func, cs_entity, pde_entity;
 	int ret;
 
-	switch (dai->id) {
+	switch (snd_soc_dai_id(dai)) {
 	case ES9356_DMIC:
 		func = FUNC_NUM_MIC;
 		cs_entity = ES9356_SDCA_ENT_CS113;
@@ -508,7 +513,7 @@ static int es9356_power_state(struct snd_soc_dai *dai, unsigned char ps, unsigne
 				     ps ? ps3 : ps0);
 			es9356_pde_transition_delay(es9356, func, pde_entity, ps ? ps3 : ps0);
 		} else {
-			dev_dbg(component->dev, "%s PDE is already %d\n", __func__,
+			dev_dbg(dev, "%s PDE is already %d\n", __func__,
 				ps ? ps0 : ps3);
 		}
 	}
@@ -524,11 +529,12 @@ static int es9356_sdw_pcm_hw_params(struct snd_pcm_substream *substream,
 				    struct snd_pcm_hw_params *params,
 				    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es9356_sdw_priv *es9356 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9356_sdw_priv *es9356 = dev_get_drvdata(dev);
 	struct sdw_stream_config stream_config = {0};
 	struct sdw_port_config port_config = {0};
-	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 	unsigned char ps0 = 0x0;
 	unsigned int rate;
 	int ret;
@@ -542,12 +548,12 @@ static int es9356_sdw_pcm_hw_params(struct snd_pcm_substream *substream,
 	/* SoundWire specific configuration */
 	snd_sdw_params_to_config(substream, params, &stream_config, &port_config);
 
-	port_config.num = dai->id;
+	port_config.num = snd_soc_dai_id(dai);
 
 	ret = sdw_stream_add_slave(es9356->slave, &stream_config,
 				   &port_config, 1, sdw_stream);
 	if (ret) {
-		dev_err(dai->dev, "Unable to configure port\n");
+		dev_err(dev, "Unable to configure port\n");
 		return -EINVAL;
 	}
 
@@ -565,15 +571,15 @@ static int es9356_sdw_pcm_hw_params(struct snd_pcm_substream *substream,
 		rate = ES9356_SDCA_RATE_96000HZ;
 		break;
 	default:
-		dev_err(component->dev, "%s: Rate %d is not supported\n",
+		dev_err(dev, "%s: Rate %d is not supported\n",
 			__func__, params_rate(params));
 		return -EINVAL;
 	}
 
 	ret = es9356_power_state(dai, ps0, &rate);
 	if (ret) {
-		dev_err(component->dev, "%s: Invalid dai id: %d\n",
-			__func__, dai->id);
+		dev_err(dev, "%s: Invalid dai id: %d\n",
+			__func__, snd_soc_dai_id(dai));
 		return -EINVAL;
 	}
 
@@ -583,9 +589,10 @@ static int es9356_sdw_pcm_hw_params(struct snd_pcm_substream *substream,
 static int es9356_sdw_pcm_hw_free(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es9356_sdw_priv *es9356 = snd_soc_component_get_drvdata(component);
-	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9356_sdw_priv *es9356 = dev_get_drvdata(dev);
+	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 	unsigned char ps3 = 0x3;
 	int ret;
 
@@ -596,8 +603,8 @@ static int es9356_sdw_pcm_hw_free(struct snd_pcm_substream *substream,
 
 	ret = es9356_power_state(dai, ps3, NULL);
 	if (ret) {
-		dev_err(component->dev, "%s: Invalid dai id: %d\n",
-			__func__, dai->id);
+		dev_err(dev, "%s: Invalid dai id: %d\n",
+			__func__, snd_soc_dai_id(dai));
 		return -EINVAL;
 	}
 
@@ -1024,7 +1031,7 @@ static int es9356_sdca_init(struct device *dev, struct regmap *regmap, struct sd
 	INIT_DELAYED_WORK(&es9356->button_detect_work,
 			  es9356_button_detect_handler);
 
-	ret = devm_snd_soc_register_component(dev,
+	ret = devm_snd_soc_component_register(dev,
 					       &snd_soc_es9356_sdw_component,
 					       es9356_sdw_dai,
 					       ARRAY_SIZE(es9356_sdw_dai));

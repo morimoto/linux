@@ -41,7 +41,7 @@ static int axg_card_tdm_be_hw_params(struct snd_pcm_substream *substream,
 				     struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct meson_card *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct meson_card *priv = snd_soc_card_to_priv(rtd->card);
 	struct axg_dai_link_tdm_data *be =
 		(struct axg_dai_link_tdm_data *)priv->link_data[rtd->id];
 
@@ -54,28 +54,38 @@ static const struct snd_soc_ops axg_card_tdm_be_ops = {
 
 static int axg_card_tdm_dai_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct meson_card *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct meson_card *priv = snd_soc_card_to_priv(rtd->card);
 	struct axg_dai_link_tdm_data *be =
 		(struct axg_dai_link_tdm_data *)priv->link_data[rtd->id];
 	struct snd_soc_dai *codec_dai;
+	struct snd_soc_dai *cpu_dai;
+	struct snd_soc_component *cpu_component;
+	struct device *cpu_dev;
 	int ret, i;
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
+		struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+		struct device *codec_dev = snd_soc_component_to_dev(codec_component);
+
 		ret = snd_soc_dai_set_tdm_slot(codec_dai,
 					       be->codec_masks[i].tx,
 					       be->codec_masks[i].rx,
 					       be->slots, be->slot_width);
 		if (ret && ret != -ENOTSUPP) {
-			dev_err(codec_dai->dev,
+			dev_err(codec_dev,
 				"setting tdm link slots failed\n");
 			return ret;
 		}
 	}
 
-	ret = axg_tdm_set_tdm_slots(snd_soc_rtd_to_cpu(rtd, 0), be->tx_mask, be->rx_mask,
+	cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	cpu_component = snd_soc_dai_to_component(cpu_dai);
+	cpu_dev = snd_soc_component_to_dev(cpu_component);
+
+	ret = axg_tdm_set_tdm_slots(cpu_dai, be->tx_mask, be->rx_mask,
 				    be->slots, be->slot_width);
 	if (ret) {
-		dev_err(snd_soc_rtd_to_cpu(rtd, 0)->dev, "setting tdm link slots failed\n");
+		dev_err(cpu_dev, "setting tdm link slots failed\n");
 		return ret;
 	}
 
@@ -84,16 +94,19 @@ static int axg_card_tdm_dai_init(struct snd_soc_pcm_runtime *rtd)
 
 static int axg_card_tdm_dai_lb_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct meson_card *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct meson_card *priv = snd_soc_card_to_priv(rtd->card);
 	struct axg_dai_link_tdm_data *be =
 		(struct axg_dai_link_tdm_data *)priv->link_data[rtd->id];
+	struct snd_soc_dai *dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	/* The loopback rx_mask is the pad tx_mask */
-	ret = axg_tdm_set_tdm_slots(snd_soc_rtd_to_cpu(rtd, 0), NULL, be->tx_mask,
+	ret = axg_tdm_set_tdm_slots(dai, NULL, be->tx_mask,
 				    be->slots, be->slot_width);
 	if (ret) {
-		dev_err(snd_soc_rtd_to_cpu(rtd, 0)->dev, "setting tdm link slots failed\n");
+		dev_err(dev, "setting tdm link slots failed\n");
 		return ret;
 	}
 
@@ -103,12 +116,12 @@ static int axg_card_tdm_dai_lb_init(struct snd_soc_pcm_runtime *rtd)
 static int axg_card_add_tdm_loopback(struct snd_soc_card *card,
 				     int *index)
 {
-	struct meson_card *priv = snd_soc_card_get_drvdata(card);
+	struct meson_card *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_card_driver *card_driver = &priv->card_driver;
 	struct snd_soc_dai_link *pad;
 	struct snd_soc_dai_link *lb;
 	struct snd_soc_dai_link_component *dlc;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	/* extend links */
@@ -160,7 +173,7 @@ static int axg_card_parse_cpu_tdm_slots(struct snd_soc_card *card,
 					struct device_node *node,
 					struct axg_dai_link_tdm_data *be)
 {
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	char propname[32];
 	u32 tx, rx;
 	int i;
@@ -225,7 +238,7 @@ static int axg_card_parse_codecs_masks(struct snd_soc_card *card,
 				       struct axg_dai_link_tdm_data *be)
 {
 	struct axg_dai_link_tdm_mask *codec_mask;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 
 	codec_mask = devm_kcalloc(dev, link->num_codecs,
 				  sizeof(*codec_mask), GFP_KERNEL);
@@ -250,10 +263,10 @@ static int axg_card_parse_tdm(struct snd_soc_card *card,
 			      struct device_node *node,
 			      int *index)
 {
-	struct meson_card *priv = snd_soc_card_get_drvdata(card);
+	struct meson_card *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_dai_link *link = &priv->card_driver.dai_link[*index];
 	struct axg_dai_link_tdm_data *be;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	/* Allocate tdm link parameters */
@@ -313,10 +326,10 @@ static int axg_card_cpu_is_codec(struct device_node *np)
 static int axg_card_add_link(struct snd_soc_card *card, struct device_node *np,
 			     int *index)
 {
-	struct meson_card *priv = snd_soc_card_get_drvdata(card);
+	struct meson_card *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_dai_link *dai_link = &priv->card_driver.dai_link[*index];
 	struct snd_soc_dai_link_component *cpu;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	cpu = devm_kzalloc(dev, sizeof(*cpu), GFP_KERNEL);

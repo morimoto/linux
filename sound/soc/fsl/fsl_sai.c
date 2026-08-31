@@ -213,7 +213,9 @@ out:
 static int fsl_sai_set_dai_tdm_slot_tx(struct snd_soc_dai *cpu_dai, u32 tx_mask,
 				       u32 rx_mask, int slots, int slot_width)
 {
-	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dev);
 	bool tx = true;
 
 	sai->slots[tx] = slots;
@@ -225,7 +227,9 @@ static int fsl_sai_set_dai_tdm_slot_tx(struct snd_soc_dai *cpu_dai, u32 tx_mask,
 static int fsl_sai_set_dai_tdm_slot_rx(struct snd_soc_dai *cpu_dai, u32 tx_mask,
 				       u32 rx_mask, int slots, int slot_width)
 {
-	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dev);
 	bool tx = false;
 
 	sai->slots[tx] = slots;
@@ -256,7 +260,9 @@ static int fsl_sai_xlate_tdm_slot_mask(unsigned int slots,
 static int fsl_sai_set_dai_bclk_ratio(struct snd_soc_dai *dai,
 				      unsigned int ratio)
 {
-	struct fsl_sai *sai = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dev);
 
 	sai->bclk_ratio = ratio;
 
@@ -266,7 +272,9 @@ static int fsl_sai_set_dai_bclk_ratio(struct snd_soc_dai *dai,
 static int fsl_sai_set_dai_sysclk_tr(struct snd_soc_dai *cpu_dai,
 		int clk_id, unsigned int freq, bool tx)
 {
-	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dev);
 	unsigned int ofs = sai->soc_data->reg_offset;
 	u32 val_cr2 = 0;
 
@@ -295,15 +303,17 @@ static int fsl_sai_set_dai_sysclk_tr(struct snd_soc_dai *cpu_dai,
 
 static int fsl_sai_set_mclk_rate(struct snd_soc_dai *dai, int clk_id, unsigned int freq)
 {
-	struct fsl_sai *sai = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dai_dev);
 	int ret;
 
-	fsl_asoc_reparent_pll_clocks(dai->dev, sai->mclk_clk[clk_id],
+	fsl_asoc_reparent_pll_clocks(dai_dev, sai->mclk_clk[clk_id],
 				     sai->pll8k_clk, sai->pll11k_clk, freq);
 
 	ret = clk_set_rate(sai->mclk_clk[clk_id], freq);
 	if (ret < 0)
-		dev_err(dai->dev, "failed to set clock rate (%u): %d\n", freq, ret);
+		dev_err(dai_dev, "failed to set clock rate (%u): %d\n", freq, ret);
 
 	return ret;
 }
@@ -311,19 +321,21 @@ static int fsl_sai_set_mclk_rate(struct snd_soc_dai *dai, int clk_id, unsigned i
 static int fsl_sai_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dai_dev);
 	int ret;
 
 	if (dir == SND_SOC_CLOCK_IN)
 		return 0;
 
 	if (clk_id < 0 || clk_id >= FSL_SAI_MCLK_MAX) {
-		dev_err(cpu_dai->dev, "Unknown clock id: %d\n", clk_id);
+		dev_err(dai_dev, "Unknown clock id: %d\n", clk_id);
 		return -EINVAL;
 	}
 
 	if (IS_ERR_OR_NULL(sai->mclk_clk[clk_id])) {
-		dev_err(cpu_dai->dev, "Unassigned clock: %d\n", clk_id);
+		dev_err(dai_dev, "Unassigned clock: %d\n", clk_id);
 		return -EINVAL;
 	}
 
@@ -337,13 +349,13 @@ static int fsl_sai_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
 
 	ret = fsl_sai_set_dai_sysclk_tr(cpu_dai, clk_id, freq, true);
 	if (ret) {
-		dev_err(cpu_dai->dev, "Cannot set tx sysclk: %d\n", ret);
+		dev_err(dai_dev, "Cannot set tx sysclk: %d\n", ret);
 		return ret;
 	}
 
 	ret = fsl_sai_set_dai_sysclk_tr(cpu_dai, clk_id, freq, false);
 	if (ret)
-		dev_err(cpu_dai->dev, "Cannot set rx sysclk: %d\n", ret);
+		dev_err(dai_dev, "Cannot set rx sysclk: %d\n", ret);
 
 	return ret;
 }
@@ -351,7 +363,9 @@ static int fsl_sai_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
 static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
 				unsigned int fmt, bool tx)
 {
-	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dev);
 	unsigned int ofs = sai->soc_data->reg_offset;
 	u32 val_cr2 = 0, val_cr4 = 0;
 
@@ -467,17 +481,19 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
 
 static int fsl_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = fsl_sai_set_dai_fmt_tr(cpu_dai, fmt, true);
 	if (ret) {
-		dev_err(cpu_dai->dev, "Cannot set tx format: %d\n", ret);
+		dev_err(dai_dev, "Cannot set tx format: %d\n", ret);
 		return ret;
 	}
 
 	ret = fsl_sai_set_dai_fmt_tr(cpu_dai, fmt, false);
 	if (ret)
-		dev_err(cpu_dai->dev, "Cannot set rx format: %d\n", ret);
+		dev_err(dai_dev, "Cannot set rx format: %d\n", ret);
 
 	return ret;
 }
@@ -494,7 +510,9 @@ static int fsl_sai_set_dai_fmt_rx(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 
 static int fsl_sai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
 {
-	struct fsl_sai *sai = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dai_dev);
 	unsigned int reg, ofs = sai->soc_data->reg_offset;
 	unsigned long clk_rate;
 	u32 savediv = 0, ratio, bestdiff = freq;
@@ -538,7 +556,7 @@ static int fsl_sai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
 		if (diff != 0 && clk_rate / diff < 1000)
 			continue;
 
-		dev_dbg(dai->dev,
+		dev_dbg(dai_dev,
 			"ratio %d for freq %dHz based on clock %ldHz\n",
 			ratio, freq, clk_rate);
 
@@ -554,12 +572,12 @@ static int fsl_sai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
 	}
 
 	if (savediv == 0) {
-		dev_err(dai->dev, "failed to derive required %cx rate: %d\n",
+		dev_err(dai_dev, "failed to derive required %cx rate: %d\n",
 				tx ? 'T' : 'R', freq);
 		return -EINVAL;
 	}
 
-	dev_dbg(dai->dev, "best fit: clock id=%d, div=%d, deviation =%d\n",
+	dev_dbg(dai_dev, "best fit: clock id=%d, div=%d, deviation =%d\n",
 			sai->mclk_id[tx], savediv, bestdiff);
 
 	/*
@@ -605,7 +623,9 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params,
 		struct snd_soc_dai *cpu_dai)
 {
-	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dai_dev);
 	unsigned int ofs = sai->soc_data->reg_offset;
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	unsigned int channels = params_channels(params);
@@ -650,7 +670,7 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (hweight8(dl_cfg[dl_cfg_idx].mask[tx]) < pins) {
-		dev_err(cpu_dai->dev, "channel not supported\n");
+		dev_err(dai_dev, "channel not supported\n");
 		return -EINVAL;
 	}
 
@@ -661,7 +681,7 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
 		if (!IS_ERR_OR_NULL(sai->pins_state)) {
 			ret = pinctrl_select_state(sai->pinctrl, sai->pins_state);
 			if (ret) {
-				dev_err(cpu_dai->dev, "failed to set proper pins state: %d\n", ret);
+				dev_err(dai_dev, "failed to set proper pins state: %d\n", ret);
 				return ret;
 			}
 		}
@@ -805,7 +825,9 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
 static int fsl_sai_hw_free(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *cpu_dai)
 {
-	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dev);
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	unsigned int ofs = sai->soc_data->reg_offset;
 	int adir = tx ? RX : TX;
@@ -888,7 +910,9 @@ static void fsl_sai_config_disable(struct fsl_sai *sai, int dir)
 static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
 		struct snd_soc_dai *cpu_dai)
 {
-	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dev);
 	unsigned int ofs = sai->soc_data->reg_offset;
 
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
@@ -975,7 +999,9 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
 static int fsl_sai_startup(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *cpu_dai)
 {
-	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dev);
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	int ret;
 
@@ -1003,7 +1029,9 @@ static int fsl_sai_startup(struct snd_pcm_substream *substream,
 
 static int fsl_sai_dai_probe(struct snd_soc_dai *cpu_dai)
 {
-	struct fsl_sai *sai = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dai_dev);
 	unsigned int ofs = sai->soc_data->reg_offset;
 
 	/* Software Reset for both Tx and Rx */
@@ -1020,8 +1048,8 @@ static int fsl_sai_dai_probe(struct snd_soc_dai *cpu_dai)
 			   FSL_SAI_CR1_RFW_MASK(sai->soc_data->fifo_depth),
 			   sai->dma_params_rx.maxburst - 1);
 
-	snd_soc_dai_init_dma_data(cpu_dai, &sai->dma_params_tx,
-				&sai->dma_params_rx);
+	snd_soc_dai_stream_dma_data_set_playback(cpu_dai, &sai->dma_params_tx);
+	snd_soc_dai_stream_dma_data_set_capture(cpu_dai,  &sai->dma_params_rx);
 
 	return 0;
 }
@@ -1084,8 +1112,8 @@ static const struct snd_soc_dai_ops fsl_sai_pcm_dai_rx_ops = {
 
 static int fsl_sai_dai_resume(struct snd_soc_component *component)
 {
-	struct fsl_sai *sai = snd_soc_component_get_drvdata(component);
-	struct device *dev = &sai->pdev->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dev);
 	int ret;
 
 	if (!IS_ERR_OR_NULL(sai->pinctrl) && !IS_ERR_OR_NULL(sai->pins_state)) {
@@ -1101,10 +1129,11 @@ static int fsl_sai_dai_resume(struct snd_soc_component *component)
 
 static int fsl_sai_component_probe(struct snd_soc_component *component)
 {
-	struct fsl_sai *sai = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_sai *sai = dev_get_drvdata(dev);
 
 	if (sai->verid.feature & FSL_SAI_VERID_TSTMP_EN)
-		snd_soc_add_component_controls(component, fsl_sai_timestamp_ctrls,
+		snd_soc_component_add_controls(component, fsl_sai_timestamp_ctrls,
 					       ARRAY_SIZE(fsl_sai_timestamp_ctrls));
 
 	return 0;
@@ -1778,7 +1807,7 @@ static int fsl_sai_probe(struct platform_device *pdev)
 		}
 	}
 
-	ret = devm_snd_soc_register_component(dev, &fsl_component,
+	ret = devm_snd_soc_component_register(dev, &fsl_component,
 					      sai->cpu_dai_drv, ARRAY_SIZE(fsl_sai_dai_template));
 	if (ret)
 		goto err_pm_get_sync;

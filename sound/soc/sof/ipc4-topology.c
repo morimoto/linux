@@ -453,6 +453,7 @@ static int sof_ipc4_get_audio_fmt(struct snd_soc_component *scomp,
 				  struct sof_ipc4_available_audio_format *available_fmt,
 				  struct sof_ipc4_base_module_cfg *module_base_cfg)
 {
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	struct sof_ipc4_pin_format *in_format = NULL;
 	struct sof_ipc4_pin_format *out_format;
 	int ret;
@@ -461,29 +462,28 @@ static int sof_ipc4_get_audio_fmt(struct snd_soc_component *scomp,
 				    SOF_AUDIO_FMT_NUM_TOKENS, swidget->tuples,
 				    swidget->num_tuples, sizeof(*available_fmt), 1);
 	if (ret) {
-		dev_err(scomp->dev, "Failed to parse audio format token count\n");
+		dev_err(dev, "Failed to parse audio format token count\n");
 		return ret;
 	}
 
 	if (!available_fmt->num_input_formats && !available_fmt->num_output_formats) {
-		dev_err(scomp->dev, "No input/output pin formats set in topology\n");
+		dev_err(dev, "No input/output pin formats set in topology\n");
 		return -EINVAL;
 	}
 
-	dev_dbg(scomp->dev,
-		"Number of input audio formats: %d. Number of output audio formats: %d\n",
+	dev_dbg(dev, "Number of input audio formats: %d. Number of output audio formats: %d\n",
 		available_fmt->num_input_formats, available_fmt->num_output_formats);
 
 	/* set is_pages in the module's base_config */
 	ret = sof_update_ipc_object(scomp, module_base_cfg, SOF_COMP_TOKENS, swidget->tuples,
 				    swidget->num_tuples, sizeof(*module_base_cfg), 1);
 	if (ret) {
-		dev_err(scomp->dev, "parse comp tokens for %s failed, error: %d\n",
+		dev_err(dev, "parse comp tokens for %s failed, error: %d\n",
 			swidget->widget->name, ret);
 		return ret;
 	}
 
-	dev_dbg(scomp->dev, "widget %s: is_pages: %d\n", swidget->widget->name,
+	dev_dbg(dev, "widget %s: is_pages: %d\n", swidget->widget->name,
 		module_base_cfg->is_pages);
 
 	if (available_fmt->num_input_formats) {
@@ -498,13 +498,12 @@ static int sof_ipc4_get_audio_fmt(struct snd_soc_component *scomp,
 					    swidget->num_tuples, sizeof(*in_format),
 					    available_fmt->num_input_formats);
 		if (ret) {
-			dev_err(scomp->dev, "parse input audio fmt tokens failed %d\n", ret);
+			dev_err(dev, "parse input audio fmt tokens failed %d\n", ret);
 			goto err_in;
 		}
 
-		dev_dbg(scomp->dev, "Input audio formats for %s\n", swidget->widget->name);
-		sof_ipc4_dbg_audio_format(scomp->dev, in_format,
-					  available_fmt->num_input_formats);
+		dev_dbg(dev, "Input audio formats for %s\n", swidget->widget->name);
+		sof_ipc4_dbg_audio_format(dev, in_format, available_fmt->num_input_formats);
 	}
 
 	if (available_fmt->num_output_formats) {
@@ -520,14 +519,13 @@ static int sof_ipc4_get_audio_fmt(struct snd_soc_component *scomp,
 					    swidget->num_tuples, sizeof(*out_format),
 					    available_fmt->num_output_formats);
 		if (ret) {
-			dev_err(scomp->dev, "parse output audio fmt tokens failed\n");
+			dev_err(dev, "parse output audio fmt tokens failed\n");
 			goto err_out;
 		}
 
 		available_fmt->output_pin_fmts = out_format;
-		dev_dbg(scomp->dev, "Output audio formats for %s\n", swidget->widget->name);
-		sof_ipc4_dbg_audio_format(scomp->dev, out_format,
-					  available_fmt->num_output_formats);
+		dev_dbg(dev, "Output audio formats for %s\n", swidget->widget->name);
+		sof_ipc4_dbg_audio_format(dev, out_format, available_fmt->num_output_formats);
 	}
 
 	sof_ipc4_evaluate_params_change(available_fmt);
@@ -560,7 +558,8 @@ static void sof_ipc4_widget_free_comp_pipeline(struct snd_sof_widget *swidget)
 static int sof_ipc4_widget_set_module_info(struct snd_sof_widget *swidget)
 {
 	struct snd_soc_component *scomp = swidget->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 
 	swidget->module_info = sof_ipc4_find_module_by_uuid(sdev, &swidget->uuid);
 
@@ -610,7 +609,8 @@ static int sof_ipc4_widget_setup_msg(struct snd_sof_widget *swidget, struct sof_
 static void sof_ipc4_widget_update_kcontrol_module_id(struct snd_sof_widget *swidget)
 {
 	struct snd_soc_component *scomp = swidget->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_ipc4_fw_module *fw_module = swidget->module_info;
 	struct snd_sof_control *scontrol;
 
@@ -632,8 +632,10 @@ sof_ipc4_update_card_components_string(struct snd_sof_widget *swidget,
 	struct snd_sof_widget *pipe_widget = swidget->spipe->pipe_widget;
 	struct sof_ipc4_pipeline *pipeline = pipe_widget->private;
 	struct snd_soc_component *scomp = spcm->scomp;
-	struct snd_soc_card *card = scomp->card;
+	struct snd_soc_card *card = snd_soc_component_to_card(scomp);
+	struct device *dev = snd_soc_card_to_dev(card);
 	const char *pt_marker = "iec61937-pcm";
+	const char *tmp = snd_soc_card_components(card);
 	unsigned pcm_id = le32_to_cpu(spcm->pcm.pcm_id);
 
 	/*
@@ -644,29 +646,21 @@ sof_ipc4_update_card_components_string(struct snd_sof_widget *swidget,
 	if (!pipeline->use_chain_dma)
 		return 0;
 
-	if (card->components) {
-		const char *tmp = card->components;
-
-		if (strstr(card->components, pt_marker))
-			card->components = devm_kasprintf(card->dev, GFP_KERNEL,
-							  "%s,%u",
-							  card->components,
-							  pcm_id);
+	if (tmp) {
+		if (strstr(tmp, pt_marker))
+			snd_soc_card_set_components(card, devm_kasprintf(dev, GFP_KERNEL,
+									 "%s,%u", tmp, pcm_id));
 		else
-			card->components = devm_kasprintf(card->dev, GFP_KERNEL,
-							  "%s %s:%u",
-							  card->components,
-							  pt_marker,
-							  pcm_id);
+			snd_soc_card_set_components(card, devm_kasprintf(dev, GFP_KERNEL,
+							   "%s %s:%u", tmp, pt_marker, pcm_id));
 
-		devm_kfree(card->dev, tmp);
+		devm_kfree(dev, tmp);
 	} else {
-		card->components = devm_kasprintf(card->dev, GFP_KERNEL,
-						  "%s:%u", pt_marker,
-						  pcm_id);
+		snd_soc_card_set_components(card, devm_kasprintf(dev, GFP_KERNEL,
+								 "%s:%u", pt_marker, pcm_id));
 	}
 
-	if (!card->components)
+	if (!snd_soc_card_components(card))
 		return -ENOMEM;
 
 	return 0;
@@ -679,6 +673,7 @@ static int sof_ipc4_widget_setup_pcm(struct snd_sof_widget *swidget)
 	struct sof_ipc4_copier *ipc4_copier;
 	struct snd_sof_pcm_stream *sps;
 	struct snd_sof_pcm *spcm;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	int node_type = 0;
 	int ret, dir;
 
@@ -689,7 +684,7 @@ static int sof_ipc4_widget_setup_pcm(struct snd_sof_widget *swidget)
 	swidget->private = ipc4_copier;
 	available_fmt = &ipc4_copier->available_fmt;
 
-	dev_dbg(scomp->dev, "Updating IPC structure for %s\n", swidget->widget->name);
+	dev_dbg(dev, "Updating IPC structure for %s\n", swidget->widget->name);
 
 	ret = sof_ipc4_get_audio_fmt(scomp, swidget, available_fmt,
 				     &ipc4_copier->data.base_config);
@@ -711,11 +706,10 @@ static int sof_ipc4_widget_setup_pcm(struct snd_sof_widget *swidget)
 				    swidget->num_tuples, sizeof(node_type), 1);
 
 	if (ret) {
-		dev_err(scomp->dev, "parse host copier node type token failed %d\n",
-			ret);
+		dev_err(dev, "parse host copier node type token failed %d\n", ret);
 		goto free_available_fmt;
 	}
-	dev_dbg(scomp->dev, "host copier '%s' node_type %u\n", swidget->widget->name, node_type);
+	dev_dbg(dev, "host copier '%s' node_type %u\n", swidget->widget->name, node_type);
 
 	spcm = snd_sof_find_spcm_comp(scomp, swidget->comp_id, &dir);
 	if (!spcm)
@@ -765,7 +759,7 @@ skip_gtw_cfg:
 		ipc4_copier->ipc_config_size = 0;
 		break;
 	default:
-		dev_err(scomp->dev, "invalid widget type %d\n", swidget->id);
+		dev_err(dev, "invalid widget type %d\n", swidget->id);
 		ret = -EINVAL;
 		goto free_gtw_attr;
 	}
@@ -806,7 +800,8 @@ static int sof_ipc4_widget_setup_comp_dai(struct snd_sof_widget *swidget)
 {
 	struct sof_ipc4_available_audio_format *available_fmt;
 	struct snd_soc_component *scomp = swidget->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct snd_sof_dai *dai = swidget->private;
 	struct sof_ipc4_copier *ipc4_copier;
 	struct snd_sof_widget *pipe_widget;
@@ -820,7 +815,7 @@ static int sof_ipc4_widget_setup_comp_dai(struct snd_sof_widget *swidget)
 
 	available_fmt = &ipc4_copier->available_fmt;
 
-	dev_dbg(scomp->dev, "Updating IPC structure for %s\n", swidget->widget->name);
+	dev_dbg(dev, "Updating IPC structure for %s\n", swidget->widget->name);
 
 	ret = sof_ipc4_get_audio_fmt(scomp, swidget, available_fmt,
 				     &ipc4_copier->data.base_config);
@@ -834,7 +829,7 @@ static int sof_ipc4_widget_setup_comp_dai(struct snd_sof_widget *swidget)
 				    SOF_COPIER_TOKENS, swidget->tuples,
 				    swidget->num_tuples, sizeof(node_type), 1);
 	if (ret) {
-		dev_err(scomp->dev, "parse dai node type failed %d\n", ret);
+		dev_err(dev, "parse dai node type failed %d\n", ret);
 		goto free_available_fmt;
 	}
 
@@ -842,11 +837,11 @@ static int sof_ipc4_widget_setup_comp_dai(struct snd_sof_widget *swidget)
 				    SOF_DAI_TOKENS, swidget->tuples,
 				    swidget->num_tuples, sizeof(u32), 1);
 	if (ret) {
-		dev_err(scomp->dev, "parse dai copier node token failed %d\n", ret);
+		dev_err(dev, "parse dai copier node token failed %d\n", ret);
 		goto free_available_fmt;
 	}
 
-	dev_dbg(scomp->dev, "dai %s node_type %u dai_type %u dai_index %d\n", swidget->widget->name,
+	dev_dbg(dev, "dai %s node_type %u dai_type %u dai_index %d\n", swidget->widget->name,
 		node_type, ipc4_copier->dai_type, ipc4_copier->dai_index);
 
 	dai->type = ipc4_copier->dai_type;
@@ -857,7 +852,7 @@ static int sof_ipc4_widget_setup_comp_dai(struct snd_sof_widget *swidget)
 
 	if (pipeline->use_chain_dma &&
 	    !snd_sof_is_chain_dma_supported(sdev, ipc4_copier->dai_type)) {
-		dev_err(scomp->dev, "Bad DAI type '%d', Chain DMA is not supported\n",
+		dev_err(dev, "Bad DAI type '%d', Chain DMA is not supported\n",
 			ipc4_copier->dai_type);
 		ret = -ENODEV;
 		goto free_available_fmt;
@@ -986,7 +981,8 @@ static void sof_ipc4_widget_free_comp_dai(struct snd_sof_widget *swidget)
 static int sof_ipc4_widget_setup_comp_pipeline(struct snd_sof_widget *swidget)
 {
 	struct snd_soc_component *scomp = swidget->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_ipc4_pipeline *pipeline;
 	struct snd_sof_pipeline *spipe = swidget->spipe;
 	int ret;
@@ -998,14 +994,14 @@ static int sof_ipc4_widget_setup_comp_pipeline(struct snd_sof_widget *swidget)
 	ret = sof_update_ipc_object(scomp, pipeline, SOF_SCHED_TOKENS, swidget->tuples,
 				    swidget->num_tuples, sizeof(*pipeline), 1);
 	if (ret) {
-		dev_err(scomp->dev, "parsing scheduler tokens failed\n");
+		dev_err(dev, "parsing scheduler tokens failed\n");
 		goto err;
 	}
 
 	if (sof_debug_check_flag(SOF_DBG_DISABLE_MULTICORE)) {
 		pipeline->core_id = SOF_DSP_PRIMARY_CORE;
 	} else if (pipeline->core_id > sdev->num_cores - 1) {
-		dev_info(scomp->dev,
+		dev_info(dev,
 			 "out of range core id for %s, moving it %d -> %d\n",
 			 swidget->widget->name, pipeline->core_id,
 			 SOF_DSP_PRIMARY_CORE);
@@ -1020,7 +1016,7 @@ static int sof_ipc4_widget_setup_comp_pipeline(struct snd_sof_widget *swidget)
 	}
 
 	if (pipeline->use_chain_dma) {
-		dev_dbg(scomp->dev, "Set up chain DMA for %s\n", swidget->widget->name);
+		dev_dbg(dev, "Set up chain DMA for %s\n", swidget->widget->name);
 		swidget->private = pipeline;
 		return 0;
 	}
@@ -1029,11 +1025,11 @@ static int sof_ipc4_widget_setup_comp_pipeline(struct snd_sof_widget *swidget)
 	ret = sof_update_ipc_object(scomp, swidget, SOF_PIPELINE_TOKENS, swidget->tuples,
 				    swidget->num_tuples, sizeof(*swidget), 1);
 	if (ret) {
-		dev_err(scomp->dev, "parsing pipeline tokens failed\n");
+		dev_err(dev, "parsing pipeline tokens failed\n");
 		goto err;
 	}
 
-	dev_dbg(scomp->dev, "pipeline '%s': id %d, pri %d, core_id %u, lp mode %d direction %d\n",
+	dev_dbg(dev, "pipeline '%s': id %d, pri %d, core_id %u, lp mode %d direction %d\n",
 		swidget->widget->name, swidget->pipeline_id,
 		pipeline->priority, pipeline->core_id, pipeline->lp_mode, pipeline->direction);
 
@@ -1058,6 +1054,7 @@ static int sof_ipc4_widget_setup_comp_pga(struct snd_sof_widget *swidget)
 {
 	struct snd_soc_component *scomp = swidget->scomp;
 	struct sof_ipc4_gain *gain;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	int ret;
 
 	gain = kzalloc_obj(*gain);
@@ -1076,12 +1073,11 @@ static int sof_ipc4_widget_setup_comp_pga(struct snd_sof_widget *swidget)
 	ret = sof_update_ipc_object(scomp, &gain->data.params, SOF_GAIN_TOKENS,
 				    swidget->tuples, swidget->num_tuples, sizeof(gain->data), 1);
 	if (ret) {
-		dev_err(scomp->dev, "Parsing gain tokens failed\n");
+		dev_err(dev, "Parsing gain tokens failed\n");
 		goto err;
 	}
 
-	dev_dbg(scomp->dev,
-		"pga widget %s: ramp type: %d, ramp duration %d, initial gain value: %#x\n",
+	dev_dbg(dev, "pga widget %s: ramp type: %d, ramp duration %d, initial gain value: %#x\n",
 		swidget->widget->name, gain->data.params.curve_type,
 		gain->data.params.curve_duration_l, gain->data.params.init_val);
 
@@ -1115,9 +1111,10 @@ static int sof_ipc4_widget_setup_comp_mixer(struct snd_sof_widget *swidget)
 {
 	struct snd_soc_component *scomp = swidget->scomp;
 	struct sof_ipc4_mixer *mixer;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	int ret;
 
-	dev_dbg(scomp->dev, "Updating IPC structure for %s\n", swidget->widget->name);
+	dev_dbg(dev, "Updating IPC structure for %s\n", swidget->widget->name);
 
 	mixer = kzalloc_obj(*mixer);
 	if (!mixer)
@@ -1147,9 +1144,10 @@ static int sof_ipc4_widget_setup_comp_src(struct snd_sof_widget *swidget)
 	struct snd_soc_component *scomp = swidget->scomp;
 	struct snd_sof_pipeline *spipe = swidget->spipe;
 	struct sof_ipc4_src *src;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	int ret;
 
-	dev_dbg(scomp->dev, "Updating IPC structure for %s\n", swidget->widget->name);
+	dev_dbg(dev, "Updating IPC structure for %s\n", swidget->widget->name);
 
 	src = kzalloc_obj(*src);
 	if (!src)
@@ -1164,7 +1162,7 @@ static int sof_ipc4_widget_setup_comp_src(struct snd_sof_widget *swidget)
 
 	if (!src->available_fmt.num_input_formats ||
 	    !src->available_fmt.num_output_formats) {
-		dev_err(scomp->dev,
+		dev_err(dev,
 			"Invalid number of formats: input: %d, output: %d\n",
 			src->available_fmt.num_input_formats,
 			src->available_fmt.num_output_formats);
@@ -1175,13 +1173,13 @@ static int sof_ipc4_widget_setup_comp_src(struct snd_sof_widget *swidget)
 	ret = sof_update_ipc_object(scomp, &src->data, SOF_SRC_TOKENS, swidget->tuples,
 				    swidget->num_tuples, sizeof(*src), 1);
 	if (ret) {
-		dev_err(scomp->dev, "Parsing SRC tokens failed\n");
+		dev_err(dev, "Parsing SRC tokens failed\n");
 		goto err;
 	}
 
 	spipe->core_mask |= BIT(swidget->core);
 
-	dev_dbg(scomp->dev, "SRC sink rate %d\n", src->data.sink_rate);
+	dev_dbg(dev, "SRC sink rate %d\n", src->data.sink_rate);
 
 	ret = sof_ipc4_widget_setup_msg(swidget, &src->msg);
 	if (ret)
@@ -1200,9 +1198,10 @@ static int sof_ipc4_widget_setup_comp_asrc(struct snd_sof_widget *swidget)
 	struct snd_soc_component *scomp = swidget->scomp;
 	struct snd_sof_pipeline *spipe = swidget->spipe;
 	struct sof_ipc4_asrc *asrc;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	int ret;
 
-	dev_dbg(scomp->dev, "Updating IPC structure for %s\n", swidget->widget->name);
+	dev_dbg(dev, "Updating IPC structure for %s\n", swidget->widget->name);
 
 	asrc = kzalloc_obj(*asrc);
 	if (!asrc)
@@ -1217,7 +1216,7 @@ static int sof_ipc4_widget_setup_comp_asrc(struct snd_sof_widget *swidget)
 
 	if (!asrc->available_fmt.num_input_formats ||
 	    !asrc->available_fmt.num_output_formats) {
-		dev_err(scomp->dev,
+		dev_err(dev,
 			"Invalid number of formats: input: %d, output: %d\n",
 			asrc->available_fmt.num_input_formats,
 			asrc->available_fmt.num_output_formats);
@@ -1228,13 +1227,13 @@ static int sof_ipc4_widget_setup_comp_asrc(struct snd_sof_widget *swidget)
 	ret = sof_update_ipc_object(scomp, &asrc->data, SOF_ASRC_TOKENS, swidget->tuples,
 				    swidget->num_tuples, sizeof(*asrc), 1);
 	if (ret) {
-		dev_err(scomp->dev, "Parsing ASRC tokens failed\n");
+		dev_err(dev, "Parsing ASRC tokens failed\n");
 		goto err;
 	}
 
 	spipe->core_mask |= BIT(swidget->core);
 
-	dev_dbg(scomp->dev, "ASRC sink rate %d, mode 0x%08x\n",
+	dev_dbg(dev, "ASRC sink rate %d, mode 0x%08x\n",
 		asrc->data.out_freq, asrc->data.asrc_mode);
 
 	ret = sof_ipc4_widget_setup_msg(swidget, &asrc->msg);
@@ -2128,7 +2127,8 @@ sof_ipc4_copier_module_update_params(struct snd_sof_widget *swidget,
 				     struct snd_pcm_hw_params *pipeline_params)
 {
 	struct snd_soc_component *scomp = swidget->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_ipc4_copier_data *copier_data;
 	struct sof_ipc4_copier *ipc4_copier;
 
@@ -2178,7 +2178,8 @@ _sof_ipc4_prepare_copier_module(struct snd_sof_widget *swidget,
 {
 	struct sof_ipc4_available_audio_format *available_fmt;
 	struct snd_soc_component *scomp = swidget->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_ipc4_copier_data *copier_data;
 	int input_fmt_index, output_fmt_index;
 	struct sof_ipc4_copier *ipc4_copier;
@@ -2214,7 +2215,7 @@ _sof_ipc4_prepare_copier_module(struct snd_sof_widget *swidget,
 					    SOF_COPIER_DEEP_BUFFER_TOKENS, swidget->tuples,
 					    swidget->num_tuples, sizeof(u32), 1);
 		if (ret) {
-			dev_err(scomp->dev, "Failed to parse deep buffer dma size for %s\n",
+			dev_err(dev, "Failed to parse deep buffer dma size for %s\n",
 				swidget->widget->name);
 			return ret;
 		}
@@ -2667,7 +2668,8 @@ static int sof_ipc4_prepare_gain_module(struct snd_sof_widget *swidget,
 					struct snd_pcm_hw_params *pipeline_params, int dir)
 {
 	struct snd_soc_component *scomp = swidget->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_ipc4_gain *gain = swidget->private;
 	struct sof_ipc4_available_audio_format *available_fmt = &gain->available_fmt;
 	struct sof_ipc4_audio_format *in_fmt;
@@ -2716,7 +2718,8 @@ static int sof_ipc4_prepare_mixer_module(struct snd_sof_widget *swidget,
 					 struct snd_pcm_hw_params *pipeline_params, int dir)
 {
 	struct snd_soc_component *scomp = swidget->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_ipc4_mixer *mixer = swidget->private;
 	struct sof_ipc4_available_audio_format *available_fmt = &mixer->available_fmt;
 	struct sof_ipc4_audio_format *in_fmt;
@@ -2765,7 +2768,8 @@ static int sof_ipc4_prepare_src_module(struct snd_sof_widget *swidget,
 				       struct snd_pcm_hw_params *pipeline_params, int dir)
 {
 	struct snd_soc_component *scomp = swidget->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_ipc4_src *src = swidget->private;
 	struct sof_ipc4_available_audio_format *available_fmt = &src->available_fmt;
 	struct sof_ipc4_audio_format *out_audio_fmt;
@@ -2858,6 +2862,7 @@ sof_ipc4_process_set_pin_formats(struct snd_sof_widget *swidget, int pin_type)
 	struct sof_ipc4_available_audio_format *available_fmt = &process->available_fmt;
 	struct sof_ipc4_pin_format *pin_format, *format_list_to_search;
 	struct snd_soc_component *scomp = swidget->scomp;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	int num_pins, format_list_count;
 	int pin_format_offset = 0;
 	int i, j;
@@ -2904,7 +2909,7 @@ sof_ipc4_process_set_pin_formats(struct snd_sof_widget *swidget, int pin_type)
 		}
 
 		if (j == format_list_count) {
-			dev_err(scomp->dev, "%s pin %d format not found for %s\n",
+			dev_err(dev, "%s pin %d format not found for %s\n",
 				(pin_type == SOF_PIN_TYPE_INPUT) ? "input" : "output",
 				i - pin_format_offset, swidget->widget->name);
 			return -EINVAL;
@@ -2934,7 +2939,8 @@ static int sof_ipc4_prepare_process_module(struct snd_sof_widget *swidget,
 					   struct snd_pcm_hw_params *pipeline_params, int dir)
 {
 	struct snd_soc_component *scomp = swidget->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_ipc4_process *process = swidget->private;
 	struct sof_ipc4_available_audio_format *available_fmt = &process->available_fmt;
 	void *cfg = process->ipc_config_data;
@@ -3700,6 +3706,7 @@ static int sof_ipc4_get_queue_id(struct snd_sof_widget *src_widget,
 	struct snd_sof_widget *current_swidget;
 	struct snd_soc_component *scomp;
 	struct ida *queue_ida;
+	struct device *dev;
 	const char *buddy_name;
 	char **pin_binding;
 	u32 num_pins;
@@ -3720,9 +3727,10 @@ static int sof_ipc4_get_queue_id(struct snd_sof_widget *src_widget,
 	}
 
 	scomp = current_swidget->scomp;
+	dev = snd_soc_component_to_dev(scomp);
 
 	if (num_pins < 1) {
-		dev_err(scomp->dev, "invalid %s num_pins: %d for queue allocation for %s\n",
+		dev_err(dev, "invalid %s num_pins: %d for queue allocation for %s\n",
 			(pin_type == SOF_PIN_TYPE_OUTPUT ? "output" : "input"),
 			num_pins, current_swidget->widget->name);
 		return -EINVAL;
@@ -3742,7 +3750,7 @@ static int sof_ipc4_get_queue_id(struct snd_sof_widget *src_widget,
 		 * Fail if no queue ID found from pin binding array, so that we don't
 		 * mixed use pin binding array and ida for queue ID allocation.
 		 */
-		dev_err(scomp->dev, "no %s queue id found from pin binding array for %s\n",
+		dev_err(dev, "no %s queue id found from pin binding array for %s\n",
 			(pin_type == SOF_PIN_TYPE_OUTPUT ? "output" : "input"),
 			current_swidget->widget->name);
 		return -EINVAL;
@@ -4066,7 +4074,8 @@ static int sof_ipc4_dai_config(struct snd_sof_dev *sdev, struct snd_sof_widget *
 static int sof_ipc4_parse_manifest(struct snd_soc_component *scomp, int index,
 				   struct snd_soc_tplg_manifest *man)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_ipc4_fw_data *ipc4_data = sdev->private;
 	struct sof_manifest_tlv *manifest_tlv;
 	struct sof_manifest *manifest;
@@ -4076,15 +4085,13 @@ static int sof_ipc4_parse_manifest(struct snd_soc_component *scomp, int index,
 	int i;
 
 	if (!size || size < SOF_IPC4_TPLG_ABI_SIZE) {
-		dev_err(scomp->dev, "%s: Invalid topology ABI size: %u\n",
-			__func__, size);
+		dev_err(dev, "%s: Invalid topology ABI size: %u\n", __func__, size);
 		return -EINVAL;
 	}
 
 	manifest = (struct sof_manifest *)man_ptr;
 
-	dev_info(scomp->dev,
-		 "Topology: ABI %d:%d:%d Kernel ABI %u:%u:%u\n",
+	dev_info(dev, "Topology: ABI %d:%d:%d Kernel ABI %u:%u:%u\n",
 		  le16_to_cpu(manifest->abi_major), le16_to_cpu(manifest->abi_minor),
 		  le16_to_cpu(manifest->abi_patch),
 		  SOF_ABI_MAJOR, SOF_ABI_MINOR, SOF_ABI_PATCH);
@@ -4113,7 +4120,7 @@ static int sof_ipc4_parse_manifest(struct snd_soc_component *scomp, int index,
 				return -ENOMEM;
 			break;
 		default:
-			dev_warn(scomp->dev, "Skipping unknown manifest data type %d\n",
+			dev_warn(dev, "Skipping unknown manifest data type %d\n",
 				 manifest_tlv->type);
 			break;
 		}

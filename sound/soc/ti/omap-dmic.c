@@ -89,7 +89,9 @@ static inline int dmic_is_enabled(struct omap_dmic *dmic)
 static int omap_dmic_dai_startup(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct omap_dmic *dmic = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_dmic *dmic = dev_get_drvdata(dev);
 
 	guard(mutex)(&dmic->mutex);
 
@@ -103,7 +105,9 @@ static int omap_dmic_dai_startup(struct snd_pcm_substream *substream,
 static void omap_dmic_dai_shutdown(struct snd_pcm_substream *substream,
 				    struct snd_soc_dai *dai)
 {
-	struct omap_dmic *dmic = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_dmic *dmic = dev_get_drvdata(dev);
 
 	guard(mutex)(&dmic->mutex);
 
@@ -180,7 +184,9 @@ static int omap_dmic_dai_hw_params(struct snd_pcm_substream *substream,
 				    struct snd_pcm_hw_params *params,
 				    struct snd_soc_dai *dai)
 {
-	struct omap_dmic *dmic = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_dmic *dmic = dev_get_drvdata(dev);
 	struct snd_dmaengine_dai_dma_data *dma_data;
 	int channels;
 
@@ -209,7 +215,7 @@ static int omap_dmic_dai_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	/* packet size is threshold * channels */
-	dma_data = snd_soc_dai_get_dma_data(dai, substream);
+	dma_data = snd_soc_dai_stream_dma_data_get(dai, substream);
 	dma_data->maxburst = dmic->threshold * channels;
 	dmic->latency = (OMAP_DMIC_THRES_MAX - dmic->threshold) * USEC_PER_SEC /
 			params_rate(params);
@@ -220,7 +226,9 @@ static int omap_dmic_dai_hw_params(struct snd_pcm_substream *substream,
 static int omap_dmic_dai_prepare(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct omap_dmic *dmic = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_dmic *dmic = dev_get_drvdata(dev);
 	u32 ctrl;
 
 	if (cpu_latency_qos_request_active(&dmic->pm_qos_req))
@@ -253,7 +261,9 @@ static int omap_dmic_dai_prepare(struct snd_pcm_substream *substream,
 static int omap_dmic_dai_trigger(struct snd_pcm_substream *substream,
 				  int cmd, struct snd_soc_dai *dai)
 {
-	struct omap_dmic *dmic = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_dmic *dmic = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -381,7 +391,9 @@ static int omap_dmic_select_outclk(struct omap_dmic *dmic, int clk_id,
 static int omap_dmic_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 				    unsigned int freq, int dir)
 {
-	struct omap_dmic *dmic = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_dmic *dmic = dev_get_drvdata(dev);
 
 	if (dir == SND_SOC_CLOCK_IN)
 		return omap_dmic_select_fclk(dmic, clk_id, freq);
@@ -394,7 +406,9 @@ static int omap_dmic_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 static int omap_dmic_probe(struct snd_soc_dai *dai)
 {
-	struct omap_dmic *dmic = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_dmic *dmic = dev_get_drvdata(dev);
 
 	pm_runtime_enable(dmic->dev);
 
@@ -406,14 +420,16 @@ static int omap_dmic_probe(struct snd_soc_dai *dai)
 	/* Configure DMIC threshold value */
 	dmic->threshold = OMAP_DMIC_THRES_MAX - 3;
 
-	snd_soc_dai_init_dma_data(dai, NULL, &dmic->dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(dai, &dmic->dma_data);
 
 	return 0;
 }
 
 static int omap_dmic_remove(struct snd_soc_dai *dai)
 {
-	struct omap_dmic *dmic = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_dmic *dmic = dev_get_drvdata(dev);
 
 	pm_runtime_disable(dmic->dev);
 
@@ -482,7 +498,7 @@ static int asoc_dmic_probe(struct platform_device *pdev)
 	if (IS_ERR(dmic->io_base))
 		return PTR_ERR(dmic->io_base);
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &omap_dmic_component,
 					      &omap_dmic_dai, 1);
 	if (ret)

@@ -57,10 +57,11 @@ static struct snd_soc_jack_pin sc7180_jack_pins[] = {
 static int sc7180_headset_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct sc7180_snd_data *pdata = snd_soc_card_get_drvdata(card);
+	struct sc7180_snd_data *pdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct snd_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int rval;
 
 	rval = snd_soc_card_jack_new_pins(card, "Headset Jack",
@@ -73,7 +74,7 @@ static int sc7180_headset_init(struct snd_soc_pcm_runtime *rtd)
 					  ARRAY_SIZE(sc7180_jack_pins));
 
 	if (rval < 0) {
-		dev_err(card->dev, "Unable to add Headset Jack\n");
+		dev_err(dev, "Unable to add Headset Jack\n");
 		return rval;
 	}
 
@@ -93,10 +94,11 @@ static int sc7180_headset_init(struct snd_soc_pcm_runtime *rtd)
 static int sc7180_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct sc7180_snd_data *pdata = snd_soc_card_get_drvdata(card);
+	struct sc7180_snd_data *pdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct snd_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int rval;
 
 	rval = snd_soc_card_jack_new(
@@ -105,7 +107,7 @@ static int sc7180_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 			&pdata->hdmi_jack);
 
 	if (rval < 0) {
-		dev_err(card->dev, "Unable to add HDMI Jack\n");
+		dev_err(dev, "Unable to add HDMI Jack\n");
 		return rval;
 	}
 
@@ -119,8 +121,9 @@ static int sc7180_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 static int sc7180_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	int dai_id = snd_soc_dai_id(cpu_dai);
 
-	switch (cpu_dai->id) {
+	switch (dai_id) {
 	case MI2S_PRIMARY:
 		return sc7180_headset_init(rtd);
 	case MI2S_SECONDARY:
@@ -129,7 +132,7 @@ static int sc7180_init(struct snd_soc_pcm_runtime *rtd)
 		return sc7180_hdmi_init(rtd);
 	default:
 		dev_err(rtd->dev, "%s: invalid dai id 0x%x\n", __func__,
-			cpu_dai->id);
+			dai_id);
 		return -EINVAL;
 	}
 	return 0;
@@ -138,8 +141,9 @@ static int sc7180_init(struct snd_soc_pcm_runtime *rtd)
 static int sc7180_qdsp_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	int dai_id = snd_soc_dai_id(cpu_dai);
 
-	switch (cpu_dai->id) {
+	switch (dai_id) {
 	case PRIMARY_MI2S_RX:
 		return sc7180_headset_init(rtd);
 	case PRIMARY_MI2S_TX:
@@ -149,7 +153,7 @@ static int sc7180_qdsp_init(struct snd_soc_pcm_runtime *rtd)
 		return sc7180_hdmi_init(rtd);
 	default:
 		dev_err(rtd->dev, "%s: invalid dai id 0x%x\n", __func__,
-			cpu_dai->id);
+			dai_id);
 		return -EINVAL;
 	}
 	return 0;
@@ -158,15 +162,16 @@ static int sc7180_qdsp_init(struct snd_soc_pcm_runtime *rtd)
 static int sc7180_startup_realtek_codec(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	const char *dai_name = snd_soc_dai_name(codec_dai);
 	int pll_id, pll_source, pll_in, pll_out, clk_id, ret;
 
-	if (!strcmp(codec_dai->name, "rt5682-aif1")) {
+	if (!strcmp(dai_name, "rt5682-aif1")) {
 		pll_source = RT5682_PLL1_S_MCLK;
 		pll_id = 0;
 		clk_id = RT5682_SCLK_S_PLL1;
 		pll_out = RT5682_PLL1_FREQ;
 		pll_in = DEFAULT_MCLK_RATE;
-	} else if (!strcmp(codec_dai->name, "rt5682s-aif1")) {
+	} else if (!strcmp(dai_name, "rt5682s-aif1")) {
 		pll_source = RT5682S_PLL_S_MCLK;
 		pll_id = RT5682S_PLL2;
 		clk_id = RT5682S_SCLK_S_PLL2;
@@ -202,11 +207,12 @@ static int sc7180_snd_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct sc7180_snd_data *data = snd_soc_card_get_drvdata(card);
+	struct sc7180_snd_data *data = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	int dai_id = snd_soc_dai_id(cpu_dai);
 	int ret;
 
-	switch (cpu_dai->id) {
+	switch (dai_id) {
 	case MI2S_PRIMARY:
 		if (++data->pri_mi2s_clk_count == 1) {
 			snd_soc_dai_set_sysclk(cpu_dai,
@@ -226,7 +232,7 @@ static int sc7180_snd_startup(struct snd_pcm_substream *substream)
 		break;
 	default:
 		dev_err(rtd->dev, "%s: invalid dai id 0x%x\n", __func__,
-			cpu_dai->id);
+			dai_id);
 		return -EINVAL;
 	}
 	return 0;
@@ -236,12 +242,13 @@ static int sc7180_qdsp_snd_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct sc7180_snd_data *data = snd_soc_card_get_drvdata(card);
+	struct sc7180_snd_data *data = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	int dai_id = snd_soc_dai_id(cpu_dai);
 	int ret;
 
-	switch (cpu_dai->id) {
+	switch (dai_id) {
 	case PRIMARY_MI2S_RX:
 	case PRIMARY_MI2S_TX:
 		if (++data->pri_mi2s_clk_count == 1) {
@@ -278,7 +285,7 @@ static int sc7180_qdsp_snd_startup(struct snd_pcm_substream *substream)
 		break;
 	default:
 		dev_err(rtd->dev, "%s: invalid dai id 0x%x\n", __func__,
-			cpu_dai->id);
+			dai_id);
 		return -EINVAL;
 	}
 	return 0;
@@ -289,7 +296,7 @@ static int dmic_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
-	struct sc7180_snd_data *data = snd_soc_card_get_drvdata(card);
+	struct sc7180_snd_data *data = snd_soc_card_to_priv(card);
 
 	ucontrol->value.integer.value[0] = data->dmic_switch;
 	return 0;
@@ -300,7 +307,7 @@ static int dmic_set(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
-	struct sc7180_snd_data *data = snd_soc_card_get_drvdata(card);
+	struct sc7180_snd_data *data = snd_soc_card_to_priv(card);
 
 	data->dmic_switch = ucontrol->value.integer.value[0];
 	gpiod_set_value(data->dmic_sel, data->dmic_switch);
@@ -311,10 +318,11 @@ static void sc7180_snd_shutdown(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct sc7180_snd_data *data = snd_soc_card_get_drvdata(card);
+	struct sc7180_snd_data *data = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	int dai_id = snd_soc_dai_id(cpu_dai);
 
-	switch (cpu_dai->id) {
+	switch (dai_id) {
 	case MI2S_PRIMARY:
 		if (--data->pri_mi2s_clk_count == 0) {
 			snd_soc_dai_set_sysclk(cpu_dai,
@@ -329,7 +337,7 @@ static void sc7180_snd_shutdown(struct snd_pcm_substream *substream)
 		break;
 	default:
 		dev_err(rtd->dev, "%s: invalid dai id 0x%x\n", __func__,
-			cpu_dai->id);
+			dai_id);
 		break;
 	}
 }
@@ -338,10 +346,11 @@ static void sc7180_qdsp_snd_shutdown(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct sc7180_snd_data *data = snd_soc_card_get_drvdata(card);
+	struct sc7180_snd_data *data = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	int dai_id = snd_soc_dai_id(cpu_dai);
 
-	switch (cpu_dai->id) {
+	switch (dai_id) {
 	case PRIMARY_MI2S_RX:
 	case PRIMARY_MI2S_TX:
 		if (--data->pri_mi2s_clk_count == 0) {
@@ -365,7 +374,7 @@ static void sc7180_qdsp_snd_shutdown(struct snd_pcm_substream *substream)
 		break;
 	default:
 		dev_err(rtd->dev, "%s: invalid dai id 0x%x\n", __func__,
-			cpu_dai->id);
+			dai_id);
 		break;
 	}
 }
@@ -373,8 +382,9 @@ static void sc7180_qdsp_snd_shutdown(struct snd_pcm_substream *substream)
 static int sc7180_adau7002_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	int dai_id = snd_soc_dai_id(cpu_dai);
 
-	switch (cpu_dai->id) {
+	switch (dai_id) {
 	case MI2S_PRIMARY:
 		return 0;
 	case MI2S_SECONDARY:
@@ -383,7 +393,7 @@ static int sc7180_adau7002_init(struct snd_soc_pcm_runtime *rtd)
 		return sc7180_hdmi_init(rtd);
 	default:
 		dev_err(rtd->dev, "%s: invalid dai id 0x%x\n", __func__,
-			cpu_dai->id);
+			dai_id);
 		return -EINVAL;
 	}
 	return 0;
@@ -395,8 +405,9 @@ static int sc7180_adau7002_snd_startup(struct snd_pcm_substream *substream)
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_pcm_runtime *runtime = substream->runtime;
+	int dai_id = snd_soc_dai_id(cpu_dai);
 
-	switch (cpu_dai->id) {
+	switch (dai_id) {
 	case MI2S_PRIMARY:
 		snd_soc_dai_set_fmt(codec_dai,
 				    SND_SOC_DAIFMT_CBC_CFC |
@@ -412,7 +423,7 @@ static int sc7180_adau7002_snd_startup(struct snd_pcm_substream *substream)
 		break;
 	default:
 		dev_err(rtd->dev, "%s: invalid dai id 0x%x\n", __func__,
-			cpu_dai->id);
+			dai_id);
 		return -EINVAL;
 	}
 	return 0;
@@ -509,7 +520,7 @@ static int sc7180_snd_platform_probe(struct platform_device *pdev)
 	if (!data)
 		return -ENOMEM;
 
-	snd_soc_card_set_drvdata(card, data);
+	snd_soc_card_set_priv(card, data);
 
 	card_driver = &data->card_driver;
 	card_driver->owner = THIS_MODULE;

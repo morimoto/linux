@@ -572,7 +572,9 @@ static const struct snd_soc_dapm_route adau1372_dapm_routes[] = {
 
 static int adau1372_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct adau1372 *adau1372 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1372 *adau1372 = dev_get_drvdata(dev);
 	unsigned int sai0 = 0, sai1 = 0;
 	bool invert_lrclk = false;
 
@@ -637,7 +639,9 @@ static int adau1372_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int adau1372_hw_params(struct snd_pcm_substream *substream,
 			      struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct adau1372 *adau1372 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1372 *adau1372 = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 	unsigned int slot_width;
 	unsigned int sai0, sai1;
@@ -678,7 +682,9 @@ static int adau1372_hw_params(struct snd_pcm_substream *substream,
 static int adau1372_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				 unsigned int rx_mask, int slots, int width)
 {
-	struct adau1372 *adau1372 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1372 *adau1372 = dev_get_drvdata(dev);
 	unsigned int sai0, sai1;
 
 	/* I2S mode */
@@ -740,7 +746,9 @@ static int adau1372_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 
 static int adau1372_set_tristate(struct snd_soc_dai *dai, int tristate)
 {
-	struct adau1372 *adau1372 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1372 *adau1372 = dev_get_drvdata(dev);
 	unsigned int sai1;
 
 	if (tristate)
@@ -753,7 +761,9 @@ static int adau1372_set_tristate(struct snd_soc_dai *dai, int tristate)
 
 static int adau1372_startup(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	struct adau1372 *adau1372 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1372 *adau1372 = dev_get_drvdata(dev);
 
 	snd_pcm_hw_constraint_list(substream->runtime, 0, SNDRV_PCM_HW_PARAM_RATE,
 				   &adau1372->rate_constraints);
@@ -854,7 +864,8 @@ static int adau1372_set_power(struct adau1372 *adau1372, bool enable)
 static int adau1372_set_bias_level(struct snd_soc_component *component,
 				   enum snd_soc_bias_level level)
 {
-	struct adau1372 *adau1372 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1372 *adau1372 = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
@@ -1017,7 +1028,7 @@ int adau1372_probe(struct device *dev, struct regmap *regmap,
 
 	regmap_write(regmap, 0x7, 0x01); /* CLOCK OUT */
 
-	return  devm_snd_soc_register_component(dev, &adau1372_driver, &adau1372_dai_driver, 1);
+	return  devm_snd_soc_component_register(dev, &adau1372_driver, &adau1372_dai_driver, 1);
 }
 EXPORT_SYMBOL(adau1372_probe);
 

@@ -58,7 +58,7 @@ static int fsl_asrc_dma_prepare_and_submit(struct snd_pcm_substream *substream,
 	u8 dir = substream->stream == SNDRV_PCM_STREAM_PLAYBACK ? OUT : IN;
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct fsl_asrc_pair *pair = runtime->private_data;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned long flags = DMA_CTRL_ACK;
 
 	/* Prepare and submit Front-End DMA channel */
@@ -142,7 +142,7 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
 	struct dma_slave_config config_fe = {}, config_be = {};
 	struct sdma_peripheral_config audio_config;
 	enum asrc_pair_index index = pair->index;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct device_node *of_dma_node;
 	int stream = substream->stream;
 	struct imx_dma_data *tmp_data;
@@ -159,6 +159,7 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
 		struct snd_soc_dai *dai_cpu = snd_soc_rtd_to_cpu(be, 0);
 		struct snd_soc_dai *dai_codec = snd_soc_rtd_to_codec(be, 0);
 		struct snd_soc_dai *dai;
+		struct snd_soc_component *component;
 
 		if (dpcm->fe != rtd)
 			continue;
@@ -175,8 +176,9 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
 			dai = dai_codec;
 
 		substream_be = snd_soc_dpcm_get_substream(be, stream);
-		dma_params_be = snd_soc_dai_get_dma_data(dai, substream_be);
-		dev_be = dai->dev;
+		dma_params_be = snd_soc_dai_stream_dma_data_get(dai, substream_be);
+		component = snd_soc_dai_to_component(dai);
+		dev_be = snd_soc_component_to_dev(component);
 		break;
 	}
 
@@ -186,7 +188,7 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
 	}
 
 	/* Override dma_data of the Front-End and config its dmaengine */
-	dma_params_fe = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	dma_params_fe = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 	dma_params_fe->addr = asrc->paddr + asrc->get_fifo_addr(!dir, index);
 	dma_params_fe->maxburst = dma_params_be->maxburst;
 
@@ -217,7 +219,7 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
 	 * The Back-End device might have already requested a DMA channel,
 	 * so try to reuse it first, and then request a new one upon NULL.
 	 */
-	component_be = snd_soc_lookup_component_nolocked(dev_be, SND_DMAENGINE_PCM_DRV_NAME);
+	component_be = snd_soc_component_lookup_nolock(dev_be, SND_DMAENGINE_PCM_DRV_NAME);
 	if (component_be) {
 		struct dmaengine_pcm *pcm = snd_soc_component_to_priv(component_be);
 
@@ -368,7 +370,7 @@ static int fsl_asrc_dma_startup(struct snd_soc_component *component,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_dmaengine_dai_dma_data *dma_data;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct fsl_asrc *asrc = dev_get_drvdata(dev);
 	struct fsl_asrc_pair *pair;
 	struct dma_chan *tmp_chan = NULL;
@@ -410,7 +412,7 @@ static int fsl_asrc_dma_startup(struct snd_soc_component *component,
 		goto dma_chan_err;
 	}
 
-	dma_data = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	dma_data = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 
 	/* Refine the snd_imx_hardware according to caps of DMA. */
 	ret = snd_dmaengine_pcm_refine_runtime_hwparams(substream,
@@ -471,7 +473,7 @@ fsl_asrc_dma_pcm_pointer(struct snd_soc_component *component,
 static int fsl_asrc_dma_pcm_new(struct snd_soc_component *component,
 				struct snd_soc_pcm_runtime *rtd)
 {
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct fsl_asrc *asrc = dev_get_drvdata(dev);
 	struct fsl_asrc_pair *pair;
 	struct snd_pcm *pcm = rtd->pcm;

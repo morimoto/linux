@@ -88,8 +88,9 @@ static int tpa6130a2_power(struct tpa6130a2_data *data, bool enable)
 static int tpa6130a2_power_event(struct snd_soc_dapm_widget *w,
 				 struct snd_kcontrol *kctrl, int event)
 {
-	struct snd_soc_component *c = snd_soc_dapm_to_component(w->dapm);
-	struct tpa6130a2_data *data = snd_soc_component_get_drvdata(c);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tpa6130a2_data *data = dev_get_drvdata(dev);
 
 	if (SND_SOC_DAPM_EVENT_ON(event)) {
 		/* Before widget power up: turn chip on, sync registers */
@@ -137,13 +138,14 @@ static const struct snd_kcontrol_new tpa6140a2_controls[] = {
 
 static int tpa6130a2_component_probe(struct snd_soc_component *component)
 {
-	struct tpa6130a2_data *data = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tpa6130a2_data *data = dev_get_drvdata(dev);
 
 	if (data->id == TPA6140A2)
-		return snd_soc_add_component_controls(component,
+		return snd_soc_component_add_controls(component,
 			tpa6140a2_controls, ARRAY_SIZE(tpa6140a2_controls));
 	else
-		return snd_soc_add_component_controls(component,
+		return snd_soc_component_add_controls(component,
 			tpa6130a2_controls, ARRAY_SIZE(tpa6130a2_controls));
 }
 
@@ -278,7 +280,7 @@ static int tpa6130a2_probe(struct i2c_client *client)
 	if (ret != 0)
 		return ret;
 
-	return devm_snd_soc_register_component(&client->dev,
+	return devm_snd_soc_component_register(&client->dev,
 			&tpa6130a2_component_driver, NULL, 0);
 }
 

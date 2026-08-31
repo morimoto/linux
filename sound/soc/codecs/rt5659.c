@@ -1258,10 +1258,10 @@ static void rt5659_enable_push_button_irq(struct snd_soc_component *component,
 static int rt5659_headset_detect(struct snd_soc_component *component, int jack_insert)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5659_priv *rt5659 = dev_get_drvdata(dev);
 	int val, i = 0, sleep_time[5] = {300, 150, 100, 50, 30};
 	int reg_63;
-
-	struct rt5659_priv *rt5659 = snd_soc_component_get_drvdata(component);
 
 	if (jack_insert) {
 		snd_soc_dapm_force_enable_pin(dapm,
@@ -1311,7 +1311,7 @@ static int rt5659_headset_detect(struct snd_soc_component *component, int jack_i
 		rt5659->jack_type = 0;
 	}
 
-	dev_dbg(component->dev, "jack_type = %d\n", rt5659->jack_type);
+	dev_dbg(dev, "jack_type = %d\n", rt5659->jack_type);
 	return rt5659->jack_type;
 }
 
@@ -1339,7 +1339,8 @@ static irqreturn_t rt5659_irq(int irq, void *data)
 int rt5659_set_jack_detect(struct snd_soc_component *component,
 	struct snd_soc_jack *hs_jack)
 {
-	struct rt5659_priv *rt5659 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5659_priv *rt5659 = dev_get_drvdata(dev);
 
 	rt5659->hs_jack = hs_jack;
 
@@ -1353,6 +1354,7 @@ static void rt5659_jack_detect_work(struct work_struct *work)
 {
 	struct rt5659_priv *rt5659 =
 		container_of(work, struct rt5659_priv, jack_detect_work.work);
+	struct device *dev = snd_soc_component_to_dev(rt5659->component);
 	int val, btn_type, report = 0;
 
 	if (!rt5659->component)
@@ -1400,9 +1402,7 @@ static void rt5659_jack_detect_work(struct work_struct *work)
 				break;
 			default:
 				btn_type = 0;
-				dev_err(rt5659->component->dev,
-					"Unexpected button code 0x%04x\n",
-					btn_type);
+				dev_err(dev, "Unexpected button code 0x%04x\n", btn_type);
 				break;
 			}
 
@@ -1565,7 +1565,8 @@ static int set_dmic_clk(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5659_priv *rt5659 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5659_priv *rt5659 = dev_get_drvdata(dev);
 	int pd, idx;
 
 	pd = rl6231_get_pre_div(rt5659->regmap,
@@ -1573,7 +1574,7 @@ static int set_dmic_clk(struct snd_soc_dapm_widget *w,
 	idx = rl6231_calc_dmic_clk(rt5659->sysclk / pd);
 
 	if (idx < 0)
-		dev_err(component->dev, "Failed to set DMIC clock\n");
+		dev_err(dev, "Failed to set DMIC clock\n");
 	else {
 		snd_soc_component_update_bits(component, RT5659_DMIC_CTRL_1,
 			RT5659_DMIC_CLK_MASK, idx << RT5659_DMIC_CLK_SFT);
@@ -3275,26 +3276,28 @@ static const struct snd_soc_dapm_route rt5659_dapm_routes[] = {
 static int rt5659_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5659_priv *rt5659 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5659_priv *rt5659 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int val_len = 0, val_clk, mask_clk;
 	int pre_div, frame_size;
 
-	rt5659->lrck[dai->id] = params_rate(params);
-	pre_div = rl6231_get_clk_info(rt5659->sysclk, rt5659->lrck[dai->id]);
+	rt5659->lrck[dai_id] = params_rate(params);
+	pre_div = rl6231_get_clk_info(rt5659->sysclk, rt5659->lrck[dai_id]);
 	if (pre_div < 0) {
-		dev_err(component->dev, "Unsupported clock setting %d for DAI %d\n",
-			rt5659->lrck[dai->id], dai->id);
+		dev_err(dev, "Unsupported clock setting %d for DAI %d\n",
+			rt5659->lrck[dai_id], dai_id);
 		return -EINVAL;
 	}
 	frame_size = snd_soc_params_to_frame_size(params);
 	if (frame_size < 0) {
-		dev_err(component->dev, "Unsupported frame size: %d\n", frame_size);
+		dev_err(dev, "Unsupported frame size: %d\n", frame_size);
 		return -EINVAL;
 	}
 
-	dev_dbg(dai->dev, "lrck is %dHz and pre_div is %d for iis %d\n",
-				rt5659->lrck[dai->id], pre_div, dai->id);
+	dev_dbg(dev, "lrck is %dHz and pre_div is %d for iis %d\n",
+				rt5659->lrck[dai_id], pre_div, dai_id);
 
 	switch (params_width(params)) {
 	case 16:
@@ -3312,7 +3315,7 @@ static int rt5659_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT5659_AIF1:
 		mask_clk = RT5659_I2S_PD1_MASK;
 		val_clk = pre_div << RT5659_I2S_PD1_SFT;
@@ -3332,13 +3335,13 @@ static int rt5659_hw_params(struct snd_pcm_substream *substream,
 			RT5659_I2S_DL_MASK, val_len);
 		break;
 	default:
-		dev_err(component->dev, "Invalid dai->id: %d\n", dai->id);
+		dev_err(dev, "Invalid dai_id: %d\n", dai_id);
 		return -EINVAL;
 	}
 
 	snd_soc_component_update_bits(component, RT5659_ADDA_CLK_1, mask_clk, val_clk);
 
-	switch (rt5659->lrck[dai->id]) {
+	switch (rt5659->lrck[dai_id]) {
 	case 192000:
 		snd_soc_component_update_bits(component, RT5659_ADDA_CLK_1,
 			RT5659_DAC_OSR_MASK, RT5659_DAC_OSR_32);
@@ -3358,17 +3361,19 @@ static int rt5659_hw_params(struct snd_pcm_substream *substream,
 
 static int rt5659_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5659_priv *rt5659 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5659_priv *rt5659 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int reg_val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
-		rt5659->master[dai->id] = 1;
+		rt5659->master[dai_id] = 1;
 		break;
 	case SND_SOC_DAIFMT_CBC_CFC:
 		reg_val |= RT5659_I2S_MS_S;
-		rt5659->master[dai->id] = 0;
+		rt5659->master[dai_id] = 0;
 		break;
 	default:
 		return -EINVAL;
@@ -3400,7 +3405,7 @@ static int rt5659_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT5659_AIF1:
 		snd_soc_component_update_bits(component, RT5659_I2S1_SDP,
 			RT5659_I2S_MS_MASK | RT5659_I2S_BP_MASK |
@@ -3417,7 +3422,7 @@ static int rt5659_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 			RT5659_I2S_DF_MASK, reg_val);
 		break;
 	default:
-		dev_err(component->dev, "Invalid dai->id: %d\n", dai->id);
+		dev_err(dev, "Invalid dai_id: %d\n", dai_id);
 		return -EINVAL;
 	}
 	return 0;
@@ -3426,7 +3431,8 @@ static int rt5659_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt5659_set_component_sysclk(struct snd_soc_component *component, int clk_id,
 				   int source, unsigned int freq, int dir)
 {
-	struct rt5659_priv *rt5659 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5659_priv *rt5659 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0;
 	int ret;
 
@@ -3448,7 +3454,7 @@ static int rt5659_set_component_sysclk(struct snd_soc_component *component, int 
 		reg_val |= RT5659_SCLK_SRC_RCCLK;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clock id (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock id (%d)\n", clk_id);
 		return -EINVAL;
 	}
 	snd_soc_component_update_bits(component, RT5659_GLB_CLK,
@@ -3456,8 +3462,7 @@ static int rt5659_set_component_sysclk(struct snd_soc_component *component, int 
 	rt5659->sysclk = freq;
 	rt5659->sysclk_src = clk_id;
 
-	dev_dbg(component->dev, "Sysclk is %dHz and clock id is %d\n",
-		freq, clk_id);
+	dev_dbg(dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
 
 	return 0;
 }
@@ -3466,7 +3471,8 @@ static int rt5659_set_component_pll(struct snd_soc_component *component, int pll
 				int source, unsigned int freq_in,
 				unsigned int freq_out)
 {
-	struct rt5659_priv *rt5659 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5659_priv *rt5659 = dev_get_drvdata(dev);
 	struct rl6231_pll_code pll_code;
 	int ret;
 
@@ -3475,7 +3481,7 @@ static int rt5659_set_component_pll(struct snd_soc_component *component, int pll
 		return 0;
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 
 		rt5659->pll_in = 0;
 		rt5659->pll_out = 0;
@@ -3502,17 +3508,17 @@ static int rt5659_set_component_pll(struct snd_soc_component *component, int pll
 				RT5659_PLL1_SRC_MASK, RT5659_PLL1_SRC_BCLK3);
 		break;
 	default:
-		dev_err(component->dev, "Unknown PLL source %d\n", source);
+		dev_err(dev, "Unknown PLL source %d\n", source);
 		return -EINVAL;
 	}
 
 	ret = rl6231_pll_calc(freq_in, freq_out, &pll_code);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupported input clock %d\n", freq_in);
+		dev_err(dev, "Unsupported input clock %d\n", freq_in);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "bypass=%d m=%d n=%d k=%d\n",
+	dev_dbg(dev, "bypass=%d m=%d n=%d k=%d\n",
 		pll_code.m_bp, (pll_code.m_bp ? 0 : pll_code.m_code),
 		pll_code.n_code, pll_code.k_code);
 
@@ -3532,7 +3538,7 @@ static int rt5659_set_component_pll(struct snd_soc_component *component, int pll
 static int rt5659_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int val = 0;
 
 	if (rx_mask || tx_mask)
@@ -3583,15 +3589,17 @@ static int rt5659_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 
 static int rt5659_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5659_priv *rt5659 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5659_priv *rt5659 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	dev_dbg(component->dev, "%s ratio=%d\n", __func__, ratio);
+	dev_dbg(dev, "%s ratio=%d\n", __func__, ratio);
 
-	rt5659->bclk[dai->id] = ratio;
+	rt5659->bclk[dai_id] = ratio;
 
 	if (ratio == 64) {
-		switch (dai->id) {
+		switch (dai_id) {
 		case RT5659_AIF2:
 			snd_soc_component_update_bits(component, RT5659_ADDA_CLK_1,
 				RT5659_I2S_BCLK_MS2_MASK,
@@ -3612,7 +3620,8 @@ static int rt5659_set_bias_level(struct snd_soc_component *component,
 			enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt5659_priv *rt5659 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5659_priv *rt5659 = dev_get_drvdata(dev);
 	int ret;
 
 	switch (level) {
@@ -3634,8 +3643,7 @@ static int rt5659_set_bias_level(struct snd_soc_component *component,
 		if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF) {
 			ret = clk_prepare_enable(rt5659->mclk);
 			if (ret) {
-				dev_err(component->dev,
-					"failed to enable MCLK: %d\n", ret);
+				dev_err(dev, "failed to enable MCLK: %d\n", ret);
 				return ret;
 			}
 		}
@@ -3663,7 +3671,8 @@ static int rt5659_set_bias_level(struct snd_soc_component *component,
 static int rt5659_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt5659_priv *rt5659 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5659_priv *rt5659 = dev_get_drvdata(dev);
 
 	rt5659->component = component;
 
@@ -3683,7 +3692,8 @@ static int rt5659_probe(struct snd_soc_component *component)
 
 static void rt5659_remove(struct snd_soc_component *component)
 {
-	struct rt5659_priv *rt5659 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5659_priv *rt5659 = dev_get_drvdata(dev);
 
 	regmap_write(rt5659->regmap, RT5659_RESET, 0);
 }
@@ -3691,7 +3701,8 @@ static void rt5659_remove(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int rt5659_suspend(struct snd_soc_component *component)
 {
-	struct rt5659_priv *rt5659 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5659_priv *rt5659 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt5659->regmap, true);
 	regcache_mark_dirty(rt5659->regmap);
@@ -3700,7 +3711,8 @@ static int rt5659_suspend(struct snd_soc_component *component)
 
 static int rt5659_resume(struct snd_soc_component *component)
 {
-	struct rt5659_priv *rt5659 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5659_priv *rt5659 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt5659->regmap, false);
 	regcache_sync(rt5659->regmap);
@@ -3852,6 +3864,7 @@ static int rt5659_parse_dt(struct rt5659_priv *rt5659, struct device *dev)
 
 static void rt5659_calibrate(struct rt5659_priv *rt5659)
 {
+	struct device *dev = snd_soc_component_to_dev(rt5659->component);
 	int value, count;
 
 	/* Calibrate HPO Start */
@@ -3911,8 +3924,7 @@ static void rt5659_calibrate(struct rt5659_priv *rt5659)
 			break;
 
 		if (count > 30) {
-			dev_err(rt5659->component->dev,
-				"HP Calibration 1 Failure\n");
+			dev_err(dev, "HP Calibration 1 Failure\n");
 			return;
 		}
 
@@ -3936,8 +3948,7 @@ static void rt5659_calibrate(struct rt5659_priv *rt5659)
 			break;
 
 		if (count > 85) {
-			dev_err(rt5659->component->dev,
-				"HP Calibration 2 Failure\n");
+			dev_err(dev, "HP Calibration 2 Failure\n");
 			return;
 		}
 
@@ -3984,8 +3995,7 @@ static void rt5659_calibrate(struct rt5659_priv *rt5659)
 			break;
 
 		if (count > 10) {
-			dev_err(rt5659->component->dev,
-				"SPK Calibration Failure\n");
+			dev_err(dev, "SPK Calibration Failure\n");
 			return;
 		}
 
@@ -4017,8 +4027,7 @@ static void rt5659_calibrate(struct rt5659_priv *rt5659)
 			break;
 
 		if (count > 35) {
-			dev_err(rt5659->component->dev,
-				"Mono Calibration Failure\n");
+			dev_err(dev, "Mono Calibration Failure\n");
 			return;
 		}
 
@@ -4308,7 +4317,7 @@ static int rt5659_i2c_probe(struct i2c_client *i2c)
 				   RT5659_GP1_PIN_MASK, RT5659_GP1_PIN_IRQ);
 	}
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_rt5659,
 			rt5659_dai, ARRAY_SIZE(rt5659_dai));
 }

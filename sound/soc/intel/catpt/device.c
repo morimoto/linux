@@ -180,7 +180,7 @@ static int catpt_probe_components(struct catpt_dev *cdev)
 
 err_reg_board:
 	pm_runtime_disable(cdev->dev);
-	snd_soc_unregister_component(cdev->dev);
+	snd_soc_component_unregister(cdev->dev);
 err_boot_fw:
 	catpt_dmac_remove(cdev);
 err_dmac_probe:
@@ -284,7 +284,7 @@ static void catpt_acpi_remove(struct platform_device *pdev)
 
 	pm_runtime_disable(cdev->dev);
 
-	snd_soc_unregister_component(cdev->dev);
+	snd_soc_component_unregister(cdev->dev);
 	catpt_dmac_remove(cdev);
 	catpt_dsp_power_down(cdev);
 

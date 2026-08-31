@@ -215,9 +215,9 @@ static const struct snd_kcontrol_new nau8325_snd_controls[] = {
 static int nau8325_dac_event(struct snd_soc_dapm_widget *w,
 			     struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct nau8325 *nau8325 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8325 *nau8325 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -241,9 +241,9 @@ static int nau8325_dac_event(struct snd_soc_dapm_widget *w,
 static int nau8325_powerup_event(struct snd_soc_dapm_widget *w,
 				 struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct nau8325 *nau8325 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8325 *nau8325 = dev_get_drvdata(dev);
 
 	if (nau8325->clock_detection)
 		return 0;
@@ -486,8 +486,9 @@ static const struct nau8325_osr_attr *nau8325_get_osr(struct nau8325 *nau8325)
 static int nau8325_dai_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8325 *nau8325 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8325 *nau8325 = dev_get_drvdata(dev);
 	const struct nau8325_osr_attr *osr;
 
 	osr = nau8325_get_osr(nau8325);
@@ -503,8 +504,9 @@ static int nau8325_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8325 *nau8325 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8325 *nau8325 = dev_get_drvdata(dev);
 	unsigned int val_len = 0;
 	const struct nau8325_osr_attr *osr;
 	int ret;
@@ -552,8 +554,9 @@ err:
 
 static int nau8325_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8325 *nau8325 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8325 *nau8325 = dev_get_drvdata(dev);
 	unsigned int ctrl1_val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -604,7 +607,8 @@ static int nau8325_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int nau8325_set_sysclk(struct snd_soc_component *component, int clk_id,
 			      int source, unsigned int freq, int dir)
 {
-	struct nau8325 *nau8325 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8325 *nau8325 = dev_get_drvdata(dev);
 
 	if (freq < MASTER_CLK_MIN || freq > MASTER_CLK_MAX) {
 		dev_dbg(nau8325->dev, "MCLK exceeds the range, MCLK:%d", freq);
@@ -881,7 +885,7 @@ static int nau8325_i2c_probe(struct i2c_client *i2c)
 	}
 	nau8325_init_regs(nau8325);
 
-	ret = devm_snd_soc_register_component(dev, &nau8325_component_driver,
+	ret = devm_snd_soc_component_register(dev, &nau8325_component_driver,
 					      &nau8325_dai, 1);
 err:
 	return ret;

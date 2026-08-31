@@ -17,7 +17,9 @@
 static inline int _soc_dai_ret(const struct snd_soc_dai *dai,
 			       const char *func, int ret)
 {
-	return snd_soc_ret(dai->dev, ret,
+	struct device *dev = snd_soc_component_to_dev(dai->component);
+
+	return snd_soc_ret(dev, ret,
 			   "at %s() on %s\n", func, dai->name);
 }
 
@@ -445,7 +447,7 @@ int snd_soc_dai_set_tdm_slot(struct snd_soc_dai *dai,
 	}
 
 	for_each_pcm_streams(stream)
-		snd_soc_dai_tdm_mask_set(dai, stream, *tdm_mask[stream]);
+		snd_soc_dai_stream_tdm_mask_set(dai, stream, *tdm_mask[stream]);
 
 	if (dai->driver->ops &&
 	    dai->driver->ops->set_tdm_slot)
@@ -702,7 +704,7 @@ int snd_soc_dai_compress_new(struct snd_soc_dai *dai,
  */
 bool snd_soc_dai_stream_valid(const struct snd_soc_dai *dai, int dir)
 {
-	const struct snd_soc_pcm_stream *stream = snd_soc_dai_get_pcm_stream(dai, dir);
+	const struct snd_soc_pcm_stream *stream = snd_soc_dai_pcm_stream_get(dai, dir);
 
 	/* If the codec specifies any channels at all, it supports the stream */
 	return stream->channels_min;
@@ -710,7 +712,7 @@ bool snd_soc_dai_stream_valid(const struct snd_soc_dai *dai, int dir)
 
 void snd_soc_dai_active_action(struct snd_soc_dai *dai, int stream, int action)
 {
-	/* see snd_soc_dai_stream_active() */
+	/* see snd_soc_dai_active_stream() */
 	dai->stream[stream].active	+= action;
 
 	/* see snd_soc_component_active() */
@@ -730,7 +732,7 @@ int snd_soc_dai_active(const struct snd_soc_dai *dai)
 
 	active = 0;
 	for_each_pcm_streams(stream)
-		active += snd_soc_dai_stream_active(dai, stream);
+		active += snd_soc_dai_active_stream(dai, stream);
 
 	return active;
 }
@@ -1047,9 +1049,11 @@ EXPORT_SYMBOL_GPL(snd_soc_dai_compr_get_metadata);
 int snd_soc_dai_add_controls(struct snd_soc_dai *dai,
 			     const struct snd_kcontrol_new *controls, int num_controls)
 {
-	struct snd_card *card = dai->component->card->snd_card;
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(dai->component);
+	struct snd_card *card = snd_soc_card_to_snd_card(soc_card);
+	struct device *dev = snd_soc_component_to_dev(dai->component);
 
-	return snd_soc_add_controls(card, dai->dev, controls, num_controls, NULL, dai);
+	return snd_soc_add_controls(card, dev, controls, num_controls, NULL, dai);
 }
 EXPORT_SYMBOL_GPL(snd_soc_dai_add_controls);
 
@@ -1074,6 +1078,8 @@ int snd_soc_dai_matches_args(const struct snd_soc_dai *dai,
 int snd_soc_dai_matches_dlc(struct snd_soc_dai *dai,
 			    const struct snd_soc_dai_link_component *dlc)
 {
+	const char *component_name;
+
 	if (!dlc)
 		return 0;
 
@@ -1092,8 +1098,9 @@ int snd_soc_dai_matches_dlc(struct snd_soc_dai *dai,
 	if (strcmp(dlc->dai_name, dai->name) == 0)
 		return 1;
 
-	if (dai->component->name &&
-	    strcmp(dlc->dai_name, dai->component->name) == 0)
+	component_name = snd_soc_component_name(dai->component);
+	if (component_name &&
+	    strcmp(dlc->dai_name, component_name) == 0)
 		return 1;
 
 	return 0;
@@ -1101,6 +1108,8 @@ int snd_soc_dai_matches_dlc(struct snd_soc_dai *dai,
 
 const char *snd_soc_dai_name(const struct snd_soc_dai *dai)
 {
+	const char *component_name = snd_soc_component_name(dai->component);
+
 	/* see snd_soc_dai_matches_dlc() */
 	if (dai->driver->name)
 		return dai->driver->name;
@@ -1108,8 +1117,8 @@ const char *snd_soc_dai_name(const struct snd_soc_dai *dai)
 	if (dai->name)
 		return dai->name;
 
-	if (dai->component->name)
-		return dai->component->name;
+	if (component_name)
+		return component_name;
 
 	return NULL;
 }
@@ -1208,9 +1217,11 @@ EXPORT_SYMBOL_GPL(snd_soc_dai_get_stream);
 
 void snd_soc_dai_unregister(struct snd_soc_dai *dai)
 {
+	struct device *dev = snd_soc_component_to_dev(dai->component);
+
 	lockdep_assert_held(&client_mutex);
 
-	dev_dbg(dai->dev, "ASoC: Unregistered DAI '%s'\n", dai->name);
+	dev_dbg(dev, "ASoC: Unregistered DAI '%s'\n", dai->name);
 	list_del(&dai->dai_list);
 }
 EXPORT_SYMBOL_GPL(snd_soc_dai_unregister);
@@ -1231,7 +1242,7 @@ struct snd_soc_dai *snd_soc_dai_register(struct snd_soc_component *component,
 					 struct snd_soc_dai_driver *dai_drv,
 					 bool legacy_dai_naming)
 {
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_soc_dai *dai;
 
 	lockdep_assert_held(&client_mutex);
@@ -1256,7 +1267,7 @@ struct snd_soc_dai *snd_soc_dai_register(struct snd_soc_component *component,
 		if (dai_drv->id)
 			dai->id = dai_drv->id;
 		else
-			dai->id = component->num_dai;
+			dai->id = snd_soc_component_num_dai(component);
 	}
 	if (!dai->name)
 		return NULL;
@@ -1304,6 +1315,7 @@ void snd_soc_dai_symmetric_set_params(struct snd_soc_dai *dai,
 int snd_soc_dai_symmetric_apply(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
+	struct device *dev = snd_soc_component_to_dev(dai->component);
 	int ret;
 
 	if (!snd_soc_dai_active(dai))
@@ -1312,14 +1324,14 @@ int snd_soc_dai_symmetric_apply(struct snd_pcm_substream *substream, struct snd_
 #define __symmetric_apply(name, NAME)							\
 	if (dai->symmetric_##name &&							\
 	    (dai->driver->symmetric_##name || rtd->dai_link->symmetric_##name)) {	\
-		dev_dbg(dai->dev, "ASoC: Symmetry forces %s to %d\n",			\
+		dev_dbg(dev, "ASoC: Symmetry forces %s to %d\n",			\
 			#name, dai->symmetric_##name);					\
 											\
 		ret = snd_pcm_hw_constraint_single(substream->runtime,			\
 						   SNDRV_PCM_HW_PARAM_##NAME,		\
 						   dai->symmetric_##name);		\
 		if (ret < 0)								\
-			return snd_soc_ret(dai->dev, ret,				\
+			return snd_soc_ret(dev, ret,				\
 					   "Unable to apply %s constraint\n", #name);	\
 	}
 

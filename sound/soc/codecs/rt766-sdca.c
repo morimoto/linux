@@ -111,11 +111,12 @@ static irqreturn_t rt766_sdca_irq_btn_handler(int irq, void *data)
 {
 	struct sdca_interrupt *interrupt = data;
 	struct rt766_sdca_priv *rt766 = interrupt->priv;
+	struct snd_soc_card *card = snd_soc_component_to_card(rt766->component);
 
 	if (!rt766->hs_jack)
 		return IRQ_HANDLED;
 
-	if (!rt766->component->card || !rt766->component->card->instantiated)
+	if (!snd_soc_card_is_instantiated(card))
 		return IRQ_HANDLED;
 
 	mutex_lock(&rt766->disable_irq_lock);
@@ -172,11 +173,12 @@ static irqreturn_t rt766_sdca_irq_jd_handler(int irq, void *data)
 {
 	struct sdca_interrupt *interrupt = data;
 	struct rt766_sdca_priv *rt766 = interrupt->priv;
+	struct snd_soc_card *card = snd_soc_component_to_card(rt766->component);
 
 	if (!rt766->hs_jack)
 		return IRQ_HANDLED;
 
-	if (!rt766->component->card || !rt766->component->card->instantiated)
+	if (!snd_soc_card_is_instantiated(card))
 		return IRQ_HANDLED;
 
 	mutex_lock(&rt766->disable_irq_lock);
@@ -270,7 +272,8 @@ static int rt766_sdca_irq_ctl(struct rt766_sdca_priv *rt766,
 static int rt766_sdca_set_jack_detect(struct snd_soc_component *component,
 	struct snd_soc_jack *hs_jack, void *data)
 {
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 	int ret;
 
 	if (!rt766->uaj_func_data) {
@@ -283,15 +286,15 @@ static int rt766_sdca_set_jack_detect(struct snd_soc_component *component,
 	if (!rt766->first_hw_init)
 		return 0;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0) {
 		if (ret != -EACCES) {
-			dev_err(component->dev, "%s: failed to resume %d\n", __func__, ret);
+			dev_err(dev, "%s: failed to resume %d\n", __func__, ret);
 			return ret;
 		}
 
 		/* pm_runtime not enabled yet */
-		dev_dbg(component->dev,	"%s: skipping jack init for now\n", __func__);
+		dev_dbg(dev,	"%s: skipping jack init for now\n", __func__);
 		return 0;
 	}
 
@@ -306,7 +309,7 @@ static int rt766_sdca_set_jack_detect(struct snd_soc_component *component,
 				rt766->component, rt766->irq_info, false);
 	}
 
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return 0;
 }
@@ -359,7 +362,8 @@ static int rt766_sdca_fu41_playback_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = !rt766->fu41_mixer_l_mute;
 	ucontrol->value.integer.value[1] = !rt766->fu41_mixer_r_mute;
@@ -370,7 +374,8 @@ static int rt766_sdca_fu41_playback_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 	int err;
 
 	if (rt766->fu41_mixer_l_mute == !ucontrol->value.integer.value[0] &&
@@ -391,7 +396,8 @@ static int rt766_sdca_fu36_capture_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = !rt766->fu36_mixer_l_mute;
 	ucontrol->value.integer.value[1] = !rt766->fu36_mixer_r_mute;
@@ -402,7 +408,8 @@ static int rt766_sdca_fu36_capture_put(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 	int err;
 
 	if (rt766->fu36_mixer_l_mute == !ucontrol->value.integer.value[0] &&
@@ -422,7 +429,8 @@ static int rt766_sdca_fu21_playback_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = !rt766->fu21_mixer_l_mute;
 	ucontrol->value.integer.value[1] = !rt766->fu21_mixer_r_mute;
@@ -433,7 +441,8 @@ static int rt766_sdca_fu21_playback_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 	int err;
 
 	if (rt766->fu21_mixer_l_mute == !ucontrol->value.integer.value[0] &&
@@ -453,9 +462,9 @@ static int rt766_sdca_fu21_playback_put(struct snd_kcontrol *kcontrol,
 static int rt766_sdca_fu113_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -474,7 +483,8 @@ static int rt766_sdca_dmic_set_gain_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 	struct rt_sdca_dmic_kctrl_priv *p =
 		(struct rt_sdca_dmic_kctrl_priv *)kcontrol->private_value;
 	const unsigned int interval_offset = 0xc0;
@@ -497,7 +507,8 @@ static int rt766_sdca_dmic_set_gain_put(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct rt_sdca_dmic_kctrl_priv *p =
 		(struct rt_sdca_dmic_kctrl_priv *)kcontrol->private_value;
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 	const unsigned int interval_offset = 0xc0;
 	unsigned int gain_val[4];
 	unsigned int i, changed = 0;
@@ -535,7 +546,8 @@ static int rt766_sdca_dmic_fu113_capture_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 	unsigned int i;
 
 	for (i = 0; i < 4; i++)
@@ -547,7 +559,8 @@ static int rt766_sdca_dmic_fu113_capture_put(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 	int err, changed = 0, i;
 
 	for (i = 0; i < 4; i++) {
@@ -565,9 +578,9 @@ static int rt766_sdca_dmic_fu113_capture_put(struct snd_kcontrol *kcontrol,
 static int rt766_sdca_fu41_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -586,7 +599,8 @@ static int rt766_sdca_pde_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event, int func_num, int pde_num, const char *pde_ent)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 	struct sdca_function_data *func_data;
 	unsigned char ps0 = 0x0, ps3 = 0x3;
 	const struct sdca_entity *entity;
@@ -607,7 +621,7 @@ static int rt766_sdca_pde_event(struct snd_soc_dapm_widget *w,
 		func_data = rt766->sm_func_data;
 		break;
 	default:
-		dev_err(component->dev, "%s: unsupported func_num %d\n",
+		dev_err(dev, "%s: unsupported func_num %d\n",
 			__func__, func_num);
 		return -EINVAL;
 	}
@@ -627,7 +641,7 @@ static int rt766_sdca_pde_event(struct snd_soc_dapm_widget *w,
 
 	entity = sdca_find_entity_by_label(func_data, pde_ent);
 	if (!entity) {
-		dev_err(component->dev, "%s: failed to find entity %s\n",
+		dev_err(dev, "%s: failed to find entity %s\n",
 			__func__, pde_ent);
 		return -EINVAL;
 	}
@@ -639,7 +653,7 @@ static int rt766_sdca_pde_event(struct snd_soc_dapm_widget *w,
 				   entity->pde.max_delay,
 				   entity->pde.num_max_delay);
 	if (ret)
-		dev_err(component->dev, "%s: PDE transition %x -> %x failed, err=%d\n",
+		dev_err(dev, "%s: PDE transition %x -> %x failed, err=%d\n",
 			__func__, from_ps, to_ps, ret);
 
 	return ret;
@@ -655,9 +669,9 @@ static int rt766_sdca_pde47_event(struct snd_soc_dapm_widget *w,
 static int rt766_sdca_fu36_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -682,9 +696,9 @@ static int rt766_sdca_pde34_event(struct snd_soc_dapm_widget *w,
 static int rt766_sdca_fu21_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -858,13 +872,14 @@ static const struct snd_soc_dapm_route rt766_sdca_audio_map[] = {
 
 static int rt766_sdca_probe(struct snd_soc_component *component)
 {
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct device *comp_dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(comp_dev);
 	struct device *dev = &rt766->slave->dev;
 	int ret;
 
 	rt766->component = component;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(comp_dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -897,10 +912,11 @@ static int rt766_sdca_probe(struct snd_soc_component *component)
 
 static void rt766_sdca_remove(struct snd_soc_component *component)
 {
-	struct rt766_sdca_priv *rt766  = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766  = dev_get_drvdata(dev);
 
-	sdca_irq_cleanup_late(component->dev, rt766->uaj_func_data, rt766->irq_info);
-	sdca_irq_cleanup_late(component->dev, rt766->hid_func_data, rt766->irq_info);
+	sdca_irq_cleanup_late(dev, rt766->uaj_func_data, rt766->irq_info);
+	sdca_irq_cleanup_late(dev, rt766->hid_func_data, rt766->irq_info);
 }
 
 static const struct snd_soc_component_driver soc_sdca_dev_rt766 = {
@@ -919,7 +935,7 @@ static const struct snd_soc_component_driver soc_sdca_dev_rt766 = {
 static int rt766_sdca_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 				int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -927,24 +943,26 @@ static int rt766_sdca_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 static void rt766_sdca_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static int rt766_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
 	struct sdw_stream_config stream_config;
 	struct sdw_port_config port_config;
 	enum sdw_data_direction direction;
 	struct sdw_stream_runtime *sdw_stream;
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int sampling_rate;
 	int retval, port;
 
-	dev_dbg(dai->dev, "%s %s id %d", __func__, dai->name, dai->id);
-	sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	dev_dbg(dev, "%s %s id %d", __func__, snd_soc_dai_name(dai), dai_id);
+	sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!sdw_stream)
 		return -EINVAL;
@@ -958,17 +976,17 @@ static int rt766_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 	/* SoundWire specific configuration */
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		direction = SDW_DATA_DIR_RX;
-		if (dai->id == RT766_AIF1)
+		if (dai_id == RT766_AIF1)
 			port = 3;
-		else if (dai->id == RT766_AIF2)
+		else if (dai_id == RT766_AIF2)
 			port = 1;
 		else
 			return -EINVAL;
 	} else {
 		direction = SDW_DATA_DIR_TX;
-		if (dai->id == RT766_AIF1)
+		if (dai_id == RT766_AIF1)
 			port = 12;
-		else if (dai->id == RT766_AIF3)
+		else if (dai_id == RT766_AIF3)
 			port = 8;
 		else
 			return -EINVAL;
@@ -978,12 +996,12 @@ static int rt766_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 	retval = sdw_stream_add_slave(rt766->slave, &stream_config,
 					&port_config, 1, sdw_stream);
 	if (retval) {
-		dev_err(dai->dev, "%s: Unable to configure port\n", __func__);
+		dev_err(dev, "%s: Unable to configure port\n", __func__);
 		return retval;
 	}
 
 	if (params_channels(params) > 16) {
-		dev_err(component->dev, "%s: Unsupported channels %d\n",
+		dev_err(dev, "%s: Unsupported channels %d\n",
 			__func__, params_channels(params));
 		return -EINVAL;
 	}
@@ -1003,13 +1021,13 @@ static int rt766_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 		sampling_rate = RT766_SDCA_RATE_192000HZ;
 		break;
 	default:
-		dev_err(component->dev, "%s: Rate %d is not supported\n",
+		dev_err(dev, "%s: Rate %d is not supported\n",
 			__func__, params_rate(params));
 		return -EINVAL;
 	}
 
 	/* set sampling frequency */
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT766_AIF1:
 		regmap_write(rt766->regmap,
 			RT766_SDCA_CTL(UAJ, CS41, SDCA_CTL_CS_SAMPLERATEINDEX),
@@ -1029,7 +1047,7 @@ static int rt766_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 			sampling_rate);
 		break;
 	default:
-		dev_err(component->dev, "%s: Wrong DAI id\n", __func__);
+		dev_err(dev, "%s: Wrong DAI id\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1039,10 +1057,10 @@ static int rt766_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 static int rt766_sdca_pcm_hw_free(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt766_sdca_priv *rt766 = snd_soc_component_get_drvdata(component);
-	struct sdw_stream_runtime *sdw_stream =
-		snd_soc_dai_get_dma_data(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt766_sdca_priv *rt766 = dev_get_drvdata(dev);
+	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!rt766->slave)
 		return -EINVAL;
@@ -1247,7 +1265,7 @@ int rt766_sdca_init(struct device *dev, struct regmap *regmap, struct sdw_slave 
 		}
 	}
 
-	ret =  devm_snd_soc_register_component(dev,
+	ret =  devm_snd_soc_component_register(dev,
 			&soc_sdca_dev_rt766, dai_drv, ARRAY_SIZE(rt766_sdca_dai));
 	if (ret < 0)
 		goto _free_dai_drv_;

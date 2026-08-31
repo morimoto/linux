@@ -582,7 +582,8 @@ static int wm5102_sysclk_ev(struct snd_soc_dapm_widget *w,
 			    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 	struct regmap *regmap = arizona->regmap;
 	const struct reg_default *patch = NULL;
 	int i, patch_size;
@@ -621,7 +622,8 @@ static int wm5102_adsp_power_ev(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 	unsigned int v = 0;
 	int ret;
 
@@ -629,8 +631,7 @@ static int wm5102_adsp_power_ev(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_PRE_PMU:
 		ret = regmap_read(arizona->regmap, ARIZONA_SYSTEM_CLOCK_1, &v);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to read SYSCLK state: %d\n", ret);
+			dev_err(dev, "Failed to read SYSCLK state: %d\n", ret);
 			return -EIO;
 		}
 
@@ -639,8 +640,7 @@ static int wm5102_adsp_power_ev(struct snd_soc_dapm_widget *w,
 		if (v >= 3) {
 			ret = arizona_dvfs_up(component, ARIZONA_DVFS_ADSP1_RQ);
 			if (ret) {
-				dev_err(component->dev,
-					"Failed to raise DVFS: %d\n", ret);
+				dev_err(dev, "Failed to raise DVFS: %d\n", ret);
 				return ret;
 			}
 		}
@@ -651,8 +651,7 @@ static int wm5102_adsp_power_ev(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_POST_PMD:
 		ret = arizona_dvfs_down(component, ARIZONA_DVFS_ADSP1_RQ);
 		if (ret)
-			dev_warn(component->dev,
-				 "Failed to lower DVFS: %d\n", ret);
+			dev_warn(dev, "Failed to lower DVFS: %d\n", ret);
 		break;
 
 	default:
@@ -666,7 +665,8 @@ static int wm5102_out_comp_coeff_get(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 
 	guard(mutex)(&arizona->dac_comp_lock);
 	put_unaligned_be16(arizona->dac_comp_coeff,
@@ -679,7 +679,8 @@ static int wm5102_out_comp_coeff_put(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 	uint16_t dac_comp_coeff = get_unaligned_be16(ucontrol->value.bytes.data);
 
 	guard(mutex)(&arizona->dac_comp_lock);
@@ -695,7 +696,8 @@ static int wm5102_out_comp_switch_get(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 
 	guard(mutex)(&arizona->dac_comp_lock);
 	ucontrol->value.integer.value[0] = arizona->dac_comp_enabled;
@@ -707,7 +709,8 @@ static int wm5102_out_comp_switch_put(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 	struct soc_mixer_control *mc = (struct soc_mixer_control *)kcontrol->private_value;
 
 	if (ucontrol->value.integer.value[0] > mc->max)
@@ -1745,7 +1748,8 @@ static const struct snd_soc_dapm_route wm5102_dapm_routes[] = {
 static int wm5102_set_fll(struct snd_soc_component *component, int fll_id,
 			  int source, unsigned int Fref, unsigned int Fout)
 {
-	struct wm5102_priv *wm5102 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm5102_priv *wm5102 = dev_get_drvdata(dev);
 
 	switch (fll_id) {
 	case WM5102_FLL1:
@@ -1922,7 +1926,8 @@ static struct snd_soc_dai_driver wm5102_dai[] = {
 static int wm5102_open(struct snd_soc_component *component,
 		       struct snd_compr_stream *stream)
 {
-	struct wm5102_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm5102_priv *priv = dev_get_drvdata(dev);
 
 	return wm_adsp_compr_open(&priv->core.adsp[0], stream);
 }
@@ -1945,17 +1950,18 @@ static irqreturn_t wm5102_adsp2_irq(int irq, void *data)
 static int wm5102_component_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm5102_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm5102_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->core.arizona;
 	int ret;
 
-	snd_soc_component_init_regmap(component, arizona->regmap);
+	snd_soc_component_regmap_init(component, arizona->regmap);
 
 	ret = wm_adsp2_component_probe(&priv->core.adsp[0], component);
 	if (ret)
 		return ret;
 
-	ret = snd_soc_add_component_controls(component,
+	ret = snd_soc_component_add_controls(component,
 					     arizona_adsp2_rate_controls, 1);
 	if (ret)
 		goto err_adsp2_codec_probe;
@@ -1980,7 +1986,8 @@ err_adsp2_codec_probe:
 
 static void wm5102_component_remove(struct snd_soc_component *component)
 {
-	struct wm5102_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm5102_priv *priv = dev_get_drvdata(dev);
 
 	wm_adsp2_component_remove(&priv->core.adsp[0], component);
 
@@ -2124,7 +2131,7 @@ static int wm5102_probe(struct platform_device *pdev)
 	if (ret < 0)
 		goto err_dsp_irq;
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &soc_component_dev_wm5102,
 					      wm5102_dai,
 					      ARRAY_SIZE(wm5102_dai));

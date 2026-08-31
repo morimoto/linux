@@ -198,8 +198,9 @@ static const struct snd_soc_dapm_route ssm4567_routes[] = {
 static int ssm4567_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ssm4567 *ssm4567 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm4567 *ssm4567 = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 	unsigned int dacfs;
 
@@ -222,7 +223,9 @@ static int ssm4567_hw_params(struct snd_pcm_substream *substream,
 
 static int ssm4567_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct ssm4567 *ssm4567 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm4567 *ssm4567 = dev_get_drvdata(dev);
 	unsigned int val;
 
 	val = mute ? SSM4567_DAC_MUTE : 0;
@@ -233,7 +236,9 @@ static int ssm4567_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int ssm4567_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	unsigned int rx_mask, int slots, int width)
 {
-	struct ssm4567 *ssm4567 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm4567 *ssm4567 = dev_get_drvdata(dev);
 	unsigned int blcks;
 	int slot;
 	int ret;
@@ -274,7 +279,9 @@ static int ssm4567_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 
 static int ssm4567_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct ssm4567 *ssm4567 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm4567 *ssm4567 = dev_get_drvdata(dev);
 	unsigned int ctrl1 = 0;
 	bool invert_fclk;
 
@@ -368,7 +375,8 @@ static int ssm4567_set_power(struct ssm4567 *ssm4567, bool enable)
 static int ssm4567_set_bias_level(struct snd_soc_component *component,
 	enum snd_soc_bias_level level)
 {
-	struct ssm4567 *ssm4567 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm4567 *ssm4567 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret = 0;
 
@@ -480,7 +488,7 @@ static int ssm4567_i2c_probe(struct i2c_client *i2c)
 	if (ret)
 		return ret;
 
-	return devm_snd_soc_register_component(&i2c->dev, &ssm4567_component_driver,
+	return devm_snd_soc_component_register(&i2c->dev, &ssm4567_component_driver,
 			&ssm4567_dai, 1);
 }
 

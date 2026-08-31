@@ -68,7 +68,9 @@ static void __lpc3xxx_find_clkdiv(u32 *clkx, u32 *clky, int freq, int xbytes, u3
 
 static int lpc3xxx_i2s_startup(struct snd_pcm_substream *substream, struct snd_soc_dai *cpu_dai)
 {
-	struct lpc3xxx_i2s_info *i2s_info_p = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct lpc3xxx_i2s_info *i2s_info_p = dev_get_drvdata(cpu_dev);
 	struct device *dev = i2s_info_p->dev;
 	u32 flag;
 	int ret = 0;
@@ -100,7 +102,9 @@ static int lpc3xxx_i2s_startup(struct snd_pcm_substream *substream, struct snd_s
 
 static void lpc3xxx_i2s_shutdown(struct snd_pcm_substream *substream, struct snd_soc_dai *cpu_dai)
 {
-	struct lpc3xxx_i2s_info *i2s_info_p = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct lpc3xxx_i2s_info *i2s_info_p = dev_get_drvdata(cpu_dev);
 	struct regmap *regs = i2s_info_p->regs;
 	const u32 stop_bits = (LPC3XXX_I2S_RESET | LPC3XXX_I2S_STOP);
 	u32 flag;
@@ -125,7 +129,9 @@ static void lpc3xxx_i2s_shutdown(struct snd_pcm_substream *substream, struct snd
 static int lpc3xxx_i2s_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
 				      int clk_id, unsigned int freq, int dir)
 {
-	struct lpc3xxx_i2s_info *i2s_info_p = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpc3xxx_i2s_info *i2s_info_p = dev_get_drvdata(dev);
 
 	/* Will use in HW params later */
 	i2s_info_p->freq = freq;
@@ -135,8 +141,8 @@ static int lpc3xxx_i2s_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
 
 static int lpc3xxx_i2s_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 {
-	struct lpc3xxx_i2s_info *i2s_info_p = snd_soc_dai_get_drvdata(cpu_dai);
-	struct device *dev = i2s_info_p->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	if ((fmt & SND_SOC_DAIFMT_FORMAT_MASK) != SND_SOC_DAIFMT_I2S) {
 		dev_warn(dev, "unsupported bus format %d\n", fmt);
@@ -155,8 +161,9 @@ static int lpc3xxx_i2s_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *cpu_dai)
 {
-	struct lpc3xxx_i2s_info *i2s_info_p = snd_soc_dai_get_drvdata(cpu_dai);
-	struct device *dev = i2s_info_p->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpc3xxx_i2s_info *i2s_info_p = dev_get_drvdata(dev);
 	struct regmap *regs = i2s_info_p->regs;
 	int xfersize;
 	u32 tmp, clkx, clky;
@@ -215,7 +222,9 @@ static int lpc3xxx_i2s_hw_params(struct snd_pcm_substream *substream,
 static int lpc3xxx_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 			       struct snd_soc_dai *cpu_dai)
 {
-	struct lpc3xxx_i2s_info *i2s_info_p = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpc3xxx_i2s_info *i2s_info_p = dev_get_drvdata(dev);
 	struct regmap *regs = i2s_info_p->regs;
 	int ret = 0;
 
@@ -250,10 +259,12 @@ static int lpc3xxx_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int lpc3xxx_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct lpc3xxx_i2s_info *i2s_info_p = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpc3xxx_i2s_info *i2s_info_p = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, &i2s_info_p->playback_dma_config,
-				  &i2s_info_p->capture_dma_config);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &i2s_info_p->playback_dma_config);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &i2s_info_p->capture_dma_config);
 	return 0;
 }
 
@@ -336,7 +347,7 @@ static int lpc32xx_i2s_probe(struct platform_device *pdev)
 
 	mutex_init(&i2s_info_p->lock);
 
-	ret = devm_snd_soc_register_component(dev, &lpc32xx_i2s_component,
+	ret = devm_snd_soc_component_register(dev, &lpc32xx_i2s_component,
 					      &lpc3xxx_i2s_dai_driver, 1);
 	if (ret)
 		return dev_err_probe(dev, ret, "Can't register cpu_dai component\n");

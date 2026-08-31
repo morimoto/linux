@@ -484,6 +484,7 @@ static const struct snd_kcontrol_new wm8995_snd_controls[] = {
 
 static void wm8995_update_class_w(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int enable = 1;
 	int source = 0;  /* GCC flow analysis can't track enable */
 	int reg, reg_r;
@@ -492,37 +493,37 @@ static void wm8995_update_class_w(struct snd_soc_component *component)
 	reg = snd_soc_component_read(component, WM8995_DAC1_LEFT_MIXER_ROUTING);
 	switch (reg) {
 	case WM8995_AIF2DACL_TO_DAC1L:
-		dev_dbg(component->dev, "Class W source AIF2DAC\n");
+		dev_dbg(dev, "Class W source AIF2DAC\n");
 		source = 2 << WM8995_CP_DYN_SRC_SEL_SHIFT;
 		break;
 	case WM8995_AIF1DAC2L_TO_DAC1L:
-		dev_dbg(component->dev, "Class W source AIF1DAC2\n");
+		dev_dbg(dev, "Class W source AIF1DAC2\n");
 		source = 1 << WM8995_CP_DYN_SRC_SEL_SHIFT;
 		break;
 	case WM8995_AIF1DAC1L_TO_DAC1L:
-		dev_dbg(component->dev, "Class W source AIF1DAC1\n");
+		dev_dbg(dev, "Class W source AIF1DAC1\n");
 		source = 0 << WM8995_CP_DYN_SRC_SEL_SHIFT;
 		break;
 	default:
-		dev_dbg(component->dev, "DAC mixer setting: %x\n", reg);
+		dev_dbg(dev, "DAC mixer setting: %x\n", reg);
 		enable = 0;
 		break;
 	}
 
 	reg_r = snd_soc_component_read(component, WM8995_DAC1_RIGHT_MIXER_ROUTING);
 	if (reg_r != reg) {
-		dev_dbg(component->dev, "Left and right DAC mixers different\n");
+		dev_dbg(dev, "Left and right DAC mixers different\n");
 		enable = 0;
 	}
 
 	if (enable) {
-		dev_dbg(component->dev, "Class W enabled\n");
+		dev_dbg(dev, "Class W enabled\n");
 		snd_soc_component_update_bits(component, WM8995_CLASS_W_1,
 				    WM8995_CP_DYN_PWR_MASK |
 				    WM8995_CP_DYN_SRC_SEL_MASK,
 				    source | WM8995_CP_DYN_PWR);
 	} else {
-		dev_dbg(component->dev, "Class W disabled\n");
+		dev_dbg(dev, "Class W disabled\n");
 		snd_soc_component_update_bits(component, WM8995_CLASS_W_1,
 				    WM8995_CP_DYN_PWR_MASK, 0);
 	}
@@ -588,9 +589,10 @@ static int hp_supply_event(struct snd_soc_dapm_widget *w,
 static void dc_servo_cmd(struct snd_soc_component *component,
 			 unsigned int reg, unsigned int val, unsigned int mask)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int timeout = 10;
 
-	dev_dbg(component->dev, "%s: reg = %#x, val = %#x, mask = %#x\n",
+	dev_dbg(dev, "%s: reg = %#x, val = %#x, mask = %#x\n",
 		__func__, reg, val, mask);
 
 	snd_soc_component_write(component, reg, val);
@@ -601,7 +603,7 @@ static void dc_servo_cmd(struct snd_soc_component *component,
 			return;
 	}
 
-	dev_err(component->dev, "Timed out waiting for DC Servo\n");
+	dev_err(dev, "Timed out waiting for DC Servo\n");
 }
 
 static int hp_event(struct snd_soc_dapm_widget *w,
@@ -668,12 +670,11 @@ static int hp_event(struct snd_soc_dapm_widget *w,
 
 static int configure_aif_clock(struct snd_soc_component *component, int aif)
 {
-	struct wm8995_priv *wm8995;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8995_priv *wm8995 = dev_get_drvdata(dev);
 	int rate;
 	int reg1 = 0;
 	int offset;
-
-	wm8995 = snd_soc_component_get_drvdata(component);
 
 	if (aif)
 		offset = 4;
@@ -704,8 +705,7 @@ static int configure_aif_clock(struct snd_soc_component *component, int aif)
 		rate /= 2;
 		reg1 |= WM8995_AIF1CLK_DIV;
 
-		dev_dbg(component->dev, "Dividing AIF%d clock to %dHz\n",
-			aif + 1, rate);
+		dev_dbg(dev, "Dividing AIF%d clock to %dHz\n", aif + 1, rate);
 	}
 
 	wm8995->aifclk[aif] = rate;
@@ -719,10 +719,9 @@ static int configure_aif_clock(struct snd_soc_component *component, int aif)
 static int configure_clock(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8995_priv *wm8995;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8995_priv *wm8995 = dev_get_drvdata(dev);
 	int change, new;
-
-	wm8995 = snd_soc_component_get_drvdata(component);
 
 	/* Bring up the AIF clocks first */
 	configure_aif_clock(component, 0);
@@ -1419,10 +1418,11 @@ static bool wm8995_volatile(struct device *dev, unsigned int reg)
 
 static int wm8995_aif_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	int dai_id = snd_soc_dai_id(dai);
 	int mute_reg;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case 0:
 		mute_reg = WM8995_AIF1_DAC1_FILTERS_1;
 		break;
@@ -1440,11 +1440,10 @@ static int wm8995_aif_mute(struct snd_soc_dai *dai, int mute, int direction)
 
 static int wm8995_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int master;
 	int aif;
-
-	component = dai->component;
 
 	master = 0;
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -1454,7 +1453,7 @@ static int wm8995_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		master = WM8995_AIF1_MSTR;
 		break;
 	default:
-		dev_err(dai->dev, "Unknown master/slave configuration\n");
+		dev_err(dev, "Unknown master/slave configuration\n");
 		return -EINVAL;
 	}
 
@@ -1475,7 +1474,7 @@ static int wm8995_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		aif |= (0x1 << WM8995_AIF1_FMT_SHIFT);
 		break;
 	default:
-		dev_err(dai->dev, "Unknown dai format\n");
+		dev_err(dev, "Unknown dai format\n");
 		return -EINVAL;
 	}
 
@@ -1544,8 +1543,10 @@ static int wm8995_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct wm8995_priv *wm8995;
+	int dai_id = snd_soc_dai_id(dai);
 	int aif1_reg;
 	int bclk_reg;
 	int lrclk_reg;
@@ -1555,10 +1556,9 @@ static int wm8995_hw_params(struct snd_pcm_substream *substream,
 	int lrclk, bclk;
 	int i, rate_val, best, best_val, cur_val;
 
-	component = dai->component;
-	wm8995 = snd_soc_component_get_drvdata(component);
+	wm8995 = dev_get_drvdata(dev);
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case 0:
 		aif1_reg = WM8995_AIF1_CONTROL_1;
 		bclk_reg = WM8995_AIF1_BCLK;
@@ -1568,7 +1568,7 @@ static int wm8995_hw_params(struct snd_pcm_substream *substream,
 			lrclk_reg = WM8995_AIF1DAC_LRCLK;
 		} else {
 			lrclk_reg = WM8995_AIF1ADC_LRCLK;
-			dev_dbg(component->dev, "AIF1 using split LRCLK\n");
+			dev_dbg(dev, "AIF1 using split LRCLK\n");
 		}
 		break;
 	case 1:
@@ -1580,7 +1580,7 @@ static int wm8995_hw_params(struct snd_pcm_substream *substream,
 			lrclk_reg = WM8995_AIF2DAC_LRCLK;
 		} else {
 			lrclk_reg = WM8995_AIF2ADC_LRCLK;
-			dev_dbg(component->dev, "AIF2 using split LRCLK\n");
+			dev_dbg(dev, "AIF2 using split LRCLK\n");
 		}
 		break;
 	default:
@@ -1605,7 +1605,7 @@ static int wm8995_hw_params(struct snd_pcm_substream *substream,
 		aif1 |= (0x3 << WM8995_AIF1_WL_SHIFT);
 		break;
 	default:
-		dev_err(dai->dev, "Unsupported word length %u\n",
+		dev_err(dev, "Unsupported word length %u\n",
 			params_width(params));
 		return -EINVAL;
 	}
@@ -1615,23 +1615,23 @@ static int wm8995_hw_params(struct snd_pcm_substream *substream,
 		if (srs[i] == params_rate(params))
 			break;
 	if (i == ARRAY_SIZE(srs)) {
-		dev_err(dai->dev, "Sample rate %d is not supported\n",
+		dev_err(dev, "Sample rate %d is not supported\n",
 			params_rate(params));
 		return -EINVAL;
 	}
 	rate_val = i << WM8995_AIF1_SR_SHIFT;
 
-	dev_dbg(dai->dev, "Sample rate is %dHz\n", srs[i]);
-	dev_dbg(dai->dev, "AIF%dCLK is %dHz, target BCLK %dHz\n",
-		dai->id + 1, wm8995->aifclk[dai->id], bclk_rate);
+	dev_dbg(dev, "Sample rate is %dHz\n", srs[i]);
+	dev_dbg(dev, "AIF%dCLK is %dHz, target BCLK %dHz\n",
+		dai_id + 1, wm8995->aifclk[dai_id], bclk_rate);
 
 	/* AIFCLK/fs ratio; look for a close match in either direction */
 	best = 1;
 	best_val = abs((fs_ratios[1] * params_rate(params))
-		       - wm8995->aifclk[dai->id]);
+		       - wm8995->aifclk[dai_id]);
 	for (i = 2; i < ARRAY_SIZE(fs_ratios); i++) {
 		cur_val = abs((fs_ratios[i] * params_rate(params))
-			      - wm8995->aifclk[dai->id]);
+			      - wm8995->aifclk[dai_id]);
 		if (cur_val >= best_val)
 			continue;
 		best = i;
@@ -1639,8 +1639,8 @@ static int wm8995_hw_params(struct snd_pcm_substream *substream,
 	}
 	rate_val |= best;
 
-	dev_dbg(dai->dev, "Selected AIF%dCLK/fs = %d\n",
-		dai->id + 1, fs_ratios[best]);
+	dev_dbg(dev, "Selected AIF%dCLK/fs = %d\n",
+		dai_id + 1, fs_ratios[best]);
 
 	/*
 	 * We may not get quite the right frequency if using
@@ -1651,19 +1651,19 @@ static int wm8995_hw_params(struct snd_pcm_substream *substream,
 	best = 0;
 	bclk = 0;
 	for (i = 0; i < ARRAY_SIZE(bclk_divs); i++) {
-		cur_val = (wm8995->aifclk[dai->id] * 10 / bclk_divs[i]) - bclk_rate;
+		cur_val = (wm8995->aifclk[dai_id] * 10 / bclk_divs[i]) - bclk_rate;
 		if (cur_val < 0) /* BCLK table is sorted */
 			break;
 		best = i;
 	}
 	bclk |= best << WM8995_AIF1_BCLK_DIV_SHIFT;
 
-	bclk_rate = wm8995->aifclk[dai->id] * 10 / bclk_divs[best];
-	dev_dbg(dai->dev, "Using BCLK_DIV %d for actual BCLK %dHz\n",
+	bclk_rate = wm8995->aifclk[dai_id] * 10 / bclk_divs[best];
+	dev_dbg(dev, "Using BCLK_DIV %d for actual BCLK %dHz\n",
 		bclk_divs[best], bclk_rate);
 
 	lrclk = bclk_rate / params_rate(params);
-	dev_dbg(dai->dev, "Using LRCLK rate %d for actual LRCLK %dHz\n",
+	dev_dbg(dev, "Using LRCLK rate %d for actual LRCLK %dHz\n",
 		lrclk, bclk_rate / lrclk);
 
 	snd_soc_component_update_bits(component, aif1_reg,
@@ -1680,10 +1680,11 @@ static int wm8995_hw_params(struct snd_pcm_substream *substream,
 
 static int wm8995_set_tristate(struct snd_soc_dai *codec_dai, int tristate)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	int dai_id = snd_soc_dai_id(codec_dai);
 	int reg, val, mask;
 
-	switch (codec_dai->id) {
+	switch (dai_id) {
 	case 0:
 		reg = WM8995_AIF1_MASTER_SLAVE;
 		mask = WM8995_AIF1_TRI;
@@ -1795,14 +1796,12 @@ static int wm8995_set_fll(struct snd_soc_dai *dai, int id,
 			  int src, unsigned int freq_in,
 			  unsigned int freq_out)
 {
-	struct snd_soc_component *component;
-	struct wm8995_priv *wm8995;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8995_priv *wm8995 = dev_get_drvdata(dev);
 	int reg_offset, ret;
 	struct fll_div fll;
 	u16 reg, aif1, aif2;
-
-	component = dai->component;
-	wm8995 = snd_soc_component_get_drvdata(component);
 
 	aif1 = snd_soc_component_read(component, WM8995_AIF1_CLOCKING_1)
 	       & WM8995_AIF1CLK_ENA;
@@ -1905,13 +1904,14 @@ static int wm8995_set_fll(struct snd_soc_dai *dai, int id,
 static int wm8995_set_dai_sysclk(struct snd_soc_dai *dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct wm8995_priv *wm8995;
+	int dai_id = snd_soc_dai_id(dai);
 
-	component = dai->component;
-	wm8995 = snd_soc_component_get_drvdata(component);
+	wm8995 = dev_get_drvdata(dev);
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case 0:
 	case 1:
 		break;
@@ -1922,28 +1922,28 @@ static int wm8995_set_dai_sysclk(struct snd_soc_dai *dai,
 
 	switch (clk_id) {
 	case WM8995_SYSCLK_MCLK1:
-		wm8995->sysclk[dai->id] = WM8995_SYSCLK_MCLK1;
+		wm8995->sysclk[dai_id] = WM8995_SYSCLK_MCLK1;
 		wm8995->mclk[0] = freq;
-		dev_dbg(dai->dev, "AIF%d using MCLK1 at %uHz\n",
-			dai->id + 1, freq);
+		dev_dbg(dev, "AIF%d using MCLK1 at %uHz\n",
+			dai_id + 1, freq);
 		break;
 	case WM8995_SYSCLK_MCLK2:
-		wm8995->sysclk[dai->id] = WM8995_SYSCLK_MCLK2;
+		wm8995->sysclk[dai_id] = WM8995_SYSCLK_MCLK2;
 		wm8995->mclk[1] = freq;
-		dev_dbg(dai->dev, "AIF%d using MCLK2 at %uHz\n",
-			dai->id + 1, freq);
+		dev_dbg(dev, "AIF%d using MCLK2 at %uHz\n",
+			dai_id + 1, freq);
 		break;
 	case WM8995_SYSCLK_FLL1:
-		wm8995->sysclk[dai->id] = WM8995_SYSCLK_FLL1;
-		dev_dbg(dai->dev, "AIF%d using FLL1\n", dai->id + 1);
+		wm8995->sysclk[dai_id] = WM8995_SYSCLK_FLL1;
+		dev_dbg(dev, "AIF%d using FLL1\n", dai_id + 1);
 		break;
 	case WM8995_SYSCLK_FLL2:
-		wm8995->sysclk[dai->id] = WM8995_SYSCLK_FLL2;
-		dev_dbg(dai->dev, "AIF%d using FLL2\n", dai->id + 1);
+		wm8995->sysclk[dai_id] = WM8995_SYSCLK_FLL2;
+		dev_dbg(dev, "AIF%d using FLL2\n", dai_id + 1);
 		break;
 	case WM8995_SYSCLK_OPCLK:
 	default:
-		dev_err(dai->dev, "Unknown clock source %d\n", clk_id);
+		dev_err(dev, "Unknown clock source %d\n", clk_id);
 		return -EINVAL;
 	}
 
@@ -1956,10 +1956,9 @@ static int wm8995_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8995_priv *wm8995;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8995_priv *wm8995 = dev_get_drvdata(dev);
 	int ret;
-
-	wm8995 = snd_soc_component_get_drvdata(component);
 	switch (level) {
 	case SND_SOC_BIAS_ON:
 	case SND_SOC_BIAS_PREPARE:
@@ -1973,8 +1972,7 @@ static int wm8995_set_bias_level(struct snd_soc_component *component,
 
 			ret = regcache_sync(wm8995->regmap);
 			if (ret) {
-				dev_err(component->dev,
-					"Failed to sync cache: %d\n", ret);
+				dev_err(dev, "Failed to sync cache: %d\n", ret);
 				return ret;
 			}
 
@@ -1995,21 +1993,21 @@ static int wm8995_set_bias_level(struct snd_soc_component *component,
 
 static int wm8995_probe(struct snd_soc_component *component)
 {
-	struct wm8995_priv *wm8995;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8995_priv *wm8995 = dev_get_drvdata(dev);
 	int i;
 	int ret;
 
-	wm8995 = snd_soc_component_get_drvdata(component);
 	wm8995->component = component;
 
 	for (i = 0; i < ARRAY_SIZE(wm8995->supplies); i++)
 		wm8995->supplies[i].supply = wm8995_supply_names[i];
 
-	ret = devm_regulator_bulk_get(component->dev,
+	ret = devm_regulator_bulk_get(dev,
 				      ARRAY_SIZE(wm8995->supplies),
 				      wm8995->supplies);
 	if (ret) {
-		dev_err(component->dev, "Failed to request supplies: %d\n", ret);
+		dev_err(dev, "Failed to request supplies: %d\n", ret);
 		return ret;
 	}
 
@@ -2028,34 +2026,32 @@ static int wm8995_probe(struct snd_soc_component *component)
 						wm8995->supplies[i].consumer,
 						&wm8995->disable_nb[i]);
 		if (ret) {
-			dev_err(component->dev,
-				"Failed to register regulator notifier: %d\n",
-				ret);
+			dev_err(dev, "Failed to register regulator notifier: %d\n", ret);
 		}
 	}
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(wm8995->supplies),
 				    wm8995->supplies);
 	if (ret) {
-		dev_err(component->dev, "Failed to enable supplies: %d\n", ret);
+		dev_err(dev, "Failed to enable supplies: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_component_read(component, WM8995_SOFTWARE_RESET);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to read device ID: %d\n", ret);
+		dev_err(dev, "Failed to read device ID: %d\n", ret);
 		goto err_reg_enable;
 	}
 
 	if (ret != 0x8995) {
-		dev_err(component->dev, "Invalid device ID: %#x\n", ret);
+		dev_err(dev, "Invalid device ID: %#x\n", ret);
 		ret = -EINVAL;
 		goto err_reg_enable;
 	}
 
 	ret = snd_soc_component_write(component, WM8995_SOFTWARE_RESET, 0);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to issue reset: %d\n", ret);
+		dev_err(dev, "Failed to issue reset: %d\n", ret);
 		goto err_reg_enable;
 	}
 
@@ -2237,7 +2233,7 @@ static int wm8995_spi_probe(struct spi_device *spi)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 				     &soc_component_dev_wm8995, wm8995_dai,
 				     ARRAY_SIZE(wm8995_dai));
 	return ret;
@@ -2270,7 +2266,7 @@ static int wm8995_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 				     &soc_component_dev_wm8995, wm8995_dai,
 				     ARRAY_SIZE(wm8995_dai));
 	if (ret < 0)

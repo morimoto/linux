@@ -258,7 +258,8 @@ static int wm8580_out_vu(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8580_priv *wm8580 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8580_priv *wm8580 = dev_get_drvdata(dev);
 	unsigned int reg = mc->reg;
 	unsigned int reg2 = mc->rreg;
 	int ret;
@@ -460,8 +461,9 @@ static int wm8580_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 		int source, unsigned int freq_in, unsigned int freq_out)
 {
 	int offset;
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8580_priv *wm8580 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8580_priv *wm8580 = dev_get_drvdata(dev);
 	struct pll_state *state;
 	struct _pll_div pll_div;
 	unsigned int reg;
@@ -534,8 +536,10 @@ static int wm8580_paif_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8580_priv *wm8580 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8580_priv *wm8580 = dev_get_drvdata(dev);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	u16 paifa = 0;
 	u16 paifb = 0;
 	int i, ratio, osr;
@@ -562,39 +566,39 @@ static int wm8580_paif_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	/* Look up the SYSCLK ratio; accept only exact matches */
-	ratio = wm8580->sysclk[dai->driver->id] / params_rate(params);
+	ratio = wm8580->sysclk[dai_driver->id] / params_rate(params);
 	for (i = 0; i < ARRAY_SIZE(wm8580_sysclk_ratios); i++)
 		if (ratio == wm8580_sysclk_ratios[i])
 			break;
 	if (i == ARRAY_SIZE(wm8580_sysclk_ratios)) {
-		dev_err(component->dev, "Invalid clock ratio %d/%d\n",
-			wm8580->sysclk[dai->driver->id], params_rate(params));
+		dev_err(dev, "Invalid clock ratio %d/%d\n",
+			wm8580->sysclk[dai_driver->id], params_rate(params));
 		return -EINVAL;
 	}
 	paifa |= i;
-	dev_dbg(component->dev, "Running at %dfs with %dHz clock\n",
-		wm8580_sysclk_ratios[i], wm8580->sysclk[dai->driver->id]);
+	dev_dbg(dev, "Running at %dfs with %dHz clock\n",
+		wm8580_sysclk_ratios[i], wm8580->sysclk[dai_driver->id]);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		switch (ratio) {
 		case 128:
 		case 192:
 			osr = WM8580_DACOSR;
-			dev_dbg(component->dev, "Selecting 64x OSR\n");
+			dev_dbg(dev, "Selecting 64x OSR\n");
 			break;
 		default:
 			osr = 0;
-			dev_dbg(component->dev, "Selecting 128x OSR\n");
+			dev_dbg(dev, "Selecting 128x OSR\n");
 			break;
 		}
 
 		snd_soc_component_update_bits(component, WM8580_PAIF3, WM8580_DACOSR, osr);
 	}
 
-	snd_soc_component_update_bits(component, WM8580_PAIF1 + dai->driver->id,
+	snd_soc_component_update_bits(component, WM8580_PAIF1 + dai_driver->id,
 			    WM8580_AIF_RATE_MASK | WM8580_AIF_BCLKSEL_MASK,
 			    paifa);
-	snd_soc_component_update_bits(component, WM8580_PAIF3 + dai->driver->id,
+	snd_soc_component_update_bits(component, WM8580_PAIF3 + dai_driver->id,
 			    WM8580_AIF_LENGTH_MASK, paifb);
 	return 0;
 }
@@ -602,13 +606,14 @@ static int wm8580_paif_hw_params(struct snd_pcm_substream *substream,
 static int wm8580_set_paif_dai_fmt(struct snd_soc_dai *codec_dai,
 				      unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(codec_dai);
 	unsigned int aifa;
 	unsigned int aifb;
 	int can_invert_lrclk;
 
-	aifa = snd_soc_component_read(component, WM8580_PAIF1 + codec_dai->driver->id);
-	aifb = snd_soc_component_read(component, WM8580_PAIF3 + codec_dai->driver->id);
+	aifa = snd_soc_component_read(component, WM8580_PAIF1 + dai_driver->id);
+	aifb = snd_soc_component_read(component, WM8580_PAIF3 + dai_driver->id);
 
 	aifb &= ~(WM8580_AIF_FMT_MASK | WM8580_AIF_LRP | WM8580_AIF_BCP);
 
@@ -674,8 +679,8 @@ static int wm8580_set_paif_dai_fmt(struct snd_soc_dai *codec_dai,
 		return -EINVAL;
 	}
 
-	snd_soc_component_write(component, WM8580_PAIF1 + codec_dai->driver->id, aifa);
-	snd_soc_component_write(component, WM8580_PAIF3 + codec_dai->driver->id, aifb);
+	snd_soc_component_write(component, WM8580_PAIF1 + dai_driver->id, aifa);
+	snd_soc_component_write(component, WM8580_PAIF3 + dai_driver->id, aifb);
 
 	return 0;
 }
@@ -683,7 +688,7 @@ static int wm8580_set_paif_dai_fmt(struct snd_soc_dai *codec_dai,
 static int wm8580_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 				 int div_id, int div)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	unsigned int reg;
 
 	switch (div_id) {
@@ -749,11 +754,13 @@ static int wm8580_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 static int wm8580_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 			     unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8580_priv *wm8580 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8580_priv *wm8580 = dev_get_drvdata(dev);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	int ret, sel, sel_mask, sel_shift;
 
-	switch (dai->driver->id) {
+	switch (dai_driver->id) {
 	case WM8580_DAI_PAIFRX:
 		sel_mask = 0x3;
 		sel_shift = 0;
@@ -771,7 +778,7 @@ static int wm8580_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 	switch (clk_id) {
 	case WM8580_CLKSRC_ADCMCLK:
-		if (dai->driver->id != WM8580_DAI_PAIFTX)
+		if (dai_driver->id != WM8580_DAI_PAIFTX)
 			return -EINVAL;
 		sel = 0 << sel_shift;
 		break;
@@ -785,12 +792,12 @@ static int wm8580_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 		sel = 3 << sel_shift;
 		break;
 	default:
-		dev_err(component->dev, "Unknown clock %d\n", clk_id);
+		dev_err(dev, "Unknown clock %d\n", clk_id);
 		return -EINVAL;
 	}
 
 	/* We really should validate PLL settings but not yet */
-	wm8580->sysclk[dai->driver->id] = freq;
+	wm8580->sysclk[dai_driver->id] = freq;
 
 	ret = snd_soc_component_update_bits(component, WM8580_CLKSEL, sel_mask, sel);
 	if (ret < 0)
@@ -801,7 +808,7 @@ static int wm8580_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 static int wm8580_mute(struct snd_soc_dai *codec_dai, int mute, int direction)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	unsigned int reg;
 
 	reg = snd_soc_component_read(component, WM8580_DAC_CONTROL5);
@@ -850,8 +857,9 @@ static int wm8580_set_bias_level(struct snd_soc_component *component,
 static int wm8580_playback_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8580_priv *wm8580 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8580_priv *wm8580 = dev_get_drvdata(dev);
 
 	return snd_pcm_hw_constraint_minmax(substream->runtime,
 		SNDRV_PCM_HW_PARAM_CHANNELS, 1, wm8580->drvdata->num_dacs * 2);
@@ -922,13 +930,14 @@ static struct snd_soc_dai_driver wm8580_dai[] = {
 
 static int wm8580_probe(struct snd_soc_component *component)
 {
-	struct wm8580_priv *wm8580 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8580_priv *wm8580 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret = 0;
 
 	switch (wm8580->drvdata->num_dacs) {
 	case 4:
-		snd_soc_add_component_controls(component, wm8581_snd_controls,
+		snd_soc_component_add_controls(component, wm8581_snd_controls,
 					ARRAY_SIZE(wm8581_snd_controls));
 		snd_soc_dapm_new_controls(dapm, wm8581_dapm_widgets,
 					ARRAY_SIZE(wm8581_dapm_widgets));
@@ -942,14 +951,14 @@ static int wm8580_probe(struct snd_soc_component *component)
 	ret = regulator_bulk_enable(ARRAY_SIZE(wm8580->supplies),
 				    wm8580->supplies);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to enable supplies: %d\n", ret);
+		dev_err(dev, "Failed to enable supplies: %d\n", ret);
 		goto err_regulator_get;
 	}
 
 	/* Get the codec into a known state */
 	ret = snd_soc_component_write(component, WM8580_RESET, 0);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to reset component: %d\n", ret);
+		dev_err(dev, "Failed to reset component: %d\n", ret);
 		goto err_regulator_enable;
 	}
 
@@ -964,7 +973,8 @@ err_regulator_get:
 /* power down chip */
 static void wm8580_remove(struct snd_soc_component *component)
 {
-	struct wm8580_priv *wm8580 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8580_priv *wm8580 = dev_get_drvdata(dev);
 
 	regulator_bulk_disable(ARRAY_SIZE(wm8580->supplies), wm8580->supplies);
 }
@@ -1034,7 +1044,7 @@ static int wm8580_i2c_probe(struct i2c_client *i2c)
 	if (!wm8580->drvdata)
 		return dev_err_probe(&i2c->dev, -EINVAL, "failed to find driver data\n");
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8580, wm8580_dai, ARRAY_SIZE(wm8580_dai));
 
 	return ret;

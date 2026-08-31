@@ -514,7 +514,9 @@ static int stm32_spdifrx_capture_get(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct stm32_spdifrx_data *spdifrx = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_spdifrx_data *spdifrx = dev_get_drvdata(dev);
 
 	stm32_spdifrx_get_ctrl_data(spdifrx);
 
@@ -531,7 +533,9 @@ static int stm32_spdif_user_bits_get(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct stm32_spdifrx_data *spdifrx = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_spdifrx_data *spdifrx = dev_get_drvdata(dev);
 
 	stm32_spdifrx_get_ctrl_data(spdifrx);
 
@@ -572,27 +576,30 @@ static struct snd_kcontrol_new stm32_spdifrx_ctrls[] = {
 
 static int stm32_spdifrx_dai_register_ctrls(struct snd_soc_dai *cpu_dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
 	int ret;
 
-	ret = snd_soc_add_dai_controls(cpu_dai, stm32_spdifrx_iec_ctrls,
+	ret = snd_soc_dai_add_controls(cpu_dai, stm32_spdifrx_iec_ctrls,
 				       ARRAY_SIZE(stm32_spdifrx_iec_ctrls));
 	if (ret < 0)
 		return ret;
 
-	return snd_soc_add_component_controls(cpu_dai->component,
+	return snd_soc_component_add_controls(component,
 					      stm32_spdifrx_ctrls,
 					      ARRAY_SIZE(stm32_spdifrx_ctrls));
 }
 
 static int stm32_spdifrx_dai_probe(struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_spdifrx_data *spdifrx = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct stm32_spdifrx_data *spdifrx = dev_get_drvdata(cpu_dev);
 
 	spdifrx->dma_params.addr = (dma_addr_t)(spdifrx->phys_addr +
 				   STM32_SPDIFRX_DR);
 	spdifrx->dma_params.maxburst = 1;
 
-	snd_soc_dai_init_dma_data(cpu_dai, NULL, &spdifrx->dma_params);
+	snd_soc_dai_stream_dma_data_set_capture(cpu_dai, &spdifrx->dma_params);
 
 	return stm32_spdifrx_dai_register_ctrls(cpu_dai);
 }
@@ -756,7 +763,9 @@ static irqreturn_t stm32_spdifrx_isr(int irq, void *devid)
 static int stm32_spdifrx_startup(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_spdifrx_data *spdifrx = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_spdifrx_data *spdifrx = dev_get_drvdata(dev);
 	int ret;
 
 	scoped_guard(spinlock_irqsave, &spdifrx->irq_lock)
@@ -773,7 +782,9 @@ static int stm32_spdifrx_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params,
 				   struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_spdifrx_data *spdifrx = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_spdifrx_data *spdifrx = dev_get_drvdata(dev);
 	int data_size = params_width(params);
 	int fmt;
 
@@ -795,7 +806,7 @@ static int stm32_spdifrx_hw_params(struct snd_pcm_substream *substream,
 	 * Left format: transfer 1 x 3 bytes samples + 1 dummy byte
 	 */
 	spdifrx->dma_params.addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
-	snd_soc_dai_init_dma_data(cpu_dai, NULL, &spdifrx->dma_params);
+	snd_soc_dai_stream_dma_data_set_capture(cpu_dai, &spdifrx->dma_params);
 
 	return regmap_update_bits(spdifrx->regmap, STM32_SPDIFRX_CR,
 				  SPDIFRX_CR_DRFMT_MASK,
@@ -805,7 +816,9 @@ static int stm32_spdifrx_hw_params(struct snd_pcm_substream *substream,
 static int stm32_spdifrx_trigger(struct snd_pcm_substream *substream, int cmd,
 				 struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_spdifrx_data *spdifrx = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_spdifrx_data *spdifrx = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (cmd) {
@@ -835,7 +848,9 @@ static int stm32_spdifrx_trigger(struct snd_pcm_substream *substream, int cmd,
 static void stm32_spdifrx_shutdown(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_spdifrx_data *spdifrx = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_spdifrx_data *spdifrx = dev_get_drvdata(dev);
 
 	scoped_guard(spinlock_irqsave, &spdifrx->irq_lock)
 		spdifrx->substream = NULL;
@@ -934,7 +949,7 @@ static void stm32_spdifrx_remove(struct platform_device *pdev)
 		snd_dma_free_pages(spdifrx->dmab);
 
 	snd_dmaengine_pcm_unregister(&pdev->dev);
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_component_unregister(&pdev->dev);
 	pm_runtime_disable(&pdev->dev);
 }
 
@@ -987,7 +1002,7 @@ static int stm32_spdifrx_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	ret = snd_soc_register_component(&pdev->dev,
+	ret = snd_soc_component_register(&pdev->dev,
 					 &stm32_spdifrx_component,
 					 stm32_spdifrx_dai,
 					 ARRAY_SIZE(stm32_spdifrx_dai));

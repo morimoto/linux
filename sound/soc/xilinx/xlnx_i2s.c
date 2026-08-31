@@ -37,7 +37,9 @@ struct xlnx_i2s_drv_data {
 static int xlnx_i2s_set_sclkout_div(struct snd_soc_dai *cpu_dai,
 				    int div_id, int div)
 {
-	struct xlnx_i2s_drv_data *drv_data = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct xlnx_i2s_drv_data *drv_data = dev_get_drvdata(dev);
 
 	if (!div || (div & ~I2S_I2STIM_VALID_MASK))
 		return -EINVAL;
@@ -52,7 +54,9 @@ static int xlnx_i2s_set_sclkout_div(struct snd_soc_dai *cpu_dai,
 static int xlnx_i2s_set_sysclk(struct snd_soc_dai *dai,
 			       int clk_id, unsigned int freq, int dir)
 {
-	struct xlnx_i2s_drv_data *drv_data = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct xlnx_i2s_drv_data *drv_data = dev_get_drvdata(dev);
 
 	drv_data->sysclk = freq;
 	if (freq) {
@@ -76,7 +80,9 @@ static int xlnx_i2s_set_sysclk(struct snd_soc_dai *dai,
 static int xlnx_i2s_startup(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *dai)
 {
-	struct xlnx_i2s_drv_data *drv_data = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct xlnx_i2s_drv_data *drv_data = dev_get_drvdata(dev);
 
 	if (drv_data->sysclk)
 		return snd_pcm_hw_constraint_ratnums(substream->runtime, 0,
@@ -91,7 +97,9 @@ static int xlnx_i2s_hw_params(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *i2s_dai)
 {
 	u32 reg_off, chan_id;
-	struct xlnx_i2s_drv_data *drv_data = snd_soc_dai_get_drvdata(i2s_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(i2s_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct xlnx_i2s_drv_data *drv_data = dev_get_drvdata(dev);
 
 	if (drv_data->sysclk) {
 		unsigned int bits_per_sample, sclk, sclk_div;
@@ -106,7 +114,7 @@ static int xlnx_i2s_hw_params(struct snd_pcm_substream *substream,
 
 		if ((drv_data->sysclk % sclk != 0) ||
 		    !sclk_div || (sclk_div & ~I2S_I2STIM_VALID_MASK)) {
-			dev_warn(i2s_dai->dev, "invalid SCLK divisor for sysclk %u and sclk %u\n",
+			dev_warn(dev, "invalid SCLK divisor for sysclk %u and sclk %u\n",
 				 drv_data->sysclk, sclk);
 			return -EINVAL;
 		}
@@ -127,7 +135,9 @@ static int xlnx_i2s_hw_params(struct snd_pcm_substream *substream,
 static int xlnx_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 			    struct snd_soc_dai *i2s_dai)
 {
-	struct xlnx_i2s_drv_data *drv_data = snd_soc_dai_get_drvdata(i2s_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(i2s_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct xlnx_i2s_drv_data *drv_data = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -227,7 +237,7 @@ static int xlnx_i2s_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, drv_data);
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &xlnx_i2s_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &xlnx_i2s_component,
 					      &drv_data->dai_drv, 1);
 	if (ret)
 		return ret;

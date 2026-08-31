@@ -164,8 +164,8 @@ static int aries_spk_cfg(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *component;
 	int ret = 0;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[0]);
-	component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	rtd = snd_soc_card_to_rtd(card, &snd_soc_card_to_driver(card)->dai_link[0]);
+	component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	/**
 	 * We have an odd setup - the SPKMODE pin is pulled up so
@@ -195,7 +195,7 @@ static int aries_main_bias(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct aries_wm8994_data *priv = snd_soc_card_get_drvdata(card);
+	struct aries_wm8994_data *priv = snd_soc_card_to_priv(card);
 	int ret = 0;
 
 	switch (event) {
@@ -214,7 +214,7 @@ static int aries_headset_bias(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct aries_wm8994_data *priv = snd_soc_card_get_drvdata(card);
+	struct aries_wm8994_data *priv = snd_soc_card_to_priv(card);
 	int ret = 0;
 
 	switch (event) {
@@ -338,7 +338,8 @@ static int aries_baseband_init(struct snd_soc_pcm_runtime *rtd)
 
 static int aries_late_probe(struct snd_soc_card *card)
 {
-	struct aries_wm8994_data *priv = snd_soc_card_get_drvdata(card);
+	struct aries_wm8994_data *priv = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret, irq;
 
 	ret = snd_soc_card_jack_new_pins(card, "Dock", SND_JACK_LINEOUT,
@@ -346,7 +347,7 @@ static int aries_late_probe(struct snd_soc_card *card)
 	if (ret)
 		return ret;
 
-	ret = devm_extcon_register_notifier(card->dev,
+	ret = devm_extcon_register_notifier(dev,
 			priv->usb_extcon, EXTCON_JACK_LINE_OUT,
 			&aries_extcon_notifier_block);
 	if (ret)
@@ -373,16 +374,16 @@ static int aries_late_probe(struct snd_soc_card *card)
 
 	irq = gpiod_to_irq(priv->gpio_headset_detect);
 	if (irq < 0) {
-		dev_err(card->dev, "Failed to map headset detect gpio to irq");
+		dev_err(dev, "Failed to map headset detect gpio to irq");
 		return -EINVAL;
 	}
 
-	ret = devm_request_threaded_irq(card->dev, irq, NULL,
+	ret = devm_request_threaded_irq(dev, irq, NULL,
 			headset_det_irq_thread,
 			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING |
 			IRQF_ONESHOT, "headset_detect", priv);
 	if (ret) {
-		dev_err(card->dev, "Failed to request headset detect irq");
+		dev_err(dev, "Failed to request headset detect irq");
 		return ret;
 	}
 
@@ -555,7 +556,7 @@ static int aries_audio_probe(struct platform_device *pdev)
 	if (!card || !priv)
 		return -ENOMEM;
 
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 
 	match = of_match_node(samsung_wm8994_of_match, np);
 	priv->variant = match->data;
@@ -617,7 +618,7 @@ static int aries_audio_probe(struct platform_device *pdev)
 	}
 
 	/* Update card-name if provided through DT, else use default name */
-	snd_soc_of_parse_card_name(card, "model");
+	snd_soc_card_of_parse_name(card, "model");
 
 	ret = snd_soc_card_driver_of_parse_audio_routing(dev, card_driver, "audio-routing");
 	if (ret < 0) {
@@ -670,7 +671,7 @@ static int aries_audio_probe(struct platform_device *pdev)
 		goto out;
 	}
 
-	ret = devm_snd_soc_register_component(dev, &aries_component,
+	ret = devm_snd_soc_component_register(dev, &aries_component,
 				aries_ext_dai, ARRAY_SIZE(aries_ext_dai));
 	if (ret < 0) {
 		dev_err(dev, "Failed to register component: %d\n", ret);

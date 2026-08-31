@@ -36,6 +36,8 @@ static int aiu_encoder_i2s_set_legacy_div(struct snd_soc_component *component,
 					  struct snd_pcm_hw_params *params,
 					  unsigned int bs)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	switch (bs) {
 	case 1:
 	case 2:
@@ -45,7 +47,7 @@ static int aiu_encoder_i2s_set_legacy_div(struct snd_soc_component *component,
 		break;
 
 	default:
-		dev_err(component->dev, "Unsupported i2s divider: %u\n", bs);
+		dev_err(dev, "Unsupported i2s divider: %u\n", bs);
 		return -EINVAL;
 	}
 
@@ -75,7 +77,7 @@ static int aiu_encoder_check_bs_quirk(struct snd_pcm_substream *substream,
 				      struct snd_pcm_hw_params *params,
 				      struct snd_soc_dai *dai)
 {
-	struct gx_stream *other_stream = snd_soc_dai_dma_data_get(dai, !substream->stream);
+	struct gx_stream *other_stream = snd_soc_dai_stream_dma_data_get(dai, !substream->stream);
 
 	/* Nothing to do if the other stream doesn't exist or it's not configured yet. */
 	if (!other_stream || !other_stream->channels)
@@ -92,6 +94,8 @@ static int aiu_encoder_i2s_set_more_div(struct snd_soc_component *component,
 					struct snd_pcm_hw_params *params,
 					unsigned int bs)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	/*
 	 * NOTE: this HW is odd.
 	 * In most configuration, the i2s divider is 'mclk / blck'.
@@ -101,8 +105,7 @@ static int aiu_encoder_i2s_set_more_div(struct snd_soc_component *component,
 	 */
 	if (aiu_encoder_is_bs_quirk(params_channels(params), params_width(params))) {
 		if (bs % 2) {
-			dev_err(component->dev,
-				"Cannot increase i2s divider by 50%%\n");
+			dev_err(dev, "Cannot increase i2s divider by 50%%\n");
 			return -EINVAL;
 		}
 		bs += bs / 2;
@@ -125,8 +128,9 @@ static int aiu_encoder_i2s_set_clocks(struct snd_pcm_substream *substream,
 				      struct snd_pcm_hw_params *params,
 				      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aiu *aiu = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aiu *aiu = dev_get_drvdata(dev);
 	struct gx_iface *iface = &aiu->i2s.iface;
 	unsigned int srate = params_rate(params);
 	unsigned int fs, bs;
@@ -155,7 +159,7 @@ static int aiu_encoder_i2s_set_clocks(struct snd_pcm_substream *substream,
 		 * state of the other stream, which is stable under that mutex.
 		 */
 		if (aiu_encoder_check_bs_quirk(substream, params, dai)) {
-			dev_err(dai->dev, "bclk requirements incompatible with other stream\n");
+			dev_err(dev, "bclk requirements incompatible with other stream\n");
 			return -EINVAL;
 		}
 		ret = aiu_encoder_i2s_set_more_div(component, params, bs);
@@ -178,12 +182,14 @@ static int aiu_encoder_i2s_hw_params(struct snd_pcm_substream *substream,
 				     struct snd_pcm_hw_params *params,
 				     struct snd_soc_dai *dai)
 {
-	struct gx_stream *ts = snd_soc_dai_get_dma_data(dai, substream);
+	struct gx_stream *ts = snd_soc_dai_stream_dma_data_get(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = aiu_encoder_i2s_set_clocks(substream, params, dai);
 	if (ret) {
-		dev_err(dai->dev, "setting i2s clocks failed: %d\n", ret);
+		dev_err(dev, "setting i2s clocks failed: %d\n", ret);
 		return ret;
 	}
 
@@ -197,8 +203,8 @@ static int aiu_encoder_i2s_hw_params(struct snd_pcm_substream *substream,
 static int aiu_encoder_i2s_prepare(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct gx_stream *ts = snd_soc_dai_get_dma_data(dai, substream);
-	struct snd_soc_component *component = dai->component;
+	struct gx_stream *ts = snd_soc_dai_stream_dma_data_get(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int ret;
 
 	if (ts->clk_enabled)
@@ -218,8 +224,8 @@ static int aiu_encoder_i2s_prepare(struct snd_pcm_substream *substream,
 static int aiu_encoder_i2s_hw_free(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct gx_stream *ts = snd_soc_dai_get_dma_data(dai, substream);
-	struct snd_soc_component *component = dai->component;
+	struct gx_stream *ts = snd_soc_dai_stream_dma_data_get(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	/*
 	 * If this is the last substream being closed then disable the i2s
@@ -242,8 +248,9 @@ static int aiu_encoder_i2s_hw_free(struct snd_pcm_substream *substream,
 
 static int aiu_encoder_i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aiu *aiu = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aiu *aiu = dev_get_drvdata(dev);
 	struct gx_iface *iface = &aiu->i2s.iface;
 	unsigned int inv = fmt & SND_SOC_DAIFMT_INV_MASK;
 	unsigned int val = 0;
@@ -276,7 +283,7 @@ static int aiu_encoder_i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		skew = 0;
 		break;
 	default:
-		dev_err(dai->dev, "unsupported dai format\n");
+		dev_err(dev, "unsupported dai format\n");
 		return -EINVAL;
 	}
 
@@ -295,7 +302,9 @@ static int aiu_encoder_i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int aiu_encoder_i2s_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 				      unsigned int freq, int dir)
 {
-	struct aiu *aiu = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aiu *aiu = dev_get_drvdata(dev);
 	struct gx_iface *iface = &aiu->i2s.iface;
 	int ret;
 
@@ -307,7 +316,7 @@ static int aiu_encoder_i2s_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 	ret = clk_set_rate(iface->mclk, freq);
 	if (ret) {
-		dev_err(dai->dev, "Failed to set sysclk to %uHz: %d", freq, ret);
+		dev_err(dev, "Failed to set sysclk to %uHz: %d", freq, ret);
 		return ret;
 	}
 
@@ -360,8 +369,10 @@ static int aiu_encoder_i2s_pcm_hw_rule(struct snd_pcm_hw_params *params,
 static int aiu_encoder_i2s_startup(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct aiu *aiu = snd_soc_component_get_drvdata(dai->component);
-	struct gx_stream *other_stream = snd_soc_dai_dma_data_get(dai, !substream->stream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aiu *aiu = dev_get_drvdata(dev);
+	struct gx_stream *other_stream = snd_soc_dai_stream_dma_data_get(dai, !substream->stream);
 	int ret;
 
 	/* Make sure the encoder gets either 2 or 8 channels */
@@ -369,7 +380,7 @@ static int aiu_encoder_i2s_startup(struct snd_pcm_substream *substream,
 					 SNDRV_PCM_HW_PARAM_CHANNELS,
 					 &hw_channel_constraints);
 	if (ret) {
-		dev_err(dai->dev, "adding channels constraints failed: %d\n", ret);
+		dev_err(dev, "adding channels constraints failed: %d\n", ret);
 		return ret;
 	}
 
@@ -405,18 +416,18 @@ static int aiu_encoder_i2s_startup(struct snd_pcm_substream *substream,
 	 */
 	ret = clk_prepare_enable(aiu->i2s.clks[PCLK].clk);
 	if (ret) {
-		dev_err(dai->dev, "failed to enable PCLK: %d\n", ret);
+		dev_err(dev, "failed to enable PCLK: %d\n", ret);
 		return ret;
 	}
 	ret = clk_prepare_enable(aiu->i2s.clks[MIXER].clk);
 	if (ret) {
-		dev_err(dai->dev, "failed to enable MIXER: %d\n", ret);
+		dev_err(dev, "failed to enable MIXER: %d\n", ret);
 		clk_disable_unprepare(aiu->i2s.clks[PCLK].clk);
 		return ret;
 	}
 	ret = clk_prepare_enable(aiu->i2s.clks[AOCLK].clk);
 	if (ret) {
-		dev_err(dai->dev, "failed to enable AOCLK: %d\n", ret);
+		dev_err(dev, "failed to enable AOCLK: %d\n", ret);
 		clk_disable_unprepare(aiu->i2s.clks[MIXER].clk);
 		clk_disable_unprepare(aiu->i2s.clks[PCLK].clk);
 		return ret;
@@ -435,11 +446,11 @@ static int aiu_encoder_i2s_startup(struct snd_pcm_substream *substream,
 	 * only when the formatter is enabled, which doesn't happen at boot as
 	 * the default value for "HDMI CTRL SRC" is "DISABLED".
 	 */
-	ret = snd_soc_component_update_bits(dai->component, AIU_I2S_SOURCE_DESC,
+	ret = snd_soc_component_update_bits(component, AIU_I2S_SOURCE_DESC,
 					    AIU_I2S_SOURCE_DESC_MODE_SPLIT,
 					    AIU_I2S_SOURCE_DESC_MODE_SPLIT);
 	if (ret < 0)
-		dev_err(dai->dev, "failed to update AIU_I2S_SOURCE_DESC: %d", ret);
+		dev_err(dev, "failed to update AIU_I2S_SOURCE_DESC: %d", ret);
 
 	return 0;
 }
@@ -447,7 +458,9 @@ static int aiu_encoder_i2s_startup(struct snd_pcm_substream *substream,
 static void aiu_encoder_i2s_shutdown(struct snd_pcm_substream *substream,
 				     struct snd_soc_dai *dai)
 {
-	struct aiu *aiu = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aiu *aiu = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(aiu->i2s.clks[AOCLK].clk);
 	clk_disable_unprepare(aiu->i2s.clks[MIXER].clk);
@@ -458,7 +471,7 @@ static int aiu_encoder_i2s_trigger(struct snd_pcm_substream *substream,
 				   int cmd,
 				   struct snd_soc_dai *dai)
 {
-	struct gx_stream *ts = snd_soc_dai_get_dma_data(dai, substream);
+	struct gx_stream *ts = snd_soc_dai_stream_dma_data_get(dai, substream);
 	int ret;
 
 	switch (cmd) {
@@ -487,11 +500,11 @@ static int aiu_encoder_i2s_remove_dai(struct snd_soc_dai *dai)
 	for_each_pcm_streams(stream) {
 		struct gx_stream *ts;
 
-		ts = snd_soc_dai_dma_data_get(dai, stream);
+		ts = snd_soc_dai_stream_dma_data_get(dai, stream);
 		if (ts)
 			gx_stream_free(ts);
 
-		snd_soc_dai_dma_data_set(dai, stream, NULL);
+		snd_soc_dai_stream_dma_data_set(dai, stream, NULL);
 	}
 
 	return 0;
@@ -499,14 +512,16 @@ static int aiu_encoder_i2s_remove_dai(struct snd_soc_dai *dai)
 
 static int aiu_encoder_i2s_probe_dai(struct snd_soc_dai *dai)
 {
-	struct aiu *aiu = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aiu *aiu = dev_get_drvdata(dev);
 	struct gx_iface *iface = &aiu->i2s.iface;
 	int stream;
 
 	for_each_pcm_streams(stream) {
 		struct gx_stream *ts;
 
-		if (!snd_soc_dai_get_widget(dai, stream))
+		if (!snd_soc_dai_stream_widget_get(dai, stream))
 			continue;
 
 		ts = gx_stream_alloc(iface);
@@ -514,7 +529,7 @@ static int aiu_encoder_i2s_probe_dai(struct snd_soc_dai *dai)
 			aiu_encoder_i2s_remove_dai(dai);
 			return -ENOMEM;
 		}
-		snd_soc_dai_dma_data_set(dai, stream, ts);
+		snd_soc_dai_stream_dma_data_set(dai, stream, ts);
 	}
 
 	iface->mclk = aiu->i2s.clks[MCLK].clk;

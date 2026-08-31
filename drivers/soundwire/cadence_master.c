@@ -1838,17 +1838,19 @@ EXPORT_SYMBOL(sdw_cdns_probe);
 int cdns_set_sdw_stream(struct snd_soc_dai *dai,
 			void *stream, int direction)
 {
-	struct sdw_cdns *cdns = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sdw_cdns *cdns = dev_get_drvdata(dev);
 	struct sdw_cdns_dai_runtime *dai_runtime;
+	const char *dai_name = snd_soc_dai_name(dai);
+	int id = snd_soc_dai_id(dai);
 
-	dai_runtime = cdns->dai_runtime_array[dai->id];
+	dai_runtime = cdns->dai_runtime_array[id];
 
 	if (stream) {
 		/* first paranoia check */
 		if (dai_runtime) {
-			dev_err(dai->dev,
-				"dai_runtime already allocated for dai %s\n",
-				dai->name);
+			dev_err(dev, "dai_runtime already allocated for dai %s\n", dai_name);
 			return -EINVAL;
 		}
 
@@ -1865,19 +1867,17 @@ int cdns_set_sdw_stream(struct snd_soc_dai *dai,
 		dai_runtime->stream = stream;
 		dai_runtime->direction = direction;
 
-		cdns->dai_runtime_array[dai->id] = dai_runtime;
+		cdns->dai_runtime_array[id] = dai_runtime;
 	} else {
 		/* second paranoia check */
 		if (!dai_runtime) {
-			dev_err(dai->dev,
-				"dai_runtime not allocated for dai %s\n",
-				dai->name);
+			dev_err(dev, "dai_runtime not allocated for dai %s\n", dai_name);
 			return -EINVAL;
 		}
 
 		/* for NULL stream we release allocated dai_runtime */
 		kfree(dai_runtime);
-		cdns->dai_runtime_array[dai->id] = NULL;
+		cdns->dai_runtime_array[id] = NULL;
 	}
 	return 0;
 }

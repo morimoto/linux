@@ -410,7 +410,8 @@ static int aic31xx_dapm_power_event(struct snd_soc_dapm_widget *w,
 				    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic31xx_priv *aic31xx = dev_get_drvdata(dev);
 	unsigned int reg = AIC31XX_DACFLAG1;
 	unsigned int mask;
 	unsigned int timeout = 500 * USEC_PER_MSEC;
@@ -443,8 +444,7 @@ static int aic31xx_dapm_power_event(struct snd_soc_dapm_widget *w,
 		reg = AIC31XX_ADCFLAG;
 		break;
 	default:
-		dev_err(component->dev, "Unknown widget '%s' calling %s\n",
-			w->name, __func__);
+		dev_err(dev, "Unknown widget '%s' calling %s\n", w->name, __func__);
 		return -EINVAL;
 	}
 
@@ -456,9 +456,7 @@ static int aic31xx_dapm_power_event(struct snd_soc_dapm_widget *w,
 		return aic31xx_wait_bits(aic31xx, reg, mask, 0,
 				5000, timeout / 5000);
 	default:
-		dev_dbg(component->dev,
-			"Unhandled dapm widget event %d from %s\n",
-			event, w->name);
+		dev_dbg(dev, "Unhandled dapm widget event %d from %s\n", event, w->name);
 	}
 	return 0;
 }
@@ -513,7 +511,8 @@ static int mic_bias_event(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic31xx_priv *aic31xx = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -522,13 +521,13 @@ static int mic_bias_event(struct snd_soc_dapm_widget *w,
 				    AIC31XX_MICBIAS_MASK,
 				    aic31xx->micbias_vg <<
 				    AIC31XX_MICBIAS_SHIFT);
-		dev_dbg(component->dev, "%s: turned on\n", __func__);
+		dev_dbg(dev, "%s: turned on\n", __func__);
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		/* turn mic bias off */
 		snd_soc_component_update_bits(component, AIC31XX_MICBIAS,
 				    AIC31XX_MICBIAS_MASK, 0);
-		dev_dbg(component->dev, "%s: turned off\n", __func__);
+		dev_dbg(dev, "%s: turned off\n", __func__);
 		break;
 	}
 	return 0;
@@ -776,21 +775,22 @@ aic31xx_cm_audio_map[] = {
 static int aic31xx_add_controls(struct snd_soc_component *component)
 {
 	int ret = 0;
-	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic31xx_priv *aic31xx = dev_get_drvdata(dev);
 
 	if (!(aic31xx->codec_type & DAC31XX_BIT))
-		ret = snd_soc_add_component_controls(
+		ret = snd_soc_component_add_controls(
 			component, aic31xx_snd_controls,
 			ARRAY_SIZE(aic31xx_snd_controls));
 	if (ret)
 		return ret;
 
 	if (aic31xx->codec_type & AIC31XX_STEREO_CLASS_D_BIT)
-		ret = snd_soc_add_component_controls(
+		ret = snd_soc_component_add_controls(
 			component, aic311x_snd_controls,
 			ARRAY_SIZE(aic311x_snd_controls));
 	else
-		ret = snd_soc_add_component_controls(
+		ret = snd_soc_component_add_controls(
 			component, aic310x_snd_controls,
 			ARRAY_SIZE(aic310x_snd_controls));
 
@@ -800,7 +800,8 @@ static int aic31xx_add_controls(struct snd_soc_component *component)
 static int aic31xx_add_widgets(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic31xx_priv *aic31xx = dev_get_drvdata(dev);
 	int ret = 0;
 
 	if (aic31xx->codec_type & DAC31XX_BIT) {
@@ -857,7 +858,8 @@ static int aic31xx_add_widgets(struct snd_soc_component *component)
 static int aic31xx_setup_pll(struct snd_soc_component *component,
 			     struct snd_pcm_hw_params *params)
 {
-	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic31xx_priv *aic31xx = dev_get_drvdata(dev);
 	int bclk_score = snd_soc_params_to_frame_size(params);
 	int mclk_p;
 	int bclk_n = 0;
@@ -865,7 +867,7 @@ static int aic31xx_setup_pll(struct snd_soc_component *component,
 	int i;
 
 	if (!aic31xx->sysclk || !aic31xx->p_div) {
-		dev_err(component->dev, "Master clock not supplied\n");
+		dev_err(dev, "Master clock not supplied\n");
 		return -EINVAL;
 	}
 	mclk_p = aic31xx->sysclk / aic31xx->p_div;
@@ -892,14 +894,13 @@ static int aic31xx_setup_pll(struct snd_soc_component *component,
 	}
 
 	if (match == -1) {
-		dev_err(component->dev,
-			"%s: Sample rate (%u) and format not supported\n",
+		dev_err(dev, "%s: Sample rate (%u) and format not supported\n",
 			__func__, params_rate(params));
 		/* See below for details on how to fix this. */
 		return -EINVAL;
 	}
 	if (bclk_score != 0) {
-		dev_warn(component->dev, "Can not produce exact bitclock");
+		dev_warn(dev, "Can not produce exact bitclock");
 		/* This is fine if using dsp format, but if using i2s
 		   there may be trouble. To fix the issue edit the
 		   aic31xx_divs table for your mclk and sample
@@ -943,8 +944,7 @@ static int aic31xx_setup_pll(struct snd_soc_component *component,
 
 	aic31xx->rate_div_line = i;
 
-	dev_dbg(component->dev,
-		"pll %d.%04d/%d dosr %d n %d m %d aosr %d n %d m %d bclk_n %d\n",
+	dev_dbg(dev, "pll %d.%04d/%d dosr %d n %d m %d aosr %d n %d m %d bclk_n %d\n",
 		aic31xx_divs[i].pll_j,
 		aic31xx_divs[i].pll_d,
 		aic31xx->p_div,
@@ -964,11 +964,12 @@ static int aic31xx_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic31xx_priv *aic31xx = dev_get_drvdata(dev);
 	u8 data = 0;
 
-	dev_dbg(component->dev, "## %s: width %d rate %d\n",
+	dev_dbg(dev, "## %s: width %d rate %d\n",
 		__func__, params_width(params),
 		params_rate(params));
 
@@ -988,8 +989,7 @@ static int aic31xx_hw_params(struct snd_pcm_substream *substream,
 			AIC31XX_IFACE1_DATALEN_SHIFT);
 		break;
 	default:
-		dev_err(component->dev, "%s: Unsupported width %d\n",
-			__func__, params_width(params));
+		dev_err(dev, "%s: Unsupported width %d\n", __func__, params_width(params));
 		return -EINVAL;
 	}
 
@@ -1013,7 +1013,7 @@ static int aic31xx_hw_params(struct snd_pcm_substream *substream,
 static int aic31xx_dac_mute(struct snd_soc_dai *codec_dai, int mute,
 			    int direction)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
 	if (mute) {
 		snd_soc_component_update_bits(component, AIC31XX_DACMUTE,
@@ -1031,7 +1031,8 @@ static int aic31xx_clock_master_routes(struct snd_soc_component *component,
 				       unsigned int fmt)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic31xx_priv *aic31xx = dev_get_drvdata(dev);
 	int ret;
 
 	fmt &= SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK;
@@ -1077,12 +1078,13 @@ static int aic31xx_clock_master_routes(struct snd_soc_component *component,
 static int aic31xx_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			       unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u8 iface_reg1 = 0;
 	u8 iface_reg2 = 0;
 	u8 dsp_a_val = 0;
 
-	dev_dbg(component->dev, "## %s: fmt = 0x%x\n", __func__, fmt);
+	dev_dbg(dev, "## %s: fmt = 0x%x\n", __func__, fmt);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -1097,7 +1099,7 @@ static int aic31xx_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	case SND_SOC_DAIFMT_CBC_CFC:
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI clock provider\n");
+		dev_err(dev, "Invalid DAI clock provider\n");
 		return -EINVAL;
 	}
 
@@ -1109,7 +1111,7 @@ static int aic31xx_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		iface_reg2 |= AIC31XX_BCLKINV_MASK;
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI clock signal polarity\n");
+		dev_err(dev, "Invalid DAI clock signal polarity\n");
 		return -EINVAL;
 	}
 
@@ -1139,7 +1141,7 @@ static int aic31xx_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			       AIC31XX_IFACE1_DATATYPE_SHIFT);
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI interface format\n");
+		dev_err(dev, "Invalid DAI interface format\n");
 		return -EINVAL;
 	}
 
@@ -1160,11 +1162,12 @@ static int aic31xx_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int aic31xx_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic31xx_priv *aic31xx = dev_get_drvdata(dev);
 	int i;
 
-	dev_dbg(component->dev, "## %s: clk_id = %d, freq = %d, dir = %d\n",
+	dev_dbg(dev, "## %s: clk_id = %d, freq = %d, dir = %d\n",
 		__func__, clk_id, freq, dir);
 
 	for (i = 1; i < 8; i++)
@@ -1236,11 +1239,12 @@ static int aic31xx_reset(struct aic31xx_priv *aic31xx)
 
 static void aic31xx_clk_on(struct snd_soc_component *component)
 {
-	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic31xx_priv *aic31xx = dev_get_drvdata(dev);
 	u8 mask = AIC31XX_PM_MASK;
 	u8 on = AIC31XX_PM_MASK;
 
-	dev_dbg(component->dev, "codec clock -> on (rate %d)\n",
+	dev_dbg(dev, "codec clock -> on (rate %d)\n",
 		aic31xx_divs[aic31xx->rate_div_line].rate);
 	snd_soc_component_update_bits(component, AIC31XX_PLLPR, mask, on);
 	mdelay(10);
@@ -1255,10 +1259,11 @@ static void aic31xx_clk_on(struct snd_soc_component *component)
 
 static void aic31xx_clk_off(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	u8 mask = AIC31XX_PM_MASK;
 	u8 off = 0;
 
-	dev_dbg(component->dev, "codec clock -> off\n");
+	dev_dbg(dev, "codec clock -> off\n");
 	snd_soc_component_update_bits(component, AIC31XX_BCLKN, mask, off);
 	snd_soc_component_update_bits(component, AIC31XX_MADC, mask, off);
 	snd_soc_component_update_bits(component, AIC31XX_NADC, mask, off);
@@ -1269,7 +1274,8 @@ static void aic31xx_clk_off(struct snd_soc_component *component)
 
 static int aic31xx_power_on(struct snd_soc_component *component)
 {
-	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic31xx_priv *aic31xx = dev_get_drvdata(dev);
 	int ret;
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(aic31xx->supplies),
@@ -1286,8 +1292,7 @@ static int aic31xx_power_on(struct snd_soc_component *component)
 
 	ret = regcache_sync(aic31xx->regmap);
 	if (ret) {
-		dev_err(component->dev,
-			"Failed to restore cache: %d\n", ret);
+		dev_err(dev, "Failed to restore cache: %d\n", ret);
 		regcache_cache_only(aic31xx->regmap, true);
 		regulator_bulk_disable(ARRAY_SIZE(aic31xx->supplies),
 				       aic31xx->supplies);
@@ -1306,7 +1311,8 @@ static int aic31xx_power_on(struct snd_soc_component *component)
 
 static void aic31xx_power_off(struct snd_soc_component *component)
 {
-	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic31xx_priv *aic31xx = dev_get_drvdata(dev);
 
 	regcache_cache_only(aic31xx->regmap, true);
 	regulator_bulk_disable(ARRAY_SIZE(aic31xx->supplies),
@@ -1317,8 +1323,9 @@ static int aic31xx_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	dev_dbg(component->dev, "## %s: %d -> %d\n", __func__,
+	dev_dbg(dev, "## %s: %d -> %d\n", __func__,
 		snd_soc_dapm_get_bias_level(dapm), level);
 
 	switch (level) {
@@ -1352,7 +1359,8 @@ static int aic31xx_set_bias_level(struct snd_soc_component *component,
 static int aic31xx_set_jack(struct snd_soc_component *component,
 			    struct snd_soc_jack *jack, void *data)
 {
-	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic31xx_priv *aic31xx = dev_get_drvdata(dev);
 
 	aic31xx->jack = jack;
 
@@ -1365,7 +1373,8 @@ static int aic31xx_set_jack(struct snd_soc_component *component,
 
 static int aic31xx_codec_probe(struct snd_soc_component *component)
 {
-	struct aic31xx_priv *aic31xx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic31xx_priv *aic31xx = dev_get_drvdata(dev);
 	int i, ret;
 
 	dev_dbg(aic31xx->dev, "## %s\n", __func__);
@@ -1380,9 +1389,7 @@ static int aic31xx_codec_probe(struct snd_soc_component *component)
 						aic31xx->supplies[i].consumer,
 						&aic31xx->disable_nb[i].nb);
 		if (ret) {
-			dev_err(component->dev,
-				"Failed to request regulator notifier: %d\n",
-				ret);
+			dev_err(dev, "Failed to request regulator notifier: %d\n", ret);
 			return ret;
 		}
 	}
@@ -1833,12 +1840,12 @@ static int aic31xx_i2c_probe(struct i2c_client *i2c)
 	}
 
 	if (aic31xx->codec_type & DAC31XX_BIT)
-		return devm_snd_soc_register_component(&i2c->dev,
+		return devm_snd_soc_component_register(&i2c->dev,
 				&soc_codec_driver_aic31xx,
 				dac31xx_dai_driver,
 				ARRAY_SIZE(dac31xx_dai_driver));
 	else
-		return devm_snd_soc_register_component(&i2c->dev,
+		return devm_snd_soc_component_register(&i2c->dev,
 				&soc_codec_driver_aic31xx,
 				aic31xx_dai_driver,
 				ARRAY_SIZE(aic31xx_dai_driver));

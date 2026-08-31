@@ -35,7 +35,7 @@ static int mt2701_cs42448_i2sin1_mux_get(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_card *card = snd_kcontrol_chip(kcontrol);
-	struct mt2701_cs42448_private *priv = snd_soc_card_get_drvdata(card);
+	struct mt2701_cs42448_private *priv = snd_soc_card_to_priv(card);
 
 	ucontrol->value.integer.value[0] = priv->i2s1_in_mux;
 	return 0;
@@ -45,7 +45,8 @@ static int mt2701_cs42448_i2sin1_mux_set(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_card *card = snd_kcontrol_chip(kcontrol);
-	struct mt2701_cs42448_private *priv = snd_soc_card_get_drvdata(card);
+	struct mt2701_cs42448_private *priv = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 
 	if (ucontrol->value.integer.value[0] == priv->i2s1_in_mux)
 		return 0;
@@ -68,7 +69,7 @@ static int mt2701_cs42448_i2sin1_mux_set(struct snd_kcontrol *kcontrol,
 		gpiod_set_value(priv->i2s1_in_mux_sel_2, 1);
 		break;
 	default:
-		dev_warn(card->dev, "%s invalid setting\n", __func__);
+		dev_warn(dev, "%s invalid setting\n", __func__);
 	}
 
 	priv->i2s1_in_mux = ucontrol->value.integer.value[0];
@@ -386,7 +387,7 @@ static int mt2701_cs42448_machine_probe(struct platform_device *pdev)
 		return dev_err_probe(dev, PTR_ERR(priv->i2s1_in_mux_sel_2),
 				     "error getting mux 2 selector\n");
 
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 
 	ret = devm_snd_soc_card_register(card, card_driver);
 

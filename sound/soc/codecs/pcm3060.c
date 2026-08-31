@@ -16,13 +16,15 @@
 static int pcm3060_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 			      unsigned int freq, int dir)
 {
-	struct snd_soc_component *comp = dai->component;
-	struct pcm3060_priv *priv = snd_soc_component_get_drvdata(comp);
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct pcm3060_priv *priv = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int reg;
 	unsigned int val;
 
 	if (dir != SND_SOC_CLOCK_IN) {
-		dev_err(comp->dev, "unsupported sysclock dir: %d\n", dir);
+		dev_err(dev, "unsupported sysclock dir: %d\n", dir);
 		return -EINVAL;
 	}
 
@@ -32,51 +34,53 @@ static int pcm3060_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 		break;
 
 	case PCM3060_CLK1:
-		val = (dai->id == PCM3060_DAI_ID_DAC ? PCM3060_REG_CSEL : 0);
+		val = (dai_id == PCM3060_DAI_ID_DAC ? PCM3060_REG_CSEL : 0);
 		break;
 
 	case PCM3060_CLK2:
-		val = (dai->id == PCM3060_DAI_ID_DAC ? 0 : PCM3060_REG_CSEL);
+		val = (dai_id == PCM3060_DAI_ID_DAC ? 0 : PCM3060_REG_CSEL);
 		break;
 
 	default:
-		dev_err(comp->dev, "unsupported sysclock id: %d\n", clk_id);
+		dev_err(dev, "unsupported sysclock id: %d\n", clk_id);
 		return -EINVAL;
 	}
 
-	if (dai->id == PCM3060_DAI_ID_DAC)
+	if (dai_id == PCM3060_DAI_ID_DAC)
 		reg = PCM3060_REG67;
 	else
 		reg = PCM3060_REG72;
 
 	regmap_update_bits(priv->regmap, reg, PCM3060_REG_CSEL, val);
 
-	priv->dai[dai->id].sclk_freq = freq;
+	priv->dai[dai_id].sclk_freq = freq;
 
 	return 0;
 }
 
 static int pcm3060_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *comp = dai->component;
-	struct pcm3060_priv *priv = snd_soc_component_get_drvdata(comp);
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct pcm3060_priv *priv = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int reg;
 	unsigned int val;
 
 	if ((fmt & SND_SOC_DAIFMT_INV_MASK) != SND_SOC_DAIFMT_NB_NF) {
-		dev_err(comp->dev, "unsupported DAI polarity: 0x%x\n", fmt);
+		dev_err(dev, "unsupported DAI polarity: 0x%x\n", fmt);
 		return -EINVAL;
 	}
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
-		priv->dai[dai->id].is_provider = true;
+		priv->dai[dai_id].is_provider = true;
 		break;
 	case SND_SOC_DAIFMT_CBC_CFC:
-		priv->dai[dai->id].is_provider = false;
+		priv->dai[dai_id].is_provider = false;
 		break;
 	default:
-		dev_err(comp->dev, "unsupported DAI mode: 0x%x\n", fmt);
+		dev_err(dev, "unsupported DAI mode: 0x%x\n", fmt);
 		return -EINVAL;
 	}
 
@@ -91,11 +95,11 @@ static int pcm3060_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		val = PCM3060_REG_FMT_LJ;
 		break;
 	default:
-		dev_err(comp->dev, "unsupported DAI format: 0x%x\n", fmt);
+		dev_err(dev, "unsupported DAI format: 0x%x\n", fmt);
 		return -EINVAL;
 	}
 
-	if (dai->id == PCM3060_DAI_ID_DAC)
+	if (dai_id == PCM3060_DAI_ID_DAC)
 		reg = PCM3060_REG67;
 	else
 		reg = PCM3060_REG72;
@@ -109,25 +113,27 @@ static int pcm3060_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *comp = dai->component;
-	struct pcm3060_priv *priv = snd_soc_component_get_drvdata(comp);
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct pcm3060_priv *priv = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int rate;
 	unsigned int ratio;
 	unsigned int reg;
 	unsigned int val;
 
-	if (!priv->dai[dai->id].is_provider) {
+	if (!priv->dai[dai_id].is_provider) {
 		val = PCM3060_REG_MS_S;
 		goto val_ready;
 	}
 
 	rate = params_rate(params);
 	if (!rate) {
-		dev_err(comp->dev, "rate is not configured\n");
+		dev_err(dev, "rate is not configured\n");
 		return -EINVAL;
 	}
 
-	ratio = priv->dai[dai->id].sclk_freq / rate;
+	ratio = priv->dai[dai_id].sclk_freq / rate;
 
 	switch (ratio) {
 	case 768:
@@ -149,12 +155,12 @@ static int pcm3060_hw_params(struct snd_pcm_substream *substream,
 		val = PCM3060_REG_MS_M128;
 		break;
 	default:
-		dev_err(comp->dev, "unsupported ratio: %d\n", ratio);
+		dev_err(dev, "unsupported ratio: %d\n", ratio);
 		return -EINVAL;
 	}
 
 val_ready:
-	if (dai->id == PCM3060_DAI_ID_DAC)
+	if (dai_id == PCM3060_DAI_ID_DAC)
 		reg = PCM3060_REG67;
 	else
 		reg = PCM3060_REG72;
@@ -338,7 +344,7 @@ int pcm3060_probe(struct device *dev)
 		regmap_update_bits(priv->regmap, PCM3060_REG64,
 				   PCM3060_REG_SE, PCM3060_REG_SE);
 
-	rc = devm_snd_soc_register_component(dev, &pcm3060_soc_comp_driver,
+	rc = devm_snd_soc_component_register(dev, &pcm3060_soc_comp_driver,
 					     pcm3060_dai,
 					     ARRAY_SIZE(pcm3060_dai));
 	if (rc) {

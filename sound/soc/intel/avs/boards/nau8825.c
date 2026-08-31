@@ -25,11 +25,12 @@ avs_nau8825_clock_control(struct snd_soc_dapm_widget *w, struct snd_kcontrol *co
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
 	struct snd_soc_dai *codec_dai;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	codec_dai = snd_soc_card_get_codec_dai(card, SKL_NUVOTON_CODEC_DAI);
 	if (!codec_dai) {
-		dev_err(card->dev, "Codec dai not found\n");
+		dev_err(dev, "Codec dai not found\n");
 		return -EINVAL;
 	}
 
@@ -39,7 +40,7 @@ avs_nau8825_clock_control(struct snd_soc_dapm_widget *w, struct snd_kcontrol *co
 	else
 		ret = snd_soc_dai_set_sysclk(codec_dai, NAU8825_CLK_INTERNAL, 0, SND_SOC_CLOCK_IN);
 	if (ret < 0)
-		dev_err(card->dev, "Set sysclk failed: %d\n", ret);
+		dev_err(dev, "Set sysclk failed: %d\n", ret);
 
 	return ret;
 }
@@ -82,12 +83,13 @@ static int avs_nau8825_codec_init(struct snd_soc_pcm_runtime *runtime)
 	struct snd_soc_card *card = runtime->card;
 	struct snd_soc_jack_pin *pins;
 	struct snd_soc_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int num_pins, ret;
 
-	jack = snd_soc_card_get_drvdata(card);
+	jack = snd_soc_card_to_priv(card);
 	num_pins = ARRAY_SIZE(card_headset_pins);
 
-	pins = devm_kmemdup_array(card->dev, card_headset_pins, num_pins,
+	pins = devm_kmemdup_array(dev, card_headset_pins, num_pins,
 				  sizeof(card_headset_pins[0]), GFP_KERNEL);
 	if (!pins)
 		return -ENOMEM;
@@ -107,12 +109,13 @@ static int avs_nau8825_codec_init(struct snd_soc_pcm_runtime *runtime)
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_2, KEY_VOLUMEUP);
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_3, KEY_VOLUMEDOWN);
 
-	return snd_soc_component_set_jack(snd_soc_rtd_to_codec(runtime, 0)->component, jack, NULL);
+	return snd_soc_component_set_jack(snd_soc_dai_to_component(snd_soc_rtd_to_codec(runtime, 0)), jack, NULL);
 }
 
 static void avs_nau8825_codec_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	snd_soc_component_set_jack(snd_soc_rtd_to_codec(rtd, 0)->component, NULL, NULL);
+	snd_soc_component_set_jack(snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0)),
+				   NULL, NULL);
 }
 
 static int
@@ -141,25 +144,27 @@ static int avs_nau8825_trigger(struct snd_pcm_substream *substream, int cmd)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtm = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtm, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 		ret = snd_soc_dai_set_sysclk(codec_dai, NAU8825_CLK_FLL_FS, 0, SND_SOC_CLOCK_IN);
 		if (ret < 0) {
-			dev_err(codec_dai->dev, "can't set FS clock %d\n", ret);
+			dev_err(dev, "can't set FS clock %d\n", ret);
 			break;
 		}
 
 		ret = snd_soc_dai_set_pll(codec_dai, 0, 0, runtime->rate, runtime->rate * 256);
 		if (ret < 0)
-			dev_err(codec_dai->dev, "can't set FLL: %d\n", ret);
+			dev_err(dev, "can't set FLL: %d\n", ret);
 		break;
 
 	case SNDRV_PCM_TRIGGER_RESUME:
 		ret = snd_soc_dai_set_pll(codec_dai, 0, 0, runtime->rate, runtime->rate * 256);
 		if (ret < 0)
-			dev_err(codec_dai->dev, "can't set FLL: %d\n", ret);
+			dev_err(dev, "can't set FLL: %d\n", ret);
 		break;
 	}
 
@@ -218,26 +223,29 @@ static int avs_create_dai_link(struct device *dev, int ssp_port, int tdm_slot,
 static int avs_card_suspend_pre(struct snd_soc_card *card)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_card_get_codec_dai(card, SKL_NUVOTON_CODEC_DAI);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
-	return snd_soc_component_set_jack(codec_dai->component, NULL, NULL);
+	return snd_soc_component_set_jack(component, NULL, NULL);
 }
 
 static int avs_card_resume_post(struct snd_soc_card *card)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_card_get_codec_dai(card, SKL_NUVOTON_CODEC_DAI);
-	struct snd_soc_jack *jack = snd_soc_card_get_drvdata(card);
+	struct snd_soc_jack *jack = snd_soc_card_to_priv(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int stream = SNDRV_PCM_STREAM_PLAYBACK;
 
 	if (!codec_dai) {
-		dev_err(card->dev, "Codec dai not found\n");
+		dev_err(dev, "Codec dai not found\n");
 		return -EINVAL;
 	}
 
-	if (snd_soc_dai_stream_active(codec_dai, stream) &&
-	    snd_soc_dai_get_widget(codec_dai, stream)->active)
+	if (snd_soc_dai_active_stream(codec_dai, stream) &&
+	    snd_soc_dai_stream_widget_get(codec_dai, stream)->active)
 		snd_soc_dai_set_sysclk(codec_dai, NAU8825_CLK_FLL_FS, 0, SND_SOC_CLOCK_IN);
 
-	return snd_soc_component_set_jack(codec_dai->component, jack, NULL);
+	return snd_soc_component_set_jack(component, jack, NULL);
 }
 
 static int avs_nau8825_probe(struct platform_device *pdev)
@@ -289,7 +297,7 @@ static int avs_nau8825_probe(struct platform_device *pdev)
 	card_driver->dapm_routes = card_base_routes;
 	card_driver->num_dapm_routes = ARRAY_SIZE(card_base_routes);
 	card_driver->fully_routed = true;
-	snd_soc_card_set_drvdata(card, jack);
+	snd_soc_card_set_priv(card, jack);
 
 	return devm_snd_soc_card_register(card, card_driver);
 }

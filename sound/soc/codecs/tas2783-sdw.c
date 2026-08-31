@@ -874,7 +874,8 @@ static s32 tas_fu21_event(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *k, s32 event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct tas2783_prv *tas_dev = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2783_prv *tas_dev = dev_get_drvdata(dev);
 	s32 mute;
 
 	switch (event) {
@@ -896,7 +897,8 @@ static s32 tas_fu23_event(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *k, s32 event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct tas2783_prv *tas_dev = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2783_prv *tas_dev = dev_get_drvdata(dev);
 	s32 mute;
 
 	switch (event) {
@@ -940,7 +942,7 @@ static s32 tas_set_sdw_stream(struct snd_soc_dai *dai,
 	if (!sdw_stream)
 		return 0;
 
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -948,16 +950,16 @@ static s32 tas_set_sdw_stream(struct snd_soc_dai *dai,
 static void tas_sdw_shutdown(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static s32 tas_sdw_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2783_prv *tas_dev =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2783_prv *tas_dev = dev_get_drvdata(dev);
 	struct sdw_stream_config stream_config = {0};
 	struct sdw_port_config port_config = {0};
 	struct sdw_stream_runtime *sdw_stream;
@@ -969,7 +971,7 @@ static s32 tas_sdw_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 	if (!sdw_stream)
 		return -EINVAL;
 
@@ -1010,7 +1012,7 @@ static s32 tas_sdw_hw_params(struct snd_pcm_substream *substream,
 	ret = sdw_stream_add_slave(sdw_peripheral,
 				   &stream_config, &port_config, 1, sdw_stream);
 	if (ret)
-		dev_err(dai->dev, "Unable to configure port\n");
+		dev_err(dev, "Unable to configure port\n");
 
 	return ret;
 }
@@ -1018,11 +1020,11 @@ static s32 tas_sdw_hw_params(struct snd_pcm_substream *substream,
 static s32 tas_sdw_pcm_hw_free(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2783_prv *tas_dev =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2783_prv *tas_dev = dev_get_drvdata(dev);
 	struct sdw_stream_runtime *sdw_stream =
-		snd_soc_dai_get_dma_data(dai, substream);
+		snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	sdw_stream_remove_slave(tas_dev->sdw_peripheral, sdw_stream);
 
@@ -1065,8 +1067,8 @@ static struct snd_soc_dai_driver tas_dai_driver[] = {
 
 static s32 tas_component_probe(struct snd_soc_component *component)
 {
-	struct tas2783_prv *tas_dev =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2783_prv *tas_dev = dev_get_drvdata(dev);
 
 	tas_dev->component = component;
 
@@ -1075,8 +1077,9 @@ static s32 tas_component_probe(struct snd_soc_component *component)
 
 static void tas_component_remove(struct snd_soc_component *codec)
 {
-	struct tas2783_prv *tas_dev =
-			snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct tas2783_prv *tas_dev = dev_get_drvdata(dev);
+
 	tas_dev->component = NULL;
 }
 
@@ -1098,7 +1101,7 @@ static s32 tas_init(struct tas2783_prv *tas_dev)
 	s32 ret;
 
 	dev_set_drvdata(tas_dev->dev, tas_dev);
-	ret = devm_snd_soc_register_component(tas_dev->dev,
+	ret = devm_snd_soc_component_register(tas_dev->dev,
 					      &soc_codec_driver_tasdevice,
 					      tas_dai_driver,
 					      ARRAY_SIZE(tas_dai_driver));
@@ -1370,7 +1373,7 @@ static const struct sdw_slave_ops tas_sdw_ops = {
 
 static void tas_remove(struct tas2783_prv *tas_dev)
 {
-	snd_soc_unregister_component(tas_dev->dev);
+	snd_soc_component_unregister(tas_dev->dev);
 }
 
 static s32 tas_sdw_probe(struct sdw_slave *peripheral,

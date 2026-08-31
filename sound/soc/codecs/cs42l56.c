@@ -746,8 +746,9 @@ static int cs42l56_get_mclk_ratio(int mclk, int rate)
 static int cs42l56_set_sysclk(struct snd_soc_dai *codec_dai,
 			int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs42l56_private *cs42l56 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l56_private *cs42l56 = dev_get_drvdata(dev);
 
 	switch (freq) {
 	case CS42L56_MCLK_5P6448MHZ:
@@ -785,8 +786,9 @@ static int cs42l56_set_sysclk(struct snd_soc_dai *codec_dai,
 
 static int cs42l56_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs42l56_private *cs42l56 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l56_private *cs42l56 = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -834,7 +836,7 @@ static int cs42l56_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 
 static int cs42l56_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (mute) {
 		/* Hit the DSP Mixer first */
@@ -891,8 +893,9 @@ static int cs42l56_pcm_hw_params(struct snd_pcm_substream *substream,
 				     struct snd_pcm_hw_params *params,
 				     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l56_private *cs42l56 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l56_private *cs42l56 = dev_get_drvdata(dev);
 	int ratio;
 
 	ratio = cs42l56_get_mclk_ratio(cs42l56->mclk, params_rate(params));
@@ -900,7 +903,7 @@ static int cs42l56_pcm_hw_params(struct snd_pcm_substream *substream,
 		snd_soc_component_update_bits(component, CS42L56_CLKCTL_2,
 				    CS42L56_CLK_RATIO_MASK, ratio);
 	} else {
-		dev_err(component->dev, "unsupported mclk/sclk/lrclk ratio\n");
+		dev_err(dev, "unsupported mclk/sclk/lrclk ratio\n");
 		return -EINVAL;
 	}
 
@@ -910,7 +913,8 @@ static int cs42l56_pcm_hw_params(struct snd_pcm_substream *substream,
 static int cs42l56_set_bias_level(struct snd_soc_component *component,
 					enum snd_soc_bias_level level)
 {
-	struct cs42l56_private *cs42l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l56_private *cs42l56 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -1006,6 +1010,7 @@ static void cs42l56_beep_work(struct work_struct *work)
 		container_of(work, struct cs42l56_private, beep_work);
 	struct snd_soc_component *component = cs42l56->component;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int i;
 	int val = 0;
 	int best = 0;
@@ -1017,14 +1022,14 @@ static void cs42l56_beep_work(struct work_struct *work)
 				best = i;
 		}
 
-		dev_dbg(component->dev, "Set beep rate %dHz for requested %dHz\n",
+		dev_dbg(dev, "Set beep rate %dHz for requested %dHz\n",
 			beep_freq[best], cs42l56->beep_rate);
 
 		val = (best << CS42L56_BEEP_RATE_SHIFT);
 
 		snd_soc_dapm_enable_pin(dapm, "Beep");
 	} else {
-		dev_dbg(component->dev, "Disabling beep\n");
+		dev_dbg(dev, "Disabling beep\n");
 		snd_soc_dapm_disable_pin(dapm, "Beep");
 	}
 
@@ -1037,13 +1042,14 @@ static void cs42l56_beep_work(struct work_struct *work)
 /* For usability define a way of injecting beep events for the device -
  * many systems will not have a keyboard.
  */
-static int cs42l56_beep_event(struct input_dev *dev, unsigned int type,
+static int cs42l56_beep_event(struct input_dev *idev, unsigned int type,
 			     unsigned int code, int hz)
 {
-	struct snd_soc_component *component = input_get_drvdata(dev);
-	struct cs42l56_private *cs42l56 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = input_get_drvdata(idev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l56_private *cs42l56 = dev_get_drvdata(dev);
 
-	dev_dbg(component->dev, "Beep event %x %x\n", code, hz);
+	dev_dbg(dev, "Beep event %x %x\n", code, hz);
 
 	switch (code) {
 	case SND_BELL:
@@ -1082,12 +1088,13 @@ static DEVICE_ATTR_WO(beep);
 
 static void cs42l56_init_beep(struct snd_soc_component *component)
 {
-	struct cs42l56_private *cs42l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l56_private *cs42l56 = dev_get_drvdata(dev);
 	int ret;
 
-	cs42l56->beep = devm_input_allocate_device(component->dev);
+	cs42l56->beep = devm_input_allocate_device(dev);
 	if (!cs42l56->beep) {
-		dev_err(component->dev, "Failed to allocate beep device\n");
+		dev_err(dev, "Failed to allocate beep device\n");
 		return;
 	}
 
@@ -1095,33 +1102,33 @@ static void cs42l56_init_beep(struct snd_soc_component *component)
 	cs42l56->beep_rate = 0;
 
 	cs42l56->beep->name = "CS42L56 Beep Generator";
-	cs42l56->beep->phys = dev_name(component->dev);
+	cs42l56->beep->phys = dev_name(dev);
 	cs42l56->beep->id.bustype = BUS_I2C;
 
 	cs42l56->beep->evbit[0] = BIT_MASK(EV_SND);
 	cs42l56->beep->sndbit[0] = BIT_MASK(SND_BELL) | BIT_MASK(SND_TONE);
 	cs42l56->beep->event = cs42l56_beep_event;
-	cs42l56->beep->dev.parent = component->dev;
+	cs42l56->beep->dev.parent = dev;
 	input_set_drvdata(cs42l56->beep, component);
 
 	ret = input_register_device(cs42l56->beep);
 	if (ret != 0) {
 		cs42l56->beep = NULL;
-		dev_err(component->dev, "Failed to register beep device\n");
+		dev_err(dev, "Failed to register beep device\n");
 	}
 
-	ret = device_create_file(component->dev, &dev_attr_beep);
+	ret = device_create_file(dev, &dev_attr_beep);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to create keyclick file: %d\n",
-			ret);
+		dev_err(dev, "Failed to create keyclick file: %d\n", ret);
 	}
 }
 
 static void cs42l56_free_beep(struct snd_soc_component *component)
 {
-	struct cs42l56_private *cs42l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l56_private *cs42l56 = dev_get_drvdata(dev);
 
-	device_remove_file(component->dev, &dev_attr_beep);
+	device_remove_file(dev, &dev_attr_beep);
 	cancel_work_sync(&cs42l56->beep_work);
 	cs42l56->beep = NULL;
 
@@ -1332,7 +1339,7 @@ static int cs42l56_i2c_probe(struct i2c_client *i2c_client)
 				   CS42L56_ADAPT_PWR_MASK,
 				cs42l56->pdata.adaptive_pwr);
 
-	ret =  devm_snd_soc_register_component(&i2c_client->dev,
+	ret =  devm_snd_soc_component_register(&i2c_client->dev,
 			&soc_component_dev_cs42l56, &cs42l56_dai, 1);
 	if (ret < 0)
 		goto err_enable;

@@ -152,7 +152,7 @@ void snd_soc_component_device_link_del(struct snd_soc_component *component)
 int snd_soc_component_device_link_add(struct snd_soc_component *component)
 {
 	struct snd_soc_card *card = snd_soc_component_to_card(component);
-	struct device *card_dev = card->dev;
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	struct device *component_dev = snd_soc_component_to_dev(component);
 
 	if (card_dev == component_dev)
@@ -349,7 +349,7 @@ int snd_soc_component_notify_control(struct snd_soc_component *component,
 	if (!kctl)
 		return soc_component_ret(component, -EINVAL);
 
-	snd_ctl_notify(component->card->snd_card,
+	snd_ctl_notify(snd_soc_card_to_snd_card(component->card),
 		       SNDRV_CTL_EVENT_MASK_VALUE, &kctl->id);
 
 	return 0;
@@ -489,7 +489,7 @@ int snd_soc_component_is_suspended(struct snd_soc_component *component)
 int snd_soc_component_add_controls(struct snd_soc_component *component,
 				   const struct snd_kcontrol_new *controls, unsigned int num_controls)
 {
-	struct snd_card *card = component->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(component->card);
 
 	return snd_soc_add_controls(card, component->dev, controls,
 				    num_controls, component->name_prefix, component);
@@ -558,7 +558,7 @@ EXPORT_SYMBOL_GPL(snd_soc_component_regmap_init);
  * Calls regmap_exit() on the regmap instance associated to the component and
  * removes the regmap instance from the component.
  *
- * This function should only be used if snd_soc_component_init_regmap() was used
+ * This function should only be used if snd_soc_component_regmap_init() was used
  * to initialize the regmap instance.
  */
 void snd_soc_component_regmap_exit(struct snd_soc_component *component)
@@ -954,7 +954,7 @@ EXPORT_SYMBOL_GPL(snd_soc_component_update_bits);
  * This function is similar to snd_soc_component_update_bits(), but the update
  * operation is scheduled asynchronously. This means it may not be completed
  * when the function returns. To make sure that all scheduled updates have been
- * completed snd_soc_component_async_complete() must be called.
+ * completed snd_soc_component_regmap_async_complete() must be called.
  *
  * Return: 1 if the operation was successful and the value of the register
  * changed, 0 if the operation was successful, but the value did not change.
@@ -1076,7 +1076,7 @@ static bool snd_soc_component_is_codec_on_rtd(struct snd_soc_pcm_runtime *rtd,
 	int i;
 
 	for_each_rtd_codec_dais(rtd, i, dai) {
-		if (dai->component == component)
+		if (snd_soc_dai_to_component(dai) == component)
 			return true;
 	}
 
@@ -1432,7 +1432,9 @@ bool snd_soc_component_matches_dlc(struct snd_soc_component *component,
 #ifdef CONFIG_DEBUG_FS
 static void snd_soc_component_debugfs_init(struct snd_soc_component *component)
 {
-	if (!component->card->debugfs_card_root)
+	struct dentry *debugfs_root = snd_soc_card_to_debugfs_root(component->card);
+
+	if (!debugfs_root)
 		return;
 
 	if (component->driver->debugfs_prefix) {
@@ -1441,13 +1443,11 @@ static void snd_soc_component_debugfs_init(struct snd_soc_component *component)
 		name = kasprintf(GFP_KERNEL, "%s:%s",
 				 component->driver->debugfs_prefix, component->name);
 		if (name) {
-			component->debugfs_root = debugfs_create_dir(name,
-								     component->card->debugfs_card_root);
+			component->debugfs_root = debugfs_create_dir(name, debugfs_root);
 			kfree(name);
 		}
 	} else {
-		component->debugfs_root = debugfs_create_dir(component->name,
-							     component->card->debugfs_card_root);
+		component->debugfs_root = debugfs_create_dir(component->name, debugfs_root);
 	}
 
 	snd_soc_dapm_debugfs_init(snd_soc_component_to_dapm(component),
@@ -1470,11 +1470,12 @@ static void snd_soc_component_set_name_prefix(struct snd_soc_card *card,
 					      struct snd_soc_component *component)
 {
 	struct device_node *of_node = snd_soc_component_to_node(component);
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	const char *str;
 	int ret, i;
 
-	for (i = 0; i < card->num_configs; i++) {
-		struct snd_soc_codec_conf *map = &card->codec_conf[i];
+	for (i = 0; i < card_driver->num_configs; i++) {
+		struct snd_soc_codec_conf *map = &card_driver->codec_conf[i];
 
 		if (snd_soc_component_matches_dlc(component, &map->dlc) &&
 		    map->name_prefix) {
@@ -1524,7 +1525,9 @@ int snd_soc_component_probe(struct snd_soc_card *card, struct snd_soc_component 
 			dev_err(component->dev,
 				"Trying to bind component \"%s\" to card \"%s\" "
 				"but is already bound to card \"%s\"\n",
-				component->name, card->name, component->card->name);
+				component->name,
+				snd_soc_card_name(card),
+				snd_soc_card_name(component->card));
 			return -ENODEV;
 		}
 		return 0;
@@ -1594,7 +1597,7 @@ int snd_soc_component_probe(struct snd_soc_card *card, struct snd_soc_component 
 		goto err_probe;
 
 	/* see for_each_card_components */
-	list_add(&component->component_list, &card->component_list_head);
+	list_add(&component->component_list, snd_soc_card_to_component_list_head(card));
 
 err_probe:
 	if (ret < 0)
@@ -1669,7 +1672,7 @@ static void snd_soc_component_unregister_dais(struct snd_soc_component *componen
 	struct snd_soc_dai *dai, *_dai;
 
 	for_each_component_dais_safe(component, dai, _dai)
-		snd_soc_unregister_dai(dai);
+		snd_soc_dai_unregister(dai);
 }
 
 /**
@@ -1688,7 +1691,7 @@ static int snd_soc_component_register_dais(struct snd_soc_component *component,
 	int ret;
 
 	for (i = 0; i < count; i++) {
-		dai = snd_soc_register_dai(component, dai_drv + i, count == 1 &&
+		dai = snd_soc_dai_register(component, dai_drv + i, count == 1 &&
 					   component->driver->legacy_dai_naming);
 		if (dai == NULL) {
 			ret = -ENOMEM;

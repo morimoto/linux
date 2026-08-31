@@ -372,8 +372,9 @@ static const struct snd_soc_dapm_route es8316_dapm_routes[] = {
 static int es8316_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct es8316_priv *es8316 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8316_priv *es8316 = dev_get_drvdata(dev);
 	int i, ret;
 	int count = 0;
 
@@ -415,7 +416,8 @@ static int es8316_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int es8316_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			      unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u8 serdata1 = 0;
 	u8 serdata2 = 0;
 	u8 clksw;
@@ -425,7 +427,7 @@ static int es8316_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		serdata1 |= ES8316_SERDATA1_MASTER;
 
 	if ((fmt & SND_SOC_DAIFMT_FORMAT_MASK) != SND_SOC_DAIFMT_I2S) {
-		dev_err(component->dev, "Codec driver only supports I2S format\n");
+		dev_err(dev, "Codec driver only supports I2S format\n");
 		return -EINVAL;
 	}
 
@@ -464,8 +466,9 @@ static int es8316_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int es8316_pcm_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8316_priv *es8316 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8316_priv *es8316 = dev_get_drvdata(dev);
 
 	if (es8316->sysclk_constraints.list)
 		snd_pcm_hw_constraint_list(substream->runtime, 0,
@@ -479,8 +482,9 @@ static int es8316_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8316_priv *es8316 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8316_priv *es8316 = dev_get_drvdata(dev);
 	u8 wordlen = 0;
 	u8 bclk_divider;
 	u16 lrck_divider;
@@ -558,7 +562,9 @@ static int es8316_pcm_hw_params(struct snd_pcm_substream *substream,
 
 static int es8316_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	snd_soc_component_update_bits(dai->component, ES8316_DAC_SET1, 0x20,
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	snd_soc_component_update_bits(component, ES8316_DAC_SET1, 0x20,
 			    mute ? 0x20 : 0);
 	return 0;
 }
@@ -636,6 +642,7 @@ static irqreturn_t es8316_irq(int irq, void *data)
 {
 	struct es8316_priv *es8316 = data;
 	struct snd_soc_component *comp = es8316->component;
+	struct device *dev = snd_soc_component_to_dev(comp);
 	unsigned int flags;
 
 	guard(mutex)(&es8316->lock);
@@ -651,7 +658,7 @@ static irqreturn_t es8316_irq(int irq, void *data)
 	if (es8316->jd_inverted)
 		flags ^= ES8316_GPIO_FLAG_HP_NOT_INSERTED;
 
-	dev_dbg(comp->dev, "gpio flags %#04x\n", flags);
+	dev_dbg(dev, "gpio flags %#04x\n", flags);
 	if (flags & ES8316_GPIO_FLAG_HP_NOT_INSERTED) {
 		/* Jack removed, or spurious IRQ? */
 		if (es8316->jack->status & SND_JACK_MICROPHONE)
@@ -660,7 +667,7 @@ static irqreturn_t es8316_irq(int irq, void *data)
 		if (es8316->jack->status & SND_JACK_HEADPHONE) {
 			snd_soc_jack_report(es8316->jack, 0,
 					    SND_JACK_HEADSET | SND_JACK_BTN_0);
-			dev_dbg(comp->dev, "jack unplugged\n");
+			dev_dbg(dev, "jack unplugged\n");
 		}
 	} else if (!(es8316->jack->status & SND_JACK_HEADPHONE)) {
 		/* Jack inserted, determine type */
@@ -668,7 +675,7 @@ static irqreturn_t es8316_irq(int irq, void *data)
 		regmap_read(es8316->regmap, ES8316_GPIO_FLAG, &flags);
 		if (es8316->jd_inverted)
 			flags ^= ES8316_GPIO_FLAG_HP_NOT_INSERTED;
-		dev_dbg(comp->dev, "gpio flags %#04x\n", flags);
+		dev_dbg(dev, "gpio flags %#04x\n", flags);
 		if (flags & ES8316_GPIO_FLAG_HP_NOT_INSERTED) {
 			/* Jack unplugged underneath us */
 			es8316_disable_micbias_for_mic_gnd_short_detect(comp);
@@ -705,15 +712,15 @@ static irqreturn_t es8316_irq(int irq, void *data)
 static void es8316_enable_jack_detect(struct snd_soc_component *component,
 				      struct snd_soc_jack *jack)
 {
-	struct es8316_priv *es8316 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8316_priv *es8316 = dev_get_drvdata(dev);
 
 	/*
 	 * Init es8316->jd_inverted here and not in the probe, as we cannot
 	 * guarantee that the bytchr-es8316 driver, which might set this
 	 * property, will probe before us.
 	 */
-	es8316->jd_inverted = device_property_read_bool(component->dev,
-							"everest,jack-detect-inverted");
+	es8316->jd_inverted = device_property_read_bool(dev, "everest,jack-detect-inverted");
 
 	scoped_guard(mutex, &es8316->lock) {
 		es8316->jack = jack;
@@ -733,7 +740,8 @@ static void es8316_enable_jack_detect(struct snd_soc_component *component,
 
 static void es8316_disable_jack_detect(struct snd_soc_component *component)
 {
-	struct es8316_priv *es8316 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8316_priv *es8316 = dev_get_drvdata(dev);
 
 	if (!es8316->jack)
 		return; /* Already disabled (or never enabled) */
@@ -766,22 +774,23 @@ static int es8316_set_jack(struct snd_soc_component *component,
 
 static int es8316_probe(struct snd_soc_component *component)
 {
-	struct es8316_priv *es8316 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8316_priv *es8316 = dev_get_drvdata(dev);
 	int ret;
 
 	es8316->component = component;
 
-	es8316->mclk = devm_clk_get_optional(component->dev, "mclk");
+	es8316->mclk = devm_clk_get_optional(dev, "mclk");
 	if (IS_ERR(es8316->mclk)) {
-		dev_err(component->dev, "unable to get mclk\n");
+		dev_err(dev, "unable to get mclk\n");
 		return PTR_ERR(es8316->mclk);
 	}
 	if (!es8316->mclk)
-		dev_warn(component->dev, "assuming static mclk\n");
+		dev_warn(dev, "assuming static mclk\n");
 
 	ret = clk_prepare_enable(es8316->mclk);
 	if (ret) {
-		dev_err(component->dev, "unable to enable mclk\n");
+		dev_err(dev, "unable to enable mclk\n");
 		return ret;
 	}
 
@@ -809,14 +818,16 @@ static int es8316_probe(struct snd_soc_component *component)
 
 static void es8316_remove(struct snd_soc_component *component)
 {
-	struct es8316_priv *es8316 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8316_priv *es8316 = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(es8316->mclk);
 }
 
 static int es8316_resume(struct snd_soc_component *component)
 {
-	struct es8316_priv *es8316 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8316_priv *es8316 = dev_get_drvdata(dev);
 
 	regcache_cache_only(es8316->regmap, false);
 	regcache_sync(es8316->regmap);
@@ -826,7 +837,8 @@ static int es8316_resume(struct snd_soc_component *component)
 
 static int es8316_suspend(struct snd_soc_component *component)
 {
-	struct es8316_priv *es8316 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8316_priv *es8316 = dev_get_drvdata(dev);
 
 	regcache_cache_only(es8316->regmap, true);
 	regcache_mark_dirty(es8316->regmap);
@@ -905,7 +917,7 @@ static int es8316_i2c_probe(struct i2c_client *i2c_client)
 		}
 	}
 
-	return devm_snd_soc_register_component(&i2c_client->dev,
+	return devm_snd_soc_component_register(&i2c_client->dev,
 				      &soc_component_dev_es8316,
 				      &es8316_dai, 1);
 }

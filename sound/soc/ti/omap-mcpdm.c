@@ -248,7 +248,9 @@ static irqreturn_t omap_mcpdm_irq_handler(int irq, void *dev_id)
 static int omap_mcpdm_dai_startup(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct omap_mcpdm *mcpdm = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_mcpdm *mcpdm = dev_get_drvdata(dev);
 
 	guard(mutex)(&mcpdm->mutex);
 
@@ -261,7 +263,9 @@ static int omap_mcpdm_dai_startup(struct snd_pcm_substream *substream,
 static void omap_mcpdm_dai_shutdown(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct omap_mcpdm *mcpdm = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_mcpdm *mcpdm = dev_get_drvdata(dev);
 	int tx = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 	int stream1 = tx ? SNDRV_PCM_STREAM_PLAYBACK : SNDRV_PCM_STREAM_CAPTURE;
 	int stream2 = tx ? SNDRV_PCM_STREAM_CAPTURE : SNDRV_PCM_STREAM_PLAYBACK;
@@ -290,7 +294,9 @@ static int omap_mcpdm_dai_hw_params(struct snd_pcm_substream *substream,
 				    struct snd_pcm_hw_params *params,
 				    struct snd_soc_dai *dai)
 {
-	struct omap_mcpdm *mcpdm = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_mcpdm *mcpdm = dev_get_drvdata(dev);
 	int stream = substream->stream;
 	struct snd_dmaengine_dai_dma_data *dma_data;
 	u32 threshold;
@@ -325,7 +331,7 @@ static int omap_mcpdm_dai_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	dma_data = snd_soc_dai_get_dma_data(dai, substream);
+	dma_data = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	threshold = mcpdm->config[stream].threshold;
 	/* Configure McPDM channels, and DMA packet size */
@@ -370,7 +376,9 @@ static int omap_mcpdm_dai_hw_params(struct snd_pcm_substream *substream,
 static int omap_mcpdm_prepare(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct omap_mcpdm *mcpdm = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_mcpdm *mcpdm = dev_get_drvdata(dev);
 	struct pm_qos_request *pm_qos_req = &mcpdm->pm_qos_req;
 	int tx = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 	int stream1 = tx ? SNDRV_PCM_STREAM_PLAYBACK : SNDRV_PCM_STREAM_CAPTURE;
@@ -401,7 +409,9 @@ static int omap_mcpdm_prepare(struct snd_pcm_substream *substream,
 
 static int omap_mcpdm_probe(struct snd_soc_dai *dai)
 {
-	struct omap_mcpdm *mcpdm = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_mcpdm *mcpdm = dev_get_drvdata(dev);
 	int ret;
 
 	pm_runtime_enable(mcpdm->dev);
@@ -425,16 +435,17 @@ static int omap_mcpdm_probe(struct snd_soc_dai *dai)
 	mcpdm->config[SNDRV_PCM_STREAM_CAPTURE].threshold =
 							MCPDM_UP_THRES_MAX - 3;
 
-	snd_soc_dai_init_dma_data(dai,
-				  &mcpdm->dma_data[SNDRV_PCM_STREAM_PLAYBACK],
-				  &mcpdm->dma_data[SNDRV_PCM_STREAM_CAPTURE]);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &mcpdm->dma_data[SNDRV_PCM_STREAM_PLAYBACK]);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &mcpdm->dma_data[SNDRV_PCM_STREAM_CAPTURE]);
 
 	return ret;
 }
 
 static int omap_mcpdm_remove(struct snd_soc_dai *dai)
 {
-	struct omap_mcpdm *mcpdm = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_mcpdm *mcpdm = dev_get_drvdata(dev);
 
 	free_irq(mcpdm->irq, (void *)mcpdm);
 	pm_runtime_disable(mcpdm->dev);
@@ -459,7 +470,8 @@ static const struct snd_soc_dai_ops omap_mcpdm_dai_ops = {
 #ifdef CONFIG_PM_SLEEP
 static int omap_mcpdm_suspend(struct snd_soc_component *component)
 {
-	struct omap_mcpdm *mcpdm = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_mcpdm *mcpdm = dev_get_drvdata(dev);
 
 	if (snd_soc_component_active(component)) {
 		omap_mcpdm_stop(mcpdm);
@@ -477,7 +489,8 @@ static int omap_mcpdm_suspend(struct snd_soc_component *component)
 
 static int omap_mcpdm_resume(struct snd_soc_component *component)
 {
-	struct omap_mcpdm *mcpdm = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_mcpdm *mcpdm = dev_get_drvdata(dev);
 
 	if (mcpdm->pm_active_count) {
 		while (mcpdm->pm_active_count--)
@@ -528,7 +541,10 @@ static const struct snd_soc_component_driver omap_mcpdm_component = {
 void omap_mcpdm_configure_dn_offsets(struct snd_soc_pcm_runtime *rtd,
 				    u8 rx1, u8 rx2)
 {
-	struct omap_mcpdm *mcpdm = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct omap_mcpdm *mcpdm = dev_get_drvdata(cpu_dev);
 
 	mcpdm->dn_rx_offset = MCPDM_DNOFST_RX1(rx1) | MCPDM_DNOFST_RX2(rx2);
 }
@@ -568,7 +584,7 @@ static int asoc_mcpdm_probe(struct platform_device *pdev)
 
 	mcpdm->dev = &pdev->dev;
 
-	ret =  devm_snd_soc_register_component(&pdev->dev,
+	ret =  devm_snd_soc_component_register(&pdev->dev,
 					       &omap_mcpdm_component,
 					       &omap_mcpdm_dai, 1);
 	if (ret)

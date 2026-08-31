@@ -203,7 +203,8 @@ static struct snd_soc_dai_driver ad1980_dai = {
 
 static int ad1980_reset(struct snd_soc_component *component, int try_warm)
 {
-	struct snd_ac97 *ac97 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_ac97 *ac97 = dev_get_drvdata(dev);
 	unsigned int retry_cnt = 0;
 	int ret;
 
@@ -223,13 +224,14 @@ static int ad1980_reset(struct snd_soc_component *component, int try_warm)
 
 	} while (retry_cnt++ < 10);
 
-	dev_err(component->dev, "Failed to reset: AC97 link error\n");
+	dev_err(dev, "Failed to reset: AC97 link error\n");
 
 	return -EIO;
 }
 
 static int ad1980_soc_probe(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_ac97 *ac97;
 	struct regmap *regmap;
 	int ret;
@@ -239,7 +241,7 @@ static int ad1980_soc_probe(struct snd_soc_component *component)
 	ac97 = snd_soc_new_ac97_component(component, 0, 0);
 	if (IS_ERR(ac97)) {
 		ret = PTR_ERR(ac97);
-		dev_err(component->dev, "Failed to register AC97 component: %d\n", ret);
+		dev_err(dev, "Failed to register AC97 component: %d\n", ret);
 		return ret;
 	}
 
@@ -249,8 +251,8 @@ static int ad1980_soc_probe(struct snd_soc_component *component)
 		goto err_free_ac97;
 	}
 
-	snd_soc_component_init_regmap(component, regmap);
-	snd_soc_component_set_drvdata(component, ac97);
+	snd_soc_component_regmap_init(component, regmap);
+	dev_set_drvdata(dev, ac97);
 
 	ret = ad1980_reset(component, 0);
 	if (ret < 0)
@@ -258,8 +260,7 @@ static int ad1980_soc_probe(struct snd_soc_component *component)
 
 	vendor_id2 = snd_soc_component_read(component, AC97_VENDOR_ID2);
 	if (vendor_id2 == 0x5374) {
-		dev_warn(component->dev,
-			"Found AD1981 - only 2/2 IN/OUT Channels supported\n");
+		dev_warn(dev, "Found AD1981 - only 2/2 IN/OUT Channels supported\n");
 	}
 
 	/* unmute captures and playbacks volume */
@@ -276,7 +277,7 @@ static int ad1980_soc_probe(struct snd_soc_component *component)
 	return 0;
 
 reset_err:
-	snd_soc_component_exit_regmap(component);
+	snd_soc_component_regmap_exit(component);
 err_free_ac97:
 	snd_soc_free_ac97_component(ac97);
 	return ret;
@@ -284,9 +285,10 @@ err_free_ac97:
 
 static void ad1980_soc_remove(struct snd_soc_component *component)
 {
-	struct snd_ac97 *ac97 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_ac97 *ac97 = dev_get_drvdata(dev);
 
-	snd_soc_component_exit_regmap(component);
+	snd_soc_component_regmap_exit(component);
 	snd_soc_free_ac97_component(ac97);
 }
 
@@ -306,7 +308,7 @@ static const struct snd_soc_component_driver soc_component_dev_ad1980 = {
 
 static int ad1980_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&soc_component_dev_ad1980, &ad1980_dai, 1);
 }
 

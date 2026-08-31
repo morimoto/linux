@@ -379,7 +379,7 @@ static int sun4i_codec_trigger(struct snd_pcm_substream *substream, int cmd,
 			       struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sun4i_codec *scodec = snd_soc_card_get_drvdata(rtd->card);
+	struct sun4i_codec *scodec = snd_soc_card_to_priv(rtd->card);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -411,7 +411,7 @@ static int sun4i_codec_prepare_capture(struct snd_pcm_substream *substream,
 				       struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sun4i_codec *scodec = snd_soc_card_get_drvdata(rtd->card);
+	struct sun4i_codec *scodec = snd_soc_card_to_priv(rtd->card);
 
 
 	/* Flush RX FIFO */
@@ -452,7 +452,7 @@ static int sun4i_codec_prepare_playback(struct snd_pcm_substream *substream,
 					struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sun4i_codec *scodec = snd_soc_card_get_drvdata(rtd->card);
+	struct sun4i_codec *scodec = snd_soc_card_to_priv(rtd->card);
 	u32 val;
 
 	/* Flush the TX FIFO */
@@ -653,7 +653,7 @@ static int sun4i_codec_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sun4i_codec *scodec = snd_soc_card_get_drvdata(rtd->card);
+	struct sun4i_codec *scodec = snd_soc_card_to_priv(rtd->card);
 	unsigned long clk_freq;
 	int ret, hwrate;
 
@@ -681,7 +681,7 @@ static int sun4i_codec_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sun4i_codec *scodec = snd_soc_card_get_drvdata(rtd->card);
+	struct sun4i_codec *scodec = snd_soc_card_to_priv(rtd->card);
 
 	/*
 	 * Stop issuing DRQ when we have room for less than 16 samples
@@ -697,7 +697,7 @@ static void sun4i_codec_shutdown(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sun4i_codec *scodec = snd_soc_card_get_drvdata(rtd->card);
+	struct sun4i_codec *scodec = snd_soc_card_to_priv(rtd->card);
 
 	clk_disable_unprepare(scodec->clk_module);
 }
@@ -1551,11 +1551,13 @@ static const struct snd_soc_component_driver sun4i_codec_component = {
 
 static int sun4i_codec_dai_probe(struct snd_soc_dai *dai)
 {
-	struct snd_soc_card *card = snd_soc_dai_get_drvdata(dai);
-	struct sun4i_codec *scodec = snd_soc_card_get_drvdata(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = dev_get_drvdata(dev);
+	struct sun4i_codec *scodec = snd_soc_card_to_priv(card);
 
-	snd_soc_dai_init_dma_data(dai, &scodec->playback_dma_data,
-				  &scodec->capture_dma_data);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &scodec->playback_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &scodec->capture_dma_data);
 
 	return 0;
 }
@@ -1600,7 +1602,7 @@ static struct snd_soc_jack_gpio sun4i_headphone_jack_gpio = {
 static int sun4i_codec_machine_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct sun4i_codec *scodec = snd_soc_card_get_drvdata(card);
+	struct sun4i_codec *scodec = snd_soc_card_to_priv(card);
 	int ret;
 
 	if (scodec->gpio_hp) {
@@ -1664,7 +1666,7 @@ static int sun4i_codec_spk_event(struct snd_soc_dapm_widget *w,
 				 struct snd_kcontrol *k, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct sun4i_codec *scodec = snd_soc_card_get_drvdata(card);
+	struct sun4i_codec *scodec = snd_soc_card_to_priv(card);
 
 	gpiod_set_value_cansleep(scodec->gpio_pa,
 				 !!SND_SOC_DAPM_EVENT_ON(event));
@@ -2380,12 +2382,12 @@ static int sun4i_codec_probe(struct platform_device *pdev)
 		scodec->capture_dma_data.addr_width = DMA_SLAVE_BUSWIDTH_2_BYTES;
 	}
 
-	ret = devm_snd_soc_register_component(&pdev->dev, quirks->codec,
+	ret = devm_snd_soc_component_register(&pdev->dev, quirks->codec,
 				     &sun4i_codec_dai, 1);
 	if (ret)
 		return ret;
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &sun4i_codec_component,
 					      &dummy_cpu_dai, 1);
 	if (ret)
@@ -2399,7 +2401,7 @@ static int sun4i_codec_probe(struct platform_device *pdev)
 	if (IS_ERR(card_driver))
 		return PTR_ERR(card_driver);
 
-	snd_soc_card_set_drvdata(card, scodec);
+	snd_soc_card_set_priv(card, scodec);
 
 	ret = snd_soc_card_register(card, card_driver);
 	if (ret)

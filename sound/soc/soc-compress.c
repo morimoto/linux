@@ -543,11 +543,13 @@ static struct snd_compr_ops soc_compr_dyn_ops = {
  */
 int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 {
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(rtd->card);
 	struct snd_soc_component *component;
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_compr *compr;
 	struct snd_pcm *be_pcm;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	char new_name[64];
 	int ret = 0, direction = 0;
 	int playback = 0, capture = 0;
@@ -562,13 +564,12 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 
 	if (rtd->dai_link->num_cpus > 1 ||
 	    rtd->dai_link->num_codecs > 1) {
-		dev_err(rtd->card->dev,
-			"Compress ASoC: Multi CPU/Codec not supported\n");
+		dev_err(dev, "Compress ASoC: Multi CPU/Codec not supported\n");
 		return -EINVAL;
 	}
 
 	if (!codec_dai) {
-		dev_err(rtd->card->dev, "Missing codec\n");
+		dev_err(dev, "Missing codec\n");
 		return -EINVAL;
 	}
 
@@ -585,8 +586,7 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 	 * should be set, check for that (xor)
 	 */
 	if (playback + capture != 1) {
-		dev_err(rtd->card->dev,
-			"Compress ASoC: Invalid direction for P %d, C %d\n",
+		dev_err(dev, "Compress ASoC: Invalid direction for P %d, C %d\n",
 			playback, capture);
 		return -EINVAL;
 	}
@@ -596,12 +596,11 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 	else
 		direction = SND_COMPRESS_CAPTURE;
 
-	compr = devm_kzalloc(rtd->card->dev, sizeof(*compr), GFP_KERNEL);
+	compr = devm_kzalloc(dev, sizeof(*compr), GFP_KERNEL);
 	if (!compr)
 		return -ENOMEM;
 
-	compr->ops = devm_kzalloc(rtd->card->dev, sizeof(soc_compr_ops),
-				  GFP_KERNEL);
+	compr->ops = devm_kzalloc(dev, sizeof(soc_compr_ops), GFP_KERNEL);
 	if (!compr->ops)
 		return -ENOMEM;
 
@@ -617,11 +616,10 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 		snprintf(new_name, sizeof(new_name), "(%s)",
 			rtd->dai_link->stream_name);
 
-		ret = snd_pcm_new_internal(rtd->card->snd_card, new_name, rtd->id,
+		ret = snd_pcm_new_internal(snd_card, new_name, rtd->id,
 				playback, capture, &be_pcm);
 		if (ret < 0) {
-			dev_err(rtd->card->dev,
-				"Compress ASoC: can't create compressed for %s: %d\n",
+			dev_err(dev, "Compress ASoC: can't create compressed for %s: %d\n",
 				rtd->dai_link->name, ret);
 			return ret;
 		}
@@ -638,27 +636,29 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 		memcpy(compr->ops, &soc_compr_dyn_ops, sizeof(soc_compr_dyn_ops));
 	} else {
 		snprintf(new_name, sizeof(new_name), "%s %s-%d",
-			rtd->dai_link->stream_name, codec_dai->name, rtd->id);
+			 rtd->dai_link->stream_name, snd_soc_dai_name(codec_dai), rtd->id);
 
 		memcpy(compr->ops, &soc_compr_ops, sizeof(soc_compr_ops));
 	}
 
 	for_each_rtd_components(rtd, i, component) {
-		if (!component->driver->compress_ops ||
-		    !component->driver->compress_ops->copy)
+		const struct snd_soc_component_driver *driver = snd_soc_component_to_driver(component);
+
+		if (!driver->compress_ops ||
+		    !driver->compress_ops->copy)
 			continue;
 
 		compr->ops->copy = snd_soc_component_compr_copy;
 		break;
 	}
 
-	ret = snd_compress_new(rtd->card->snd_card, rtd->id, direction,
-				new_name, compr);
+	ret = snd_compress_new(snd_card, rtd->id, direction, new_name, compr);
 	if (ret < 0) {
-		component = snd_soc_rtd_to_codec(rtd, 0)->component;
-		dev_err(component->dev,
+		component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
+
+		dev_err(snd_soc_component_to_dev(component),
 			"Compress ASoC: can't create compress for codec %s: %d\n",
-			component->name, ret);
+			snd_soc_component_name(component), ret);
 		return ret;
 	}
 
@@ -668,8 +668,8 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 	rtd->compr = compr;
 	compr->private_data = rtd;
 
-	dev_dbg(rtd->card->dev, "Compress ASoC: %s <-> %s mapping ok\n",
-		codec_dai->name, cpu_dai->name);
+	dev_dbg(dev, "Compress ASoC: %s <-> %s mapping ok\n",
+		snd_soc_dai_name(codec_dai), snd_soc_dai_name(cpu_dai));
 
 	return 0;
 }

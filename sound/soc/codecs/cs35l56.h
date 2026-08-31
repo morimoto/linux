@@ -35,6 +35,7 @@ struct cs35l56_private {
 	struct work_struct dsp_work;
 	struct workqueue_struct *dsp_wq;
 	struct snd_soc_component *component;
+	struct snd_soc_card *card;
 	struct regulator_bulk_data supplies[CS35L56_NUM_BULK_SUPPLIES];
 	struct sdw_slave *sdw_peripheral;
 	struct regmap *sdw_bus_regmap;

@@ -941,12 +941,13 @@ static int da732x_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	u32 aif = 0;
 	u32 reg_aif;
 	u32 fs;
 
-	reg_aif = dai->driver->base;
+	reg_aif = dai_driver->base;
 
 	switch (params_width(params)) {
 	case 16:
@@ -1011,12 +1012,12 @@ static int da732x_hw_params(struct snd_pcm_substream *substream,
 
 static int da732x_set_dai_fmt(struct snd_soc_dai *dai, u32 fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u32 aif_mclk, pc_count;
 	u32 reg_aif1, aif1;
 	u32 reg_aif3, aif3;
 
-	switch (dai->id) {
+	switch (snd_soc_dai_id(dai)) {
 	case DA732X_DAI_ID1:
 		reg_aif1 = DA732X_REG_AIFA1;
 		reg_aif3 = DA732X_REG_AIFA3;
@@ -1114,7 +1115,8 @@ static int da732x_set_dai_pll(struct snd_soc_component *component, int pll_id,
 			      int source, unsigned int freq_in,
 			      unsigned int freq_out)
 {
-	struct da732x_priv *da732x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da732x_priv *da732x = dev_get_drvdata(dev);
 	int fref, indiv;
 	u8 div_lo, div_mid, div_hi;
 	u64 frac_div;
@@ -1143,8 +1145,7 @@ static int da732x_set_dai_pll(struct snd_soc_component *component, int pll_id,
 				      DA732X_PLL_BYPASS);
 			return 0;
 		default:
-			dev_err(component->dev,
-				"Cannot use PLL Bypass, invalid SYSCLK rate\n");
+			dev_err(dev, "Cannot use PLL Bypass, invalid SYSCLK rate\n");
 			return -EINVAL;
 		}
 	}
@@ -1175,8 +1176,9 @@ static int da732x_set_dai_pll(struct snd_soc_component *component, int pll_id,
 static int da732x_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 				 unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct da732x_priv *da732x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da732x_priv *da732x = dev_get_drvdata(dev);
 
 	da732x->sysclk = freq;
 
@@ -1425,7 +1427,8 @@ static void da732x_hp_dc_offset_cancellation(struct snd_soc_component *component
 static int da732x_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct da732x_priv *da732x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da732x_priv *da732x = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -1554,7 +1557,7 @@ static int da732x_i2c_probe(struct i2c_client *i2c)
 		 (reg & DA732X_ID_MAJOR_MASK) >> 4,
 		 (reg & DA732X_ID_MINOR_MASK));
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 				     &soc_component_dev_da732x,
 				     da732x_dai, ARRAY_SIZE(da732x_dai));
 	if (ret != 0)
