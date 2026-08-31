@@ -1002,7 +1002,7 @@ struct snd_soc_card {
 	struct snd_soc_dai_link *dai_link;  /* predefined links only */
 	int num_links;  /* predefined links only */
 
-	struct list_head rtd_list;
+	struct list_head rtd_list_head;
 	int num_rtd;
 
 	/* optional codec specific configuration */
@@ -1075,9 +1075,9 @@ struct snd_soc_card {
 	     (i)++)
 
 #define for_each_card_rtds(card, rtd)			\
-	list_for_each_entry(rtd, &(card)->rtd_list, list)
+	list_for_each_entry(rtd, &(card)->rtd_list_head, rtd_list)
 #define for_each_card_rtds_safe(card, rtd, _rtd)	\
-	list_for_each_entry_safe(rtd, _rtd, &(card)->rtd_list, list)
+	list_for_each_entry_safe(rtd, _rtd, &(card)->rtd_list_head, rtd_list)
 
 #define for_each_card_auxs(card, component)			\
 	list_for_each_entry(component, &card->aux_list_head, aux_list)
@@ -1142,7 +1142,7 @@ struct snd_soc_pcm_runtime {
 #endif
 
 	unsigned int id; /* 0-based and monotonic increasing */
-	struct list_head list; /* rtd list of the soc card */
+	struct list_head rtd_list; /* rtd list of the soc card */
 
 	/* function mark */
 	struct snd_pcm_substream *mark_startup;
