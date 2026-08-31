@@ -1030,8 +1030,8 @@ static int fsl_asoc_card_late_probe(struct snd_soc_card *card)
 	int ret;
 
 	/* Use the first rtd which carries the CPU+codec DAIs */
-	rtd = list_first_entry(&card->rtd_list,
-			       struct snd_soc_pcm_runtime, list);
+	rtd = list_first_entry(&card->rtd_list_head,
+			       struct snd_soc_pcm_runtime, rtd_list);
 
 	ret = fsl_asoc_card_init_jack(card);
 	if (ret)

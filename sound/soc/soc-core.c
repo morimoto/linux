@@ -297,7 +297,7 @@ static void soc_free_pcm_runtime(struct snd_soc_pcm_runtime *rtd)
 	if (!rtd)
 		return;
 
-	list_del(&rtd->list);
+	list_del(&rtd->rtd_list);
 
 	flush_delayed_work(&rtd->delayed_work);
 	snd_soc_pcm_component_free(rtd);
@@ -373,7 +373,7 @@ static struct snd_soc_pcm_runtime *soc_new_pcm_runtime(
 	}
 
 	rtd->dev = dev;
-	INIT_LIST_HEAD(&rtd->list);
+	INIT_LIST_HEAD(&rtd->rtd_list);
 	for_each_pcm_streams(stream) {
 		INIT_LIST_HEAD(&rtd->dpcm[stream].be_clients);
 		INIT_LIST_HEAD(&rtd->dpcm[stream].fe_clients);
@@ -409,7 +409,7 @@ static struct snd_soc_pcm_runtime *soc_new_pcm_runtime(
 	rtd->pmdown_time = pmdown_time;			/* default power off timeout */
 
 	/* see for_each_card_rtds */
-	list_add_tail(&rtd->list, &card->rtd_list);
+	list_add_tail(&rtd->rtd_list, &card->rtd_list_head);
 
 	ret = device_add_groups(dev, soc_dev_attr_groups);
 	if (ret < 0)
@@ -1222,7 +1222,7 @@ int snd_soc_register_card(struct snd_soc_card *card)
 	INIT_LIST_HEAD(&card->aux_list_head);
 	INIT_LIST_HEAD(&card->component_list_head);
 	INIT_LIST_HEAD(&card->list);
-	INIT_LIST_HEAD(&card->rtd_list);
+	INIT_LIST_HEAD(&card->rtd_list_head);
 	INIT_LIST_HEAD(&card->dapm_dirty);
 
 	card->instantiated = 0;
