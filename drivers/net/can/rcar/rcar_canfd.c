@@ -2020,6 +2020,7 @@ static int rcar_canfd_global_init(struct rcar_canfd_global *gpriv)
 		goto fail_clk;
 	}
 
+#if 0
 	err = reset_control_reset(gpriv->rstc1);
 	if (err)
 		goto fail_ram_clk;
@@ -2027,7 +2028,7 @@ static int rcar_canfd_global_init(struct rcar_canfd_global *gpriv)
 	err = reset_control_reset(gpriv->rstc2);
 	if (err)
 		goto fail_reset1;
-
+#endif
 	err = rcar_canfd_reset_controller(gpriv);
 	if (err) {
 		dev_err(dev, "reset controller failed: %pe\n", ERR_PTR(err));
@@ -2070,10 +2071,12 @@ static int rcar_canfd_global_init(struct rcar_canfd_global *gpriv)
 fail_mode:
 	rcar_canfd_disable_global_interrupts(gpriv);
 fail_reset2:
+#if 0
 	reset_control_assert(gpriv->rstc2);
 fail_reset1:
 	reset_control_assert(gpriv->rstc1);
 fail_ram_clk:
+#endif
 	clk_disable_unprepare(gpriv->clk_ram);
 fail_clk:
 	clk_disable_unprepare(gpriv->clkp);
@@ -2091,8 +2094,10 @@ static void rcar_canfd_global_deinit(struct rcar_canfd_global *gpriv, bool full)
 		rcar_canfd_set_bit(gpriv->base, RCANFD_GCTR, RCANFD_GCTR_GSLPR);
 	}
 
+#if 0
 	reset_control_assert(gpriv->rstc2);
 	reset_control_assert(gpriv->rstc1);
+#endif
 	clk_disable_unprepare(gpriv->clk_ram);
 	clk_disable_unprepare(gpriv->clkp);
 }
@@ -2201,6 +2206,14 @@ static int rcar_canfd_probe(struct platform_device *pdev)
 	} else {
 		fcan_freq = clk_get_rate(gpriv->can_clk);
 		gpriv->extclk = gpriv->info->external_clk;
+	}
+	if (!fcan_freq) {
+		u32 clk_rate;
+
+		if (of_property_read_u32(dev->of_node,
+					 "renesas,canfd-clk", &clk_rate))
+			goto fail_dev;
+		fcan_freq = clk_rate;
 	}
 
 	gpriv->clk_ram = devm_clk_get_optional(dev, "ram_clk");
@@ -2379,7 +2392,7 @@ static struct platform_driver rcar_canfd_driver = {
 		.pm = pm_sleep_ptr(&rcar_canfd_pm_ops),
 	},
 	.probe = rcar_canfd_probe,
-	.remove = rcar_canfd_remove,
+	.remove_new = rcar_canfd_remove,
 };
 
 module_platform_driver(rcar_canfd_driver);
