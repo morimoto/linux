@@ -5,18 +5,8 @@
 // Copyright (C) 2009-2010 Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
 #include <linux/clkdev.h>
-#include <linux/device.h>
-#include <linux/firmware.h>
-#include <linux/module.h>
-
 #include <asm/clock.h>
-
-#include <cpu/sh7722.h>
-
-#include <sound/core.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
-#include <sound/soc-card.h>
 
 #include "../codecs/wm8978.h"
 #include "siu.h"
