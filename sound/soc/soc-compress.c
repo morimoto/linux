@@ -8,17 +8,7 @@
 //          Ramesh Babu K V <ramesh.babu@linux.intel.com>
 //          Vinod Koul <vinod.koul@linux.intel.com>
 
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/slab.h>
-#include <linux/workqueue.h>
-#include <sound/core.h>
-#include <sound/compress_params.h>
-#include <sound/compress_driver.h>
 #include <sound/soc.h>
-#include <sound/initval.h>
-#include <sound/soc-dpcm.h>
 #include "soc-internal.h"
 
 static int snd_soc_compr_components_open(struct snd_compr_stream *cstream)
