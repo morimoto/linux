@@ -11,15 +11,9 @@
 //         with code, comments and ideas from :-
 //         Richard Purdie <richard@openedhand.com>
 
-#include <linux/ctype.h>
-#include <linux/delay.h>
-#include <linux/export.h>
 #include <linux/gpio/consumer.h>
 #include <linux/gpio/driver.h>
-#include <linux/init.h>
-#include <linux/of.h>
 #include <linux/pinctrl/consumer.h>
-#include <linux/slab.h>
 #include <sound/ac97_codec.h>
 #include <sound/soc.h>
 
