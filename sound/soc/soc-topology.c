@@ -20,14 +20,8 @@
 //  This file only manages the core ALSA and ASoC components, all other bespoke
 //  firmware topology data is passed to component drivers for bespoke handling.
 
-#include <linux/kernel.h>
-#include <linux/export.h>
-#include <linux/list.h>
 #include <linux/firmware.h>
-#include <linux/slab.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/soc-topology.h>
 #include <sound/tlv.h>
 
 #define SOC_TPLG_MAGIC_BIG_ENDIAN            0x436F5341 /* ASoC in reverse */
