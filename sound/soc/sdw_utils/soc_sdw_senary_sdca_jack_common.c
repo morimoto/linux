@@ -85,7 +85,7 @@ int asoc_sdw_senary_sdca_jack_rtd_init(struct snd_soc_pcm_runtime *rtd, struct s
 	int i;
 
 	component = snd_soc_dai_to_component(dai);
-        name_prefix = snd_soc_component_name_prefix(component);
+	name_prefix = snd_soc_component_name_prefix(component);
 	snd_soc_card_set_components(card,
 				devm_kasprintf(dev, GFP_KERNEL, "%s hs:%s",
 						snd_soc_card_components(card),
