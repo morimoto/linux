@@ -17,27 +17,10 @@
 //   o Add more codecs and platforms to ensure good API coverage.
 //   o Support TDM on PCM and I2S
 
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/pm.h>
-#include <linux/bitops.h>
 #include <linux/debugfs.h>
-#include <linux/platform_device.h>
 #include <linux/pinctrl/consumer.h>
-#include <linux/ctype.h>
-#include <linux/slab.h>
-#include <linux/of.h>
 #include <linux/of_graph.h>
-#include <linux/acpi.h>
-#include <linux/string_choices.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dpcm.h>
-#include <sound/soc-topology.h>
 #include "soc-internal.h"
 
 #define CREATE_TRACE_POINTS
