@@ -632,7 +632,7 @@ static int rzv2h_icu_init_common(struct device_node *node, struct device_node *p
 	return 0;
 
 pm_put:
-	pm_runtime_put(&pdev->dev);
+	pm_runtime_put_sync(&pdev->dev);
 
 	return ret;
 }
