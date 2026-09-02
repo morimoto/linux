@@ -6,9 +6,7 @@
  */
 
 #include <linux/firmware.h>
-#include <sound/core.h>
 #include <sound/soc.h>
-#include <sound/soc-topology.h>
 #include <kunit/device.h>
 #include <kunit/test.h>
 
