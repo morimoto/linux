@@ -6,13 +6,8 @@
 //
 // Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-#include <sound/jack.h>
 #include <sound/soc.h>
 #include <linux/gpio/consumer.h>
-#include <linux/interrupt.h>
-#include <linux/workqueue.h>
-#include <linux/delay.h>
-#include <linux/export.h>
 #include <linux/suspend.h>
 #include <trace/events/asoc.h>
 
