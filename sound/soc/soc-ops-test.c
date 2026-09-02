@@ -4,13 +4,7 @@
 
 #include <kunit/device.h>
 #include <kunit/test.h>
-#include <linux/module.h>
-#include <linux/regmap.h>
-#include <linux/string.h>
-#include <sound/asound.h>
-#include <sound/control.h>
 #include <sound/soc.h>
-#include <sound/soc-component.h>
 #include <sound/soc-test-hack.h>
 
 enum soc_ops_test_control_layout {
