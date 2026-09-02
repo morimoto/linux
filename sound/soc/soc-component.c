@@ -9,10 +9,8 @@
 // Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 //
 #include <linux/debugfs.h>
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
 #include <sound/soc.h>
-#include <linux/bitops.h>
 #include "soc-internal.h"
 
 struct snd_soc_component {
