@@ -3,11 +3,7 @@
 //                    Cirrus Logic International Semiconductor Ltd.
 
 #include <kunit/test.h>
-#include <linux/module.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <uapi/sound/asound.h>
 
 static const struct {
 	u32 rate;
