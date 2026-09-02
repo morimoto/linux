@@ -4,10 +4,7 @@
 
 #include <kunit/device.h>
 #include <kunit/test.h>
-#include <linux/module.h>
-#include <sound/control.h>
 #include <sound/soc.h>
-#include <sound/soc-card.h>
 
 struct soc_card_test_priv {
 	struct device *card_dev;
