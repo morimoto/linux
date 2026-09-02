@@ -3,16 +3,8 @@
 //  Copyright (C) 2013, Analog Devices Inc.
 //	Author: Lars-Peter Clausen <lars@metafoo.de>
 
-#include <linux/acpi.h>
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/dmaengine.h>
-#include <linux/slab.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <linux/dma-mapping.h>
-#include <linux/of.h>
 
 #include <sound/dmaengine_pcm.h>
 
