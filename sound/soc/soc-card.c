@@ -8,12 +8,9 @@
 
 #include <linux/debugfs.h>
 #include <linux/dmi.h>
-#include <linux/lockdep.h>
 #include <linux/pinctrl/consumer.h>
-#include <linux/rwsem.h>
 #include <sound/initval.h>
 #include <sound/soc.h>
-#include <sound/jack.h>
 #include "soc-internal.h"
 
 static LIST_HEAD(unbind_list_head);
