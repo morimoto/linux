@@ -10,14 +10,6 @@
 //
 // FIXME: little-endian only for now
 
-#include <linux/module.h>
-#include <linux/gfp.h>
-#include <linux/init.h>
-#include <linux/platform_device.h>
-#include <linux/dma-mapping.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <asm/dmabrg.h>
 
