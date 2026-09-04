@@ -193,16 +193,19 @@ static struct snd_soc_dai_driver hdac_hda_hdmi_dais[] = {
 static int hdac_hda_dai_set_stream(struct snd_soc_dai *dai,
 				   void *stream, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct hdac_hda_priv *hda_pvt;
 	struct hdac_hda_pcm *pcm;
 	struct hdac_stream *hstream;
+	struct device *dev;
+	int dai_id = snd_soc_dai_id(dai);
 
 	if (!stream)
 		return -EINVAL;
 
-	hda_pvt = snd_soc_component_get_drvdata(component);
-	pcm = &hda_pvt->pcm[dai->id];
+	dev = snd_soc_component_to_dev(component);
+	hda_pvt = dev_get_drvdata(dev);
+	pcm = &hda_pvt->pcm[dai_id];
 	hstream = (struct hdac_stream *)stream;
 
 	pcm->stream_tag[direction] = hstream->stream_tag;
@@ -214,22 +217,25 @@ static int hdac_hda_dai_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	struct hdac_hda_priv *hda_pvt;
+	struct device *dai_dev = snd_soc_component_to_dev(component);
 	unsigned int format_val;
 	unsigned int maxbps;
 	unsigned int bits;
+	int dai_id = snd_soc_dai_id(dai);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
-		maxbps = dai->driver->playback.sig_bits;
+		maxbps = dai_driver->playback.sig_bits;
 	else
-		maxbps = dai->driver->capture.sig_bits;
+		maxbps = dai_driver->capture.sig_bits;
 	bits = snd_hdac_stream_format_bits(params_format(params), SNDRV_PCM_SUBFORMAT_STD, maxbps);
 
-	hda_pvt = snd_soc_component_get_drvdata(component);
+	hda_pvt = dev_get_drvdata(dai_dev);
 	format_val = snd_hdac_stream_format(params_channels(params), bits, params_rate(params));
 	if (!format_val) {
-		dev_err(dai->dev,
+		dev_err(dai_dev,
 			"%s: invalid format_val, rate=%d, ch=%d, format=%d, maxbps=%d\n",
 			__func__,
 			params_rate(params), params_channels(params),
@@ -238,19 +244,20 @@ static int hdac_hda_dai_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	hda_pvt->pcm[dai->id].format_val[substream->stream] = format_val;
+	hda_pvt->pcm[dai_id].format_val[substream->stream] = format_val;
 	return 0;
 }
 
 static int hdac_hda_dai_hw_free(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct hdac_hda_priv *hda_pvt;
 	struct hda_pcm_stream *hda_stream;
 	struct hda_pcm *pcm;
 
-	hda_pvt = snd_soc_component_get_drvdata(component);
+	hda_pvt = dev_get_drvdata(dev);
 	pcm = snd_soc_find_pcm_from_dai(hda_pvt, dai);
 	if (!pcm)
 		return -EINVAL;
@@ -264,28 +271,30 @@ static int hdac_hda_dai_hw_free(struct snd_pcm_substream *substream,
 static int hdac_hda_dai_prepare(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct hda_pcm_stream *hda_stream;
 	struct hdac_hda_priv *hda_pvt;
+	struct device *dai_dev = snd_soc_component_to_dev(component);
 	unsigned int format_val;
 	struct hda_pcm *pcm;
 	unsigned int stream;
 	int ret = 0;
+	int dai_id = snd_soc_dai_id(dai);
 
-	hda_pvt = snd_soc_component_get_drvdata(component);
+	hda_pvt = dev_get_drvdata(dai_dev);
 	pcm = snd_soc_find_pcm_from_dai(hda_pvt, dai);
 	if (!pcm)
 		return -EINVAL;
 
 	hda_stream = &pcm->stream[substream->stream];
 
-	stream = hda_pvt->pcm[dai->id].stream_tag[substream->stream];
-	format_val = hda_pvt->pcm[dai->id].format_val[substream->stream];
+	stream = hda_pvt->pcm[dai_id].stream_tag[substream->stream];
+	format_val = hda_pvt->pcm[dai_id].format_val[substream->stream];
 
 	ret = snd_hda_codec_prepare(hda_pvt->codec, hda_stream,
 				    stream, format_val, substream);
 	if (ret < 0)
-		dev_err(dai->dev, "%s: failed %d\n", __func__, ret);
+		dev_err(dai_dev, "%s: failed %d\n", __func__, ret);
 
 	return ret;
 }
@@ -293,13 +302,14 @@ static int hdac_hda_dai_prepare(struct snd_pcm_substream *substream,
 static int hdac_hda_dai_open(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct hdac_hda_priv *hda_pvt;
 	struct hda_pcm_stream *hda_stream;
 	struct hda_pcm *pcm;
+	struct device *dai_dev = snd_soc_component_to_dev(component);
 	int ret;
 
-	hda_pvt = snd_soc_component_get_drvdata(component);
+	hda_pvt = dev_get_drvdata(dai_dev);
 	pcm = snd_soc_find_pcm_from_dai(hda_pvt, dai);
 	if (!pcm)
 		return -EINVAL;
@@ -310,7 +320,7 @@ static int hdac_hda_dai_open(struct snd_pcm_substream *substream,
 
 	ret = hda_stream->ops.open(hda_stream, hda_pvt->codec, substream);
 	if (ret < 0)
-		dev_err(dai->dev, "%s: failed %d\n", __func__, ret);
+		dev_err(dai_dev, "%s: failed %d\n", __func__, ret);
 
 	return ret;
 }
@@ -318,12 +328,13 @@ static int hdac_hda_dai_open(struct snd_pcm_substream *substream,
 static void hdac_hda_dai_close(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct hdac_hda_priv *hda_pvt;
 	struct hda_pcm_stream *hda_stream;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct hda_pcm *pcm;
 
-	hda_pvt = snd_soc_component_get_drvdata(component);
+	hda_pvt = dev_get_drvdata(dev);
 	pcm = snd_soc_find_pcm_from_dai(hda_pvt, dai);
 	if (!pcm)
 		return;
@@ -341,6 +352,9 @@ static struct hda_pcm *snd_soc_find_pcm_from_dai(struct hdac_hda_priv *hda_pvt,
 	struct hda_codec *hcodec = hda_pvt->codec;
 	struct hda_pcm *cpcm;
 	const char *pcm_name;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	int dai_id = snd_soc_dai_id(dai);
 
 	/*
 	 * map DAI ID to the closest matching PCM name, using the naming
@@ -348,7 +362,7 @@ static struct hda_pcm *snd_soc_find_pcm_from_dai(struct hdac_hda_priv *hda_pvt,
 	 * HDMI in hda_codec patch_hdmi.c)
 	 */
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case HDAC_ANALOG_DAI_ID:
 		pcm_name = "Analog";
 		break;
@@ -371,7 +385,7 @@ static struct hda_pcm *snd_soc_find_pcm_from_dai(struct hdac_hda_priv *hda_pvt,
 		pcm_name = "HDMI 3";
 		break;
 	default:
-		dev_err(dai->dev, "%s: invalid dai id %d\n", __func__, dai->id);
+		dev_err(dai_dev, "%s: invalid dai id %d\n", __func__, dai_id);
 		return NULL;
 	}
 
@@ -385,7 +399,7 @@ static struct hda_pcm *snd_soc_find_pcm_from_dai(struct hdac_hda_priv *hda_pvt,
 		}
 	}
 
-	dev_err(dai->dev, "%s: didn't find PCM for DAI %s\n", __func__, dai->name);
+	dev_err(dai_dev, "%s: didn't find PCM for DAI %s\n", __func__, snd_soc_dai_name(dai));
 	return NULL;
 }
 
@@ -403,11 +417,13 @@ static bool is_hdmi_codec(struct hda_codec *hcodec)
 
 static int hdac_hda_codec_probe(struct snd_soc_component *component)
 {
-	struct hdac_hda_priv *hda_pvt =
-			snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct hdac_hda_priv *hda_pvt = dev_get_drvdata(dev);
 	struct hdac_device *hdev = &hda_pvt->codec->core;
 	struct hda_codec *hcodec = hda_pvt->codec;
 	struct hda_codec_driver *driver = hda_codec_to_driver(hcodec);
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(component);
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(soc_card);
 	struct hdac_ext_link *hlink;
 	int ret;
 
@@ -428,8 +444,7 @@ static int hdac_hda_codec_probe(struct snd_soc_component *component)
 		snd_hdac_display_power(hdev->bus,
 				       HDA_CODEC_IDX_CONTROLLER, true);
 
-	ret = snd_hda_codec_device_new(hcodec->bus, component->card->snd_card,
-				       hdev->addr, hcodec, true);
+	ret = snd_hda_codec_device_new(hcodec->bus, snd_card, hdev->addr, hcodec, true);
 	if (ret < 0) {
 		dev_err(&hdev->dev, "%s: failed to create hda codec %d\n", __func__, ret);
 		goto error_no_pm;
@@ -467,7 +482,7 @@ static int hdac_hda_codec_probe(struct snd_soc_component *component)
 	 */
 	pm_runtime_get_noresume(&hdev->dev);
 
-	hcodec->bus->card = component->card->snd_card;
+	hcodec->bus->card = snd_card;
 
 	ret = snd_hda_codec_set_name(hcodec, hcodec->preset->name);
 	if (ret < 0) {
@@ -541,8 +556,8 @@ error_no_pm:
 
 static void hdac_hda_codec_remove(struct snd_soc_component *component)
 {
-	struct hdac_hda_priv *hda_pvt =
-		      snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct hdac_hda_priv *hda_pvt = dev_get_drvdata(dev);
 	struct hdac_device *hdev = &hda_pvt->codec->core;
 	struct hda_codec *codec = hda_pvt->codec;
 	struct hda_codec_driver *driver = hda_codec_to_driver(codec);
@@ -633,11 +648,11 @@ static int hdac_hda_dev_probe(struct hdac_device *hdev)
 
 	/* ASoC specific initialization */
 	if (hda_pvt->need_display_power)
-		ret = devm_snd_soc_register_component(&hdev->dev,
+		ret = devm_snd_soc_component_register(&hdev->dev,
 						&hdac_hda_hdmi_codec, hdac_hda_hdmi_dais,
 						ARRAY_SIZE(hdac_hda_hdmi_dais));
 	else
-		ret = devm_snd_soc_register_component(&hdev->dev,
+		ret = devm_snd_soc_component_register(&hdev->dev,
 						&hdac_hda_codec, hdac_hda_dais,
 						ARRAY_SIZE(hdac_hda_dais));
 

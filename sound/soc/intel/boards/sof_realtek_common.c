@@ -143,11 +143,14 @@ static int rt1011_hw_params(struct snd_pcm_substream *substream,
 	srate = params_rate(params);
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
+		struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+		struct device *dev = snd_soc_component_to_dev(codec_component);
+
 		/* 100 Fs to drive 24 bit data */
 		ret = snd_soc_dai_set_pll(codec_dai, 0, RT1011_PLL1_S_BCLK,
 					  100 * srate, 256 * srate);
 		if (ret < 0) {
-			dev_err(codec_dai->dev, "fail to set pll, ret %d\n",
+			dev_err(dev, "fail to set pll, ret %d\n",
 				ret);
 			return ret;
 		}
@@ -155,13 +158,13 @@ static int rt1011_hw_params(struct snd_pcm_substream *substream,
 		ret = snd_soc_dai_set_sysclk(codec_dai, RT1011_FS_SYS_PRE_S_PLL1,
 					     256 * srate, SND_SOC_CLOCK_IN);
 		if (ret < 0) {
-			dev_err(codec_dai->dev, "fail to set sysclk, ret %d\n",
+			dev_err(dev, "fail to set sysclk, ret %d\n",
 				ret);
 			return ret;
 		}
 
 		if (i >= ARRAY_SIZE(rt1011_tdm_mask)) {
-			dev_err(codec_dai->dev, "invalid codec index %d\n",
+			dev_err(dev, "invalid codec index %d\n",
 				i);
 			return -ENODEV;
 		}
@@ -170,7 +173,7 @@ static int rt1011_hw_params(struct snd_pcm_substream *substream,
 					       rt1011_tdm_mask[i].rx, 4,
 					       params_width(params));
 		if (ret < 0) {
-			dev_err(codec_dai->dev, "fail to set tdm slot, ret %d\n",
+			dev_err(dev, "fail to set tdm slot, ret %d\n",
 				ret);
 			return ret;
 		}
@@ -201,7 +204,7 @@ static int rt1011_init(struct snd_soc_pcm_runtime *rtd)
 				return ret;
 			}
 
-			ret = snd_soc_add_card_controls(card, realtek_2spk_kcontrols,
+			ret = snd_soc_card_add_controls(card, realtek_2spk_kcontrols,
 							ARRAY_SIZE(realtek_2spk_kcontrols));
 			if (ret) {
 				dev_err(rtd->dev, "fail to add rt1011 kcontrols, ret %d\n",
@@ -233,7 +236,7 @@ static int rt1011_init(struct snd_soc_pcm_runtime *rtd)
 			return ret;
 		}
 
-		ret = snd_soc_add_card_controls(card, realtek_4spk_kcontrols, num_codecs);
+		ret = snd_soc_card_add_controls(card, realtek_4spk_kcontrols, num_codecs);
 		if (ret) {
 			dev_err(rtd->dev, "fail to add rt1011 controls, ret %d\n",
 				ret);
@@ -352,7 +355,7 @@ static int rt1015p_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, realtek_2spk_kcontrols,
+	ret = snd_soc_card_add_controls(card, realtek_2spk_kcontrols,
 					ARRAY_SIZE(realtek_2spk_kcontrols));
 	if (ret) {
 		dev_err(rtd->dev, "fail to add rt1015p kcontrols, ret %d\n", ret);
@@ -409,11 +412,14 @@ static int rt1015_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
+		struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+		struct device *dev = snd_soc_component_to_dev(codec_component);
+
 		ret = snd_soc_dai_set_pll(codec_dai, 0, RT1015_PLL_S_BCLK,
 					  clk_freq,
 					  params_rate(params) * 256);
 		if (ret) {
-			dev_err(codec_dai->dev, "fail to set pll, ret %d\n",
+			dev_err(dev, "fail to set pll, ret %d\n",
 				ret);
 			return ret;
 		}
@@ -422,7 +428,7 @@ static int rt1015_hw_params(struct snd_pcm_substream *substream,
 					     params_rate(params) * 256,
 					     SND_SOC_CLOCK_IN);
 		if (ret) {
-			dev_err(codec_dai->dev, "fail to set sysclk, ret %d\n",
+			dev_err(dev, "fail to set sysclk, ret %d\n",
 				ret);
 			return ret;
 		}
@@ -437,13 +443,13 @@ static int rt1015_hw_params(struct snd_pcm_substream *substream,
 						       4,
 						       params_width(params));
 			if (ret < 0) {
-				dev_err(codec_dai->dev, "fail to set tdm slot, ret %d\n",
+				dev_err(dev, "fail to set tdm slot, ret %d\n",
 					ret);
 				return ret;
 			}
 			break;
 		default:
-			dev_dbg(codec_dai->dev, "codec is in I2S mode\n");
+			dev_dbg(dev, "codec is in I2S mode\n");
 			break;
 		}
 	}
@@ -494,7 +500,7 @@ static int speaker_codec_init_lr(struct snd_soc_pcm_runtime *rtd)
 			return ret;
 		}
 
-		ret = snd_soc_add_card_controls(card, realtek_2spk_kcontrols,
+		ret = snd_soc_card_add_controls(card, realtek_2spk_kcontrols,
 						ARRAY_SIZE(realtek_2spk_kcontrols));
 		if (ret) {
 			dev_err(rtd->dev, "fail to add rt1015 kcontrols, ret %d\n",
@@ -571,7 +577,7 @@ static int rt1308_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, rt1308_kcontrols,
+	ret = snd_soc_card_add_controls(card, rt1308_kcontrols,
 					ARRAY_SIZE(rt1308_kcontrols));
 	if (ret) {
 		dev_err(rtd->dev, "fail to add card controls, ret %d\n", ret);
@@ -593,6 +599,7 @@ static int rt1308_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int clk_id, clk_freq, pll_out;
 	int ret;
 
@@ -605,7 +612,7 @@ static int rt1308_hw_params(struct snd_pcm_substream *substream,
 	/* Set rt1308 pll */
 	ret = snd_soc_dai_set_pll(codec_dai, 0, clk_id, clk_freq, pll_out);
 	if (ret < 0) {
-		dev_err(card->dev, "Failed to set RT1308 PLL: %d\n", ret);
+		dev_err(dev, "Failed to set RT1308 PLL: %d\n", ret);
 		return ret;
 	}
 
@@ -613,7 +620,7 @@ static int rt1308_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT1308_FS_SYS_S_PLL, pll_out,
 				     SND_SOC_CLOCK_IN);
 	if (ret < 0)
-		dev_err(card->dev, "Failed to set RT1308 SYSCLK: %d\n", ret);
+		dev_err(dev, "Failed to set RT1308 SYSCLK: %d\n", ret);
 
 	return ret;
 }
@@ -661,7 +668,7 @@ static int rt1019p_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, realtek_2spk_kcontrols,
+	ret = snd_soc_card_add_controls(card, realtek_2spk_kcontrols,
 					ARRAY_SIZE(realtek_2spk_kcontrols));
 	if (ret) {
 		dev_err(rtd->dev, "fail to add rt1019p kcontrols, ret %d\n", ret);

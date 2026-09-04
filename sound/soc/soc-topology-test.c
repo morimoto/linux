@@ -260,12 +260,12 @@ static void snd_soc_tplg_test_load_with_null_comp(struct kunit *test)
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
-	ret = snd_soc_register_component(component, &test_component_null_comp, NULL, 0);
+	ret = snd_soc_component_register(component, &test_component_null_comp, NULL, 0);
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
 	snd_soc_card_unregister(card);
-	snd_soc_unregister_component(test_dev);
+	snd_soc_component_unregister(test_dev);
 }
 
 // TEST CASE
@@ -302,13 +302,13 @@ static void snd_soc_tplg_test_load_with_null_ops(struct kunit *test)
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
-	ret = snd_soc_register_component(component, &test_component, NULL, 0);
+	ret = snd_soc_component_register(component, &test_component, NULL, 0);
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
 	snd_soc_card_unregister(card);
 
-	snd_soc_unregister_component(test_dev);
+	snd_soc_component_unregister(test_dev);
 }
 
 // TEST CASE
@@ -363,13 +363,13 @@ static void snd_soc_tplg_test_load_with_null_fw(struct kunit *test)
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
-	ret = snd_soc_register_component(component, &test_component_null_fw, NULL, 0);
+	ret = snd_soc_component_register(component, &test_component_null_fw, NULL, 0);
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
 	snd_soc_card_unregister(card);
 
-	snd_soc_unregister_component(test_dev);
+	snd_soc_component_unregister(test_dev);
 }
 
 // TEST CASE
@@ -411,13 +411,13 @@ static void snd_soc_tplg_test_load_empty_tplg(struct kunit *test)
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
-	ret = snd_soc_register_component(component, &test_component, NULL, 0);
+	ret = snd_soc_component_register(component, &test_component, NULL, 0);
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
 	snd_soc_card_unregister(card);
 
-	snd_soc_unregister_component(test_dev);
+	snd_soc_component_unregister(test_dev);
 }
 
 // TEST CASE
@@ -466,13 +466,13 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_magic(struct kunit *test)
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
-	ret = snd_soc_register_component(component, &test_component, NULL, 0);
+	ret = snd_soc_component_register(component, &test_component, NULL, 0);
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
 	snd_soc_card_unregister(card);
 
-	snd_soc_unregister_component(test_dev);
+	snd_soc_component_unregister(test_dev);
 }
 
 // TEST CASE
@@ -521,13 +521,13 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_abi(struct kunit *test)
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
-	ret = snd_soc_register_component(component, &test_component, NULL, 0);
+	ret = snd_soc_component_register(component, &test_component, NULL, 0);
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
 	snd_soc_card_unregister(card);
 
-	snd_soc_unregister_component(test_dev);
+	snd_soc_component_unregister(test_dev);
 }
 
 // TEST CASE
@@ -576,13 +576,13 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_size(struct kunit *test)
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
-	ret = snd_soc_register_component(component, &test_component, NULL, 0);
+	ret = snd_soc_component_register(component, &test_component, NULL, 0);
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
 	snd_soc_card_unregister(card);
 
-	snd_soc_unregister_component(test_dev);
+	snd_soc_component_unregister(test_dev);
 }
 
 // TEST CASE
@@ -632,11 +632,11 @@ static void snd_soc_tplg_test_load_empty_tplg_bad_payload_size(struct kunit *tes
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
-	ret = snd_soc_register_component(component, &test_component, NULL, 0);
+	ret = snd_soc_component_register(component, &test_component, NULL, 0);
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	/* cleanup */
-	snd_soc_unregister_component(test_dev);
+	snd_soc_component_unregister(test_dev);
 
 	snd_soc_card_unregister(card);
 }
@@ -680,10 +680,10 @@ static void snd_soc_tplg_test_load_pcm_tplg(struct kunit *test)
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
-	ret = snd_soc_register_component(component, &test_component, NULL, 0);
+	ret = snd_soc_component_register(component, &test_component, NULL, 0);
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
-	snd_soc_unregister_component(test_dev);
+	snd_soc_component_unregister(test_dev);
 
 	/* cleanup */
 	snd_soc_card_unregister(card);
@@ -732,10 +732,10 @@ static void snd_soc_tplg_test_load_pcm_tplg_reload_comp(struct kunit *test)
 
 	for (i = 0; i < 100; i++) {
 
-		ret = snd_soc_register_component(component, &test_component, NULL, 0);
+		ret = snd_soc_component_register(component, &test_component, NULL, 0);
 		KUNIT_EXPECT_EQ(test, 0, ret);
 
-		snd_soc_unregister_component(test_dev);
+		snd_soc_component_unregister(test_dev);
 	}
 
 	/* cleanup */
@@ -779,7 +779,7 @@ static void snd_soc_tplg_test_load_pcm_tplg_reload_card(struct kunit *test)
 	snd_soc_component_set_priv(component, kunit_comp);
 
 	/* run test */
-	ret = snd_soc_register_component(component, &test_component, NULL, 0);
+	ret = snd_soc_component_register(component, &test_component, NULL, 0);
 	KUNIT_EXPECT_EQ(test, 0, ret);
 
 	for (i = 0; i < 100; i++) {
@@ -791,7 +791,7 @@ static void snd_soc_tplg_test_load_pcm_tplg_reload_card(struct kunit *test)
 	}
 
 	/* cleanup */
-	snd_soc_unregister_component(test_dev);
+	snd_soc_component_unregister(test_dev);
 }
 
 /* ===== KUNIT MODULE DEFINITIONS =========================================== */

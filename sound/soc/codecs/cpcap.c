@@ -271,7 +271,8 @@ static int cpcap_st_workaround(struct snd_soc_dapm_widget *w,
 			       struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	int err = 0;
 
 	/* Only CPCAP from ST requires workaround */
@@ -372,7 +373,8 @@ static int cpcap_output_mux_get_enum(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int shift = e->shift_l;
 	int reg_voice, reg_hifi, reg_ext, status;
@@ -415,7 +417,8 @@ static int cpcap_output_mux_put_enum(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int muxval = ucontrol->value.enumerated.item[0];
@@ -459,7 +462,8 @@ static int cpcap_input_right_mux_get_enum(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	int regval, mask;
 	int err;
 
@@ -498,7 +502,8 @@ static int cpcap_input_right_mux_put_enum(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int muxval = ucontrol->value.enumerated.item[0];
@@ -542,7 +547,8 @@ static int cpcap_input_left_mux_get_enum(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	int regval, mask;
 	int err;
 
@@ -573,7 +579,8 @@ static int cpcap_input_left_mux_put_enum(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int muxval = ucontrol->value.enumerated.item[0];
@@ -960,6 +967,7 @@ static const struct snd_soc_dapm_route intercon[] = {
 static int cpcap_set_sysclk(struct cpcap_audio *cpcap, enum cpcap_dai dai,
 			    int clk_id, int freq)
 {
+	struct device *dev = snd_soc_component_to_dev(cpcap->component);
 	u16 clkfreqreg, clkfreqshift;
 	u16 clkfreqmask, clkfreqval;
 	u16 clkidreg, clkidshift;
@@ -980,13 +988,13 @@ static int cpcap_set_sysclk(struct cpcap_audio *cpcap, enum cpcap_dai dai,
 		clkidshift = CPCAP_BIT_CLK_IN_SEL;
 		break;
 	default:
-		dev_err(cpcap->component->dev, "invalid DAI: %d", dai);
+		dev_err(dev, "invalid DAI: %d", dai);
 		return -EINVAL;
 	}
 
 	/* setup clk id */
 	if (clk_id < 0 || clk_id > 1) {
-		dev_err(cpcap->component->dev, "invalid clk id %d", clk_id);
+		dev_err(dev, "invalid clk id %d", clk_id);
 		return -EINVAL;
 	}
 	err = regmap_update_bits(cpcap->regmap, clkidreg, BIT(clkidshift),
@@ -1026,7 +1034,7 @@ static int cpcap_set_sysclk(struct cpcap_audio *cpcap, enum cpcap_dai dai,
 		clkfreqval = 0x06 << clkfreqshift;
 		break;
 	default:
-		dev_err(cpcap->component->dev, "unsupported freq %u", freq);
+		dev_err(dev, "unsupported freq %u", freq);
 		return -EINVAL;
 	}
 
@@ -1047,6 +1055,7 @@ static int cpcap_set_samprate(struct cpcap_audio *cpcap, enum cpcap_dai dai,
 			      int samplerate)
 {
 	struct snd_soc_component *component = cpcap->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	u16 sampreg, sampmask, sampshift, sampval, sampreset;
 	int err, sampreadval;
 
@@ -1064,7 +1073,7 @@ static int cpcap_set_samprate(struct cpcap_audio *cpcap, enum cpcap_dai dai,
 			    BIT(CPCAP_BIT_CDC_CLOCK_TREE_RESET);
 		break;
 	default:
-		dev_err(component->dev, "invalid DAI: %d", dai);
+		dev_err(dev, "invalid DAI: %d", dai);
 		return -EINVAL;
 	}
 
@@ -1098,7 +1107,7 @@ static int cpcap_set_samprate(struct cpcap_audio *cpcap, enum cpcap_dai dai,
 		sampval = 0x0 << sampshift;
 		break;
 	default:
-		dev_err(component->dev, "unsupported samplerate %d", samplerate);
+		dev_err(dev, "unsupported samplerate %d", samplerate);
 		return -EINVAL;
 	}
 	err = regmap_update_bits(cpcap->regmap, sampreg,
@@ -1114,8 +1123,7 @@ static int cpcap_set_samprate(struct cpcap_audio *cpcap, enum cpcap_dai dai,
 		return err;
 
 	if (sampreadval & sampreset) {
-		dev_err(component->dev, "reset self-clear failed: %04x",
-			sampreadval);
+		dev_err(dev, "reset self-clear failed: %04x", sampreadval);
 		return -EIO;
 	}
 
@@ -1126,20 +1134,21 @@ static int cpcap_hifi_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	int rate = params_rate(params);
 
-	dev_dbg(component->dev, "HiFi setup HW params: rate=%d", rate);
+	dev_dbg(dev, "HiFi setup HW params: rate=%d", rate);
 	return cpcap_set_samprate(cpcap, CPCAP_DAI_HIFI, rate);
 }
 
 static int cpcap_hifi_set_dai_sysclk(struct snd_soc_dai *codec_dai, int clk_id,
 				     unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
-	struct device *dev = component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 
 	dev_dbg(dev, "HiFi setup sysclk: clk_id=%u, freq=%u", clk_id, freq);
 	return cpcap_set_sysclk(cpcap, CPCAP_DAI_HIFI, clk_id, freq);
@@ -1148,9 +1157,9 @@ static int cpcap_hifi_set_dai_sysclk(struct snd_soc_dai *codec_dai, int clk_id,
 static int cpcap_hifi_set_dai_fmt(struct snd_soc_dai *codec_dai,
 				  unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
-	struct device *dev = component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	static const u16 reg = CPCAP_REG_SDACDI;
 	static const u16 mask =
 		BIT(CPCAP_BIT_SMB_ST_DAC) |
@@ -1229,8 +1238,9 @@ static int cpcap_hifi_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 static int cpcap_hifi_set_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	static const u16 reg = CPCAP_REG_RXSDOA;
 	static const u16 mask = BIT(CPCAP_BIT_ST_DAC_SW);
 	u16 val;
@@ -1240,7 +1250,7 @@ static int cpcap_hifi_set_mute(struct snd_soc_dai *dai, int mute, int direction)
 	else
 		val = BIT(CPCAP_BIT_ST_DAC_SW);
 
-	dev_dbg(component->dev, "HiFi mute: %d", mute);
+	dev_dbg(dev, "HiFi mute: %d", mute);
 	return regmap_update_bits(cpcap->regmap, reg, mask, val);
 }
 
@@ -1273,9 +1283,9 @@ static int cpcap_voice_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_soc_component *component = dai->component;
-	struct device *dev = component->dev;
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	static const u16 reg_cdi = CPCAP_REG_CDI;
 	int rate = params_rate(params);
 	int channels = params_channels(params);
@@ -1312,10 +1322,11 @@ static int cpcap_voice_hw_params(struct snd_pcm_substream *substream,
 static int cpcap_voice_set_dai_sysclk(struct snd_soc_dai *codec_dai, int clk_id,
 				      unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 
-	dev_dbg(component->dev, "Voice setup sysclk: clk_id=%u, freq=%u",
+	dev_dbg(dev, "Voice setup sysclk: clk_id=%u, freq=%u",
 		clk_id, freq);
 	return cpcap_set_sysclk(cpcap, CPCAP_DAI_VOICE, clk_id, freq);
 }
@@ -1323,8 +1334,9 @@ static int cpcap_voice_set_dai_sysclk(struct snd_soc_dai *codec_dai, int clk_id,
 static int cpcap_voice_set_dai_fmt(struct snd_soc_dai *codec_dai,
 				   unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	static const u16 mask = BIT(CPCAP_BIT_SMB_CDC) |
 				BIT(CPCAP_BIT_CLK_INV) |
 				BIT(CPCAP_BIT_FS_INV) |
@@ -1333,7 +1345,7 @@ static int cpcap_voice_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	u16 val = 0x0000;
 	int err;
 
-	dev_dbg(component->dev, "Voice setup dai format (%08x)", fmt);
+	dev_dbg(dev, "Voice setup dai format (%08x)", fmt);
 
 	/*
 	 * "Voice Playback" and "Voice Capture" should always be
@@ -1345,7 +1357,7 @@ static int cpcap_voice_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		val &= ~BIT(CPCAP_BIT_SMB_CDC);
 		break;
 	default:
-		dev_err(component->dev, "Voice dai fmt failed: CPCAP should be the provider");
+		dev_err(dev, "Voice dai fmt failed: CPCAP should be the provider");
 		val &= ~BIT(CPCAP_BIT_SMB_CDC);
 		break;
 	}
@@ -1368,7 +1380,7 @@ static int cpcap_voice_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		val &= ~BIT(CPCAP_BIT_FS_INV);
 		break;
 	default:
-		dev_err(component->dev, "Voice dai fmt failed: unsupported clock invert mode");
+		dev_err(dev, "Voice dai fmt failed: unsupported clock invert mode");
 		break;
 	}
 
@@ -1390,7 +1402,7 @@ static int cpcap_voice_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		break;
 	}
 
-	dev_dbg(component->dev, "Voice dai format: val=%04x", val);
+	dev_dbg(dev, "Voice dai format: val=%04x", val);
 	err = regmap_update_bits(cpcap->regmap, CPCAP_REG_CDI, mask, val);
 	if (err)
 		return err;
@@ -1402,8 +1414,9 @@ static int cpcap_voice_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int cpcap_voice_set_mute(struct snd_soc_dai *dai,
 				int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	static const u16 reg = CPCAP_REG_RXCOA;
 	static const u16 mask = BIT(CPCAP_BIT_CDC_SW);
 	u16 val;
@@ -1413,7 +1426,7 @@ static int cpcap_voice_set_mute(struct snd_soc_dai *dai,
 	else
 		val = BIT(CPCAP_BIT_CDC_SW);
 
-	dev_dbg(component->dev, "Voice mute: %d", mute);
+	dev_dbg(dev, "Voice mute: %d", mute);
 	return regmap_update_bits(cpcap->regmap, reg, mask, val);
 };
 
@@ -1496,10 +1509,11 @@ static int cpcap_dai_mux(struct cpcap_audio *cpcap, bool swap_dai_configuration)
 static int cpcap_audio_reset(struct snd_soc_component *component,
 			     bool swap_dai_configuration)
 {
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	int i, err = 0;
 
-	dev_dbg(component->dev, "init audio codec");
+	dev_dbg(dev, "init audio codec");
 
 	for (i = 0; i < ARRAY_SIZE(cpcap_default_regs); i++) {
 		err = regmap_update_bits(cpcap->regmap,
@@ -1536,7 +1550,8 @@ static int cpcap_audio_reset(struct snd_soc_component *component,
 static irqreturn_t cpcap_hs_irq_thread(int irq, void *data)
 {
 	struct snd_soc_component *component = data;
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	struct regmap *regmap = cpcap->regmap;
 	int status = 0;
 	int mask = SND_JACK_HEADSET;
@@ -1560,17 +1575,17 @@ static irqreturn_t cpcap_hs_irq_thread(int irq, void *data)
 			 * MFB pressed.)
 			 */
 			status = SND_JACK_HEADPHONE;
-			dev_info(component->dev, "HP plugged in\n");
+			dev_info(dev, "HP plugged in\n");
 		} else if (regmap_test_bits(regmap, CPCAP_REG_INTS1,
 					    BIT(CPCAP_BIT_MB2_S)) == 1) {
 			status = SND_JACK_HEADSET;
-			dev_info(component->dev, "HS plugged in\n");
+			dev_info(dev, "HS plugged in\n");
 		} else
-			dev_info(component->dev, "Unsupported HS plugged in\n");
+			dev_info(dev, "Unsupported HS plugged in\n");
 	} else {
 		bool mic = cpcap->jack.status & SND_JACK_MICROPHONE;
 
-		dev_info(component->dev, "H%s disconnect\n", mic ? "S" : "P");
+		dev_info(dev, "H%s disconnect\n", mic ? "S" : "P");
 		val = BIT(CPCAP_BIT_MB_ON2) | BIT(CPCAP_BIT_PTT_CMP_EN);
 		regmap_update_bits(cpcap->regmap, CPCAP_REG_TXI, val, 0);
 
@@ -1590,7 +1605,8 @@ static irqreturn_t cpcap_hs_irq_thread(int irq, void *data)
 static irqreturn_t cpcap_mb2_irq_thread(int irq, void *data)
 {
 	struct snd_soc_component *component = data;
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 	struct regmap *regmap = cpcap->regmap;
 	int status = 0;
 	int mb2;
@@ -1605,7 +1621,7 @@ static irqreturn_t cpcap_mb2_irq_thread(int irq, void *data)
 	/* Initial detection might have been with MFB pressed */
 	if (!(cpcap->jack.status & SND_JACK_MICROPHONE)) {
 		if (ptt == 1 && mb2 == 1) {
-			dev_info(component->dev, "MIC plugged in\n");
+			dev_info(dev, "MIC plugged in\n");
 			snd_soc_jack_report(&cpcap->jack, SND_JACK_MICROPHONE,
 					    SND_JACK_MICROPHONE);
 		}
@@ -1623,39 +1639,40 @@ static irqreturn_t cpcap_mb2_irq_thread(int irq, void *data)
 
 static int cpcap_soc_probe(struct snd_soc_component *component)
 {
-	struct platform_device *pdev = to_platform_device(component->dev);
-	struct snd_soc_card *card = component->card;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct platform_device *pdev = to_platform_device(dev);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
 	struct cpcap_audio *cpcap;
 	int err;
 
-	cpcap = devm_kzalloc(component->dev, sizeof(*cpcap), GFP_KERNEL);
+	cpcap = devm_kzalloc(dev, sizeof(*cpcap), GFP_KERNEL);
 	if (!cpcap)
 		return -ENOMEM;
 
-	snd_soc_component_set_drvdata(component, cpcap);
+	dev_set_drvdata(dev, cpcap);
 	cpcap->component = component;
 
-	cpcap->vaudio = devm_regulator_get(component->dev, "VAUDIO");
+	cpcap->vaudio = devm_regulator_get(dev, "VAUDIO");
 	if (IS_ERR(cpcap->vaudio))
-		return dev_err_probe(component->dev, PTR_ERR(cpcap->vaudio),
+		return dev_err_probe(dev, PTR_ERR(cpcap->vaudio),
 				     "Cannot get VAUDIO regulator\n");
 
 	err = snd_soc_card_jack_new(card, "Headphones",
 				    SND_JACK_HEADSET | SND_JACK_BTN_0,
 				    &cpcap->jack);
 	if (err < 0) {
-		dev_err(component->dev, "Cannot create HS jack: %i\n", err);
+		dev_err(dev, "Cannot create HS jack: %i\n", err);
 		return err;
 	}
 
 	snd_jack_set_key(cpcap->jack.jack, SND_JACK_BTN_0, KEY_MEDIA);
 
-	cpcap->regmap = dev_get_regmap(component->dev->parent, NULL);
+	cpcap->regmap = dev_get_regmap(dev->parent, NULL);
 	if (!cpcap->regmap)
 		return -ENODEV;
-	snd_soc_component_init_regmap(component, cpcap->regmap);
+	snd_soc_component_regmap_init(component, cpcap->regmap);
 
-	err = cpcap_get_vendor(component->dev, cpcap->regmap, &cpcap->vendor);
+	err = cpcap_get_vendor(dev, cpcap->regmap, &cpcap->vendor);
 	if (err)
 		return err;
 
@@ -1663,7 +1680,7 @@ static int cpcap_soc_probe(struct snd_soc_component *component)
 	if (cpcap->hsirq < 0)
 		return cpcap->hsirq;
 
-	err = devm_request_threaded_irq(component->dev, cpcap->hsirq, NULL,
+	err = devm_request_threaded_irq(dev, cpcap->hsirq, NULL,
 					cpcap_hs_irq_thread,
 					IRQF_TRIGGER_RISING |
 					IRQF_TRIGGER_FALLING |
@@ -1671,7 +1688,7 @@ static int cpcap_soc_probe(struct snd_soc_component *component)
 					"cpcap-codec-hs",
 					component);
 	if (err) {
-		dev_warn(component->dev, "no HS irq%i: %i\n",
+		dev_warn(dev, "no HS irq%i: %i\n",
 			 cpcap->hsirq, err);
 		return err;
 	}
@@ -1680,7 +1697,7 @@ static int cpcap_soc_probe(struct snd_soc_component *component)
 	if (cpcap->mb2irq < 0)
 		return cpcap->mb2irq;
 
-	err = devm_request_threaded_irq(component->dev, cpcap->mb2irq, NULL,
+	err = devm_request_threaded_irq(dev, cpcap->mb2irq, NULL,
 					cpcap_mb2_irq_thread,
 					IRQF_TRIGGER_RISING |
 					IRQF_TRIGGER_FALLING |
@@ -1688,7 +1705,7 @@ static int cpcap_soc_probe(struct snd_soc_component *component)
 					"cpcap-codec-mb2",
 					component);
 	if (err) {
-		dev_warn(component->dev, "no MB2 irq%i: %i\n",
+		dev_warn(dev, "no MB2 irq%i: %i\n",
 			 cpcap->mb2irq, err);
 		return err;
 	}
@@ -1707,7 +1724,8 @@ static int cpcap_soc_probe(struct snd_soc_component *component)
 
 static void cpcap_soc_remove(struct snd_soc_component *component)
 {
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 
 	disable_irq_wake(cpcap->hsirq);
 	disable_irq_wake(cpcap->mb2irq);
@@ -1716,7 +1734,8 @@ static void cpcap_soc_remove(struct snd_soc_component *component)
 static int cpcap_set_bias_level(struct snd_soc_component *component,
 		enum snd_soc_bias_level level)
 {
-	struct cpcap_audio *cpcap = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cpcap_audio *cpcap = dev_get_drvdata(dev);
 
 	/* VAIDIO should be kept in normal mode in order MIC/PTT to work */
 	if (cpcap->jack.status & SND_JACK_MICROPHONE)
@@ -1762,7 +1781,7 @@ static int cpcap_codec_probe(struct platform_device *pdev)
 
 	pdev->dev.of_node = codec_node;
 
-	return devm_snd_soc_register_component(&pdev->dev, &soc_codec_dev_cpcap,
+	return devm_snd_soc_component_register(&pdev->dev, &soc_codec_dev_cpcap,
 				      cpcap_dai, ARRAY_SIZE(cpcap_dai));
 }
 

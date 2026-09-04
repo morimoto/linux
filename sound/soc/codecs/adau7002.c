@@ -24,8 +24,8 @@ static int adau7002_aif_event(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_component *component =
 			snd_soc_dapm_to_component(w->dapm);
-	struct adau7002_priv *adau7002 =
-			snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau7002_priv *adau7002 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -39,17 +39,18 @@ static int adau7002_aif_event(struct snd_soc_dapm_widget *w,
 
 static int adau7002_component_probe(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct adau7002_priv *adau7002;
 
-	adau7002 = devm_kzalloc(component->dev, sizeof(*adau7002),
+	adau7002 = devm_kzalloc(dev, sizeof(*adau7002),
 				GFP_KERNEL);
 	if (!adau7002)
 		return -ENOMEM;
 
-	device_property_read_u32(component->dev, "wakeup-delay-ms",
+	device_property_read_u32(dev, "wakeup-delay-ms",
 				 &adau7002->wakeup_delay);
 
-	snd_soc_component_set_drvdata(component, adau7002);
+	dev_set_drvdata(dev, adau7002);
 
 	return 0;
 }
@@ -95,7 +96,7 @@ static const struct snd_soc_component_driver adau7002_component_driver = {
 
 static int adau7002_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&adau7002_component_driver,
 			&adau7002_dai, 1);
 }

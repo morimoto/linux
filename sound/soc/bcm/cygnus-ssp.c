@@ -236,9 +236,12 @@ static const struct snd_pcm_hw_constraint_list cygnus_rate_constraint = {
 
 static struct cygnus_aio_port *cygnus_dai_get_portinfo(struct snd_soc_dai *dai)
 {
-	struct cygnus_audio *cygaud = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cygnus_audio *cygaud = dev_get_drvdata(dev);
+	int id = snd_soc_dai_id(dai);
 
-	return &cygaud->portinfo[dai->id];
+	return &cygaud->portinfo[id];
 }
 
 static int audio_ssp_init_portregs(struct cygnus_aio_port *aio)
@@ -708,7 +711,9 @@ static int cygnus_ssp_set_sysclk(struct snd_soc_dai *dai,
 	int sel;
 	u32 value;
 	struct cygnus_aio_port *aio = cygnus_dai_get_portinfo(dai);
-	struct cygnus_audio *cygaud = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cygnus_audio *cygaud = dev_get_drvdata(dev);
 
 	dev_dbg(aio->cygaud->dev,
 		"%s Enter port = %d\n", __func__, aio->portnum);
@@ -735,7 +740,7 @@ static int cygnus_ssp_startup(struct snd_pcm_substream *substream,
 {
 	struct cygnus_aio_port *aio = cygnus_dai_get_portinfo(dai);
 
-	snd_soc_dai_set_dma_data(dai, substream, aio);
+	snd_soc_dai_stream_dma_data_set(dai, substream, aio);
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 		aio->clk_trace.play_en = true;
 	else
@@ -923,7 +928,9 @@ static int cygnus_ssp_trigger(struct snd_pcm_substream *substream, int cmd,
 			       struct snd_soc_dai *dai)
 {
 	struct cygnus_aio_port *aio = cygnus_dai_get_portinfo(dai);
-	struct cygnus_audio *cygaud = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cygnus_audio *cygaud = dev_get_drvdata(dev);
 
 	dev_dbg(aio->cygaud->dev,
 		"%s cmd %d at port = %d\n", __func__, cmd, aio->portnum);
@@ -1356,10 +1363,10 @@ static int cygnus_ssp_probe(struct platform_device *pdev)
 	cygaud->active_ports = 0;
 
 	dev_dbg(dev, "Registering %d DAIs\n", active_port_count);
-	err = devm_snd_soc_register_component(dev, &cygnus_ssp_component,
+	err = devm_snd_soc_component_register(dev, &cygnus_ssp_component,
 				cygnus_ssp_dai, active_port_count);
 	if (err) {
-		dev_err(dev, "snd_soc_register_dai failed\n");
+		dev_err(dev, "snd_soc_component_register() failed\n");
 		return err;
 	}
 

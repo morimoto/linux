@@ -70,7 +70,7 @@ static void mop500_of_node_put(void)
 
 static int mop500_of_probe(struct snd_soc_card *card)
 {
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct device_node *codec_np, *msp_np[2];
 	struct device_node *np = dev->of_node;
 	int i;
@@ -96,7 +96,7 @@ static int mop500_of_probe(struct snd_soc_card *card)
 		mop500_dai_links[i].codecs->name = NULL;
 	}
 
-	snd_soc_of_parse_card_name(card, "stericsson,card-name");
+	snd_soc_card_of_parse_name(card, "stericsson,card-name");
 
 	return 0;
 }

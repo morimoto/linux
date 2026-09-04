@@ -217,7 +217,8 @@ static int mic_bias_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct aic3x_priv *aic3x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic3x_priv *aic3x = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -1008,7 +1009,8 @@ static const struct snd_soc_dapm_route intercon_3007[] = {
 
 static int aic3x_add_widgets(struct snd_soc_component *component)
 {
-	struct aic3x_priv *aic3x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic3x_priv *aic3x = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (aic3x->model) {
@@ -1050,8 +1052,9 @@ static int aic3x_hw_params(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
 	static const u8 dual_rate_q[] = {4, 8, 9, 12, 16};
-	struct snd_soc_component *component = dai->component;
-	struct aic3x_priv *aic3x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic3x_priv *aic3x = dev_get_drvdata(dev);
 	int codec_clk = 0, bypass_pll = 0, fsref, last_clk = 0;
 	u8 data, j, r, p, pll_q, pll_p = 1, pll_r = 1, pll_j = 1;
 	u16 d, pll_d = 1;
@@ -1214,8 +1217,9 @@ found:
 static int aic3x_prepare(struct snd_pcm_substream *substream,
 			 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aic3x_priv *aic3x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic3x_priv *aic3x = dev_get_drvdata(dev);
 	int delay = 0;
 	int width = aic3x->slot_width;
 
@@ -1236,7 +1240,7 @@ static int aic3x_prepare(struct snd_pcm_substream *substream,
 
 static int aic3x_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u8 ldac_reg = snd_soc_component_read(component, LDAC_VOL) & ~MUTE_ON;
 	u8 rdac_reg = snd_soc_component_read(component, RDAC_VOL) & ~MUTE_ON;
 
@@ -1254,8 +1258,9 @@ static int aic3x_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int aic3x_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct aic3x_priv *aic3x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic3x_priv *aic3x = dev_get_drvdata(dev);
 
 	/* set clock on MCLK or GPIO2 or BCLK */
 	snd_soc_component_update_bits(component, AIC3X_CLKGEN_CTRL_REG, PLLCLK_IN_MASK,
@@ -1270,8 +1275,9 @@ static int aic3x_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int aic3x_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			     unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct aic3x_priv *aic3x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic3x_priv *aic3x = dev_get_drvdata(dev);
 	u8 iface_areg, iface_breg;
 
 	iface_areg = snd_soc_component_read(component, AIC3X_ASD_INTF_CTRLA) & 0x3f;
@@ -1335,24 +1341,25 @@ static int aic3x_set_dai_tdm_slot(struct snd_soc_dai *codec_dai,
 				  unsigned int tx_mask, unsigned int rx_mask,
 				  int slots, int slot_width)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct aic3x_priv *aic3x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic3x_priv *aic3x = dev_get_drvdata(dev);
 	unsigned int lsb;
 
 	if (tx_mask != rx_mask) {
-		dev_err(component->dev, "tx and rx masks must be symmetric\n");
+		dev_err(dev, "tx and rx masks must be symmetric\n");
 		return -EINVAL;
 	}
 
 	if (unlikely(!tx_mask)) {
-		dev_err(component->dev, "tx and rx masks need to be non 0\n");
+		dev_err(dev, "tx and rx masks need to be non 0\n");
 		return -EINVAL;
 	}
 
 	/* TDM based on DSP mode requires slots to be adjacent */
 	lsb = __ffs(tx_mask);
 	if ((lsb + 1) != __fls(tx_mask)) {
-		dev_err(component->dev, "Invalid mask, slots must be adjacent\n");
+		dev_err(dev, "Invalid mask, slots must be adjacent\n");
 		return -EINVAL;
 	}
 
@@ -1363,7 +1370,7 @@ static int aic3x_set_dai_tdm_slot(struct snd_soc_dai *codec_dai,
 	case 32:
 		break;
 	default:
-		dev_err(component->dev, "Unsupported slot width %d\n", slot_width);
+		dev_err(dev, "Unsupported slot width %d\n", slot_width);
 		return -EINVAL;
 	}
 
@@ -1400,7 +1407,8 @@ static int aic3x_regulator_event(struct notifier_block *nb,
 
 static int aic3x_set_power(struct snd_soc_component *component, int power)
 {
-	struct aic3x_priv *aic3x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic3x_priv *aic3x = dev_get_drvdata(dev);
 	unsigned int pll_c, pll_d;
 	int ret;
 
@@ -1463,7 +1471,8 @@ static int aic3x_set_bias_level(struct snd_soc_component *component,
 				enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct aic3x_priv *aic3x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic3x_priv *aic3x = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
@@ -1567,7 +1576,8 @@ static void aic3x_mono_init(struct snd_soc_component *component)
  */
 static int aic3x_init(struct snd_soc_component *component)
 {
-	struct aic3x_priv *aic3x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic3x_priv *aic3x = dev_get_drvdata(dev);
 
 	snd_soc_component_write(component, AIC3X_PAGE_SELECT, PAGE0_SELECT);
 	snd_soc_component_write(component, AIC3X_RESET, SOFT_RESET);
@@ -1641,7 +1651,8 @@ static int aic3x_init(struct snd_soc_component *component)
 
 static int aic3x_component_probe(struct snd_soc_component *component)
 {
-	struct aic3x_priv *aic3x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic3x_priv *aic3x = dev_get_drvdata(dev);
 	int ret, i;
 
 	aic3x->component = component;
@@ -1653,9 +1664,7 @@ static int aic3x_component_probe(struct snd_soc_component *component)
 						aic3x->supplies[i].consumer,
 						&aic3x->disable_nb[i].nb);
 		if (ret) {
-			dev_err(component->dev,
-				"Failed to request regulator notifier: %d\n",
-				 ret);
+			dev_err(dev, "Failed to request regulator notifier: %d\n", ret);
 			return ret;
 		}
 	}
@@ -1671,7 +1680,7 @@ static int aic3x_component_probe(struct snd_soc_component *component)
 			snd_soc_component_write(component, AIC3X_GPIO2_REG,
 				      (aic3x->setup->gpio_func[1] & 0xf) << 4);
 		} else {
-			dev_warn(component->dev, "GPIO functionality is not supported on tlv320aic3104\n");
+			dev_warn(dev, "GPIO functionality is not supported on tlv320aic3104\n");
 		}
 	}
 
@@ -1679,15 +1688,15 @@ static int aic3x_component_probe(struct snd_soc_component *component)
 	case AIC3X_MODEL_3X:
 	case AIC3X_MODEL_33:
 	case AIC3X_MODEL_3106:
-		snd_soc_add_component_controls(component, aic3x_extra_snd_controls,
+		snd_soc_component_add_controls(component, aic3x_extra_snd_controls,
 				ARRAY_SIZE(aic3x_extra_snd_controls));
-		snd_soc_add_component_controls(component, aic3x_mono_controls,
+		snd_soc_component_add_controls(component, aic3x_mono_controls,
 				ARRAY_SIZE(aic3x_mono_controls));
 		break;
 	case AIC3X_MODEL_3007:
-		snd_soc_add_component_controls(component, aic3x_extra_snd_controls,
+		snd_soc_component_add_controls(component, aic3x_extra_snd_controls,
 				ARRAY_SIZE(aic3x_extra_snd_controls));
-		snd_soc_add_component_controls(component,
+		snd_soc_component_add_controls(component,
 				&aic3x_classd_amp_gain_ctrl, 1);
 		break;
 	case AIC3X_MODEL_3104:
@@ -1862,7 +1871,7 @@ int aic3x_probe(struct device *dev, struct regmap *regmap, kernel_ulong_t driver
 
 	aic3x_configure_ocmv(dev, aic3x);
 
-	ret = devm_snd_soc_register_component(dev, &soc_component_dev_aic3x, &aic3x_dai, 1);
+	ret = devm_snd_soc_component_register(dev, &soc_component_dev_aic3x, &aic3x_dai, 1);
 	if (ret)
 		return ret;
 

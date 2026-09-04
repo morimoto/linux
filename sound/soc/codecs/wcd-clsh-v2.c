@@ -317,6 +317,7 @@ static void wcd_clsh_v2_set_hph_mode(struct snd_soc_component *comp, int mode)
 static void wcd_clsh_v3_set_hph_mode(struct snd_soc_component *component,
 				  int mode)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	u8 val;
 
 	switch (mode) {
@@ -338,7 +339,7 @@ static void wcd_clsh_v3_set_hph_mode(struct snd_soc_component *component,
 		val = 0x04;
 		break;
 	default:
-		dev_err(component->dev, "%s:Invalid mode %d\n", __func__, mode);
+		dev_err(dev, "%s:Invalid mode %d\n", __func__, mode);
 		return;
 	}
 
@@ -510,10 +511,10 @@ static void wcd_clsh_state_lo(struct wcd_clsh_ctrl *ctrl, int req_state,
 			      bool is_enable, int mode)
 {
 	struct snd_soc_component *comp = ctrl->comp;
+	struct device *dev = snd_soc_component_to_dev(comp);
 
 	if (mode != CLS_AB) {
-		dev_err(comp->dev, "%s: LO cannot be in this mode: %d\n",
-			__func__, mode);
+		dev_err(dev, "%s: LO cannot be in this mode: %d\n", __func__, mode);
 		return;
 	}
 
@@ -537,10 +538,10 @@ static void wcd_clsh_v3_state_hph_r(struct wcd_clsh_ctrl *ctrl, int req_state,
 				 bool is_enable, int mode)
 {
 	struct snd_soc_component *component = ctrl->comp;
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	if (mode == CLS_H_NORMAL) {
-		dev_dbg(component->dev, "%s: Normal mode not applicable for hph_r\n",
-			__func__);
+		dev_dbg(dev, "%s: Normal mode not applicable for hph_r\n", __func__);
 		return;
 	}
 
@@ -569,10 +570,10 @@ static void wcd_clsh_state_hph_r(struct wcd_clsh_ctrl *ctrl, int req_state,
 				 bool is_enable, int mode)
 {
 	struct snd_soc_component *comp = ctrl->comp;
+	struct device *dev = snd_soc_component_to_dev(comp);
 
 	if (mode == CLS_H_NORMAL) {
-		dev_err(comp->dev, "%s: Normal mode not applicable for hph_r\n",
-			__func__);
+		dev_err(dev, "%s: Normal mode not applicable for hph_r\n", __func__);
 		return;
 	}
 
@@ -627,10 +628,10 @@ static void wcd_clsh_v3_state_hph_l(struct wcd_clsh_ctrl *ctrl, int req_state,
 				 bool is_enable, int mode)
 {
 	struct snd_soc_component *component = ctrl->comp;
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	if (mode == CLS_H_NORMAL) {
-		dev_dbg(component->dev, "%s: Normal mode not applicable for hph_l\n",
-			__func__);
+		dev_dbg(dev, "%s: Normal mode not applicable for hph_l\n", __func__);
 		return;
 	}
 
@@ -659,10 +660,10 @@ static void wcd_clsh_state_hph_l(struct wcd_clsh_ctrl *ctrl, int req_state,
 				 bool is_enable, int mode)
 {
 	struct snd_soc_component *comp = ctrl->comp;
+	struct device *dev = snd_soc_component_to_dev(comp);
 
 	if (mode == CLS_H_NORMAL) {
-		dev_err(comp->dev, "%s: Normal mode not applicable for hph_l\n",
-			__func__);
+		dev_err(dev, "%s: Normal mode not applicable for hph_l\n", __func__);
 		return;
 	}
 
@@ -743,10 +744,10 @@ static void wcd_clsh_state_ear(struct wcd_clsh_ctrl *ctrl, int req_state,
 			       bool is_enable, int mode)
 {
 	struct snd_soc_component *comp = ctrl->comp;
+	struct device *dev = snd_soc_component_to_dev(comp);
 
 	if (mode != CLS_H_NORMAL) {
-		dev_err(comp->dev, "%s: mode: %d cannot be used for EAR\n",
-			__func__, mode);
+		dev_err(dev, "%s: mode: %d cannot be used for EAR\n", __func__, mode);
 		return;
 	}
 
@@ -847,9 +848,10 @@ int wcd_clsh_ctrl_set_state(struct wcd_clsh_ctrl *ctrl,
 			    enum wcd_clsh_mode mode)
 {
 	struct snd_soc_component *comp = ctrl->comp;
+	struct device *dev = snd_soc_component_to_dev(comp);
 
 	if (!wcd_clsh_is_state_valid(nstate)) {
-		dev_err(comp->dev, "Class-H not a valid new state:\n");
+		dev_err(dev, "Class-H not a valid new state:\n");
 		return -EINVAL;
 	}
 

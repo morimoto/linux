@@ -188,7 +188,8 @@ static int cs35l35_sdin_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l35_private *cs35l35 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l35_private *cs35l35 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (event) {
@@ -224,7 +225,7 @@ static int cs35l35_sdin_event(struct snd_soc_dapm_widget *w,
 				   1 << CS35L35_AMP_DIGSFT_SHIFT);
 		break;
 	default:
-		dev_err(component->dev, "Invalid event = 0x%x\n", event);
+		dev_err(dev, "Invalid event = 0x%x\n", event);
 		ret = -EINVAL;
 	}
 	return ret;
@@ -234,7 +235,8 @@ static int cs35l35_main_amp_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l35_private *cs35l35 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l35_private *cs35l35 = dev_get_drvdata(dev);
 	unsigned int reg[4];
 	int i;
 
@@ -294,7 +296,7 @@ static int cs35l35_main_amp_event(struct snd_soc_dapm_widget *w,
 
 		break;
 	default:
-		dev_err(component->dev, "Invalid event = 0x%x\n", event);
+		dev_err(dev, "Invalid event = 0x%x\n", event);
 	}
 	return 0;
 }
@@ -362,8 +364,9 @@ static const struct snd_soc_dapm_route cs35l35_audio_map[] = {
 
 static int cs35l35_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs35l35_private *cs35l35 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l35_private *cs35l35 = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -463,8 +466,9 @@ static int cs35l35_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs35l35_private *cs35l35 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l35_private *cs35l35 = dev_get_drvdata(dev);
 	struct classh_cfg *classh = &cs35l35->pdata.classh_algo;
 	int srate = params_rate(params);
 	int ret = 0;
@@ -475,7 +479,7 @@ static int cs35l35_hw_params(struct snd_pcm_substream *substream,
 	int clk_ctl = cs35l35_get_clk_config(cs35l35->sysclk, srate);
 
 	if (clk_ctl < 0) {
-		dev_err(component->dev, "Invalid CLK:Rate %d:%d\n",
+		dev_err(dev, "Invalid CLK:Rate %d:%d\n",
 			cs35l35->sysclk, srate);
 		return -EINVAL;
 	}
@@ -483,7 +487,7 @@ static int cs35l35_hw_params(struct snd_pcm_substream *substream,
 	ret = regmap_update_bits(cs35l35->regmap, CS35L35_CLK_CTL2,
 			  CS35L35_CLK_CTL2_MASK, clk_ctl);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to set port config %d\n", ret);
+		dev_err(dev, "Failed to set port config %d\n", ret);
 		return ret;
 	}
 
@@ -502,8 +506,7 @@ static int cs35l35_hw_params(struct snd_pcm_substream *substream,
 					CS35L35_CH_WKFET_DEL_MASK,
 					0 << CS35L35_CH_WKFET_DEL_SHIFT);
 		if (ret != 0) {
-			dev_err(component->dev, "Failed to set fet config %d\n",
-				ret);
+			dev_err(dev, "Failed to set fet config %d\n", ret);
 			return ret;
 		}
 	}
@@ -524,7 +527,7 @@ static int cs35l35_hw_params(struct snd_pcm_substream *substream,
 			audin_format = CS35L35_SDIN_DEPTH_24;
 			break;
 		default:
-			dev_err(component->dev, "Unsupported Width %d\n",
+			dev_err(dev, "Unsupported Width %d\n",
 				params_width(params));
 			return -EINVAL;
 		}
@@ -547,8 +550,7 @@ static int cs35l35_hw_params(struct snd_pcm_substream *substream,
 		 * to configure the CLOCK_CTL3 register correctly
 		 */
 		if ((cs35l35->sclk / srate) % 4) {
-			dev_err(component->dev, "Unsupported sclk/fs ratio %d:%d\n",
-					cs35l35->sclk, srate);
+			dev_err(dev, "Unsupported sclk/fs ratio %d:%d\n", cs35l35->sclk, srate);
 			return -EINVAL;
 		}
 		sp_sclks = ((cs35l35->sclk / srate) / 4) - 1;
@@ -561,7 +563,7 @@ static int cs35l35_hw_params(struct snd_pcm_substream *substream,
 			case CS35L35_SP_SCLKS_64FS:
 				break;
 			default:
-				dev_err(component->dev, "ratio not supported\n");
+				dev_err(dev, "ratio not supported\n");
 				return -EINVAL;
 			}
 		} else {
@@ -571,7 +573,7 @@ static int cs35l35_hw_params(struct snd_pcm_substream *substream,
 			case CS35L35_SP_SCLKS_64FS:
 				break;
 			default:
-				dev_err(component->dev, "ratio not supported\n");
+				dev_err(dev, "ratio not supported\n");
 				return -EINVAL;
 			}
 		}
@@ -580,7 +582,7 @@ static int cs35l35_hw_params(struct snd_pcm_substream *substream,
 					CS35L35_SP_SCLKS_MASK, sp_sclks <<
 					CS35L35_SP_SCLKS_SHIFT);
 		if (ret != 0) {
-			dev_err(component->dev, "Failed to set fsclk %d\n", ret);
+			dev_err(dev, "Failed to set fsclk %d\n", ret);
 			return ret;
 		}
 	}
@@ -600,8 +602,9 @@ static const struct snd_pcm_hw_constraint_list cs35l35_constraints = {
 static int cs35l35_pcm_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs35l35_private *cs35l35 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l35_private *cs35l35 = dev_get_drvdata(dev);
 
 	if (!substream->runtime)
 		return 0;
@@ -628,8 +631,9 @@ static const struct snd_pcm_hw_constraint_list cs35l35_pdm_constraints = {
 static int cs35l35_pdm_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs35l35_private *cs35l35 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l35_private *cs35l35 = dev_get_drvdata(dev);
 
 	if (!substream->runtime)
 		return 0;
@@ -648,8 +652,9 @@ static int cs35l35_pdm_startup(struct snd_pcm_substream *substream,
 static int cs35l35_dai_set_sysclk(struct snd_soc_dai *dai,
 				int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs35l35_private *cs35l35 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l35_private *cs35l35 = dev_get_drvdata(dev);
 
 	/* Need the SCLK Frequency regardless of sysclk source for I2S */
 	cs35l35->sclk = freq;
@@ -717,7 +722,8 @@ static int cs35l35_component_set_sysclk(struct snd_soc_component *component,
 				int clk_id, int source, unsigned int freq,
 				int dir)
 {
-	struct cs35l35_private *cs35l35 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l35_private *cs35l35 = dev_get_drvdata(dev);
 	int clksrc;
 	int ret = 0;
 
@@ -732,7 +738,7 @@ static int cs35l35_component_set_sysclk(struct snd_soc_component *component,
 		clksrc = CS35L35_CLK_SOURCE_PDM;
 		break;
 	default:
-		dev_err(component->dev, "Invalid CLK Source\n");
+		dev_err(dev, "Invalid CLK Source\n");
 		return -EINVAL;
 	}
 
@@ -750,7 +756,7 @@ static int cs35l35_component_set_sysclk(struct snd_soc_component *component,
 		cs35l35->sysclk = freq;
 		break;
 	default:
-		dev_err(component->dev, "Invalid CLK Frequency Input : %d\n", freq);
+		dev_err(dev, "Invalid CLK Frequency Input : %d\n", freq);
 		return -EINVAL;
 	}
 
@@ -758,7 +764,7 @@ static int cs35l35_component_set_sysclk(struct snd_soc_component *component,
 				CS35L35_CLK_SOURCE_MASK,
 				clksrc << CS35L35_CLK_SOURCE_SHIFT);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to set sysclk %d\n", ret);
+		dev_err(dev, "Failed to set sysclk %d\n", ret);
 		return ret;
 	}
 
@@ -837,7 +843,8 @@ static int cs35l35_boost_inductor(struct cs35l35_private *cs35l35,
 
 static int cs35l35_component_probe(struct snd_soc_component *component)
 {
-	struct cs35l35_private *cs35l35 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l35_private *cs35l35 = dev_get_drvdata(dev);
 	struct classh_cfg *classh = &cs35l35->pdata.classh_algo;
 	struct monitor_cfg *monitor_config = &cs35l35->pdata.mon_cfg;
 	int ret;
@@ -881,7 +888,7 @@ static int cs35l35_component_probe(struct snd_soc_component *component)
 			regmap_update_bits(cs35l35->regmap, CS35L35_CLASS_H_CTL,
 					CS35L35_CH_STEREO_MASK,
 					1 << CS35L35_CH_STEREO_SHIFT);
-		ret = snd_soc_add_component_controls(component, cs35l35_adv_controls,
+		ret = snd_soc_component_add_controls(component, cs35l35_adv_controls,
 					ARRAY_SIZE(cs35l35_adv_controls));
 		if (ret)
 			return ret;
@@ -1615,7 +1622,7 @@ static int cs35l35_i2c_probe(struct i2c_client *i2c_client)
 	regmap_update_bits(cs35l35->regmap, CS35L35_PROTECT_CTL,
 		CS35L35_AMP_MUTE_MASK, 1 << CS35L35_AMP_MUTE_SHIFT);
 
-	ret = devm_snd_soc_register_component(dev, &soc_component_dev_cs35l35,
+	ret = devm_snd_soc_component_register(dev, &soc_component_dev_cs35l35,
 					cs35l35_dai, ARRAY_SIZE(cs35l35_dai));
 	if (ret < 0) {
 		dev_err(dev, "Failed to register component: %d\n", ret);

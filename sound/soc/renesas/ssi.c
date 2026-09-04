@@ -396,7 +396,7 @@ static const struct snd_soc_component_driver sh4_ssi_component = {
 
 static int sh4_soc_dai_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev, &sh4_ssi_component,
+	return devm_snd_soc_component_register(&pdev->dev, &sh4_ssi_component,
 					       sh4_ssi_dai,
 					       ARRAY_SIZE(sh4_ssi_dai));
 }

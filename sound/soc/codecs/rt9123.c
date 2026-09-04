@@ -54,7 +54,7 @@ static int rt9123_enable_event(struct snd_soc_dapm_widget *w, struct snd_kcontro
 			       int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct device *dev = comp->dev;
+	struct device *dev = snd_soc_component_to_dev(comp);
 	unsigned int enable;
 	int ret;
 
@@ -109,8 +109,12 @@ static int rt9123_kcontrol_name_comp(struct snd_kcontrol *kcontrol, const char *
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
 	const char *kctlname = kcontrol->id.name;
 
-	if (comp && comp->name_prefix)
-		kctlname += strlen(comp->name_prefix) + 1;
+	if (comp) {
+		const char *name_prefix = snd_soc_component_name_prefix(comp);
+
+		if (name_prefix)
+			kctlname += strlen(name_prefix) + 1;
+	}
 
 	return strcmp(kctlname, s);
 }
@@ -118,7 +122,7 @@ static int rt9123_kcontrol_name_comp(struct snd_kcontrol *kcontrol, const char *
 static int rt9123_xhandler_get(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct device *dev = comp->dev;
+	struct device *dev = snd_soc_component_to_dev(comp);
 	int ret;
 
 	ret = pm_runtime_resume_and_get(dev);
@@ -145,7 +149,7 @@ static int rt9123_xhandler_get(struct snd_kcontrol *kcontrol, struct snd_ctl_ele
 static int rt9123_xhandler_put(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct device *dev = comp->dev;
+	struct device *dev = snd_soc_component_to_dev(comp);
 	int ret;
 
 	ret = pm_runtime_resume_and_get(dev);
@@ -192,7 +196,9 @@ static const struct snd_soc_component_driver rt9123_comp_driver = {
 
 static int rt9123_dai_set_format(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct rt9123_priv *rt9123 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt9123_priv *rt9123 = dev_get_drvdata(dev);
 
 	rt9123->dai_fmt = fmt;
 	return 0;
@@ -201,9 +207,9 @@ static int rt9123_dai_set_format(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt9123_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				   unsigned int rx_mask, int slots, int slot_width)
 {
-	struct rt9123_priv *rt9123 = snd_soc_dai_get_drvdata(dai);
-	struct snd_soc_component *comp = dai->component;
-	struct device *dev = dai->dev;
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct rt9123_priv *rt9123 = dev_get_drvdata(dev);
 	unsigned int rx_loc;
 
 	dev_dbg(dev, "(slots, slot_width) = (%d, %d), (txmask, rxmask) = 0x%x, 0x%x\n", slots,
@@ -233,10 +239,10 @@ static int rt9123_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask
 static int rt9123_dai_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *param, struct snd_soc_dai *dai)
 {
-	struct rt9123_priv *rt9123 = snd_soc_dai_get_drvdata(dai);
-	struct snd_soc_component *comp = dai->component;
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct rt9123_priv *rt9123 = dev_get_drvdata(dev);
 	unsigned int fmtval, width, slot_width;
-	struct device *dev = dai->dev;
 	unsigned int audfmt, audbit;
 
 	fmtval = FIELD_GET(SND_SOC_DAIFMT_FORMAT_MASK, rt9123->dai_fmt);
@@ -434,7 +440,7 @@ static int rt9123_i2c_probe(struct i2c_client *i2c)
 	if (ret)
 		return dev_err_probe(dev, ret, "Failed to enable pm runtime\n");
 
-	return devm_snd_soc_register_component(dev, &rt9123_comp_driver, &rt9123_dai_driver, 1);
+	return devm_snd_soc_component_register(dev, &rt9123_comp_driver, &rt9123_dai_driver, 1);
 }
 
 #ifdef CONFIG_PM

@@ -199,7 +199,8 @@ static struct cygnus_aio_port *cygnus_dai_get_dma_data(
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 
-	return snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(soc_runtime, 0), substream);
+	return snd_soc_dai_stream_dma_data_get(
+		snd_soc_rtd_to_cpu(soc_runtime, 0), substream->stream);
 }
 
 static void ringbuf_set_initial(void __iomem *audio_io,
@@ -344,12 +345,15 @@ static void enable_intr(struct snd_pcm_substream *substream)
 static void disable_intr(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
+	struct snd_soc_dai *dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct cygnus_aio_port *aio;
 	u32 set_mask;
 
 	aio = cygnus_dai_get_dma_data(substream);
 
-	dev_dbg(snd_soc_rtd_to_cpu(rtd, 0)->dev, "%s on port %d\n", __func__, aio->portnum);
+	dev_dbg(dev, "%s on port %d\n", __func__, aio->portnum);
 
 	/* The port number maps to the bit position to be set */
 	set_mask = BIT(aio->portnum);
@@ -571,7 +575,7 @@ static irqreturn_t cygnus_dma_irq(int irq, void *data)
 static int cygnus_pcm_open(struct snd_soc_component *component,
 			   struct snd_pcm_substream *substream)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct cygnus_aio_port *aio;
 	int ret;
@@ -580,7 +584,7 @@ static int cygnus_pcm_open(struct snd_soc_component *component,
 	if (!aio)
 		return -ENODEV;
 
-	dev_dbg(snd_soc_rtd_to_cpu(rtd, 0)->dev, "%s port %d\n", __func__, aio->portnum);
+	dev_dbg(dev, "%s port %d\n", __func__, aio->portnum);
 
 	snd_soc_set_runtime_hwparams(substream, &cygnus_pcm_hw);
 
@@ -608,12 +612,12 @@ static int cygnus_pcm_open(struct snd_soc_component *component,
 static int cygnus_pcm_close(struct snd_soc_component *component,
 			    struct snd_pcm_substream *substream)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct cygnus_aio_port *aio;
 
 	aio = cygnus_dai_get_dma_data(substream);
 
-	dev_dbg(snd_soc_rtd_to_cpu(rtd, 0)->dev, "%s  port %d\n", __func__, aio->portnum);
+	dev_dbg(dev, "%s  port %d\n", __func__, aio->portnum);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 		aio->play_stream = NULL;
@@ -621,7 +625,7 @@ static int cygnus_pcm_close(struct snd_soc_component *component,
 		aio->capture_stream = NULL;
 
 	if (!aio->play_stream && !aio->capture_stream)
-		dev_dbg(snd_soc_rtd_to_cpu(rtd, 0)->dev, "freed  port %d\n", aio->portnum);
+		dev_dbg(dev, "freed  port %d\n", aio->portnum);
 
 	return 0;
 }
@@ -629,22 +633,21 @@ static int cygnus_pcm_close(struct snd_soc_component *component,
 static int cygnus_pcm_prepare(struct snd_soc_component *component,
 			      struct snd_pcm_substream *substream)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct cygnus_aio_port *aio;
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned long bufsize, periodsize;
 	bool is_play;
 	u32 start;
 	struct ringbuf_regs *p_rbuf = NULL;
 
 	aio = cygnus_dai_get_dma_data(substream);
-	dev_dbg(snd_soc_rtd_to_cpu(rtd, 0)->dev, "%s port %d\n", __func__, aio->portnum);
+	dev_dbg(dev, "%s port %d\n", __func__, aio->portnum);
 
 	bufsize = snd_pcm_lib_buffer_bytes(substream);
 	periodsize = snd_pcm_lib_period_bytes(substream);
 
-	dev_dbg(snd_soc_rtd_to_cpu(rtd, 0)->dev, "%s (buf_size %lu) (period_size %lu)\n",
-			__func__, bufsize, periodsize);
+	dev_dbg(dev, "%s (buf_size %lu) (period_size %lu)\n", __func__, bufsize, periodsize);
 
 	configure_ringbuf_regs(substream);
 
@@ -694,7 +697,7 @@ static int cygnus_dma_new(struct snd_soc_component *component,
 			  struct snd_soc_pcm_runtime *rtd)
 {
 	size_t size = cygnus_pcm_hw.buffer_bytes_max;
-	struct snd_card *card = rtd->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(rtd->card);
 
 	if (!card->dev->dma_mask)
 		card->dev->dma_mask = &cygnus_dma_dmamask;
@@ -730,7 +733,7 @@ int cygnus_soc_platform_register(struct device *dev,
 		return rc;
 	}
 
-	rc = devm_snd_soc_register_component(dev, &cygnus_soc_platform,
+	rc = devm_snd_soc_component_register(dev, &cygnus_soc_platform,
 					     NULL, 0);
 	if (rc) {
 		dev_err(dev, "%s failed\n", __func__);

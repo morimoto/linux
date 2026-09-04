@@ -308,7 +308,7 @@ static int sun50i_codec_hbias_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
 	u32 value = !!SND_SOC_DAPM_EVENT_ON(event);
 
-	regmap_update_bits(component->regmap, SUN50I_ADDA_JACK_MIC_CTRL,
+	snd_soc_component_update_bits(component, SUN50I_ADDA_JACK_MIC_CTRL,
 			   BIT(SUN50I_ADDA_JACK_MIC_CTRL_MICADCEN),
 			   value << SUN50I_ADDA_JACK_MIC_CTRL_MICADCEN);
 
@@ -499,19 +499,22 @@ static int sun50i_a64_codec_set_bias_level(struct snd_soc_component *component,
 
 	switch (level) {
 	case SND_SOC_BIAS_OFF:
-		regmap_clear_bits(component->regmap, SUN50I_ADDA_JACK_MIC_CTRL,
+		snd_soc_component_update_bits(component, SUN50I_ADDA_JACK_MIC_CTRL,
 				   BIT(SUN50I_ADDA_JACK_MIC_CTRL_JACKDETEN) |
-				   BIT(SUN50I_ADDA_JACK_MIC_CTRL_MICADCEN));
+				   BIT(SUN50I_ADDA_JACK_MIC_CTRL_MICADCEN),
+				   0);
 
-		regmap_set_bits(component->regmap, SUN50I_ADDA_HP_CTRL,
-				BIT(SUN50I_ADDA_HP_CTRL_PA_CLK_GATE));
+		snd_soc_component_update_bits(component, SUN50I_ADDA_HP_CTRL,
+				   BIT(SUN50I_ADDA_HP_CTRL_PA_CLK_GATE),
+				   BIT(SUN50I_ADDA_HP_CTRL_PA_CLK_GATE));
 		break;
 	case SND_SOC_BIAS_STANDBY:
-		regmap_clear_bits(component->regmap, SUN50I_ADDA_HP_CTRL,
-				   BIT(SUN50I_ADDA_HP_CTRL_PA_CLK_GATE));
+		snd_soc_component_update_bits(component, SUN50I_ADDA_HP_CTRL,
+				   BIT(SUN50I_ADDA_HP_CTRL_PA_CLK_GATE),
+				   0);
 
 		hbias = snd_soc_dapm_get_pin_status(dapm, "HBIAS");
-		regmap_update_bits(component->regmap, SUN50I_ADDA_JACK_MIC_CTRL,
+		snd_soc_component_update_bits(component, SUN50I_ADDA_JACK_MIC_CTRL,
 				   BIT(SUN50I_ADDA_JACK_MIC_CTRL_JACKDETEN) |
 				   BIT(SUN50I_ADDA_JACK_MIC_CTRL_MICADCEN),
 				   BIT(SUN50I_ADDA_JACK_MIC_CTRL_JACKDETEN) |
@@ -572,7 +575,7 @@ static int sun50i_codec_analog_probe(struct platform_device *pdev)
 			   0x3 << SUN50I_ADDA_MDET_CTRL_SELDETADC_FS |
 			   0x3 << SUN50I_ADDA_MDET_CTRL_SELDETADC_BF);
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 					       &sun50i_codec_analog_cmpnt_drv,
 					       NULL, 0);
 }

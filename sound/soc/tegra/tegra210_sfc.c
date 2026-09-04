@@ -3092,7 +3092,8 @@ static inline void tegra210_sfc_write_ram(struct regmap *regmap,
 
 static int tegra210_sfc_write_coeff_ram(struct snd_soc_component *cmpnt)
 {
-	struct tegra210_sfc *sfc = dev_get_drvdata(cmpnt->dev);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_sfc *sfc = dev_get_drvdata(dev);
 	s32 *coeff_ram;
 
 	/* Bypass */
@@ -3101,8 +3102,7 @@ static int tegra210_sfc_write_coeff_ram(struct snd_soc_component *cmpnt)
 
 	coeff_ram = coef_addr_table[sfc->srate_in][sfc->srate_out];
 	if (IS_ERR_OR_NULL(coeff_ram)) {
-		dev_err(cmpnt->dev,
-			"Conversion from %d to %d Hz is not supported\n",
+		dev_err(dev, "Conversion from %d to %d Hz is not supported\n",
 			sfc->srate_in, sfc->srate_out);
 
 		return PTR_ERR_OR_ZERO(coeff_ram);
@@ -3200,7 +3200,9 @@ static int tegra210_sfc_rate_to_idx(struct device *dev, int rate,
 static int tegra210_sfc_startup(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct tegra210_sfc *sfc = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_sfc *sfc = dev_get_drvdata(dev);
 	int err;
 
 	regmap_update_bits(sfc->regmap, TEGRA210_SFC_COEF_RAM,
@@ -3208,7 +3210,7 @@ static int tegra210_sfc_startup(struct snd_pcm_substream *substream,
 
 	err = tegra210_sfc_soft_reset(sfc);
 	if (err < 0) {
-		dev_err(dai->dev, "Failed to reset SFC in %s, err = %d\n",
+		dev_err(dev, "Failed to reset SFC in %s, err = %d\n",
 			__func__, err);
 
 		return err;
@@ -3221,8 +3223,9 @@ static int tegra210_sfc_in_hw_params(struct snd_pcm_substream *substream,
 				     struct snd_pcm_hw_params *params,
 				     struct snd_soc_dai *dai)
 {
-	struct tegra210_sfc *sfc = snd_soc_dai_get_drvdata(dai);
-	struct device *dev = dai->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_sfc *sfc = dev_get_drvdata(dev);
 	int err;
 
 	err = tegra210_sfc_rate_to_idx(dev, params_rate(params),
@@ -3245,8 +3248,9 @@ static int tegra210_sfc_out_hw_params(struct snd_pcm_substream *substream,
 				      struct snd_pcm_hw_params *params,
 				      struct snd_soc_dai *dai)
 {
-	struct tegra210_sfc *sfc = snd_soc_dai_get_drvdata(dai);
-	struct device *dev = dai->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_sfc *sfc = dev_get_drvdata(dev);
 	int err;
 
 	err = tegra210_sfc_rate_to_idx(dev, params_rate(params),
@@ -3277,7 +3281,8 @@ static int tegra210_sfc_iget_stereo_to_mono(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_sfc *sfc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_sfc *sfc = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = sfc->stereo_to_mono[SFC_RX_PATH];
 
@@ -3288,7 +3293,8 @@ static int tegra210_sfc_iput_stereo_to_mono(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_sfc *sfc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_sfc *sfc = dev_get_drvdata(dev);
 	unsigned int value = ucontrol->value.enumerated.item[0];
 
 	if (value == sfc->stereo_to_mono[SFC_RX_PATH])
@@ -3303,7 +3309,8 @@ static int tegra210_sfc_iget_mono_to_stereo(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_sfc *sfc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_sfc *sfc = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = sfc->mono_to_stereo[SFC_RX_PATH];
 
@@ -3314,7 +3321,8 @@ static int tegra210_sfc_iput_mono_to_stereo(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_sfc *sfc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_sfc *sfc = dev_get_drvdata(dev);
 	unsigned int value = ucontrol->value.enumerated.item[0];
 
 	if (value == sfc->mono_to_stereo[SFC_RX_PATH])
@@ -3329,7 +3337,8 @@ static int tegra210_sfc_oget_stereo_to_mono(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_sfc *sfc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_sfc *sfc = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = sfc->stereo_to_mono[SFC_TX_PATH];
 
@@ -3340,7 +3349,8 @@ static int tegra210_sfc_oput_stereo_to_mono(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_sfc *sfc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_sfc *sfc = dev_get_drvdata(dev);
 	unsigned int value = ucontrol->value.enumerated.item[0];
 
 	if (value == sfc->stereo_to_mono[SFC_TX_PATH])
@@ -3355,7 +3365,8 @@ static int tegra210_sfc_oget_mono_to_stereo(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_sfc *sfc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_sfc *sfc = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = sfc->mono_to_stereo[SFC_TX_PATH];
 
@@ -3366,7 +3377,8 @@ static int tegra210_sfc_oput_mono_to_stereo(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_sfc *sfc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_sfc *sfc = dev_get_drvdata(dev);
 	unsigned int value = ucontrol->value.enumerated.item[0];
 
 	if (value == sfc->mono_to_stereo[SFC_TX_PATH])
@@ -3604,7 +3616,7 @@ static int tegra210_sfc_platform_probe(struct platform_device *pdev)
 
 	regcache_cache_only(sfc->regmap, true);
 
-	err = devm_snd_soc_register_component(dev, &tegra210_sfc_cmpnt,
+	err = devm_snd_soc_component_register(dev, &tegra210_sfc_cmpnt,
 					      tegra210_sfc_dais,
 					      ARRAY_SIZE(tegra210_sfc_dais));
 	if (err)

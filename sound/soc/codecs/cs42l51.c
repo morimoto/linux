@@ -255,7 +255,8 @@ static int mclk_event(struct snd_soc_dapm_widget *w,
 		      struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct cs42l51_private *cs42l51 = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct cs42l51_private *cs42l51 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -307,8 +308,9 @@ static const struct snd_soc_dapm_route cs42l51_routes[] = {
 static int cs42l51_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int format)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs42l51_private *cs42l51 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l51_private *cs42l51 = dev_get_drvdata(dev);
 
 	switch (format & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
@@ -317,7 +319,7 @@ static int cs42l51_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		cs42l51->audio_mode = format & SND_SOC_DAIFMT_FORMAT_MASK;
 		break;
 	default:
-		dev_err(component->dev, "invalid DAI format\n");
+		dev_err(dev, "invalid DAI format\n");
 		return -EINVAL;
 	}
 
@@ -329,7 +331,7 @@ static int cs42l51_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		cs42l51->func = MODE_SLAVE_AUTO;
 		break;
 	default:
-		dev_err(component->dev, "Unknown master/slave configuration\n");
+		dev_err(dev, "Unknown master/slave configuration\n");
 		return -EINVAL;
 	}
 
@@ -383,8 +385,9 @@ static struct cs42l51_ratios master_ratios[] = {
 static int cs42l51_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs42l51_private *cs42l51 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l51_private *cs42l51 = dev_get_drvdata(dev);
 
 	cs42l51->mclk = freq;
 	return 0;
@@ -394,8 +397,9 @@ static int cs42l51_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params,
 		struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l51_private *cs42l51 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l51_private *cs42l51 = dev_get_drvdata(dev);
 	int ret;
 	unsigned int i;
 	unsigned int rate;
@@ -429,7 +433,7 @@ static int cs42l51_hw_params(struct snd_pcm_substream *substream,
 
 	if (i == nr_ratios) {
 		/* We did not find a matching ratio */
-		dev_err(component->dev, "could not find matching ratio\n");
+		dev_err(dev, "could not find matching ratio\n");
 		return -EINVAL;
 	}
 
@@ -486,13 +490,13 @@ static int cs42l51_hw_params(struct snd_pcm_substream *substream,
 			fmt = CS42L51_DAC_DIF_RJ24;
 			break;
 		default:
-			dev_err(component->dev, "unknown format\n");
+			dev_err(dev, "unknown format\n");
 			return -EINVAL;
 		}
 		intf_ctl |= CS42L51_INTF_CTL_DAC_FORMAT(fmt);
 		break;
 	default:
-		dev_err(component->dev, "unknown format\n");
+		dev_err(dev, "unknown format\n");
 		return -EINVAL;
 	}
 
@@ -512,7 +516,7 @@ static int cs42l51_hw_params(struct snd_pcm_substream *substream,
 
 static int cs42l51_dai_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int reg;
 	int mask = CS42L51_DAC_OUT_CTL_DACA_MUTE|CS42L51_DAC_OUT_CTL_DACB_MUTE;
 
@@ -570,11 +574,9 @@ static struct snd_soc_dai_driver cs42l51_dai = {
 static int cs42l51_component_probe(struct snd_soc_component *component)
 {
 	int ret, reg;
-	struct snd_soc_dapm_context *dapm;
-	struct cs42l51_private *cs42l51;
-
-	cs42l51 = snd_soc_component_get_drvdata(component);
-	dapm = snd_soc_component_to_dapm(component);
+	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l51_private *cs42l51 = dev_get_drvdata(dev);
 
 	if (cs42l51->mclk_handle)
 		snd_soc_dapm_new_controls(dapm, cs42l51_dapm_mclk_widgets, 1);
@@ -781,7 +783,7 @@ int cs42l51_probe(struct device *dev, struct regmap *regmap)
 	dev_info(dev, "Cirrus Logic CS42L51, Revision: %02X\n",
 		 val & CS42L51_CHIP_REV_MASK);
 
-	ret = devm_snd_soc_register_component(dev,
+	ret = devm_snd_soc_component_register(dev,
 			&soc_component_device_cs42l51, &cs42l51_dai, 1);
 	if (ret < 0)
 		goto error;

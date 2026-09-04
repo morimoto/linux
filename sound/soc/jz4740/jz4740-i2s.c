@@ -93,7 +93,9 @@ struct jz4740_i2s {
 static int jz4740_i2s_startup(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct jz4740_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz4740_i2s *i2s = dev_get_drvdata(dev);
 	int ret;
 
 	/*
@@ -131,7 +133,9 @@ static int jz4740_i2s_startup(struct snd_pcm_substream *substream,
 static void jz4740_i2s_shutdown(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct jz4740_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz4740_i2s *i2s = dev_get_drvdata(dev);
 
 	if (snd_soc_dai_active(dai))
 		return;
@@ -144,7 +148,9 @@ static void jz4740_i2s_shutdown(struct snd_pcm_substream *substream,
 static int jz4740_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 	struct snd_soc_dai *dai)
 {
-	struct jz4740_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz4740_i2s *i2s = dev_get_drvdata(dev);
 	uint32_t mask;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
@@ -172,7 +178,9 @@ static int jz4740_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int jz4740_i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct jz4740_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz4740_i2s *i2s = dev_get_drvdata(dev);
 	const unsigned int conf_mask = JZ_AIC_CONF_BIT_CLK_MASTER |
 				       JZ_AIC_CONF_SYNC_CLK_MASTER;
 	unsigned int conf = 0, format = 0;
@@ -250,7 +258,9 @@ static int jz4740_i2s_get_i2sdiv(unsigned long mclk, unsigned long rate,
 static int jz4740_i2s_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct jz4740_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz4740_i2s *i2s = dev_get_drvdata(dev);
 	struct regmap_field *div_field;
 	unsigned long i2sdiv_max;
 	unsigned int sample_size;
@@ -318,10 +328,12 @@ static int jz4740_i2s_hw_params(struct snd_pcm_substream *substream,
 
 static int jz4740_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct jz4740_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz4740_i2s *i2s = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, &i2s->playback_dma_data,
-		&i2s->capture_dma_data);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &i2s->playback_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &i2s->capture_dma_data);
 
 	return 0;
 }
@@ -423,7 +435,8 @@ static const struct i2s_soc_info jz4780_i2s_soc_info = {
 
 static int jz4740_i2s_suspend(struct snd_soc_component *component)
 {
-	struct jz4740_i2s *i2s = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz4740_i2s *i2s = dev_get_drvdata(dev);
 
 	if (snd_soc_component_active(component)) {
 		regmap_clear_bits(i2s->regmap, JZ_REG_AIC_CONF, JZ_AIC_CONF_ENABLE);
@@ -437,7 +450,8 @@ static int jz4740_i2s_suspend(struct snd_soc_component *component)
 
 static int jz4740_i2s_resume(struct snd_soc_component *component)
 {
-	struct jz4740_i2s *i2s = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz4740_i2s *i2s = dev_get_drvdata(dev);
 	int ret;
 
 	ret = clk_prepare_enable(i2s->clk_aic);
@@ -459,7 +473,8 @@ static int jz4740_i2s_resume(struct snd_soc_component *component)
 
 static int jz4740_i2s_probe(struct snd_soc_component *component)
 {
-	struct jz4740_i2s *i2s = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz4740_i2s *i2s = dev_get_drvdata(dev);
 	int ret;
 
 	ret = clk_prepare_enable(i2s->clk_aic);
@@ -480,7 +495,8 @@ static int jz4740_i2s_probe(struct snd_soc_component *component)
 
 static void jz4740_i2s_remove(struct snd_soc_component *component)
 {
-	struct jz4740_i2s *i2s = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz4740_i2s *i2s = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(i2s->clk_aic);
 }
@@ -584,7 +600,7 @@ static int jz4740_i2s_dev_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, i2s);
 
-	ret = devm_snd_soc_register_component(dev, &jz4740_i2s_component,
+	ret = devm_snd_soc_component_register(dev, &jz4740_i2s_component,
 					      i2s->soc_info->dai, 1);
 	if (ret)
 		return ret;

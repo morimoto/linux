@@ -262,7 +262,9 @@ static irqreturn_t atmel_i2s_interrupt(int irq, void *dev_id)
 
 static int atmel_i2s_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct atmel_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct atmel_i2s_dev *dev = dev_get_drvdata(dai_dev);
 
 	dev->fmt = fmt;
 	return 0;
@@ -271,7 +273,9 @@ static int atmel_i2s_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int atmel_i2s_prepare(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct atmel_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct atmel_i2s_dev *dev = dev_get_drvdata(dai_dev);
 	bool is_playback = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 	unsigned int rhr, sr = 0;
 
@@ -323,7 +327,9 @@ static int atmel_i2s_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *dai)
 {
-	struct atmel_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct atmel_i2s_dev *dev = dev_get_drvdata(dai_dev);
 	bool is_playback = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 	unsigned int mr = 0, mr_mask;
 	int ret;
@@ -476,7 +482,9 @@ static int atmel_i2s_switch_mck_generator(struct atmel_i2s_dev *dev,
 static int atmel_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 			     struct snd_soc_dai *dai)
 {
-	struct atmel_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct atmel_i2s_dev *dev = dev_get_drvdata(dai_dev);
 	bool is_playback = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 	bool is_master, mck_enabled;
 	unsigned int cr, mr;
@@ -534,9 +542,12 @@ static int atmel_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int atmel_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct atmel_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct atmel_i2s_dev *dev = dev_get_drvdata(dai_dev);
 
-	snd_soc_dai_init_dma_data(dai, &dev->playback, &dev->capture);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &dev->playback);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &dev->capture);
 	return 0;
 }
 
@@ -697,7 +708,7 @@ static int atmel_i2s_probe(struct platform_device *pdev)
 	regmap_write(dev->regmap, ATMEL_I2SC_IER,
 		     ATMEL_I2SC_INT_RXOR | ATMEL_I2SC_INT_TXUR);
 
-	err = devm_snd_soc_register_component(&pdev->dev,
+	err = devm_snd_soc_component_register(&pdev->dev,
 					      &atmel_i2s_component,
 					      &atmel_i2s_dai, 1);
 	if (err) {

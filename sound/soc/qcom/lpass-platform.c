@@ -195,18 +195,20 @@ static int lpass_platform_pcmops_open(struct snd_soc_component *component,
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	const struct lpass_variant *v = drvdata->variant;
 	int ret, dma_ch, dir = substream->stream;
 	struct lpass_pcm_data *data;
 	struct regmap *map;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = dai_driver->id;
 
 	data = kzalloc_obj(*data);
 	if (!data)
 		return -ENOMEM;
 
-	data->i2s_port = cpu_dai->driver->id;
+	data->i2s_port = dai_driver->id;
 	runtime->private_data = data;
 
 	if (v->alloc_dma_channel)
@@ -286,10 +288,12 @@ static int lpass_platform_pcmops_close(struct snd_soc_component *component,
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	const struct lpass_variant *v = drvdata->variant;
 	struct lpass_pcm_data *data;
-	unsigned int dai_id = cpu_dai->driver->id;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
+	unsigned int dai_id = dai_driver->id;
 
 	data = runtime->private_data;
 
@@ -323,10 +327,12 @@ static struct lpaif_dmactl *__lpass_get_dmactl_handle(const struct snd_pcm_subst
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct lpaif_dmactl *dmactl = NULL;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 
-	switch (cpu_dai->driver->id) {
+	switch (dai_driver->id) {
 	case MI2S_PRIMARY ... MI2S_QUINARY:
 		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 			dmactl = drvdata->rd_dmactl;
@@ -355,13 +361,15 @@ static int __lpass_get_id(const struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *rt = substream->runtime;
 	struct lpass_pcm_data *pcm_data = rt->private_data;
 	const struct lpass_variant *v = drvdata->variant;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	int id;
 
-	switch (cpu_dai->driver->id) {
+	switch (dai_driver->id) {
 	case MI2S_PRIMARY ... MI2S_QUINARY:
 		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 			id = pcm_data->dma_ch;
@@ -390,10 +398,12 @@ static struct regmap *__lpass_get_regmap_handle(const struct snd_pcm_substream *
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	struct regmap *map = NULL;
 
-	switch (cpu_dai->driver->id) {
+	switch (dai_driver->id) {
 	case MI2S_PRIMARY ... MI2S_QUINARY:
 		map = drvdata->lpaif_map;
 		break;
@@ -418,10 +428,12 @@ static int lpass_platform_pcmops_hw_params(struct snd_soc_component *component,
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *rt = substream->runtime;
 	struct lpass_pcm_data *pcm_data = rt->private_data;
 	const struct lpass_variant *v = drvdata->variant;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	snd_pcm_format_t format = params_format(params);
 	unsigned int channels = params_channels(params);
 	unsigned int regval;
@@ -429,7 +441,7 @@ static int lpass_platform_pcmops_hw_params(struct snd_soc_component *component,
 	int id;
 	int bitwidth;
 	int ret, dma_port = pcm_data->i2s_port + v->dmactl_audif_start;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = dai_driver->id;
 
 	dmactl = __lpass_get_dmactl_handle(substream, component);
 	id = __lpass_get_id(substream, component);
@@ -571,14 +583,16 @@ static int lpass_platform_pcmops_hw_free(struct snd_soc_component *component,
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *rt = substream->runtime;
 	struct lpass_pcm_data *pcm_data = rt->private_data;
 	const struct lpass_variant *v = drvdata->variant;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	unsigned int reg;
 	int ret;
 	struct regmap *map;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = dai_driver->id;
 
 	if (is_cdc_dma_port(dai_id))
 		return 0;
@@ -599,14 +613,16 @@ static int lpass_platform_pcmops_prepare(struct snd_soc_component *component,
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *rt = substream->runtime;
 	struct lpass_pcm_data *pcm_data = rt->private_data;
 	const struct lpass_variant *v = drvdata->variant;
 	struct lpaif_dmactl *dmactl;
 	struct regmap *map;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	int ret, id, ch, dir = substream->stream;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = dai_driver->id;
 
 	ch = pcm_data->dma_ch;
 
@@ -662,16 +678,18 @@ static int lpass_platform_pcmops_trigger(struct snd_soc_component *component,
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *rt = substream->runtime;
 	struct lpass_pcm_data *pcm_data = rt->private_data;
 	const struct lpass_variant *v = drvdata->variant;
 	struct lpaif_dmactl *dmactl;
 	struct regmap *map;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	int ret, ch, id;
 	unsigned int reg_irqclr = 0, val_irqclr = 0;
 	unsigned int  reg_irqen = 0, val_irqen = 0, val_mask = 0;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = dai_driver->id;
 
 	ch = pcm_data->dma_ch;
 	dmactl = __lpass_get_dmactl_handle(substream, component);
@@ -861,14 +879,16 @@ static snd_pcm_uframes_t lpass_platform_pcmops_pointer(
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *rt = substream->runtime;
 	struct lpass_pcm_data *pcm_data = rt->private_data;
 	const struct lpass_variant *v = drvdata->variant;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	unsigned int base_addr, curr_addr;
 	int ret, ch, dir = substream->stream;
 	struct regmap *map;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = dai_driver->id;
 
 	map = __lpass_get_regmap_handle(substream, component);
 	ch = pcm_data->dma_ch;
@@ -913,7 +933,8 @@ static int lpass_platform_pcmops_mmap(struct snd_soc_component *component,
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	unsigned int dai_id = cpu_dai->driver->id;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
+	unsigned int dai_id = dai_driver->id;
 
 	if (is_cdc_dma_port(dai_id))
 		return lpass_platform_cdc_dma_mmap(substream, vma);
@@ -929,11 +950,12 @@ static irqreturn_t lpass_dma_interrupt_handler(
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
 	const struct lpass_variant *v = drvdata->variant;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	irqreturn_t ret = IRQ_NONE;
 	int rv;
 	unsigned int reg, val, mask;
 	struct regmap *map;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = dai_driver->id;
 
 	mask = LPAIF_IRQ_ALL(chan);
 	switch (dai_id) {
@@ -1127,7 +1149,8 @@ static irqreturn_t lpass_platform_vaif_irq(int irq, void *data)
 static int lpass_platform_prealloc_cdc_dma_buffer(struct snd_soc_component *component,
 						  struct snd_pcm *pcm, int dai_id)
 {
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct snd_pcm_substream *substream;
 	struct snd_dma_buffer *buf;
 
@@ -1170,7 +1193,9 @@ static int lpass_platform_pcm_new(struct snd_soc_component *component,
 {
 	struct snd_pcm *pcm = soc_runtime->pcm;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	unsigned int dai_id = cpu_dai->driver->id;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	unsigned int dai_id = dai_driver->id;
 
 	size_t size = lpass_platform_pcm_hardware.buffer_bytes_max;
 
@@ -1181,13 +1206,13 @@ static int lpass_platform_pcm_new(struct snd_soc_component *component,
 	if (is_cdc_dma_port(dai_id))
 		return lpass_platform_prealloc_cdc_dma_buffer(component, pcm, dai_id);
 
-	return snd_pcm_set_fixed_buffer_all(pcm, SNDRV_DMA_TYPE_NONCOHERENT,
-					    component->dev, size);
+	return snd_pcm_set_fixed_buffer_all(pcm, SNDRV_DMA_TYPE_NONCOHERENT, dev, size);
 }
 
 static int lpass_platform_pcmops_suspend(struct snd_soc_component *component)
 {
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct regmap *map;
 
 	if (drvdata->hdmi_port_enable) {
@@ -1205,7 +1230,8 @@ static int lpass_platform_pcmops_suspend(struct snd_soc_component *component)
 
 static int lpass_platform_pcmops_resume(struct snd_soc_component *component)
 {
-	struct lpass_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct regmap *map;
 	int ret;
 
@@ -1231,7 +1257,8 @@ static int lpass_platform_copy(struct snd_soc_component *component,
 	struct snd_pcm_runtime *rt = substream->runtime;
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	unsigned int dai_id = cpu_dai->driver->id;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
+	unsigned int dai_id = dai_driver->id;
 	int ret = 0;
 
 	void __iomem *dma_buf = (void __iomem *) (rt->dma_area + pos +
@@ -1387,7 +1414,7 @@ int asoc_qcom_lpass_platform_register(struct platform_device *pdev)
 			return ret;
 		}
 	}
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&lpass_component_driver, NULL, 0);
 }
 EXPORT_SYMBOL_GPL(asoc_qcom_lpass_platform_register);

@@ -603,7 +603,7 @@ static int tda7419_probe(struct i2c_client *i2c)
 			     tda7419_regmap_defaults[i].reg,
 			     tda7419_regmap_defaults[i].def);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 		&tda7419_component_driver, NULL, 0);
 	if (ret < 0) {
 		dev_err(&i2c->dev, "error registering component: %d\n",

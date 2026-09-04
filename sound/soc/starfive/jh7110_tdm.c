@@ -330,7 +330,9 @@ static int jh7110_tdm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct jh7110_tdm_dev *tdm = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jh7110_tdm_dev *tdm = dev_get_drvdata(dev);
 	int chan_wl, chan_sl, chan_nr;
 	unsigned int data_width;
 	unsigned int dma_bus_width;
@@ -387,7 +389,7 @@ static int jh7110_tdm_hw_params(struct snd_pcm_substream *substream,
 		dma_data = &tdm->capture_dma_data;
 	}
 
-	snd_soc_dai_set_dma_data(dai, substream, dma_data);
+	snd_soc_dai_stream_dma_data_set(dai, substream, dma_data);
 
 	ret = jh7110_tdm_config(tdm, substream);
 	if (ret)
@@ -400,7 +402,9 @@ static int jh7110_tdm_hw_params(struct snd_pcm_substream *substream,
 static int jh7110_tdm_trigger(struct snd_pcm_substream *substream,
 			      int cmd, struct snd_soc_dai *dai)
 {
-	struct jh7110_tdm_dev *tdm = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jh7110_tdm_dev *tdm = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (cmd) {
@@ -426,7 +430,9 @@ static int jh7110_tdm_trigger(struct snd_pcm_substream *substream,
 static int jh7110_tdm_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 				  unsigned int fmt)
 {
-	struct jh7110_tdm_dev *tdm = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jh7110_tdm_dev *tdm = dev_get_drvdata(dev);
 	unsigned int gbcr;
 
 	/* set master/slave audio interface */
@@ -458,10 +464,14 @@ static int jh7110_tdm_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 
 static int jh7110_tdm_dai_probe(struct snd_soc_dai *dai)
 {
-	struct jh7110_tdm_dev *tdm = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jh7110_tdm_dev *tdm = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, &tdm->play_dma_data, &tdm->capture_dma_data);
-	snd_soc_dai_set_drvdata(dai, tdm);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &tdm->play_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &tdm->capture_dma_data);
+	dev_set_drvdata(dev, tdm);
+
 	return 0;
 }
 
@@ -593,7 +603,7 @@ static int jh7110_tdm_probe(struct platform_device *pdev)
 	jh7110_tdm_init_params(tdm);
 
 	dev_set_drvdata(&pdev->dev, tdm);
-	ret = devm_snd_soc_register_component(&pdev->dev, &jh7110_tdm_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &jh7110_tdm_component,
 					      &jh7110_tdm_dai, 1);
 	if (ret)
 		return ret;

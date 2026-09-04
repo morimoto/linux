@@ -173,7 +173,10 @@ static unsigned int samplerate_to_bit(unsigned int samplerate)
 
 static inline struct rk_pdm_dev *to_info(struct snd_soc_dai *dai)
 {
-	return snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	return dev_get_drvdata(dev);
 }
 
 static void rockchip_pdm_rxctrl(struct rk_pdm_dev *pdm, int on)
@@ -320,6 +323,8 @@ static int rockchip_pdm_set_fmt(struct snd_soc_dai *cpu_dai,
 				unsigned int fmt)
 {
 	struct rk_pdm_dev *pdm = to_info(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int mask = 0, val = 0;
 	int ret;
 
@@ -335,12 +340,12 @@ static int rockchip_pdm_set_fmt(struct snd_soc_dai *cpu_dai,
 		return -EINVAL;
 	}
 
-	ret = pm_runtime_resume_and_get(cpu_dai->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret)
 		return ret;
 
 	regmap_update_bits(pdm->regmap, PDM_CLK_CTRL, mask, val);
-	pm_runtime_put(cpu_dai->dev);
+	pm_runtime_put(dev);
 
 	return 0;
 }
@@ -376,7 +381,7 @@ static int rockchip_pdm_dai_probe(struct snd_soc_dai *dai)
 {
 	struct rk_pdm_dev *pdm = to_info(dai);
 
-	snd_soc_dai_dma_data_set_capture(dai, &pdm->capture_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(dai, &pdm->capture_dma_data);
 
 	return 0;
 }
@@ -632,7 +637,7 @@ static int rockchip_pdm_probe(struct platform_device *pdev)
 			goto err_pm_disable;
 	}
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &rockchip_pdm_component,
 					      &rockchip_pdm_dai, 1);
 

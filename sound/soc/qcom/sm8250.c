@@ -30,10 +30,10 @@ struct sm8250_snd_data {
 
 static int sm8250_snd_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct sm8250_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct sm8250_snd_data *data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
-	switch (cpu_dai->id) {
+	switch (snd_soc_dai_id(cpu_dai)) {
 	case DISPLAY_PORT_RX:
 		return qcom_snd_dp_jack_setup(rtd, &data->dp_jack, 0);
 	case USB_RX:
@@ -46,10 +46,10 @@ static int sm8250_snd_init(struct snd_soc_pcm_runtime *rtd)
 
 static void sm8250_snd_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	struct sm8250_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct sm8250_snd_data *data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
-	if (cpu_dai->id == USB_RX)
+	if (snd_soc_dai_id(cpu_dai) == USB_RX)
 		qcom_snd_usb_offload_jack_remove(rtd,
 						 &data->usb_offload_jack_setup);
 
@@ -79,7 +79,7 @@ static int sm8250_snd_startup(struct snd_pcm_substream *substream)
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 
-	switch (cpu_dai->id) {
+	switch (snd_soc_dai_id(cpu_dai)) {
 	case PRIMARY_MI2S_RX:
 		codec_dai_fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_I2S;
 		snd_soc_dai_set_sysclk(cpu_dai,
@@ -139,18 +139,18 @@ static int sm8250_snd_prepare(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct sm8250_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct sm8250_snd_data *data = snd_soc_card_to_priv(rtd->card);
 
-	return qcom_snd_sdw_prepare(substream, &data->stream_prepared[cpu_dai->id]);
+	return qcom_snd_sdw_prepare(substream, &data->stream_prepared[snd_soc_dai_id(cpu_dai)]);
 }
 
 static int sm8250_snd_hw_free(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sm8250_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct sm8250_snd_data *data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
-	return qcom_snd_sdw_hw_free(substream, &data->stream_prepared[cpu_dai->id]);
+	return qcom_snd_sdw_hw_free(substream, &data->stream_prepared[snd_soc_dai_id(cpu_dai)]);
 }
 
 static const struct snd_soc_ops sm8250_be_ops = {
@@ -195,7 +195,7 @@ static int sm8250_platform_probe(struct platform_device *pdev)
 	if (!data)
 		return -ENOMEM;
 
-	snd_soc_card_set_drvdata(card, data);
+	snd_soc_card_set_priv(card, data);
 	ret = qcom_snd_parse_of(card, card_driver);
 	if (ret)
 		return ret;

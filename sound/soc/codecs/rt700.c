@@ -157,13 +157,14 @@ static void rt700_jack_detect_handler(struct work_struct *work)
 {
 	struct rt700_priv *rt700 =
 		container_of(work, struct rt700_priv, jack_detect_work.work);
+	struct snd_soc_card *card = snd_soc_component_to_card(rt700->component);
 	int btn_type = 0, ret;
 	unsigned int jack_status = 0, reg;
 
 	if (!rt700->hs_jack)
 		return;
 
-	if (!snd_soc_card_is_instantiated(rt700->component->card))
+	if (!snd_soc_card_is_instantiated(card))
 		return;
 
 	reg = RT700_VERB_GET_PIN_SENSE | RT700_HP_OUT;
@@ -314,7 +315,8 @@ static void rt700_jack_init(struct rt700_priv *rt700)
 static int rt700_set_jack_detect(struct snd_soc_component *component,
 	struct snd_soc_jack *hs_jack, void *data)
 {
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 	int ret;
 
 	rt700->hs_jack = hs_jack;
@@ -323,21 +325,21 @@ static int rt700_set_jack_detect(struct snd_soc_component *component,
 	if (!rt700->first_hw_init)
 		return 0;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0) {
 		if (ret != -EACCES) {
-			dev_err(component->dev, "%s: failed to resume %d\n", __func__, ret);
+			dev_err(dev, "%s: failed to resume %d\n", __func__, ret);
 			return ret;
 		}
 
 		/* pm_runtime not enabled yet */
-		dev_dbg(component->dev,	"%s: skipping jack init for now\n", __func__);
+		dev_dbg(dev,	"%s: skipping jack init for now\n", __func__);
 		return 0;
 	}
 
 	rt700_jack_init(rt700);
 
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return 0;
 }
@@ -364,7 +366,8 @@ static int rt700_set_amp_gain_put(struct snd_kcontrol *kcontrol,
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 	unsigned int addr_h, addr_l, val_h, val_ll, val_lr;
 	unsigned int read_ll, read_rl;
 	int i;
@@ -458,7 +461,8 @@ static int rt700_set_amp_gain_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	unsigned int addr_h, addr_l, val_h;
@@ -523,7 +527,8 @@ static int rt700_mux_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 	unsigned int reg, val = 0, nid;
 	int ret;
 
@@ -552,7 +557,8 @@ static int rt700_mux_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int *item = ucontrol->value.enumerated.item;
 	unsigned int val, val2 = 0, change, reg, nid;
@@ -630,9 +636,9 @@ static const struct snd_kcontrol_new rt700_hp_mux =
 static int rt700_dac_front_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -650,9 +656,9 @@ static int rt700_dac_front_event(struct snd_soc_dapm_widget *w,
 static int rt700_dac_surround_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -670,9 +676,9 @@ static int rt700_dac_surround_event(struct snd_soc_dapm_widget *w,
 static int rt700_adc_09_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -690,9 +696,9 @@ static int rt700_adc_09_event(struct snd_soc_dapm_widget *w,
 static int rt700_adc_08_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -710,9 +716,9 @@ static int rt700_adc_08_event(struct snd_soc_dapm_widget *w,
 static int rt700_hpo_mux_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 	unsigned int val_h = (1 << RT700_DIR_OUT_SFT) | (0x3 << 4);
 	unsigned int val_l;
 
@@ -735,9 +741,9 @@ static int rt700_hpo_mux_event(struct snd_soc_dapm_widget *w,
 static int rt700_spk_pga_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 	unsigned int val_h = (1 << RT700_DIR_OUT_SFT) | (0x3 << 4);
 	unsigned int val_l;
 
@@ -816,7 +822,8 @@ static const struct snd_soc_dapm_route rt700_audio_map[] = {
 
 static int rt700_probe(struct snd_soc_component *component)
 {
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 	int ret;
 
 	rt700->component = component;
@@ -824,7 +831,7 @@ static int rt700_probe(struct snd_soc_component *component)
 	if (!rt700->first_hw_init)
 		return 0;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -835,7 +842,8 @@ static int rt700_set_bias_level(struct snd_soc_component *component,
 				enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_PREPARE:
@@ -875,7 +883,7 @@ static const struct snd_soc_component_driver soc_codec_dev_rt700 = {
 static int rt700_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 				int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -883,23 +891,25 @@ static int rt700_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 static void rt700_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static int rt700_pcm_hw_params(struct snd_pcm_substream *substream,
 					struct snd_pcm_hw_params *params,
 					struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 	struct sdw_stream_config stream_config = {0};
 	struct sdw_port_config port_config = {0};
 	struct sdw_stream_runtime *sdw_stream;
+	int dai_id = snd_soc_dai_id(dai);
 	int retval;
 	unsigned int val = 0;
 
-	dev_dbg(dai->dev, "%s %s", __func__, dai->name);
-	sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	dev_dbg(dev, "%s %s", __func__, snd_soc_dai_name(dai));
+	sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!sdw_stream)
 		return -EINVAL;
@@ -916,21 +926,21 @@ static int rt700_pcm_hw_params(struct snd_pcm_substream *substream,
 	else
 		port_config.num = 2;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT700_AIF1:
 		break;
 	case RT700_AIF2:
 		port_config.num += 2;
 		break;
 	default:
-		dev_err(component->dev, "%s: Invalid DAI id %d\n", __func__, dai->id);
+		dev_err(dev, "%s: Invalid DAI id %d\n", __func__, dai_id);
 		return -EINVAL;
 	}
 
 	retval = sdw_stream_add_slave(rt700->slave, &stream_config,
 					&port_config, 1, sdw_stream);
 	if (retval) {
-		dev_err(dai->dev, "%s: Unable to configure port\n", __func__);
+		dev_err(dev, "%s: Unable to configure port\n", __func__);
 		return retval;
 	}
 
@@ -938,7 +948,7 @@ static int rt700_pcm_hw_params(struct snd_pcm_substream *substream,
 		/* bit 3:0 Number of Channel */
 		val |= (params_channels(params) - 1);
 	} else {
-		dev_err(component->dev, "%s: Unsupported channels %d\n",
+		dev_err(dev, "%s: Unsupported channels %d\n",
 			__func__, params_channels(params));
 		return -EINVAL;
 	}
@@ -973,10 +983,11 @@ static int rt700_pcm_hw_params(struct snd_pcm_substream *substream,
 static int rt700_pcm_hw_free(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt700_priv *rt700 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt700_priv *rt700 = dev_get_drvdata(dev);
 	struct sdw_stream_runtime *sdw_stream =
-		snd_soc_dai_get_dma_data(dai, substream);
+		snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!rt700->slave)
 		return -EINVAL;
@@ -1115,7 +1126,7 @@ int rt700_init(struct device *dev, struct regmap *sdw_regmap,
 	rt700->hw_init = false;
 	rt700->first_hw_init = false;
 
-	ret =  devm_snd_soc_register_component(dev,
+	ret =  devm_snd_soc_component_register(dev,
 				&soc_codec_dev_rt700,
 				rt700_dai,
 				ARRAY_SIZE(rt700_dai));

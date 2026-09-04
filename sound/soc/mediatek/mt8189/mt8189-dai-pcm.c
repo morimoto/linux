@@ -218,7 +218,9 @@ static int mtk_dai_pcm_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 	unsigned int rate_reg = pcm_rate_transform(afe->dev, rate);
 	unsigned int x_rate_reg = pcm_1x_rate_transform(afe->dev, rate);
@@ -226,10 +228,9 @@ static int mtk_dai_pcm_hw_params(struct snd_pcm_substream *substream,
 	unsigned int pcm_con1;
 	unsigned int playback_active = 0;
 	unsigned int capture_active = 0;
-	struct snd_soc_dapm_widget *playback_widget =
-		snd_soc_dai_get_widget(dai, SNDRV_PCM_STREAM_PLAYBACK);
-	struct snd_soc_dapm_widget *capture_widget =
-		snd_soc_dai_get_widget(dai, SNDRV_PCM_STREAM_CAPTURE);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_dapm_widget *playback_widget = snd_soc_dai_stream_widget_get_playback(dai);
+	struct snd_soc_dapm_widget *capture_widget =  snd_soc_dai_stream_widget_get_capture(dai);
 
 	if (playback_widget)
 		playback_active = playback_widget->active;
@@ -237,12 +238,12 @@ static int mtk_dai_pcm_hw_params(struct snd_pcm_substream *substream,
 		capture_active = capture_widget->active;
 	dev_dbg(afe->dev,
 		"id %d, stream %d, rate %d, rate_reg %d, active p %d, c %d\n",
-		dai->id, substream->stream, rate, rate_reg,
+		dai_id, substream->stream, rate, rate_reg,
 		playback_active, capture_active);
 
 	if (playback_active || capture_active)
 		return 0;
-	switch (dai->id) {
+	switch (dai_id) {
 	case MT8189_DAI_PCM_0:
 		pcm_con0 = AUD_BCLK_OUT_INV_NO_INVERSE << PCM0_BCLK_OUT_INV_SFT;
 		pcm_con0 |= AUD_TX_LCH_RPT_NO_REPEAT << PCM0_TX_LCH_RPT_SFT;
@@ -267,7 +268,7 @@ static int mtk_dai_pcm_hw_params(struct snd_pcm_substream *substream,
 		break;
 	default:
 		dev_err(afe->dev, "%s(), id %d not support\n",
-			__func__, dai->id);
+			__func__, dai_id);
 		return -EINVAL;
 	}
 	return 0;

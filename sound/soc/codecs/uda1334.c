@@ -42,7 +42,8 @@ static int uda1334_put_deemph(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct uda1334_priv *uda1334 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1334_priv *uda1334 = dev_get_drvdata(dev);
 	int deemph = ucontrol->value.integer.value[0];
 
 	if (deemph > 1)
@@ -57,7 +58,8 @@ static int uda1334_get_deemph(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct uda1334_priv *uda1334 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1334_priv *uda1334 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = gpiod_get_value_cansleep(uda1334->deemph);
@@ -89,16 +91,16 @@ static const struct {
 static int uda1334_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct uda1334_priv *uda1334 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1334_priv *uda1334 = dev_get_drvdata(dev);
 
 	/*
 	 * The set of sample rates that can be supported depends on the
 	 * MCLK supplied to the CODEC - enforce this.
 	 */
 	if (!uda1334->sysclk) {
-		dev_err(component->dev,
-			"No MCLK configured, call set_sysclk() on init\n");
+		dev_err(dev, "No MCLK configured, call set_sysclk() on init\n");
 		return -EINVAL;
 	}
 
@@ -114,8 +116,9 @@ static int uda1334_startup(struct snd_pcm_substream *substream,
 static void uda1334_shutdown(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct uda1334_priv *uda1334 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1334_priv *uda1334 = dev_get_drvdata(dev);
 
 	gpiod_set_value_cansleep(uda1334->mute, 0);
 }
@@ -123,8 +126,9 @@ static void uda1334_shutdown(struct snd_pcm_substream *substream,
 static int uda1334_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct uda1334_priv *uda1334 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1334_priv *uda1334 = dev_get_drvdata(dev);
 	unsigned int val;
 	int i, j = 0;
 
@@ -147,14 +151,12 @@ static int uda1334_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		case 64000:
 		case 88200:
 		case 96000:
-			dev_dbg(component->dev, "Supported sample rate: %dHz\n",
-				val);
+			dev_dbg(dev, "Supported sample rate: %dHz\n", val);
 			uda1334->rate_constraint_list[j++] = val;
 			uda1334->rate_constraint.count++;
 			break;
 		default:
-			dev_dbg(component->dev, "Skipping sample rate: %dHz\n",
-				val);
+			dev_dbg(dev, "Skipping sample rate: %dHz\n", val);
 		}
 	}
 
@@ -167,12 +169,15 @@ static int uda1334_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 
 static int uda1334_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	fmt &= (SND_SOC_DAIFMT_FORMAT_MASK | SND_SOC_DAIFMT_INV_MASK |
 		SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK);
 
 	if (fmt != (SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
 		    SND_SOC_DAIFMT_CBC_CFC)) {
-		dev_err(codec_dai->dev, "Invalid DAI format\n");
+		dev_err(dev, "Invalid DAI format\n");
 		return -EINVAL;
 	}
 
@@ -181,7 +186,9 @@ static int uda1334_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 
 static int uda1334_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct uda1334_priv *uda1334 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1334_priv *uda1334 = dev_get_drvdata(dev);
 
 	if (uda1334->mute)
 		gpiod_set_value_cansleep(uda1334->mute, mute);
@@ -221,7 +228,8 @@ static struct snd_soc_dai_driver uda1334_dai = {
 
 static int uda1334_probe(struct snd_soc_component *component)
 {
-	struct uda1334_priv *uda1334 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1334_priv *uda1334 = dev_get_drvdata(dev);
 
 	uda1334->rate_constraint.list = &uda1334->rate_constraint_list[0];
 	uda1334->rate_constraint.count =
@@ -275,7 +283,7 @@ static int uda1334_codec_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &soc_component_dev_uda1334,
 					      &uda1334_dai, 1);
 	if (ret < 0)

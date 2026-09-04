@@ -125,7 +125,9 @@ int sti_uniperiph_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			       unsigned int rx_mask, int slots,
 			       int slot_width)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *uni = priv->dai_data.uni;
 	int i, frame_size, avail_slots;
 
@@ -255,7 +257,9 @@ int sti_uniperiph_get_tdm_word_pos(struct uniperif *uni,
  */
 static int sti_uniperiph_dai_create_ctrl(struct snd_soc_dai *dai)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *uni = priv->dai_data.uni;
 	struct snd_kcontrol_new *ctrl;
 	int i;
@@ -273,7 +277,7 @@ static int sti_uniperiph_dai_create_ctrl(struct snd_soc_dai *dai)
 		ctrl->device = uni->id;
 	}
 
-	return snd_soc_add_dai_controls(dai, uni->snd_ctrls, uni->num_ctrls);
+	return snd_soc_dai_add_controls(dai, uni->snd_ctrls, uni->num_ctrls);
 }
 
 /*
@@ -283,7 +287,9 @@ int sti_uniperiph_dai_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *uni = priv->dai_data.uni;
 	struct snd_dmaengine_dai_dma_data *dma_data;
 	int transfer_size;
@@ -294,7 +300,7 @@ int sti_uniperiph_dai_hw_params(struct snd_pcm_substream *substream,
 	else
 		transfer_size = params_channels(params) * UNIPERIF_FIFO_FRAMES;
 
-	dma_data = snd_soc_dai_get_dma_data(dai, substream);
+	dma_data = snd_soc_dai_stream_dma_data_get(dai, substream);
 	dma_data->maxburst = transfer_size;
 
 	return 0;
@@ -302,7 +308,9 @@ int sti_uniperiph_dai_hw_params(struct snd_pcm_substream *substream,
 
 int sti_uniperiph_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 
 	priv->dai_data.uni->daifmt = fmt;
 
@@ -311,7 +319,8 @@ int sti_uniperiph_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 static int sti_uniperiph_suspend(struct snd_soc_component *component)
 {
-	struct sti_uniperiph_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *uni = priv->dai_data.uni;
 	int ret;
 
@@ -333,7 +342,8 @@ static int sti_uniperiph_suspend(struct snd_soc_component *component)
 
 static int sti_uniperiph_resume(struct snd_soc_component *component)
 {
-	struct sti_uniperiph_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *uni = priv->dai_data.uni;
 	int ret;
 
@@ -354,14 +364,16 @@ static int sti_uniperiph_resume(struct snd_soc_component *component)
 
 int sti_uniperiph_dai_probe(struct snd_soc_dai *dai)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct sti_uniperiph_dai *dai_data = &priv->dai_data;
 
 	/* DMA settings*/
 	if (priv->dai_data.stream == SNDRV_PCM_STREAM_PLAYBACK)
-		snd_soc_dai_init_dma_data(dai, &dai_data->dma_data, NULL);
+		snd_soc_dai_stream_dma_data_set_playback(dai, &dai_data->dma_data);
 	else
-		snd_soc_dai_init_dma_data(dai, NULL, &dai_data->dma_data);
+		snd_soc_dai_stream_dma_data_set_capture(dai, &dai_data->dma_data);
 
 	dai_data->dma_data.addr = dai_data->uni->fifo_phys_address;
 	dai_data->dma_data.addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
@@ -483,7 +495,7 @@ static int sti_uniperiph_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, priv);
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &sti_uniperiph_dai_component,
 					      priv->dai, 1);
 	if (ret < 0)

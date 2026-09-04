@@ -342,10 +342,8 @@ static int wm8770_reset(struct snd_soc_component *component)
 
 static int wm8770_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int iface, master;
-
-	component = dai->component;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -407,15 +405,13 @@ static int wm8770_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component;
-	struct wm8770_priv *wm8770;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8770_priv *wm8770 = dev_get_drvdata(dev);
 	int i;
 	int iface;
 	int shift;
 	int ratio;
-
-	component = dai->component;
-	wm8770 = snd_soc_component_get_drvdata(component);
 
 	iface = 0;
 	switch (params_width(params)) {
@@ -454,13 +450,12 @@ static int wm8770_hw_params(struct snd_pcm_substream *substream,
 		}
 
 		if (i == ARRAY_SIZE(mclk_ratios)) {
-			dev_err(component->dev,
-				"Unable to configure MCLK ratio %d/%d\n",
+			dev_err(dev, "Unable to configure MCLK ratio %d/%d\n",
 				wm8770->sysclk, params_rate(params));
 			return -EINVAL;
 		}
 
-		dev_dbg(component->dev, "MCLK is %dfs\n", mclk_ratios[i]);
+		dev_dbg(dev, "MCLK is %dfs\n", mclk_ratios[i]);
 
 		snd_soc_component_update_bits(component, WM8770_MSTRCTRL, 0x7 << shift,
 				    i << shift);
@@ -473,9 +468,8 @@ static int wm8770_hw_params(struct snd_pcm_substream *substream,
 
 static int wm8770_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
-	component = dai->component;
 	return snd_soc_component_update_bits(component, WM8770_DACMUTE, 0x10,
 				   !!mute << 4);
 }
@@ -483,11 +477,10 @@ static int wm8770_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int wm8770_set_sysclk(struct snd_soc_dai *dai,
 			     int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component;
-	struct wm8770_priv *wm8770;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8770_priv *wm8770 = dev_get_drvdata(dev);
 
-	component = dai->component;
-	wm8770 = snd_soc_component_get_drvdata(component);
 	wm8770->sysclk = freq;
 	return 0;
 }
@@ -497,9 +490,8 @@ static int wm8770_set_bias_level(struct snd_soc_component *component,
 {
 	int ret;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8770_priv *wm8770;
-
-	wm8770 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8770_priv *wm8770 = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
@@ -511,9 +503,7 @@ static int wm8770_set_bias_level(struct snd_soc_component *component,
 			ret = regulator_bulk_enable(ARRAY_SIZE(wm8770->supplies),
 						    wm8770->supplies);
 			if (ret) {
-				dev_err(component->dev,
-					"Failed to enable supplies: %d\n",
-					ret);
+				dev_err(dev, "Failed to enable supplies: %d\n", ret);
 				return ret;
 			}
 
@@ -578,22 +568,22 @@ static struct snd_soc_dai_driver wm8770_dai = {
 
 static int wm8770_probe(struct snd_soc_component *component)
 {
-	struct wm8770_priv *wm8770;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8770_priv *wm8770 = dev_get_drvdata(dev);
 	int ret;
 
-	wm8770 = snd_soc_component_get_drvdata(component);
 	wm8770->component = component;
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(wm8770->supplies),
 				    wm8770->supplies);
 	if (ret) {
-		dev_err(component->dev, "Failed to enable supplies: %d\n", ret);
+		dev_err(dev, "Failed to enable supplies: %d\n", ret);
 		return ret;
 	}
 
 	ret = wm8770_reset(component);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to issue reset: %d\n", ret);
+		dev_err(dev, "Failed to issue reset: %d\n", ret);
 		goto err_reg_enable;
 	}
 
@@ -690,7 +680,7 @@ static int wm8770_spi_probe(struct spi_device *spi)
 
 	spi_set_drvdata(spi, wm8770);
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 				     &soc_component_dev_wm8770, &wm8770_dai, 1);
 
 	return ret;

@@ -225,9 +225,11 @@ static inline bool any_active(struct i2s_dai *i2s)
 
 static inline struct i2s_dai *to_info(struct snd_soc_dai *dai)
 {
-	struct samsung_i2s_priv *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct samsung_i2s_priv *priv = dev_get_drvdata(dev);
 
-	return &priv->dai[dai->id - 1];
+	return &priv->dai[snd_soc_dai_id(dai) - 1];
 }
 
 static inline bool is_opened(struct i2s_dai *i2s)
@@ -504,16 +506,18 @@ static inline void i2s_fifo(struct i2s_dai *i2s, u32 flush)
 static int i2s_set_sysclk(struct snd_soc_dai *dai, int clk_id, unsigned int rfs,
 			  int dir)
 {
-	struct samsung_i2s_priv *priv = snd_soc_dai_get_drvdata(dai);
 	struct i2s_dai *i2s = to_info(dai);
 	struct i2s_dai *other = get_other_dai(i2s);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct samsung_i2s_priv *priv = dev_get_drvdata(dev);
 	const struct samsung_i2s_variant_regs *i2s_regs = priv->variant_regs;
 	unsigned int cdcon_mask = 1 << i2s_regs->cdclkcon_off;
 	unsigned int rsrc_mask = 1 << i2s_regs->rclksrc_off;
 	u32 mod, mask, val = 0;
 	int ret = 0;
 
-	guard(pm_runtime_active)(dai->dev);
+	guard(pm_runtime_active)(dev);
 
 	scoped_guard(spinlock_irqsave, &priv->lock)
 		mod = readl(priv->addr + I2SMOD);
@@ -620,8 +624,10 @@ static int i2s_set_sysclk(struct snd_soc_dai *dai, int clk_id, unsigned int rfs,
 
 static int i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct samsung_i2s_priv *priv = snd_soc_dai_get_drvdata(dai);
 	struct i2s_dai *i2s = to_info(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct samsung_i2s_priv *priv = dev_get_drvdata(dev);
 	int lrp_shift, sdf_shift, sdf_mask, lrp_rlow, mod_slave;
 	u32 mod, tmp = 0;
 	unsigned long flags;
@@ -688,7 +694,7 @@ static int i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
-	pm_runtime_get_sync(dai->dev);
+	pm_runtime_get_sync(dev);
 	spin_lock_irqsave(&priv->lock, flags);
 	mod = readl(priv->addr + I2SMOD);
 	/*
@@ -698,7 +704,7 @@ static int i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	if (any_active(i2s) &&
 		((mod & (sdf_mask | lrp_rlow | mod_slave)) != tmp)) {
 		spin_unlock_irqrestore(&priv->lock, flags);
-		pm_runtime_put(dai->dev);
+		pm_runtime_put(dev);
 		dev_err(&i2s->pdev->dev,
 				"%s:%d Other DAI busy\n", __func__, __LINE__);
 		return -EAGAIN;
@@ -709,7 +715,7 @@ static int i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	writel(mod, priv->addr + I2SMOD);
 	priv->slave_mode = (mod & mod_slave);
 	spin_unlock_irqrestore(&priv->lock, flags);
-	pm_runtime_put(dai->dev);
+	pm_runtime_put(dev);
 
 	return 0;
 }
@@ -717,12 +723,14 @@ static int i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int i2s_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct samsung_i2s_priv *priv = snd_soc_dai_get_drvdata(dai);
 	struct i2s_dai *i2s = to_info(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct samsung_i2s_priv *priv = dev_get_drvdata(dev);
 	u32 mod, mask = 0, val = 0;
 	struct clk *rclksrc;
 
-	WARN_ON(!pm_runtime_active(dai->dev));
+	WARN_ON(!pm_runtime_active(dev));
 
 	if (!is_secondary(i2s))
 		mask |= (MOD_DC2_EN | MOD_DC1_EN);
@@ -798,7 +806,8 @@ static int i2s_hw_params(struct snd_pcm_substream *substream,
 		writel(mod, priv->addr + I2SMOD);
 	}
 
-	snd_soc_dai_init_dma_data(dai, &i2s->dma_playback, &i2s->dma_capture);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &i2s->dma_playback);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &i2s->dma_capture);
 
 	i2s->frmclk = params_rate(params);
 
@@ -813,11 +822,13 @@ static int i2s_hw_params(struct snd_pcm_substream *substream,
 static int i2s_startup(struct snd_pcm_substream *substream,
 	  struct snd_soc_dai *dai)
 {
-	struct samsung_i2s_priv *priv = snd_soc_dai_get_drvdata(dai);
 	struct i2s_dai *i2s = to_info(dai);
 	struct i2s_dai *other = get_other_dai(i2s);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct samsung_i2s_priv *priv = dev_get_drvdata(dev);
 
-	pm_runtime_get_sync(dai->dev);
+	pm_runtime_get_sync(dev);
 
 	guard(spinlock_irqsave)(&priv->pcm_lock);
 
@@ -837,9 +848,11 @@ static int i2s_startup(struct snd_pcm_substream *substream,
 static void i2s_shutdown(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct samsung_i2s_priv *priv = snd_soc_dai_get_drvdata(dai);
 	struct i2s_dai *i2s = to_info(dai);
 	struct i2s_dai *other = get_other_dai(i2s);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct samsung_i2s_priv *priv = dev_get_drvdata(dev);
 
 	scoped_guard(spinlock_irqsave, &priv->pcm_lock) {
 		i2s->mode &= ~DAI_OPENED;
@@ -853,7 +866,7 @@ static void i2s_shutdown(struct snd_pcm_substream *substream,
 		i2s->bfs = 0;
 	}
 
-	pm_runtime_put(dai->dev);
+	pm_runtime_put(dev);
 }
 
 static int config_setup(struct i2s_dai *i2s)
@@ -920,16 +933,18 @@ static int config_setup(struct i2s_dai *i2s)
 static int i2s_trigger(struct snd_pcm_substream *substream,
 	int cmd, struct snd_soc_dai *dai)
 {
-	struct samsung_i2s_priv *priv = snd_soc_dai_get_drvdata(dai);
 	int capture = (substream->stream == SNDRV_PCM_STREAM_CAPTURE);
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct i2s_dai *i2s = to_info(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct samsung_i2s_priv *priv = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 	case SNDRV_PCM_TRIGGER_RESUME:
 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-		pm_runtime_get_sync(dai->dev);
+		pm_runtime_get_sync(dev);
 
 		if (priv->fixup_early)
 			priv->fixup_early(substream, dai);
@@ -959,7 +974,7 @@ static int i2s_trigger(struct snd_pcm_substream *substream,
 				i2s_fifo(i2s, FIC_TXFLUSH);
 			}
 		}
-		pm_runtime_put(dai->dev);
+		pm_runtime_put(dev);
 		break;
 	}
 
@@ -971,19 +986,21 @@ static int i2s_set_clkdiv(struct snd_soc_dai *dai,
 {
 	struct i2s_dai *i2s = to_info(dai);
 	struct i2s_dai *other = get_other_dai(i2s);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	switch (div_id) {
 	case SAMSUNG_I2S_DIV_BCLK:
-		pm_runtime_get_sync(dai->dev);
+		pm_runtime_get_sync(dev);
 		if ((any_active(i2s) && div && (get_bfs(i2s) != div))
 			|| (other && other->bfs && (other->bfs != div))) {
-			pm_runtime_put(dai->dev);
+			pm_runtime_put(dev);
 			dev_err(&i2s->pdev->dev,
 				"%s:%d Other DAI busy\n", __func__, __LINE__);
 			return -EAGAIN;
 		}
 		i2s->bfs = div;
-		pm_runtime_put(dai->dev);
+		pm_runtime_put(dev);
 		break;
 	default:
 		dev_err(&i2s->pdev->dev,
@@ -997,12 +1014,14 @@ static int i2s_set_clkdiv(struct snd_soc_dai *dai,
 static snd_pcm_sframes_t
 i2s_delay(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	struct samsung_i2s_priv *priv = snd_soc_dai_get_drvdata(dai);
 	struct i2s_dai *i2s = to_info(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct samsung_i2s_priv *priv = dev_get_drvdata(dev);
 	u32 reg = readl(priv->addr + I2SFIC);
 	snd_pcm_sframes_t delay;
 
-	WARN_ON(!pm_runtime_active(dai->dev));
+	WARN_ON(!pm_runtime_active(dev));
 
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE)
 		delay = FIC_RXCOUNT(reg);
@@ -1017,12 +1036,16 @@ i2s_delay(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 #ifdef CONFIG_PM
 static int i2s_suspend(struct snd_soc_component *component)
 {
-	return pm_runtime_force_suspend(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	return pm_runtime_force_suspend(dev);
 }
 
 static int i2s_resume(struct snd_soc_component *component)
 {
-	return pm_runtime_force_resume(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	return pm_runtime_force_resume(dev);
 }
 #else
 #define i2s_suspend NULL
@@ -1031,18 +1054,17 @@ static int i2s_resume(struct snd_soc_component *component)
 
 static int samsung_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct samsung_i2s_priv *priv = snd_soc_dai_get_drvdata(dai);
 	struct i2s_dai *i2s = to_info(dai);
 	struct i2s_dai *other = get_other_dai(i2s);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct samsung_i2s_priv *priv = dev_get_drvdata(dev);
 
-	pm_runtime_get_sync(dai->dev);
+	pm_runtime_get_sync(dev);
 
-	if (is_secondary(i2s)) {
-		/* If this is probe on the secondary DAI */
-		snd_soc_dai_init_dma_data(dai, &i2s->dma_playback, NULL);
-	} else {
-		snd_soc_dai_init_dma_data(dai, &i2s->dma_playback,
-					  &i2s->dma_capture);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &i2s->dma_playback);
+	if (!is_secondary(i2s)) {
+		snd_soc_dai_stream_dma_data_set_capture(dai, &i2s->dma_capture);
 
 		if (priv->quirks & QUIRK_NEED_RSTCLR)
 			writel(CON_RSTCLR, priv->addr + I2SCON);
@@ -1068,17 +1090,19 @@ static int samsung_i2s_dai_probe(struct snd_soc_dai *dai)
 	if (!is_opened(other))
 		i2s_set_sysclk(dai, SAMSUNG_I2S_CDCLK,
 				0, SND_SOC_CLOCK_IN);
-	pm_runtime_put(dai->dev);
+	pm_runtime_put(dev);
 
 	return 0;
 }
 
 static int samsung_i2s_dai_remove(struct snd_soc_dai *dai)
 {
-	struct samsung_i2s_priv *priv = snd_soc_dai_get_drvdata(dai);
 	struct i2s_dai *i2s = to_info(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct samsung_i2s_priv *priv = dev_get_drvdata(dev);
 
-	pm_runtime_get_sync(dai->dev);
+	pm_runtime_get_sync(dev);
 
 	if (!is_secondary(i2s)) {
 		if (priv->quirks & QUIRK_NEED_RSTCLR) {
@@ -1087,7 +1111,7 @@ static int samsung_i2s_dai_remove(struct snd_soc_dai *dai)
 		}
 	}
 
-	pm_runtime_put(dai->dev);
+	pm_runtime_put(dev);
 
 	return 0;
 }
@@ -1135,7 +1159,7 @@ static const struct snd_soc_dapm_route samsung_i2s_dapm_routes_sec_play[] = {
 
 static int samsung_i2s_component_probe(struct snd_soc_component *component)
 {
-	struct samsung_i2s_priv *priv = snd_soc_component_get_drvdata(component);
+	struct samsung_i2s_priv *priv = snd_soc_component_to_priv(component);
 
 	if (priv->quirks & QUIRK_SEC_DAI)
 		snd_soc_dapm_add_routes(snd_soc_component_to_dapm(component),
@@ -1529,7 +1553,7 @@ static int samsung_i2s_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, priv);
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					&samsung_i2s_component,
 					priv->dai_drv, num_dais);
 	if (ret < 0)
@@ -1590,7 +1614,9 @@ static void fsd_i2s_fixup_late(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct samsung_i2s_priv *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct samsung_i2s_priv *priv = dev_get_drvdata(dev);
 	struct i2s_dai *i2s = to_info(snd_soc_rtd_to_cpu(rtd, 0));
 	struct i2s_dai *other = get_other_dai(i2s);
 

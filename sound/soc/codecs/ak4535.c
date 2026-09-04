@@ -248,8 +248,9 @@ static const struct snd_soc_dapm_route ak4535_audio_map[] = {
 static int ak4535_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 	int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct ak4535_priv *ak4535 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4535_priv *ak4535 = dev_get_drvdata(dev);
 
 	ak4535->sysclk = freq;
 	return 0;
@@ -259,8 +260,9 @@ static int ak4535_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4535_priv *ak4535 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4535_priv *ak4535 = dev_get_drvdata(dev);
 	u8 mode2 = snd_soc_component_read(component, AK4535_MODE2) & ~(0x3 << 5);
 	int rate = params_rate(params), fs = 256;
 
@@ -287,7 +289,7 @@ static int ak4535_hw_params(struct snd_pcm_substream *substream,
 static int ak4535_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u8 mode1 = 0;
 
 	/* interface format */
@@ -311,7 +313,7 @@ static int ak4535_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 static int ak4535_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 mute_reg = snd_soc_component_read(component, AK4535_DAC);
 
 	if (!mute)
@@ -379,7 +381,7 @@ static struct snd_soc_dai_driver ak4535_dai = {
 
 static int ak4535_resume(struct snd_soc_component *component)
 {
-	snd_soc_component_cache_sync(component);
+	snd_soc_component_regcache_sync(component);
 	return 0;
 }
 
@@ -429,7 +431,7 @@ static int ak4535_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, ak4535);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_ak4535, &ak4535_dai, 1);
 
 	return ret;

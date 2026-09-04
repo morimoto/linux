@@ -28,7 +28,7 @@ static int bdw_rt5677_event_hp(struct snd_soc_dapm_widget *w,
 			struct snd_kcontrol *k, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct bdw_rt5677_priv *bdw_rt5677 = snd_soc_card_get_drvdata(card);
+	struct bdw_rt5677_priv *bdw_rt5677 = snd_soc_card_to_priv(card);
 
 	if (SND_SOC_DAPM_EVENT_ON(event))
 		msleep(70);
@@ -224,15 +224,15 @@ static const struct snd_soc_ops bdw_rt5677_fe_ops = {
 
 static int bdw_rt5677_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct bdw_rt5677_priv *bdw_rt5677 =
-			snd_soc_card_get_drvdata(rtd->card);
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct bdw_rt5677_priv *bdw_rt5677 = snd_soc_card_to_priv(rtd->card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
-	ret = devm_acpi_dev_add_driver_gpios(component->dev, bdw_rt5677_gpios);
+	ret = devm_acpi_dev_add_driver_gpios(dev, bdw_rt5677_gpios);
 	if (ret)
-		dev_warn(component->dev, "Failed to add driver gpios\n");
+		dev_warn(dev, "Failed to add driver gpios\n");
 
 	/* Enable codec ASRC function for Stereo DAC/Stereo1 ADC/DMIC/I2S1.
 	 * The ASRC clock source is clk_i2s1_asrc.
@@ -247,10 +247,9 @@ static int bdw_rt5677_init(struct snd_soc_pcm_runtime *rtd)
 			RT5677_CLK_SEL_SYS2);
 
 	/* Request rt5677 GPIO for headphone amp control */
-	bdw_rt5677->gpio_hp_en = gpiod_get(component->dev, "headphone-enable",
-					   GPIOD_OUT_LOW);
+	bdw_rt5677->gpio_hp_en = gpiod_get(dev, "headphone-enable", GPIOD_OUT_LOW);
 	if (IS_ERR(bdw_rt5677->gpio_hp_en)) {
-		dev_err(component->dev, "Can't find HP_AMP_SHDN_L gpio\n");
+		dev_err(dev, "Can't find HP_AMP_SHDN_L gpio\n");
 		return PTR_ERR(bdw_rt5677->gpio_hp_en);
 	}
 
@@ -258,23 +257,23 @@ static int bdw_rt5677_init(struct snd_soc_pcm_runtime *rtd)
 	if (!snd_soc_card_jack_new_pins(rtd->card, "Headphone Jack",
 			SND_JACK_HEADPHONE, &headphone_jack,
 			&headphone_jack_pin, 1)) {
-		headphone_jack_gpio.gpiod_dev = component->dev;
+		headphone_jack_gpio.gpiod_dev = dev;
 		if (snd_soc_jack_add_gpios(&headphone_jack, 1,
 				&headphone_jack_gpio))
-			dev_err(component->dev, "Can't add headphone jack gpio\n");
+			dev_err(dev, "Can't add headphone jack gpio\n");
 	} else {
-		dev_err(component->dev, "Can't create headphone jack\n");
+		dev_err(dev, "Can't create headphone jack\n");
 	}
 
 	/* Create and initialize mic jack */
 	if (!snd_soc_card_jack_new_pins(rtd->card, "Mic Jack",
 			SND_JACK_MICROPHONE, &mic_jack,
 			&mic_jack_pin, 1)) {
-		mic_jack_gpio.gpiod_dev = component->dev;
+		mic_jack_gpio.gpiod_dev = dev;
 		if (snd_soc_jack_add_gpios(&mic_jack, 1, &mic_jack_gpio))
-			dev_err(component->dev, "Can't add mic jack gpio\n");
+			dev_err(dev, "Can't add mic jack gpio\n");
 	} else {
-		dev_err(component->dev, "Can't create mic jack\n");
+		dev_err(dev, "Can't create mic jack\n");
 	}
 	bdw_rt5677->component = component;
 
@@ -284,8 +283,7 @@ static int bdw_rt5677_init(struct snd_soc_pcm_runtime *rtd)
 
 static void bdw_rt5677_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	struct bdw_rt5677_priv *bdw_rt5677 =
-			snd_soc_card_get_drvdata(rtd->card);
+	struct bdw_rt5677_priv *bdw_rt5677 = snd_soc_card_to_priv(rtd->card);
 
 	/*
 	 * The .exit() can be reached without going through the .init()
@@ -361,7 +359,7 @@ static struct snd_soc_dai_link bdw_rt5677_dais[] = {
 
 static int bdw_rt5677_suspend_pre(struct snd_soc_card *card)
 {
-	struct bdw_rt5677_priv *bdw_rt5677 = snd_soc_card_get_drvdata(card);
+	struct bdw_rt5677_priv *bdw_rt5677 = snd_soc_card_to_priv(card);
 	struct snd_soc_dapm_context *dapm;
 
 	if (bdw_rt5677->component) {
@@ -373,7 +371,7 @@ static int bdw_rt5677_suspend_pre(struct snd_soc_card *card)
 
 static int bdw_rt5677_resume_post(struct snd_soc_card *card)
 {
-	struct bdw_rt5677_priv *bdw_rt5677 = snd_soc_card_get_drvdata(card);
+	struct bdw_rt5677_priv *bdw_rt5677 = snd_soc_card_to_priv(card);
 	struct snd_soc_dapm_context *dapm;
 
 	if (bdw_rt5677->component) {

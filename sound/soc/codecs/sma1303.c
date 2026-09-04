@@ -309,7 +309,8 @@ static int sma1303_force_mute_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = (int)sma1303->force_mute_status;
 	dev_dbg(sma1303->dev, "%s : Force Mute %s\n", __func__,
@@ -322,7 +323,8 @@ static int sma1303_force_mute_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	bool change = false, val = (bool)ucontrol->value.integer.value[0];
 
 	if (sma1303->force_mute_status == val)
@@ -341,7 +343,8 @@ static int sma1303_postscaler_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	int val, ret;
 
 	ret = sma1303_regmap_read(sma1303, SMA1303_90_POSTSCALER, &val);
@@ -357,7 +360,8 @@ static int sma1303_postscaler_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	int ret, val = (int)ucontrol->value.integer.value[0];
 	bool change;
 
@@ -373,7 +377,8 @@ static int sma1303_tdm_slot_rx_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	int val, ret;
 
 	ret = sma1303_regmap_read(sma1303, SMA1303_A5_TDM1, &val);
@@ -390,7 +395,8 @@ static int sma1303_tdm_slot_rx_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	int ret, val = (int)ucontrol->value.integer.value[0];
 	bool change;
 
@@ -406,7 +412,8 @@ static int sma1303_tdm_slot_tx_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	int val, ret;
 
 	ret = sma1303_regmap_read(sma1303, SMA1303_A6_TDM2, &val);
@@ -423,7 +430,8 @@ static int sma1303_tdm_slot_tx_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	int ret, val = (int)ucontrol->value.integer.value[0];
 	bool change;
 
@@ -437,7 +445,8 @@ static int sma1303_tdm_slot_tx_put(struct snd_kcontrol *kcontrol,
 
 static int sma1303_startup(struct snd_soc_component *component)
 {
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	bool change = false, temp = false;
 
 	sma1303_regmap_update_bits(sma1303, SMA1303_8E_PLL_CTRL,
@@ -487,7 +496,8 @@ static int sma1303_startup(struct snd_soc_component *component)
 
 static int sma1303_shutdown(struct snd_soc_component *component)
 {
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	bool change = false, temp = false;
 
 	cancel_delayed_work_sync(&sma1303->check_fault_work);
@@ -514,9 +524,9 @@ static int sma1303_shutdown(struct snd_soc_component *component)
 static int sma1303_aif_in_event(struct snd_soc_dapm_widget *w,
 			struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-			snd_soc_dapm_to_component(w->dapm);
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	unsigned int mux = snd_soc_dapm_kcontrol_get_value(w->kcontrols[0]);
 	int ret = 0;
 	bool change = false, temp = false;
@@ -584,9 +594,9 @@ static int sma1303_aif_in_event(struct snd_soc_dapm_widget *w,
 static int sma1303_aif_out_event(struct snd_soc_dapm_widget *w,
 			struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-			snd_soc_dapm_to_component(w->dapm);
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	unsigned int mux = snd_soc_dapm_kcontrol_get_value(w->kcontrols[0]);
 	int ret = 0;
 	bool change = false, temp = false;
@@ -724,9 +734,9 @@ static int sma1303_aif_out_event(struct snd_soc_dapm_widget *w,
 static int sma1303_sdo_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	int ret = 0;
 	bool change = false, temp = false;
 
@@ -776,9 +786,9 @@ static int sma1303_sdo_event(struct snd_soc_dapm_widget *w,
 static int sma1303_post_scaler_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	int ret = 0;
 	bool change = false;
 
@@ -810,9 +820,9 @@ static int sma1303_post_scaler_event(struct snd_soc_dapm_widget *w,
 static int sma1303_power_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (event) {
@@ -920,15 +930,16 @@ static const struct snd_soc_dapm_route sma1303_audio_map[] = {
 static int sma1303_setup_pll(struct snd_soc_component *component,
 		unsigned int bclk)
 {
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 
 	int i = 0, ret = 0;
 
-	dev_dbg(component->dev, "%s : BCLK = %dHz\n",
+	dev_dbg(dev, "%s : BCLK = %dHz\n",
 		__func__, bclk);
 
 	if (sma1303->sys_clk_id == SMA1303_PLL_CLKIN_MCLK) {
-		dev_dbg(component->dev, "%s : MCLK is not supported\n",
+		dev_dbg(dev, "%s : MCLK is not supported\n",
 		__func__);
 	} else if (sma1303->sys_clk_id == SMA1303_PLL_CLKIN_BCLK) {
 		for (i = 0; i < sma1303->num_of_pll_matches; i++) {
@@ -936,7 +947,7 @@ static int sma1303_setup_pll(struct snd_soc_component *component,
 				break;
 		}
 		if (i == sma1303->num_of_pll_matches) {
-			dev_dbg(component->dev, "%s : No matching value between pll table and SCK\n",
+			dev_dbg(dev, "%s : No matching value between pll table and SCK\n",
 					__func__);
 			return -EINVAL;
 		}
@@ -972,8 +983,9 @@ static int sma1303_setup_pll(struct snd_soc_component *component,
 static int sma1303_dai_hw_params_amp(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	unsigned int bclk = 0;
 	int ret = 0;
 
@@ -983,8 +995,7 @@ static int sma1303_dai_hw_params_amp(struct snd_pcm_substream *substream,
 		bclk = params_rate(params) * params_physical_width(params)
 			* params_channels(params);
 
-	dev_dbg(component->dev,
-			"%s : rate = %d : bit size = %d : channel = %d\n",
+	dev_dbg(dev, "%s : rate = %d : bit size = %d : channel = %d\n",
 			__func__, params_rate(params), params_width(params),
 			params_channels(params));
 
@@ -1033,7 +1044,7 @@ static int sma1303_dai_hw_params_amp(struct snd_pcm_substream *substream,
 			break;
 
 		default:
-			dev_err(component->dev, "%s not support rate : %d\n",
+			dev_err(dev, "%s not support rate : %d\n",
 				__func__, params_rate(params));
 
 			return -EINVAL;
@@ -1044,9 +1055,7 @@ static int sma1303_dai_hw_params_amp(struct snd_pcm_substream *substream,
 		switch (params_format(params)) {
 
 		case SNDRV_PCM_FORMAT_S16_LE:
-			dev_dbg(component->dev,
-				"%s set format SNDRV_PCM_FORMAT_S16_LE\n",
-				__func__);
+			dev_dbg(dev, "%s set format SNDRV_PCM_FORMAT_S16_LE\n", __func__);
 			ret += sma1303_regmap_update_bits(sma1303,
 					SMA1303_A4_TOP_MAN3,
 					SMA1303_SCK_RATE_MASK,
@@ -1055,9 +1064,7 @@ static int sma1303_dai_hw_params_amp(struct snd_pcm_substream *substream,
 			break;
 
 		case SNDRV_PCM_FORMAT_S24_LE:
-			dev_dbg(component->dev,
-				"%s set format SNDRV_PCM_FORMAT_S24_LE\n",
-				__func__);
+			dev_dbg(dev, "%s set format SNDRV_PCM_FORMAT_S24_LE\n", __func__);
 			ret += sma1303_regmap_update_bits(sma1303,
 					SMA1303_A4_TOP_MAN3,
 					SMA1303_SCK_RATE_MASK,
@@ -1065,9 +1072,7 @@ static int sma1303_dai_hw_params_amp(struct snd_pcm_substream *substream,
 					NULL);
 			break;
 		case SNDRV_PCM_FORMAT_S32_LE:
-			dev_dbg(component->dev,
-				"%s set format SNDRV_PCM_FORMAT_S32_LE\n",
-				__func__);
+			dev_dbg(dev, "%s set format SNDRV_PCM_FORMAT_S32_LE\n", __func__);
 			ret += sma1303_regmap_update_bits(sma1303,
 					SMA1303_A4_TOP_MAN3,
 					SMA1303_SCK_RATE_MASK,
@@ -1075,8 +1080,7 @@ static int sma1303_dai_hw_params_amp(struct snd_pcm_substream *substream,
 					NULL);
 			break;
 		default:
-			dev_err(component->dev,
-				"%s not support data bit : %d\n", __func__,
+			dev_err(dev, "%s not support data bit : %d\n", __func__,
 						params_format(params));
 			return -EINVAL;
 		}
@@ -1146,8 +1150,7 @@ static int sma1303_dai_hw_params_amp(struct snd_pcm_substream *substream,
 	case 32:
 		break;
 	default:
-		dev_err(component->dev,
-			"%s not support data bit : %d\n", __func__,
+		dev_err(dev, "%s not support data bit : %d\n", __func__,
 					params_format(params));
 		return -EINVAL;
 	}
@@ -1160,8 +1163,9 @@ static int sma1303_dai_hw_params_amp(struct snd_pcm_substream *substream,
 static int sma1303_dai_set_sysclk_amp(struct snd_soc_dai *dai,
 				int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 
 	switch (clk_id) {
 	case SMA1303_EXTERNAL_CLOCK_19_2:
@@ -1173,7 +1177,7 @@ static int sma1303_dai_set_sysclk_amp(struct snd_soc_dai *dai,
 	case SMA1303_PLL_CLKIN_BCLK:
 		break;
 	default:
-		dev_err(component->dev, "Invalid clk id: %d\n", clk_id);
+		dev_err(dev, "Invalid clk id: %d\n", clk_id);
 		return -EINVAL;
 	}
 	sma1303->sys_clk_id = clk_id;
@@ -1182,15 +1186,16 @@ static int sma1303_dai_set_sysclk_amp(struct snd_soc_dai *dai,
 
 static int sma1303_dai_mute(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	if (stream == SNDRV_PCM_STREAM_CAPTURE)
 		return ret;
 
 	if (mute) {
-		dev_dbg(component->dev, "%s : %s\n", __func__, "MUTE");
+		dev_dbg(dev, "%s : %s\n", __func__, "MUTE");
 
 		ret += sma1303_regmap_update_bits(sma1303,
 				SMA1303_0E_MUTE_VOL_CTRL,
@@ -1202,8 +1207,7 @@ static int sma1303_dai_mute(struct snd_soc_dai *dai, int mute, int stream)
 		msleep(55);
 	} else {
 		if (!sma1303->force_mute_status) {
-			dev_dbg(component->dev, "%s : %s\n",
-					__func__, "UNMUTE");
+			dev_dbg(dev, "%s : %s\n", __func__, "UNMUTE");
 			ret += sma1303_regmap_update_bits(sma1303,
 					SMA1303_0E_MUTE_VOL_CTRL,
 					SMA1303_SPK_MUTE_MASK,
@@ -1223,15 +1227,15 @@ static int sma1303_dai_mute(struct snd_soc_dai *dai, int mute, int stream)
 static int sma1303_dai_set_fmt_amp(struct snd_soc_dai *dai,
 					unsigned int fmt)
 {
-	struct snd_soc_component *component  = dai->component;
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 
 	case SND_SOC_DAIFMT_CBC_CFC:
-		dev_dbg(component->dev,
-				"%s : %s\n", __func__, "I2S/TDM Device mode");
+		dev_dbg(dev, "%s : %s\n", __func__, "I2S/TDM Device mode");
 		ret += sma1303_regmap_update_bits(sma1303,
 				SMA1303_01_INPUT1_CTRL1,
 				SMA1303_CONTROLLER_DEVICE_MASK,
@@ -1240,8 +1244,7 @@ static int sma1303_dai_set_fmt_amp(struct snd_soc_dai *dai,
 		break;
 
 	case SND_SOC_DAIFMT_CBP_CFP:
-		dev_dbg(component->dev,
-			"%s : %s\n", __func__, "I2S/TDM Controller mode");
+		dev_dbg(dev, "%s : %s\n", __func__, "I2S/TDM Controller mode");
 		ret += sma1303_regmap_update_bits(sma1303,
 				SMA1303_01_INPUT1_CTRL1,
 				SMA1303_CONTROLLER_DEVICE_MASK,
@@ -1250,8 +1253,7 @@ static int sma1303_dai_set_fmt_amp(struct snd_soc_dai *dai,
 		break;
 
 	default:
-		dev_err(component->dev,
-			"Unsupported Controller/Device : 0x%x\n", fmt);
+		dev_err(dev, "Unsupported Controller/Device : 0x%x\n", fmt);
 		return -EINVAL;
 	}
 
@@ -1265,16 +1267,14 @@ static int sma1303_dai_set_fmt_amp(struct snd_soc_dai *dai,
 		sma1303->format = fmt & SND_SOC_DAIFMT_FORMAT_MASK;
 		break;
 	default:
-		dev_err(component->dev,
-			"Unsupported Audio Interface Format : 0x%x\n", fmt);
+		dev_err(dev, "Unsupported Audio Interface Format : 0x%x\n", fmt);
 		return -EINVAL;
 	}
 
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
 
 	case SND_SOC_DAIFMT_IB_NF:
-		dev_dbg(component->dev, "%s : %s\n",
-			__func__, "Invert BCLK + Normal Frame");
+		dev_dbg(dev, "%s : %s\n", __func__, "Invert BCLK + Normal Frame");
 		ret += sma1303_regmap_update_bits(sma1303,
 				SMA1303_01_INPUT1_CTRL1,
 				SMA1303_SCK_RISING_MASK,
@@ -1282,8 +1282,7 @@ static int sma1303_dai_set_fmt_amp(struct snd_soc_dai *dai,
 				NULL);
 		break;
 	case SND_SOC_DAIFMT_IB_IF:
-		dev_dbg(component->dev, "%s : %s\n",
-			__func__, "Invert BCLK + Invert Frame");
+		dev_dbg(dev, "%s : %s\n", __func__, "Invert BCLK + Invert Frame");
 		ret += sma1303_regmap_update_bits(sma1303,
 				SMA1303_01_INPUT1_CTRL1,
 				SMA1303_LEFTPOL_MASK|SMA1303_SCK_RISING_MASK,
@@ -1291,8 +1290,7 @@ static int sma1303_dai_set_fmt_amp(struct snd_soc_dai *dai,
 				NULL);
 		break;
 	case SND_SOC_DAIFMT_NB_IF:
-		dev_dbg(component->dev, "%s : %s\n",
-			__func__, "Normal BCLK + Invert Frame");
+		dev_dbg(dev, "%s : %s\n", __func__, "Normal BCLK + Invert Frame");
 		ret += sma1303_regmap_update_bits(sma1303,
 				SMA1303_01_INPUT1_CTRL1,
 				SMA1303_LEFTPOL_MASK,
@@ -1300,12 +1298,10 @@ static int sma1303_dai_set_fmt_amp(struct snd_soc_dai *dai,
 				NULL);
 		break;
 	case SND_SOC_DAIFMT_NB_NF:
-		dev_dbg(component->dev, "%s : %s\n",
-			__func__, "Normal BCLK + Normal Frame");
+		dev_dbg(dev, "%s : %s\n", __func__, "Normal BCLK + Normal Frame");
 		break;
 	default:
-		dev_err(component->dev,
-				"Unsupported Bit & Frameclock : 0x%x\n", fmt);
+		dev_err(dev, "Unsupported Bit & Frameclock : 0x%x\n", fmt);
 		return -EINVAL;
 	}
 
@@ -1318,11 +1314,12 @@ static int sma1303_dai_set_tdm_slot(struct snd_soc_dai *dai,
 				unsigned int tx_mask, unsigned int rx_mask,
 				int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 	int ret = 0;
 
-	dev_dbg(component->dev, "%s : slots = %d, slot_width - %d\n",
+	dev_dbg(dev, "%s : slots = %d, slot_width - %d\n",
 			__func__, slots, slot_width);
 
 	sma1303->frame_size = slot_width * slots;
@@ -1349,8 +1346,7 @@ static int sma1303_dai_set_tdm_slot(struct snd_soc_dai *dai,
 					NULL);
 		break;
 	default:
-		dev_err(component->dev, "%s not support TDM %d slot_width\n",
-					__func__, slot_width);
+		dev_err(dev, "%s not support TDM %d slot_width\n", __func__, slot_width);
 		break;
 	}
 
@@ -1370,8 +1366,7 @@ static int sma1303_dai_set_tdm_slot(struct snd_soc_dai *dai,
 					NULL);
 		break;
 	default:
-		dev_err(component->dev, "%s not support TDM %d slots\n",
-				__func__, slots);
+		dev_err(dev, "%s not support TDM %d slots\n", __func__, slots);
 		break;
 	}
 
@@ -1382,8 +1377,7 @@ static int sma1303_dai_set_tdm_slot(struct snd_soc_dai *dai,
 					(sma1303->tdm_slot_rx) << 3,
 					NULL);
 	else
-		dev_err(component->dev, "%s Incorrect tdm-slot-rx %d set\n",
-					__func__, sma1303->tdm_slot_rx);
+		dev_err(dev, "%s Incorrect tdm-slot-rx %d set\n", __func__, sma1303->tdm_slot_rx);
 
 	ret += sma1303_regmap_update_bits(sma1303,
 				SMA1303_A5_TDM1,
@@ -1404,8 +1398,7 @@ static int sma1303_dai_set_tdm_slot(struct snd_soc_dai *dai,
 					(sma1303->tdm_slot_tx) << 3,
 					NULL);
 	else
-		dev_err(component->dev, "%s Incorrect tdm-slot-tx %d set\n",
-				__func__, sma1303->tdm_slot_tx);
+		dev_err(dev, "%s Incorrect tdm-slot-tx %d set\n", __func__, sma1303->tdm_slot_tx);
 
 	if (ret < 0)
 		return -EINVAL;
@@ -1578,7 +1571,8 @@ static int sma1303_probe(struct snd_soc_component *component)
 
 static void sma1303_remove(struct snd_soc_component *component)
 {
-	struct sma1303_priv *sma1303 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sma1303_priv *sma1303 = dev_get_drvdata(dev);
 
 	cancel_delayed_work_sync(&sma1303->check_fault_work);
 }
@@ -1766,7 +1760,7 @@ static int sma1303_i2c_probe(struct i2c_client *client)
 	sma1303->num_of_pll_matches =
 		ARRAY_SIZE(sma1303_pll_matches);
 
-	ret = devm_snd_soc_register_component(&client->dev,
+	ret = devm_snd_soc_component_register(&client->dev,
 			&sma1303_component, sma1303_dai, 1);
 	if (ret) {
 		dev_err(&client->dev, "Failed to register component");
