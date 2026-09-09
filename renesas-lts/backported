@@ -1,3 +1,28 @@
+v7.2      / clk: renesas: r8a779g0: Add DSC clock
+Local     / media: rppx1: bls: read the raw pattern from the PRE2 acquisition module
+Local     / media: rppx1: describe the MAIN_POST white balance gains block
+Local     / media: rppx1: lin: Add support for gamma sensor linearization
+Local     / media: rppx1: ga: Add support for gamma out correction
+Local     / media: rppx1: lsc: Add support for lens shade correction
+Local     / media: rppx1: ccor: Add support for color correction matrix
+Local     / media: rppx1: bls: Add support for black level compensation
+Local     / media: rppx1: hist: Add support histogram measurement
+Local     / media: rppx1: exm: Add support for exposure measurement
+Local     / media: rppx1: awbg: Add support for white balance gain settings
+Local     / media: rppx1: wbmeas: Add support for white balance measurement
+Local     / media: rcar-isp: Add support for ISPCORE
+Local     / media: rppx1: Add framework to support Dreamchip RPPX1 ISP
+Local     / media: uapi: Add extensible param and stats blocks for RPPX1
+Local     / media: Add RPPX1_PARAMS and RPPX1_STATS meta formats
+Local     / media: uapi: v4l2-isp: Add extensible statistics
+Local     / media: v4l2-isp: Add helpers for stats buffer
+Local     / media: v4l2-isp: Add per-block validation callback
+Local     / media: v4l2-isp: Rename v4l2_isp_params_buffer_size
+v6.19     / media: v4l2-isp: Rename block_info to block_type_info
+Local     / arm64: dts: renesas: sparrow-hawk: Always enable edge connector I2C busses
+v7.2      / media: rcar-vin: Drop min_queued_buffers
+v7.1      / media: renesas: vin: Fix RAW8 (again)
+Local     / PCI: rcar-gen4: Limit Max_Read_Request_Size and Max_Payload_Size to 256 Bytes
 v6.19     / dma-buf: heaps: cma: Create CMA heap for each CMA reserved region
 v6.19     / doc: dma-buf: List the heaps by name
 v6.19     / Documentation: dma-buf: heaps: Add naming guidelines
