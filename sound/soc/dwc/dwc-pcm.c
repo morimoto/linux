@@ -137,7 +137,10 @@ static int dw_pcm_open(struct snd_soc_component *component,
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct dw_i2s_dev *dev = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct dw_i2s_dev *dev = dev_get_drvdata(cpu_dev);
 
 	snd_soc_set_runtime_hwparams(substream, &dw_pcm_hardware);
 	snd_pcm_hw_constraint_integer(runtime, SNDRV_PCM_HW_PARAM_PERIODS);
@@ -258,6 +261,5 @@ static const struct snd_soc_component_driver dw_pcm_component = {
 
 int dw_pcm_register(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev, &dw_pcm_component,
-					       NULL, 0);
+	return devm_snd_soc_component_register(&pdev->dev, &dw_pcm_component, NULL, 0);
 }

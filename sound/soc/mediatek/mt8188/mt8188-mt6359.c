@@ -359,8 +359,9 @@ static int mt8188_mt6359_mtkaif_calibration(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_component *cmpnt_afe =
 		snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
 	struct snd_soc_component *cmpnt_codec =
-		snd_soc_rtd_to_codec(rtd, 0)->component;
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	struct snd_soc_dapm_widget *pin_w = NULL, *w;
+	struct device *afe_dev;
 	struct mtk_base_afe *afe;
 	struct mt8188_afe_private *afe_priv;
 	struct mtkaif_param *param;
@@ -380,7 +381,8 @@ static int mt8188_mt6359_mtkaif_calibration(struct snd_soc_pcm_runtime *rtd)
 	if (!cmpnt_afe)
 		return -EINVAL;
 
-	afe = snd_soc_component_get_drvdata(cmpnt_afe);
+	afe_dev = snd_soc_component_to_dev(cmpnt_afe);
+	afe = dev_get_drvdata(afe_dev);
 	afe_priv = afe->platform_priv;
 	param = &afe_priv->mtkaif_params;
 
@@ -520,7 +522,7 @@ static int mt8188_mt6359_mtkaif_calibration(struct snd_soc_pcm_runtime *rtd)
 
 static int mt8188_mt6359_accdet_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(rtd->card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_jack *jack = &soc_card_data->card_data->jacks[MT8188_JACK_HEADSET];
 	int ret;
 
@@ -550,7 +552,7 @@ static int mt8188_mt6359_accdet_init(struct snd_soc_pcm_runtime *rtd)
 static int mt8188_mt6359_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_component *cmpnt_codec =
-		snd_soc_rtd_to_codec(rtd, 0)->component;
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	/* set mtkaif protocol */
 	mt6359_set_mtkaif_protocol(cmpnt_codec,
@@ -632,9 +634,10 @@ static int mt8188_dptx_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 
 static int mt8188_hdmi_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(rtd->card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_jack *jack = &soc_card_data->card_data->jacks[MT8188_JACK_HDMI];
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component =
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	int ret = 0;
 
 	ret = snd_soc_card_jack_new_pins(rtd->card, "HDMI Jack",
@@ -649,7 +652,7 @@ static int mt8188_hdmi_codec_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_component_set_jack(component, jack, NULL);
 	if (ret) {
 		dev_err(rtd->dev, "%s, set jack failed on %s (ret=%d)\n",
-			__func__, component->name, ret);
+			__func__, snd_soc_component_name(component), ret);
 		return ret;
 	}
 
@@ -658,9 +661,10 @@ static int mt8188_hdmi_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 static int mt8188_dptx_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(rtd->card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_jack *jack = &soc_card_data->card_data->jacks[MT8188_JACK_DP];
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component =
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	int ret = 0;
 
 	ret = snd_soc_card_jack_new_pins(rtd->card, "DP Jack", SND_JACK_AVOUT,
@@ -674,7 +678,7 @@ static int mt8188_dptx_codec_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_component_set_jack(component, jack, NULL);
 	if (ret) {
 		dev_err(rtd->dev, "%s, set jack failed on %s (ret=%d)\n",
-			__func__, component->name, ret);
+			__func__, snd_soc_component_name(component), ret);
 		return ret;
 	}
 
@@ -694,7 +698,7 @@ static int mt8188_dumb_amp_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, mt8188_dumb_spk_controls,
+	ret = snd_soc_card_add_controls(card, mt8188_dumb_spk_controls,
 					ARRAY_SIZE(mt8188_dumb_spk_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add Dumb card controls, ret %d\n", ret);
@@ -716,16 +720,19 @@ static int mt8188_max98390_hw_params(struct snd_pcm_substream *substream,
 	snd_soc_dai_set_tdm_slot(cpu_dai, 0xf, 0xf, 4, bit_width);
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-		if (!strcmp(codec_dai->component->name, MAX98390_DEV0_NAME))
+		struct snd_soc_component *codec = snd_soc_dai_to_component(codec_dai);
+		const char *codec_name = snd_soc_component_name(codec);
+
+		if (!strcmp(codec_name, MAX98390_DEV0_NAME))
 			snd_soc_dai_set_tdm_slot(codec_dai, 0x8, 0x3, 4, bit_width);
 
-		if (!strcmp(codec_dai->component->name, MAX98390_DEV1_NAME))
+		if (!strcmp(codec_name, MAX98390_DEV1_NAME))
 			snd_soc_dai_set_tdm_slot(codec_dai, 0x4, 0x3, 4, bit_width);
 
-		if (!strcmp(codec_dai->component->name, MAX98390_DEV2_NAME))
+		if (!strcmp(codec_name, MAX98390_DEV2_NAME))
 			snd_soc_dai_set_tdm_slot(codec_dai, 0x2, 0x3, 4, bit_width);
 
-		if (!strcmp(codec_dai->component->name, MAX98390_DEV3_NAME))
+		if (!strcmp(codec_name, MAX98390_DEV3_NAME))
 			snd_soc_dai_set_tdm_slot(codec_dai, 0x1, 0x3, 4, bit_width);
 	}
 	return 0;
@@ -749,7 +756,7 @@ static int mt8188_max98390_codec_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, mt8188_dual_spk_controls,
+	ret = snd_soc_card_add_controls(card, mt8188_dual_spk_controls,
 					ARRAY_SIZE(mt8188_dual_spk_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add Left/Right card controls, ret %d\n", ret);
@@ -768,7 +775,7 @@ static int mt8188_max98390_codec_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, mt8188_rear_spk_controls,
+	ret = snd_soc_card_add_controls(card, mt8188_rear_spk_controls,
 					ARRAY_SIZE(mt8188_rear_spk_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add Rear card controls, ret %d\n", ret);
@@ -782,9 +789,10 @@ static int mt8188_headset_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(rtd->card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_jack *jack = &soc_card_data->card_data->jacks[MT8188_JACK_HEADSET];
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component =
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	struct mtk_platform_card_data *card_data = soc_card_data->card_data;
 	int ret;
 
@@ -795,7 +803,7 @@ static int mt8188_headset_codec_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, mt8188_nau8825_controls,
+	ret = snd_soc_card_add_controls(card, mt8188_nau8825_controls,
 					ARRAY_SIZE(mt8188_nau8825_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add nau8825 card controls, ret %d\n", ret);
@@ -838,7 +846,8 @@ static int mt8188_headset_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 static void mt8188_headset_codec_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component =
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	snd_soc_component_set_jack(component, NULL, NULL);
 }
@@ -849,6 +858,8 @@ static int mt8188_nau8825_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int rate = params_rate(params);
 	unsigned int bit_width = params_width(params);
 	int clk_freq, ret;
@@ -859,7 +870,7 @@ static int mt8188_nau8825_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_sysclk(codec_dai, NAU8825_CLK_FLL_BLK, 0,
 				     SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set BCLK clock %d\n", ret);
+		dev_err(dev, "can't set BCLK clock %d\n", ret);
 		return ret;
 	}
 
@@ -867,7 +878,7 @@ static int mt8188_nau8825_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_pll(codec_dai, 0, 0, clk_freq,
 				  params_rate(params) * 256);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set BCLK: %d\n", ret);
+		dev_err(dev, "can't set BCLK: %d\n", ret);
 		return ret;
 	}
 
@@ -885,33 +896,34 @@ static int mt8188_rt5682s_i2s_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	unsigned int rate = params_rate(params);
 	int bitwidth;
 	int ret;
 
 	bitwidth = snd_pcm_format_width(params_format(params));
 	if (bitwidth < 0) {
-		dev_err(card->dev, "invalid bit width: %d\n", bitwidth);
+		dev_err(dev, "invalid bit width: %d\n", bitwidth);
 		return bitwidth;
 	}
 
 	ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x00, 0x0, 0x2, bitwidth);
 	if (ret) {
-		dev_err(card->dev, "failed to set tdm slot\n");
+		dev_err(dev, "failed to set tdm slot\n");
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, RT5682_PLL1, RT5682_PLL1_S_BCLK1,
 				  rate * 32, rate * 512);
 	if (ret) {
-		dev_err(card->dev, "failed to set pll\n");
+		dev_err(dev, "failed to set pll\n");
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5682_SCLK_S_PLL1,
 				     rate * 512, SND_SOC_CLOCK_IN);
 	if (ret) {
-		dev_err(card->dev, "failed to set sysclk\n");
+		dev_err(dev, "failed to set sysclk\n");
 		return ret;
 	}
 
@@ -937,7 +949,7 @@ static int mt8188_sof_be_hw_params(struct snd_pcm_substream *substream,
 			break;
 	}
 
-	if (cmpnt_afe && !pm_runtime_active(cmpnt_afe->dev)) {
+	if (cmpnt_afe && !pm_runtime_active(snd_soc_component_to_dev(cmpnt_afe))) {
 		dev_err(rtd->dev, "afe pm runtime is not active!!\n");
 		return -EINVAL;
 	}
@@ -955,13 +967,15 @@ static int mt8188_es8326_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int rate = params_rate(params);
 	int ret;
 
 	/* Configure MCLK for codec */
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, rate * 256, SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set MCLK %d\n", ret);
+		dev_err(dev, "can't set MCLK %d\n", ret);
 		return ret;
 	}
 
@@ -1282,8 +1296,10 @@ static struct snd_soc_dai_link mt8188_mt6359_dai_links[] = {
 
 static void mt8188_fixup_controls(struct snd_soc_card *card)
 {
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(card);
 	struct mtk_platform_card_data *card_data = soc_card_data->card_data;
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct snd_kcontrol *kctl;
 
 	if (card_data->flags & (NAU8825_HS_PRESENT | RT5682S_HS_PRESENT | ES8326_HS_PRESENT)) {
@@ -1296,11 +1312,11 @@ static void mt8188_fixup_controls(struct snd_soc_card *card)
 			snd_soc_dapm_free_widget(w);
 		}
 
-		kctl = snd_ctl_find_id_mixer(card->snd_card, "Headphone Switch");
+		kctl = snd_ctl_find_id_mixer(snd_card, "Headphone Switch");
 		if (kctl)
-			snd_ctl_remove(card->snd_card, kctl);
+			snd_ctl_remove(snd_card, kctl);
 		else
-			dev_warn(card->dev, "Cannot find ctl : Headphone Switch\n");
+			dev_warn(dev, "Cannot find ctl : Headphone Switch\n");
 	}
 }
 

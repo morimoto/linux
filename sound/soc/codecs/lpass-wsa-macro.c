@@ -1128,7 +1128,8 @@ static const struct regmap_config wsa_regmap_config = {
  */
 int wsa_macro_set_spkr_mode(struct snd_soc_component *component, int mode)
 {
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	wsa->spkr_mode = mode;
 
@@ -1163,10 +1164,12 @@ static int wsa_macro_set_prim_interpolator_rate(struct snd_soc_dai *dai,
 	u16 int_mux_cfg0, int_mux_cfg1;
 	u16 int_fs_reg;
 	u8 inp0_sel, inp1_sel, inp2_sel;
-	struct snd_soc_component *component = dai->component;
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	for_each_set_bit(port, &wsa->active_ch_mask[dai->id], WSA_MACRO_RX_MAX) {
+	for_each_set_bit(port, &wsa->active_ch_mask[dai_id], WSA_MACRO_RX_MAX) {
 		int_1_mix1_inp = port;
 		int_mux_cfg0 = CDC_WSA_RX_INP_MUX_RX_INT0_CFG0;
 
@@ -1209,10 +1212,12 @@ static int wsa_macro_set_mix_interpolator_rate(struct snd_soc_dai *dai,
 	u32 j, port;
 	u16 int_mux_cfg1, int_fs_reg;
 	u8 int_mux_cfg1_val;
-	struct snd_soc_component *component = dai->component;
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	for_each_set_bit(port, &wsa->active_ch_mask[dai->id], WSA_MACRO_RX_MAX) {
+	for_each_set_bit(port, &wsa->active_ch_mask[dai_id], WSA_MACRO_RX_MAX) {
 		int_2_inp = port;
 
 		int_mux_cfg1 = CDC_WSA_RX_INP_MUX_RX_INT0_CFG1;
@@ -1274,22 +1279,24 @@ static int wsa_macro_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int ret;
 
 	switch (substream->stream) {
 	case SNDRV_PCM_STREAM_PLAYBACK:
 		ret = wsa_macro_set_interpolator_rate(dai, params_rate(params));
 		if (ret) {
-			dev_err(component->dev,
+			dev_err(dev,
 				"%s: cannot set sample rate: %u\n",
 				__func__, params_rate(params));
 			return ret;
 		}
 		break;
 	case SNDRV_PCM_STREAM_CAPTURE:
-		if (dai->id == WSA_MACRO_AIF_VI)
+		if (dai_id == WSA_MACRO_AIF_VI)
 			wsa->pcm_rate_vi = params_rate(params);
 
 		break;
@@ -1303,18 +1310,20 @@ static int wsa_macro_get_channel_map(const struct snd_soc_dai *dai,
 				     unsigned int *tx_num, unsigned int *tx_slot,
 				     unsigned int *rx_num, unsigned int *rx_slot)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	u16 val, mask = 0, cnt = 0, temp;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case WSA_MACRO_AIF_VI:
-		*tx_slot = wsa->active_ch_mask[dai->id];
-		*tx_num = wsa->active_ch_cnt[dai->id];
+		*tx_slot = wsa->active_ch_mask[dai_id];
+		*tx_num = wsa->active_ch_cnt[dai_id];
 		break;
 	case WSA_MACRO_AIF1_PB:
 	case WSA_MACRO_AIF_MIX1_PB:
-		for_each_set_bit(temp, &wsa->active_ch_mask[dai->id],
+		for_each_set_bit(temp, &wsa->active_ch_mask[dai_id],
 					WSA_MACRO_RX_MAX) {
 			mask |= (1 << temp);
 			if (++cnt == WSA_MACRO_MAX_DMA_CH_PER_PORT)
@@ -1339,7 +1348,7 @@ static int wsa_macro_get_channel_map(const struct snd_soc_dai *dai,
 		*tx_num = cnt;
 		break;
 	default:
-		dev_err(component->dev, "%s: Invalid AIF\n", __func__);
+		dev_err(dev, "%s: Invalid AIF\n", __func__);
 		break;
 	}
 	return 0;
@@ -1497,7 +1506,8 @@ static void wsa_macro_enable_disable_vi_sense(struct snd_soc_component *componen
 static void wsa_macro_enable_disable_vi_feedback(struct snd_soc_component *component,
 						 bool enable, u32 rate)
 {
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	if (test_bit(WSA_MACRO_TX0, &wsa->active_ch_mask[WSA_MACRO_AIF_VI]))
 		wsa_macro_enable_disable_vi_sense(component, enable,
@@ -1514,7 +1524,8 @@ static int wsa_macro_mclk_event(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	wsa_macro_mclk_enable(wsa, event == SND_SOC_DAPM_PRE_PMU);
 	return 0;
@@ -1525,7 +1536,8 @@ static int wsa_macro_enable_vi_feedback(struct snd_soc_dapm_widget *w,
 					int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 	u32 rate_val;
 
 	switch (wsa->pcm_rate_vi) {
@@ -1606,7 +1618,8 @@ static int wsa_macro_config_compander(struct snd_soc_component *component,
 				      int comp, int event)
 {
 	u16 comp_ctl0_reg, rx_path_cfg0_reg;
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	if (!wsa->comp_enabled[comp])
 		return 0;
@@ -1692,7 +1705,8 @@ static int wsa_macro_config_softclip(struct snd_soc_component *component,
 				     int path, int event)
 {
 	u16 softclip_ctrl_reg;
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 	int softclip_path = 0;
 
 	if (path == WSA_MACRO_COMP1)
@@ -1751,7 +1765,8 @@ static int wsa_macro_enable_prim_interpolator(struct snd_soc_component *componen
 {
 	u16 prim_int_reg;
 	u16 ind = 0;
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	prim_int_reg = wsa_macro_interp_get_primary_reg(reg, &ind);
 
@@ -1843,7 +1858,8 @@ static int wsa_macro_enable_interpolator(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
 	u16 gain_reg;
 	u16 reg;
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	if (w->shift == WSA_MACRO_COMP1) {
 		reg = CDC_WSA_RX0_RX_PATH_CTL;
@@ -1922,6 +1938,7 @@ static int wsa_macro_spk_boost_event(struct snd_soc_dapm_widget *w,
 				     int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u16 boost_path_ctl, boost_path_cfg1;
 	u16 reg, reg_mix;
 
@@ -1936,7 +1953,7 @@ static int wsa_macro_spk_boost_event(struct snd_soc_dapm_widget *w,
 		reg = CDC_WSA_RX1_RX_PATH_CTL;
 		reg_mix = CDC_WSA_RX1_RX_PATH_MIX_CTL;
 	} else {
-		dev_warn(component->dev, "Incorrect widget name in the driver\n");
+		dev_warn(dev, "Incorrect widget name in the driver\n");
 		return -EINVAL;
 	}
 
@@ -1973,7 +1990,8 @@ static int wsa_macro_enable_echo(struct snd_soc_dapm_widget *w,
 				 int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 	u16 val, ec_tx, ec_hq_reg;
 
 	val = snd_soc_component_read(component, CDC_WSA_RX_INP_MUX_RX_MIX_CFG0);
@@ -1988,8 +2006,7 @@ static int wsa_macro_enable_echo(struct snd_soc_dapm_widget *w,
 		ec_tx = (val >> CDC_WSA_RX_MIX_TX1_SEL_SHFT) - 1;
 		break;
 	default:
-		dev_err(component->dev,	"%s: Invalid shift %u\n",
-			__func__, w->shift);
+		dev_err(dev,	"%s: Invalid shift %u\n", __func__, w->shift);
 		return -EINVAL;
 	}
 
@@ -2014,7 +2031,8 @@ static int wsa_macro_get_ec_hq(struct snd_kcontrol *kcontrol,
 
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	int ec_tx = ((struct soc_mixer_control *) kcontrol->private_value)->shift;
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wsa->ec_hq[ec_tx];
 
@@ -2027,7 +2045,8 @@ static int wsa_macro_set_ec_hq(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	int ec_tx = ((struct soc_mixer_control *) kcontrol->private_value)->shift;
 	int value = ucontrol->value.integer.value[0];
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	wsa->ec_hq[ec_tx] = value;
 
@@ -2040,7 +2059,8 @@ static int wsa_macro_get_compander(struct snd_kcontrol *kcontrol,
 
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	int comp = ((struct soc_mixer_control *) kcontrol->private_value)->shift;
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wsa->comp_enabled[comp];
 	return 0;
@@ -2052,7 +2072,8 @@ static int wsa_macro_set_compander(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	int comp = ((struct soc_mixer_control *) kcontrol->private_value)->shift;
 	int value = ucontrol->value.integer.value[0];
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	wsa->comp_enabled[comp] = value;
 
@@ -2063,7 +2084,8 @@ static int wsa_macro_ear_spkr_pa_gain_get(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = wsa->ear_spkr_gain;
 
@@ -2074,7 +2096,8 @@ static int wsa_macro_ear_spkr_pa_gain_put(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	wsa->ear_spkr_gain =  ucontrol->value.enumerated.item[0];
 
@@ -2085,9 +2108,9 @@ static int wsa_macro_rx_mux_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dapm_widget *widget = snd_soc_dapm_kcontrol_to_widget(kcontrol);
-	struct snd_soc_component *component =
-				snd_soc_dapm_to_component(widget->dapm);
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(widget->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] =
 			wsa->rx_port_value[widget->shift];
@@ -2106,14 +2129,15 @@ static int wsa_macro_rx_mux_put(struct snd_kcontrol *kcontrol,
 	u32 bit_input;
 	u32 aif_rst;
 	unsigned int dai_id;
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 
 	aif_rst = wsa->rx_port_value[widget->shift];
 	if (!rx_port_value) {
 		if (aif_rst == 0)
 			return 0;
 		if (aif_rst >= WSA_MACRO_RX_MAX) {
-			dev_err(component->dev, "%s: Invalid AIF reset\n", __func__);
+			dev_err(dev, "%s: Invalid AIF reset\n", __func__);
 			return 0;
 		}
 	}
@@ -2141,9 +2165,7 @@ static int wsa_macro_rx_mux_put(struct snd_kcontrol *kcontrol,
 		wsa->active_ch_cnt[dai_id]++;
 		break;
 	default:
-		dev_err(component->dev,
-			"%s: Invalid AIF_ID for WSA RX MUX %d\n",
-			__func__, rx_port_value);
+		dev_err(dev, "%s: Invalid AIF_ID for WSA RX MUX %d\n", __func__, rx_port_value);
 		return -EINVAL;
 	}
 
@@ -2156,7 +2178,8 @@ static int wsa_macro_soft_clip_enable_get(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 	int path = ((struct soc_mixer_control *)kcontrol->private_value)->shift;
 
 	ucontrol->value.integer.value[0] = wsa->is_softclip_on[path];
@@ -2168,7 +2191,8 @@ static int wsa_macro_soft_clip_enable_put(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 	int path = ((struct soc_mixer_control *) kcontrol->private_value)->shift;
 
 	wsa->is_softclip_on[path] =  ucontrol->value.integer.value[0];
@@ -2234,7 +2258,8 @@ static int wsa_macro_vi_feed_mixer_get(struct snd_kcontrol *kcontrol,
 	struct snd_soc_dapm_widget *widget = snd_soc_dapm_kcontrol_to_widget(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(widget->dapm);
 	struct soc_mixer_control *mixer = (struct soc_mixer_control *)kcontrol->private_value;
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 	u32 spk_tx_id = mixer->shift;
 	u32 dai_id = widget->shift;
 
@@ -2252,7 +2277,8 @@ static int wsa_macro_vi_feed_mixer_put(struct snd_kcontrol *kcontrol,
 	struct snd_soc_dapm_widget *widget = snd_soc_dapm_kcontrol_to_widget(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(widget->dapm);
 	struct soc_mixer_control *mixer = (struct soc_mixer_control *)kcontrol->private_value;
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 	u32 enable = ucontrol->value.integer.value[0];
 	u32 spk_tx_id = mixer->shift;
 	u32 dai_id = widget->shift;
@@ -2559,11 +2585,12 @@ static int wsa_swrm_clock(struct wsa_macro *wsa, bool enable)
 static int wsa_macro_component_probe(struct snd_soc_component *comp)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(comp);
-	struct wsa_macro *wsa = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wsa_macro *wsa = dev_get_drvdata(dev);
 	const struct snd_soc_dapm_widget *widgets;
 	unsigned int num_widgets;
 
-	snd_soc_component_init_regmap(comp, wsa->regmap);
+	snd_soc_component_regmap_init(comp, wsa->regmap);
 
 	wsa->spkr_gain_offset = WSA_MACRO_GAIN_OFFSET_M1P5_DB;
 
@@ -2810,7 +2837,7 @@ static int wsa_macro_probe(struct platform_device *pdev)
 	regmap_update_bits(wsa->regmap, CDC_WSA_CLK_RST_CTRL_SWR_CONTROL,
 			   CDC_WSA_SWR_RST_EN_MASK, CDC_WSA_SWR_RST_DISABLE);
 
-	ret = devm_snd_soc_register_component(dev, &wsa_macro_component_drv,
+	ret = devm_snd_soc_component_register(dev, &wsa_macro_component_drv,
 					      wsa_macro_dai,
 					      ARRAY_SIZE(wsa_macro_dai));
 	if (ret)

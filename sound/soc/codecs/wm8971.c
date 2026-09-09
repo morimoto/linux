@@ -429,8 +429,9 @@ static int get_coeff(int mclk, int rate)
 static int wm8971_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8971_priv *wm8971 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8971_priv *wm8971 = dev_get_drvdata(dev);
 
 	switch (freq) {
 	case 11289600:
@@ -447,7 +448,7 @@ static int wm8971_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int wm8971_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 iface = 0;
 
 	/* set master/slave audio interface */
@@ -506,8 +507,9 @@ static int wm8971_pcm_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params,
 	struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8971_priv *wm8971 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8971_priv *wm8971 = dev_get_drvdata(dev);
 	u16 iface = snd_soc_component_read(component, WM8971_IFACE) & 0x1f3;
 	u16 srate = snd_soc_component_read(component, WM8971_SRATE) & 0x1c0;
 	int coeff = get_coeff(wm8971->sysclk, params_rate(params));
@@ -538,7 +540,7 @@ static int wm8971_pcm_hw_params(struct snd_pcm_substream *substream,
 
 static int wm8971_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 mute_reg = snd_soc_component_read(component, WM8971_ADCDAC) & 0xfff7;
 
 	if (mute)
@@ -560,7 +562,8 @@ static void wm8971_charge_work(struct work_struct *work)
 static int wm8971_set_bias_level(struct snd_soc_component *component,
 	enum snd_soc_bias_level level)
 {
-	struct wm8971_priv *wm8971 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8971_priv *wm8971 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	u16 pwr_reg = snd_soc_component_read(component, WM8971_PWR1) & 0xfe3e;
 
@@ -575,7 +578,7 @@ static int wm8971_set_bias_level(struct snd_soc_component *component,
 		break;
 	case SND_SOC_BIAS_STANDBY:
 		if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF) {
-			snd_soc_component_cache_sync(component);
+			snd_soc_component_regcache_sync(component);
 			/* charge output caps - set vmid to 5k for quick power up */
 			snd_soc_component_write(component, WM8971_PWR1, pwr_reg | 0x01c0);
 			queue_delayed_work(system_power_efficient_wq,
@@ -641,7 +644,8 @@ static struct snd_soc_dai_driver wm8971_dai = {
 
 static int wm8971_probe(struct snd_soc_component *component)
 {
-	struct wm8971_priv *wm8971 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8971_priv *wm8971 = dev_get_drvdata(dev);
 
 	INIT_DELAYED_WORK(&wm8971->charge_work, wm8971_charge_work);
 
@@ -700,7 +704,7 @@ static int wm8971_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, wm8971);
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8971, &wm8971_dai, 1);
 }
 

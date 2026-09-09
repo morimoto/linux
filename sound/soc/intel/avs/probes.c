@@ -62,18 +62,20 @@ static inline struct hdac_ext_stream *avs_compr_get_host_stream(struct snd_compr
 
 static int avs_probe_compr_open(struct snd_compr_stream *cstream, struct snd_soc_dai *dai)
 {
-	struct avs_dev *adev = to_avs_dev(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct avs_dev *adev = to_avs_dev(dev);
 	struct hdac_bus *bus = &adev->base.core;
 	struct hdac_ext_stream *host_stream;
 
 	if (adev->extractor) {
-		dev_err(dai->dev, "Cannot open more than one extractor stream\n");
+		dev_err(dev, "Cannot open more than one extractor stream\n");
 		return -EEXIST;
 	}
 
 	host_stream = snd_hdac_ext_cstream_assign(bus, cstream);
 	if (!host_stream) {
-		dev_err(dai->dev, "Failed to assign HDAudio stream for extraction\n");
+		dev_err(dev, "Failed to assign HDAudio stream for extraction\n");
 		return -EBUSY;
 	}
 
@@ -86,8 +88,10 @@ static int avs_probe_compr_open(struct snd_compr_stream *cstream, struct snd_soc
 
 static int avs_probe_compr_free(struct snd_compr_stream *cstream, struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct hdac_ext_stream *host_stream = avs_compr_get_host_stream(cstream);
-	struct avs_dev *adev = to_avs_dev(dai->dev);
+	struct avs_dev *adev = to_avs_dev(dev);
 	struct avs_probe_point_desc *desc;
 	/* Extractor node identifier. */
 	unsigned int vindex = INVALID_NODE_ID.vindex;
@@ -97,7 +101,7 @@ static int avs_probe_compr_free(struct snd_compr_stream *cstream, struct snd_soc
 	/* Disconnect all probe points. */
 	ret = avs_ipc_probe_get_points(adev, &desc, &num_desc);
 	if (ret) {
-		dev_err(dai->dev, "get probe points failed: %d\n", ret);
+		dev_err(dev, "get probe points failed: %d\n", ret);
 		ret = AVS_IPC_RET(ret);
 		goto exit;
 	}
@@ -131,7 +135,9 @@ static int avs_probe_compr_set_params(struct snd_compr_stream *cstream,
 {
 	struct hdac_ext_stream *host_stream = avs_compr_get_host_stream(cstream);
 	struct snd_compr_runtime *rtd = cstream->runtime;
-	struct avs_dev *adev = to_avs_dev(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct avs_dev *adev = to_avs_dev(dev);
 	unsigned int format_val;
 	int bps, ret;
 
@@ -170,7 +176,7 @@ static int avs_probe_compr_set_params(struct snd_compr_stream *cstream,
 
 		ret = avs_dsp_init_probe(adev, params, bps, node_id, rtd->dma_bytes);
 		if (ret < 0) {
-			dev_err(dai->dev, "probe init failed: %d\n", ret);
+			dev_err(dev, "probe init failed: %d\n", ret);
 			avs_dsp_enable_d0ix(adev);
 			return ret;
 		}
@@ -184,7 +190,9 @@ static int avs_probe_compr_trigger(struct snd_compr_stream *cstream, int cmd,
 				   struct snd_soc_dai *dai)
 {
 	struct hdac_ext_stream *host_stream = avs_compr_get_host_stream(cstream);
-	struct avs_dev *adev = to_avs_dev(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct avs_dev *adev = to_avs_dev(dev);
 	struct hdac_bus *bus = &adev->base.core;
 	unsigned long cookie;
 
@@ -220,8 +228,9 @@ static int avs_probe_compr_pointer(struct snd_compr_stream *cstream,
 {
 	struct hdac_ext_stream *host_stream = avs_compr_get_host_stream(cstream);
 	struct snd_soc_pcm_stream *pstream;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 
-	pstream = &dai->driver->capture;
+	pstream = &dai_driver->capture;
 	tstamp->copied_total = hdac_stream(host_stream)->curr_pos;
 	tstamp->sampling_rate = snd_pcm_rate_bit_to_rate(pstream->rates);
 
@@ -308,7 +317,7 @@ int avs_register_probe_component(struct avs_dev *adev, const char *name)
 
 	snd_soc_component_set_name(component, comp_name);
 
-	return snd_soc_register_component(component,
+	return snd_soc_component_register(component,
 					  &avs_probe_component_driver,
 					  probe_cpu_dais, ARRAY_SIZE(probe_cpu_dais));
 }

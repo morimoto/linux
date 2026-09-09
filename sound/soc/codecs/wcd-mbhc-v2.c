@@ -757,14 +757,14 @@ static irqreturn_t wcd_mbhc_hphr_ocp_irq(int irq, void *data)
 static int wcd_mbhc_initialise(struct wcd_mbhc *mbhc)
 {
 	struct snd_soc_component *component = mbhc->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
-	ret = pm_runtime_get_sync(component->dev);
+	ret = pm_runtime_get_sync(dev);
 	if (ret < 0 && ret != -EACCES) {
-		dev_err_ratelimited(component->dev,
-				    "pm_runtime_get_sync failed in %s, ret %d\n",
+		dev_err_ratelimited(dev, "pm_runtime_get_sync failed in %s, ret %d\n",
 				    __func__, ret);
-		pm_runtime_put_noidle(component->dev);
+		pm_runtime_put_noidle(dev);
 		return ret;
 	}
 
@@ -825,7 +825,7 @@ static int wcd_mbhc_initialise(struct wcd_mbhc *mbhc)
 
 	mutex_unlock(&mbhc->lock);
 
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return 0;
 }
@@ -1149,6 +1149,7 @@ static void wcd_correct_swch_plug(struct work_struct *work)
 	struct wcd_mbhc *mbhc;
 	struct snd_soc_component *component;
 	enum wcd_mbhc_plug_type plug_type = MBHC_PLUG_TYPE_INVALID;
+	struct device *dev;
 	unsigned long timeout;
 	int pt_gnd_mic_swap_cnt = 0;
 	int output_mv, cross_conn, hs_threshold, try = 0, micbias_mv;
@@ -1158,13 +1159,13 @@ static void wcd_correct_swch_plug(struct work_struct *work)
 
 	mbhc = container_of(work, struct wcd_mbhc, correct_plug_swch);
 	component = mbhc->component;
+	dev = snd_soc_component_to_dev(component);
 
-	ret = pm_runtime_get_sync(component->dev);
+	ret = pm_runtime_get_sync(dev);
 	if (ret < 0 && ret != -EACCES) {
-		dev_err_ratelimited(component->dev,
-				    "pm_runtime_get_sync failed in %s, ret %d\n",
+		dev_err_ratelimited(dev, "pm_runtime_get_sync failed in %s, ret %d\n",
 				    __func__, ret);
-		pm_runtime_put_noidle(component->dev);
+		pm_runtime_put_noidle(dev);
 		return;
 	}
 	micbias_mv = wcd_mbhc_get_micbias(mbhc);
@@ -1318,7 +1319,7 @@ exit:
 	if (mbhc->mbhc_cb->hph_pull_down_ctrl)
 		mbhc->mbhc_cb->hph_pull_down_ctrl(component, true);
 
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_put_autosuspend(dev);
 }
 
 static irqreturn_t wcd_mbhc_adc_hs_rem_irq(int irq, void *data)
@@ -1506,7 +1507,7 @@ struct wcd_mbhc *wcd_mbhc_init(struct snd_soc_component *component,
 			       const struct wcd_mbhc_field *fields,
 			       bool impedance_det_en)
 {
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct wcd_mbhc *mbhc;
 	int ret;
 

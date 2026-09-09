@@ -69,13 +69,13 @@ static const struct reg_default max98520_reg[] = {
 
 static int max98520_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct max98520_priv *max98520 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98520_priv *max98520 = dev_get_drvdata(dev);
 	unsigned int format = 0;
 	unsigned int invert = 0;
 
-	dev_dbg(component->dev, "%s: fmt 0x%08X\n", __func__, fmt);
+	dev_dbg(dev, "%s: fmt 0x%08X\n", __func__, fmt);
 
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
 	case SND_SOC_DAIFMT_NB_NF:
@@ -84,7 +84,7 @@ static int max98520_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 		invert = MAX98520_PCM_MODE_CFG_PCM_BCLKEDGE;
 		break;
 	default:
-		dev_err(component->dev, "DAI invert mode unsupported\n");
+		dev_err(dev, "DAI invert mode unsupported\n");
 		return -EINVAL;
 	}
 
@@ -138,8 +138,8 @@ static int max98520_get_bclk_sel(int bclk)
 static int max98520_set_clock(struct snd_soc_component *component,
 			      struct snd_pcm_hw_params *params)
 {
-	struct max98520_priv *max98520 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98520_priv *max98520 = dev_get_drvdata(dev);
 	/* BCLK/LRCLK ratio calculation */
 	int blr_clk_ratio = params_channels(params) * max98520->ch_size;
 	int value;
@@ -148,8 +148,7 @@ static int max98520_set_clock(struct snd_soc_component *component,
 		/* BCLK configuration */
 		value = max98520_get_bclk_sel(blr_clk_ratio);
 		if (!value) {
-			dev_err(component->dev, "format unsupported %d\n",
-				params_format(params));
+			dev_err(dev, "format unsupported %d\n", params_format(params));
 			return -EINVAL;
 		}
 
@@ -158,7 +157,8 @@ static int max98520_set_clock(struct snd_soc_component *component,
 				   MAX98520_PCM_CLK_SETUP_BSEL_MASK,
 				   value);
 	}
-	dev_dbg(component->dev, "%s tdm_mode:%d out\n", __func__, max98520->tdm_mode);
+	dev_dbg(dev, "%s tdm_mode:%d out\n", __func__, max98520->tdm_mode);
+
 	return 0;
 }
 
@@ -166,9 +166,9 @@ static int max98520_dai_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98520_priv *max98520 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98520_priv *max98520 = dev_get_drvdata(dev);
 	unsigned int sampling_rate = 0;
 	unsigned int chan_sz = 0;
 
@@ -184,8 +184,7 @@ static int max98520_dai_hw_params(struct snd_pcm_substream *substream,
 		chan_sz = MAX98520_PCM_MODE_CFG_CHANSZ_32;
 		break;
 	default:
-		dev_err(component->dev, "format unsupported %d\n",
-			params_format(params));
+		dev_err(dev, "format unsupported %d\n", params_format(params));
 		goto err;
 	}
 
@@ -195,8 +194,7 @@ static int max98520_dai_hw_params(struct snd_pcm_substream *substream,
 			   MAX98520_R2040_PCM_MODE_CFG,
 			   MAX98520_PCM_MODE_CFG_CHANSZ_MASK, chan_sz);
 
-	dev_dbg(component->dev, "format supported %d",
-		params_format(params));
+	dev_dbg(dev, "format supported %d", params_format(params));
 
 	/* sampling rate configuration */
 	switch (params_rate(params)) {
@@ -240,12 +238,11 @@ static int max98520_dai_hw_params(struct snd_pcm_substream *substream,
 		sampling_rate = MAX98520_PCM_SR_192000;
 		break;
 	default:
-		dev_err(component->dev, "rate %d not supported\n",
-			params_rate(params));
+		dev_err(dev, "rate %d not supported\n", params_rate(params));
 		goto err;
 	}
 
-	dev_dbg(component->dev, " %s ch_size: %d, sampling rate : %d out\n", __func__,
+	dev_dbg(dev, " %s ch_size: %d, sampling rate : %d out\n", __func__,
 		snd_pcm_format_width(params_format(params)), params_rate(params));
 	/* set DAI_SR to correct LRCLK frequency */
 	regmap_update_bits(max98520->regmap,
@@ -255,7 +252,8 @@ static int max98520_dai_hw_params(struct snd_pcm_substream *substream,
 
 	return max98520_set_clock(component, params);
 err:
-	dev_dbg(component->dev, "%s out error", __func__);
+	dev_dbg(dev, "%s out error", __func__);
+
 	return -EINVAL;
 }
 
@@ -263,9 +261,9 @@ static int max98520_dai_tdm_slot(struct snd_soc_dai *dai,
 				 unsigned int tx_mask, unsigned int rx_mask,
 				 int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98520_priv *max98520 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98520_priv *max98520 = dev_get_drvdata(dev);
 	int bsel;
 	unsigned int chan_sz = 0;
 
@@ -277,8 +275,7 @@ static int max98520_dai_tdm_slot(struct snd_soc_dai *dai,
 	/* BCLK configuration */
 	bsel = max98520_get_bclk_sel(slots * slot_width);
 	if (bsel == 0) {
-		dev_err(component->dev, "BCLK %d not supported\n",
-			slots * slot_width);
+		dev_err(dev, "BCLK %d not supported\n", slots * slot_width);
 		return -EINVAL;
 	}
 
@@ -299,8 +296,7 @@ static int max98520_dai_tdm_slot(struct snd_soc_dai *dai,
 		chan_sz = MAX98520_PCM_MODE_CFG_CHANSZ_32;
 		break;
 	default:
-		dev_err(component->dev, "format unsupported %d\n",
-			slot_width);
+		dev_err(dev, "format unsupported %d\n", slot_width);
 		return -EINVAL;
 	}
 
@@ -345,21 +341,20 @@ static const struct snd_soc_dai_ops max98520_dai_ops = {
 static int max98520_dac_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct max98520_priv *max98520 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98520_priv *max98520 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
-		dev_dbg(component->dev, " AMP ON\n");
+		dev_dbg(dev, " AMP ON\n");
 
 		regmap_write(max98520->regmap, MAX98520_R209F_AMP_EN, 1);
 		regmap_write(max98520->regmap, MAX98520_R210F_GLOBAL_EN, 1);
 		usleep_range(30000, 31000);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
-		dev_dbg(component->dev, " AMP OFF\n");
+		dev_dbg(dev, " AMP OFF\n");
 
 		regmap_write(max98520->regmap, MAX98520_R210F_GLOBAL_EN, 0);
 		regmap_write(max98520->regmap, MAX98520_R209F_AMP_EN, 0);
@@ -604,8 +599,8 @@ static struct snd_soc_dai_driver max98520_dai[] = {
 
 static int max98520_probe(struct snd_soc_component *component)
 {
-	struct max98520_priv *max98520 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98520_priv *max98520 = dev_get_drvdata(dev);
 
 	/* Software Reset */
 	regmap_write(max98520->regmap, MAX98520_R2000_SW_RESET, 1);
@@ -734,7 +729,7 @@ static int max98520_i2c_probe(struct i2c_client *i2c)
 	dev_info(&i2c->dev, "MAX98520 revisionID: 0x%02X\n", reg);
 
 	/* codec registration */
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 					      &soc_codec_dev_max98520,
 						  max98520_dai, ARRAY_SIZE(max98520_dai));
 	if (ret < 0)

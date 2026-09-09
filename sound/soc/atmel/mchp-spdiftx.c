@@ -283,7 +283,9 @@ static irqreturn_t mchp_spdiftx_interrupt(int irq, void *dev_id)
 static int mchp_spdiftx_dai_startup(struct snd_pcm_substream *substream,
 				    struct snd_soc_dai *dai)
 {
-	struct mchp_spdiftx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdiftx_dev *dev = dev_get_drvdata(dai_dev);
 
 	/* Software reset the IP */
 	regmap_write(dev->regmap, SPDIFTX_CR,
@@ -295,7 +297,9 @@ static int mchp_spdiftx_dai_startup(struct snd_pcm_substream *substream,
 static void mchp_spdiftx_dai_shutdown(struct snd_pcm_substream *substream,
 				      struct snd_soc_dai *dai)
 {
-	struct mchp_spdiftx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdiftx_dev *dev = dev_get_drvdata(dai_dev);
 
 	/* Disable interrupts */
 	regmap_write(dev->regmap, SPDIFTX_IDR, 0xffffffff);
@@ -304,7 +308,9 @@ static void mchp_spdiftx_dai_shutdown(struct snd_pcm_substream *substream,
 static int mchp_spdiftx_trigger(struct snd_pcm_substream *substream, int cmd,
 				struct snd_soc_dai *dai)
 {
-	struct mchp_spdiftx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdiftx_dev *dev = dev_get_drvdata(dai_dev);
 	struct mchp_spdiftx_mixer_control *ctrl = &dev->control;
 	int ret;
 
@@ -347,7 +353,9 @@ static int mchp_spdiftx_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
 	unsigned long flags;
-	struct mchp_spdiftx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdiftx_dev *dev = dev_get_drvdata(dai_dev);
 	struct mchp_spdiftx_mixer_control *ctrl = &dev->control;
 	u32 mr;
 	unsigned int bps = params_physical_width(params) / 8;
@@ -510,7 +518,9 @@ static int mchp_spdiftx_hw_params(struct snd_pcm_substream *substream,
 static int mchp_spdiftx_hw_free(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct mchp_spdiftx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdiftx_dev *dev = dev_get_drvdata(dai_dev);
 
 	return regmap_write(dev->regmap, SPDIFTX_CR,
 			    SPDIFTX_CR_SWRST | SPDIFTX_CR_FCLR);
@@ -547,7 +557,9 @@ static int mchp_spdiftx_cs_get(struct snd_kcontrol *kcontrol,
 {
 	unsigned long flags;
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct mchp_spdiftx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdiftx_dev *dev = dev_get_drvdata(dai_dev);
 	struct mchp_spdiftx_mixer_control *ctrl = &dev->control;
 
 	spin_lock_irqsave(&ctrl->lock, flags);
@@ -563,7 +575,9 @@ static int mchp_spdiftx_cs_put(struct snd_kcontrol *kcontrol,
 {
 	unsigned long flags;
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct mchp_spdiftx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdiftx_dev *dev = dev_get_drvdata(dai_dev);
 	struct mchp_spdiftx_mixer_control *ctrl = &dev->control;
 	int changed = 0;
 	int i;
@@ -606,7 +620,9 @@ static int mchp_spdiftx_subcode_get(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct mchp_spdiftx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdiftx_dev *dev = dev_get_drvdata(dai_dev);
 	struct mchp_spdiftx_mixer_control *ctrl = &dev->control;
 	unsigned long flags;
 
@@ -623,7 +639,9 @@ static int mchp_spdiftx_subcode_put(struct snd_kcontrol *kcontrol,
 {
 	unsigned long flags;
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct mchp_spdiftx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdiftx_dev *dev = dev_get_drvdata(dai_dev);
 	struct mchp_spdiftx_mixer_control *ctrl = &dev->control;
 	int changed = 0;
 	int i;
@@ -684,12 +702,14 @@ static struct snd_kcontrol_new mchp_spdiftx_ctrls[] = {
 
 static int mchp_spdiftx_dai_probe(struct snd_soc_dai *dai)
 {
-	struct mchp_spdiftx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdiftx_dev *dev = dev_get_drvdata(dai_dev);
 
-	snd_soc_dai_init_dma_data(dai, &dev->playback, NULL);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &dev->playback);
 
 	/* Add controls */
-	snd_soc_add_dai_controls(dai, mchp_spdiftx_ctrls,
+	snd_soc_dai_add_controls(dai, mchp_spdiftx_ctrls,
 				 ARRAY_SIZE(mchp_spdiftx_ctrls));
 
 	return 0;
@@ -858,7 +878,7 @@ static int mchp_spdiftx_probe(struct platform_device *pdev)
 		goto pm_runtime_suspend;
 	}
 
-	err = devm_snd_soc_register_component(&pdev->dev,
+	err = devm_snd_soc_component_register(&pdev->dev,
 					      &mchp_spdiftx_component,
 					      &mchp_spdiftx_dai, 1);
 	if (err) {

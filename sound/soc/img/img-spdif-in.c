@@ -284,7 +284,9 @@ static int img_spdif_in_get_status(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct img_spdif_in *spdif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_in *spdif = dev_get_drvdata(dev);
 	u32 reg;
 
 	reg = img_spdif_in_readl(spdif, IMG_SPDIF_IN_CSL);
@@ -314,7 +316,9 @@ static int img_spdif_in_get_multi_freq(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct img_spdif_in *spdif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_in *spdif = dev_get_drvdata(dev);
 
 	guard(spinlock_irqsave)(&spdif->lock);
 	if (spdif->multi_freq) {
@@ -336,7 +340,9 @@ static int img_spdif_in_set_multi_freq(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct img_spdif_in *spdif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_in *spdif = dev_get_drvdata(dev);
 	unsigned int multi_freqs[IMG_SPDIF_IN_NUM_ACLKGEN];
 	bool multi_freq;
 
@@ -381,7 +387,9 @@ static int img_spdif_in_get_lock_freq(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *uc)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct img_spdif_in *spdif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_in *spdif = dev_get_drvdata(dev);
 	u32 reg;
 	int i;
 
@@ -418,7 +426,9 @@ static int img_spdif_in_get_trk(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct img_spdif_in *spdif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_in *spdif = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = spdif->trk;
 
@@ -429,7 +439,9 @@ static int img_spdif_in_set_trk(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct img_spdif_in *spdif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_in *spdif = dev_get_drvdata(dev);
 	int i;
 	u32 reg;
 
@@ -471,7 +483,9 @@ static int img_spdif_in_get_lock_acquire(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct img_spdif_in *spdif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_in *spdif = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = spdif->lock_acquire;
 
@@ -482,7 +496,9 @@ static int img_spdif_in_set_lock_acquire(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct img_spdif_in *spdif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_in *spdif = dev_get_drvdata(dev);
 	u32 reg;
 
 	guard(spinlock_irqsave)(&spdif->lock);
@@ -505,7 +521,9 @@ static int img_spdif_in_get_lock_release(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct img_spdif_in *spdif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_in *spdif = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = spdif->lock_release;
 
@@ -516,7 +534,9 @@ static int img_spdif_in_set_lock_release(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct img_spdif_in *spdif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_in *spdif = dev_get_drvdata(dev);
 	u32 reg;
 
 	guard(spinlock_irqsave)(&spdif->lock);
@@ -592,7 +612,9 @@ static struct snd_kcontrol_new img_spdif_in_controls[] = {
 static int img_spdif_in_trigger(struct snd_pcm_substream *substream, int cmd,
 	struct snd_soc_dai *dai)
 {
-	struct img_spdif_in *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_in *spdif = dev_get_drvdata(dev);
 	int ret = 0;
 	u32 reg;
 
@@ -629,7 +651,9 @@ static int img_spdif_in_trigger(struct snd_pcm_substream *substream, int cmd,
 static int img_spdif_in_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct img_spdif_in *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_in *spdif = dev_get_drvdata(dev);
 	unsigned int rate, channels;
 	snd_pcm_format_t format;
 
@@ -648,11 +672,13 @@ static int img_spdif_in_hw_params(struct snd_pcm_substream *substream,
 
 static int img_spdif_in_dai_probe(struct snd_soc_dai *dai)
 {
-	struct img_spdif_in *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_in *spdif = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, NULL, &spdif->dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(dai, &spdif->dma_data);
 
-	snd_soc_add_dai_controls(dai, img_spdif_in_controls,
+	snd_soc_dai_add_controls(dai, img_spdif_in_controls,
 			ARRAY_SIZE(img_spdif_in_controls));
 
 	return 0;
@@ -752,7 +778,7 @@ static int img_spdif_in_probe(struct platform_device *pdev)
 
 	pm_runtime_put(&pdev->dev);
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 			&img_spdif_in_component, &img_spdif_in_dai, 1);
 	if (ret)
 		goto err_suspend;

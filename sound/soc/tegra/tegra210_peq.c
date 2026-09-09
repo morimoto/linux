@@ -101,7 +101,8 @@ static int tegra210_peq_get(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_ope *ope = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_ope *ope = dev_get_drvdata(dev);
 	unsigned int mask = (1 << fls(mc->max)) - 1;
 	unsigned int val;
 
@@ -124,7 +125,8 @@ static int tegra210_peq_put(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_ope *ope = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_ope *ope = dev_get_drvdata(dev);
 	unsigned int mask = (1 << fls(mc->max)) - 1;
 	bool change = false;
 	unsigned int val;
@@ -147,18 +149,19 @@ static int tegra210_peq_ram_get(struct snd_kcontrol *kcontrol,
 {
 	struct tegra_soc_bytes *params = (void *)kcontrol->private_value;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_ope *ope = snd_soc_component_get_drvdata(cmpnt);
-	int val_bytes = snd_soc_component_regmap_val_bytes(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_ope *ope = dev_get_drvdata(dev);
+	int val_bytes = snd_soc_component_regmap_get_val_bytes(cmpnt);
 	u32 i, reg_ctrl = params->soc.base;
 	u32 reg_data = reg_ctrl + val_bytes;
 	s32 *data = (s32 *)biquad_coeff_buffer;
 
-	pm_runtime_get_sync(cmpnt->dev);
+	pm_runtime_get_sync(dev);
 
 	tegra210_peq_read_ram(ope->peq_regmap, reg_ctrl, reg_data,
 			      params->shift, data, params->soc.num_regs);
 
-	pm_runtime_put_sync(cmpnt->dev);
+	pm_runtime_put_sync(dev);
 
 	for (i = 0; i < params->soc.num_regs; i++)
 		ucontrol->value.integer.value[i] = (long)data[i];
@@ -171,8 +174,9 @@ static int tegra210_peq_ram_put(struct snd_kcontrol *kcontrol,
 {
 	struct tegra_soc_bytes *params = (void *)kcontrol->private_value;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_ope *ope = snd_soc_component_get_drvdata(cmpnt);
-	int val_bytes = snd_soc_component_regmap_val_bytes(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_ope *ope = dev_get_drvdata(dev);
+	int val_bytes = snd_soc_component_regmap_get_val_bytes(cmpnt);
 	u32 i, reg_ctrl = params->soc.base;
 	u32 reg_data = reg_ctrl + val_bytes;
 	s32 *data = (s32 *)biquad_coeff_buffer;
@@ -180,12 +184,12 @@ static int tegra210_peq_ram_put(struct snd_kcontrol *kcontrol,
 	for (i = 0; i < params->soc.num_regs; i++)
 		data[i] = (s32)ucontrol->value.integer.value[i];
 
-	pm_runtime_get_sync(cmpnt->dev);
+	pm_runtime_get_sync(dev);
 
 	tegra210_peq_write_ram(ope->peq_regmap, reg_ctrl, reg_data,
 			       params->shift, data, params->soc.num_regs);
 
-	pm_runtime_put_sync(cmpnt->dev);
+	pm_runtime_put_sync(dev);
 
 	return 1;
 }
@@ -358,10 +362,11 @@ void tegra210_peq_save(struct regmap *regmap, u32 *biquad_gains,
 
 int tegra210_peq_component_init(struct snd_soc_component *cmpnt)
 {
-	struct tegra210_ope *ope = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_ope *ope = dev_get_drvdata(dev);
 	unsigned int i;
 
-	pm_runtime_get_sync(cmpnt->dev);
+	pm_runtime_get_sync(dev);
 	regmap_update_bits(ope->peq_regmap, TEGRA210_PEQ_CFG,
 		TEGRA210_PEQ_CFG_MODE_MASK,
 		0 << TEGRA210_PEQ_CFG_MODE_SHIFT);
@@ -391,9 +396,9 @@ int tegra210_peq_component_init(struct snd_soc_component *cmpnt)
 
 	}
 
-	pm_runtime_put_sync(cmpnt->dev);
+	pm_runtime_put_sync(dev);
 
-	snd_soc_add_component_controls(cmpnt, tegra210_peq_controls,
+	snd_soc_component_add_controls(cmpnt, tegra210_peq_controls,
 				       ARRAY_SIZE(tegra210_peq_controls));
 
 	return 0;

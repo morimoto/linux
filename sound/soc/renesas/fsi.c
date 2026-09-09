@@ -406,9 +406,11 @@ static struct snd_soc_dai *fsi_get_dai(struct snd_pcm_substream *substream)
 
 static struct fsi_priv *fsi_get_priv_frm_dai(struct snd_soc_dai *dai)
 {
-	struct fsi_master *master = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsi_master *master = dev_get_drvdata(dev);
 
-	if (dai->id == 0)
+	if (snd_soc_dai_id(dai) == 0)
 		return &master->fsia;
 	else
 		return &master->fsib;
@@ -532,15 +534,17 @@ static void fsi_stream_init(struct fsi_priv *fsi,
 static void fsi_stream_quit(struct fsi_priv *fsi, struct fsi_stream *io)
 {
 	struct snd_soc_dai *dai = fsi_get_dai(io->substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct fsi_master *master = fsi_get_master(fsi);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	guard(spinlock_irqsave)(&master->lock);
 
 	if (io->oerr_num > 0)
-		dev_err(dai->dev, "over_run = %d\n", io->oerr_num);
+		dev_err(dev, "over_run = %d\n", io->oerr_num);
 
 	if (io->uerr_num > 0)
-		dev_err(dai->dev, "under_run = %d\n", io->uerr_num);
+		dev_err(dev, "under_run = %d\n", io->uerr_num);
 
 	fsi_stream_handler_call(io, quit, fsi, io);
 	io->substream	= NULL;
@@ -1353,8 +1357,10 @@ static void fsi_dma_complete(void *data)
 static int fsi_dma_transfer(struct fsi_priv *fsi, struct fsi_stream *io)
 {
 	struct snd_soc_dai *dai = fsi_get_dai(io->substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_pcm_substream *substream = io->substream;
 	struct dma_async_tx_descriptor *desc;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int is_play = fsi_stream_is_play(fsi, io);
 	enum dma_transfer_direction dir;
 	int ret = -EIO;
@@ -1371,7 +1377,7 @@ static int fsi_dma_transfer(struct fsi_priv *fsi, struct fsi_stream *io)
 					 dir,
 					 DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
 	if (!desc) {
-		dev_err(dai->dev, "dmaengine_prep_dma_cyclic() fail\n");
+		dev_err(dev, "dmaengine_prep_dma_cyclic() fail\n");
 		goto fsi_dma_transfer_err;
 	}
 
@@ -1379,7 +1385,7 @@ static int fsi_dma_transfer(struct fsi_priv *fsi, struct fsi_stream *io)
 	desc->callback_param	= io;
 
 	if (dmaengine_submit(desc) < 0) {
-		dev_err(dai->dev, "tx_submit() fail\n");
+		dev_err(dev, "tx_submit() fail\n");
 		goto fsi_dma_transfer_err;
 	}
 
@@ -1661,13 +1667,15 @@ static int fsi_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 {
 	struct fsi_priv *fsi = fsi_get_priv(substream);
 	struct fsi_stream *io = fsi_stream_get(fsi, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 		fsi_stream_init(fsi, io, substream);
 		if (!ret)
-			ret = fsi_hw_startup(fsi, io, dai->dev);
+			ret = fsi_hw_startup(fsi, io, dev);
 		if (!ret)
 			ret = fsi_stream_start(fsi, io);
 		if (!ret)
@@ -1677,7 +1685,7 @@ static int fsi_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 		fsi_stream_stop(fsi, io);
 		fsi_stream_quit(fsi, io);
 		if (!ret)
-			ret = fsi_hw_shutdown(fsi, dai->dev);
+			ret = fsi_hw_shutdown(fsi, dev);
 		break;
 	}
 
@@ -1843,7 +1851,7 @@ static int fsi_pcm_new(struct snd_soc_component *component,
 	snd_pcm_set_managed_buffer_all(
 		rtd->pcm,
 		SNDRV_DMA_TYPE_DEV,
-		rtd->card->snd_card->dev,
+		snd_soc_card_to_dev(rtd->card),
 		PREALLOC_BUFFER, PREALLOC_BUFFER_MAX);
 	return 0;
 }
@@ -2076,7 +2084,7 @@ static int fsi_probe(struct platform_device *pdev)
 		goto exit_fsib;
 	}
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &fsi_soc_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &fsi_soc_component,
 				    fsi_soc_dai, ARRAY_SIZE(fsi_soc_dai));
 	if (ret < 0) {
 		dev_err(&pdev->dev, "cannot snd component register\n");

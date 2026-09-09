@@ -343,10 +343,9 @@ static int rt1308_interrupt_callback(struct sdw_slave *slave,
 static int rt1308_classd_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt1308_sdw_priv *rt1308 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1308_sdw_priv *rt1308 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -491,7 +490,7 @@ static const struct snd_soc_dapm_route rt1308_dapm_routes[] = {
 static int rt1308_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 				int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -499,7 +498,7 @@ static int rt1308_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 static void rt1308_sdw_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static int rt1308_sdw_set_tdm_slot(struct snd_soc_dai *dai,
@@ -507,9 +506,9 @@ static int rt1308_sdw_set_tdm_slot(struct snd_soc_dai *dai,
 				   unsigned int rx_mask,
 				   int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1308_sdw_priv *rt1308 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1308_sdw_priv *rt1308 = dev_get_drvdata(dev);
 
 	if (tx_mask)
 		return -EINVAL;
@@ -527,16 +526,16 @@ static int rt1308_sdw_set_tdm_slot(struct snd_soc_dai *dai,
 static int rt1308_sdw_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1308_sdw_priv *rt1308 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1308_sdw_priv *rt1308 = dev_get_drvdata(dev);
 	struct sdw_stream_config stream_config = {0};
 	struct sdw_port_config port_config = {0};
 	struct sdw_stream_runtime *sdw_stream;
 	int retval;
 
-	dev_dbg(dai->dev, "%s %s", __func__, dai->name);
-	sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	dev_dbg(dev, "%s %s", __func__, snd_soc_dai_name(dai));
+	sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!sdw_stream)
 		return -EINVAL;
@@ -561,7 +560,7 @@ static int rt1308_sdw_hw_params(struct snd_pcm_substream *substream,
 	retval = sdw_stream_add_slave(rt1308->sdw_slave, &stream_config,
 				&port_config, 1, sdw_stream);
 	if (retval) {
-		dev_err(dai->dev, "Unable to configure port\n");
+		dev_err(dev, "Unable to configure port\n");
 		return retval;
 	}
 
@@ -571,11 +570,11 @@ static int rt1308_sdw_hw_params(struct snd_pcm_substream *substream,
 static int rt1308_sdw_pcm_hw_free(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1308_sdw_priv *rt1308 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1308_sdw_priv *rt1308 = dev_get_drvdata(dev);
 	struct sdw_stream_runtime *sdw_stream =
-		snd_soc_dai_get_dma_data(dai, substream);
+		snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!rt1308->sdw_slave)
 		return -EINVAL;
@@ -618,7 +617,8 @@ static int rt1308_sdw_parse_dt(struct rt1308_sdw_priv *rt1308, struct device *de
 
 static int rt1308_sdw_component_probe(struct snd_soc_component *component)
 {
-	struct rt1308_sdw_priv *rt1308 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1308_sdw_priv *rt1308 = dev_get_drvdata(dev);
 	int ret;
 
 	rt1308->component = component;
@@ -627,7 +627,7 @@ static int rt1308_sdw_component_probe(struct snd_soc_component *component)
 	if (!rt1308->first_hw_init)
 		return 0;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -698,7 +698,7 @@ static int rt1308_sdw_init(struct device *dev, struct regmap *regmap,
 	rt1308->hw_init = false;
 	rt1308->first_hw_init = false;
 
-	ret =  devm_snd_soc_register_component(dev,
+	ret =  devm_snd_soc_component_register(dev,
 				&soc_component_sdw_rt1308,
 				rt1308_sdw_dai,
 				ARRAY_SIZE(rt1308_sdw_dai));

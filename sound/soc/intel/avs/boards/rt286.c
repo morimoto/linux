@@ -54,12 +54,13 @@ static int avs_rt286_codec_init(struct snd_soc_pcm_runtime *runtime)
 	struct snd_soc_card *card = runtime->card;
 	struct snd_soc_jack_pin *pins;
 	struct snd_soc_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int num_pins, ret;
 
-	jack = snd_soc_card_get_drvdata(card);
+	jack = snd_soc_card_to_priv(card);
 	num_pins = ARRAY_SIZE(card_headset_pins);
 
-	pins = devm_kmemdup_array(card->dev, card_headset_pins, num_pins,
+	pins = devm_kmemdup_array(dev, card_headset_pins, num_pins,
 				  sizeof(card_headset_pins[0]), GFP_KERNEL);
 	if (!pins)
 		return -ENOMEM;
@@ -69,12 +70,14 @@ static int avs_rt286_codec_init(struct snd_soc_pcm_runtime *runtime)
 	if (ret)
 		return ret;
 
-	return snd_soc_component_set_jack(snd_soc_rtd_to_codec(runtime, 0)->component, jack, NULL);
+	return snd_soc_component_set_jack(
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(runtime, 0)), jack, NULL);
 }
 
 static void avs_rt286_codec_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	snd_soc_component_set_jack(snd_soc_rtd_to_codec(rtd, 0)->component, NULL, NULL);
+	snd_soc_component_set_jack(
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0)), NULL, NULL);
 }
 
 static int avs_rt286_be_fixup(struct snd_soc_pcm_runtime *runtime, struct snd_pcm_hw_params *params)
@@ -162,16 +165,18 @@ static int avs_create_dai_link(struct device *dev, int ssp_port, int tdm_slot,
 static int avs_card_suspend_pre(struct snd_soc_card *card)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_card_get_codec_dai(card, RT286_CODEC_DAI);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
-	return snd_soc_component_set_jack(codec_dai->component, NULL, NULL);
+	return snd_soc_component_set_jack(component, NULL, NULL);
 }
 
 static int avs_card_resume_post(struct snd_soc_card *card)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_card_get_codec_dai(card, RT286_CODEC_DAI);
-	struct snd_soc_jack *jack = snd_soc_card_get_drvdata(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct snd_soc_jack *jack = snd_soc_card_to_priv(card);
 
-	return snd_soc_component_set_jack(codec_dai->component, jack, NULL);
+	return snd_soc_component_set_jack(component, jack, NULL);
 }
 
 static int avs_rt286_probe(struct platform_device *pdev)
@@ -224,7 +229,7 @@ static int avs_rt286_probe(struct platform_device *pdev)
 	card_driver->dapm_routes = card_base_routes;
 	card_driver->num_dapm_routes = ARRAY_SIZE(card_base_routes);
 	card_driver->fully_routed = true;
-	snd_soc_card_set_drvdata(card, jack);
+	snd_soc_card_set_priv(card, jack);
 
 	return devm_snd_soc_card_register(card, card_driver);
 }

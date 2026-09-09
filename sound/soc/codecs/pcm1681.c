@@ -80,7 +80,8 @@ static const int pcm1681_deemph[] = { 44100, 48000, 32000 };
 
 static int pcm1681_set_deemph(struct snd_soc_component *component)
 {
-	struct pcm1681_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm1681_private *priv = dev_get_drvdata(dev);
 	int i, val = -1, enable = 0;
 
 	if (priv->deemph) {
@@ -109,7 +110,8 @@ static int pcm1681_get_deemph(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct pcm1681_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm1681_private *priv = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = priv->deemph;
 
@@ -120,7 +122,8 @@ static int pcm1681_put_deemph(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct pcm1681_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm1681_private *priv = dev_get_drvdata(dev);
 
 	priv->deemph = ucontrol->value.integer.value[0];
 
@@ -130,12 +133,13 @@ static int pcm1681_put_deemph(struct snd_kcontrol *kcontrol,
 static int pcm1681_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			      unsigned int format)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct pcm1681_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm1681_private *priv = dev_get_drvdata(dev);
 
 	/* The PCM1681 can only be consumer to all clocks */
 	if ((format & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_CBC_CFC) {
-		dev_err(component->dev, "Invalid clocking mode\n");
+		dev_err(dev, "Invalid clocking mode\n");
 		return -EINVAL;
 	}
 
@@ -146,8 +150,9 @@ static int pcm1681_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 static int pcm1681_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm1681_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm1681_private *priv = dev_get_drvdata(dev);
 	int val;
 
 	if (mute)
@@ -162,8 +167,9 @@ static int pcm1681_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm1681_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm1681_private *priv = dev_get_drvdata(dev);
 	int val = 0, ret;
 
 	priv->rate = params_rate(params);
@@ -188,7 +194,7 @@ static int pcm1681_hw_params(struct snd_pcm_substream *substream,
 		val = 0x05;
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI format\n");
+		dev_err(dev, "Invalid DAI format\n");
 		return -EINVAL;
 	}
 
@@ -320,7 +326,7 @@ static int pcm1681_i2c_probe(struct i2c_client *client)
 
 	i2c_set_clientdata(client, priv);
 
-	return devm_snd_soc_register_component(&client->dev,
+	return devm_snd_soc_component_register(&client->dev,
 		&soc_component_dev_pcm1681,
 		&pcm1681_dai, 1);
 }

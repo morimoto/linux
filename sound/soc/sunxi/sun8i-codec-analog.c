@@ -391,10 +391,10 @@ static const struct snd_soc_dapm_route sun8i_codec_headphone_routes[] = {
 static int sun8i_codec_add_headphone(struct snd_soc_component *cmpnt)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(cmpnt);
-	struct device *dev = cmpnt->dev;
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
 	int ret;
 
-	ret = snd_soc_add_component_controls(cmpnt,
+	ret = snd_soc_component_add_controls(cmpnt,
 					     sun8i_codec_headphone_controls,
 					     ARRAY_SIZE(sun8i_codec_headphone_controls));
 	if (ret) {
@@ -429,7 +429,7 @@ static const struct snd_soc_dapm_widget sun8i_codec_mbias_widgets[] = {
 static int sun8i_codec_add_mbias(struct snd_soc_component *cmpnt)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(cmpnt);
-	struct device *dev = cmpnt->dev;
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
 	int ret;
 
 	ret = snd_soc_dapm_new_controls(dapm, sun8i_codec_mbias_widgets,
@@ -450,7 +450,7 @@ static const struct snd_soc_dapm_widget sun8i_codec_hmic_widgets[] = {
 static int sun8i_codec_add_hmic(struct snd_soc_component *cmpnt)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(cmpnt);
-	struct device *dev = cmpnt->dev;
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
 	int ret;
 
 	ret = snd_soc_dapm_new_controls(dapm, sun8i_codec_hmic_widgets,
@@ -487,10 +487,10 @@ static const struct snd_soc_dapm_route sun8i_codec_linein_routes[] = {
 static int sun8i_codec_add_linein(struct snd_soc_component *cmpnt)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(cmpnt);
-	struct device *dev = cmpnt->dev;
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
 	int ret;
 
-	ret = snd_soc_add_component_controls(cmpnt,
+	ret = snd_soc_component_add_controls(cmpnt,
 					     sun8i_codec_linein_controls,
 					     ARRAY_SIZE(sun8i_codec_linein_controls));
 	if (ret) {
@@ -568,10 +568,10 @@ static const struct snd_soc_dapm_route sun8i_codec_lineout_routes[] = {
 static int sun8i_codec_add_lineout(struct snd_soc_component *cmpnt)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(cmpnt);
-	struct device *dev = cmpnt->dev;
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
 	int ret;
 
-	ret = snd_soc_add_component_controls(cmpnt,
+	ret = snd_soc_component_add_controls(cmpnt,
 					     sun8i_codec_lineout_controls,
 					     ARRAY_SIZE(sun8i_codec_lineout_controls));
 	if (ret) {
@@ -633,10 +633,10 @@ static const struct snd_soc_dapm_route sun8i_codec_mic2_routes[] = {
 static int sun8i_codec_add_mic2(struct snd_soc_component *cmpnt)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(cmpnt);
-	struct device *dev = cmpnt->dev;
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
 	int ret;
 
-	ret = snd_soc_add_component_controls(cmpnt,
+	ret = snd_soc_component_add_controls(cmpnt,
 					     sun8i_codec_mic2_controls,
 					     ARRAY_SIZE(sun8i_codec_mic2_controls));
 	if (ret) {
@@ -689,7 +689,7 @@ static int sun8i_codec_analog_add_mixer(struct snd_soc_component *cmpnt,
 					const struct sun8i_codec_analog_quirks *quirks)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(cmpnt);
-	struct device *dev = cmpnt->dev;
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
 	int ret;
 
 	if (!quirks->has_mic2 && !quirks->has_linein) {
@@ -734,7 +734,7 @@ static const struct sun8i_codec_analog_quirks sun8i_v3s_quirks = {
 
 static int sun8i_codec_analog_cmpnt_probe(struct snd_soc_component *cmpnt)
 {
-	struct device *dev = cmpnt->dev;
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
 	const struct sun8i_codec_analog_quirks *quirks;
 	int ret;
 
@@ -830,7 +830,7 @@ static int sun8i_codec_analog_probe(struct platform_device *pdev)
 		return dev_err_probe(&pdev->dev, PTR_ERR(regmap),
 				     "Failed to create regmap\n");
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 					       &sun8i_codec_analog_cmpnt_drv,
 					       NULL, 0);
 }

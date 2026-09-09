@@ -234,7 +234,8 @@ static const struct cs43130_pll_params *cs43130_get_pll_table(
 
 static int cs43130_pll_config(struct snd_soc_component *component)
 {
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
 	const struct cs43130_pll_params *pll_entry;
 
 	dev_dbg(cs43130->dev, "cs43130->mclk = %u, cs43130->mclk_int = %u\n",
@@ -286,7 +287,8 @@ static int cs43130_set_pll(struct snd_soc_component *component, int pll_id, int 
 			   unsigned int freq_in, unsigned int freq_out)
 {
 	int ret = 0;
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
 
 	switch (freq_in) {
 	case 9600000:
@@ -357,7 +359,8 @@ static int cs43130_change_clksrc(struct snd_soc_component *component,
 				 enum cs43130_mclk_src_sel src)
 {
 	int ret;
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
 	int mclk_int_decoded;
 
 	if (src == cs43130->mclk_int_src) {
@@ -814,8 +817,10 @@ static int cs43130_dsd_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int required_clk;
 	u8 dsd_speed;
 
@@ -852,7 +857,7 @@ static int cs43130_dsd_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	if (cs43130->dais[dai->id].dai_mode == SND_SOC_DAIFMT_CBP_CFP)
+	if (cs43130->dais[dai_id].dai_mode == SND_SOC_DAIFMT_CBP_CFP)
 		regmap_update_bits(cs43130->regmap, CS43130_DSD_INT_CFG,
 				   CS43130_DSD_MASTER, CS43130_DSD_MASTER);
 	else
@@ -873,10 +878,12 @@ static int cs43130_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
 	const struct cs43130_rate_map *rate_map;
-	unsigned int sclk = cs43130->dais[dai->id].sclk;
+	unsigned int sclk = cs43130->dais[dai_id].sclk;
 	unsigned int bitwidth_sclk;
 	unsigned int bitwidth_dai = (unsigned int)(params_width(params));
 	unsigned int required_clk;
@@ -902,7 +909,7 @@ static int cs43130_hw_params(struct snd_pcm_substream *substream,
 			cs43130_pcm_dsd_mix(true, cs43130->regmap);
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case CS43130_ASP_DOP_DAI:
 	case CS43130_XSP_DOP_DAI:
 		/* DoP bitwidth is always 24-bit */
@@ -935,11 +942,11 @@ static int cs43130_hw_params(struct snd_pcm_substream *substream,
 		regmap_write(cs43130->regmap, CS43130_SP_SRATE, rate_map->val);
 		break;
 	default:
-		dev_err(cs43130->dev, "Invalid DAI (%d)\n", dai->id);
+		dev_err(cs43130->dev, "Invalid DAI (%d)\n", dai_id);
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case CS43130_ASP_DOP_DAI:
 		regmap_update_bits(cs43130->regmap, CS43130_DSD_PATH_CTL_2,
 				   CS43130_DSD_SRC_MASK, CS43130_DSD_SRC_ASP <<
@@ -952,7 +959,7 @@ static int cs43130_hw_params(struct snd_pcm_substream *substream,
 		break;
 	}
 
-	if (!sclk && cs43130->dais[dai->id].dai_mode == SND_SOC_DAIFMT_CBP_CFP)
+	if (!sclk && cs43130->dais[dai_id].dai_mode == SND_SOC_DAIFMT_CBP_CFP)
 		/* Calculate SCLK in master mode if unassigned */
 		sclk = params_rate(params) * bitwidth_dai *
 		       params_channels(params);
@@ -977,8 +984,8 @@ static int cs43130_hw_params(struct snd_pcm_substream *substream,
 		"bitwidth_sclk = %u, num_ch = %u\n",
 		bitwidth_sclk, params_channels(params));
 
-	cs43130_set_bitwidth(dai->id, bitwidth_dai, cs43130->regmap);
-	cs43130_set_sp_fmt(dai->id, bitwidth_sclk, params, cs43130);
+	cs43130_set_bitwidth(dai_id, bitwidth_dai, cs43130->regmap);
+	cs43130_set_sp_fmt(dai_id, bitwidth_sclk, params, cs43130);
 
 	return 0;
 }
@@ -986,8 +993,9 @@ static int cs43130_hw_params(struct snd_pcm_substream *substream,
 static int cs43130_hw_free(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
 
 	guard(mutex)(&cs43130->clk_mutex);
 	cs43130->clk_req--;
@@ -1063,7 +1071,8 @@ static int cs43130_pcm_ch_put(struct snd_kcontrol *kcontrol,
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int *item = ucontrol->value.enumerated.item;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
 	unsigned int val;
 
 	if (item[0] >= e->items)
@@ -1184,7 +1193,8 @@ static int cs43130_dsd_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -1241,7 +1251,8 @@ static int cs43130_pcm_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -1310,7 +1321,8 @@ static int cs43130_dac_event(struct snd_soc_dapm_widget *w,
 			     struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -1390,7 +1402,8 @@ static int cs43130_hpin_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMD:
@@ -1512,15 +1525,17 @@ static int cs43130_dop_startup(struct snd_pcm_substream *substream,
 
 static int cs43130_pcm_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(codec_dai);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBC_CFC:
-		cs43130->dais[codec_dai->id].dai_mode = SND_SOC_DAIFMT_CBC_CFC;
+		cs43130->dais[dai_id].dai_mode = SND_SOC_DAIFMT_CBC_CFC;
 		break;
 	case SND_SOC_DAIFMT_CBP_CFP:
-		cs43130->dais[codec_dai->id].dai_mode = SND_SOC_DAIFMT_CBP_CFP;
+		cs43130->dais[dai_id].dai_mode = SND_SOC_DAIFMT_CBP_CFP;
 		break;
 	default:
 		dev_err(cs43130->dev, "unsupported mode\n");
@@ -1529,16 +1544,16 @@ static int cs43130_pcm_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
 	case SND_SOC_DAIFMT_NB_NF:
-		cs43130->dais[codec_dai->id].dai_invert = SND_SOC_DAIFMT_NB_NF;
+		cs43130->dais[dai_id].dai_invert = SND_SOC_DAIFMT_NB_NF;
 		break;
 	case SND_SOC_DAIFMT_IB_NF:
-		cs43130->dais[codec_dai->id].dai_invert = SND_SOC_DAIFMT_IB_NF;
+		cs43130->dais[dai_id].dai_invert = SND_SOC_DAIFMT_IB_NF;
 		break;
 	case SND_SOC_DAIFMT_NB_IF:
-		cs43130->dais[codec_dai->id].dai_invert = SND_SOC_DAIFMT_NB_IF;
+		cs43130->dais[dai_id].dai_invert = SND_SOC_DAIFMT_NB_IF;
 		break;
 	case SND_SOC_DAIFMT_IB_IF:
-		cs43130->dais[codec_dai->id].dai_invert = SND_SOC_DAIFMT_IB_IF;
+		cs43130->dais[dai_id].dai_invert = SND_SOC_DAIFMT_IB_IF;
 		break;
 	default:
 		dev_err(cs43130->dev, "Unsupported invert mode 0x%x\n",
@@ -1548,16 +1563,16 @@ static int cs43130_pcm_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
-		cs43130->dais[codec_dai->id].dai_format = SND_SOC_DAIFMT_I2S;
+		cs43130->dais[dai_id].dai_format = SND_SOC_DAIFMT_I2S;
 		break;
 	case SND_SOC_DAIFMT_LEFT_J:
-		cs43130->dais[codec_dai->id].dai_format = SND_SOC_DAIFMT_LEFT_J;
+		cs43130->dais[dai_id].dai_format = SND_SOC_DAIFMT_LEFT_J;
 		break;
 	case SND_SOC_DAIFMT_DSP_A:
-		cs43130->dais[codec_dai->id].dai_format = SND_SOC_DAIFMT_DSP_A;
+		cs43130->dais[dai_id].dai_format = SND_SOC_DAIFMT_DSP_A;
 		break;
 	case SND_SOC_DAIFMT_DSP_B:
-		cs43130->dais[codec_dai->id].dai_format = SND_SOC_DAIFMT_DSP_B;
+		cs43130->dais[dai_id].dai_format = SND_SOC_DAIFMT_DSP_B;
 		break;
 	default:
 		dev_err(cs43130->dev,
@@ -1566,24 +1581,26 @@ static int cs43130_pcm_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	}
 
 	dev_dbg(cs43130->dev, "dai_id = %d,  dai_mode = %u, dai_format = %u\n",
-		codec_dai->id,
-		cs43130->dais[codec_dai->id].dai_mode,
-		cs43130->dais[codec_dai->id].dai_format);
+		dai_id,
+		cs43130->dais[dai_id].dai_mode,
+		cs43130->dais[dai_id].dai_format);
 
 	return 0;
 }
 
 static int cs43130_dsd_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(codec_dai);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBC_CFC:
-		cs43130->dais[codec_dai->id].dai_mode = SND_SOC_DAIFMT_CBC_CFC;
+		cs43130->dais[dai_id].dai_mode = SND_SOC_DAIFMT_CBC_CFC;
 		break;
 	case SND_SOC_DAIFMT_CBP_CFP:
-		cs43130->dais[codec_dai->id].dai_mode = SND_SOC_DAIFMT_CBP_CFP;
+		cs43130->dais[dai_id].dai_mode = SND_SOC_DAIFMT_CBP_CFP;
 		break;
 	default:
 		dev_err(cs43130->dev, "Unsupported DAI format.\n");
@@ -1591,7 +1608,7 @@ static int cs43130_dsd_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	}
 
 	dev_dbg(cs43130->dev, "dai_mode = 0x%x\n",
-		cs43130->dais[codec_dai->id].dai_mode);
+		cs43130->dais[dai_id].dai_mode);
 
 	return 0;
 }
@@ -1599,12 +1616,14 @@ static int cs43130_dsd_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 static int cs43130_set_sysclk(struct snd_soc_dai *codec_dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(codec_dai);
 
-	cs43130->dais[codec_dai->id].sclk = freq;
-	dev_dbg(cs43130->dev, "dai_id = %d,  sclk = %u\n", codec_dai->id,
-		cs43130->dais[codec_dai->id].sclk);
+	cs43130->dais[dai_id].sclk = freq;
+	dev_dbg(cs43130->dev, "dai_id = %d,  sclk = %u\n", dai_id,
+		cs43130->dais[dai_id].sclk);
 
 	return 0;
 }
@@ -1705,7 +1724,8 @@ static int cs43130_component_set_sysclk(struct snd_soc_component *component,
 				    int clk_id, int source, unsigned int freq,
 				    int dir)
 {
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
 
 	dev_dbg(cs43130->dev, "clk_id = %d, source = %d, freq = %d, dir = %d\n",
 		clk_id, source, freq, dir);
@@ -2358,8 +2378,9 @@ static irqreturn_t cs43130_irq_thread(int irq, void *data)
 static int cs43130_probe(struct snd_soc_component *component)
 {
 	int ret;
-	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
-	struct snd_soc_card *card = component->card;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
 	unsigned int reg;
 
 	cs43130->component = component;
@@ -2633,11 +2654,11 @@ static int cs43130_i2c_probe(struct i2c_client *client)
 		break;
 	}
 
-	ret = devm_snd_soc_register_component(cs43130->dev, component_driver,
+	ret = devm_snd_soc_component_register(cs43130->dev, component_driver,
 				     cs43130_dai, ARRAY_SIZE(cs43130_dai));
 	if (ret < 0) {
 		dev_err(cs43130->dev,
-			"snd_soc_register_component failed with ret = %d\n", ret);
+			"snd_soc_component_register failed with ret = %d\n", ret);
 		goto err;
 	}
 

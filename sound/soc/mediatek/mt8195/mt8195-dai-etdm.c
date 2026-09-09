@@ -266,14 +266,17 @@ static int get_etdm_wlen(unsigned int bitwidth)
 
 static int is_cowork_mode(struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	int dai_id = snd_soc_dai_id(dai);
 
-	if (!mt8195_afe_etdm_is_valid(dai->id))
+	if (!mt8195_afe_etdm_is_valid(dai_id))
 		return -EINVAL;
 
-	etdm_data = afe_priv->dai_priv[dai->id];
+	etdm_data = afe_priv->dai_priv[dai_id];
 	return (etdm_data->cowork_slv_count > 0 ||
 		etdm_data->cowork_source_id != COWORK_ETDM_NONE);
 }
@@ -298,19 +301,22 @@ static int sync_to_dai_id(int source_sel)
 
 static int get_etdm_cowork_master_id(struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	int id = snd_soc_dai_id(dai);
 	int dai_id;
 
-	if (!mt8195_afe_etdm_is_valid(dai->id))
+	if (!mt8195_afe_etdm_is_valid(id))
 		return -EINVAL;
 
-	etdm_data = afe_priv->dai_priv[dai->id];
+	etdm_data = afe_priv->dai_priv[id];
 	dai_id = etdm_data->cowork_source_id;
 
 	if (dai_id == COWORK_ETDM_NONE)
-		dai_id = dai->id;
+		dai_id = id;
 
 	return dai_id;
 }
@@ -697,7 +703,8 @@ static int mt8195_etdm_clk_src_sel_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int source = ucontrol->value.enumerated.item[0];
 	unsigned int val;
 	unsigned int mask;
@@ -739,7 +746,8 @@ static int mt8195_etdm_clk_src_sel_get(struct snd_kcontrol *kcontrol,
 				       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int value = 0;
 	unsigned int reg = 0;
 	unsigned int mask = 0;
@@ -1571,7 +1579,9 @@ static int mtk_dai_etdm_disable_mclk(struct mtk_base_afe *afe, int dai_id)
 static int mtk_dai_etdm_startup(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *mst_etdm_data;
 	int cg_id;
@@ -1599,9 +1609,11 @@ static int mtk_dai_etdm_startup(struct snd_pcm_substream *substream,
 						      afe_priv->clk[cg_id]);
 		}
 	} else {
-		mtk_dai_etdm_enable_mclk(afe, dai->id);
+		int dai_id = snd_soc_dai_id(dai);
 
-		cg_id = mtk_dai_etdm_get_cg_id_by_dai_id(dai->id);
+		mtk_dai_etdm_enable_mclk(afe, dai_id);
+
+		cg_id = mtk_dai_etdm_get_cg_id_by_dai_id(dai_id);
 		if (cg_id >= 0)
 			mt8195_afe_enable_clk(afe, afe_priv->clk[cg_id]);
 	}
@@ -1612,7 +1624,9 @@ static int mtk_dai_etdm_startup(struct snd_pcm_substream *substream,
 static void mtk_dai_etdm_shutdown(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *mst_etdm_data;
 	int cg_id;
@@ -1639,11 +1653,13 @@ static void mtk_dai_etdm_shutdown(struct snd_pcm_substream *substream,
 		}
 		mtk_dai_etdm_disable_mclk(afe, mst_dai_id);
 	} else {
-		cg_id = mtk_dai_etdm_get_cg_id_by_dai_id(dai->id);
+		int dai_id = snd_soc_dai_id(dai);
+
+		cg_id = mtk_dai_etdm_get_cg_id_by_dai_id(dai_id);
 		if (cg_id >= 0)
 			mt8195_afe_disable_clk(afe, afe_priv->clk[cg_id]);
 
-		mtk_dai_etdm_disable_mclk(afe, dai->id);
+		mtk_dai_etdm_disable_mclk(afe, dai_id);
 	}
 }
 
@@ -2038,7 +2054,9 @@ static int mtk_dai_etdm_hw_params(struct snd_pcm_substream *substream,
 	unsigned int rate = params_rate(params);
 	unsigned int bit_width = params_width(params);
 	unsigned int channels = params_channels(params);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *mst_etdm_data;
 	int mst_dai_id;
@@ -2076,12 +2094,14 @@ static int mtk_dai_etdm_hw_params(struct snd_pcm_substream *substream,
 				return ret;
 		}
 	} else {
-		ret = mtk_dai_etdm_mclk_configure(afe, dai->id);
+		int dai_id = snd_soc_dai_id(dai);
+
+		ret = mtk_dai_etdm_mclk_configure(afe, dai_id);
 		if (ret)
 			return ret;
 
 		ret = mtk_dai_etdm_configure(afe, rate, channels,
-					     bit_width, dai->id);
+					     bit_width, dai_id);
 	}
 
 	return ret;
@@ -2091,14 +2111,17 @@ static int mtk_dai_etdm_trigger(struct snd_pcm_substream *substream, int cmd,
 				struct snd_soc_dai *dai)
 {
 	int ret = 0;
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *mst_etdm_data;
+	int dai_id = snd_soc_dai_id(dai);
 	int mst_dai_id;
 	int slv_dai_id;
 	int i;
 
-	dev_dbg(afe->dev, "%s(), cmd %d, dai id %d\n", __func__, cmd, dai->id);
+	dev_dbg(afe->dev, "%s(), cmd %d, dai id %d\n", __func__, cmd, dai_id);
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 	case SNDRV_PCM_TRIGGER_RESUME:
@@ -2116,7 +2139,7 @@ static int mtk_dai_etdm_trigger(struct snd_pcm_substream *substream, int cmd,
 				ret |= mt8195_afe_enable_etdm(afe, slv_dai_id);
 			}
 		} else {
-			ret = mt8195_afe_enable_etdm(afe, dai->id);
+			ret = mt8195_afe_enable_etdm(afe, dai_id);
 		}
 		break;
 	case SNDRV_PCM_TRIGGER_STOP:
@@ -2135,7 +2158,7 @@ static int mtk_dai_etdm_trigger(struct snd_pcm_substream *substream, int cmd,
 			// close master at last
 			ret |= mt8195_afe_disable_etdm(afe, mst_dai_id);
 		} else {
-			ret = mt8195_afe_disable_etdm(afe, dai->id);
+			ret = mt8195_afe_disable_etdm(afe, dai_id);
 		}
 		break;
 	default:
@@ -2182,17 +2205,20 @@ static int mtk_dai_etdm_cal_mclk(struct mtk_base_afe *afe, int freq, int dai_id)
 static int mtk_dai_etdm_set_sysclk(struct snd_soc_dai *dai,
 				   int clk_id, unsigned int freq, int dir)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
-	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	struct mt8195_afe_private *afe_priv = afe->platform_priv;
+	int id = snd_soc_dai_id(dai);
 	int dai_id;
 
-	dev_dbg(dai->dev, "%s id %d freq %u, dir %d\n",
-		__func__, dai->id, freq, dir);
+	dev_dbg(dev, "%s id %d freq %u, dir %d\n",
+		__func__, id, freq, dir);
 	if (is_cowork_mode(dai))
 		dai_id = get_etdm_cowork_master_id(dai);
 	else
-		dai_id = dai->id;
+		dai_id = id;
 
 	if (!mt8195_afe_etdm_is_valid(dai_id))
 		return -EINVAL;
@@ -2206,16 +2232,19 @@ static int mtk_dai_etdm_set_tdm_slot(struct snd_soc_dai *dai,
 				     unsigned int tx_mask, unsigned int rx_mask,
 				     int slots, int slot_width)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
-	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	struct mt8195_afe_private *afe_priv = afe->platform_priv;
+	int dai_id = snd_soc_dai_id(dai);
 
-	if (!mt8195_afe_etdm_is_valid(dai->id))
+	if (!mt8195_afe_etdm_is_valid(dai_id))
 		return -EINVAL;
 
-	etdm_data = afe_priv->dai_priv[dai->id];
-	dev_dbg(dai->dev, "%s id %d slot_width %d\n",
-		__func__, dai->id, slot_width);
+	etdm_data = afe_priv->dai_priv[dai_id];
+	dev_dbg(dev, "%s id %d slot_width %d\n",
+		__func__, dai_id, slot_width);
 
 	etdm_data->slots = slots;
 	etdm_data->lrck_width = slot_width;
@@ -2224,14 +2253,17 @@ static int mtk_dai_etdm_set_tdm_slot(struct snd_soc_dai *dai,
 
 static int mtk_dai_etdm_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	int dai_id = snd_soc_dai_id(dai);
 
-	if (!mt8195_afe_etdm_is_valid(dai->id))
+	if (!mt8195_afe_etdm_is_valid(dai_id))
 		return -EINVAL;
 
-	etdm_data = afe_priv->dai_priv[dai->id];
+	etdm_data = afe_priv->dai_priv[dai_id];
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
 		etdm_data->format = MTK_DAI_ETDM_FORMAT_I2S;
@@ -2290,14 +2322,17 @@ static int mtk_dai_etdm_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int mtk_dai_hdmitx_dptx_startup(struct snd_pcm_substream *substream,
 				       struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
-	int cg_id = mtk_dai_etdm_get_cg_id_by_dai_id(dai->id);
+	int cg_id = mtk_dai_etdm_get_cg_id_by_dai_id(dai_id);
 
 	if (cg_id >= 0)
 		mt8195_afe_enable_clk(afe, afe_priv->clk[cg_id]);
 
-	mtk_dai_etdm_enable_mclk(afe, dai->id);
+	mtk_dai_etdm_enable_mclk(afe, dai_id);
 
 	return 0;
 }
@@ -2305,11 +2340,14 @@ static int mtk_dai_hdmitx_dptx_startup(struct snd_pcm_substream *substream,
 static void mtk_dai_hdmitx_dptx_shutdown(struct snd_pcm_substream *substream,
 					 struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
-	int cg_id = mtk_dai_etdm_get_cg_id_by_dai_id(dai->id);
+	int cg_id = mtk_dai_etdm_get_cg_id_by_dai_id(dai_id);
 
-	mtk_dai_etdm_disable_mclk(afe, dai->id);
+	mtk_dai_etdm_disable_mclk(afe, dai_id);
 
 	if (cg_id >= 0)
 		mt8195_afe_disable_clk(afe, afe_priv->clk[cg_id]);
@@ -2347,22 +2385,25 @@ static int mtk_dai_hdmitx_dptx_hw_params(struct snd_pcm_substream *substream,
 					 struct snd_pcm_hw_params *params,
 					 struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
 	unsigned int rate = params_rate(params);
 	unsigned int channels = params_channels(params);
 	snd_pcm_format_t format = params_format(params);
+	int dai_id = snd_soc_dai_id(dai);
 	int width = snd_pcm_format_physical_width(format);
 	int ret = 0;
 
-	if (!mt8195_afe_hdmitx_dptx_is_valid(dai->id))
+	if (!mt8195_afe_hdmitx_dptx_is_valid(dai_id))
 		return -EINVAL;
 
-	etdm_data = afe_priv->dai_priv[dai->id];
+	etdm_data = afe_priv->dai_priv[dai_id];
 
 	/* dptx configure */
-	if (dai->id == MT8195_AFE_IO_DPTX) {
+	if (dai_id == MT8195_AFE_IO_DPTX) {
 		regmap_update_bits(afe->regmap, AFE_DPTX_CON,
 				   AFE_DPTX_CON_CH_EN_MASK,
 				   mtk_dai_get_dptx_ch_en(channels));
@@ -2383,11 +2424,11 @@ static int mtk_dai_hdmitx_dptx_hw_params(struct snd_pcm_substream *substream,
 		etdm_data->data_mode = MTK_DAI_ETDM_DATA_MULTI_PIN;
 	}
 
-	ret = mtk_dai_etdm_mclk_configure(afe, dai->id);
+	ret = mtk_dai_etdm_mclk_configure(afe, dai_id);
 	if (ret)
 		return ret;
 
-	ret = mtk_dai_etdm_configure(afe, rate, channels, width, dai->id);
+	ret = mtk_dai_etdm_configure(afe, rate, channels, width, dai_id);
 
 	return ret;
 }
@@ -2396,30 +2437,33 @@ static int mtk_dai_hdmitx_dptx_trigger(struct snd_pcm_substream *substream,
 				       int cmd,
 				       struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int ret = 0;
 
-	dev_dbg(afe->dev, "%s(), cmd %d, dai id %d\n", __func__, cmd, dai->id);
+	dev_dbg(afe->dev, "%s(), cmd %d, dai id %d\n", __func__, cmd, dai_id);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 	case SNDRV_PCM_TRIGGER_RESUME:
 		/* enable dptx interface */
-		if (dai->id == MT8195_AFE_IO_DPTX)
+		if (dai_id == MT8195_AFE_IO_DPTX)
 			regmap_update_bits(afe->regmap, AFE_DPTX_CON,
 					   AFE_DPTX_CON_ON_MASK,
 					   AFE_DPTX_CON_ON);
 
 		/* enable etdm_out3 */
-		ret = mt8195_afe_enable_etdm(afe, dai->id);
+		ret = mt8195_afe_enable_etdm(afe, dai_id);
 		break;
 	case SNDRV_PCM_TRIGGER_STOP:
 	case SNDRV_PCM_TRIGGER_SUSPEND:
 		/* disable etdm_out3 */
-		ret = mt8195_afe_disable_etdm(afe, dai->id);
+		ret = mt8195_afe_disable_etdm(afe, dai_id);
 
 		/* disable dptx interface */
-		if (dai->id == MT8195_AFE_IO_DPTX)
+		if (dai_id == MT8195_AFE_IO_DPTX)
 			regmap_update_bits(afe->regmap, AFE_DPTX_CON,
 					   AFE_DPTX_CON_ON_MASK, 0);
 		break;
@@ -2435,20 +2479,23 @@ static int mtk_dai_hdmitx_dptx_set_sysclk(struct snd_soc_dai *dai,
 					  unsigned int freq,
 					  int dir)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
-	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	struct mt8195_afe_private *afe_priv = afe->platform_priv;
+	int dai_id = snd_soc_dai_id(dai);
 
-	if (!mt8195_afe_hdmitx_dptx_is_valid(dai->id))
+	if (!mt8195_afe_hdmitx_dptx_is_valid(dai_id))
 		return -EINVAL;
 
-	etdm_data = afe_priv->dai_priv[dai->id];
+	etdm_data = afe_priv->dai_priv[dai_id];
 
-	dev_dbg(dai->dev, "%s id %d freq %u, dir %d\n",
-		__func__, dai->id, freq, dir);
+	dev_dbg(dev, "%s id %d freq %u, dir %d\n",
+		__func__, dai_id, freq, dir);
 
 	etdm_data->mclk_dir = dir;
-	return mtk_dai_etdm_cal_mclk(afe, freq, dai->id);
+	return mtk_dai_etdm_cal_mclk(afe, freq, dai_id);
 }
 
 /* dai driver */
@@ -2460,22 +2507,25 @@ static int mtk_dai_hdmitx_dptx_set_sysclk(struct snd_soc_dai *dai,
 
 static int mtk_dai_etdm_probe(struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
-	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	struct mt8195_afe_private *afe_priv = afe->platform_priv;
+	int dai_id = snd_soc_dai_id(dai);
 
-	dev_dbg(dai->dev, "%s id %d\n", __func__, dai->id);
+	dev_dbg(dev, "%s id %d\n", __func__, dai_id);
 
-	if (!mt8195_afe_etdm_is_valid(dai->id))
+	if (!mt8195_afe_etdm_is_valid(dai_id))
 		return -EINVAL;
 
-	etdm_data = afe_priv->dai_priv[dai->id];
+	etdm_data = afe_priv->dai_priv[dai_id];
 	if (etdm_data->mclk_freq) {
 		dev_dbg(afe->dev, "MCLK always on, rate %d\n",
 			etdm_data->mclk_freq);
 		pm_runtime_get_sync(afe->dev);
-		mtk_dai_etdm_mclk_configure(afe, dai->id);
-		mtk_dai_etdm_enable_mclk(afe, dai->id);
+		mtk_dai_etdm_mclk_configure(afe, dai_id);
+		mtk_dai_etdm_enable_mclk(afe, dai_id);
 		pm_runtime_put_sync(afe->dev);
 	}
 	return 0;

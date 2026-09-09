@@ -267,7 +267,8 @@ static int mic_bias_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct sgtl5000_priv *sgtl5000 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sgtl5000_priv *sgtl5000 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -303,9 +304,8 @@ static int vag_and_mute_control(struct snd_soc_component *component,
 		SGTL5000_OUTPUTS_MUTE,
 		SGTL5000_OUTPUTS_MUTE
 	};
-
-	struct sgtl5000_priv *sgtl5000 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sgtl5000_priv *sgtl5000 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -777,7 +777,7 @@ static const struct snd_kcontrol_new sgtl5000_snd_controls[] = {
 /* mute the codec used by alsa core */
 static int sgtl5000_mute_stream(struct snd_soc_dai *codec_dai, int mute, int direction)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 i2s_pwr = SGTL5000_I2S_IN_POWERUP;
 
 	/*
@@ -794,8 +794,9 @@ static int sgtl5000_mute_stream(struct snd_soc_dai *codec_dai, int mute, int dir
 /* set codec format */
 static int sgtl5000_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct sgtl5000_priv *sgtl5000 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sgtl5000_priv *sgtl5000 = dev_get_drvdata(dev);
 	u16 i2sctl = 0;
 
 	sgtl5000->master = 0;
@@ -862,8 +863,9 @@ static int sgtl5000_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 static int sgtl5000_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				   int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct sgtl5000_priv *sgtl5000 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sgtl5000_priv *sgtl5000 = dev_get_drvdata(dev);
 
 	switch (clk_id) {
 	case SGTL5000_SYSCLK:
@@ -891,7 +893,8 @@ static int sgtl5000_set_dai_sysclk(struct snd_soc_dai *codec_dai,
  */
 static int sgtl5000_set_clock(struct snd_soc_component *component, int frame_rate)
 {
-	struct sgtl5000_priv *sgtl5000 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sgtl5000_priv *sgtl5000 = dev_get_drvdata(dev);
 	int clk_ctl = 0;
 	int sys_fs;	/* sample freq */
 
@@ -944,8 +947,7 @@ static int sgtl5000_set_clock(struct snd_soc_component *component, int frame_rat
 		clk_ctl |= SGTL5000_SYS_FS_96k << SGTL5000_SYS_FS_SHIFT;
 		break;
 	default:
-		dev_err(component->dev, "frame rate %d not supported\n",
-			frame_rate);
+		dev_err(dev, "frame rate %d not supported\n", frame_rate);
 		return -EINVAL;
 	}
 
@@ -973,9 +975,8 @@ static int sgtl5000_set_clock(struct snd_soc_component *component, int frame_rat
 			clk_ctl |= SGTL5000_MCLK_FREQ_PLL <<
 				SGTL5000_MCLK_FREQ_SHIFT;
 		} else {
-			dev_err(component->dev,
-				"PLL not supported in slave mode\n");
-			dev_err(component->dev, "%d ratio is not supported. "
+			dev_err(dev, "PLL not supported in slave mode\n");
+			dev_err(dev, "%d ratio is not supported. "
 				"SYS_MCLK needs to be 256, 384 or 512 * fs\n",
 				sgtl5000->sysclk / frame_rate);
 			return -EINVAL;
@@ -1048,8 +1049,9 @@ static int sgtl5000_pcm_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sgtl5000_priv *sgtl5000 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sgtl5000_priv *sgtl5000 = dev_get_drvdata(dev);
 	int channels = params_channels(params);
 	int i2s_ctl = 0;
 	int stereo;
@@ -1057,7 +1059,7 @@ static int sgtl5000_pcm_hw_params(struct snd_pcm_substream *substream,
 
 	/* sysclk should already set */
 	if (!sgtl5000->sysclk) {
-		dev_err(component->dev, "%s: set sysclk first!\n", __func__);
+		dev_err(dev, "%s: set sysclk first!\n", __func__);
 		return -EFAULT;
 	}
 
@@ -1125,7 +1127,8 @@ static int sgtl5000_pcm_hw_params(struct snd_pcm_substream *substream,
 static int sgtl5000_set_bias_level(struct snd_soc_component *component,
 				   enum snd_soc_bias_level level)
 {
-	struct sgtl5000_priv *sgtl = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sgtl5000_priv *sgtl = dev_get_drvdata(dev);
 	int ret;
 
 	switch (level) {
@@ -1309,7 +1312,8 @@ static int sgtl5000_set_power_regs(struct snd_soc_component *component)
 	int vol_quot;
 	int lo_vol;
 	size_t i;
-	struct sgtl5000_priv *sgtl5000 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sgtl5000_priv *sgtl5000 = dev_get_drvdata(dev);
 
 	vdda  = regulator_get_voltage(sgtl5000->supplies[VDDA].consumer);
 	vddio = regulator_get_voltage(sgtl5000->supplies[VDDIO].consumer);
@@ -1322,15 +1326,14 @@ static int sgtl5000_set_power_regs(struct snd_soc_component *component)
 	vddd  = vddd / 1000;
 
 	if (vdda <= 0 || vddio <= 0 || vddd < 0) {
-		dev_err(component->dev, "regulator voltage not set correctly\n");
+		dev_err(dev, "regulator voltage not set correctly\n");
 
 		return -EINVAL;
 	}
 
 	/* according to datasheet, maximum voltage of supplies */
 	if (vdda > 3600 || vddio > 3600 || vddd > 1980) {
-		dev_err(component->dev,
-			"exceed max voltage vdda %dmV vddio %dmV vddd %dmV\n",
+		dev_err(dev, "exceed max voltage vdda %dmV vddio %dmV vddd %dmV\n",
 			vdda, vddio, vddd);
 
 		return -EINVAL;
@@ -1470,7 +1473,8 @@ static int sgtl5000_probe(struct snd_soc_component *component)
 {
 	int ret;
 	u16 reg;
-	struct sgtl5000_priv *sgtl5000 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sgtl5000_priv *sgtl5000 = dev_get_drvdata(dev);
 	unsigned int zcd_mask = SGTL5000_HP_ZCD_EN | SGTL5000_ADC_ZCD_EN;
 
 	/* power up sgtl5000 */
@@ -1784,7 +1788,7 @@ static int sgtl5000_i2c_probe(struct i2c_client *client)
 	/* Ensure sgtl5000 will start with sane register values */
 	sgtl5000_fill_defaults(client);
 
-	ret = devm_snd_soc_register_component(&client->dev,
+	ret = devm_snd_soc_component_register(&client->dev,
 			&sgtl5000_driver, &sgtl5000_dai, 1);
 	if (ret)
 		goto disable_clk;

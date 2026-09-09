@@ -220,7 +220,9 @@ static int sst_platform_alloc_stream(struct snd_pcm_substream *substream,
 	struct snd_sst_params str_params = {0};
 	struct snd_sst_alloc_params_ext alloc_params = {0};
 	int ret_val = 0;
-	struct sst_data *ctx = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sst_data *ctx = dev_get_drvdata(dev);
 
 	/* set codec params and inform SST driver the same */
 	sst_fill_pcm_params(substream, &param);
@@ -292,6 +294,8 @@ static int sst_media_open(struct snd_pcm_substream *substream,
 	int ret_val = 0;
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct sst_runtime_stream *stream __free(kfree) = NULL;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	stream = kzalloc_obj(*stream);
 	if (!stream)
@@ -302,7 +306,7 @@ static int sst_media_open(struct snd_pcm_substream *substream,
 	scoped_guard(mutex, &sst_lock) {
 		if (!sst ||
 		    !try_module_get(sst->dev->driver->owner)) {
-			dev_err(dai->dev, "no device available to run\n");
+			dev_err(dev, "no device available to run\n");
 			return -ENODEV;
 		}
 		stream->ops = sst->ops;
@@ -405,12 +409,14 @@ static int sst_be_hw_params(struct snd_pcm_substream *substream,
 	int ret = 0;
 
 	if (snd_soc_dai_active(dai) == 1)
-		ret = send_ssp_cmd(dai, dai->name, 1);
+		ret = send_ssp_cmd(dai, snd_soc_dai_name(dai), 1);
 	return ret;
 }
 
 static int sst_set_format(struct snd_soc_dai *dai, unsigned int fmt)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
 	if (!snd_soc_dai_active(dai))
@@ -418,14 +424,17 @@ static int sst_set_format(struct snd_soc_dai *dai, unsigned int fmt)
 
 	ret = sst_fill_ssp_config(dai, fmt);
 	if (ret < 0)
-		dev_err(dai->dev, "sst_set_format failed..\n");
+		dev_err(dev, "sst_set_format failed..\n");
 
 	return ret;
 }
 
 static int sst_platform_set_ssp_slot(struct snd_soc_dai *dai,
 			unsigned int tx_mask, unsigned int rx_mask,
-			int slots, int slot_width) {
+			int slots, int slot_width)
+{
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
 	if (!snd_soc_dai_active(dai))
@@ -433,7 +442,7 @@ static int sst_platform_set_ssp_slot(struct snd_soc_dai *dai,
 
 	ret = sst_fill_ssp_slot(dai, tx_mask, rx_mask, slots, slot_width);
 	if (ret < 0)
-		dev_err(dai->dev, "sst_fill_ssp_slot failed..%d\n", ret);
+		dev_err(dev, "sst_fill_ssp_slot failed..%d\n", ret);
 
 	return ret;
 }
@@ -442,7 +451,7 @@ static void sst_disable_ssp(struct snd_pcm_substream *substream,
 			struct snd_soc_dai *dai)
 {
 	if (!snd_soc_dai_active(dai)) {
-		send_ssp_cmd(dai, dai->name, 0);
+		send_ssp_cmd(dai, snd_soc_dai_name(dai), 0);
 		sst_handle_vb_timer(dai, false);
 	}
 }
@@ -660,10 +669,11 @@ static int sst_soc_pcm_new(struct snd_soc_component *component,
 			   struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai *dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	struct snd_pcm *pcm = rtd->pcm;
 
-	if (dai->driver->playback.channels_min ||
-			dai->driver->capture.channels_min) {
+	if (dai_driver->playback.channels_min ||
+			dai_driver->capture.channels_min) {
 		snd_pcm_set_managed_buffer_all(pcm, SNDRV_DMA_TYPE_DEV,
 					       pcm->card->dev,
 					       SST_MIN_BUFFER, SST_MAX_BUFFER);
@@ -673,15 +683,18 @@ static int sst_soc_pcm_new(struct snd_soc_component *component,
 
 static int sst_soc_probe(struct snd_soc_component *component)
 {
-	struct sst_data *drv = dev_get_drvdata(component->dev);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sst_data *drv = dev_get_drvdata(dev);
 
-	drv->soc_card = component->card;
+	drv->soc_card = card;
 	return sst_dsp_init_v2_dpcm(component);
 }
 
 static void sst_soc_remove(struct snd_soc_component *component)
 {
-	struct sst_data *drv = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sst_data *drv = dev_get_drvdata(dev);
 
 	drv->soc_card = NULL;
 }
@@ -721,7 +734,7 @@ static int sst_platform_probe(struct platform_device *pdev)
 	mutex_init(&drv->lock);
 	dev_set_drvdata(&pdev->dev, drv);
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &sst_soc_platform_drv,
+	ret = devm_snd_soc_component_register(&pdev->dev, &sst_soc_platform_drv,
 				sst_platform_dai, ARRAY_SIZE(sst_platform_dai));
 	if (ret)
 		dev_err(&pdev->dev, "registering cpu dais failed\n");
@@ -740,20 +753,21 @@ static int sst_soc_prepare(struct device *dev)
 {
 	struct sst_data *drv = dev_get_drvdata(dev);
 	struct snd_soc_pcm_runtime *rtd;
+	struct device *card_dev = snd_soc_card_to_dev(drv->soc_card);
 
 	if (!drv->soc_card)
 		return 0;
 
 	/* suspend all pcms first */
-	snd_soc_suspend(drv->soc_card->dev);
-	snd_soc_poweroff(drv->soc_card->dev);
+	snd_soc_suspend(card_dev);
+	snd_soc_poweroff(card_dev);
 
 	/* set the SSPs to idle */
 	for_each_card_rtds(drv->soc_card, rtd) {
 		struct snd_soc_dai *dai = snd_soc_rtd_to_cpu(rtd, 0);
 
 		if (snd_soc_dai_active(dai)) {
-			send_ssp_cmd(dai, dai->name, 0);
+			send_ssp_cmd(dai, snd_soc_dai_name(dai), 0);
 			sst_handle_vb_timer(dai, false);
 		}
 	}
@@ -775,10 +789,10 @@ static void sst_soc_complete(struct device *dev)
 
 		if (snd_soc_dai_active(dai)) {
 			sst_handle_vb_timer(dai, true);
-			send_ssp_cmd(dai, dai->name, 1);
+			send_ssp_cmd(dai, snd_soc_dai_name(dai), 1);
 		}
 	}
-	snd_soc_resume(drv->soc_card->dev);
+	snd_soc_resume(snd_soc_card_to_dev(drv->soc_card));
 }
 
 #else

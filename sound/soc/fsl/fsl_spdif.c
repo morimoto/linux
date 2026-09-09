@@ -501,7 +501,10 @@ static int spdif_set_sample_rate(struct snd_pcm_substream *substream,
 				int sample_rate)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(cpu_dev);
 	struct spdif_mixer_control *ctrl = &spdif_priv->fsl_spdif_control;
 	struct regmap *regmap = spdif_priv->regmap;
 	struct platform_device *pdev = spdif_priv->pdev;
@@ -603,8 +606,9 @@ clk_set_bypass:
 static int fsl_spdif_startup(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *cpu_dai)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(cpu_dev);
 	struct platform_device *pdev = spdif_priv->pdev;
 	struct regmap *regmap = spdif_priv->regmap;
 	u32 scr, mask;
@@ -645,8 +649,9 @@ static int fsl_spdif_startup(struct snd_pcm_substream *substream,
 static void fsl_spdif_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *cpu_dai)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(cpu_dev);
 	struct regmap *regmap = spdif_priv->regmap;
 	u32 scr, mask;
 
@@ -699,8 +704,9 @@ static int fsl_spdif_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct spdif_mixer_control *ctrl = &spdif_priv->fsl_spdif_control;
 	struct platform_device *pdev = spdif_priv->pdev;
 	u32 sample_rate = params_rate(params);
@@ -734,8 +740,9 @@ static int fsl_spdif_hw_params(struct snd_pcm_substream *substream,
 static int fsl_spdif_trigger(struct snd_pcm_substream *substream,
 				int cmd, struct snd_soc_dai *dai)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct regmap *regmap = spdif_priv->regmap;
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	u32 intr = SIE_INTR_FOR(tx);
@@ -786,7 +793,9 @@ static int fsl_spdif_pb_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct spdif_mixer_control *ctrl = &spdif_priv->fsl_spdif_control;
 
 	uvalue->value.iec958.status[0] = ctrl->ch_status[0];
@@ -801,7 +810,9 @@ static int fsl_spdif_pb_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct spdif_mixer_control *ctrl = &spdif_priv->fsl_spdif_control;
 
 	ctrl->ch_status[0] = uvalue->value.iec958.status[0];
@@ -819,7 +830,9 @@ static int fsl_spdif_capture_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct regmap *regmap = spdif_priv->regmap;
 	u32 cstatus, val;
 
@@ -851,7 +864,9 @@ static int fsl_spdif_subcode_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct spdif_mixer_control *ctrl = &spdif_priv->fsl_spdif_control;
 	int ret = -EAGAIN;
 
@@ -881,7 +896,9 @@ static int fsl_spdif_qget(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct spdif_mixer_control *ctrl = &spdif_priv->fsl_spdif_control;
 	int ret = -EAGAIN;
 
@@ -901,7 +918,9 @@ static int fsl_spdif_rx_vbit_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct regmap *regmap = spdif_priv->regmap;
 	u32 val;
 
@@ -916,7 +935,9 @@ static int fsl_spdif_tx_vbit_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct regmap *regmap = spdif_priv->regmap;
 	u32 val;
 
@@ -932,7 +953,9 @@ static int fsl_spdif_tx_vbit_put(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct regmap *regmap = spdif_priv->regmap;
 	u32 val = (1 - ucontrol->value.integer.value[0]) << SCR_VAL_OFFSET;
 
@@ -945,7 +968,9 @@ static int fsl_spdif_rx_rcm_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct regmap *regmap = spdif_priv->regmap;
 	u32 val;
 
@@ -960,14 +985,17 @@ static int fsl_spdif_rx_rcm_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct regmap *regmap = spdif_priv->regmap;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	u32 val = (ucontrol->value.integer.value[0] ? SCR_RAW_CAPTURE_MODE : 0);
 
 	if (val)
-		cpu_dai->driver->capture.formats |= SNDRV_PCM_FMTBIT_S32_LE;
+		dai_driver->capture.formats |= SNDRV_PCM_FMTBIT_S32_LE;
 	else
-		cpu_dai->driver->capture.formats &= ~SNDRV_PCM_FMTBIT_S32_LE;
+		dai_driver->capture.formats &= ~SNDRV_PCM_FMTBIT_S32_LE;
 
 	regmap_update_bits(regmap, REG_SPDIF_SCR, SCR_RAW_CAPTURE_MODE, val);
 
@@ -978,7 +1006,9 @@ static int fsl_spdif_bypass_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *priv = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = priv->bypass ? 1 : 0;
 
@@ -989,25 +1019,27 @@ static int fsl_spdif_bypass_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *priv = snd_soc_dai_get_drvdata(dai);
-	struct snd_soc_card *card = dai->component->card;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *priv = dev_get_drvdata(dai_dev);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
 	bool set = (ucontrol->value.integer.value[0] != 0);
 	struct regmap *regmap = priv->regmap;
 	struct snd_soc_pcm_runtime *rtd;
 	u32 scr, mask;
 	int stream;
 
-	rtd = snd_soc_get_pcm_runtime(card, card->dai_link);
+	rtd = snd_soc_card_to_rtd(card, snd_soc_card_to_driver(card)->dai_link);
 
 	if (priv->bypass == set)
 		return 0; /* nothing to do */
 
 	if (snd_soc_dai_active(dai)) {
-		dev_err(dai->dev, "Cannot change BYPASS mode while stream is running.\n");
+		dev_err(dai_dev, "Cannot change BYPASS mode while stream is running.\n");
 		return -EBUSY;
 	}
 
-	pm_runtime_get_sync(dai->dev);
+	pm_runtime_get_sync(dai_dev);
 
 	if (set) {
 		/* Disable interrupts */
@@ -1032,7 +1064,7 @@ static int fsl_spdif_bypass_put(struct snd_kcontrol *kcontrol,
 		rtd->pcm->streams[stream].substream_count = (set ? 0 : 1);
 
 	priv->bypass = set;
-	pm_runtime_put_sync(dai->dev);
+	pm_runtime_put_sync(dai_dev);
 
 	return 0;
 }
@@ -1093,7 +1125,9 @@ static int fsl_spdif_rxrate_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	int rate = 0;
 
 	if (spdif_priv->dpll_locked)
@@ -1113,7 +1147,9 @@ static int fsl_spdif_usync_get(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct regmap *regmap = spdif_priv->regmap;
 	u32 val;
 
@@ -1132,7 +1168,9 @@ static int fsl_spdif_usync_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
 	struct regmap *regmap = spdif_priv->regmap;
 	u32 val = ucontrol->value.integer.value[0] << SRCD_CD_USER_OFFSET;
 
@@ -1244,20 +1282,22 @@ static const struct snd_kcontrol_new fsl_spdif_ctrls_rcm[] = {
 
 static int fsl_spdif_dai_probe(struct snd_soc_dai *dai)
 {
-	struct fsl_spdif_priv *spdif_private = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_spdif_priv *spdif_private = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, &spdif_private->dma_params_tx,
-				  &spdif_private->dma_params_rx);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &spdif_private->dma_params_tx);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &spdif_private->dma_params_rx);
 
-	snd_soc_add_dai_controls(dai, fsl_spdif_ctrls, ARRAY_SIZE(fsl_spdif_ctrls));
+	snd_soc_dai_add_controls(dai, fsl_spdif_ctrls, ARRAY_SIZE(fsl_spdif_ctrls));
 
 	if (spdif_private->soc->raw_capture_mode)
-		snd_soc_add_dai_controls(dai, fsl_spdif_ctrls_rcm,
+		snd_soc_dai_add_controls(dai, fsl_spdif_ctrls_rcm,
 					 ARRAY_SIZE(fsl_spdif_ctrls_rcm));
 
-	spdif_private->snd_card = dai->component->card->snd_card;
-	spdif_private->rxrate_kcontrol = snd_soc_card_get_kcontrol(dai->component->card,
-								   RX_SAMPLE_RATE_KCONTROL);
+	spdif_private->snd_card = snd_soc_card_to_snd_card(card);
+	spdif_private->rxrate_kcontrol = snd_soc_card_get_kcontrol(card, RX_SAMPLE_RATE_KCONTROL);
 	if (!spdif_private->rxrate_kcontrol)
 		dev_err(&spdif_private->pdev->dev, "failed to get %s kcontrol\n",
 			RX_SAMPLE_RATE_KCONTROL);
@@ -1644,7 +1684,7 @@ static int fsl_spdif_probe(struct platform_device *pdev)
 		goto err_pm_disable;
 	}
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_spdif_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &fsl_spdif_component,
 					      &spdif_priv->cpu_dai_drv, 1);
 	if (ret) {
 		dev_err(&pdev->dev, "failed to register DAI: %d\n", ret);

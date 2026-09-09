@@ -111,7 +111,8 @@ static const struct wm8958_micd_rate jackdet_rates[] = {
 
 static void wm8958_micd_set_rate(struct snd_soc_component *component)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	int best, i, sysclk, val;
 	bool idle;
@@ -151,7 +152,7 @@ static void wm8958_micd_set_rate(struct snd_soc_component *component)
 	val = rates[best].start << WM8958_MICD_BIAS_STARTTIME_SHIFT
 		| rates[best].rate << WM8958_MICD_RATE_SHIFT;
 
-	dev_dbg(component->dev, "MICD rate %d,%d for %dHz %s\n",
+	dev_dbg(dev, "MICD rate %d,%d for %dHz %s\n",
 		rates[best].start, rates[best].rate, sysclk,
 		idle ? "idle" : "active");
 
@@ -162,7 +163,8 @@ static void wm8958_micd_set_rate(struct snd_soc_component *component)
 
 static int configure_aif_clock(struct snd_soc_component *component, int aif)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	int rate;
 	int reg1 = 0;
 	int offset;
@@ -200,8 +202,7 @@ static int configure_aif_clock(struct snd_soc_component *component, int aif)
 		rate /= 2;
 		reg1 |= WM8994_AIF1CLK_DIV;
 
-		dev_dbg(component->dev, "Dividing AIF%d clock to %dHz\n",
-			aif + 1, rate);
+		dev_dbg(dev, "Dividing AIF%d clock to %dHz\n", aif + 1, rate);
 	}
 
 	wm8994->aifclk[aif] = rate;
@@ -216,7 +217,8 @@ static int configure_aif_clock(struct snd_soc_component *component, int aif)
 static int configure_clock(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	int change, new;
 
 	/* Bring up the AIF clocks first */
@@ -323,7 +325,8 @@ static int wm8994_put_drc_sw(struct snd_kcontrol *kcontrol,
 
 static void wm8994_set_drc(struct snd_soc_component *component, int drc)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	struct wm8994_pdata *pdata = &control->pdata;
 	int base = wm8994_drc_base[drc];
@@ -360,7 +363,8 @@ static int wm8994_put_drc_enum(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	struct wm8994_pdata *pdata = &control->pdata;
 	int drc = wm8994_get_drc(kcontrol->id.name);
@@ -383,7 +387,8 @@ static int wm8994_get_drc_enum(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	int drc = wm8994_get_drc(kcontrol->id.name);
 
 	if (drc < 0)
@@ -395,7 +400,8 @@ static int wm8994_get_drc_enum(struct snd_kcontrol *kcontrol,
 
 static void wm8994_set_retune_mobile(struct snd_soc_component *component, int block)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	struct wm8994_pdata *pdata = &control->pdata;
 	int base = wm8994_retune_mobile_base[block];
@@ -432,7 +438,7 @@ static void wm8994_set_retune_mobile(struct snd_soc_component *component, int bl
 		}
 	}
 
-	dev_dbg(component->dev, "ReTune Mobile %d %s/%dHz for %dHz sample rate\n",
+	dev_dbg(dev, "ReTune Mobile %d %s/%dHz for %dHz sample rate\n",
 		block,
 		pdata->retune_mobile_cfgs[best].name,
 		pdata->retune_mobile_cfgs[best].rate,
@@ -467,7 +473,8 @@ static int wm8994_put_retune_mobile_enum(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	struct wm8994_pdata *pdata = &control->pdata;
 	int block = wm8994_get_retune_mobile_block(kcontrol->id.name);
@@ -490,7 +497,8 @@ static int wm8994_get_retune_mobile_enum(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	int block = wm8994_get_retune_mobile_block(kcontrol->id.name);
 
 	if (block < 0)
@@ -742,7 +750,8 @@ SOC_SINGLE_TLV("AIF2DAC Noise Gate Threshold Volume",
 /* We run all mode setting through a function to enforce audio mode */
 static void wm1811_jackdet_set_mode(struct snd_soc_component *component, u16 mode)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	if (!wm8994->jackdet || !wm8994->micdet[0].jack)
 		return;
@@ -765,13 +774,14 @@ static void wm1811_jackdet_set_mode(struct snd_soc_component *component, u16 mod
 
 static void active_reference(struct snd_soc_component *component)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	guard(mutex)(&wm8994->accdet_lock);
 
 	wm8994->active_refcount++;
 
-	dev_dbg(component->dev, "Active refcount incremented, now %d\n",
+	dev_dbg(dev, "Active refcount incremented, now %d\n",
 		wm8994->active_refcount);
 
 	/* If we're using jack detection go into audio mode */
@@ -780,14 +790,15 @@ static void active_reference(struct snd_soc_component *component)
 
 static void active_dereference(struct snd_soc_component *component)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	u16 mode;
 
 	guard(mutex)(&wm8994->accdet_lock);
 
 	wm8994->active_refcount--;
 
-	dev_dbg(component->dev, "Active refcount decremented, now %d\n",
+	dev_dbg(dev, "Active refcount decremented, now %d\n",
 		wm8994->active_refcount);
 
 	if (wm8994->active_refcount == 0) {
@@ -805,7 +816,8 @@ static int clk_sys_event(struct snd_soc_dapm_widget *w,
 			 struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -837,13 +849,14 @@ static int clk_sys_event(struct snd_soc_dapm_widget *w,
 
 static void vmid_reference(struct snd_soc_component *component)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
-	pm_runtime_get_sync(component->dev);
+	pm_runtime_get_sync(dev);
 
 	wm8994->vmid_refcount++;
 
-	dev_dbg(component->dev, "Referencing VMID, refcount is now %d\n",
+	dev_dbg(dev, "Referencing VMID, refcount is now %d\n",
 		wm8994->vmid_refcount);
 
 	if (wm8994->vmid_refcount == 1) {
@@ -916,11 +929,12 @@ static void vmid_reference(struct snd_soc_component *component)
 
 static void vmid_dereference(struct snd_soc_component *component)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	wm8994->vmid_refcount--;
 
-	dev_dbg(component->dev, "Dereferencing VMID, refcount is now %d\n",
+	dev_dbg(dev, "Dereferencing VMID, refcount is now %d\n",
 		wm8994->vmid_refcount);
 
 	if (wm8994->vmid_refcount == 0) {
@@ -974,7 +988,7 @@ static void vmid_dereference(struct snd_soc_component *component)
 				    WM8994_VMID_SEL_MASK, 0);
 	}
 
-	pm_runtime_put(component->dev);
+	pm_runtime_put(dev);
 }
 
 static int vmid_event(struct snd_soc_dapm_widget *w,
@@ -997,6 +1011,7 @@ static int vmid_event(struct snd_soc_dapm_widget *w,
 
 static bool wm8994_check_class_w_digital(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int source = 0;  /* GCC flow analysis can't track enable */
 	int reg, reg_r;
 
@@ -1004,25 +1019,25 @@ static bool wm8994_check_class_w_digital(struct snd_soc_component *component)
 	reg = snd_soc_component_read(component, WM8994_DAC1_LEFT_MIXER_ROUTING);
 	switch (reg) {
 	case WM8994_AIF2DACL_TO_DAC1L:
-		dev_vdbg(component->dev, "Class W source AIF2DAC\n");
+		dev_vdbg(dev, "Class W source AIF2DAC\n");
 		source = 2 << WM8994_CP_DYN_SRC_SEL_SHIFT;
 		break;
 	case WM8994_AIF1DAC2L_TO_DAC1L:
-		dev_vdbg(component->dev, "Class W source AIF1DAC2\n");
+		dev_vdbg(dev, "Class W source AIF1DAC2\n");
 		source = 1 << WM8994_CP_DYN_SRC_SEL_SHIFT;
 		break;
 	case WM8994_AIF1DAC1L_TO_DAC1L:
-		dev_vdbg(component->dev, "Class W source AIF1DAC1\n");
+		dev_vdbg(dev, "Class W source AIF1DAC1\n");
 		source = 0 << WM8994_CP_DYN_SRC_SEL_SHIFT;
 		break;
 	default:
-		dev_vdbg(component->dev, "DAC mixer setting: %x\n", reg);
+		dev_vdbg(dev, "DAC mixer setting: %x\n", reg);
 		return false;
 	}
 
 	reg_r = snd_soc_component_read(component, WM8994_DAC1_RIGHT_MIXER_ROUTING);
 	if (reg_r != reg) {
-		dev_vdbg(component->dev, "Left and right DAC mixers different\n");
+		dev_vdbg(dev, "Left and right DAC mixers different\n");
 		return false;
 	}
 
@@ -1035,7 +1050,8 @@ static bool wm8994_check_class_w_digital(struct snd_soc_component *component)
 
 static void wm8994_update_vu_bits(struct snd_soc_component *component)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	int i;
 
@@ -1055,7 +1071,8 @@ static void wm8994_update_vu_bits(struct snd_soc_component *component)
 
 static int aif_mclk_set(struct snd_soc_component *component, int aif, bool enable)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	unsigned int offset, val, clk_idx;
 	int ret;
 
@@ -1081,8 +1098,7 @@ static int aif_mclk_set(struct snd_soc_component *component, int aif, bool enabl
 	if (enable) {
 		ret = clk_prepare_enable(wm8994->mclk[clk_idx].clk);
 		if (ret < 0) {
-			dev_err(component->dev,	"Failed to enable MCLK%d\n",
-				clk_idx);
+			dev_err(dev,	"Failed to enable MCLK%d\n", clk_idx);
 			return ret;
 		}
 	} else {
@@ -1096,7 +1112,8 @@ static int aif1clk_ev(struct snd_soc_dapm_widget *w,
 		      struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	int mask = WM8994_AIF1DAC1L_ENA | WM8994_AIF1DAC1R_ENA;
 	int ret;
@@ -1293,7 +1310,8 @@ static int aif1clk_late_ev(struct snd_soc_dapm_widget *w,
 			   struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -1311,7 +1329,8 @@ static int aif2clk_late_ev(struct snd_soc_dapm_widget *w,
 			   struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -1329,7 +1348,8 @@ static int late_enable_ev(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -1362,7 +1382,8 @@ static int late_disable_ev(struct snd_soc_dapm_widget *w,
 			   struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMD:
@@ -1445,7 +1466,9 @@ static int post_ev(struct snd_soc_dapm_widget *w,
 	    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	dev_dbg(component->dev, "SRC status: %x\n",
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	dev_dbg(dev, "SRC status: %x\n",
 		snd_soc_component_read(component,
 			     WM8994_RATE_STATUS));
 	return 0;
@@ -2202,7 +2225,8 @@ static int wm8994_get_fll_config(struct wm8994 *control, struct fll_div *fll,
 static int _wm8994_set_fll(struct snd_soc_component *component, int id, int src,
 			  unsigned int freq_in, unsigned int freq_out)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	int reg_offset, ret;
 	struct fll_div fll;
@@ -2276,8 +2300,7 @@ static int _wm8994_set_fll(struct snd_soc_component *component, int id, int src,
 
 	if ((reg & WM8994_AIF1CLK_ENA) &&
 	    (reg & WM8994_AIF1CLK_SRC_MASK) == aif_src) {
-		dev_err(component->dev, "FLL%d is currently providing SYSCLK\n",
-			id + 1);
+		dev_err(dev, "FLL%d is currently providing SYSCLK\n", id + 1);
 		return -EBUSY;
 	}
 
@@ -2308,7 +2331,7 @@ static int _wm8994_set_fll(struct snd_soc_component *component, int id, int src,
 
 	if (wm8994->fll_byp && src == WM8994_FLL_SRC_BCLK &&
 	    freq_in == freq_out && freq_out) {
-		dev_dbg(component->dev, "Bypassing FLL%d\n", id + 1);
+		dev_dbg(dev, "Bypassing FLL%d\n", id + 1);
 		snd_soc_component_update_bits(component, WM8994_FLL1_CONTROL_5 + reg_offset,
 				    WM8958_FLL1_BYP, WM8958_FLL1_BYP);
 		goto out;
@@ -2365,8 +2388,7 @@ static int _wm8994_set_fll(struct snd_soc_component *component, int id, int src,
 	if (freq_out) {
 		ret = clk_prepare_enable(mclk);
 		if (ret < 0) {
-			dev_err(component->dev, "Failed to enable MCLK for FLL%d\n",
-				id + 1);
+			dev_err(dev, "Failed to enable MCLK for FLL%d\n", id + 1);
 			return ret;
 		}
 
@@ -2403,8 +2425,7 @@ static int _wm8994_set_fll(struct snd_soc_component *component, int id, int src,
 			time_left = wait_for_completion_timeout(&wm8994->fll_locked[id],
 								msecs_to_jiffies(10));
 			if (time_left == 0)
-				dev_warn(component->dev,
-					 "Timed out waiting for FLL lock\n");
+				dev_warn(dev, "Timed out waiting for FLL lock\n");
 		} else {
 			msleep(5);
 		}
@@ -2438,7 +2459,7 @@ out:
 	 * for detection.
 	 */
 	if (max(wm8994->aifclk[0], wm8994->aifclk[1]) < 50000) {
-		dev_dbg(component->dev, "Configuring AIFs for 128fs\n");
+		dev_dbg(dev, "Configuring AIFs for 128fs\n");
 
 		wm8994->aifdiv[0] = snd_soc_component_read(component, WM8994_AIF1_RATE)
 			& WM8994_AIF1CLK_RATE_MASK;
@@ -2478,7 +2499,9 @@ static int opclk_divs[] = { 10, 20, 30, 40, 55, 60, 80, 120, 160 };
 static int wm8994_set_fll(struct snd_soc_dai *dai, int id, int src,
 			  unsigned int freq_in, unsigned int freq_out)
 {
-	return _wm8994_set_fll(dai->component, id, src, freq_in, freq_out);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	return _wm8994_set_fll(component, id, src, freq_in, freq_out);
 }
 
 static int wm8994_set_mclk_rate(struct wm8994_priv *wm8994, unsigned int id,
@@ -2501,11 +2524,13 @@ static int wm8994_set_mclk_rate(struct wm8994_priv *wm8994, unsigned int id,
 static int wm8994_set_dai_sysclk(struct snd_soc_dai *dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int ret, i;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case 1:
 	case 2:
 		break;
@@ -2517,38 +2542,38 @@ static int wm8994_set_dai_sysclk(struct snd_soc_dai *dai,
 
 	switch (clk_id) {
 	case WM8994_SYSCLK_MCLK1:
-		wm8994->sysclk[dai->id - 1] = WM8994_SYSCLK_MCLK1;
+		wm8994->sysclk[dai_id - 1] = WM8994_SYSCLK_MCLK1;
 
-		ret = wm8994_set_mclk_rate(wm8994, dai->id - 1, &freq);
+		ret = wm8994_set_mclk_rate(wm8994, dai_id - 1, &freq);
 		if (ret < 0)
 			return ret;
 
 		wm8994->mclk_rate[0] = freq;
-		dev_dbg(dai->dev, "AIF%d using MCLK1 at %uHz\n",
-			dai->id, freq);
+		dev_dbg(dev, "AIF%d using MCLK1 at %uHz\n",
+			dai_id, freq);
 		break;
 
 	case WM8994_SYSCLK_MCLK2:
 		/* TODO: Set GPIO AF */
-		wm8994->sysclk[dai->id - 1] = WM8994_SYSCLK_MCLK2;
+		wm8994->sysclk[dai_id - 1] = WM8994_SYSCLK_MCLK2;
 
-		ret = wm8994_set_mclk_rate(wm8994, dai->id - 1, &freq);
+		ret = wm8994_set_mclk_rate(wm8994, dai_id - 1, &freq);
 		if (ret < 0)
 			return ret;
 
 		wm8994->mclk_rate[1] = freq;
-		dev_dbg(dai->dev, "AIF%d using MCLK2 at %uHz\n",
-			dai->id, freq);
+		dev_dbg(dev, "AIF%d using MCLK2 at %uHz\n",
+			dai_id, freq);
 		break;
 
 	case WM8994_SYSCLK_FLL1:
-		wm8994->sysclk[dai->id - 1] = WM8994_SYSCLK_FLL1;
-		dev_dbg(dai->dev, "AIF%d using FLL1\n", dai->id);
+		wm8994->sysclk[dai_id - 1] = WM8994_SYSCLK_FLL1;
+		dev_dbg(dev, "AIF%d using FLL1\n", dai_id);
 		break;
 
 	case WM8994_SYSCLK_FLL2:
-		wm8994->sysclk[dai->id - 1] = WM8994_SYSCLK_FLL2;
-		dev_dbg(dai->dev, "AIF%d using FLL2\n", dai->id);
+		wm8994->sysclk[dai_id - 1] = WM8994_SYSCLK_FLL2;
+		dev_dbg(dev, "AIF%d using FLL2\n", dai_id);
 		break;
 
 	case WM8994_SYSCLK_OPCLK:
@@ -2582,7 +2607,7 @@ static int wm8994_set_dai_sysclk(struct snd_soc_dai *dai,
 	 * for detection.
 	 */
 	if (max(wm8994->aifclk[0], wm8994->aifclk[1]) < 50000) {
-		dev_dbg(component->dev, "Configuring AIFs for 128fs\n");
+		dev_dbg(dev, "Configuring AIFs for 128fs\n");
 
 		wm8994->aifdiv[0] = snd_soc_component_read(component, WM8994_AIF1_RATE)
 			& WM8994_AIF1CLK_RATE_MASK;
@@ -2611,7 +2636,8 @@ static int wm8994_set_dai_sysclk(struct snd_soc_dai *dai,
 static int wm8994_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	struct wm8994 *control = wm8994->wm8994;
 
@@ -2694,7 +2720,8 @@ static int wm8994_set_bias_level(struct snd_soc_component *component,
 
 int wm8994_vmid_mode(struct snd_soc_component *component, enum wm8994_vmid_mode mode)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (mode) {
@@ -2752,9 +2779,11 @@ int wm8994_vmid_mode(struct snd_soc_component *component, enum wm8994_vmid_mode 
 
 static int wm8994_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
+	int dai_id = snd_soc_dai_id(dai);
 	int ms_reg;
 	int aif1_reg;
 	int dac_reg;
@@ -2763,7 +2792,7 @@ static int wm8994_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	int aif1 = 0;
 	int lrclk = 0;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case 1:
 		ms_reg = WM8994_AIF1_MASTER_SLAVE;
 		aif1_reg = WM8994_AIF1_CONTROL_1;
@@ -2855,7 +2884,7 @@ static int wm8994_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	switch (control->type) {
 	case WM1811:
 	case WM8958:
-		if (dai->id == 2)
+		if (dai_id == 2)
 			snd_soc_component_update_bits(component, WM8958_AIF3_CONTROL_1,
 					    WM8994_AIF1_LRCLK_INV |
 					    WM8958_AIF3_FMT_MASK, aif1);
@@ -2908,10 +2937,12 @@ static int wm8994_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	struct wm8994_pdata *pdata = &control->pdata;
+	int dai_id = snd_soc_dai_id(dai);
 	int aif1_reg;
 	int aif2_reg;
 	int bclk_reg;
@@ -2922,11 +2953,11 @@ static int wm8994_hw_params(struct snd_pcm_substream *substream,
 	int bclk = 0;
 	int lrclk = 0;
 	int rate_val = 0;
-	int id = dai->id - 1;
+	int id = dai_id - 1;
 
 	int i, cur_val, best_val, bclk_rate, best;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case 1:
 		aif1_reg = WM8994_AIF1_CONTROL_1;
 		aif2_reg = WM8994_AIF1_CONTROL_2;
@@ -2937,7 +2968,7 @@ static int wm8994_hw_params(struct snd_pcm_substream *substream,
 			lrclk_reg = WM8994_AIF1DAC_LRCLK;
 		} else {
 			lrclk_reg = WM8994_AIF1ADC_LRCLK;
-			dev_dbg(component->dev, "AIF1 using split LRCLK\n");
+			dev_dbg(dev, "AIF1 using split LRCLK\n");
 		}
 		break;
 	case 2:
@@ -2950,7 +2981,7 @@ static int wm8994_hw_params(struct snd_pcm_substream *substream,
 			lrclk_reg = WM8994_AIF2DAC_LRCLK;
 		} else {
 			lrclk_reg = WM8994_AIF2ADC_LRCLK;
-			dev_dbg(component->dev, "AIF2 using split LRCLK\n");
+			dev_dbg(dev, "AIF2 using split LRCLK\n");
 		}
 		break;
 	default:
@@ -2981,7 +3012,7 @@ static int wm8994_hw_params(struct snd_pcm_substream *substream,
 	wm8994->channels[id] = params_channels(params);
 	if (pdata->max_channels_clocked[id] &&
 	    wm8994->channels[id] > pdata->max_channels_clocked[id]) {
-		dev_dbg(dai->dev, "Constraining channels to %d from %d\n",
+		dev_dbg(dev, "Constraining channels to %d from %d\n",
 			pdata->max_channels_clocked[id], wm8994->channels[id]);
 		wm8994->channels[id] = pdata->max_channels_clocked[id];
 	}
@@ -3004,16 +3035,16 @@ static int wm8994_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	rate_val |= srs[i].val << WM8994_AIF1_SR_SHIFT;
 
-	dev_dbg(dai->dev, "Sample rate is %dHz\n", srs[i].rate);
-	dev_dbg(dai->dev, "AIF%dCLK is %dHz, target BCLK %dHz\n",
-		dai->id, wm8994->aifclk[id], bclk_rate);
+	dev_dbg(dev, "Sample rate is %dHz\n", srs[i].rate);
+	dev_dbg(dev, "AIF%dCLK is %dHz, target BCLK %dHz\n",
+		dai_id, wm8994->aifclk[id], bclk_rate);
 
 	if (wm8994->channels[id] == 1 &&
 	    (snd_soc_component_read(component, aif1_reg) & 0x18) == 0x18)
 		aif2 |= WM8994_AIF1_MONO;
 
 	if (wm8994->aifclk[id] == 0) {
-		dev_err(dai->dev, "AIF%dCLK not configured\n", dai->id);
+		dev_err(dev, "AIF%dCLK not configured\n", dai_id);
 		return -EINVAL;
 	}
 
@@ -3029,8 +3060,8 @@ static int wm8994_hw_params(struct snd_pcm_substream *substream,
 		best = i;
 		best_val = cur_val;
 	}
-	dev_dbg(dai->dev, "Selected AIF%dCLK/fs = %d\n",
-		dai->id, fs_ratios[best]);
+	dev_dbg(dev, "Selected AIF%dCLK/fs = %d\n",
+		dai_id, fs_ratios[best]);
 	rate_val |= best;
 
 	/* We may not get quite the right frequency if using
@@ -3046,17 +3077,17 @@ static int wm8994_hw_params(struct snd_pcm_substream *substream,
 		best = i;
 	}
 	bclk_rate = wm8994->aifclk[id] * 10 / bclk_divs[best];
-	dev_dbg(dai->dev, "Using BCLK_DIV %d for actual BCLK %dHz\n",
+	dev_dbg(dev, "Using BCLK_DIV %d for actual BCLK %dHz\n",
 		bclk_divs[best], bclk_rate);
 	bclk |= best << WM8994_AIF1_BCLK_DIV_SHIFT;
 
 	lrclk = bclk_rate / params_rate(params);
 	if (!lrclk) {
-		dev_err(dai->dev, "Unable to generate LRCLK from %dHz BCLK\n",
+		dev_err(dev, "Unable to generate LRCLK from %dHz BCLK\n",
 			bclk_rate);
 		return -EINVAL;
 	}
-	dev_dbg(dai->dev, "Using LRCLK rate %d for actual LRCLK %dHz\n",
+	dev_dbg(dev, "Using LRCLK rate %d for actual LRCLK %dHz\n",
 		lrclk, bclk_rate / lrclk);
 
 	snd_soc_component_update_bits(component, aif1_reg, WM8994_AIF1_WL_MASK, aif1);
@@ -3068,7 +3099,7 @@ static int wm8994_hw_params(struct snd_pcm_substream *substream,
 			    WM8994_AIF1CLK_RATE_MASK, rate_val);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-		switch (dai->id) {
+		switch (dai_id) {
 		case 1:
 			wm8994->dac_rates[0] = params_rate(params);
 			wm8994_set_retune_mobile(component, 0);
@@ -3088,13 +3119,15 @@ static int wm8994_aif3_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
+	int dai_id = snd_soc_dai_id(dai);
 	int aif1_reg;
 	int aif1 = 0;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case 3:
 		switch (control->type) {
 		case WM1811:
@@ -3131,11 +3164,12 @@ static int wm8994_aif3_hw_params(struct snd_pcm_substream *substream,
 static int wm8994_aif_mute(struct snd_soc_dai *codec_dai, int mute,
 			   int direction)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	int dai_id = snd_soc_dai_id(codec_dai);
 	int mute_reg;
 	int reg;
 
-	switch (codec_dai->id) {
+	switch (dai_id) {
 	case 1:
 		mute_reg = WM8994_AIF1_DAC1_FILTERS_1;
 		break;
@@ -3158,10 +3192,11 @@ static int wm8994_aif_mute(struct snd_soc_dai *codec_dai, int mute,
 
 static int wm8994_set_tristate(struct snd_soc_dai *codec_dai, int tristate)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	int dai_id = snd_soc_dai_id(codec_dai);
 	int reg, val, mask;
 
-	switch (codec_dai->id) {
+	switch (dai_id) {
 	case 1:
 		reg = WM8994_AIF1_MASTER_SLAVE;
 		mask = WM8994_AIF1_TRI;
@@ -3184,7 +3219,7 @@ static int wm8994_set_tristate(struct snd_soc_dai *codec_dai, int tristate)
 
 static int wm8994_aif2_probe(struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	/* Disable the pulls on the AIF if we're using it to save power. */
 	snd_soc_component_update_bits(component, WM8994_GPIO_3,
@@ -3317,7 +3352,8 @@ static struct snd_soc_dai_driver wm8994_dai[] = {
 #ifdef CONFIG_PM
 static int wm8994_component_suspend(struct snd_soc_component *component)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int i, ret;
 
@@ -3326,8 +3362,7 @@ static int wm8994_component_suspend(struct snd_soc_component *component)
 		       sizeof(struct wm8994_fll_config));
 		ret = _wm8994_set_fll(component, i + 1, 0, 0, 0);
 		if (ret < 0)
-			dev_warn(component->dev, "Failed to stop FLL%d: %d\n",
-				 i + 1, ret);
+			dev_warn(dev, "Failed to stop FLL%d: %d\n", i + 1, ret);
 	}
 
 	snd_soc_dapm_force_bias_level(dapm, SND_SOC_BIAS_OFF);
@@ -3337,7 +3372,8 @@ static int wm8994_component_suspend(struct snd_soc_component *component)
 
 static int wm8994_component_resume(struct snd_soc_component *component)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	int i, ret;
 
 	for (i = 0; i < ARRAY_SIZE(wm8994->fll); i++) {
@@ -3349,8 +3385,7 @@ static int wm8994_component_resume(struct snd_soc_component *component)
 				     wm8994->fll_suspend[i].in,
 				     wm8994->fll_suspend[i].out);
 		if (ret < 0)
-			dev_warn(component->dev, "Failed to restore FLL%d: %d\n",
-				 i + 1, ret);
+			dev_warn(dev, "Failed to restore FLL%d: %d\n", i + 1, ret);
 	}
 
 	return 0;
@@ -3363,6 +3398,7 @@ static int wm8994_component_resume(struct snd_soc_component *component)
 static void wm8994_handle_retune_mobile_pdata(struct wm8994_priv *wm8994)
 {
 	struct snd_soc_component *component = wm8994->hubs.component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct wm8994 *control = wm8994->wm8994;
 	struct wm8994_pdata *pdata = &control->pdata;
 	struct snd_kcontrol_new controls[] = {
@@ -3415,22 +3451,21 @@ static void wm8994_handle_retune_mobile_pdata(struct wm8994_priv *wm8994)
 		wm8994->retune_mobile_texts = t;
 	}
 
-	dev_dbg(component->dev, "Allocated %d unique ReTune Mobile names\n",
+	dev_dbg(dev, "Allocated %d unique ReTune Mobile names\n",
 		wm8994->num_retune_mobile_texts);
 
 	wm8994->retune_mobile_enum.items = wm8994->num_retune_mobile_texts;
 	wm8994->retune_mobile_enum.texts = wm8994->retune_mobile_texts;
 
-	ret = snd_soc_add_component_controls(wm8994->hubs.component, controls,
-				   ARRAY_SIZE(controls));
+	ret = snd_soc_component_add_controls(component, controls, ARRAY_SIZE(controls));
 	if (ret != 0)
-		dev_err(wm8994->hubs.component->dev,
-			"Failed to add ReTune Mobile controls: %d\n", ret);
+		dev_err(dev, "Failed to add ReTune Mobile controls: %d\n", ret);
 }
 
 static void wm8994_handle_pdata(struct wm8994_priv *wm8994)
 {
 	struct snd_soc_component *component = wm8994->hubs.component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct wm8994 *control = wm8994->wm8994;
 	struct wm8994_pdata *pdata = &control->pdata;
 	int ret, i;
@@ -3449,7 +3484,7 @@ static void wm8994_handle_pdata(struct wm8994_priv *wm8994)
 				      pdata->micbias1_lvl,
 				      pdata->micbias2_lvl);
 
-	dev_dbg(component->dev, "%d DRC configurations\n", pdata->num_drc_cfgs);
+	dev_dbg(dev, "%d DRC configurations\n", pdata->num_drc_cfgs);
 
 	if (pdata->num_drc_cfgs) {
 		struct snd_kcontrol_new controls[] = {
@@ -3462,7 +3497,7 @@ static void wm8994_handle_pdata(struct wm8994_priv *wm8994)
 		};
 
 		/* We need an array of texts for the enum API */
-		wm8994->drc_texts = devm_kcalloc(wm8994->hubs.component->dev,
+		wm8994->drc_texts = devm_kcalloc(dev,
 			    pdata->num_drc_cfgs, sizeof(char *), GFP_KERNEL);
 		if (!wm8994->drc_texts)
 			return;
@@ -3473,28 +3508,26 @@ static void wm8994_handle_pdata(struct wm8994_priv *wm8994)
 		wm8994->drc_enum.items = pdata->num_drc_cfgs;
 		wm8994->drc_enum.texts = wm8994->drc_texts;
 
-		ret = snd_soc_add_component_controls(wm8994->hubs.component, controls,
-					   ARRAY_SIZE(controls));
+		ret = snd_soc_component_add_controls(component, controls, ARRAY_SIZE(controls));
 		for (i = 0; i < WM8994_NUM_DRC; i++)
 			wm8994_set_drc(component, i);
 	} else {
-		ret = snd_soc_add_component_controls(wm8994->hubs.component,
+		ret = snd_soc_component_add_controls(component,
 						 wm8994_drc_controls,
 						 ARRAY_SIZE(wm8994_drc_controls));
 	}
 
 	if (ret != 0)
-		dev_err(wm8994->hubs.component->dev,
-			"Failed to add DRC mode controls: %d\n", ret);
+		dev_err(dev, "Failed to add DRC mode controls: %d\n", ret);
 
 
-	dev_dbg(component->dev, "%d ReTune Mobile configurations\n",
+	dev_dbg(dev, "%d ReTune Mobile configurations\n",
 		pdata->num_retune_mobile_cfgs);
 
 	if (pdata->num_retune_mobile_cfgs)
 		wm8994_handle_retune_mobile_pdata(wm8994);
 	else
-		snd_soc_add_component_controls(wm8994->hubs.component, wm8994_eq_controls,
+		snd_soc_component_add_controls(component, wm8994_eq_controls,
 				     ARRAY_SIZE(wm8994_eq_controls));
 
 	for (i = 0; i < ARRAY_SIZE(pdata->micbias); i++) {
@@ -3524,17 +3557,18 @@ int wm8994_mic_detect(struct snd_soc_component *component, struct snd_soc_jack *
 		      int micbias)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994_micdet *micdet;
 	struct wm8994 *control = wm8994->wm8994;
 	int reg, ret;
 
 	if (control->type != WM8994) {
-		dev_warn(component->dev, "Not a WM8994\n");
+		dev_warn(dev, "Not a WM8994\n");
 		return -EINVAL;
 	}
 
-	pm_runtime_get_sync(component->dev);
+	pm_runtime_get_sync(dev);
 
 	switch (micbias) {
 	case 1:
@@ -3552,16 +3586,14 @@ int wm8994_mic_detect(struct snd_soc_component *component, struct snd_soc_jack *
 			ret = snd_soc_dapm_disable_pin(dapm, "MICBIAS1");
 		break;
 	default:
-		dev_warn(component->dev, "Invalid MICBIAS %d\n", micbias);
+		dev_warn(dev, "Invalid MICBIAS %d\n", micbias);
 		return -EINVAL;
 	}
 
 	if (ret != 0)
-		dev_warn(component->dev, "Failed to configure MICBIAS%d: %d\n",
-			 micbias, ret);
+		dev_warn(dev, "Failed to configure MICBIAS%d: %d\n", micbias, ret);
 
-	dev_dbg(component->dev, "Configuring microphone detection on %d %p\n",
-		micbias, jack);
+	dev_dbg(dev, "Configuring microphone detection on %d %p\n", micbias, jack);
 
 	/* Store the configuration */
 	micdet->jack = jack;
@@ -3583,7 +3615,7 @@ int wm8994_mic_detect(struct snd_soc_component *component, struct snd_soc_jack *
 
 	snd_soc_dapm_sync(dapm);
 
-	pm_runtime_put(component->dev);
+	pm_runtime_put(dev);
 
 	return 0;
 }
@@ -3657,12 +3689,13 @@ static irqreturn_t wm8994_mic_irq(int irq, void *data)
 {
 	struct wm8994_priv *priv = data;
 	struct snd_soc_component *component = priv->hubs.component;
+	struct device *dev = snd_soc_component_to_dev(component);
 
 #ifndef CONFIG_SND_SOC_WM8994_MODULE
-	trace_snd_soc_jack_irq(dev_name(component->dev));
+	trace_snd_soc_jack_irq(dev_name(dev));
 #endif
 
-	pm_wakeup_event(component->dev, 300);
+	pm_wakeup_event(dev, 300);
 
 	queue_delayed_work(system_power_efficient_wq,
 			   &priv->mic_work, msecs_to_jiffies(250));
@@ -3674,7 +3707,8 @@ static irqreturn_t wm8994_mic_irq(int irq, void *data)
 static void wm1811_micd_stop(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	if (!wm8994->jackdet)
 		return;
@@ -3689,7 +3723,8 @@ static void wm1811_micd_stop(struct snd_soc_component *component)
 
 static void wm8958_button_det(struct snd_soc_component *component, u16 status)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	int report;
 
 	report = 0;
@@ -3741,12 +3776,13 @@ static void wm8958_open_circuit_work(struct work_struct *work)
 static void wm8958_mic_id(void *data, u16 status)
 {
 	struct snd_soc_component *component = data;
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	/* Either nothing present or just starting detection */
 	if (!(status & WM8958_MICD_STS)) {
 		/* If nothing present then clear our statuses */
-		dev_dbg(component->dev, "Detected open circuit\n");
+		dev_dbg(dev, "Detected open circuit\n");
 
 		queue_delayed_work(system_power_efficient_wq,
 				   &wm8994->open_circuit_work,
@@ -3758,7 +3794,7 @@ static void wm8958_mic_id(void *data, u16 status)
 	 * microphone.
 	 */
 	if (status & 0x600) {
-		dev_dbg(component->dev, "Detected microphone\n");
+		dev_dbg(dev, "Detected microphone\n");
 
 		wm8994->mic_detecting = false;
 		wm8994->jack_mic = true;
@@ -3771,7 +3807,7 @@ static void wm8958_mic_id(void *data, u16 status)
 
 
 	if (status & 0xfc) {
-		dev_dbg(component->dev, "Detected headphone\n");
+		dev_dbg(dev, "Detected headphone\n");
 		wm8994->mic_detecting = false;
 
 		wm8958_micd_set_rate(component);
@@ -3792,8 +3828,9 @@ static void wm1811_mic_work(struct work_struct *work)
 	struct wm8994 *control = wm8994->wm8994;
 	struct snd_soc_component *component = wm8994->hubs.component;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	guard(pm_runtime_active)(component->dev);
+	guard(pm_runtime_active)(dev);
 
 	/* If required for an external cap force MICBIAS on */
 	if (control->pdata.jd_ext_cap) {
@@ -3803,7 +3840,7 @@ static void wm1811_mic_work(struct work_struct *work)
 
 	guard(mutex)(&wm8994->accdet_lock);
 
-	dev_dbg(component->dev, "Starting mic detection\n");
+	dev_dbg(dev, "Starting mic detection\n");
 
 	/* Use a user-supplied callback if we have one */
 	if (wm8994->micd_cb) {
@@ -3827,10 +3864,11 @@ static irqreturn_t wm1811_jackdet_irq(int irq, void *data)
 	struct wm8994 *control = wm8994->wm8994;
 	struct snd_soc_component *component = wm8994->hubs.component;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int reg, delay;
 	bool present;
 
-	pm_runtime_get_sync(component->dev);
+	pm_runtime_get_sync(dev);
 
 	cancel_delayed_work_sync(&wm8994->mic_complete_work);
 
@@ -3838,18 +3876,18 @@ static irqreturn_t wm1811_jackdet_irq(int irq, void *data)
 
 	reg = snd_soc_component_read(component, WM1811_JACKDET_CTRL);
 	if (reg < 0) {
-		dev_err(component->dev, "Failed to read jack status: %d\n", reg);
+		dev_err(dev, "Failed to read jack status: %d\n", reg);
 		mutex_unlock(&wm8994->accdet_lock);
-		pm_runtime_put(component->dev);
+		pm_runtime_put(dev);
 		return IRQ_NONE;
 	}
 
-	dev_dbg(component->dev, "JACKDET %x\n", reg);
+	dev_dbg(dev, "JACKDET %x\n", reg);
 
 	present = reg & WM1811_JACKDET_LVL;
 
 	if (present) {
-		dev_dbg(component->dev, "Jack detected\n");
+		dev_dbg(dev, "Jack detected\n");
 
 		wm8958_micd_set_rate(component);
 
@@ -3865,7 +3903,7 @@ static irqreturn_t wm1811_jackdet_irq(int irq, void *data)
 				   &wm8994->mic_work,
 				   msecs_to_jiffies(delay));
 	} else {
-		dev_dbg(component->dev, "Jack not detected\n");
+		dev_dbg(dev, "Jack not detected\n");
 
 		/* Release wm8994->accdet_lock to avoid deadlock:
 		 * cancel_delayed_work_sync() takes wm8994->mic_work internal
@@ -3906,7 +3944,7 @@ static irqreturn_t wm1811_jackdet_irq(int irq, void *data)
 	 * avoid bootstrapping issues with the core. */
 	snd_soc_jack_report(wm8994->micdet[0].jack, 0, 0);
 
-	pm_runtime_put(component->dev);
+	pm_runtime_put(dev);
 	return IRQ_HANDLED;
 }
 
@@ -3943,7 +3981,8 @@ int wm8958_mic_detect(struct snd_soc_component *component, struct snd_soc_jack *
 		      wm1811_mic_id_cb id_cb, void *id_cb_data)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	u16 micd_lvl_sel;
 
@@ -3955,7 +3994,7 @@ int wm8958_mic_detect(struct snd_soc_component *component, struct snd_soc_jack *
 		return -EINVAL;
 	}
 
-	pm_runtime_get_sync(component->dev);
+	pm_runtime_get_sync(dev);
 
 	if (jack) {
 		snd_soc_dapm_force_enable_pin(dapm, "CLK_SYS");
@@ -4025,7 +4064,7 @@ int wm8958_mic_detect(struct snd_soc_component *component, struct snd_soc_jack *
 		snd_soc_dapm_sync(dapm);
 	}
 
-	pm_runtime_put(component->dev);
+	pm_runtime_put(dev);
 
 	return 0;
 }
@@ -4037,8 +4076,9 @@ static void wm8958_mic_work(struct work_struct *work)
 						  struct wm8994_priv,
 						  mic_complete_work.work);
 	struct snd_soc_component *component = wm8994->hubs.component;
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	guard(pm_runtime_active)(component->dev);
+	guard(pm_runtime_active)(dev);
 	guard(mutex)(&wm8994->accdet_lock);
 
 	wm8994->mic_id_cb(wm8994->mic_id_cb_data, wm8994->mic_status);
@@ -4048,6 +4088,7 @@ static irqreturn_t wm8958_mic_irq(int irq, void *data)
 {
 	struct wm8994_priv *wm8994 = data;
 	struct snd_soc_component *component = wm8994->hubs.component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int reg, count, ret, id_delay;
 
 	/*
@@ -4061,7 +4102,7 @@ static irqreturn_t wm8958_mic_irq(int irq, void *data)
 	cancel_delayed_work_sync(&wm8994->mic_complete_work);
 	cancel_delayed_work_sync(&wm8994->open_circuit_work);
 
-	pm_runtime_get_sync(component->dev);
+	pm_runtime_get_sync(dev);
 
 	/* We may occasionally read a detection without an impedence
 	 * range being provided - if that happens loop again.
@@ -4070,15 +4111,13 @@ static irqreturn_t wm8958_mic_irq(int irq, void *data)
 	do {
 		reg = snd_soc_component_read(component, WM8958_MIC_DETECT_3);
 		if (reg < 0) {
-			dev_err(component->dev,
-				"Failed to read mic detect status: %d\n",
-				reg);
-			pm_runtime_put(component->dev);
+			dev_err(dev, "Failed to read mic detect status: %d\n", reg);
+			pm_runtime_put(dev);
 			return IRQ_NONE;
 		}
 
 		if (!(reg & WM8958_MICD_VALID)) {
-			dev_dbg(component->dev, "Mic detect data not valid\n");
+			dev_dbg(dev, "Mic detect data not valid\n");
 			goto out;
 		}
 
@@ -4089,20 +4128,19 @@ static irqreturn_t wm8958_mic_irq(int irq, void *data)
 	} while (count--);
 
 	if (count == 0)
-		dev_warn(component->dev, "No impedance range reported for jack\n");
+		dev_warn(dev, "No impedance range reported for jack\n");
 
 #ifndef CONFIG_SND_SOC_WM8994_MODULE
-	trace_snd_soc_jack_irq(dev_name(component->dev));
+	trace_snd_soc_jack_irq(dev_name(dev));
 #endif
 
 	/* Avoid a transient report when the accessory is being removed */
 	if (wm8994->jackdet) {
 		ret = snd_soc_component_read(component, WM1811_JACKDET_CTRL);
 		if (ret < 0) {
-			dev_err(component->dev, "Failed to read jack status: %d\n",
-				ret);
+			dev_err(dev, "Failed to read jack status: %d\n", ret);
 		} else if (!(ret & WM1811_JACKDET_LVL)) {
-			dev_dbg(component->dev, "Ignoring removed jack\n");
+			dev_dbg(dev, "Ignoring removed jack\n");
 			goto out;
 		}
 	} else if (!(reg & WM8958_MICD_STS)) {
@@ -4124,15 +4162,16 @@ static irqreturn_t wm8958_mic_irq(int irq, void *data)
 		wm8958_button_det(component, reg);
 
 out:
-	pm_runtime_put(component->dev);
+	pm_runtime_put(dev);
 	return IRQ_HANDLED;
 }
 
 static irqreturn_t wm8994_fifo_error(int irq, void *data)
 {
 	struct snd_soc_component *component = data;
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	dev_err(component->dev, "FIFO error\n");
+	dev_err(dev, "FIFO error\n");
 
 	return IRQ_HANDLED;
 }
@@ -4140,8 +4179,9 @@ static irqreturn_t wm8994_fifo_error(int irq, void *data)
 static irqreturn_t wm8994_temp_warn(int irq, void *data)
 {
 	struct snd_soc_component *component = data;
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	dev_err(component->dev, "Thermal warning\n");
+	dev_err(dev, "Thermal warning\n");
 
 	return IRQ_HANDLED;
 }
@@ -4149,8 +4189,9 @@ static irqreturn_t wm8994_temp_warn(int irq, void *data)
 static irqreturn_t wm8994_temp_shut(int irq, void *data)
 {
 	struct snd_soc_component *component = data;
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	dev_crit(component->dev, "Thermal shutdown\n");
+	dev_crit(dev, "Thermal shutdown\n");
 
 	return IRQ_HANDLED;
 }
@@ -4158,12 +4199,13 @@ static irqreturn_t wm8994_temp_shut(int irq, void *data)
 static int wm8994_component_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8994 *control = dev_get_drvdata(component->dev->parent);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994 *control = dev_get_drvdata(dev->parent);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	unsigned int reg;
 	int ret, i;
 
-	snd_soc_component_init_regmap(component, control->regmap);
+	snd_soc_component_regmap_init(component, control->regmap);
 
 	wm8994->hubs.component = component;
 
@@ -4273,9 +4315,7 @@ static int wm8994_component_probe(struct snd_soc_component *component)
 					wm8994);
 
 		if (ret != 0)
-			dev_warn(component->dev,
-				 "Failed to request Mic1 detect IRQ: %d\n",
-				 ret);
+			dev_warn(dev, "Failed to request Mic1 detect IRQ: %d\n", ret);
 
 
 		ret = wm8994_request_irq(wm8994->wm8994,
@@ -4283,27 +4323,21 @@ static int wm8994_component_probe(struct snd_soc_component *component)
 					 wm8994_mic_irq, "Mic 1 short",
 					 wm8994);
 		if (ret != 0)
-			dev_warn(component->dev,
-				 "Failed to request Mic1 short IRQ: %d\n",
-				 ret);
+			dev_warn(dev, "Failed to request Mic1 short IRQ: %d\n", ret);
 
 		ret = wm8994_request_irq(wm8994->wm8994,
 					 WM8994_IRQ_MIC2_DET,
 					 wm8994_mic_irq, "Mic 2 detect",
 					 wm8994);
 		if (ret != 0)
-			dev_warn(component->dev,
-				 "Failed to request Mic2 detect IRQ: %d\n",
-				 ret);
+			dev_warn(dev, "Failed to request Mic2 detect IRQ: %d\n", ret);
 
 		ret = wm8994_request_irq(wm8994->wm8994,
 					 WM8994_IRQ_MIC2_SHRT,
 					 wm8994_mic_irq, "Mic 2 short",
 					 wm8994);
 		if (ret != 0)
-			dev_warn(component->dev,
-				 "Failed to request Mic2 short IRQ: %d\n",
-				 ret);
+			dev_warn(dev, "Failed to request Mic2 short IRQ: %d\n", ret);
 		break;
 
 	case WM8958:
@@ -4316,9 +4350,7 @@ static int wm8994_component_probe(struct snd_soc_component *component)
 						   "Mic detect",
 						   wm8994);
 			if (ret != 0)
-				dev_warn(component->dev,
-					 "Failed to request Mic detect IRQ: %d\n",
-					 ret);
+				dev_warn(dev, "Failed to request Mic detect IRQ: %d\n", ret);
 		} else {
 			wm8994_request_irq(wm8994->wm8994, WM8994_IRQ_MIC1_DET,
 					   wm8958_mic_irq, "Mic detect",
@@ -4352,7 +4384,7 @@ static int wm8994_component_probe(struct snd_soc_component *component)
 	}
 
 	/* Make sure we can read from the GPIOs if they're inputs */
-	pm_runtime_get_sync(component->dev);
+	pm_runtime_get_sync(dev);
 
 	/* Remember if AIFnLRCLK is configured as a GPIO.  This should be
 	 * configured on init - if a system wants to do this dynamically
@@ -4360,7 +4392,7 @@ static int wm8994_component_probe(struct snd_soc_component *component)
 	 */
 	ret = regmap_read(control->regmap, WM8994_GPIO_1, &reg);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to read GPIO1 state: %d\n", ret);
+		dev_err(dev, "Failed to read GPIO1 state: %d\n", ret);
 		goto err_irq;
 	}
 	if ((reg & WM8994_GPN_FN_MASK) != WM8994_GP_FN_PIN_SPECIFIC) {
@@ -4372,7 +4404,7 @@ static int wm8994_component_probe(struct snd_soc_component *component)
 
 	ret = regmap_read(control->regmap, WM8994_GPIO_6, &reg);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to read GPIO6 state: %d\n", ret);
+		dev_err(dev, "Failed to read GPIO6 state: %d\n", ret);
 		goto err_irq;
 	}
 	if ((reg & WM8994_GPN_FN_MASK) != WM8994_GP_FN_PIN_SPECIFIC) {
@@ -4382,7 +4414,7 @@ static int wm8994_component_probe(struct snd_soc_component *component)
 		wm8994->lrclk_shared[1] = 0;
 	}
 
-	pm_runtime_put(component->dev);
+	pm_runtime_put(dev);
 
 	/* Latch volume update bits */
 	for (i = 0; i < ARRAY_SIZE(wm8994_vu_bits); i++)
@@ -4441,14 +4473,14 @@ static int wm8994_component_probe(struct snd_soc_component *component)
 	wm8994_handle_pdata(wm8994);
 
 	wm_hubs_add_analogue_controls(component);
-	snd_soc_add_component_controls(component, wm8994_common_snd_controls,
+	snd_soc_component_add_controls(component, wm8994_common_snd_controls,
 				       ARRAY_SIZE(wm8994_common_snd_controls));
 	snd_soc_dapm_new_controls(dapm, wm8994_dapm_widgets,
 				  ARRAY_SIZE(wm8994_dapm_widgets));
 
 	switch (control->type) {
 	case WM8994:
-		snd_soc_add_component_controls(component, wm8994_snd_controls,
+		snd_soc_component_add_controls(component, wm8994_snd_controls,
 					       ARRAY_SIZE(wm8994_snd_controls));
 		snd_soc_dapm_new_controls(dapm, wm8994_specific_dapm_widgets,
 					  ARRAY_SIZE(wm8994_specific_dapm_widgets));
@@ -4469,9 +4501,9 @@ static int wm8994_component_probe(struct snd_soc_component *component)
 		}
 		break;
 	case WM8958:
-		snd_soc_add_component_controls(component, wm8994_snd_controls,
+		snd_soc_component_add_controls(component, wm8994_snd_controls,
 					       ARRAY_SIZE(wm8994_snd_controls));
-		snd_soc_add_component_controls(component, wm8958_snd_controls,
+		snd_soc_component_add_controls(component, wm8958_snd_controls,
 					       ARRAY_SIZE(wm8958_snd_controls));
 		snd_soc_dapm_new_controls(dapm, wm8958_dapm_widgets,
 					  ARRAY_SIZE(wm8958_dapm_widgets));
@@ -4493,7 +4525,7 @@ static int wm8994_component_probe(struct snd_soc_component *component)
 		break;
 
 	case WM1811:
-		snd_soc_add_component_controls(component, wm8958_snd_controls,
+		snd_soc_component_add_controls(component, wm8958_snd_controls,
 				     ARRAY_SIZE(wm8958_snd_controls));
 		snd_soc_dapm_new_controls(dapm, wm8958_dapm_widgets,
 					  ARRAY_SIZE(wm8958_dapm_widgets));
@@ -4578,7 +4610,8 @@ err_irq:
 
 static void wm8994_component_remove(struct snd_soc_component *component)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	int i;
 
@@ -4658,7 +4691,7 @@ static int wm8994_probe(struct platform_device *pdev)
 	pm_runtime_enable(&pdev->dev);
 	pm_runtime_idle(&pdev->dev);
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &soc_component_dev_wm8994,
+	ret = devm_snd_soc_component_register(&pdev->dev, &soc_component_dev_wm8994,
 			wm8994_dai, ARRAY_SIZE(wm8994_dai));
 	if (ret < 0)
 		pm_runtime_disable(&pdev->dev);

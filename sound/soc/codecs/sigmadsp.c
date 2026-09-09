@@ -635,6 +635,8 @@ static bool sigmadsp_samplerate_valid(unsigned int supported,
 static int sigmadsp_alloc_control(struct sigmadsp *sigmadsp,
 	struct sigmadsp_control *ctrl, unsigned int samplerate_mask)
 {
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(sigmadsp->component);
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(soc_card);
 	struct snd_kcontrol_new template;
 	struct snd_kcontrol *kcontrol;
 
@@ -656,13 +658,14 @@ static int sigmadsp_alloc_control(struct sigmadsp *sigmadsp,
 	kcontrol->private_free = sigmadsp_control_free;
 	ctrl->kcontrol = kcontrol;
 
-	return snd_ctl_add(sigmadsp->component->card->snd_card, kcontrol);
+	return snd_ctl_add(snd_card, kcontrol);
 }
 
 static void sigmadsp_activate_ctrl(struct sigmadsp *sigmadsp,
 	struct sigmadsp_control *ctrl, unsigned int samplerate_mask)
 {
-	struct snd_card *card = sigmadsp->component->card->snd_card;
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(sigmadsp->component);
+	struct snd_card *card = snd_soc_card_to_snd_card(soc_card);
 	bool active;
 	int changed;
 

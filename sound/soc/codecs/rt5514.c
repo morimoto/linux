@@ -287,7 +287,8 @@ static int rt5514_dsp_voice_wake_up_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt5514_priv *rt5514 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_priv *rt5514 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rt5514->dsp_enabled;
 
@@ -326,7 +327,8 @@ static int rt5514_dsp_voice_wake_up_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt5514_priv *rt5514 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_priv *rt5514 = dev_get_drvdata(dev);
 	const struct firmware *fw = NULL;
 	u8 buf[8];
 
@@ -341,12 +343,10 @@ static int rt5514_dsp_voice_wake_up_put(struct snd_kcontrol *kcontrol,
 				!IS_ERR(rt5514->dsp_calib_clk)) {
 				if (clk_set_rate(rt5514->dsp_calib_clk,
 					rt5514->pdata.dsp_calib_clk_rate))
-					dev_err(component->dev,
-						"Can't set rate for mclk");
+					dev_err(dev, "Can't set rate for mclk");
 
 				if (clk_prepare_enable(rt5514->dsp_calib_clk))
-					dev_err(component->dev,
-						"Can't enable dsp_calib_clk");
+					dev_err(dev, "Can't enable dsp_calib_clk");
 
 				rt5514_calibration(rt5514, true);
 
@@ -355,7 +355,7 @@ static int rt5514_dsp_voice_wake_up_put(struct snd_kcontrol *kcontrol,
 				rt5514_spi_burst_read(RT5514_PLL3_CALIB_CTRL6 |
 					RT5514_DSP_MAPPING, buf, sizeof(buf));
 #else
-				dev_err(component->dev, "There is no SPI driver for"
+				dev_err(dev, "There is no SPI driver for"
 					" loading the firmware\n");
 				memset(buf, 0, sizeof(buf));
 #endif
@@ -368,26 +368,26 @@ static int rt5514_dsp_voice_wake_up_put(struct snd_kcontrol *kcontrol,
 
 			rt5514_enable_dsp_prepare(rt5514);
 
-			request_firmware(&fw, RT5514_FIRMWARE1, component->dev);
+			request_firmware(&fw, RT5514_FIRMWARE1, dev);
 			if (fw) {
 #if IS_ENABLED(CONFIG_SND_SOC_RT5514_SPI)
 				rt5514_spi_burst_write(0x4ff60000, fw->data,
 					((fw->size/8)+1)*8);
 #else
-				dev_err(component->dev, "There is no SPI driver for"
+				dev_err(dev, "There is no SPI driver for"
 					" loading the firmware\n");
 #endif
 				release_firmware(fw);
 				fw = NULL;
 			}
 
-			request_firmware(&fw, RT5514_FIRMWARE2, component->dev);
+			request_firmware(&fw, RT5514_FIRMWARE2, dev);
 			if (fw) {
 #if IS_ENABLED(CONFIG_SND_SOC_RT5514_SPI)
 				rt5514_spi_burst_write(0x4ffc0000, fw->data,
 					((fw->size/8)+1)*8);
 #else
-				dev_err(component->dev, "There is no SPI driver for"
+				dev_err(dev, "There is no SPI driver for"
 					" loading the firmware\n");
 #endif
 				release_firmware(fw);
@@ -494,6 +494,7 @@ static const struct snd_kcontrol_new rt5514_sto2_dmic_mux =
  */
 static int rt5514_calc_dmic_clk(struct snd_soc_component *component, int rate)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	static const int div[] = {2, 3, 4, 8, 12, 16, 24, 32};
 	int i;
 
@@ -508,7 +509,7 @@ static int rt5514_calc_dmic_clk(struct snd_soc_component *component, int rate)
 			return i;
 	}
 
-	dev_warn(component->dev, "Base clock rate %d is too high\n", rate);
+	dev_warn(dev, "Base clock rate %d is too high\n", rate);
 	return -EINVAL;
 }
 
@@ -516,12 +517,13 @@ static int rt5514_set_dmic_clk(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5514_priv *rt5514 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_priv *rt5514 = dev_get_drvdata(dev);
 	int idx;
 
 	idx = rt5514_calc_dmic_clk(component, rt5514->sysclk);
 	if (idx < 0)
-		dev_err(component->dev, "Failed to set DMIC clock\n");
+		dev_err(dev, "Failed to set DMIC clock\n");
 	else
 		regmap_update_bits(rt5514->regmap, RT5514_CLK_CTRL1,
 			RT5514_CLK_DMIC_OUT_SEL_MASK,
@@ -537,7 +539,8 @@ static int rt5514_is_sys_clk_from_pll(struct snd_soc_dapm_widget *source,
 			 struct snd_soc_dapm_widget *sink)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
-	struct rt5514_priv *rt5514 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_priv *rt5514 = dev_get_drvdata(dev);
 
 	if (rt5514->sysclk_src == RT5514_SCLK_S_PLL1)
 		return 1;
@@ -549,7 +552,8 @@ static int rt5514_i2s_use_asrc(struct snd_soc_dapm_widget *source,
 	struct snd_soc_dapm_widget *sink)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
-	struct rt5514_priv *rt5514 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_priv *rt5514 = dev_get_drvdata(dev);
 
 	return (rt5514->sysclk > rt5514->lrck * 384);
 }
@@ -751,31 +755,33 @@ static const struct snd_soc_dapm_route rt5514_dapm_routes[] = {
 static int rt5514_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5514_priv *rt5514 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_priv *rt5514 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int pre_div, bclk_ms, frame_size;
 	unsigned int val_len = 0;
 
 	rt5514->lrck = params_rate(params);
 	pre_div = rl6231_get_clk_info(rt5514->sysclk, rt5514->lrck);
 	if (pre_div < 0) {
-		dev_err(component->dev, "Unsupported clock setting\n");
+		dev_err(dev, "Unsupported clock setting\n");
 		return -EINVAL;
 	}
 
 	frame_size = snd_soc_params_to_frame_size(params);
 	if (frame_size < 0) {
-		dev_err(component->dev, "Unsupported frame size: %d\n", frame_size);
+		dev_err(dev, "Unsupported frame size: %d\n", frame_size);
 		return -EINVAL;
 	}
 
 	bclk_ms = frame_size > 32;
 	rt5514->bclk = rt5514->lrck * (32 << bclk_ms);
 
-	dev_dbg(dai->dev, "bclk is %dHz and lrck is %dHz\n",
+	dev_dbg(dev, "bclk is %dHz and lrck is %dHz\n",
 		rt5514->bclk, rt5514->lrck);
-	dev_dbg(dai->dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
-				bclk_ms, pre_div, dai->id);
+	dev_dbg(dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
+				bclk_ms, pre_div, dai_id);
 
 	switch (params_format(params)) {
 	case SNDRV_PCM_FORMAT_S16_LE:
@@ -808,8 +814,9 @@ static int rt5514_hw_params(struct snd_pcm_substream *substream,
 
 static int rt5514_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5514_priv *rt5514 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_priv *rt5514 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
@@ -862,8 +869,9 @@ static int rt5514_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt5514_set_dai_sysclk(struct snd_soc_dai *dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5514_priv *rt5514 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_priv *rt5514 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0;
 
 	if (freq == rt5514->sysclk && clk_id == rt5514->sysclk_src)
@@ -879,7 +887,7 @@ static int rt5514_set_dai_sysclk(struct snd_soc_dai *dai,
 		break;
 
 	default:
-		dev_err(component->dev, "Invalid clock id (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock id (%d)\n", clk_id);
 		return -EINVAL;
 	}
 
@@ -889,7 +897,7 @@ static int rt5514_set_dai_sysclk(struct snd_soc_dai *dai,
 	rt5514->sysclk = freq;
 	rt5514->sysclk_src = clk_id;
 
-	dev_dbg(dai->dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
+	dev_dbg(dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
 
 	return 0;
 }
@@ -897,13 +905,14 @@ static int rt5514_set_dai_sysclk(struct snd_soc_dai *dai,
 static int rt5514_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5514_priv *rt5514 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_priv *rt5514 = dev_get_drvdata(dev);
 	struct rl6231_pll_code pll_code;
 	int ret;
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 
 		rt5514->pll_in = 0;
 		rt5514->pll_out = 0;
@@ -930,17 +939,17 @@ static int rt5514_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 		break;
 
 	default:
-		dev_err(component->dev, "Unknown PLL source %d\n", source);
+		dev_err(dev, "Unknown PLL source %d\n", source);
 		return -EINVAL;
 	}
 
 	ret = rl6231_pll_calc(freq_in, freq_out, &pll_code);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupported input clock %d\n", freq_in);
+		dev_err(dev, "Unsupported input clock %d\n", freq_in);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "bypass=%d m=%d n=%d k=%d\n",
+	dev_dbg(dev, "bypass=%d m=%d n=%d k=%d\n",
 		pll_code.m_bp, (pll_code.m_bp ? 0 : pll_code.m_code),
 		pll_code.n_code, pll_code.k_code);
 
@@ -961,8 +970,9 @@ static int rt5514_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 static int rt5514_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5514_priv *rt5514 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_priv *rt5514 = dev_get_drvdata(dev);
 	unsigned int val = 0, val2 = 0;
 
 	if (rx_mask || tx_mask)
@@ -1050,7 +1060,8 @@ static int rt5514_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 static int rt5514_set_bias_level(struct snd_soc_component *component,
 			enum snd_soc_bias_level level)
 {
-	struct rt5514_priv *rt5514 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_priv *rt5514 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -1098,10 +1109,11 @@ static int rt5514_set_bias_level(struct snd_soc_component *component,
 
 static int rt5514_probe(struct snd_soc_component *component)
 {
-	struct rt5514_priv *rt5514 = snd_soc_component_get_drvdata(component);
-	struct platform_device *pdev = to_platform_device(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_priv *rt5514 = dev_get_drvdata(dev);
+	struct platform_device *pdev = to_platform_device(dev);
 
-	rt5514->mclk = devm_clk_get_optional(component->dev, "mclk");
+	rt5514->mclk = devm_clk_get_optional(dev, "mclk");
 	if (IS_ERR(rt5514->mclk))
 		return PTR_ERR(rt5514->mclk);
 
@@ -1327,7 +1339,7 @@ static int rt5514_i2c_probe(struct i2c_client *i2c)
 	if (ret != 0)
 		dev_warn(&i2c->dev, "Failed to apply regmap patch: %d\n", ret);
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_rt5514,
 			rt5514_dai, ARRAY_SIZE(rt5514_dai));
 }

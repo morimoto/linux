@@ -133,7 +133,9 @@ static int img_spdif_out_get_status(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct img_spdif_out *spdif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_out *spdif = dev_get_drvdata(dev);
 	u32 reg;
 
 	guard(spinlock_irqsave)(&spdif->lock);
@@ -156,7 +158,9 @@ static int img_spdif_out_set_status(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct img_spdif_out *spdif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_out *spdif = dev_get_drvdata(dev);
 	u32 reg;
 
 	reg = ((u32)ucontrol->value.iec958.status[3] << 24);
@@ -197,7 +201,9 @@ static struct snd_kcontrol_new img_spdif_out_controls[] = {
 static int img_spdif_out_trigger(struct snd_pcm_substream *substream, int cmd,
 			struct snd_soc_dai *dai)
 {
-	struct img_spdif_out *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_out *spdif = dev_get_drvdata(dev);
 	u32 reg;
 
 	switch (cmd) {
@@ -224,7 +230,9 @@ static int img_spdif_out_trigger(struct snd_pcm_substream *substream, int cmd,
 static int img_spdif_out_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct img_spdif_out *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_out *spdif = dev_get_drvdata(dev);
 	unsigned int channels;
 	long pre_div_a, pre_div_b, diff_a, diff_b, rate, clk_rate;
 	u32 reg;
@@ -281,11 +289,13 @@ static int img_spdif_out_hw_params(struct snd_pcm_substream *substream,
 
 static int img_spdif_out_dai_probe(struct snd_soc_dai *dai)
 {
-	struct img_spdif_out *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_spdif_out *spdif = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, &spdif->dma_data, NULL);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &spdif->dma_data);
 
-	snd_soc_add_dai_controls(dai, img_spdif_out_controls,
+	snd_soc_dai_add_controls(dai, img_spdif_out_controls,
 			ARRAY_SIZE(img_spdif_out_controls));
 
 	return 0;
@@ -371,7 +381,7 @@ static int img_spdif_out_probe(struct platform_device *pdev)
 	spdif->dma_data.addr_width = 4;
 	spdif->dma_data.maxburst = 4;
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 			&img_spdif_out_component,
 			&img_spdif_out_dai, 1);
 	if (ret)

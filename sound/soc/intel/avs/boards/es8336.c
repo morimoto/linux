@@ -42,7 +42,7 @@ static int avs_es8336_speaker_power_event(struct snd_soc_dapm_widget *w,
 	struct avs_card_drvdata *data;
 	bool speaker_en;
 
-	data = snd_soc_card_get_drvdata(card);
+	data = snd_soc_card_to_priv(card);
 	/* As enable_gpio has active_low=true, logic is inverted. */
 	speaker_en = !SND_SOC_DAPM_EVENT_ON(event);
 
@@ -99,18 +99,19 @@ static const struct snd_soc_jack_pin card_headset_pins[] = {
 static int avs_es8336_codec_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(runtime, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct snd_soc_card *card = runtime->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	struct snd_soc_jack_pin *pins;
 	struct avs_card_drvdata *data;
 	struct gpio_desc *gpiod;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int num_pins, ret;
 
-	data = snd_soc_card_get_drvdata(card);
+	data = snd_soc_card_to_priv(card);
 	num_pins = ARRAY_SIZE(card_headset_pins);
 
-	pins = devm_kmemdup_array(card->dev, card_headset_pins, num_pins,
+	pins = devm_kmemdup_array(snd_soc_card_to_dev(card), card_headset_pins, num_pins,
 				  sizeof(card_headset_pins[0]), GFP_KERNEL);
 	if (!pins)
 		return -ENOMEM;
@@ -120,13 +121,13 @@ static int avs_es8336_codec_init(struct snd_soc_pcm_runtime *runtime)
 	if (ret)
 		return ret;
 
-	ret = devm_acpi_dev_add_driver_gpios(codec_dai->dev, speaker_gpios);
+	ret = devm_acpi_dev_add_driver_gpios(dev, speaker_gpios);
 	if (ret)
-		dev_warn(codec_dai->dev, "Unable to add GPIO mapping table\n");
+		dev_warn(dev, "Unable to add GPIO mapping table\n");
 
-	gpiod = gpiod_get_optional(codec_dai->dev, "speaker-enable", GPIOD_OUT_LOW);
+	gpiod = gpiod_get_optional(dev, "speaker-enable", GPIOD_OUT_LOW);
 	if (IS_ERR(gpiod))
-		return dev_err_probe(codec_dai->dev, PTR_ERR(gpiod), "Get gpiod failed: %ld\n",
+		return dev_err_probe(dev, PTR_ERR(gpiod), "Get gpiod failed: %ld\n",
 				     PTR_ERR(gpiod));
 
 	data->gpiod = gpiod;
@@ -140,10 +141,11 @@ static int avs_es8336_codec_init(struct snd_soc_pcm_runtime *runtime)
 
 static void avs_es8336_codec_exit(struct snd_soc_pcm_runtime *runtime)
 {
-	struct avs_card_drvdata *data = snd_soc_card_get_drvdata(runtime->card);
+	struct avs_card_drvdata *data = snd_soc_card_to_priv(runtime->card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(runtime, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
-	snd_soc_component_set_jack(codec_dai->component, NULL, NULL);
+	snd_soc_component_set_jack(component, NULL, NULL);
 	gpiod_put(data->gpiod);
 }
 
@@ -244,16 +246,18 @@ static int avs_create_dai_link(struct device *dev, int ssp_port, int tdm_slot,
 static int avs_card_suspend_pre(struct snd_soc_card *card)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_card_get_codec_dai(card, ES8336_CODEC_DAI);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
-	return snd_soc_component_set_jack(codec_dai->component, NULL, NULL);
+	return snd_soc_component_set_jack(component, NULL, NULL);
 }
 
 static int avs_card_resume_post(struct snd_soc_card *card)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_card_get_codec_dai(card, ES8336_CODEC_DAI);
-	struct avs_card_drvdata *data = snd_soc_card_get_drvdata(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct avs_card_drvdata *data = snd_soc_card_to_priv(card);
 
-	return snd_soc_component_set_jack(codec_dai->component, &data->jack, NULL);
+	return snd_soc_component_set_jack(component, &data->jack, NULL);
 }
 
 static int avs_es8336_probe(struct platform_device *pdev)
@@ -305,7 +309,7 @@ static int avs_es8336_probe(struct platform_device *pdev)
 	card_driver->dapm_routes = card_routes;
 	card_driver->num_dapm_routes = ARRAY_SIZE(card_routes);
 	card_driver->fully_routed = true;
-	snd_soc_card_set_drvdata(card, data);
+	snd_soc_card_set_priv(card, data);
 
 	return devm_snd_soc_card_register(card, card_driver);
 }

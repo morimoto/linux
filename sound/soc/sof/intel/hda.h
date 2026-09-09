@@ -1086,8 +1086,9 @@ static inline struct snd_sof_dev *widget_to_sdev(struct snd_soc_dapm_widget *w)
 {
 	struct snd_sof_widget *swidget = w->dobj.private;
 	struct snd_soc_component *component = swidget->scomp;
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	return snd_soc_component_get_drvdata(component);
+	return dev_get_drvdata(dev);
 }
 
 #endif

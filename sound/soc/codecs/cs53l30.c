@@ -545,7 +545,9 @@ static int cs53l30_get_mclk_coeff(int mclk_rate, int srate)
 static int cs53l30_set_sysclk(struct snd_soc_dai *dai,
 			      int clk_id, unsigned int freq, int dir)
 {
-	struct cs53l30_private *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs53l30_private *priv = dev_get_drvdata(dev);
 	int mclkx_coeff;
 	u32 mclk_rate;
 
@@ -568,7 +570,9 @@ static int cs53l30_set_sysclk(struct snd_soc_dai *dai,
 
 static int cs53l30_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct cs53l30_private *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs53l30_private *priv = dev_get_drvdata(dev);
 	u8 aspcfg = 0, aspctl1 = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -622,7 +626,9 @@ static int cs53l30_pcm_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct cs53l30_private *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs53l30_private *priv = dev_get_drvdata(dev);
 	int srate = params_rate(params);
 	int mclk_coeff;
 
@@ -650,7 +656,8 @@ static int cs53l30_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct cs53l30_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs53l30_private *priv = dev_get_drvdata(dev);
 	enum snd_soc_bias_level bias_level = snd_soc_dapm_get_bias_level(dapm);
 	unsigned int reg;
 	int i, inter_max_check, ret;
@@ -667,8 +674,7 @@ static int cs53l30_set_bias_level(struct snd_soc_component *component,
 		if (bias_level == SND_SOC_BIAS_OFF) {
 			ret = clk_prepare_enable(priv->mclk);
 			if (ret) {
-				dev_err(component->dev,
-					"failed to enable MCLK: %d\n", ret);
+				dev_err(dev, "failed to enable MCLK: %d\n", ret);
 				return ret;
 			}
 			regmap_update_bits(priv->regmap, CS53L30_MCLKCTL,
@@ -733,7 +739,9 @@ static int cs53l30_set_bias_level(struct snd_soc_component *component,
 
 static int cs53l30_set_tristate(struct snd_soc_dai *dai, int tristate)
 {
-	struct cs53l30_private *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs53l30_private *priv = dev_get_drvdata(dev);
 	u8 val = tristate ? CS53L30_ASP_3ST : 0;
 
 	return regmap_update_bits(priv->regmap, CS53L30_ASP_CTL1,
@@ -749,25 +757,27 @@ static int cs53l30_set_dai_tdm_slot(struct snd_soc_dai *dai,
 				    unsigned int tx_mask, unsigned int rx_mask,
 				    int slots, int slot_width)
 {
-	struct cs53l30_private *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct cs53l30_private *priv = dev_get_drvdata(dai_dev);
 	unsigned int loc[CS53L30_TDM_SLOT_MAX] = {48, 48, 48, 48};
 	unsigned int slot_next, slot_step;
 	u64 tx_enable = 0;
 	int i;
 
 	if (!rx_mask) {
-		dev_err(dai->dev, "rx masks must not be 0\n");
+		dev_err(dai_dev, "rx masks must not be 0\n");
 		return -EINVAL;
 	}
 
 	/* Assuming slot_width is not supposed to be greater than 64 */
 	if (slots <= 0 || slot_width <= 0 || slot_width > 64) {
-		dev_err(dai->dev, "invalid slot number or slot width\n");
+		dev_err(dai_dev, "invalid slot number or slot width\n");
 		return -EINVAL;
 	}
 
 	if (slot_width & 0x7) {
-		dev_err(dai->dev, "slot width must count in byte\n");
+		dev_err(dai_dev, "slot width must count in byte\n");
 		return -EINVAL;
 	}
 
@@ -787,7 +797,7 @@ static int cs53l30_set_dai_tdm_slot(struct snd_soc_dai *dai,
 
 	/* Error out to avoid slot shift */
 	if (rx_mask && i == CS53L30_TDM_SLOT_MAX) {
-		dev_err(dai->dev, "rx_mask exceeds max slot number: %d\n",
+		dev_err(dai_dev, "rx_mask exceeds max slot number: %d\n",
 			CS53L30_TDM_SLOT_MAX);
 		return -EINVAL;
 	}
@@ -795,7 +805,7 @@ static int cs53l30_set_dai_tdm_slot(struct snd_soc_dai *dai,
 	/* Validate the last active CS53L30 slot */
 	slot_next = loc[i - 1] + slot_step - 1;
 	if (slot_next > 47) {
-		dev_err(dai->dev, "slot selection out of bounds: %u\n",
+		dev_err(dai_dev, "slot selection out of bounds: %u\n",
 			slot_next);
 		return -EINVAL;
 	}
@@ -803,14 +813,14 @@ static int cs53l30_set_dai_tdm_slot(struct snd_soc_dai *dai,
 	for (i = 0; i < CS53L30_TDM_SLOT_MAX && loc[i] != 48; i++) {
 		regmap_update_bits(priv->regmap, CS53L30_ASP_TDMTX_CTL(i),
 				   CS53L30_ASP_CHx_TX_LOC_MASK, loc[i]);
-		dev_dbg(dai->dev, "loc[%d]=%x\n", i, loc[i]);
+		dev_dbg(dai_dev, "loc[%d]=%x\n", i, loc[i]);
 	}
 
 	for (i = 0; i < CS53L30_ASP_TDMTX_ENx_MAX && tx_enable; i++) {
 		regmap_write(priv->regmap, CS53L30_ASP_TDMTX_ENx(i),
 			     tx_enable & 0xff);
 		tx_enable >>= 8;
-		dev_dbg(dai->dev, "en_reg=%x, tx_enable=%llx\n",
+		dev_dbg(dai_dev, "en_reg=%x, tx_enable=%llx\n",
 			CS53L30_ASP_TDMTX_ENx(i), tx_enable & 0xff);
 	}
 
@@ -819,7 +829,9 @@ static int cs53l30_set_dai_tdm_slot(struct snd_soc_dai *dai,
 
 static int cs53l30_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct cs53l30_private *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs53l30_private *priv = dev_get_drvdata(dev);
 
 	gpiod_set_value_cansleep(priv->mute_gpio, mute);
 
@@ -865,7 +877,8 @@ static struct snd_soc_dai_driver cs53l30_dai = {
 
 static int cs53l30_component_probe(struct snd_soc_component *component)
 {
-	struct cs53l30_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs53l30_private *priv = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	if (priv->use_sdout2)
@@ -1013,7 +1026,7 @@ static int cs53l30_i2c_probe(struct i2c_client *client)
 
 	dev_info(dev, "Cirrus Logic CS53L30, Revision: %02X\n", reg & 0xFF);
 
-	ret = devm_snd_soc_register_component(dev, &cs53l30_driver, &cs53l30_dai, 1);
+	ret = devm_snd_soc_component_register(dev, &cs53l30_driver, &cs53l30_dai, 1);
 	if (ret) {
 		dev_err(dev, "failed to register component: %d\n", ret);
 		goto error;

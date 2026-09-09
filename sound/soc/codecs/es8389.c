@@ -133,7 +133,8 @@ static int es8389_hpf_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = es8389->hpf_freq;
 	return 0;
@@ -143,7 +144,8 @@ static int es8389_hpf_set(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 	u32 freq;
 	bool hpf;
 
@@ -158,7 +160,7 @@ static int es8389_hpf_set(struct snd_kcontrol *kcontrol,
 			return -EBUSY;
 
 		if (es8389->hpf_freq != ucontrol->value.integer.value[0])
-			dev_dbg(component->dev, "At the %u Hz sampling rate, %ld Hz could not be obtained."
+			dev_dbg(dev, "At the %u Hz sampling rate, %ld Hz could not be obtained."
 				"the frequency has been set to the closest value, %u Hz\n",
 				es8389->capture_rate, ucontrol->value.integer.value[0], es8389->hpf_freq);
 
@@ -166,7 +168,7 @@ static int es8389_hpf_set(struct snd_kcontrol *kcontrol,
 		regmap_update_bits(es8389->regmap, ES8389_ADC_HPF2, 0x0f, es8389->hpfr);
 	} else {
 		es8389->hpf_freq = ucontrol->value.integer.value[0];
-		dev_dbg(component->dev, "PCM_STREAM_CAPTURE is not active.retain the input frequency\n");
+		dev_dbg(dev, "PCM_STREAM_CAPTURE is not active.retain the input frequency\n");
 	}
 
 	return 1;
@@ -177,7 +179,8 @@ static int es8389_dmic_set(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int val;
 	bool changed1, changed2;
@@ -633,8 +636,9 @@ static inline int get_coeff(u8 vddd, u8 dmic, int mclk, int rate)
 static int es8389_set_dai_sysclk(struct snd_soc_dai *dai,
 			int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 
 	es8389->sysclk = freq;
 
@@ -644,8 +648,9 @@ static int es8389_set_dai_sysclk(struct snd_soc_dai *dai,
 static int es8389_set_tdm_slot(struct snd_soc_dai *dai,
 	unsigned int tx_mask, unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 
 	regmap_update_bits(es8389->regmap, ES8389_PTDM_SLOT,
 				ES8389_TDM_SLOT, (slots << ES8389_TDM_SHIFT));
@@ -657,8 +662,9 @@ static int es8389_set_tdm_slot(struct snd_soc_dai *dai,
 
 static int es8389_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 	u8 state = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -679,7 +685,7 @@ static int es8389_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		state |= ES8389_DAIFMT_I2S;
 		break;
 	case SND_SOC_DAIFMT_RIGHT_J:
-		dev_err(component->dev, "component driver does not support right justified\n");
+		dev_err(dev, "component driver does not support right justified\n");
 		return -EINVAL;
 	case SND_SOC_DAIFMT_LEFT_J:
 		state |= ES8389_DAIFMT_LEFT_J;
@@ -703,8 +709,9 @@ static int es8389_pcm_hw_params(struct snd_pcm_substream *substream,
 			struct snd_pcm_hw_params *params,
 			struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 	int coeff, ret;
 	u8 dmic_enable, state = 0;
 	unsigned int regv;
@@ -784,7 +791,7 @@ static int es8389_pcm_hw_params(struct snd_pcm_substream *substream,
 		regmap_write(es8389->regmap, ES8389_SYSTEM18, coeff_div[coeff].Reg0x18);
 		regmap_write(es8389->regmap, ES8389_SYSTEM19, coeff_div[coeff].Reg0x19);
 	} else {
-		dev_warn(component->dev, "Clock coefficients do not match");
+		dev_warn(dev, "Clock coefficients do not match");
 	}
 
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE) {
@@ -792,7 +799,7 @@ static int es8389_pcm_hw_params(struct snd_pcm_substream *substream,
 		freq = (es8389->hpf_freq * 48000) / params_rate(params);
 		hpf = find_best_hpf_freq(freq, &es8389->hpfl, &es8389->hpfr, &es8389->hpf_freq);
 		if (!hpf) {
-			dev_err(component->dev, "The HPF frequency is invalid\n");
+			dev_err(dev, "The HPF frequency is invalid\n");
 			return -EINVAL;
 		}
 	}
@@ -803,8 +810,9 @@ static int es8389_pcm_hw_params(struct snd_pcm_substream *substream,
 static int es8389_pcm_hw_free(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE)
 		es8389->capture_rate = 0;
@@ -816,7 +824,8 @@ static int es8389_set_bias_level(struct snd_soc_component *component,
 			enum snd_soc_bias_level level)
 {
 	int ret;
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
@@ -858,8 +867,9 @@ static int es8389_set_bias_level(struct snd_soc_component *component,
 
 static int es8389_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 	unsigned int regv;
 
 	if (mute) {
@@ -944,7 +954,8 @@ static struct snd_soc_dai_driver es8389_dai = {
 
 static void es8389_init(struct snd_soc_component *component)
 {
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 	unsigned int reg;
 
 	regmap_read(es8389->regmap, ES8389_MAX_REGISTER, &reg);
@@ -1022,7 +1033,8 @@ static void es8389_init(struct snd_soc_component *component)
 
 static int es8389_suspend(struct snd_soc_component *component)
 {
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 
 	es8389_set_bias_level(component, SND_SOC_BIAS_STANDBY);
 	regcache_cache_only(es8389->regmap, true);
@@ -1033,7 +1045,8 @@ static int es8389_suspend(struct snd_soc_component *component)
 
 static int es8389_resume(struct snd_soc_component *component)
 {
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 	unsigned int regv;
 
 	regcache_cache_only(es8389->regmap, false);
@@ -1054,39 +1067,40 @@ static int es8389_resume(struct snd_soc_component *component)
 static int es8389_probe(struct snd_soc_component *component)
 {
 	int ret, i;
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 
-	ret = device_property_read_u8(component->dev, "everest,mclk-src", &es8389->mclk_src);
+	ret = device_property_read_u8(dev, "everest,mclk-src", &es8389->mclk_src);
 	if (ret != 0) {
-		dev_dbg(component->dev, "mclk-src return %d", ret);
+		dev_dbg(dev, "mclk-src return %d", ret);
 		es8389->mclk_src = ES8389_MCLK_SOURCE;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(es8389_core_supplies); i++)
 		es8389->core_supply[i].supply = es8389_core_supplies[i];
-	ret = devm_regulator_bulk_get(component->dev, ARRAY_SIZE(es8389_core_supplies), es8389->core_supply);
+	ret = devm_regulator_bulk_get(dev, ARRAY_SIZE(es8389_core_supplies), es8389->core_supply);
 	if (ret) {
-		dev_err(component->dev, "Failed to request core supplies %d\n", ret);
+		dev_err(dev, "Failed to request core supplies %d\n", ret);
 		return ret;
 	}
 
-	es8389->mclk = devm_clk_get_optional(component->dev, "mclk");
+	es8389->mclk = devm_clk_get_optional(dev, "mclk");
 	if (IS_ERR(es8389->mclk))
-		return dev_err_probe(component->dev, PTR_ERR(es8389->mclk),
+		return dev_err_probe(dev, PTR_ERR(es8389->mclk),
 			"ES8389 is unable to get mclk\n");
 
 	if (!es8389->mclk)
-		dev_err(component->dev, "%s, assuming static mclk\n", __func__);
+		dev_err(dev, "%s, assuming static mclk\n", __func__);
 
 	ret = clk_prepare_enable(es8389->mclk);
 	if (ret) {
-		dev_err(component->dev, "%s, unable to enable mclk\n", __func__);
+		dev_err(dev, "%s, unable to enable mclk\n", __func__);
 		return ret;
 	}
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(es8389_core_supplies), es8389->core_supply);
 	if (ret) {
-		dev_err(component->dev, "Failed to enable core supplies: %d\n", ret);
+		dev_err(dev, "Failed to enable core supplies: %d\n", ret);
 		clk_disable_unprepare(es8389->mclk);
 		return ret;
 	}
@@ -1100,7 +1114,8 @@ static int es8389_probe(struct snd_soc_component *component)
 
 static void es8389_remove(struct snd_soc_component *component)
 {
-	struct es8389_private *es8389 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8389_private *es8389 = dev_get_drvdata(dev);
 
 	regmap_write(es8389->regmap, ES8389_MASTER_MODE, 0x28);
 	regmap_write(es8389->regmap, ES8389_HPSW, 0x00);
@@ -1177,7 +1192,7 @@ static int es8389_i2c_probe(struct i2c_client *i2c_client)
 		return dev_err_probe(&i2c_client->dev, PTR_ERR(es8389->regmap),
 			"regmap_init() failed\n");
 
-	ret =  devm_snd_soc_register_component(&i2c_client->dev,
+	ret =  devm_snd_soc_component_register(&i2c_client->dev,
 			&soc_codec_dev_es8389,
 			&es8389_dai,
 			1);

@@ -678,7 +678,8 @@ static const struct reg_default rt1011_reg[] = {
 
 static int rt1011_reg_init(struct snd_soc_component *component)
 {
-	struct rt1011_priv *rt1011 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 
 	regmap_multi_reg_write(rt1011->regmap,
 		init_list, ARRAY_SIZE(init_list));
@@ -1035,8 +1036,8 @@ static int rt1011_recv_spk_mode_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1011_priv *rt1011 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rt1011->recv_spk_mode;
 
@@ -1048,8 +1049,8 @@ static int rt1011_recv_spk_mode_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt1011_priv *rt1011 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 
 	if (ucontrol->value.integer.value[0] == rt1011->recv_spk_mode)
 		return 0;
@@ -1110,8 +1111,8 @@ static int rt1011_bq_drc_coeff_get(struct snd_kcontrol *kcontrol,
 					struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1011_priv *rt1011 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 	struct rt1011_bq_drc_params *bq_drc_info;
 	struct rt1011_bq_drc_params *params =
 		(struct rt1011_bq_drc_params *)ucontrol->value.integer.value;
@@ -1146,8 +1147,8 @@ static int rt1011_bq_drc_coeff_put(struct snd_kcontrol *kcontrol,
 					struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1011_priv *rt1011 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 	struct rt1011_bq_drc_params *bq_drc_info;
 	struct rt1011_bq_drc_params *params =
 		(struct rt1011_bq_drc_params *)ucontrol->value.integer.value;
@@ -1210,7 +1211,8 @@ static int rt1011_r0_cali_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1011_priv *rt1011 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rt1011->cali_done;
 
@@ -1222,7 +1224,8 @@ static int rt1011_r0_cali_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt1011_priv *rt1011 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 
 	rt1011->cali_done = 0;
 	if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF &&
@@ -1251,7 +1254,8 @@ static int rt1011_r0_load_mode_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1011_priv *rt1011 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rt1011->r0_reg;
 
@@ -1263,8 +1267,8 @@ static int rt1011_r0_load_mode_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt1011_priv *rt1011 = snd_soc_component_get_drvdata(component);
-	struct device *dev;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 	unsigned int r0_integer, r0_factor, format;
 
 	if (ucontrol->value.integer.value[0] == rt1011->r0_reg)
@@ -1273,7 +1277,6 @@ static int rt1011_r0_load_mode_put(struct snd_kcontrol *kcontrol,
 	if (ucontrol->value.integer.value[0] == 0)
 		return -EINVAL;
 
-	dev = regmap_get_device(rt1011->regmap);
 	if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF) {
 		rt1011->r0_reg = ucontrol->value.integer.value[0];
 
@@ -1319,8 +1322,8 @@ static int rt1011_i2s_ref_put(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1011_priv *rt1011 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 
 	rt1011->i2s_ref = ucontrol->value.enumerated.item[0];
 	switch (rt1011->i2s_ref) {
@@ -1337,7 +1340,7 @@ static int rt1011_i2s_ref_put(struct snd_kcontrol *kcontrol,
 		regmap_write(rt1011->regmap, RT1011_ADCDAT_OUT_SOURCE, 0x4);
 		break;
 	default:
-		dev_info(component->dev, "I2S Reference: Do nothing\n");
+		dev_info(dev, "I2S Reference: Do nothing\n");
 	}
 
 	return 0;
@@ -1347,8 +1350,8 @@ static int rt1011_i2s_ref_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1011_priv *rt1011 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = rt1011->i2s_ref;
 
@@ -1401,9 +1404,9 @@ static const struct snd_kcontrol_new rt1011_snd_controls[] = {
 static int rt1011_is_sys_clk_from_pll(struct snd_soc_dapm_widget *source,
 			 struct snd_soc_dapm_widget *sink)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(source->dapm);
-	struct rt1011_priv *rt1011 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 
 	if (rt1011->sysclk_src == RT1011_FS_SYS_PRE_S_PLL1)
 		return 1;
@@ -1569,15 +1572,17 @@ static int rt1011_get_clk_info(int sclk, int rate)
 static int rt1011_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1011_priv *rt1011 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int val_len = 0, ch_len = 0, val_clk, mask_clk;
 	int pre_div, bclk_ms, frame_size;
 
 	rt1011->lrck = params_rate(params);
 	pre_div = rt1011_get_clk_info(rt1011->sysclk, rt1011->lrck);
 	if (pre_div < 0) {
-		dev_warn(component->dev, "Force using PLL ");
+		dev_warn(dev, "Force using PLL ");
 		snd_soc_dai_set_pll(dai, 0, RT1011_PLL1_S_BCLK,
 			rt1011->lrck * 64, rt1011->lrck * 256);
 		snd_soc_dai_set_sysclk(dai, RT1011_FS_SYS_PRE_S_PLL1,
@@ -1586,7 +1591,7 @@ static int rt1011_hw_params(struct snd_pcm_substream *substream,
 	}
 	frame_size = snd_soc_params_to_frame_size(params);
 	if (frame_size < 0) {
-		dev_err(component->dev, "Unsupported frame size: %d\n",
+		dev_err(dev, "Unsupported frame size: %d\n",
 			frame_size);
 		return -EINVAL;
 	}
@@ -1594,11 +1599,11 @@ static int rt1011_hw_params(struct snd_pcm_substream *substream,
 	bclk_ms = frame_size > 32;
 	rt1011->bclk = rt1011->lrck * (32 << bclk_ms);
 
-	dev_dbg(component->dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
-				bclk_ms, pre_div, dai->id);
+	dev_dbg(dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
+				bclk_ms, pre_div, dai_id);
 
-	dev_dbg(component->dev, "lrck is %dHz and pre_div is %d for iis %d\n",
-				rt1011->lrck, pre_div, dai->id);
+	dev_dbg(dev, "lrck is %dHz and pre_div is %d for iis %d\n",
+				rt1011->lrck, pre_div, dai_id);
 
 	switch (params_width(params)) {
 	case 16:
@@ -1635,7 +1640,7 @@ static int rt1011_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT1011_AIF1:
 		mask_clk = RT1011_FS_SYS_DIV_MASK;
 		val_clk = pre_div << RT1011_FS_SYS_DIV_SFT;
@@ -1648,7 +1653,7 @@ static int rt1011_hw_params(struct snd_pcm_substream *substream,
 			ch_len);
 		break;
 	default:
-		dev_err(component->dev, "Invalid dai->id: %d\n", dai->id);
+		dev_err(dev, "Invalid dai_id: %d\n", dai_id);
 		return -EINVAL;
 	}
 
@@ -1660,9 +1665,11 @@ static int rt1011_hw_params(struct snd_pcm_substream *substream,
 
 static int rt1011_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int reg_val = 0, reg_bclk_inv = 0;
+	int dai_id = snd_soc_dai_id(dai);
 	int ret = 0;
 
 	snd_soc_dapm_mutex_lock(dapm);
@@ -1703,7 +1710,7 @@ static int rt1011_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		goto _set_fmt_err_;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT1011_AIF1:
 		snd_soc_component_update_bits(component, RT1011_TDM_TOTAL_SET,
 			RT1011_I2S_TDM_MS_MASK | RT1011_I2S_TDM_DF_MASK,
@@ -1714,7 +1721,7 @@ static int rt1011_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 			RT1011_TDM_INV_BCLK_MASK, reg_bclk_inv);
 		break;
 	default:
-		dev_err(component->dev, "Invalid dai->id: %d\n", dai->id);
+		dev_err(dev, "Invalid dai_id: %d\n", dai_id);
 		ret = -EINVAL;
 	}
 
@@ -1726,7 +1733,8 @@ _set_fmt_err_:
 static int rt1011_set_component_sysclk(struct snd_soc_component *component,
 		int clk_id, int source, unsigned int freq, int dir)
 {
-	struct rt1011_priv *rt1011 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0;
 
 	if (freq == rt1011->sysclk && clk_id == rt1011->sysclk_src)
@@ -1752,7 +1760,7 @@ static int rt1011_set_component_sysclk(struct snd_soc_component *component,
 		reg_val |= RT1011_FS_SYS_PRE_RCCLK;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clock id (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock id (%d)\n", clk_id);
 		return -EINVAL;
 	}
 	snd_soc_component_update_bits(component, RT1011_CLK_2,
@@ -1760,7 +1768,7 @@ static int rt1011_set_component_sysclk(struct snd_soc_component *component,
 	rt1011->sysclk = freq;
 	rt1011->sysclk_src = clk_id;
 
-	dev_dbg(component->dev, "Sysclk is %dHz and clock id is %d\n",
+	dev_dbg(dev, "Sysclk is %dHz and clock id is %d\n",
 		freq, clk_id);
 
 	return 0;
@@ -1770,7 +1778,8 @@ static int rt1011_set_component_pll(struct snd_soc_component *component,
 		int pll_id, int source, unsigned int freq_in,
 		unsigned int freq_out)
 {
-	struct rt1011_priv *rt1011 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 	struct rl6231_pll_code pll_code;
 	int ret;
 
@@ -1779,7 +1788,7 @@ static int rt1011_set_component_pll(struct snd_soc_component *component,
 		return 0;
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 
 		rt1011->pll_in = 0;
 		rt1011->pll_out = 0;
@@ -1808,18 +1817,17 @@ static int rt1011_set_component_pll(struct snd_soc_component *component,
 			RT1011_PLL1_SRC_MASK, RT1011_PLL1_SRC_PLL2);
 		break;
 	default:
-		dev_err(component->dev, "Unknown PLL Source %d\n", source);
+		dev_err(dev, "Unknown PLL Source %d\n", source);
 		return -EINVAL;
 	}
 
 	ret = rl6231_pll_calc(freq_in, freq_out, &pll_code);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupported input clock %d\n",
-			freq_in);
+		dev_err(dev, "Unsupported input clock %d\n", freq_in);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "bypass=%d m=%d n=%d k=%d\n",
+	dev_dbg(dev, "bypass=%d m=%d n=%d k=%d\n",
 		pll_code.m_bp, (pll_code.m_bp ? 0 : pll_code.m_code),
 		pll_code.n_code, pll_code.k_code);
 
@@ -1840,8 +1848,9 @@ static int rt1011_set_component_pll(struct snd_soc_component *component,
 static int rt1011_set_tdm_slot(struct snd_soc_dai *dai,
 	unsigned int tx_mask, unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int val = 0, tdm_en = 0, rx_slotnum, tx_slotnum;
 	int ret = 0, first_bit, last_bit;
 
@@ -1893,7 +1902,7 @@ static int rt1011_set_tdm_slot(struct snd_soc_dai *dai,
 	rx_slotnum = hweight_long(rx_mask);
 	if (rx_slotnum > 1 || !rx_slotnum) {
 		ret = -EINVAL;
-		dev_err(component->dev, "too many rx slots or zero slot\n");
+		dev_err(dev, "too many rx slots or zero slot\n");
 		goto _set_tdm_err_;
 	}
 
@@ -1936,7 +1945,7 @@ static int rt1011_set_tdm_slot(struct snd_soc_dai *dai,
 	tx_slotnum = hweight_long(tx_mask);
 	if (tx_slotnum > 2 || !tx_slotnum) {
 		ret = -EINVAL;
-		dev_err(component->dev, "too many tx slots or zero slot\n");
+		dev_err(dev, "too many tx slots or zero slot\n");
 		goto _set_tdm_err_;
 	}
 
@@ -1944,7 +1953,7 @@ static int rt1011_set_tdm_slot(struct snd_soc_dai *dai,
 	last_bit = __fls(tx_mask);
 	if (last_bit - first_bit > 1) {
 		ret = -EINVAL;
-		dev_err(component->dev, "tx slot location error\n");
+		dev_err(dev, "tx slot location error\n");
 		goto _set_tdm_err_;
 	}
 
@@ -1999,8 +2008,7 @@ static int rt1011_set_tdm_slot(struct snd_soc_dai *dai,
 			break;
 		default:
 			ret = -EINVAL;
-			dev_dbg(component->dev,
-				"tx slot location error\n");
+			dev_dbg(dev, "tx slot location error\n");
 			goto _set_tdm_err_;
 		}
 	} else if (tx_slotnum == 2) {
@@ -2017,7 +2025,7 @@ static int rt1011_set_tdm_slot(struct snd_soc_dai *dai,
 			break;
 		default:
 			ret = -EINVAL;
-			dev_dbg(component->dev,
+			dev_dbg(dev,
 				"tx slot location should be paired and start from slot0/2/4/6\n");
 			goto _set_tdm_err_;
 		}
@@ -2045,7 +2053,8 @@ _set_tdm_err_:
 
 static int rt1011_probe(struct snd_soc_component *component)
 {
-	struct rt1011_priv *rt1011 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 	int i;
 
 	rt1011->component = component;
@@ -2053,14 +2062,14 @@ static int rt1011_probe(struct snd_soc_component *component)
 	schedule_work(&rt1011->cali_work);
 
 	rt1011->i2s_ref = 0;
-	rt1011->bq_drc_params = devm_kcalloc(component->dev,
+	rt1011->bq_drc_params = devm_kcalloc(dev,
 		RT1011_ADVMODE_NUM, sizeof(struct rt1011_bq_drc_params *),
 		GFP_KERNEL);
 	if (!rt1011->bq_drc_params)
 		return -ENOMEM;
 
 	for (i = 0; i < RT1011_ADVMODE_NUM; i++) {
-		rt1011->bq_drc_params[i] = devm_kcalloc(component->dev,
+		rt1011->bq_drc_params[i] = devm_kcalloc(dev,
 			RT1011_BQ_DRC_NUM, sizeof(struct rt1011_bq_drc_params),
 			GFP_KERNEL);
 		if (!rt1011->bq_drc_params[i])
@@ -2072,7 +2081,8 @@ static int rt1011_probe(struct snd_soc_component *component)
 
 static void rt1011_remove(struct snd_soc_component *component)
 {
-	struct rt1011_priv *rt1011 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 
 	cancel_work_sync(&rt1011->cali_work);
 	rt1011_reset(rt1011->regmap);
@@ -2081,7 +2091,8 @@ static void rt1011_remove(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int rt1011_suspend(struct snd_soc_component *component)
 {
-	struct rt1011_priv *rt1011 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt1011->regmap, true);
 	regcache_mark_dirty(rt1011->regmap);
@@ -2091,7 +2102,8 @@ static int rt1011_suspend(struct snd_soc_component *component)
 
 static int rt1011_resume(struct snd_soc_component *component)
 {
-	struct rt1011_priv *rt1011 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1011_priv *rt1011 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt1011->regmap, false);
 	regcache_sync(rt1011->regmap);
@@ -2380,6 +2392,7 @@ static void rt1011_calibration_work(struct work_struct *work)
 	struct rt1011_priv *rt1011 =
 		container_of(work, struct rt1011_priv, cali_work);
 	struct snd_soc_component *component = rt1011->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int r0_integer, r0_factor, format;
 
 	if (rt1011->r0_calib)
@@ -2412,7 +2425,7 @@ static void rt1011_calibration_work(struct work_struct *work)
 		r0_integer = format / rt1011->r0_reg / 128;
 		r0_factor = ((format / rt1011->r0_reg * 100) / 128)
 						- (r0_integer * 100);
-		dev_info(component->dev, "DP r0 resistance about %d.%02d ohm, reg=0x%X\n",
+		dev_info(dev, "DP r0 resistance about %d.%02d ohm, reg=0x%X\n",
 			r0_integer, r0_factor, rt1011->r0_reg);
 
 		rt1011_r0_load(rt1011);
@@ -2466,7 +2479,7 @@ static int rt1011_i2c_probe(struct i2c_client *i2c)
 
 	INIT_WORK(&rt1011->cali_work, rt1011_calibration_work);
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 		&soc_component_dev_rt1011,
 		rt1011_dai, ARRAY_SIZE(rt1011_dai));
 

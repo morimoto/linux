@@ -218,6 +218,7 @@ static int nau8822_eq_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_bytes_ext *params = (void *)kcontrol->private_value;
+	struct device *dev = snd_soc_component_to_dev(component);
 	void *data;
 	u16 *val, value;
 	int i, reg, ret;
@@ -238,8 +239,7 @@ static int nau8822_eq_put(struct snd_kcontrol *kcontrol,
 		value = be16_to_cpup(tmp);
 		ret = snd_soc_component_write(component, reg + i, value);
 		if (ret) {
-			dev_err(component->dev,
-			    "EQ configuration fail, register: %x ret: %d\n",
+			dev_err(dev, "EQ configuration fail, register: %x ret: %d\n",
 			    reg + i, ret);
 			kfree(data);
 			return ret;
@@ -658,8 +658,9 @@ static int nau8822_calc_pll(unsigned int pll_in, unsigned int fs,
 
 static int nau8822_config_clkdiv(struct snd_soc_dai *dai, int div, int rate)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8822 *nau8822 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8822 *nau8822 = dev_get_drvdata(dev);
 	struct nau8822_pll *pll = &nau8822->pll;
 	int i, sclk, imclk;
 
@@ -677,8 +678,7 @@ static int nau8822_config_clkdiv(struct snd_soc_dai *dai, int div, int rate)
 				break;
 			div = i;
 		}
-		dev_dbg(component->dev, "master clock prescaler %x for fs %d\n",
-			div, rate);
+		dev_dbg(dev, "master clock prescaler %x for fs %d\n", div, rate);
 
 		/* master clock from MCLK and disable PLL */
 		snd_soc_component_update_bits(component,
@@ -692,8 +692,7 @@ static int nau8822_config_clkdiv(struct snd_soc_dai *dai, int div, int rate)
 	case NAU8822_CLK_PLL:
 		/* master clock from PLL and enable PLL */
 		if (pll->mclk_scaler != div) {
-			dev_err(component->dev,
-			"master clock prescaler not meet PLL parameters\n");
+			dev_err(dev, "master clock prescaler not meet PLL parameters\n");
 			return -EINVAL;
 		}
 		snd_soc_component_update_bits(component,
@@ -714,8 +713,9 @@ static int nau8822_config_clkdiv(struct snd_soc_dai *dai, int div, int rate)
 static int nau8822_set_pll(struct snd_soc_dai *dai, int pll_id, int source,
 				unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8822 *nau8822 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8822 *nau8822 = dev_get_drvdata(dev);
 	struct nau8822_pll *pll_param = &nau8822->pll;
 	int ret, fs;
 
@@ -724,7 +724,7 @@ static int nau8822_set_pll(struct snd_soc_dai *dai, int pll_id, int source,
 		return 0;
 
 	if (freq_out == 0) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 		snd_soc_component_update_bits(component,
 			NAU8822_REG_POWER_MANAGEMENT_1, NAU8822_PLL_EN_MASK, NAU8822_PLL_OFF);
 		return 0;
@@ -734,12 +734,11 @@ static int nau8822_set_pll(struct snd_soc_dai *dai, int pll_id, int source,
 
 	ret = nau8822_calc_pll(freq_in, fs, pll_param);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupported input clock %d\n",
-			freq_in);
+		dev_err(dev, "Unsupported input clock %d\n", freq_in);
 		return ret;
 	}
 
-	dev_dbg(component->dev,
+	dev_dbg(dev,
 		"pll_int=%x pll_frac=%x mclk_scaler=%x pre_factor=%x\n",
 		pll_param->pll_int, pll_param->pll_frac,
 		pll_param->mclk_scaler, pll_param->pre_factor);
@@ -775,8 +774,9 @@ static int nau8822_set_pll(struct snd_soc_dai *dai, int pll_id, int source,
 static int nau8822_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 				 unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8822 *nau8822 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8822 *nau8822 = dev_get_drvdata(dev);
 	unsigned long mclk_freq;
 
 	nau8822->div_id = clk_id;
@@ -788,14 +788,14 @@ static int nau8822_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 			int ret = nau8822_set_pll(dai, NAU8822_CLK_MCLK,
 				NAU8822_CLK_MCLK, mclk_freq, freq);
 			if (ret) {
-				dev_err(component->dev, "Failed to set PLL\n");
+				dev_err(dev, "Failed to set PLL\n");
 				return ret;
 			}
 			nau8822->div_id = NAU8822_CLK_PLL;
 		}
 	}
 
-	dev_dbg(component->dev, "master sysclk %dHz, source %s\n", freq,
+	dev_dbg(dev, "master sysclk %dHz, source %s\n", freq,
 		nau8822->div_id == NAU8822_CLK_PLL ? "PLL" : "MCLK");
 
 	return 0;
@@ -803,10 +803,11 @@ static int nau8822_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 static int nau8822_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u16 ctrl1_val = 0, ctrl2_val = 0;
 
-	dev_dbg(component->dev, "%s\n", __func__);
+	dev_dbg(dev, "%s\n", __func__);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -865,8 +866,9 @@ static int nau8822_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8822 *nau8822 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8822 *nau8822 = dev_get_drvdata(dev);
 	int div = 0, val_len = 0, val_rate = 0;
 	unsigned int ctrl_val, bclk_fs, bclk_div;
 
@@ -944,9 +946,10 @@ static int nau8822_hw_params(struct snd_pcm_substream *substream,
 
 static int nau8822_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	dev_dbg(component->dev, "%s: %d\n", __func__, mute);
+	dev_dbg(dev, "%s: %d\n", __func__, mute);
 
 	if (mute)
 		snd_soc_component_update_bits(component,
@@ -961,7 +964,8 @@ static int nau8822_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int nau8822_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct nau8822 *nau8822 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8822 *nau8822 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -974,8 +978,7 @@ static int nau8822_set_bias_level(struct snd_soc_component *component,
 			int ret = clk_prepare_enable(nau8822->mclk);
 
 			if (ret) {
-				dev_err(component->dev,
-					"Failed to enable MCLK: %d\n", ret);
+				dev_err(dev, "Failed to enable MCLK: %d\n", ret);
 				return ret;
 			}
 		}
@@ -1016,7 +1019,7 @@ static int nau8822_set_bias_level(struct snd_soc_component *component,
 		break;
 	}
 
-	dev_dbg(component->dev, "%s: %d\n", __func__, level);
+	dev_dbg(dev, "%s: %d\n", __func__, level);
 
 	return 0;
 }
@@ -1069,7 +1072,8 @@ static struct snd_soc_dai_driver nau8822_dai = {
 
 static int nau8822_suspend(struct snd_soc_component *component)
 {
-	struct nau8822 *nau8822 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8822 *nau8822 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	snd_soc_dapm_force_bias_level(dapm, SND_SOC_BIAS_OFF);
@@ -1082,13 +1086,13 @@ static int nau8822_suspend(struct snd_soc_component *component)
 
 static int nau8822_resume(struct snd_soc_component *component)
 {
-	struct nau8822 *nau8822 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8822 *nau8822 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret = regulator_bulk_enable(NAU8822_NUM_SUPPLIES, nau8822->supplies);
 
 	if (ret) {
-		dev_err(component->dev,
-			"Failed to enable regulators: %d\n", ret);
+		dev_err(dev, "Failed to enable regulators: %d\n", ret);
 		return ret;
 	}
 
@@ -1123,7 +1127,8 @@ static const int update_reg[] = {
 static int nau8822_probe(struct snd_soc_component *component)
 {
 	int i;
-	struct device_node *of_node = component->dev->of_node;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct device_node *of_node = dev->of_node;
 
 	/*
 	 * Set the update bit in all registers, that have one. This way all
@@ -1222,7 +1227,7 @@ static int nau8822_i2c_probe(struct i2c_client *i2c)
 		goto err_reg;
 	}
 
-	ret = devm_snd_soc_register_component(dev, &soc_component_dev_nau8822,
+	ret = devm_snd_soc_component_register(dev, &soc_component_dev_nau8822,
 						&nau8822_dai, 1);
 	if (ret != 0) {
 		dev_err(&i2c->dev, "Failed to register CODEC: %d\n", ret);

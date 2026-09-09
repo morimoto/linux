@@ -228,7 +228,9 @@ static int zl38_software_reset(struct regmap *regmap)
 
 static int zl38_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct zl38_codec_priv *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct zl38_codec_priv *priv = dev_get_drvdata(dev);
 	int err;
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
@@ -267,7 +269,9 @@ static int zl38_hw_params(struct snd_pcm_substream *substream,
 			  struct snd_pcm_hw_params *params,
 			  struct snd_soc_dai *dai)
 {
-	struct zl38_codec_priv *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct zl38_codec_priv *priv = dev_get_drvdata(dev);
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	unsigned int fsrate;
 	int err;
@@ -313,7 +317,9 @@ skip_setup:
 static int zl38_hw_free(struct snd_pcm_substream *substream,
 			struct snd_soc_dai *dai)
 {
-	struct zl38_codec_priv *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct zl38_codec_priv *priv = dev_get_drvdata(dev);
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 
 	priv->is_stream_in_use[tx] = false;
@@ -611,7 +617,7 @@ static int zl38_spi_probe(struct spi_device *spi)
 	if (err)
 		return err;
 
-	return devm_snd_soc_register_component(dev, &zl38_component_dev,
+	return devm_snd_soc_component_register(dev, &zl38_component_dev,
 					       &zl38_dai, 1);
 }
 

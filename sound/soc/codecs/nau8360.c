@@ -359,7 +359,8 @@ static int nau8360_anc_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cp = snd_kcontrol_chip(kcontrol);
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	int ret, value = NAU8360_PEQ_BAND_8;
 
 	mutex_lock(&nau8360->lock);
@@ -406,7 +407,8 @@ static int nau8360_peq_coeff_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *cp = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(cp);
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	struct soc_bytes_ext *params = (void *)kcontrol->private_value;
 	int i, value, reg, ret = 0;
 	__be16 *val = (__be16 *)ucontrol->value.bytes.data;
@@ -449,7 +451,8 @@ static int nau8360_peq_coeff_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *cp = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(cp);
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	struct soc_bytes_ext *params = (void *)kcontrol->private_value;
 	int i, reg, ret = 0;
 	__be16 *data = NULL;
@@ -685,7 +688,8 @@ static inline void nau8360_dsp_enable(struct regmap *regmap, bool enable)
 
 static void nau8360_dsp_switch(struct snd_soc_component *component, bool enable)
 {
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8360->regmap;
 	int value = NAU8360_PEQ_BAND_8;
 
@@ -709,7 +713,8 @@ static int nau8360_dac_mux_put_enum(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int *item = ucontrol->value.enumerated.item;
 	int ret = 0;
@@ -823,8 +828,9 @@ static const struct snd_soc_dapm_route nau8360_dapm_routes[] = {
 
 static int nau8360_startup(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	unsigned int i2s_mask = NAU8360_FRAME_START_MASK | NAU8360_RX_OFFSET_MASK;
 	unsigned int i2s_fmt = NAU8360_FRAME_START_H2L | NAU8360_RX_OFFSET_I2S;
 	int val = 0;
@@ -852,8 +858,9 @@ static int nau8360_startup(struct snd_pcm_substream *substream, struct snd_soc_d
 static void nau8360_shutdown(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	unsigned int tdm_mask;
 
 	tdm_mask = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) ?
@@ -868,8 +875,9 @@ static void nau8360_shutdown(struct snd_pcm_substream *substream,
 static int nau8360_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	unsigned int val_len, val_srate;
 	int dlen = params_width(params);
 
@@ -928,7 +936,7 @@ static int nau8360_hw_params(struct snd_pcm_substream *substream,
 
 static int nau8360_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int ctrl_val, ctrl1_val;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -1127,7 +1135,8 @@ static int nau8360_validate_tdm_slots(struct device *dev, unsigned int mask,
 static void nau8360_enable_tdm_channels(struct snd_soc_component *cp,
 	int rx_slot_used, int tx_slot_used)
 {
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	int i, slot;
 	unsigned int val = 0;
 	bool enable;
@@ -1149,7 +1158,8 @@ static void nau8360_enable_tdm_channels(struct snd_soc_component *cp,
 
 static void nau8360_tdm_apply(struct snd_soc_component *cp, int slot_width)
 {
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	int i, chan_tx;
 
 	for (i = 0; i < NAU8360_TDM_TXN; i++) {
@@ -1169,9 +1179,9 @@ static void nau8360_tdm_apply(struct snd_soc_component *cp, int slot_width)
 static int nau8360_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *cp = dai->component;
-	struct device *dev = cp->dev;
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(cp);
+	struct snd_soc_component *cp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	unsigned int tx_slot_used = 0, rx_slot_used = 0;
 	int ret = 0;
 
@@ -1190,7 +1200,7 @@ static int nau8360_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 		return -EINVAL;
 	}
 
-	ret = nau8360_validate_tdm_slots(cp->dev, rx_mask,
+	ret = nau8360_validate_tdm_slots(dev, rx_mask,
 		nau8360->tdm_rx_func_slot,
 		nau8360_rx_func_names,
 		NAU8360_TDM_RXN, "RX",
@@ -1198,7 +1208,7 @@ static int nau8360_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	if (ret < 0)
 		goto err;
 
-	ret = nau8360_validate_tdm_slots(cp->dev, tx_mask,
+	ret = nau8360_validate_tdm_slots(dev, tx_mask,
 		nau8360->tdm_tx_func_slot,
 		nau8360_tx_func_names,
 		NAU8360_TDM_TXN, "TX",
@@ -1427,7 +1437,8 @@ static int nau8360_dsp_hw_clk(struct nau8360 *nau8360, int source, unsigned int 
 static int nau8360_set_sysclk(struct snd_soc_component *cp,
 	int clk_id, int source, unsigned int freq, int dir)
 {
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(cp);
+	struct device *cdev = snd_soc_component_to_dev(cp);
+	struct nau8360 *nau8360 = dev_get_drvdata(cdev);
 	struct regmap *regmap = nau8360->regmap;
 	struct device *dev = nau8360->dev;
 	static const char * const idtab[] = { "DIG", "ANA", "Internal" };
@@ -1544,7 +1555,8 @@ static int nau8360_calc_pll(struct nau8360 *nau8360)
 static int nau8360_set_pll(struct snd_soc_component *cp, int pll_id, int source,
 	unsigned int freq_in, unsigned int freq_out)
 {
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(cp);
+	struct device *cdev = snd_soc_component_to_dev(cp);
+	struct nau8360 *nau8360 = dev_get_drvdata(cdev);
 	struct device *dev = nau8360->dev;
 	struct nau8360_pll *pll = &nau8360->pll;
 	int ctrl_val, ret;
@@ -1655,7 +1667,8 @@ static inline void nau8360_dsp_software_reset(struct snd_soc_component *componen
 
 static void nau8360_dsp_bootup(struct snd_soc_component *component)
 {
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8360->regmap;
 
 	regmap_update_bits(regmap, NAU8360_R90_HW2_CTL0, NAU8360_HW2_STALL, 0);
@@ -1665,7 +1678,8 @@ static void nau8360_dsp_bootup(struct snd_soc_component *component)
 
 static void nau8360_tdm_function_config(struct snd_soc_component *cp)
 {
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	int i, chan_tx, tdm_chan_len;
 
 	for (i = 0; i < NAU8360_TDM_RXN; i++) {
@@ -1710,7 +1724,8 @@ static void nau8360_load_fw_work(struct work_struct *work)
 static int nau8360_codec_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(component);
+	struct device *cdev = snd_soc_component_to_dev(component);
+	struct nau8360 *nau8360 = dev_get_drvdata(cdev);
 	struct regmap *regmap = nau8360->regmap;
 	struct device *dev = nau8360->dev;
 	int ret, vbat, vsaw_level, vsaw_slope;
@@ -1757,7 +1772,8 @@ err:
 
 static int __maybe_unused nau8360_suspend(struct snd_soc_component *component)
 {
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 
 	cancel_work_sync(&nau8360->load_fw_work);
 
@@ -1773,7 +1789,8 @@ static int __maybe_unused nau8360_suspend(struct snd_soc_component *component)
 
 static int __maybe_unused nau8360_resume(struct snd_soc_component *component)
 {
-	struct nau8360 *nau8360 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8360 *nau8360 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8360->regmap;
 
 	regcache_cache_only(regmap, false);
@@ -2252,7 +2269,7 @@ static int nau8360_i2c_probe(struct i2c_client *i2c)
 	nau8360_print_device_properties(nau8360);
 	nau8360_init_regs(nau8360);
 
-	return devm_snd_soc_register_component(dev, &soc_comp_dev_nau8360, &nau8360_dai, 1);
+	return devm_snd_soc_component_register(dev, &soc_comp_dev_nau8360, &nau8360_dai, 1);
 }
 
 static void nau8360_i2c_remove(struct i2c_client *client)

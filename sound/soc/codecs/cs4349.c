@@ -69,8 +69,9 @@ static bool cs4349_writeable_register(struct device *dev, unsigned int reg)
 static int cs4349_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			      unsigned int format)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs4349_private *cs4349 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4349_private *cs4349 = dev_get_drvdata(dev);
 	unsigned int fmt;
 
 	fmt = format & SND_SOC_DAIFMT_FORMAT_MASK;
@@ -92,8 +93,9 @@ static int cs4349_pcm_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs4349_private *cs4349 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4349_private *cs4349 = dev_get_drvdata(dev);
 	int fmt, ret;
 
 	cs4349->rate = params_rate(params);
@@ -131,7 +133,7 @@ static int cs4349_pcm_hw_params(struct snd_pcm_substream *substream,
 
 static int cs4349_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int reg;
 
 	reg = 0;
@@ -305,7 +307,7 @@ static int cs4349_i2c_probe(struct i2c_client *client)
 
 	i2c_set_clientdata(client, cs4349);
 
-	return devm_snd_soc_register_component(&client->dev,
+	return devm_snd_soc_component_register(&client->dev,
 		&soc_component_dev_cs4349,
 		&cs4349_dai, 1);
 }

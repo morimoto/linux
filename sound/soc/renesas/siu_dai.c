@@ -493,7 +493,9 @@ void siu_free_port(struct siu_port *port_info)
 static int siu_dai_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct siu_info *info = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct siu_info *info = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *rt = substream->runtime;
 	struct siu_port	*port_info = siu_port_info(substream);
 	int ret;
@@ -515,7 +517,9 @@ static int siu_dai_startup(struct snd_pcm_substream *substream,
 static void siu_dai_shutdown(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct siu_info *info = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct siu_info *info = dev_get_drvdata(dev);
 	struct siu_port	*port_info = siu_port_info(substream);
 
 	dev_dbg(substream->pcm->card->dev, "%s: port=%d@%p\n", __func__,
@@ -540,7 +544,9 @@ static void siu_dai_shutdown(struct snd_pcm_substream *substream,
 static int siu_dai_prepare(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct siu_info *info = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct siu_info *info = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *rt = substream->runtime;
 	struct siu_port *port_info = siu_port_info(substream);
 	struct siu_stream *siu_stream;
@@ -589,11 +595,13 @@ fail:
 static int siu_dai_set_fmt(struct snd_soc_dai *dai,
 			   unsigned int fmt)
 {
-	struct siu_info *info = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct siu_info *info = dev_get_drvdata(dev);
 	u32 __iomem *base = info->reg;
 	u32 ifctl;
 
-	dev_dbg(dai->dev, "%s: fmt 0x%x on port %d\n",
+	dev_dbg(dev, "%s: fmt 0x%x on port %d\n",
 		__func__, fmt, info->port_id);
 
 	if (info->port_id < 0)
@@ -625,6 +633,8 @@ static int siu_dai_set_fmt(struct snd_soc_dai *dai,
 static int siu_dai_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 			      unsigned int freq, int dir)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct clk *siu_clk, *parent_clk;
 	char *siu_name, *parent_name;
 	int ret;
@@ -632,7 +642,7 @@ static int siu_dai_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 	if (dir != SND_SOC_CLOCK_IN)
 		return -EINVAL;
 
-	dev_dbg(dai->dev, "%s: using clock %d\n", __func__, clk_id);
+	dev_dbg(dev, "%s: using clock %d\n", __func__, clk_id);
 
 	switch (clk_id) {
 	case SIU_CLKA_PLL:
@@ -655,29 +665,29 @@ static int siu_dai_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 		return -EINVAL;
 	}
 
-	siu_clk = clk_get(dai->dev, siu_name);
+	siu_clk = clk_get(dev, siu_name);
 	if (IS_ERR(siu_clk)) {
-		dev_err(dai->dev, "%s: cannot get a SIU clock: %ld\n", __func__,
+		dev_err(dev, "%s: cannot get a SIU clock: %ld\n", __func__,
 			PTR_ERR(siu_clk));
 		return PTR_ERR(siu_clk);
 	}
 
-	parent_clk = clk_get(dai->dev, parent_name);
+	parent_clk = clk_get(dev, parent_name);
 	if (IS_ERR(parent_clk)) {
 		ret = PTR_ERR(parent_clk);
-		dev_err(dai->dev, "cannot get a SIU clock parent: %d\n", ret);
+		dev_err(dev, "cannot get a SIU clock parent: %d\n", ret);
 		goto epclkget;
 	}
 
 	ret = clk_set_parent(siu_clk, parent_clk);
 	if (ret < 0) {
-		dev_err(dai->dev, "cannot reparent the SIU clock: %d\n", ret);
+		dev_err(dev, "cannot reparent the SIU clock: %d\n", ret);
 		goto eclksetp;
 	}
 
 	ret = clk_set_rate(siu_clk, freq);
 	if (ret < 0)
-		dev_err(dai->dev, "cannot set SIU clock rate: %d\n", ret);
+		dev_err(dev, "cannot set SIU clock rate: %d\n", ret);
 
 	/* TODO: when clkdev gets reference counting we'll move these to siu_dai_shutdown() */
 eclksetp:
@@ -772,7 +782,7 @@ static int siu_probe(struct platform_device *pdev)
 	dev_set_drvdata(&pdev->dev, info);
 
 	/* register using ARRAY version so we can keep dai name */
-	ret = devm_snd_soc_register_component(&pdev->dev, &siu_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &siu_component,
 					      &siu_i2s_dai, 1);
 	if (ret < 0)
 		return ret;

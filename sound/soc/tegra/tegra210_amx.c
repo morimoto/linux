@@ -99,7 +99,9 @@ static void tegra210_amx_write_map_ram(struct tegra210_amx *amx)
 static int tegra210_amx_startup(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct tegra210_amx *amx = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_amx *amx = dev_get_drvdata(dev);
 	unsigned int val;
 	int err;
 
@@ -107,7 +109,7 @@ static int tegra210_amx_startup(struct snd_pcm_substream *substream,
 	err = regmap_read_poll_timeout(amx->regmap, TEGRA210_AMX_STATUS, val,
 				       !(val & 0x1), 10, 10000);
 	if (err < 0) {
-		dev_err(dai->dev, "failed to stop AMX, err = %d\n", err);
+		dev_err(dev, "failed to stop AMX, err = %d\n", err);
 		return err;
 	}
 
@@ -124,7 +126,7 @@ static int tegra210_amx_startup(struct snd_pcm_substream *substream,
 	err = regmap_read_poll_timeout(amx->regmap, TEGRA210_AMX_SOFT_RESET,
 				       val, !(val & 0x1), 10, 10000);
 	if (err < 0) {
-		dev_err(dai->dev, "failed to reset AMX, err = %d\n", err);
+		dev_err(dev, "failed to reset AMX, err = %d\n", err);
 		return err;
 	}
 
@@ -162,7 +164,9 @@ static int tegra210_amx_set_audio_cif(struct snd_soc_dai *dai,
 				      struct snd_pcm_hw_params *params,
 				      unsigned int reg)
 {
-	struct tegra210_amx *amx = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_amx *amx = dev_get_drvdata(dev);
 	int channels, audio_bits;
 	struct tegra_cif_conf cif_conf;
 
@@ -182,7 +186,7 @@ static int tegra210_amx_set_audio_cif(struct snd_soc_dai *dai,
 		audio_bits = TEGRA_ACIF_BITS_32;
 		break;
 	default:
-		dev_err(dai->dev, "unsupported format: %d\n",
+		dev_err(dev, "unsupported format: %d\n",
 			params_format(params));
 		return -EINVAL;
 	}
@@ -204,18 +208,21 @@ static int tegra210_amx_in_hw_params(struct snd_pcm_substream *substream,
 				     struct snd_pcm_hw_params *params,
 				     struct snd_soc_dai *dai)
 {
-	struct tegra210_amx *amx = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_amx *amx = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
 	if (amx->soc_data->auto_disable) {
 		regmap_write(amx->regmap,
-			     AMX_CH_REG(dai->id, TEGRA194_AMX_RX1_FRAME_PERIOD +
+			     AMX_CH_REG(dai_id, TEGRA194_AMX_RX1_FRAME_PERIOD +
 				amx->soc_data->reg_offset),
 			     TEGRA194_MAX_FRAME_IDLE_COUNT);
 		regmap_write(amx->regmap, TEGRA210_AMX_CYA + amx->soc_data->reg_offset, 1);
 	}
 
 	return tegra210_amx_set_audio_cif(dai, params,
-			AMX_CH_REG(dai->id, TEGRA210_AMX_RX1_CIF_CTRL));
+			AMX_CH_REG(dai_id, TEGRA210_AMX_RX1_CIF_CTRL));
 }
 
 static int tegra210_amx_out_hw_params(struct snd_pcm_substream *substream,
@@ -230,9 +237,10 @@ static int tegra210_amx_get_byte_map(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
-	struct tegra210_amx *amx = snd_soc_component_get_drvdata(cmpnt);
+	struct tegra210_amx *amx = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = amx->map[mc->reg];
 
@@ -245,7 +253,8 @@ static int tegra210_amx_put_byte_map(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_amx *amx = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_amx *amx = dev_get_drvdata(dev);
 	unsigned int value = ucontrol->value.integer.value[0];
 
 	/*
@@ -503,10 +512,11 @@ static struct snd_kcontrol_new tegra264_amx_controls[] = {
 
 static int tegra210_amx_component_probe(struct snd_soc_component *component)
 {
-	struct tegra210_amx *amx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_amx *amx = dev_get_drvdata(dev);
 
 	if (amx->soc_data->num_controls)
-		return snd_soc_add_component_controls(component, amx->soc_data->controls,
+		return snd_soc_component_add_controls(component, amx->soc_data->controls,
 						      amx->soc_data->num_controls);
 
 	return 0;
@@ -764,7 +774,7 @@ static int tegra210_amx_platform_probe(struct platform_device *pdev)
 	tegra210_amx_dais[TEGRA_AMX_OUT_DAI_ID].capture.channels_max =
 			amx->soc_data->max_ch;
 
-	err = devm_snd_soc_register_component(dev, &tegra210_amx_cmpnt,
+	err = devm_snd_soc_component_register(dev, &tegra210_amx_cmpnt,
 					      tegra210_amx_dais,
 					      ARRAY_SIZE(tegra210_amx_dais));
 	if (err)

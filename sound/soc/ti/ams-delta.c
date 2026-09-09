@@ -301,6 +301,7 @@ static int cx81801_open(struct tty_struct *tty)
 static void cx81801_close(struct tty_struct *tty)
 {
 	struct snd_soc_component *component = cx20442_codec.component;
+	struct snd_soc_card *card;
 	struct snd_soc_dapm_context *dapm;
 
 	if (WARN_ON(tty->disc_data != &cx20442_codec))
@@ -316,7 +317,8 @@ static void cx81801_close(struct tty_struct *tty)
 
 	v253_ops.close(tty);
 
-	dapm = snd_soc_card_to_dapm(component->card);
+	card = snd_soc_component_to_card(component);
+	dapm = snd_soc_card_to_dapm(card);
 
 	/* Revert back to default audio input/output constellation */
 	snd_soc_dapm_mutex_lock(dapm);
@@ -343,6 +345,7 @@ static void cx81801_receive(struct tty_struct *tty, const u8 *cp, const u8 *fp,
 			    size_t count)
 {
 	struct snd_soc_component *component = cx20442_codec.component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	const unsigned char *c;
 	int apply, ret;
 
@@ -362,7 +365,7 @@ static void cx81801_receive(struct tty_struct *tty, const u8 *cp, const u8 *fp,
 					ARRAY_SIZE(ams_delta_hook_switch_pins),
 					ams_delta_hook_switch_pins);
 		if (ret)
-			dev_warn(component->dev,
+			dev_warn(dev,
 				"Failed to link hook switch to DAPM pins, "
 				"will continue with hook switch unlinked.\n");
 
@@ -464,42 +467,43 @@ static void ams_delta_shutdown(struct snd_pcm_substream *substream)
 static int ams_delta_cx20442_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_dai_driver *codec_driver = snd_soc_dai_to_driver(codec_dai);
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 	/* Codec is ready, now add/activate board specific controls */
 
 	/* Store a pointer to the codec structure for tty ldisc use */
-	cx20442_codec.component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	cx20442_codec.component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	/* Add hook switch - can be used to control the codec from userspace
 	 * even if line discipline fails */
 	ret = snd_soc_card_jack_new_pins(card, "hook_switch", SND_JACK_HEADSET,
 					 &ams_delta_hook_switch, NULL, 0);
 	if (ret)
-		dev_warn(card->dev,
+		dev_warn(dev,
 				"Failed to allocate resources for hook switch, "
 				"will continue without one.\n");
 	else {
-		ret = snd_soc_jack_add_gpiods(card->dev, &ams_delta_hook_switch,
+		ret = snd_soc_jack_add_gpiods(dev, &ams_delta_hook_switch,
 					ARRAY_SIZE(ams_delta_hook_switch_gpios),
 					ams_delta_hook_switch_gpios);
 		if (ret)
-			dev_warn(card->dev,
+			dev_warn(dev,
 				"Failed to set up hook switch GPIO line, "
 				"will continue with hook switch inactive.\n");
 	}
 
-	gpiod_modem_codec = devm_gpiod_get(card->dev, "modem_codec",
-					   GPIOD_OUT_HIGH);
+	gpiod_modem_codec = devm_gpiod_get(dev, "modem_codec", GPIOD_OUT_HIGH);
 	if (IS_ERR(gpiod_modem_codec)) {
-		dev_warn(card->dev, "Failed to obtain modem_codec GPIO\n");
+		dev_warn(dev, "Failed to obtain modem_codec GPIO\n");
 		return 0;
 	}
 
 	/* Set up digital mute if not provided by the codec */
-	if (!codec_dai->driver->ops) {
-		codec_dai->driver->ops = &ams_delta_dai_ops;
+	if (!codec_driver->ops) {
+		codec_driver->ops = &ams_delta_dai_ops;
 	} else {
 		ams_delta_ops.startup = ams_delta_startup;
 		ams_delta_ops.shutdown = ams_delta_shutdown;
@@ -508,7 +512,7 @@ static int ams_delta_cx20442_init(struct snd_soc_pcm_runtime *rtd)
 	/* Register optional line discipline for over the modem control */
 	ret = tty_register_ldisc(&cx81801_ops);
 	if (ret) {
-		dev_warn(card->dev,
+		dev_warn(dev,
 				"Failed to register line discipline, "
 				"will continue without any controls.\n");
 		return 0;

@@ -334,7 +334,8 @@ int wm_adsp_fw_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
-	struct wm_adsp *dsp = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_adsp *dsp = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = dsp[e->shift_l].fw;
 
@@ -347,7 +348,8 @@ int wm_adsp_fw_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
-	struct wm_adsp *dsp = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_adsp *dsp = dev_get_drvdata(dev);
 
 	if (ucontrol->value.enumerated.item[0] == dsp[e->shift_l].fw)
 		return 0;
@@ -576,7 +578,7 @@ static void wm_adsp_ctl_work(struct work_struct *work)
 		break;
 	}
 
-	snd_soc_add_component_controls(dsp->component, kcontrol, 1);
+	snd_soc_component_add_controls(dsp->component, kcontrol, 1);
 
 	kfree(kcontrol);
 }
@@ -619,11 +621,13 @@ int wm_adsp_control_add(struct cs_dsp_coeff_ctl *cs_ctl)
 	}
 
 	if (cs_ctl->subname) {
+		const char *name_prefix = snd_soc_component_name_prefix(dsp->component);
+
 		int avail = SNDRV_CTL_ELEM_ID_NAME_MAXLEN - ret - 2;
 		int skip = 0;
 
-		if (dsp->component->name_prefix)
-			avail -= strlen(dsp->component->name_prefix) + 1;
+		if (name_prefix)
+			avail -= strlen(name_prefix) + 1;
 
 		/* Truncate the subname from the start if it is too long */
 		if (cs_ctl->subname_len > avail)
@@ -794,7 +798,7 @@ VISIBLE_IF_KUNIT int wm_adsp_request_firmware_files(struct wm_adsp *dsp,
 						    struct wm_adsp_fw_files *fw)
 {
 	const char *system_name = dsp->system_name;
-	const char *suffix = dsp->component->name_prefix;
+	const char *suffix = snd_soc_component_name_prefix(dsp->component);
 	bool require_bin_suffix = false;
 	int ret = 0;
 
@@ -912,7 +916,8 @@ int wm_adsp1_event(struct snd_soc_dapm_widget *w,
 		   int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm_adsp *dsps = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_adsp *dsps = dev_get_drvdata(dev);
 	struct wm_adsp *dsp = &dsps[w->shift];
 	struct wm_adsp_fw_files fw = { 0 };
 	int ret = 0;
@@ -946,7 +951,8 @@ EXPORT_SYMBOL_GPL(wm_adsp1_event);
 int wm_adsp2_set_dspclk(struct snd_soc_dapm_widget *w, unsigned int freq)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm_adsp *dsps = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_adsp *dsps = dev_get_drvdata(dev);
 	struct wm_adsp *dsp = &dsps[w->shift];
 
 	return cs_dsp_set_dspclk(&dsp->cs_dsp, freq);
@@ -957,7 +963,8 @@ int wm_adsp2_preloader_get(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm_adsp *dsps = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_adsp *dsps = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct wm_adsp *dsp = &dsps[mc->shift - 1];
@@ -972,7 +979,8 @@ int wm_adsp2_preloader_put(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm_adsp *dsps = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_adsp *dsps = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
@@ -1051,7 +1059,8 @@ int wm_adsp_early_event(struct snd_soc_dapm_widget *w,
 			struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm_adsp *dsps = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_adsp *dsps = dev_get_drvdata(dev);
 	struct wm_adsp *dsp = &dsps[w->shift];
 
 	switch (event) {
@@ -1123,7 +1132,8 @@ int wm_adsp_event(struct snd_soc_dapm_widget *w,
 		  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm_adsp *dsps = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_adsp *dsps = dev_get_drvdata(dev);
 	struct wm_adsp *dsp = &dsps[w->shift];
 
 	switch (event) {
@@ -1148,7 +1158,8 @@ int wm_adsp2_component_probe(struct wm_adsp *dsp, struct snd_soc_component *comp
 		snd_soc_dapm_disable_pin(dapm, preload);
 	}
 
-	cs_dsp_init_debugfs(&dsp->cs_dsp, component->debugfs_root);
+	cs_dsp_init_debugfs(&dsp->cs_dsp,
+			    snd_soc_component_to_debugfs_root(component));
 
 	dsp->component = component;
 
@@ -1258,25 +1269,27 @@ int wm_adsp_compr_open(struct wm_adsp *dsp, struct snd_compr_stream *stream)
 {
 	struct wm_adsp_compr *compr, *tmp;
 	struct snd_soc_pcm_runtime *rtd = stream->private_data;
+	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
+	const char *dai_name = snd_soc_dai_name(dai);
 
 	guard(mutex)(&dsp->cs_dsp.pwr_lock);
 
 	if (wm_adsp_fw[dsp->fw].num_caps == 0) {
 		adsp_err(dsp, "%s: Firmware does not support compressed API\n",
-			 snd_soc_rtd_to_codec(rtd, 0)->name);
+			 dai_name);
 		return -ENXIO;
 	}
 
 	if (wm_adsp_fw[dsp->fw].compr_direction != stream->direction) {
 		adsp_err(dsp, "%s: Firmware does not support stream direction\n",
-			 snd_soc_rtd_to_codec(rtd, 0)->name);
+			 dai_name);
 		return -EINVAL;
 	}
 
 	list_for_each_entry(tmp, &dsp->compr_list, list) {
-		if (!strcmp(tmp->name, snd_soc_rtd_to_codec(rtd, 0)->name)) {
+		if (!strcmp(tmp->name, dai_name)) {
 			adsp_err(dsp, "%s: Only a single stream supported per dai\n",
-				 snd_soc_rtd_to_codec(rtd, 0)->name);
+				 dai_name);
 			return -EBUSY;
 		}
 	}
@@ -1287,7 +1300,7 @@ int wm_adsp_compr_open(struct wm_adsp *dsp, struct snd_compr_stream *stream)
 
 	compr->dsp = dsp;
 	compr->stream = stream;
-	compr->name = snd_soc_rtd_to_codec(rtd, 0)->name;
+	compr->name = dai_name;
 
 	list_add_tail(&compr->list, &dsp->compr_list);
 

@@ -118,7 +118,9 @@ static const struct snd_soc_dapm_route mtk_dai_etdm_routes[] = {
 static int mtk_dai_etdm_startup(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt7986_afe_private *afe_priv = afe->platform_priv;
 	int ret;
 
@@ -135,7 +137,9 @@ static int mtk_dai_etdm_startup(struct snd_pcm_substream *substream,
 static void mtk_dai_etdm_shutdown(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt7986_afe_private *afe_priv = afe->platform_priv;
 
 	regmap_update_bits(afe->regmap, AUDIO_TOP_CON2, CLK_OUT5_PDN_MASK,
@@ -165,8 +169,9 @@ static int mtk_dai_etdm_config(struct mtk_base_afe *afe,
 			       struct snd_soc_dai *dai,
 			       int stream)
 {
+	int dai_id = snd_soc_dai_id(dai);
 	struct mt7986_afe_private *afe_priv = afe->platform_priv;
-	struct mtk_dai_etdm_priv *etdm_data = afe_priv->dai_priv[dai->id];
+	struct mtk_dai_etdm_priv *etdm_data = afe_priv->dai_priv[dai_id];
 	unsigned int rate = params_rate(params);
 	unsigned int etdm_rate = mt7986_etdm_rate_transform(afe->dev, rate);
 	unsigned int afe_rate = mt7986_afe_rate_transform(afe->dev, rate);
@@ -237,8 +242,10 @@ static int mtk_dai_etdm_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
 
 	switch (rate) {
 	case 8000:
@@ -263,9 +270,11 @@ static int mtk_dai_etdm_hw_params(struct snd_pcm_substream *substream,
 static int mtk_dai_etdm_trigger(struct snd_pcm_substream *substream, int cmd,
 				struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
-	dev_dbg(afe->dev, "%s(), cmd %d, dai id %d\n", __func__, cmd, dai->id);
+	dev_dbg(afe->dev, "%s(), cmd %d, dai id %d\n", __func__, cmd, snd_soc_dai_id(dai));
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 	case SNDRV_PCM_TRIGGER_RESUME:
@@ -290,17 +299,20 @@ static int mtk_dai_etdm_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int mtk_dai_etdm_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt7986_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_etdm_priv *etdm_data;
+	int id = snd_soc_dai_id(dai);
 	void *priv_data;
 
-	switch (dai->id) {
+	switch (id) {
 	case MT7986_DAI_ETDM:
 		break;
 	default:
 		dev_warn(afe->dev, "%s(), id %d not support\n",
-			 __func__, dai->id);
+			 __func__, id);
 		return -EINVAL;
 	}
 
@@ -309,8 +321,8 @@ static int mtk_dai_etdm_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	if (!priv_data)
 		return -ENOMEM;
 
-	afe_priv->dai_priv[dai->id] = priv_data;
-	etdm_data = afe_priv->dai_priv[dai->id];
+	afe_priv->dai_priv[id] = priv_data;
+	etdm_data = afe_priv->dai_priv[id];
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:

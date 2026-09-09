@@ -381,9 +381,9 @@ static const struct snd_soc_dapm_route ak4613_intercon[] = {
 static void ak4613_dai_shutdown(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4613_priv *priv = snd_soc_component_get_drvdata(component);
-	struct device *dev = component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4613_priv *priv = dev_get_drvdata(dev);
 
 	guard(mutex)(&priv->lock);
 	priv->cnt--;
@@ -504,8 +504,9 @@ static void ak4613_hw_constraints(struct ak4613_priv *priv,
 static int ak4613_dai_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4613_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4613_priv *priv = dev_get_drvdata(dev);
 
 	guard(mutex)(&priv->lock);
 	ak4613_hw_constraints(priv, substream);
@@ -517,8 +518,9 @@ static int ak4613_dai_startup(struct snd_pcm_substream *substream,
 static int ak4613_dai_set_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct ak4613_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4613_priv *priv = dev_get_drvdata(dev);
 
 	priv->sysclk = freq;
 
@@ -527,8 +529,9 @@ static int ak4613_dai_set_sysclk(struct snd_soc_dai *codec_dai,
 
 static int ak4613_dai_set_fmt(struct snd_soc_dai *dai, unsigned int format)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4613_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4613_priv *priv = dev_get_drvdata(dev);
 	unsigned int fmt;
 
 	fmt = format & SND_SOC_DAIFMT_FORMAT_MASK;
@@ -561,9 +564,9 @@ static int ak4613_dai_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4613_priv *priv = snd_soc_component_get_drvdata(component);
-	struct device *dev = component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4613_priv *priv = dev_get_drvdata(dev);
 	unsigned int width = params_width(params);
 	unsigned int fmt = priv->fmt;
 	unsigned int rate;
@@ -706,8 +709,9 @@ static void ak4613_dummy_write(struct work_struct *work)
 static int ak4613_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 			      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4613_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4613_priv *priv = dev_get_drvdata(dev);
 
 	/*
 	 * FIXME
@@ -792,7 +796,8 @@ static struct snd_soc_dai_driver ak4613_dai = {
 
 static int ak4613_suspend(struct snd_soc_component *component)
 {
-	struct regmap *regmap = dev_get_regmap(component->dev, NULL);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct regmap *regmap = dev_get_regmap(dev, NULL);
 
 	regcache_cache_only(regmap, true);
 	regcache_mark_dirty(regmap);
@@ -801,7 +806,8 @@ static int ak4613_suspend(struct snd_soc_component *component)
 
 static int ak4613_resume(struct snd_soc_component *component)
 {
-	struct regmap *regmap = dev_get_regmap(component->dev, NULL);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct regmap *regmap = dev_get_regmap(dev, NULL);
 
 	regcache_cache_only(regmap, false);
 	return regcache_sync(regmap);
@@ -899,7 +905,7 @@ static int ak4613_i2c_probe(struct i2c_client *i2c)
 	if (IS_ERR(regmap))
 		return PTR_ERR(regmap);
 
-	return devm_snd_soc_register_component(dev, &soc_component_dev_ak4613,
+	return devm_snd_soc_component_register(dev, &soc_component_dev_ak4613,
 				      &ak4613_dai, 1);
 }
 

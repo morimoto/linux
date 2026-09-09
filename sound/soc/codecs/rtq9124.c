@@ -165,7 +165,9 @@ static const struct snd_soc_component_driver rtq9124_comp_driver = {
 
 static int rtq9124_dai_set_format(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct rtq9124_priv *rtq9124 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rtq9124_priv *rtq9124 = dev_get_drvdata(dev);
 
 	rtq9124->dai_fmt = fmt;
 	return 0;
@@ -174,9 +176,9 @@ static int rtq9124_dai_set_format(struct snd_soc_dai *dai, unsigned int fmt)
 static int rtq9124_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				    unsigned int rx_mask, int slots, int slot_width)
 {
-	struct rtq9124_priv *rtq9124 = snd_soc_dai_get_drvdata(dai);
-	struct snd_soc_component *comp = dai->component;
-	struct device *dev = dai->dev;
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct rtq9124_priv *rtq9124 = dev_get_drvdata(dev);
 	unsigned int byte_loc, i;
 
 	dev_dbg(dev, "(slots, slot_width) = (%d, %d), (txmask, rxmask) = 0x%x, 0x%x\n", slots,
@@ -216,10 +218,10 @@ static int rtq9124_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mas
 static int rtq9124_dai_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *param, struct snd_soc_dai *dai)
 {
-	struct rtq9124_priv *rtq9124 = snd_soc_dai_get_drvdata(dai);
-	struct snd_soc_component *comp = dai->component;
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct rtq9124_priv *rtq9124 = dev_get_drvdata(dev);
 	unsigned int fmtval, width, slot_width, bitrate;
-	struct device *dev = dai->dev;
 	unsigned int audfmt, audbit;
 
 	fmtval = FIELD_GET(SND_SOC_DAIFMT_FORMAT_MASK, rtq9124->dai_fmt);
@@ -486,7 +488,7 @@ static int rtq9124_probe(struct i2c_client *i2c)
 	if (ret)
 		return dev_err_probe(dev, ret, "Failed to enable pm runtime\n");
 
-	return devm_snd_soc_register_component(dev, &rtq9124_comp_driver, &rtq9124_dai_driver, 1);
+	return devm_snd_soc_component_register(dev, &rtq9124_comp_driver, &rtq9124_dai_driver, 1);
 }
 
 #ifdef CONFIG_PM

@@ -47,8 +47,8 @@ static void tas2780_reset(struct tas2780_priv *tas2780)
 #ifdef CONFIG_PM
 static int tas2780_codec_suspend(struct snd_soc_component *component)
 {
-	struct tas2780_priv *tas2780 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2780_priv *tas2780 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	ret = snd_soc_component_update_bits(component, TAS2780_PWR_CTRL,
@@ -67,8 +67,8 @@ err:
 
 static int tas2780_codec_resume(struct snd_soc_component *component)
 {
-	struct tas2780_priv *tas2780 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2780_priv *tas2780 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = snd_soc_component_update_bits(component, TAS2780_PWR_CTRL,
@@ -127,9 +127,9 @@ static const struct snd_soc_dapm_route tas2780_audio_map[] = {
 
 static int tas2780_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2780_priv *tas2780 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2780_priv *tas2780 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	ret = snd_soc_component_update_bits(component, TAS2780_PWR_CTRL,
@@ -277,9 +277,9 @@ err:
 static int tas2780_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2780_priv *tas2780 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2780_priv *tas2780 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = tas2780_set_bitwidth(tas2780, params_format(params));
@@ -291,9 +291,9 @@ static int tas2780_hw_params(struct snd_pcm_substream *substream,
 
 static int tas2780_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2780_priv *tas2780 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2780_priv *tas2780 = dev_get_drvdata(dev);
 	u8 tdm_rx_start_slot = 0, asi_cfg_1 = 0;
 	int iface;
 	int ret = 0;
@@ -363,9 +363,9 @@ static int tas2780_set_dai_tdm_slot(struct snd_soc_dai *dai,
 				unsigned int rx_mask,
 				int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2780_priv *tas2780 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2780_priv *tas2780 = dev_get_drvdata(dev);
 	int left_slot, right_slot;
 	int slots_cfg;
 	int slot_size;
@@ -490,8 +490,8 @@ static struct snd_soc_dai_driver tas2780_dai_driver[] = {
 
 static int tas2780_codec_probe(struct snd_soc_component *component)
 {
-	struct tas2780_priv *tas2780 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2780_priv *tas2780 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	tas2780->component = component;
@@ -625,7 +625,7 @@ static int tas2780_i2c_probe(struct i2c_client *client)
 		}
 	}
 
-	return devm_snd_soc_register_component(tas2780->dev,
+	return devm_snd_soc_component_register(tas2780->dev,
 		&soc_component_driver_tas2780, tas2780_dai_driver,
 		ARRAY_SIZE(tas2780_dai_driver));
 }

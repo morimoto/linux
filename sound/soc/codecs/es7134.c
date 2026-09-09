@@ -38,6 +38,8 @@ static int es7134_check_mclk(struct snd_soc_dai *dai,
 			     struct es7134_data *priv,
 			     unsigned int rate)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
 	unsigned int mfs = priv->mclk / rate;
 	int i, j;
 
@@ -52,13 +54,13 @@ static int es7134_check_mclk(struct snd_soc_dai *dai,
 				return 0;
 		}
 
-		dev_err(dai->dev, "unsupported mclk_fs %u for rate %u\n",
+		dev_err(dai_dev, "unsupported mclk_fs %u for rate %u\n",
 			mfs, rate);
 		return -EINVAL;
 	}
 
 	/* should not happen */
-	dev_err(dai->dev, "unsupported rate: %u\n", rate);
+	dev_err(dai_dev, "unsupported rate: %u\n", rate);
 	return -EINVAL;
 }
 
@@ -66,7 +68,9 @@ static int es7134_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct es7134_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es7134_data *priv = dev_get_drvdata(dev);
 
 	/* mclk has not been provided, assume it is OK */
 	if (!priv->mclk)
@@ -78,7 +82,9 @@ static int es7134_hw_params(struct snd_pcm_substream *substream,
 static int es7134_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 			     unsigned int freq, int dir)
 {
-	struct es7134_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es7134_data *priv = dev_get_drvdata(dev);
 
 	if (dir == SND_SOC_CLOCK_IN && clk_id == 0) {
 		priv->mclk = freq;
@@ -90,12 +96,15 @@ static int es7134_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 static int es7134_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+
 	fmt &= (SND_SOC_DAIFMT_FORMAT_MASK | SND_SOC_DAIFMT_INV_MASK |
 		SND_SOC_DAIFMT_MASTER_MASK);
 
 	if (fmt != (SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
 		    SND_SOC_DAIFMT_CBC_CFC)) {
-		dev_err(codec_dai->dev, "Invalid DAI format\n");
+		dev_err(dai_dev, "Invalid DAI format\n");
 		return -EINVAL;
 	}
 
@@ -105,7 +114,8 @@ static int es7134_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 static int es7134_component_probe(struct snd_soc_component *c)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(c);
-	struct es7134_data *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es7134_data *priv = dev_get_drvdata(dev);
 	const struct es7134_chip *chip = priv->chip;
 	int ret;
 
@@ -113,7 +123,7 @@ static int es7134_component_probe(struct snd_soc_component *c)
 		ret = snd_soc_dapm_new_controls(dapm, chip->extra_widgets,
 						chip->extra_widget_num);
 		if (ret) {
-			dev_err(c->dev, "failed to add extra widgets\n");
+			dev_err(dev, "failed to add extra widgets\n");
 			return ret;
 		}
 	}
@@ -122,7 +132,7 @@ static int es7134_component_probe(struct snd_soc_component *c)
 		ret = snd_soc_dapm_add_routes(dapm, chip->extra_routes,
 					      chip->extra_route_num);
 		if (ret) {
-			dev_err(c->dev, "failed to add extra routes\n");
+			dev_err(dev, "failed to add extra routes\n");
 			return ret;
 		}
 	}
@@ -292,7 +302,7 @@ static int es7134_probe(struct platform_device *pdev)
 		return -ENODEV;
 	}
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 				      &es7134_component_driver,
 				      priv->chip->dai_drv, 1);
 }

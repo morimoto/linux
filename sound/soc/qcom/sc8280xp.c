@@ -110,7 +110,7 @@ static int sc8280xp_tdm_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sc8280xp_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct sc8280xp_snd_data *data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai;
 	struct qcom_snd_tdm_slot_cfg cpu_cfg;
@@ -163,7 +163,7 @@ static int sc8280xp_tdm_hw_params(struct snd_pcm_substream *substream,
 						     SND_SOC_CLOCK_IN);
 			if (ret && ret != -ENOTSUPP) {
 				dev_err(rtd->dev, "%s: failed to set codec sysclk on %s: %d\n",
-					__func__, codec_dai->name, ret);
+					__func__, snd_soc_dai_name(codec_dai), ret);
 				return ret;
 			}
 		}
@@ -174,13 +174,14 @@ static int sc8280xp_tdm_hw_params(struct snd_pcm_substream *substream,
 
 static int sc8280xp_snd_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct sc8280xp_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct sc8280xp_snd_data *data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_jack *dp_jack  = NULL;
+	int cpu_id = snd_soc_dai_id(cpu_dai);
 	int dp_pcm_id = 0;
 
-	switch (cpu_dai->id) {
+	switch (cpu_id) {
 	case WSA_CODEC_DMA_RX_0:
 	case WSA_CODEC_DMA_RX_1:
 		/*
@@ -199,7 +200,7 @@ static int sc8280xp_snd_init(struct snd_soc_pcm_runtime *rtd)
 		dp_jack = &data->dp_jack[dp_pcm_id];
 		break;
 	case DISPLAY_PORT_RX_1 ... DISPLAY_PORT_RX_7:
-		dp_pcm_id = cpu_dai->id - DISPLAY_PORT_RX_1 + 1;
+		dp_pcm_id = cpu_id - DISPLAY_PORT_RX_1 + 1;
 		dp_jack = &data->dp_jack[dp_pcm_id];
 		break;
 	default:
@@ -229,7 +230,7 @@ static int sc8280xp_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 	snd_mask_set_format(fmt, SNDRV_PCM_FORMAT_S16_LE);
 	channels->min = 2;
 	channels->max = 2;
-	switch (cpu_dai->id) {
+	switch (snd_soc_dai_id(cpu_dai)) {
 	case TX_CODEC_DMA_TX_0:
 	case TX_CODEC_DMA_TX_1:
 	case TX_CODEC_DMA_TX_2:
@@ -250,12 +251,12 @@ static int sc8280xp_snd_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct sc8280xp_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct sc8280xp_snd_data *data = snd_soc_card_to_priv(rtd->card);
 	int mclk_freq = sc8280xp_get_mclk_freq(params);
 	int bclk_freq = sc8280xp_get_bclk_freq(params);
 	int ret;
 
-	switch (cpu_dai->id) {
+	switch (snd_soc_dai_id(cpu_dai)) {
 	case PRIMARY_MI2S_RX ... QUATERNARY_MI2S_TX:
 	case QUINARY_MI2S_RX ... QUINARY_MI2S_TX:
 	case SENARY_MI2S_RX ... SENARY_MI2S_TX:
@@ -331,7 +332,7 @@ static int ayaneo_ps2_snd_prepare(struct snd_pcm_substream *substream)
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	unsigned int channels = substream->runtime->channels;
 
-	if (cpu_dai->id != WSA_CODEC_DMA_RX_0)
+	if (snd_soc_dai_id(cpu_dai) != WSA_CODEC_DMA_RX_0)
 		return 0;
 
 	if (channels != 2)
@@ -346,7 +347,7 @@ static int sc8280xp_snd_prepare(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct sc8280xp_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct sc8280xp_snd_data *data = snd_soc_card_to_priv(rtd->card);
 
 	if (data->priv->snd_prepare) {
 		int ret;
@@ -356,16 +357,16 @@ static int sc8280xp_snd_prepare(struct snd_pcm_substream *substream)
 			return ret;
 	}
 
-	return qcom_snd_sdw_prepare(substream, &data->stream_prepared[cpu_dai->id]);
+	return qcom_snd_sdw_prepare(substream, &data->stream_prepared[snd_soc_dai_id(cpu_dai)]);
 }
 
 static int sc8280xp_snd_hw_free(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sc8280xp_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct sc8280xp_snd_data *data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
-	return qcom_snd_sdw_hw_free(substream, &data->stream_prepared[cpu_dai->id]);
+	return qcom_snd_sdw_hw_free(substream, &data->stream_prepared[snd_soc_dai_id(cpu_dai)]);
 }
 
 static const struct snd_soc_ops sc8280xp_be_ops = {
@@ -412,7 +413,7 @@ static int sc8280xp_platform_probe(struct platform_device *pdev)
 	if (!data->priv)
 		return -ENODEV;
 
-	snd_soc_card_set_drvdata(card, data);
+	snd_soc_card_set_priv(card, data);
 	card_driver->owner = THIS_MODULE;
 	card_driver->dapm_widgets = data->priv->dapm_widgets;
 	card_driver->num_dapm_widgets = data->priv->num_dapm_widgets;

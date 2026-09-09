@@ -85,8 +85,9 @@ static const struct dmic_rate dmic_rate_s[] = {
 static int sun50i_dmic_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *cpu_dai)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sun50i_dmic_dev *host = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun50i_dmic_dev *host = dev_get_drvdata(dev);
 
 	/* only support capture */
 	if (substream->stream != SNDRV_PCM_STREAM_CAPTURE)
@@ -109,7 +110,9 @@ static int sun50i_dmic_hw_params(struct snd_pcm_substream *substream,
 	unsigned int mclk = 0;
 	unsigned int channels = params_channels(params);
 	unsigned int chan_en = (1 << channels) - 1;
-	struct sun50i_dmic_dev *host = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct sun50i_dmic_dev *host = dev_get_drvdata(cpu_dev);
 
 	/* DMIC num is N+1 */
 	regmap_update_bits(host->regmap, SUN50I_DMIC_CH_NUM,
@@ -132,7 +135,7 @@ static int sun50i_dmic_hw_params(struct snd_pcm_substream *substream,
 				   SUN50I_DMIC_RXFIFO_CTL_SAMPLE_24);
 		break;
 	default:
-		dev_err(cpu_dai->dev, "Invalid format!\n");
+		dev_err(cpu_dev, "Invalid format!\n");
 		return -EINVAL;
 	}
 	/* The hardware supports FIFO mode 1 for 24-bit samples */
@@ -155,12 +158,12 @@ static int sun50i_dmic_hw_params(struct snd_pcm_substream *substream,
 		mclk = 24576000;
 		break;
 	default:
-		dev_err(cpu_dai->dev, "Invalid rate!\n");
+		dev_err(cpu_dev, "Invalid rate!\n");
 		return -EINVAL;
 	}
 
 	if (clk_set_rate(host->dmic_clk, mclk)) {
-		dev_err(cpu_dai->dev, "mclk : %u not support\n", mclk);
+		dev_err(cpu_dev, "mclk : %u not support\n", mclk);
 		return -EINVAL;
 	}
 
@@ -181,7 +184,7 @@ static int sun50i_dmic_hw_params(struct snd_pcm_substream *substream,
 		host->dma_params_rx.addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
 		break;
 	default:
-		dev_err(cpu_dai->dev, "Unsupported physical sample width: %d\n",
+		dev_err(cpu_dev, "Unsupported physical sample width: %d\n",
 			params_physical_width(params));
 		return -EINVAL;
 	}
@@ -202,7 +205,9 @@ static int sun50i_dmic_trigger(struct snd_pcm_substream *substream, int cmd,
 			       struct snd_soc_dai *dai)
 {
 	int ret = 0;
-	struct sun50i_dmic_dev *host = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun50i_dmic_dev *host = dev_get_drvdata(dev);
 
 	if (substream->stream != SNDRV_PCM_STREAM_CAPTURE)
 		return -EINVAL;
@@ -239,9 +244,11 @@ static int sun50i_dmic_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int sun50i_dmic_soc_dai_probe(struct snd_soc_dai *dai)
 {
-	struct sun50i_dmic_dev *host = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun50i_dmic_dev *host = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, NULL, &host->dma_params_rx);
+	snd_soc_dai_stream_dma_data_set_capture(dai, &host->dma_params_rx);
 
 	return 0;
 }
@@ -305,7 +312,7 @@ static const struct snd_kcontrol_new sun50i_dmic_controls[] = {
 };
 
 static const struct snd_soc_component_driver sun50i_dmic_component = {
-	.name           = "sun50i-dmic",
+	.name		= "sun50i-dmic",
 	.controls	= sun50i_dmic_controls,
 	.num_controls	= ARRAY_SIZE(sun50i_dmic_controls),
 };
@@ -383,7 +390,7 @@ static int sun50i_dmic_probe(struct platform_device *pdev)
 				     "Failed to get reset.\n");
 	reset_control_deassert(host->rst);
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &sun50i_dmic_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &sun50i_dmic_component,
 					      &sun50i_dmic_dai, 1);
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret,

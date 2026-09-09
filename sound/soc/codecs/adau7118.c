@@ -126,14 +126,15 @@ static int adau7118_set_channel_map(struct snd_soc_dai *dai,
 				    unsigned int rx_num,
 				    const unsigned int *rx_slot)
 {
-	struct adau7118_data *st =
-		snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau7118_data *st = dev_get_drvdata(dev);
 	int chan, ret;
 
 	dev_dbg(st->dev, "Set channel map, %d", tx_num);
 
 	for (chan = 0; chan < tx_num; chan++) {
-		ret = snd_soc_component_update_bits(dai->component,
+		ret = snd_soc_component_update_bits(component,
 					ADAU7118_REG_SPT_CX(chan),
 					ADAU7118_SPT_SLOT_MASK,
 					ADAU7118_SPT_SLOT(tx_slot[chan]));
@@ -146,8 +147,9 @@ static int adau7118_set_channel_map(struct snd_soc_dai *dai,
 
 static int adau7118_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct adau7118_data *st =
-		snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau7118_data *st = dev_get_drvdata(dev);
 	int ret = 0;
 	u32 regval;
 
@@ -155,13 +157,13 @@ static int adau7118_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
-		ret = snd_soc_component_update_bits(dai->component,
+		ret = snd_soc_component_update_bits(component,
 						    ADAU7118_REG_SPT_CTRL1,
 						    ADAU7118_DATA_FMT_MASK,
 						    ADAU7118_DATA_FMT(0));
 		break;
 	case SND_SOC_DAIFMT_LEFT_J:
-		ret = snd_soc_component_update_bits(dai->component,
+		ret = snd_soc_component_update_bits(component,
 						    ADAU7118_REG_SPT_CTRL1,
 						    ADAU7118_DATA_FMT_MASK,
 						    ADAU7118_DATA_FMT(1));
@@ -170,7 +172,7 @@ static int adau7118_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		st->right_j = true;
 		break;
 	case SND_SOC_DAIFMT_DSP_A:
-		ret = snd_soc_component_update_bits(dai->component,
+		ret = snd_soc_component_update_bits(component,
 						    ADAU7118_REG_SPT_CTRL1,
 						    ADAU7118_DATA_FMT_MASK,
 						    ADAU7118_DATA_FMT(1));
@@ -203,7 +205,7 @@ static int adau7118_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
-	ret = snd_soc_component_update_bits(dai->component,
+	ret = snd_soc_component_update_bits(component,
 					    ADAU7118_REG_SPT_CTRL2,
 					    ADAU7118_LRCLK_BCLK_POL_MASK,
 					    regval);
@@ -215,13 +217,14 @@ static int adau7118_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 static int adau7118_set_tristate(struct snd_soc_dai *dai, int tristate)
 {
-	struct adau7118_data *st =
-		snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau7118_data *st = dev_get_drvdata(dev);
 	int ret;
 
 	dev_dbg(st->dev, "Set tristate, %d\n", tristate);
 
-	ret = snd_soc_component_update_bits(dai->component,
+	ret = snd_soc_component_update_bits(component,
 					    ADAU7118_REG_SPT_CTRL1,
 					    ADAU7118_TRISTATE_MASK,
 					    ADAU7118_TRISTATE(tristate));
@@ -235,8 +238,9 @@ static int adau7118_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				 unsigned int rx_mask, int slots,
 				 int slot_width)
 {
-	struct adau7118_data *st =
-		snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau7118_data *st = dev_get_drvdata(dev);
 	int ret = 0;
 	u32 regval;
 
@@ -257,7 +261,7 @@ static int adau7118_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 		return -EINVAL;
 	}
 
-	ret = snd_soc_component_update_bits(dai->component,
+	ret = snd_soc_component_update_bits(component,
 					    ADAU7118_REG_SPT_CTRL1,
 					    ADAU7118_SLOT_WIDTH_MASK, regval);
 	if (ret < 0)
@@ -273,15 +277,16 @@ static int adau7118_hw_params(struct snd_pcm_substream *substream,
 			      struct snd_pcm_hw_params *params,
 			      struct snd_soc_dai *dai)
 {
-	struct adau7118_data *st =
-		snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau7118_data *st = dev_get_drvdata(dev);
 	u32 data_width = params_width(params), slots_width;
 	int ret;
 	u32 regval;
 
 	if (!st->slots) {
 		/* set stereo mode */
-		ret = snd_soc_component_update_bits(dai->component,
+		ret = snd_soc_component_update_bits(component,
 						    ADAU7118_REG_SPT_CTRL1,
 						    ADAU7118_SAI_MODE_MASK,
 						    ADAU7118_SAI_MODE(0));
@@ -320,7 +325,7 @@ static int adau7118_hw_params(struct snd_pcm_substream *substream,
 			return -EINVAL;
 		}
 
-		ret = snd_soc_component_update_bits(dai->component,
+		ret = snd_soc_component_update_bits(component,
 						    ADAU7118_REG_SPT_CTRL1,
 						    ADAU7118_DATA_FMT_MASK,
 						    regval);
@@ -334,7 +339,8 @@ static int adau7118_hw_params(struct snd_pcm_substream *substream,
 static int adau7118_set_bias_level(struct snd_soc_component *component,
 				   enum snd_soc_bias_level level)
 {
-	struct adau7118_data *st = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau7118_data *st = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret = 0;
 
@@ -364,7 +370,7 @@ static int adau7118_set_bias_level(struct snd_soc_component *component,
 
 			regcache_cache_only(st->map, false);
 			/* sync cache */
-			ret = snd_soc_component_cache_sync(component);
+			ret = snd_soc_component_regcache_sync(component);
 		}
 		break;
 	case SND_SOC_BIAS_OFF:
@@ -392,7 +398,8 @@ static int adau7118_set_bias_level(struct snd_soc_component *component,
 
 static int adau7118_component_probe(struct snd_soc_component *component)
 {
-	struct adau7118_data *st = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau7118_data *st = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret = 0;
 
@@ -405,7 +412,7 @@ static int adau7118_component_probe(struct snd_soc_component *component)
 		ret = snd_soc_dapm_add_routes(dapm, adau7118_routes_hw,
 					      ARRAY_SIZE(adau7118_routes_hw));
 	} else {
-		snd_soc_component_init_regmap(component, st->map);
+		snd_soc_component_regmap_init(component, st->map);
 		ret = snd_soc_dapm_new_controls(dapm, adau7118_widgets_sw,
 					ARRAY_SIZE(adau7118_widgets_sw));
 		if (ret)
@@ -576,7 +583,7 @@ int adau7118_probe(struct device *dev, struct regmap *map, bool hw_mode)
 	if (ret)
 		return ret;
 
-	return devm_snd_soc_register_component(dev,
+	return devm_snd_soc_component_register(dev,
 					       &adau7118_component_driver,
 					       &adau7118_dai, 1);
 }

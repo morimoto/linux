@@ -72,11 +72,14 @@ static int q6dma_set_channel_map(struct snd_soc_dai *dai,
 				 const unsigned int *rx_ch_mask)
 {
 
-	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct audioreach_module_config *cfg = &dai_data->module_config[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dev);
+	struct audioreach_module_config *cfg = &dai_data->module_config[dai_id];
 	int i;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case WSA_CODEC_DMA_TX_0:
 	case WSA_CODEC_DMA_TX_1:
 	case WSA_CODEC_DMA_TX_2:
@@ -90,12 +93,12 @@ static int q6dma_set_channel_map(struct snd_soc_dai *dai,
 	case TX_CODEC_DMA_TX_4:
 	case TX_CODEC_DMA_TX_5:
 		if (!tx_ch_mask) {
-			dev_err(dai->dev, "tx slot not found\n");
+			dev_err(dev, "tx slot not found\n");
 			return -EINVAL;
 		}
 
 		if (tx_num > AR_PCM_MAX_NUM_CHANNEL) {
-			dev_err(dai->dev, "invalid tx num %d\n",
+			dev_err(dev, "invalid tx num %d\n",
 				tx_num);
 			return -EINVAL;
 		}
@@ -115,11 +118,11 @@ static int q6dma_set_channel_map(struct snd_soc_dai *dai,
 	case RX_CODEC_DMA_RX_7:
 		/* rx */
 		if (!rx_ch_mask) {
-			dev_err(dai->dev, "rx slot not found\n");
+			dev_err(dev, "rx slot not found\n");
 			return -EINVAL;
 		}
 		if (rx_num > APM_PORT_MAX_AUDIO_CHAN_CNT) {
-			dev_err(dai->dev, "invalid rx num %d\n",
+			dev_err(dev, "invalid rx num %d\n",
 				rx_num);
 			return -EINVAL;
 		}
@@ -128,8 +131,8 @@ static int q6dma_set_channel_map(struct snd_soc_dai *dai,
 
 		break;
 	default:
-		dev_err(dai->dev, "%s: invalid dai id 0x%x\n",
-			__func__, dai->id);
+		dev_err(dev, "%s: invalid dai id 0x%x\n",
+			__func__, dai_id);
 		return -EINVAL;
 	}
 
@@ -139,8 +142,11 @@ static int q6dma_set_channel_map(struct snd_soc_dai *dai,
 static int q6hdmi_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct audioreach_module_config *cfg = &dai_data->module_config[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dev);
+	struct audioreach_module_config *cfg = &dai_data->module_config[dai_id];
 	int channels = hw_param_interval_c(params, SNDRV_PCM_HW_PARAM_CHANNELS)->max;
 	int ret;
 
@@ -149,12 +155,12 @@ static int q6hdmi_hw_params(struct snd_pcm_substream *substream,
 	cfg->num_channels = channels;
 	audioreach_set_default_channel_mapping(cfg->channel_map, channels);
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case DISPLAY_PORT_RX_0:
 		cfg->dp_idx = 0;
 		break;
 	case DISPLAY_PORT_RX_1 ... DISPLAY_PORT_RX_7:
-		cfg->dp_idx = dai->id - DISPLAY_PORT_RX_1 + 1;
+		cfg->dp_idx = dai_id - DISPLAY_PORT_RX_1 + 1;
 		break;
 	}
 
@@ -170,8 +176,11 @@ static int q6hdmi_hw_params(struct snd_pcm_substream *substream,
 static int q6dma_hw_params(struct snd_pcm_substream *substream,
 			   struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct audioreach_module_config *cfg = &dai_data->module_config[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dev);
+	struct audioreach_module_config *cfg = &dai_data->module_config[dai_id];
 	int channels = hw_param_interval_c(params, SNDRV_PCM_HW_PARAM_CHANNELS)->max;
 
 	cfg->bit_width = params_width(params);
@@ -184,38 +193,44 @@ static int q6dma_hw_params(struct snd_pcm_substream *substream,
 
 static void q6apm_lpass_dai_shutdown(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int rc;
 
-	if (dai_data->is_port_started[dai->id]) {
-		rc = q6apm_graph_stop(dai_data->graph[dai->id]);
-		dai_data->is_port_started[dai->id] = false;
+	if (dai_data->is_port_started[dai_id]) {
+		rc = q6apm_graph_stop(dai_data->graph[dai_id]);
+		dai_data->is_port_started[dai_id] = false;
 		if (rc < 0)
-			dev_err(dai->dev, "failed to stop APM port (%d)\n", rc);
+			dev_err(dev, "failed to stop APM port (%d)\n", rc);
 	}
 
-	if (dai_data->graph[dai->id]) {
-		q6apm_graph_close(dai_data->graph[dai->id]);
-		dai_data->graph[dai->id] = NULL;
+	if (dai_data->graph[dai_id]) {
+		q6apm_graph_close(dai_data->graph[dai_id]);
+		dai_data->graph[dai_id] = NULL;
 	}
 }
 
 static int q6apm_lpass_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 				   struct snd_soc_dai *dai)
 {
-	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int ret = 0;
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 	case SNDRV_PCM_TRIGGER_RESUME:
 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-		if (!dai_data->is_port_started[dai->id]) {
-			ret = q6apm_graph_start(dai_data->graph[dai->id]);
+		if (!dai_data->is_port_started[dai_id]) {
+			ret = q6apm_graph_start(dai_data->graph[dai_id]);
 			if (ret < 0)
-				dev_err(dai->dev, "Failed to start APM port %d\n", dai->id);
+				dev_err(dev, "Failed to start APM port %d\n", dai_id);
 			else
-				dai_data->is_port_started[dai->id] = true;
+				dai_data->is_port_started[dai_id] = true;
 		}
 		break;
 	default:
@@ -227,15 +242,17 @@ static int q6apm_lpass_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int q6apm_lpass_dai_prepare(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct audioreach_module_config *cfg = &dai_data->module_config[dai->id];
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
+	struct audioreach_module_config *cfg = &dai_data->module_config[dai_id];
 	struct q6apm_graph *graph;
-	int graph_id = dai->id;
 	int rc;
 
-	if (dai_data->is_port_started[dai->id]) {
-		q6apm_graph_stop(dai_data->graph[dai->id]);
-		dai_data->is_port_started[dai->id] = false;
+	if (dai_data->is_port_started[dai_id]) {
+		q6apm_graph_stop(dai_data->graph[dai_id]);
+		dai_data->is_port_started[dai_id] = false;
 
 	}
 
@@ -243,47 +260,49 @@ static int q6apm_lpass_dai_prepare(struct snd_pcm_substream *substream, struct s
 	 * It is recommend to load DSP with source graph first and then sink
 	 * graph, so sequence for playback and capture will be different
 	 */
-	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK && dai_data->graph[dai->id] == NULL) {
-		graph = q6apm_graph_open(dai->dev, NULL, dai->dev, graph_id, substream->stream);
+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK && dai_data->graph[dai_id] == NULL) {
+		graph = q6apm_graph_open(dev, NULL, dev, dai_id, substream->stream);
 		if (IS_ERR(graph)) {
-			dev_err(dai->dev, "Failed to open graph (%d)\n", graph_id);
+			dev_err(dev, "Failed to open graph (%d)\n", dai_id);
 			rc = PTR_ERR(graph);
 			return rc;
 		}
-		dai_data->graph[graph_id] = graph;
+		dai_data->graph[dai_id] = graph;
 	}
 
 	cfg->direction = substream->stream;
-	rc = q6apm_graph_media_format_pcm(dai_data->graph[dai->id], cfg);
+	rc = q6apm_graph_media_format_pcm(dai_data->graph[dai_id], cfg);
 	if (rc) {
-		dev_err(dai->dev, "Failed to set media format %d\n", rc);
+		dev_err(dev, "Failed to set media format %d\n", rc);
 		goto err;
 	}
 
-	rc = q6apm_graph_prepare(dai_data->graph[dai->id]);
+	rc = q6apm_graph_prepare(dai_data->graph[dai_id]);
 	if (rc) {
-		dev_err(dai->dev, "Failed to prepare Graph %d\n", rc);
+		dev_err(dev, "Failed to prepare Graph %d\n", rc);
 		goto err;
 	}
 	return 0;
 err:
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-		q6apm_graph_close(dai_data->graph[dai->id]);
-		dai_data->graph[dai->id] = NULL;
+		q6apm_graph_close(dai_data->graph[dai_id]);
+		dai_data->graph[dai_id] = NULL;
 	}
 	return rc;
 }
 
 static int q6apm_lpass_dai_startup(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dev);
 	struct q6apm_graph *graph;
-	int graph_id = dai->id;
+	int graph_id = snd_soc_dai_id(dai);
 
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE) {
-		graph = q6apm_graph_open(dai->dev, NULL, dai->dev, graph_id, substream->stream);
+		graph = q6apm_graph_open(dev, NULL, dev, graph_id, substream->stream);
 		if (IS_ERR(graph)) {
-			dev_err(dai->dev, "Failed to open graph (%d)\n", graph_id);
+			dev_err(dev, "Failed to open graph (%d)\n", graph_id);
 			return PTR_ERR(graph);
 		}
 		dai_data->graph[graph_id] = graph;
@@ -299,27 +318,32 @@ static int q6i2s_dai_startup(struct snd_pcm_substream *substream, struct snd_soc
 
 static void q6i2s_lpass_dai_shutdown(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dev);
 
 	q6apm_lpass_dai_shutdown(substream, dai);
-	q6apm_lpass_dai_disable_clocks(dai_data, dai->id);
+	q6apm_lpass_dai_disable_clocks(dai_data, snd_soc_dai_id(dai));
 }
 
 static int q6i2s_set_sysclk(struct snd_soc_dai *dai, int clk_id, unsigned int freq, int dir)
 {
-	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dev);
 	struct clk *sysclk = NULL;
+	int dai_id = snd_soc_dai_id(dai);
 	bool *enabled = NULL;
 	int ret = 0;
 
 	switch (clk_id) {
 	case LPAIF_MI2S_MCLK:
-		sysclk = dai_data->priv[dai->id].mclk;
-		enabled = &dai_data->priv[dai->id].mclk_enabled;
+		sysclk = dai_data->priv[dai_id].mclk;
+		enabled = &dai_data->priv[dai_id].mclk_enabled;
 		break;
 	case LPAIF_MI2S_BCLK:
-		sysclk = dai_data->priv[dai->id].bclk;
-		enabled = &dai_data->priv[dai->id].bclk_enabled;
+		sysclk = dai_data->priv[dai_id].bclk;
+		enabled = &dai_data->priv[dai_id].bclk_enabled;
 		break;
 	default:
 		return -EINVAL;
@@ -328,7 +352,7 @@ static int q6i2s_set_sysclk(struct snd_soc_dai *dai, int clk_id, unsigned int fr
 	if (sysclk) {
 		ret = clk_set_rate(sysclk, freq);
 		if (ret) {
-			dev_err(dai->dev, "Error, Unable to set rate (%d) for sysclk %d\n",
+			dev_err(dev, "Error, Unable to set rate (%d) for sysclk %d\n",
 				freq, clk_id);
 			return ret;
 		}
@@ -338,7 +362,7 @@ static int q6i2s_set_sysclk(struct snd_soc_dai *dai, int clk_id, unsigned int fr
 
 		ret = clk_prepare_enable(sysclk);
 		if (ret) {
-			dev_err(dai->dev, "Error, Unable to prepare (%d) sysclk\n", clk_id);
+			dev_err(dev, "Error, Unable to prepare (%d) sysclk\n", clk_id);
 			return ret;
 		}
 
@@ -350,8 +374,11 @@ static int q6i2s_set_sysclk(struct snd_soc_dai *dai, int clk_id, unsigned int fr
 
 static int q6i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct audioreach_module_config *cfg = &dai_data->module_config[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dev);
+	struct audioreach_module_config *cfg = &dai_data->module_config[dai_id];
 
 	cfg->fmt = fmt;
 
@@ -363,12 +390,15 @@ static int q6tdm_set_tdm_slot(struct snd_soc_dai *dai,
 			      unsigned int rx_mask,
 			      int slots, int slot_width)
 {
-	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct audioreach_module_config *cfg = &dai_data->module_config[dai->id];
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm_lpass_dai_data *dai_data = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
+	struct audioreach_module_config *cfg = &dai_data->module_config[dai_id];
 	unsigned int cap_mask, slot_mask;
 
 	if (slot_width != 16 && slot_width != 32) {
-		dev_err(dai->dev, "%s: invalid slot_width %d\n", __func__, slot_width);
+		dev_err(dev, "%s: invalid slot_width %d\n", __func__, slot_width);
 		return -EINVAL;
 	}
 
@@ -380,15 +410,15 @@ static int q6tdm_set_tdm_slot(struct snd_soc_dai *dai,
 		cap_mask = GENMASK(slots - 1, 0);
 		break;
 	default:
-		dev_err(dai->dev, "%s: invalid slots %d\n", __func__, slots);
+		dev_err(dev, "%s: invalid slots %d\n", __func__, slots);
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case PRIMARY_TDM_RX_0 ... QUINARY_TDM_TX_7:
-		slot_mask = (dai->id & 0x1) ? tx_mask : rx_mask;
+		slot_mask = (dai_id & 0x1) ? tx_mask : rx_mask;
 		if (slot_mask & ~cap_mask) {
-			dev_err(dai->dev, "%s: invalid slot mask 0x%x for %d slots\n",
+			dev_err(dev, "%s: invalid slot mask 0x%x for %d slots\n",
 				__func__, slot_mask, slots);
 			return -EINVAL;
 		}
@@ -398,7 +428,7 @@ static int q6tdm_set_tdm_slot(struct snd_soc_dai *dai,
 		cfg->slot_mask = slot_mask;
 		break;
 	default:
-		dev_err(dai->dev, "%s: invalid dai id 0x%x\n", __func__, dai->id);
+		dev_err(dev, "%s: invalid dai id 0x%x\n", __func__, dai_id);
 		return -EINVAL;
 	}
 
@@ -541,7 +571,7 @@ static int q6apm_lpass_dai_dev_probe(struct platform_device *pdev)
 	cfg.q6tdm_ops = &q6tdm_ops;
 	dais = q6dsp_audio_ports_set_config(dev, &cfg, &num_dais);
 
-	return devm_snd_soc_register_component(dev, &q6apm_lpass_dai_component, dais, num_dais);
+	return devm_snd_soc_component_register(dev, &q6apm_lpass_dai_component, dais, num_dais);
 }
 
 #ifdef CONFIG_OF

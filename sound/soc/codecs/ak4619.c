@@ -231,7 +231,8 @@ static SOC_ENUM_SINGLE_DECL(ak4619_dac_2_digi_fil, DAC_MF, DA2SL_SHIFT, ak4619_d
 
 static void ak4619_set_deemph(struct snd_soc_component *component)
 {
-	struct ak4619_priv *ak4619 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4619_priv *ak4619 = dev_get_drvdata(dev);
 	u8 dem = 0;
 
 	if (!ak4619->deemph_en)
@@ -258,7 +259,8 @@ static int ak4619_put_deemph(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct ak4619_priv *ak4619 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4619_priv *ak4619 = dev_get_drvdata(dev);
 	int deemph_en = ucontrol->value.integer.value[0];
 	int ret = 0;
 
@@ -283,7 +285,8 @@ static int ak4619_get_deemph(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct ak4619_priv *ak4619 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4619_priv *ak4619 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = ak4619->deemph_en;
 
@@ -533,8 +536,9 @@ static int ak4619_dai_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4619_priv *ak4619 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4619_priv *ak4619 = dev_get_drvdata(dev);
 	unsigned int width;
 	unsigned int rate;
 	unsigned int fs;
@@ -626,7 +630,7 @@ static int ak4619_dai_hw_params(struct snd_pcm_substream *substream,
 
 static int ak4619_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u8 dai_fmt1 = 0;
 	u8 dai_fmt2 = 0;
 
@@ -684,8 +688,9 @@ static int ak4619_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int ak4619_dai_set_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct ak4619_priv *ak4619 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4619_priv *ak4619 = dev_get_drvdata(dev);
 
 	ak4619->sysclk = freq;
 
@@ -694,7 +699,7 @@ static int ak4619_dai_set_sysclk(struct snd_soc_dai *codec_dai,
 
 static int ak4619_dai_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	snd_soc_component_update_bits(component, DAC_MF, DA1MUTE_EN, mute ? DA1MUTE_EN : 0);
 	snd_soc_component_update_bits(component, DAC_MF, DA2MUTE_EN, mute ? DA2MUTE_EN : 0);
@@ -769,8 +774,9 @@ static void ak4619_hw_constraints(struct ak4619_priv *ak4619,
 static int ak4619_dai_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4619_priv *ak4619 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4619_priv *ak4619 = dev_get_drvdata(dev);
 
 	ak4619_hw_constraints(ak4619, substream->runtime);
 
@@ -882,7 +888,7 @@ static int ak4619_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(dev, &soc_component_dev_ak4619,
+	ret = devm_snd_soc_component_register(dev, &soc_component_dev_ak4619,
 				      &ak4619_dai, 1);
 	if (ret < 0) {
 		dev_err(dev, "Failed to register ak4619 component: %d\n",

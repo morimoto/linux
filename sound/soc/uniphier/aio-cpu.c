@@ -364,7 +364,7 @@ static int uniphier_aio_dai_probe(struct snd_soc_dai *dai)
 		struct uniphier_aio_sub *sub = &aio->sub[i];
 		const struct uniphier_aio_spec *spec;
 
-		spec = find_spec(aio, dai->name, i);
+		spec = find_spec(aio, snd_soc_dai_name(dai), i);
 		if (!spec)
 			continue;
 
@@ -633,7 +633,8 @@ static int uniphier_aio_vol_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct uniphier_aio_chip *chip = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct uniphier_aio_chip *chip = dev_get_drvdata(dev);
 	struct uniphier_aio_sub *sub;
 	int oport_hw = kcontrol->private_value;
 
@@ -650,7 +651,8 @@ static int uniphier_aio_vol_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct uniphier_aio_chip *chip = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct uniphier_aio_chip *chip = dev_get_drvdata(dev);
 	struct uniphier_aio_sub *sub;
 	int oport_hw = kcontrol->private_value;
 
@@ -801,7 +803,7 @@ int uniphier_aio_probe(struct platform_device *pdev)
 	if (ret)
 		goto err_out_clock;
 
-	ret = devm_snd_soc_register_component(dev, &uniphier_aio_component,
+	ret = devm_snd_soc_component_register(dev, &uniphier_aio_component,
 					      chip->chip_spec->dais,
 					      chip->chip_spec->num_dais);
 	if (ret)

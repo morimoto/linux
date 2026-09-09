@@ -252,8 +252,9 @@ static int max9860_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max9860_priv *max9860 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9860_priv *max9860 = dev_get_drvdata(dev);
 	u8 master;
 	u8 ifc1a = 0;
 	u8 ifc1b = 0;
@@ -261,7 +262,7 @@ static int max9860_hw_params(struct snd_pcm_substream *substream,
 	unsigned long n;
 	int ret;
 
-	dev_dbg(component->dev, "hw_params %u Hz, %u channels\n",
+	dev_dbg(dev, "hw_params %u Hz, %u channels\n",
 		params_rate(params),
 		params_channels(params));
 
@@ -297,8 +298,7 @@ static int max9860_hw_params(struct snd_pcm_substream *substream,
 		break;
 	case SND_SOC_DAIFMT_DSP_A:
 		if (params_width(params) != 16) {
-			dev_err(component->dev,
-				"DSP_A works for 16 bits per sample only.\n");
+			dev_err(dev, "DSP_A works for 16 bits per sample only.\n");
 			return -EINVAL;
 		}
 		ifc1a |= MAX9860_DDLY | MAX9860_WCI | MAX9860_HIZ | MAX9860_TDM;
@@ -306,8 +306,7 @@ static int max9860_hw_params(struct snd_pcm_substream *substream,
 		break;
 	case SND_SOC_DAIFMT_DSP_B:
 		if (params_width(params) != 16) {
-			dev_err(component->dev,
-				"DSP_B works for 16 bits per sample only.\n");
+			dev_err(dev, "DSP_B works for 16 bits per sample only.\n");
 			return -EINVAL;
 		}
 		ifc1a |= MAX9860_WCI | MAX9860_HIZ | MAX9860_TDM;
@@ -343,16 +342,16 @@ static int max9860_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	dev_dbg(component->dev, "IFC1A  %02x\n", ifc1a);
+	dev_dbg(dev, "IFC1A  %02x\n", ifc1a);
 	ret = regmap_write(max9860->regmap, MAX9860_IFC1A, ifc1a);
 	if (ret) {
-		dev_err(component->dev, "Failed to set IFC1A: %d\n", ret);
+		dev_err(dev, "Failed to set IFC1A: %d\n", ret);
 		return ret;
 	}
-	dev_dbg(component->dev, "IFC1B  %02x\n", ifc1b);
+	dev_dbg(dev, "IFC1B  %02x\n", ifc1b);
 	ret = regmap_write(max9860->regmap, MAX9860_IFC1B, ifc1b);
 	if (ret) {
-		dev_err(component->dev, "Failed to set IFC1B: %d\n", ret);
+		dev_err(dev, "Failed to set IFC1B: %d\n", ret);
 		return ret;
 	}
 
@@ -408,34 +407,33 @@ static int max9860_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	sysclk |= max9860->psclk;
-	dev_dbg(component->dev, "SYSCLK %02x\n", sysclk);
+	dev_dbg(dev, "SYSCLK %02x\n", sysclk);
 	ret = regmap_write(max9860->regmap,
 			   MAX9860_SYSCLK, sysclk);
 	if (ret) {
-		dev_err(component->dev, "Failed to set SYSCLK: %d\n", ret);
+		dev_err(dev, "Failed to set SYSCLK: %d\n", ret);
 		return ret;
 	}
-	dev_dbg(component->dev, "N %lu\n", n);
+	dev_dbg(dev, "N %lu\n", n);
 	ret = regmap_write(max9860->regmap,
 			   MAX9860_AUDIOCLKHIGH, n >> 8);
 	if (ret) {
-		dev_err(component->dev, "Failed to set NHI: %d\n", ret);
+		dev_err(dev, "Failed to set NHI: %d\n", ret);
 		return ret;
 	}
 	ret = regmap_write(max9860->regmap,
 			   MAX9860_AUDIOCLKLOW, n & 0xff);
 	if (ret) {
-		dev_err(component->dev, "Failed to set NLO: %d\n", ret);
+		dev_err(dev, "Failed to set NLO: %d\n", ret);
 		return ret;
 	}
 
 	if (!master) {
-		dev_dbg(component->dev, "Enable PLL\n");
+		dev_dbg(dev, "Enable PLL\n");
 		ret = regmap_update_bits(max9860->regmap, MAX9860_AUDIOCLKHIGH,
 					 MAX9860_PLL, MAX9860_PLL);
 		if (ret) {
-			dev_err(component->dev, "Failed to enable PLL: %d\n",
-				ret);
+			dev_err(dev, "Failed to enable PLL: %d\n", ret);
 			return ret;
 		}
 	}
@@ -445,8 +443,9 @@ static int max9860_hw_params(struct snd_pcm_substream *substream,
 
 static int max9860_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max9860_priv *max9860 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9860_priv *max9860 = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -507,7 +506,8 @@ static struct snd_soc_dai_driver max9860_dai = {
 static int max9860_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
-	struct max9860_priv *max9860 = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9860_priv *max9860 = dev_get_drvdata(dev);
 	int ret;
 
 	switch (level) {
@@ -519,8 +519,7 @@ static int max9860_set_bias_level(struct snd_soc_component *component,
 		ret = regmap_update_bits(max9860->regmap, MAX9860_PWRMAN,
 					 MAX9860_SHDN, MAX9860_SHDN);
 		if (ret) {
-			dev_err(component->dev, "Failed to remove SHDN: %d\n",
-				ret);
+			dev_err(dev, "Failed to remove SHDN: %d\n", ret);
 			return ret;
 		}
 		break;
@@ -529,8 +528,7 @@ static int max9860_set_bias_level(struct snd_soc_component *component,
 		ret = regmap_update_bits(max9860->regmap, MAX9860_PWRMAN,
 					 MAX9860_SHDN, 0);
 		if (ret) {
-			dev_err(component->dev, "Failed to request SHDN: %d\n",
-				ret);
+			dev_err(dev, "Failed to request SHDN: %d\n", ret);
 			return ret;
 		}
 		break;
@@ -695,7 +693,7 @@ static int max9860_probe(struct i2c_client *i2c)
 	pm_runtime_enable(dev);
 	pm_runtime_idle(dev);
 
-	ret = devm_snd_soc_register_component(dev, &max9860_component_driver,
+	ret = devm_snd_soc_component_register(dev, &max9860_component_driver,
 					      &max9860_dai, 1);
 	if (ret) {
 		dev_err(dev, "Failed to register CODEC: %d\n", ret);

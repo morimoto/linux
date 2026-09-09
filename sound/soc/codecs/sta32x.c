@@ -266,7 +266,8 @@ static int sta32x_coefficient_get(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sta32x_priv *sta32x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta32x_priv *sta32x = dev_get_drvdata(dev);
 	int numcoef = kcontrol->private_value >> 16;
 	int index = kcontrol->private_value & 0xffff;
 	unsigned int cfud, val;
@@ -304,7 +305,8 @@ static int sta32x_coefficient_put(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sta32x_priv *sta32x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta32x_priv *sta32x = dev_get_drvdata(dev);
 	int numcoef = kcontrol->private_value >> 16;
 	int index = kcontrol->private_value & 0xffff;
 	unsigned int cfud;
@@ -340,7 +342,8 @@ static int sta32x_coefficient_put(struct snd_kcontrol *kcontrol,
 
 static int sta32x_sync_coef_shadow(struct snd_soc_component *component)
 {
-	struct sta32x_priv *sta32x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta32x_priv *sta32x = dev_get_drvdata(dev);
 	unsigned int cfud;
 	int i;
 
@@ -368,7 +371,8 @@ static int sta32x_sync_coef_shadow(struct snd_soc_component *component)
 
 static int sta32x_cache_sync(struct snd_soc_component *component)
 {
-	struct sta32x_priv *sta32x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta32x_priv *sta32x = dev_get_drvdata(dev);
 	unsigned int mute;
 	int rc;
 
@@ -573,10 +577,11 @@ static int mcs_ratio_table[3][7] = {
 static int sta32x_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct sta32x_priv *sta32x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta32x_priv *sta32x = dev_get_drvdata(dev);
 
-	dev_dbg(component->dev, "mclk=%u\n", freq);
+	dev_dbg(dev, "mclk=%u\n", freq);
 	sta32x->mclk = freq;
 
 	return 0;
@@ -593,8 +598,9 @@ static int sta32x_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int sta32x_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			      unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct sta32x_priv *sta32x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta32x_priv *sta32x = dev_get_drvdata(dev);
 	u8 confb = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -642,22 +648,22 @@ static int sta32x_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sta32x_priv *sta32x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta32x_priv *sta32x = dev_get_drvdata(dev);
 	int i, mcs = -EINVAL, ir = -EINVAL;
 	unsigned int confa, confb;
 	unsigned int rate, ratio;
 	int ret;
 
 	if (!sta32x->mclk) {
-		dev_err(component->dev,
-			"sta32x->mclk is unset. Unable to determine ratio\n");
+		dev_err(dev, "sta32x->mclk is unset. Unable to determine ratio\n");
 		return -EIO;
 	}
 
 	rate = params_rate(params);
 	ratio = sta32x->mclk / rate;
-	dev_dbg(component->dev, "rate: %u, ratio: %u\n", rate, ratio);
+	dev_dbg(dev, "rate: %u, ratio: %u\n", rate, ratio);
 
 	for (i = 0; i < ARRAY_SIZE(interpolation_ratios); i++) {
 		if (interpolation_ratios[i].fs == rate) {
@@ -667,7 +673,7 @@ static int sta32x_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (ir < 0) {
-		dev_err(component->dev, "Unsupported samplerate: %u\n", rate);
+		dev_err(dev, "Unsupported samplerate: %u\n", rate);
 		return -EINVAL;
 	}
 
@@ -679,7 +685,7 @@ static int sta32x_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (mcs < 0) {
-		dev_err(component->dev, "Unresolvable ratio: %u\n", ratio);
+		dev_err(dev, "Unresolvable ratio: %u\n", ratio);
 		return -EINVAL;
 	}
 
@@ -689,10 +695,10 @@ static int sta32x_hw_params(struct snd_pcm_substream *substream,
 
 	switch (params_width(params)) {
 	case 24:
-		dev_dbg(component->dev, "24bit\n");
+		dev_dbg(dev, "24bit\n");
 		fallthrough;
 	case 32:
-		dev_dbg(component->dev, "24bit or 32bit\n");
+		dev_dbg(dev, "24bit or 32bit\n");
 		switch (sta32x->format) {
 		case SND_SOC_DAIFMT_I2S:
 			confb |= 0x0;
@@ -707,7 +713,7 @@ static int sta32x_hw_params(struct snd_pcm_substream *substream,
 
 		break;
 	case 20:
-		dev_dbg(component->dev, "20bit\n");
+		dev_dbg(dev, "20bit\n");
 		switch (sta32x->format) {
 		case SND_SOC_DAIFMT_I2S:
 			confb |= 0x4;
@@ -722,7 +728,7 @@ static int sta32x_hw_params(struct snd_pcm_substream *substream,
 
 		break;
 	case 18:
-		dev_dbg(component->dev, "18bit\n");
+		dev_dbg(dev, "18bit\n");
 		switch (sta32x->format) {
 		case SND_SOC_DAIFMT_I2S:
 			confb |= 0x8;
@@ -737,7 +743,7 @@ static int sta32x_hw_params(struct snd_pcm_substream *substream,
 
 		break;
 	case 16:
-		dev_dbg(component->dev, "16bit\n");
+		dev_dbg(dev, "16bit\n");
 		switch (sta32x->format) {
 		case SND_SOC_DAIFMT_I2S:
 			confb |= 0x0;
@@ -795,10 +801,11 @@ static int sta32x_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
 	int ret;
-	struct sta32x_priv *sta32x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta32x_priv *sta32x = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
-	dev_dbg(component->dev, "level = %d\n", level);
+	dev_dbg(dev, "level = %d\n", level);
 	switch (level) {
 	case SND_SOC_BIAS_ON:
 		break;
@@ -815,8 +822,7 @@ static int sta32x_set_bias_level(struct snd_soc_component *component,
 			ret = regulator_bulk_enable(ARRAY_SIZE(sta32x->supplies),
 						    sta32x->supplies);
 			if (ret != 0) {
-				dev_err(component->dev,
-					"Failed to enable supplies: %d\n", ret);
+				dev_err(dev, "Failed to enable supplies: %d\n", ret);
 				return ret;
 			}
 
@@ -878,7 +884,8 @@ static struct snd_soc_dai_driver sta32x_dai = {
 static int sta32x_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct sta32x_priv *sta32x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta32x_priv *sta32x = dev_get_drvdata(dev);
 	struct sta32x_platform_data *pdata = sta32x->pdata;
 	int i, ret = 0, thermal = 0;
 
@@ -887,8 +894,7 @@ static int sta32x_probe(struct snd_soc_component *component)
 	if (sta32x->xti_clk) {
 		ret = clk_prepare_enable(sta32x->xti_clk);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to enable clock: %d\n", ret);
+			dev_err(dev, "Failed to enable clock: %d\n", ret);
 			return ret;
 		}
 	}
@@ -896,13 +902,13 @@ static int sta32x_probe(struct snd_soc_component *component)
 	ret = regulator_bulk_enable(ARRAY_SIZE(sta32x->supplies),
 				    sta32x->supplies);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to enable supplies: %d\n", ret);
+		dev_err(dev, "Failed to enable supplies: %d\n", ret);
 		goto err_clk_disable_unprepare;
 	}
 
 	ret = sta32x_startup_sequence(sta32x);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to startup device\n");
+		dev_err(dev, "Failed to startup device\n");
 		goto err_regulator_bulk_disable;
 	}
 
@@ -997,7 +1003,8 @@ err_clk_disable_unprepare:
 
 static void sta32x_remove(struct snd_soc_component *component)
 {
-	struct sta32x_priv *sta32x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta32x_priv *sta32x = dev_get_drvdata(dev);
 
 	sta32x_watchdog_stop(sta32x);
 	regulator_bulk_disable(ARRAY_SIZE(sta32x->supplies), sta32x->supplies);
@@ -1151,7 +1158,7 @@ static int sta32x_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, sta32x);
 
-	ret = devm_snd_soc_register_component(dev, &sta32x_component,
+	ret = devm_snd_soc_component_register(dev, &sta32x_component,
 					      &sta32x_dai, 1);
 	if (ret < 0)
 		dev_err(dev, "Failed to register component (%d)\n", ret);

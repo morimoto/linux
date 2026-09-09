@@ -74,7 +74,8 @@ static int headset_jack_check(void *data)
 {
 	struct snd_soc_component *codec = data;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(codec);
-	struct midas_priv *priv = snd_soc_card_get_drvdata(codec->card);
+	struct snd_soc_card *card = snd_soc_component_to_card(codec);
+	struct midas_priv *priv = snd_soc_card_to_priv(card);
 	int adc, ret;
 	int jack_type = 0;
 
@@ -117,7 +118,8 @@ out:
 static int headset_key_check(void *data)
 {
 	struct snd_soc_component *codec = data;
-	struct midas_priv *priv = snd_soc_card_get_drvdata(codec->card);
+	struct snd_soc_card *card = snd_soc_component_to_card(codec);
+	struct midas_priv *priv = snd_soc_card_to_priv(card);
 	int adc, i, ret;
 
 	if (!gpiod_get_value_cansleep(priv->gpio_headset_key))
@@ -163,9 +165,10 @@ static struct snd_soc_jack_gpio headset_gpio[] = {
 static int midas_start_fll1(struct snd_soc_pcm_runtime *rtd, unsigned int rate)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct midas_priv *priv = snd_soc_card_get_drvdata(card);
+	struct midas_priv *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *aif1_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	if (!rate)
@@ -182,7 +185,7 @@ static int midas_start_fll1(struct snd_soc_pcm_runtime *rtd, unsigned int rate)
 		ret = snd_soc_dai_set_sysclk(aif1_dai, WM8994_SYSCLK_MCLK2,
 					     MCLK2_RATE, SND_SOC_CLOCK_IN);
 		if (ret < 0) {
-			dev_err(card->dev, "Unable to switch to MCLK2: %d\n", ret);
+			dev_err(dev, "Unable to switch to MCLK2: %d\n", ret);
 			return ret;
 		}
 	}
@@ -190,7 +193,7 @@ static int midas_start_fll1(struct snd_soc_pcm_runtime *rtd, unsigned int rate)
 	ret = snd_soc_dai_set_pll(aif1_dai, WM8994_FLL1, WM8994_FLL_SRC_MCLK1,
 				  MCLK1_RATE, rate);
 	if (ret < 0) {
-		dev_err(card->dev, "Failed to set FLL1 rate: %d\n", ret);
+		dev_err(dev, "Failed to set FLL1 rate: %d\n", ret);
 		return ret;
 	}
 	priv->fll1_rate = rate;
@@ -198,14 +201,14 @@ static int midas_start_fll1(struct snd_soc_pcm_runtime *rtd, unsigned int rate)
 	ret = snd_soc_dai_set_sysclk(aif1_dai, WM8994_SYSCLK_FLL1,
 				     priv->fll1_rate, SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(card->dev, "Failed to set SYSCLK source: %d\n", ret);
+		dev_err(dev, "Failed to set SYSCLK source: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(cpu_dai, SAMSUNG_I2S_OPCLK, 0,
 				     SAMSUNG_I2S_OPCLK_PCLK);
 	if (ret < 0) {
-		dev_err(card->dev, "Failed to set OPCLK source: %d\n", ret);
+		dev_err(dev, "Failed to set OPCLK source: %d\n", ret);
 		return ret;
 	}
 
@@ -215,20 +218,21 @@ static int midas_start_fll1(struct snd_soc_pcm_runtime *rtd, unsigned int rate)
 static int midas_stop_fll1(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct midas_priv *priv = snd_soc_card_get_drvdata(card);
+	struct midas_priv *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *aif1_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	ret = snd_soc_dai_set_sysclk(aif1_dai, WM8994_SYSCLK_MCLK2,
 				     MCLK2_RATE, SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(card->dev, "Unable to switch to MCLK2: %d\n", ret);
+		dev_err(dev, "Unable to switch to MCLK2: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_pll(aif1_dai, WM8994_FLL1, 0, 0, 0);
 	if (ret < 0) {
-		dev_err(card->dev, "Unable to stop FLL1: %d\n", ret);
+		dev_err(dev, "Unable to stop FLL1: %d\n", ret);
 		return ret;
 	}
 
@@ -286,7 +290,7 @@ static int midas_fm_set(struct snd_soc_dapm_widget *w,
 			struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct midas_priv *priv = snd_soc_card_get_drvdata(card);
+	struct midas_priv *priv = snd_soc_card_to_priv(card);
 
 	if (!priv->gpio_fm_sel)
 		return 0;
@@ -307,7 +311,7 @@ static int midas_line_set(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct midas_priv *priv = snd_soc_card_get_drvdata(card);
+	struct midas_priv *priv = snd_soc_card_to_priv(card);
 
 	if (!priv->gpio_lineout_sel)
 		return 0;
@@ -372,11 +376,13 @@ static int midas_set_bias_level(struct snd_soc_card *card,
 				struct snd_soc_dapm_context *dapm,
 				enum snd_soc_bias_level level)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_get_pcm_runtime(card,
-						  &card->dai_link[0]);
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct snd_soc_pcm_runtime *rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[0]);
 	struct snd_soc_dai *aif1_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *aif1_component = snd_soc_dai_to_component(aif1_dai);
+	struct device *aif1_dev = snd_soc_component_to_dev(aif1_component);
 
-	if (snd_soc_dapm_to_dev(dapm) != aif1_dai->dev)
+	if (snd_soc_dapm_to_dev(dapm) != aif1_dev)
 		return 0;
 
 	switch (level) {
@@ -393,17 +399,20 @@ static int midas_set_bias_level(struct snd_soc_card *card,
 
 static int midas_late_probe(struct snd_soc_card *card)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_get_pcm_runtime(card,
-							&card->dai_link[0]);
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct snd_soc_pcm_runtime *rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[0]);
 	struct snd_soc_dai *aif1_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct midas_priv *priv = snd_soc_card_get_drvdata(card);
+	struct snd_soc_component *aif1_component = snd_soc_dai_to_component(aif1_dai);
+	struct device *aif1_dev = snd_soc_component_to_dev(aif1_component);
+	struct midas_priv *priv = snd_soc_card_to_priv(card);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	/* Use MCLK2 as SYSCLK for boot */
 	ret = snd_soc_dai_set_sysclk(aif1_dai, WM8994_SYSCLK_MCLK2, MCLK2_RATE,
 				     SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(aif1_dai->dev, "Failed to switch to MCLK2: %d\n", ret);
+		dev_err(aif1_dev, "Failed to switch to MCLK2: %d\n", ret);
 		return ret;
 	}
 
@@ -419,7 +428,7 @@ static int midas_late_probe(struct snd_soc_card *card)
 		if (ret)
 			return ret;
 
-		wm8958_mic_detect(aif1_dai->component, &priv->headset_jack,
+		wm8958_mic_detect(aif1_component, &priv->headset_jack,
 				  NULL, NULL, NULL, NULL);
 	} else {
 		/* Some devices (n8000, t310) use a GPIO to detect the jack. */
@@ -430,7 +439,7 @@ static int midas_late_probe(struct snd_soc_card *card)
 				headset_jack_pins,
 				ARRAY_SIZE(headset_jack_pins));
 		if (ret) {
-			dev_err(card->dev,
+			dev_err(card_dev,
 				"Failed to set up headset pins: %d\n", ret);
 			return ret;
 		}
@@ -439,15 +448,15 @@ static int midas_late_probe(struct snd_soc_card *card)
 				ARRAY_SIZE(headset_jack_zones),
 				headset_jack_zones);
 		if (ret) {
-			dev_err(card->dev,
+			dev_err(card_dev,
 				"Failed to set up headset zones: %d\n", ret);
 			return ret;
 		}
 
-		headset_gpio[0].data = aif1_dai->component;
+		headset_gpio[0].data = aif1_component;
 		headset_gpio[0].desc = priv->gpio_headset_detect;
 
-		headset_gpio[1].data = aif1_dai->component;
+		headset_gpio[1].data = aif1_component;
 		headset_gpio[1].desc = priv->gpio_headset_key;
 
 		snd_jack_set_key(priv->headset_jack.jack,
@@ -461,7 +470,7 @@ static int midas_late_probe(struct snd_soc_card *card)
 				ARRAY_SIZE(headset_gpio),
 				headset_gpio);
 		if (ret)
-			dev_err(card->dev,
+			dev_err(card_dev,
 				"Failed to set up headset jack GPIOs: %d\n",
 				ret);
 
@@ -513,7 +522,7 @@ static struct snd_soc_dai_driver midas_ext_dai[] = {
 };
 
 static const struct snd_soc_component_driver midas_component = {
-	.name	= "midas-audio",
+	.name = "midas-audio",
 };
 
 SND_SOC_DAILINK_DEFS(wm1811_hifi,
@@ -588,7 +597,7 @@ static int midas_probe(struct platform_device *pdev)
 	if (!card || !priv)
 		return -ENOMEM;
 
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 
 	priv->gpio_fm_sel = devm_gpiod_get_optional(dev, "fm-sel", GPIOD_OUT_HIGH);
 	if (IS_ERR(priv->gpio_fm_sel))
@@ -685,7 +694,7 @@ static int midas_probe(struct platform_device *pdev)
 		}
 	}
 
-	ret = snd_soc_of_parse_card_name(card, "model");
+	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret < 0) {
 		dev_err(dev, "Card name is not specified\n");
 		return ret;
@@ -734,7 +743,7 @@ static int midas_probe(struct platform_device *pdev)
 		dai_link->platforms->of_node = cpu_dai_node;
 	}
 
-	ret = devm_snd_soc_register_component(dev, &midas_component,
+	ret = devm_snd_soc_component_register(dev, &midas_component,
 			midas_ext_dai, ARRAY_SIZE(midas_ext_dai));
 	if (ret < 0) {
 		dev_err(dev, "Failed to register component: %d\n", ret);

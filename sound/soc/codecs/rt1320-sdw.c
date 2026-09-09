@@ -1747,7 +1747,8 @@ static int rt1320_r0_cali_get(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rt1320->cali_done;
 	return 0;
@@ -1757,14 +1758,15 @@ static int rt1320_r0_cali_put(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(rt1320->component);
 	int ret;
 
 	if (!rt1320->hw_init)
 		return 0;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -2327,9 +2329,10 @@ static void rt1320_load_dspfw_work(struct work_struct *work)
 {
 	struct rt1320_sdw_priv *rt1320 =
 		container_of(work, struct rt1320_sdw_priv, load_dspfw_work);
+	struct device *dev = snd_soc_component_to_dev(rt1320->component);
 	int ret;
 
-	ret = pm_runtime_resume(rt1320->component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return;
 
@@ -2554,9 +2557,9 @@ static int rt1320_update_status(struct sdw_slave *slave,
 static int rt1320_pde11_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	unsigned char ps0 = 0x0, ps3 = 0x3;
 
 	switch (event) {
@@ -2582,9 +2585,9 @@ static int rt1320_pde11_event(struct snd_soc_dapm_widget *w,
 static int rt1320_pde23_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	unsigned char ps0 = 0x0, ps3 = 0x3;
 
 	switch (event) {
@@ -2613,7 +2616,8 @@ static int rt1320_set_gain_put(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	unsigned int gain_l_val, gain_r_val;
 	unsigned int lvalue, rvalue;
 	const unsigned int interval_offset = 0xc0;
@@ -2714,7 +2718,8 @@ static int rt1320_set_gain_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	unsigned int read_l, read_r, ctl_l = 0, ctl_r = 0;
@@ -2806,7 +2811,8 @@ static int rt1320_dmic_fu_capture_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	struct rt_sdca_dmic_kctrl_priv *p =
 		(struct rt_sdca_dmic_kctrl_priv *)kcontrol->private_value;
 	unsigned int i;
@@ -2821,7 +2827,8 @@ static int rt1320_dmic_fu_capture_put(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	struct rt_sdca_dmic_kctrl_priv *p =
 		(struct rt_sdca_dmic_kctrl_priv *)kcontrol->private_value;
 	int err, changed = 0, i;
@@ -2858,9 +2865,9 @@ static int rt1320_dmic_fu_info(struct snd_kcontrol *kcontrol,
 static int rt1320_dmic_fu_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -2937,7 +2944,8 @@ static int rt1320_r0_load_mode_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rt1320->r0_l_reg;
 	ucontrol->value.integer.value[1] = rt1320->r0_r_reg;
@@ -2949,7 +2957,8 @@ static int rt1320_r0_load_mode_put(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(rt1320->component);
 	int ret;
 
@@ -2960,7 +2969,7 @@ static int rt1320_r0_load_mode_put(struct snd_kcontrol *kcontrol,
 		ucontrol->value.integer.value[1] == 0)
 		return -EINVAL;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -2998,7 +3007,8 @@ static int rt1320_dspfw_load_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rt1320->fw_load_done;
 	return 0;
@@ -3008,14 +3018,15 @@ static int rt1320_dspfw_load_put(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
 	if (!rt1320->hw_init)
 		return 0;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -3026,8 +3037,8 @@ static int rt1320_dspfw_load_put(struct snd_kcontrol *kcontrol,
 	if (!ucontrol->value.integer.value[0])
 		rt1320->fw_load_done = false;
 
-	pm_runtime_mark_last_busy(component->dev);
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_mark_last_busy(dev);
+	pm_runtime_put_autosuspend(dev);
 	return 0;
 }
 
@@ -3035,7 +3046,8 @@ static int rt1320_rae_update_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rt1320->rae_update_done;
 	return 0;
@@ -3045,14 +3057,15 @@ static int rt1320_rae_update_put(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
 	if (!rt1320->hw_init)
 		return 0;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -3070,13 +3083,14 @@ static int rt1320_brown_out_put(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	int ret, changed = 0;
 
 	if (!rt1320->hw_init)
 		return 0;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -3098,7 +3112,8 @@ static int rt1320_brown_out_get(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rt1320->brown_out;
 
@@ -3109,7 +3124,8 @@ static int rt1320_r0_temperature_get(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rt1320->temp_l_calib;
 	ucontrol->value.integer.value[1] = rt1320->temp_r_calib;
@@ -3120,14 +3136,15 @@ static int rt1320_r0_temperature_put(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(rt1320->component);
 	int ret;
 
 	if (!rt1320->hw_init)
 		return 0;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -3230,31 +3247,32 @@ static const struct snd_soc_dapm_route rt1320_dapm_routes[] = {
 static int rt1320_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 				int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 	return 0;
 }
 
 static void rt1320_sdw_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static int rt1320_sdw_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1320_sdw_priv *rt1320 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	struct sdw_stream_config stream_config;
 	struct sdw_port_config port_config;
 	struct sdw_port_config dmic_port_config[2];
 	struct sdw_stream_runtime *sdw_stream;
+	int dai_id = snd_soc_dai_id(dai);
 	int retval, num_channels;
 	unsigned int sampling_rate;
 
-	dev_dbg(dai->dev, "%s %s", __func__, dai->name);
-	sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	dev_dbg(dev, "%s %s", __func__, snd_soc_dai_name(dai));
+	sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!sdw_stream)
 		return -EINVAL;
@@ -3266,14 +3284,14 @@ static int rt1320_sdw_hw_params(struct snd_pcm_substream *substream,
 	snd_sdw_params_to_config(substream, params, &stream_config, &port_config);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-		if (dai->id == RT1320_AIF1)
+		if (dai_id == RT1320_AIF1)
 			port_config.num = 1;
 		else
 			return -EINVAL;
 	} else {
-		if (dai->id == RT1320_AIF1)
+		if (dai_id == RT1320_AIF1)
 			port_config.num = 4;
-		else if (dai->id == RT1320_AIF2) {
+		else if (dai_id == RT1320_AIF2) {
 			switch (rt1320->dev_id) {
 			case RT1320_DEV_ID:
 				dmic_port_config[0].ch_mask = BIT(0) | BIT(1);
@@ -3293,10 +3311,10 @@ static int rt1320_sdw_hw_params(struct snd_pcm_substream *substream,
 			return -EINVAL;
 	}
 
-	if (dai->id == RT1320_AIF1)
+	if (dai_id == RT1320_AIF1)
 		retval = sdw_stream_add_slave(rt1320->sdw_slave, &stream_config,
 				&port_config, 1, sdw_stream);
-	else if (dai->id == RT1320_AIF2) {
+	else if (dai_id == RT1320_AIF2) {
 		switch (rt1320->dev_id) {
 		case RT1320_DEV_ID:
 			retval = sdw_stream_add_slave(rt1320->sdw_slave, &stream_config,
@@ -3307,13 +3325,13 @@ static int rt1320_sdw_hw_params(struct snd_pcm_substream *substream,
 				dmic_port_config, 1, sdw_stream);
 			break;
 		default:
-			dev_err(dai->dev, "%s: Unknown device ID %d\n", __func__, rt1320->dev_id);
+			dev_err(dev, "%s: Unknown device ID %d\n", __func__, rt1320->dev_id);
 			return -EINVAL;
 		}
 	} else
 		return -EINVAL;
 	if (retval) {
-		dev_err(dai->dev, "%s: Unable to configure port\n", __func__);
+		dev_err(dev, "%s: Unable to configure port\n", __func__);
 		return retval;
 	}
 
@@ -3338,13 +3356,12 @@ static int rt1320_sdw_hw_params(struct snd_pcm_substream *substream,
 		sampling_rate = RT1320_SDCA_RATE_192000HZ;
 		break;
 	default:
-		dev_err(component->dev, "%s: Rate %d is not supported\n",
-			__func__, params_rate(params));
+		dev_err(dev, "%s: Rate %d is not supported\n", __func__, params_rate(params));
 		return -EINVAL;
 	}
 
 	/* set sampling frequency */
-	if (dai->id == RT1320_AIF1)
+	if (dai_id == RT1320_AIF1)
 		regmap_write(rt1320->regmap,
 			SDW_SDCA_CTL(FUNC_NUM_AMP, RT1320_SDCA_ENT_CS21, RT1320_SDCA_CTL_SAMPLE_FREQ_INDEX, 0),
 			sampling_rate);
@@ -3365,11 +3382,11 @@ static int rt1320_sdw_hw_params(struct snd_pcm_substream *substream,
 static int rt1320_sdw_pcm_hw_free(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1320_sdw_priv *rt1320 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	struct sdw_stream_runtime *sdw_stream =
-		snd_soc_dai_get_dma_data(dai, substream);
+		snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!rt1320->sdw_slave)
 		return -EINVAL;
@@ -3421,7 +3438,8 @@ static const struct sdw_slave_ops rt1320_slave_ops = {
 
 static int rt1320_sdw_component_probe(struct snd_soc_component *component)
 {
-	struct rt1320_sdw_priv *rt1320 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1320_sdw_priv *rt1320 = dev_get_drvdata(dev);
 	int ret;
 
 	rt1320->component = component;
@@ -3429,7 +3447,7 @@ static int rt1320_sdw_component_probe(struct snd_soc_component *component)
 	if (!rt1320->first_hw_init)
 		return 0;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	dev_dbg(&rt1320->sdw_slave->dev, "%s pm_runtime_resume, ret=%d", __func__, ret);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
@@ -3561,7 +3579,7 @@ static int rt1320_sdw_init(struct device *dev, struct regmap *regmap,
 
 	INIT_WORK(&rt1320->load_dspfw_work, rt1320_load_dspfw_work);
 
-	ret =  devm_snd_soc_register_component(dev,
+	ret =  devm_snd_soc_component_register(dev,
 				&soc_component_sdw_rt1320,
 				rt1320_sdw_dai,
 				ARRAY_SIZE(rt1320_sdw_dai));

@@ -137,7 +137,7 @@ static int at91sam9g20ek_audio_probe(struct platform_device *pdev)
 	}
 
 	/* Parse device node info */
-	ret = snd_soc_of_parse_card_name(card, "atmel,model");
+	ret = snd_soc_card_of_parse_name(card, "atmel,model");
 	if (ret)
 		goto err;
 

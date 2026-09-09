@@ -111,7 +111,7 @@ static int audio_iio_aux_add_controls(struct snd_soc_component *component,
 		.private_value = (unsigned long)chan,
 	};
 
-	return snd_soc_add_component_controls(component, &control, 1);
+	return snd_soc_component_add_controls(component, &control, 1);
 }
 
 /*
@@ -165,7 +165,8 @@ static int audio_iio_aux_add_dapms(struct snd_soc_component *component,
 
 static int audio_iio_aux_component_probe(struct snd_soc_component *component)
 {
-	struct audio_iio_aux *iio_aux = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct audio_iio_aux *iio_aux = dev_get_drvdata(dev);
 	struct audio_iio_aux_chan *chan;
 	int ret;
 	int i;
@@ -175,14 +176,12 @@ static int audio_iio_aux_component_probe(struct snd_soc_component *component)
 
 		ret = iio_read_max_channel_raw(chan->iio_chan, &chan->max);
 		if (ret)
-			return dev_err_probe(component->dev, ret,
-					     "chan[%d] %s: Cannot get max raw value\n",
+			return dev_err_probe(dev, ret, "chan[%d] %s: Cannot get max raw value\n",
 					     i, chan->name);
 
 		ret = iio_read_min_channel_raw(chan->iio_chan, &chan->min);
 		if (ret)
-			return dev_err_probe(component->dev, ret,
-					     "chan[%d] %s: Cannot get min raw value\n",
+			return dev_err_probe(dev, ret, "chan[%d] %s: Cannot get min raw value\n",
 					     i, chan->name);
 
 		if (chan->min > chan->max) {
@@ -191,7 +190,7 @@ static int audio_iio_aux_component_probe(struct snd_soc_component *component)
 			 * later, just swap values here to ensure that the
 			 * minimum value is lower than the maximum value.
 			 */
-			dev_dbg(component->dev, "chan[%d] %s: Swap min and max\n",
+			dev_dbg(dev, "chan[%d] %s: Swap min and max\n",
 				i, chan->name);
 			swap(chan->min, chan->max);
 		}
@@ -200,8 +199,7 @@ static int audio_iio_aux_component_probe(struct snd_soc_component *component)
 		ret = iio_write_channel_raw(chan->iio_chan,
 					    chan->is_invert_range ? chan->max : chan->min);
 		if (ret)
-			return dev_err_probe(component->dev, ret,
-					     "chan[%d] %s: Cannot set initial value\n",
+			return dev_err_probe(dev, ret, "chan[%d] %s: Cannot set initial value\n",
 					     i, chan->name);
 
 		ret = audio_iio_aux_add_controls(component, chan);
@@ -212,7 +210,7 @@ static int audio_iio_aux_component_probe(struct snd_soc_component *component)
 		if (ret)
 			return ret;
 
-		dev_dbg(component->dev, "chan[%d]: Added %s (min=%d, max=%d, invert=%s)\n",
+		dev_dbg(dev, "chan[%d]: Added %s (min=%d, max=%d, invert=%s)\n",
 			i, chan->name, chan->min, chan->max,
 			str_on_off(chan->is_invert_range));
 	}
@@ -289,7 +287,7 @@ static int audio_iio_aux_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, iio_aux);
 
-	return devm_snd_soc_register_component(dev, &audio_iio_aux_component_driver,
+	return devm_snd_soc_component_register(dev, &audio_iio_aux_component_driver,
 					       NULL, 0);
 }
 

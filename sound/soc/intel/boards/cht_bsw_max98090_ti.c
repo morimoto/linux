@@ -44,7 +44,8 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
 	struct snd_soc_dai *codec_dai;
-	struct cht_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct cht_mc_private *ctx = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	/* See the comment in snd_cht_mc_probe() */
@@ -53,15 +54,14 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 
 	codec_dai = snd_soc_card_get_codec_dai(card, CHT_CODEC_DAI);
 	if (!codec_dai) {
-		dev_err(card->dev, "Codec dai not found; Unable to set platform clock\n");
+		dev_err(dev, "Codec dai not found; Unable to set platform clock\n");
 		return -EIO;
 	}
 
 	if (SND_SOC_DAPM_EVENT_ON(event)) {
 		ret = clk_prepare_enable(ctx->mclk);
 		if (ret < 0) {
-			dev_err(card->dev,
-				"could not configure MCLK state");
+			dev_err(dev, "could not configure MCLK state");
 			return ret;
 		}
 	} else {
@@ -186,8 +186,9 @@ static int cht_codec_init(struct snd_soc_pcm_runtime *runtime)
 {
 	int ret;
 	int jack_type;
-	struct cht_mc_private *ctx = snd_soc_card_get_drvdata(runtime->card);
+	struct cht_mc_private *ctx = snd_soc_card_to_priv(runtime->card);
 	struct snd_soc_jack *jack = &ctx->jack;
+	struct device *card_dev = snd_soc_card_to_dev(runtime->card);
 
 	if (ctx->ts3a227e_present) {
 		/*
@@ -209,7 +210,7 @@ static int cht_codec_init(struct snd_soc_pcm_runtime *runtime)
 		return ret;
 	}
 
-	ret = snd_soc_jack_add_gpiods(runtime->card->dev->parent, jack,
+	ret = snd_soc_jack_add_gpiods(card_dev->parent, jack,
 				      ARRAY_SIZE(hs_jack_gpios),
 				      hs_jack_gpios);
 	if (ret) {
@@ -288,9 +289,10 @@ static int cht_aif1_startup(struct snd_pcm_substream *substream)
 
 static int cht_max98090_headset_init(struct snd_soc_component *component)
 {
-	struct snd_soc_card *card = component->card;
-	struct cht_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct cht_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct snd_soc_jack *jack = &ctx->jack;
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	int jack_type;
 	int ret;
 
@@ -307,7 +309,7 @@ static int cht_max98090_headset_init(struct snd_soc_component *component)
 
 	ret = snd_soc_card_jack_new(card, "Headset Jack", jack_type, jack);
 	if (ret) {
-		dev_err(card->dev, "Headset Jack creation failed %d\n", ret);
+		dev_err(card_dev, "Headset Jack creation failed %d\n", ret);
 		return ret;
 	}
 
@@ -623,7 +625,7 @@ static int snd_cht_mc_probe(struct platform_device *pdev)
 static void snd_cht_mc_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
-	struct cht_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct cht_mc_private *ctx = snd_soc_card_to_priv(card);
 
 	if (ctx->quirks & QUIRK_PMC_PLT_CLK_0)
 		clk_disable_unprepare(ctx->mclk);

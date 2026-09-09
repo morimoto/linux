@@ -1192,14 +1192,14 @@ static int adc3xxx_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(dai->component);
-	struct adc3xxx *adc3xxx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adc3xxx *adc3xxx = dev_get_drvdata(dev);
 	int i, width = 16;
 	u8 iface_len, bdiv;
 
-	i = adc3xxx_get_divs(component->dev, adc3xxx->sysclk,
-			     params_rate(params), adc3xxx->pll_mode);
+	i = adc3xxx_get_divs(dev, adc3xxx->sysclk, params_rate(params), adc3xxx->pll_mode);
 
 	if (i < 0)
 		return i;
@@ -1223,7 +1223,7 @@ static int adc3xxx_hw_params(struct snd_pcm_substream *substream,
 		width = 32;
 		break;
 	default:
-		dev_err(component->dev, "Unsupported serial data format\n");
+		dev_err(dev, "Unsupported serial data format\n");
 		return -EINVAL;
 	}
 	snd_soc_component_update_bits(component, ADC3XXX_INTERFACE_CTRL_1,
@@ -1282,8 +1282,9 @@ static const char *adc3xxx_pll_mode_text(int pll_mode)
 static int adc3xxx_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct adc3xxx *adc3xxx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adc3xxx *adc3xxx = dev_get_drvdata(dev);
 	int ret;
 
 	ret = adc3xxx_parse_pll_mode(clk_id, &adc3xxx->pll_mode);
@@ -1291,16 +1292,17 @@ static int adc3xxx_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		return ret;
 
 	adc3xxx->sysclk = freq;
-	dev_dbg(component->dev, "Set sysclk to %u Hz, %s\n",
+	dev_dbg(dev, "Set sysclk to %u Hz, %s\n",
 		freq, adc3xxx_pll_mode_text(adc3xxx->pll_mode));
 	return 0;
 }
 
 static int adc3xxx_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct adc3xxx *adc3xxx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adc3xxx *adc3xxx = dev_get_drvdata(dev);
 	u8 clkdir = 0, format = 0;
 	int master = 0;
 	int ret;
@@ -1314,7 +1316,7 @@ static int adc3xxx_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 		master = 0;
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI clock setup\n");
+		dev_err(dev, "Invalid DAI clock setup\n");
 		return -EINVAL;
 	}
 
@@ -1339,7 +1341,7 @@ static int adc3xxx_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 		format = ADC3XXX_FORMAT_LJF;
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI format\n");
+		dev_err(dev, "Invalid DAI format\n");
 		return -EINVAL;
 	}
 
@@ -1490,7 +1492,7 @@ static int adc3xxx_i2c_probe(struct i2c_client *i2c)
 	/* Potentially set up pins used as GPIOs */
 	adc3xxx_init_gpio(adc3xxx);
 
-	ret = snd_soc_register_component(dev,
+	ret = snd_soc_component_register(dev,
 			&soc_component_dev_adc3xxx, &adc3xxx_dai, 1);
 	if (ret < 0) {
 		dev_err(dev, "Failed to register codec: %d\n", ret);
@@ -1510,7 +1512,7 @@ static void adc3xxx_i2c_remove(struct i2c_client *client)
 
 	clk_disable_unprepare(adc3xxx->mclk);
 	adc3xxx_free_gpio(adc3xxx);
-	snd_soc_unregister_component(&client->dev);
+	snd_soc_component_unregister(&client->dev);
 }
 
 static const struct of_device_id tlv320adc3xxx_of_match[] = {

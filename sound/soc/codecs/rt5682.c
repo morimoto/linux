@@ -868,12 +868,13 @@ EXPORT_SYMBOL_GPL(rt5682_sel_asrc_clk_src);
 
 static int rt5682_button_detect(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int btn_type, val;
 
 	val = snd_soc_component_read(component, RT5682_4BTN_IL_CMD_1);
 	btn_type = val & 0xfff0;
 	snd_soc_component_write(component, RT5682_4BTN_IL_CMD_1, val);
-	dev_dbg(component->dev, "%s btn_type=%x\n", __func__, btn_type);
+	dev_dbg(dev, "%s btn_type=%x\n", __func__, btn_type);
 	snd_soc_component_update_bits(component,
 		RT5682_SAR_IL_CMD_2, 0x10, 0x10);
 
@@ -883,7 +884,8 @@ static int rt5682_button_detect(struct snd_soc_component *component)
 static void rt5682_enable_push_button_irq(struct snd_soc_component *component,
 		bool enable)
 {
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 
 	if (enable) {
 		snd_soc_component_update_bits(component, RT5682_SAR_IL_CMD_1,
@@ -928,7 +930,8 @@ static void rt5682_enable_push_button_irq(struct snd_soc_component *component,
  */
 static int rt5682_headset_detect(struct snd_soc_component *component, int jack_insert)
 {
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	unsigned int val, count;
 
@@ -1008,14 +1011,15 @@ static int rt5682_headset_detect(struct snd_soc_component *component, int jack_i
 		rt5682->jack_type = 0;
 	}
 
-	dev_dbg(component->dev, "jack_type = %d\n", rt5682->jack_type);
+	dev_dbg(dev, "jack_type = %d\n", rt5682->jack_type);
 	return rt5682->jack_type;
 }
 
 static int rt5682_set_jack_detect(struct snd_soc_component *component,
 		struct snd_soc_jack *hs_jack, void *data)
 {
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 
 	rt5682->hs_jack = hs_jack;
 
@@ -1084,7 +1088,7 @@ static int rt5682_set_jack_detect(struct snd_soc_component *component,
 			break;
 
 		default:
-			dev_warn(component->dev, "Wrong JD source\n");
+			dev_warn(dev, "Wrong JD source\n");
 			break;
 		}
 	}
@@ -1097,10 +1101,17 @@ void rt5682_jack_detect_handler(struct work_struct *work)
 	struct rt5682_priv *rt5682 =
 		container_of(work, struct rt5682_priv, jack_detect_work.work);
 	struct snd_soc_dapm_context *dapm;
+	struct device *dev;
+	struct snd_soc_card *card;
 	int val, btn_type;
 
-	if (!rt5682->component ||
-	    !snd_soc_card_is_instantiated(rt5682->component->card)) {
+	if (!rt5682->component)
+		return;
+
+	dev = snd_soc_component_to_dev(rt5682->component);
+	card = snd_soc_component_to_card(rt5682->component);
+
+	if (!snd_soc_card_is_instantiated(card)) {
 		/* card not yet ready, try later */
 		mod_delayed_work(system_power_efficient_wq,
 				 &rt5682->jack_detect_work, msecs_to_jiffies(15));
@@ -1166,9 +1177,7 @@ void rt5682_jack_detect_handler(struct work_struct *work)
 			case 0x0000: /* unpressed */
 				break;
 			default:
-				dev_err(rt5682->component->dev,
-					"Unexpected button code 0x%04x\n",
-					btn_type);
+				dev_err(dev, "Unexpected button code 0x%04x\n", btn_type);
 				break;
 			}
 		}
@@ -1220,29 +1229,26 @@ static const struct snd_kcontrol_new rt5682_snd_controls[] = {
 static int rt5682_div_sel(struct rt5682_priv *rt5682,
 		int target, const int div[], int size)
 {
+	struct device *dev = snd_soc_component_to_dev(rt5682->component);
 	int i;
 
 	if (rt5682->sysclk < target) {
-		dev_err(rt5682->component->dev,
-			"sysclk rate %d is too low\n", rt5682->sysclk);
+		dev_err(dev, "sysclk rate %d is too low\n", rt5682->sysclk);
 		return 0;
 	}
 
 	for (i = 0; i < size - 1; i++) {
-		dev_dbg(rt5682->component->dev, "div[%d]=%d\n", i, div[i]);
+		dev_dbg(dev, "div[%d]=%d\n", i, div[i]);
 		if (target * div[i] == rt5682->sysclk)
 			return i;
 		if (target * div[i + 1] > rt5682->sysclk) {
-			dev_dbg(rt5682->component->dev,
-				"can't find div for sysclk %d\n",
-				rt5682->sysclk);
+			dev_dbg(dev, "can't find div for sysclk %d\n", rt5682->sysclk);
 			return i;
 		}
 	}
 
 	if (target * div[i] < rt5682->sysclk)
-		dev_err(rt5682->component->dev,
-			"sysclk rate %d is too high\n", rt5682->sysclk);
+		dev_err(dev, "sysclk rate %d is too high\n", rt5682->sysclk);
 
 	return size - 1;
 }
@@ -1260,9 +1266,9 @@ static int rt5682_div_sel(struct rt5682_priv *rt5682,
 static int set_dmic_clk(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 	int idx, dmic_clk_rate = 3072000;
 	static const int div[] = {2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128};
 
@@ -1280,9 +1286,9 @@ static int set_dmic_clk(struct snd_soc_dapm_widget *w,
 static int set_filter_clk(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 	int ref, val, reg, idx;
 	static const int div_f[] = {1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48};
 	static const int div_o[] = {1, 2, 4, 6, 8, 12, 16, 24, 32, 48};
@@ -1579,9 +1585,9 @@ static int rt5682_hp_event(struct snd_soc_dapm_widget *w,
 static int set_dmic_power(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 	unsigned int delay = 50, val;
 
 	if (rt5682->pdata.dmic_delay)
@@ -2064,7 +2070,7 @@ static const struct snd_soc_dapm_route rt5682_dapm_routes[] = {
 static int rt5682_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 		unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int cl, val = 0;
 
 	if (tx_mask || rx_mask)
@@ -2133,23 +2139,24 @@ static int rt5682_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 static int rt5682_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int len_1 = 0, len_2 = 0;
 	int pre_div, frame_size;
 
-	rt5682->lrck[dai->id] = params_rate(params);
-	pre_div = rl6231_get_clk_info(rt5682->sysclk, rt5682->lrck[dai->id]);
+	rt5682->lrck[dai_id] = params_rate(params);
+	pre_div = rl6231_get_clk_info(rt5682->sysclk, rt5682->lrck[dai_id]);
 
 	frame_size = snd_soc_params_to_frame_size(params);
 	if (frame_size < 0) {
-		dev_err(component->dev, "Unsupported frame size: %d\n",
-			frame_size);
+		dev_err(dev, "Unsupported frame size: %d\n", frame_size);
 		return -EINVAL;
 	}
 
-	dev_dbg(dai->dev, "lrck is %dHz and pre_div is %d for iis %d\n",
-		rt5682->lrck[dai->id], pre_div, dai->id);
+	dev_dbg(dev, "lrck is %dHz and pre_div is %d for iis %d\n",
+		rt5682->lrck[dai_id], pre_div, dai_id);
 
 	switch (params_width(params)) {
 	case 16:
@@ -2174,7 +2181,7 @@ static int rt5682_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT5682_AIF1:
 		snd_soc_component_update_bits(component, RT5682_I2S1_SDP,
 			RT5682_I2S1_DL_MASK, len_1);
@@ -2212,7 +2219,7 @@ static int rt5682_hw_params(struct snd_pcm_substream *substream,
 				RT5682_I2S2_MONO_DIS);
 		break;
 	default:
-		dev_err(component->dev, "Invalid dai->id: %d\n", dai->id);
+		dev_err(dev, "Invalid dai_id: %d\n", dai_id);
 		return -EINVAL;
 	}
 
@@ -2221,16 +2228,18 @@ static int rt5682_hw_params(struct snd_pcm_substream *substream,
 
 static int rt5682_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int reg_val = 0, tdm_ctrl = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
-		rt5682->master[dai->id] = 1;
+		rt5682->master[dai_id] = 1;
 		break;
 	case SND_SOC_DAIFMT_CBC_CFC:
-		rt5682->master[dai->id] = 0;
+		rt5682->master[dai_id] = 0;
 		break;
 	default:
 		return -EINVAL;
@@ -2244,13 +2253,13 @@ static int rt5682_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		tdm_ctrl |= RT5682_TDM_S_BP_INV;
 		break;
 	case SND_SOC_DAIFMT_NB_IF:
-		if (dai->id == RT5682_AIF1)
+		if (dai_id == RT5682_AIF1)
 			tdm_ctrl |= RT5682_TDM_S_LP_INV | RT5682_TDM_M_BP_INV;
 		else
 			return -EINVAL;
 		break;
 	case SND_SOC_DAIFMT_IB_IF:
-		if (dai->id == RT5682_AIF1)
+		if (dai_id == RT5682_AIF1)
 			tdm_ctrl |= RT5682_TDM_S_BP_INV | RT5682_TDM_S_LP_INV |
 				    RT5682_TDM_M_BP_INV | RT5682_TDM_M_LP_INV;
 		else
@@ -2279,7 +2288,7 @@ static int rt5682_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT5682_AIF1:
 		snd_soc_component_update_bits(component, RT5682_I2S1_SDP,
 			RT5682_I2S_DF_MASK, reg_val);
@@ -2287,17 +2296,17 @@ static int rt5682_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 			RT5682_TDM_MS_MASK | RT5682_TDM_S_BP_MASK |
 			RT5682_TDM_DF_MASK | RT5682_TDM_M_BP_MASK |
 			RT5682_TDM_M_LP_MASK | RT5682_TDM_S_LP_MASK,
-			tdm_ctrl | rt5682->master[dai->id]);
+			tdm_ctrl | rt5682->master[dai_id]);
 		break;
 	case RT5682_AIF2:
-		if (rt5682->master[dai->id] == 0)
+		if (rt5682->master[dai_id] == 0)
 			reg_val |= RT5682_I2S2_MS_S;
 		snd_soc_component_update_bits(component, RT5682_I2S2_SDP,
 			RT5682_I2S2_MS_MASK | RT5682_I2S_BP_MASK |
 			RT5682_I2S_DF_MASK, reg_val);
 		break;
 	default:
-		dev_err(component->dev, "Invalid dai->id: %d\n", dai->id);
+		dev_err(dev, "Invalid dai_id: %d\n", dai_id);
 		return -EINVAL;
 	}
 	return 0;
@@ -2306,7 +2315,8 @@ static int rt5682_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt5682_set_component_sysclk(struct snd_soc_component *component,
 		int clk_id, int source, unsigned int freq, int dir)
 {
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0, src = 0;
 
 	if (freq == rt5682->sysclk && clk_id == rt5682->sysclk_src)
@@ -2330,7 +2340,7 @@ static int rt5682_set_component_sysclk(struct snd_soc_component *component,
 		src = RT5682_CLK_SRC_RCCLK;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clock id (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock id (%d)\n", clk_id);
 		return -EINVAL;
 	}
 	snd_soc_component_update_bits(component, RT5682_GLB_CLK,
@@ -2345,8 +2355,7 @@ static int rt5682_set_component_sysclk(struct snd_soc_component *component,
 	rt5682->sysclk = freq;
 	rt5682->sysclk_src = clk_id;
 
-	dev_dbg(component->dev, "Sysclk is %dHz and clock id is %d\n",
-		freq, clk_id);
+	dev_dbg(dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
 
 	return 0;
 }
@@ -2355,7 +2364,8 @@ static int rt5682_set_component_pll(struct snd_soc_component *component,
 		int pll_id, int source, unsigned int freq_in,
 		unsigned int freq_out)
 {
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 	struct rl6231_pll_code pll_code, pll2f_code, pll2b_code;
 	unsigned int pll2_fout1, pll2_ps_val;
 	int ret;
@@ -2366,7 +2376,7 @@ static int rt5682_set_component_pll(struct snd_soc_component *component,
 		return 0;
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 
 		rt5682->pll_in[pll_id] = 0;
 		rt5682->pll_out[pll_id] = 0;
@@ -2383,8 +2393,7 @@ static int rt5682_set_component_pll(struct snd_soc_component *component,
 				RT5682_PLL2_SRC_MCLK);
 			break;
 		default:
-			dev_err(component->dev, "Unknown PLL2 Source %d\n",
-				source);
+			dev_err(dev, "Unknown PLL2 Source %d\n", source);
 			return -EINVAL;
 		}
 
@@ -2395,11 +2404,10 @@ static int rt5682_set_component_pll(struct snd_soc_component *component,
 		pll2_fout1 = 3840000;
 		ret = rl6231_pll_calc(freq_in, pll2_fout1, &pll2f_code);
 		if (ret < 0) {
-			dev_err(component->dev, "Unsupported input clock %d\n",
-				freq_in);
+			dev_err(dev, "Unsupported input clock %d\n", freq_in);
 			return ret;
 		}
-		dev_dbg(component->dev, "PLL2F: fin=%d fout=%d bypass=%d m=%d n=%d k=%d\n",
+		dev_dbg(dev, "PLL2F: fin=%d fout=%d bypass=%d m=%d n=%d k=%d\n",
 			freq_in, pll2_fout1,
 			pll2f_code.m_bp,
 			(pll2f_code.m_bp ? 0 : pll2f_code.m_code),
@@ -2407,11 +2415,10 @@ static int rt5682_set_component_pll(struct snd_soc_component *component,
 
 		ret = rl6231_pll_calc(pll2_fout1, freq_out, &pll2b_code);
 		if (ret < 0) {
-			dev_err(component->dev, "Unsupported input clock %d\n",
-				pll2_fout1);
+			dev_err(dev, "Unsupported input clock %d\n", pll2_fout1);
 			return ret;
 		}
-		dev_dbg(component->dev, "PLL2B: fin=%d fout=%d bypass=%d m=%d n=%d k=%d\n",
+		dev_dbg(dev, "PLL2B: fin=%d fout=%d bypass=%d m=%d n=%d k=%d\n",
 			pll2_fout1, freq_out,
 			pll2b_code.m_bp,
 			(pll2b_code.m_bp ? 0 : pll2b_code.m_code),
@@ -2451,19 +2458,17 @@ static int rt5682_set_component_pll(struct snd_soc_component *component,
 				RT5682_PLL1_SRC_BCLK1);
 			break;
 		default:
-			dev_err(component->dev, "Unknown PLL1 Source %d\n",
-				source);
+			dev_err(dev, "Unknown PLL1 Source %d\n", source);
 			return -EINVAL;
 		}
 
 		ret = rl6231_pll_calc(freq_in, freq_out, &pll_code);
 		if (ret < 0) {
-			dev_err(component->dev, "Unsupported input clock %d\n",
-				freq_in);
+			dev_err(dev, "Unsupported input clock %d\n", freq_in);
 			return ret;
 		}
 
-		dev_dbg(component->dev, "bypass=%d m=%d n=%d k=%d\n",
+		dev_dbg(dev, "bypass=%d m=%d n=%d k=%d\n",
 			pll_code.m_bp, (pll_code.m_bp ? 0 : pll_code.m_code),
 			pll_code.n_code, pll_code.k_code);
 
@@ -2483,10 +2488,12 @@ static int rt5682_set_component_pll(struct snd_soc_component *component,
 
 static int rt5682_set_bclk1_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	rt5682->bclk[dai->id] = ratio;
+	rt5682->bclk[dai_id] = ratio;
 
 	switch (ratio) {
 	case 256:
@@ -2506,7 +2513,7 @@ static int rt5682_set_bclk1_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 			RT5682_TDM_BCLK_MS1_MASK, RT5682_TDM_BCLK_MS1_32);
 		break;
 	default:
-		dev_err(dai->dev, "Invalid bclk1 ratio %d\n", ratio);
+		dev_err(dev, "Invalid bclk1 ratio %d\n", ratio);
 		return -EINVAL;
 	}
 
@@ -2515,10 +2522,12 @@ static int rt5682_set_bclk1_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 
 static int rt5682_set_bclk2_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	rt5682->bclk[dai->id] = ratio;
+	rt5682->bclk[dai_id] = ratio;
 
 	switch (ratio) {
 	case 64:
@@ -2532,7 +2541,7 @@ static int rt5682_set_bclk2_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 			RT5682_I2S2_BCLK_MS2_32);
 		break;
 	default:
-		dev_err(dai->dev, "Invalid bclk2 ratio %d\n", ratio);
+		dev_err(dev, "Invalid bclk2 ratio %d\n", ratio);
 		return -EINVAL;
 	}
 
@@ -2542,7 +2551,8 @@ static int rt5682_set_bclk2_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 static int rt5682_set_bias_level(struct snd_soc_component *component,
 		enum snd_soc_bias_level level)
 {
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_PREPARE:
@@ -2839,7 +2849,7 @@ static int rt5682_bclk_set_rate(struct clk_hw *hw, unsigned long rate,
 	factor = rt5682_bclk_get_factor(rate, parent_rate);
 
 	for_each_component_dais(component, dai)
-		if (dai->id == RT5682_AIF1)
+		if (snd_soc_dai_id(dai) == RT5682_AIF1)
 			return rt5682_set_bclk1_ratio(dai, factor);
 
 	dev_err(rt5682->i2c_dev, "dai %d not found in component\n",
@@ -2928,7 +2938,8 @@ EXPORT_SYMBOL_GPL(rt5682_register_dai_clks);
 
 static int rt5682_probe(struct snd_soc_component *component)
 {
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -2948,7 +2959,8 @@ static int rt5682_probe(struct snd_soc_component *component)
 
 static void rt5682_remove(struct snd_soc_component *component)
 {
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 
 	rt5682_reset(rt5682);
 }
@@ -2956,7 +2968,8 @@ static void rt5682_remove(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int rt5682_suspend(struct snd_soc_component *component)
 {
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 	unsigned int val;
 
 	if (rt5682->is_sdw)
@@ -3009,7 +3022,8 @@ static int rt5682_suspend(struct snd_soc_component *component)
 
 static int rt5682_resume(struct snd_soc_component *component)
 {
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 
 	if (rt5682->is_sdw)
 		return 0;
@@ -3138,6 +3152,7 @@ EXPORT_SYMBOL_GPL(rt5682_get_ldo1);
 
 void rt5682_calibrate(struct rt5682_priv *rt5682)
 {
+	struct device *dev = snd_soc_component_to_dev(rt5682->component);
 	int value, count;
 
 	guard(mutex)(&rt5682->calibrate_mutex);
@@ -3176,7 +3191,7 @@ void rt5682_calibrate(struct rt5682_priv *rt5682)
 	}
 
 	if (count >= 60)
-		dev_err(rt5682->component->dev, "HP Calibration Failure\n");
+		dev_err(dev, "HP Calibration Failure\n");
 
 	/* restore settings */
 	regmap_write(rt5682->regmap, RT5682_PWR_ANLG_1, 0x002f);

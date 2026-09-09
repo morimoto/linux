@@ -286,8 +286,9 @@ static inline int get_coeff(u8 vddd, u8 dmic, int mclk, int rate)
 static int es8375_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8375_priv *es8375 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8375_priv *es8375 = dev_get_drvdata(dev);
 	int par_width = params_width(params);
 	u8 dmic_enable, iface = 0;
 	unsigned int regv;
@@ -318,7 +319,7 @@ static int es8375_hw_params(struct snd_pcm_substream *substream,
 
 	coeff = get_coeff(es8375->vddd, dmic_enable, es8375->mclk_freq, params_rate(params));
 	if (coeff < 0) {
-		dev_warn(component->dev, "Clock coefficients do not match");
+		dev_warn(dev, "Clock coefficients do not match");
 		return coeff;
 	}
 	regmap_write(es8375->regmap, ES8375_CLK_MGR4,
@@ -362,8 +363,9 @@ static int es8375_hw_params(struct snd_pcm_substream *substream,
 static int es8375_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 		unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8375_priv *es8375 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8375_priv *es8375 = dev_get_drvdata(dev);
 
 	es8375->mclk_freq = freq;
 
@@ -372,8 +374,9 @@ static int es8375_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 static int es8375_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8375_priv *es8375 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8375_priv *es8375 = dev_get_drvdata(dev);
 	unsigned int iface, codeciface;
 
 	regmap_read(es8375->regmap, ES8375_SDP, &codeciface);
@@ -445,14 +448,15 @@ static int es8375_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int es8375_set_bias_level(struct snd_soc_component *component,
 		enum snd_soc_bias_level level)
 {
-	struct es8375_priv *es8375 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8375_priv *es8375 = dev_get_drvdata(dev);
 	int ret;
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
 		ret = clk_prepare_enable(es8375->mclk);
 		if (ret) {
-			dev_err(component->dev, "unable to prepare mclk\n");
+			dev_err(dev, "unable to prepare mclk\n");
 			return  ret;
 		}
 		regmap_write(es8375->regmap, ES8375_CSM1, 0xA6);
@@ -471,8 +475,9 @@ static int es8375_set_bias_level(struct snd_soc_component *component,
 
 static int es8375_mute(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8375_priv *es8375 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8375_priv *es8375 = dev_get_drvdata(dev);
 
 	if (mute) {
 		if (stream == SNDRV_PCM_STREAM_PLAYBACK)
@@ -535,7 +540,8 @@ static struct snd_soc_dai_driver es8375_dai = {
 
 static void es8375_init(struct snd_soc_component *component)
 {
-	struct es8375_priv *es8375 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8375_priv *es8375 = dev_get_drvdata(dev);
 
 	regmap_write(es8375->regmap, ES8375_CLK_MGR10, 0x95);
 	regmap_write(es8375->regmap, ES8375_CLK_MGR3, 0x48);
@@ -577,7 +583,8 @@ static void es8375_init(struct snd_soc_component *component)
 
 static int es8375_suspend(struct snd_soc_component *component)
 {
-	struct es8375_priv *es8375 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8375_priv *es8375 = dev_get_drvdata(dev);
 
 	regmap_write(es8375->regmap, ES8375_CSM1, 0x96);
 	regcache_cache_only(es8375->regmap, true);
@@ -587,7 +594,8 @@ static int es8375_suspend(struct snd_soc_component *component)
 
 static int es8375_resume(struct snd_soc_component *component)
 {
-	struct es8375_priv *es8375 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8375_priv *es8375 = dev_get_drvdata(dev);
 	unsigned int reg;
 
 	regcache_cache_only(es8375->regmap, false);
@@ -607,7 +615,8 @@ static int es8375_resume(struct snd_soc_component *component)
 
 static int es8375_codec_probe(struct snd_soc_component *component)
 {
-	struct es8375_priv *es8375 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8375_priv *es8375 = dev_get_drvdata(dev);
 
 	es8375->mastermode = 0;
 
@@ -740,7 +749,7 @@ static int es8375_i2c_probe(struct i2c_client *i2c_client)
 		return ret;
 	}
 
-	return devm_snd_soc_register_component(&i2c_client->dev, &es8375_codec_driver,
+	return devm_snd_soc_component_register(&i2c_client->dev, &es8375_codec_driver,
 			&es8375_dai, 1);
 }
 

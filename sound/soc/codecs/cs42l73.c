@@ -489,7 +489,8 @@ static int cs42l73_spklo_spk_amp_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs42l73_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l73_private *priv = dev_get_drvdata(dev);
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMD:
 		/* 150 ms delay between setting PDN and MCLKDIS */
@@ -505,7 +506,8 @@ static int cs42l73_ear_amp_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs42l73_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l73_private *priv = dev_get_drvdata(dev);
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMD:
 		/* 50 ms delay between setting PDN and MCLKDIS */
@@ -523,7 +525,8 @@ static int cs42l73_hp_amp_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs42l73_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l73_private *priv = dev_get_drvdata(dev);
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMD:
 		/* 30 ms delay between setting PDN and MCLKDIS */
@@ -882,8 +885,9 @@ static int cs42l73_get_mclk_coeff(int mclk, int srate)
 
 static int cs42l73_set_mclk(struct snd_soc_dai *dai, unsigned int freq)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l73_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l73_private *priv = dev_get_drvdata(dev);
 
 	int mclkx_coeff;
 	u32 mclk = 0;
@@ -897,7 +901,7 @@ static int cs42l73_set_mclk(struct snd_soc_dai *dai, unsigned int freq)
 	mclk = cs42l73_mclkx_coeffs[mclkx_coeff].mclkx /
 		cs42l73_mclkx_coeffs[mclkx_coeff].ratio;
 
-	dev_dbg(component->dev, "MCLK%u %u  <-> internal MCLK %u\n",
+	dev_dbg(dev, "MCLK%u %u  <-> internal MCLK %u\n",
 		 priv->mclksel + 1, cs42l73_mclkx_coeffs[mclkx_coeff].mclkx,
 		 mclk);
 
@@ -915,8 +919,9 @@ static int cs42l73_set_mclk(struct snd_soc_dai *dai, unsigned int freq)
 static int cs42l73_set_sysclk(struct snd_soc_dai *dai,
 			      int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l73_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l73_private *priv = dev_get_drvdata(dev);
 
 	switch (clk_id) {
 	case CS42L73_CLKID_MCLK1:
@@ -928,8 +933,7 @@ static int cs42l73_set_sysclk(struct snd_soc_dai *dai,
 	}
 
 	if ((cs42l73_set_mclk(dai, freq)) < 0) {
-		dev_err(component->dev, "Unable to set MCLK for dai %s\n",
-			dai->name);
+		dev_err(dev, "Unable to set MCLK for dai %s\n", snd_soc_dai_name(dai));
 		return -EINVAL;
 	}
 
@@ -940,9 +944,10 @@ static int cs42l73_set_sysclk(struct snd_soc_dai *dai,
 
 static int cs42l73_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs42l73_private *priv = snd_soc_component_get_drvdata(component);
-	u8 id = codec_dai->id;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l73_private *priv = dev_get_drvdata(dev);
+	int id = snd_soc_dai_id(codec_dai);
 	unsigned int inv, format;
 	u8 spc, mmcc;
 
@@ -972,13 +977,11 @@ static int cs42l73_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	case SND_SOC_DAIFMT_DSP_A:
 	case SND_SOC_DAIFMT_DSP_B:
 		if (mmcc & CS42L73_MS_MASTER) {
-			dev_err(component->dev,
-				"PCM format in slave mode only\n");
+			dev_err(dev, "PCM format in slave mode only\n");
 			return -EINVAL;
 		}
 		if (id == CS42L73_ASP) {
-			dev_err(component->dev,
-				"PCM format is not supported on ASP port\n");
+			dev_err(dev, "PCM format is not supported on ASP port\n");
 			return -EINVAL;
 		}
 		spc |= CS42L73_SPDIF_PCM;
@@ -1053,9 +1056,10 @@ static int cs42l73_pcm_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l73_private *priv = snd_soc_component_get_drvdata(component);
-	int id = dai->id;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l73_private *priv = dev_get_drvdata(dev);
+	int id = snd_soc_dai_id(dai);
 	int mclk_coeff;
 	int srate = params_rate(params);
 
@@ -1068,7 +1072,7 @@ static int cs42l73_pcm_hw_params(struct snd_pcm_substream *substream,
 		if (mclk_coeff < 0)
 			return -EINVAL;
 
-		dev_dbg(component->dev,
+		dev_dbg(dev,
 			 "DAI[%d]: MCLK %u, srate %u, MMCC[5:0] = %x\n",
 			 id, priv->mclk, srate,
 			 cs42l73_mclk_coeffs[mclk_coeff].mmcc);
@@ -1100,7 +1104,8 @@ static int cs42l73_pcm_hw_params(struct snd_pcm_substream *substream,
 static int cs42l73_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
-	struct cs42l73_private *cs42l73 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l73_private *cs42l73 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -1138,8 +1143,8 @@ static int cs42l73_set_bias_level(struct snd_soc_component *component,
 
 static int cs42l73_set_tristate(struct snd_soc_dai *dai, int tristate)
 {
-	struct snd_soc_component *component = dai->component;
-	int id = dai->id;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	int id = snd_soc_dai_id(dai);
 
 	return snd_soc_component_update_bits(component, CS42L73_SPC(id), CS42L73_SP_3ST,
 				   tristate << 7);
@@ -1243,7 +1248,8 @@ static struct snd_soc_dai_driver cs42l73_dai[] = {
 
 static int cs42l73_probe(struct snd_soc_component *component)
 {
-	struct cs42l73_private *cs42l73 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l73_private *cs42l73 = dev_get_drvdata(dev);
 
 	/* Set Charge Pump Frequency */
 	if (cs42l73->pdata.chgfreq)
@@ -1355,7 +1361,7 @@ static int cs42l73_i2c_probe(struct i2c_client *i2c_client)
 	dev_info(&i2c_client->dev,
 		 "Cirrus Logic CS42L73, Revision: %02X\n", reg & 0xFF);
 
-	ret = devm_snd_soc_register_component(&i2c_client->dev,
+	ret = devm_snd_soc_component_register(&i2c_client->dev,
 			&soc_component_dev_cs42l73, cs42l73_dai,
 			ARRAY_SIZE(cs42l73_dai));
 	if (ret < 0)

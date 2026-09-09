@@ -145,7 +145,8 @@ static int mchp_pdmc_sinc_order_get(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct mchp_pdmc *dd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mchp_pdmc *dd = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int item;
 
@@ -159,7 +160,8 @@ static int mchp_pdmc_sinc_order_put(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct mchp_pdmc *dd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mchp_pdmc *dd = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int *item = uvalue->value.enumerated.item;
 	unsigned int val;
@@ -184,7 +186,8 @@ static int mchp_pdmc_af_get(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct mchp_pdmc *dd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mchp_pdmc *dd = dev_get_drvdata(dev);
 
 	uvalue->value.integer.value[0] = !!dd->audio_filter_en;
 
@@ -195,7 +198,8 @@ static int mchp_pdmc_af_put(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct mchp_pdmc *dd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mchp_pdmc *dd = dev_get_drvdata(dev);
 	bool af = uvalue->value.integer.value[0] ? true : false;
 
 	if (atomic_read(&dd->busy_stream))
@@ -423,7 +427,9 @@ static const struct snd_pcm_hw_constraint_list mchp_pdmc_chan_constr[] = {
 static int mchp_pdmc_startup(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct mchp_pdmc *dd = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mchp_pdmc *dd = dev_get_drvdata(dev);
 
 	regmap_write(dd->regmap, MCHP_PDMC_CR, MCHP_PDMC_CR_SWRST);
 
@@ -435,9 +441,11 @@ static int mchp_pdmc_startup(struct snd_pcm_substream *substream,
 
 static int mchp_pdmc_dai_probe(struct snd_soc_dai *dai)
 {
-	struct mchp_pdmc *dd = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mchp_pdmc *dd = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, NULL, &dd->addr);
+	snd_soc_dai_stream_dma_data_set_capture(dai, &dd->addr);
 
 	return 0;
 }
@@ -521,8 +529,9 @@ static int mchp_pdmc_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *dai)
 {
-	struct mchp_pdmc *dd = snd_soc_dai_get_drvdata(dai);
-	struct snd_soc_component *comp = dai->component;
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct mchp_pdmc *dd = dev_get_drvdata(dev);
 	unsigned long gclk_rate = 0;
 	unsigned long best_diff_rate = ~0UL;
 	unsigned int channels = params_channels(params);
@@ -537,12 +546,12 @@ static int mchp_pdmc_hw_params(struct snd_pcm_substream *substream,
 	int i;
 	int ret;
 
-	dev_dbg(comp->dev, "%s() rate=%u format=%#x width=%u channels=%u period_bytes=%d\n",
+	dev_dbg(dev, "%s() rate=%u format=%#x width=%u channels=%u period_bytes=%d\n",
 		__func__, params_rate(params), params_format(params),
 		params_width(params), params_channels(params), period_bytes);
 
 	if (channels > dd->mic_no) {
-		dev_err(comp->dev, "more channels %u than microphones %d\n",
+		dev_err(dev, "more channels %u than microphones %d\n",
 			channels, dd->mic_no);
 		return -EINVAL;
 	}
@@ -578,7 +587,7 @@ static int mchp_pdmc_hw_params(struct snd_pcm_substream *substream,
 		}
 	}
 	if (!gclk_rate) {
-		dev_err(comp->dev, "invalid sampling rate: %u\n", fs);
+		dev_err(dev, "invalid sampling rate: %u\n", fs);
 		return -EINVAL;
 	}
 
@@ -589,7 +598,7 @@ static int mchp_pdmc_hw_params(struct snd_pcm_substream *substream,
 	ret = clk_set_rate(dd->gclk, gclk_rate);
 	clk_prepare_enable(dd->gclk);
 	if (ret) {
-		dev_err(comp->dev, "unable to set rate %lu to GCLK: %d\n",
+		dev_err(dev, "unable to set rate %lu to GCLK: %d\n",
 			gclk_rate, ret);
 		return ret;
 	}
@@ -601,7 +610,7 @@ static int mchp_pdmc_hw_params(struct snd_pcm_substream *substream,
 	maxburst = mchp_pdmc_period_to_maxburst(period_bytes, sample_bytes);
 	dd->addr.maxburst = maxburst;
 	mr_val |= FIELD_PREP(MCHP_PDMC_MR_CHUNK_MASK, dd->addr.maxburst);
-	dev_dbg(comp->dev, "maxburst set to %d\n", dd->addr.maxburst);
+	dev_dbg(dev, "maxburst set to %d\n", dd->addr.maxburst);
 
 	snd_soc_component_update_bits(comp, MCHP_PDMC_MR,
 				      MCHP_PDMC_MR_OSR_MASK |
@@ -640,8 +649,9 @@ static void mchp_pdmc_noise_filter_workaround(struct mchp_pdmc *dd)
 static int mchp_pdmc_trigger(struct snd_pcm_substream *substream,
 			     int cmd, struct snd_soc_dai *dai)
 {
-	struct mchp_pdmc *dd = snd_soc_dai_get_drvdata(dai);
-	struct snd_soc_component *cpu = dai->component;
+	struct snd_soc_component *cpu = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(cpu);
+	struct mchp_pdmc *dd = dev_get_drvdata(dev);
 #ifdef DEBUG
 	u32 val;
 #endif
@@ -731,7 +741,9 @@ static int mchp_pdmc_add_chmap_ctls(struct snd_pcm *pcm, struct mchp_pdmc *dd)
 static int mchp_pdmc_pcm_new(struct snd_soc_pcm_runtime *rtd,
 			     struct snd_soc_dai *dai)
 {
-	struct mchp_pdmc *dd = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mchp_pdmc *dd = dev_get_drvdata(dev);
 	int ret;
 
 	ret = mchp_pdmc_add_chmap_ctls(rtd->pcm, dd);
@@ -1095,7 +1107,7 @@ static int mchp_pdmc_probe(struct platform_device *pdev)
 		goto pm_runtime_suspend;
 	}
 
-	ret = devm_snd_soc_register_component(dev, &mchp_pdmc_dai_component,
+	ret = devm_snd_soc_component_register(dev, &mchp_pdmc_dai_component,
 					      &mchp_pdmc_dai, 1);
 	if (ret) {
 		dev_err(dev, "could not register CPU DAI: %d\n", ret);

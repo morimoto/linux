@@ -81,7 +81,8 @@ static void cs35l56_test_system_name_from_ssid(struct kunit *test)
 	struct cs35l56_private *cs35l56 = priv->cs35l56_priv;
 
 	cs35l56->speaker_id = -1;
-	snd_soc_card_set_pci_ssid(cs35l56->component->card, 0x12b4, 0xa7c8);
+	snd_soc_card_set_pci_ssid(snd_soc_component_to_card(cs35l56->component),
+				  0x12b4, 0xa7c8);
 
 	KUNIT_EXPECT_EQ(test, cs35l56_get_firmware_uid(cs35l56), 0);
 	KUNIT_EXPECT_EQ(test, cs35l56_set_fw_name(cs35l56->component), 0);
@@ -94,7 +95,8 @@ static void cs35l56_test_system_name_from_ssid_and_spkid(struct kunit *test)
 	struct cs35l56_private *cs35l56 = priv->cs35l56_priv;
 
 	cs35l56->speaker_id = 1;
-	snd_soc_card_set_pci_ssid(cs35l56->component->card, 0x12b4, 0xa7c8);
+	snd_soc_card_set_pci_ssid(snd_soc_component_to_card(cs35l56->component),
+				  0x12b4, 0xa7c8);
 
 	KUNIT_EXPECT_EQ(test, cs35l56_get_firmware_uid(cs35l56), 0);
 	KUNIT_EXPECT_EQ(test, cs35l56_set_fw_name(cs35l56->component), 0);
@@ -255,7 +257,8 @@ static void cs35l56_test_ssidexv2_suffix_sdw(struct kunit *test)
 	cs35l56->sdw_unique_id = 5;
 
 	/* Set a SSID to enable lookup of SSIDExV2 */
-	snd_soc_card_set_pci_ssid(cs35l56->component->card, PCI_VENDOR_ID_DELL, 0x1234);
+	snd_soc_card_set_pci_ssid(snd_soc_component_to_card(cs35l56->component),
+				  PCI_VENDOR_ID_DELL, 0x1234);
 
 	priv->ssidexv2 = "10281234_01_BB_CC";
 
@@ -281,7 +284,8 @@ static void cs35l56_test_ssidexv2_suffix_i2cspi(struct kunit *test)
 	test_hack_component_setup_name_prefix(cs35l56->component, "AMP1");
 
 	/* Set a SSID to enable lookup of SSIDExV2 */
-	snd_soc_card_set_pci_ssid(cs35l56->component->card, PCI_VENDOR_ID_DELL, 0x1234);
+	snd_soc_card_set_pci_ssid(snd_soc_component_to_card(cs35l56->component),
+				  PCI_VENDOR_ID_DELL, 0x1234);
 
 	priv->ssidexv2 = "10281234_01_BB_CC";
 
@@ -320,7 +324,8 @@ static void cs35l56_test_l56_b0_ssidexv2_ignored_suffix_sdw(struct kunit *test)
 	cs35l56->sdw_unique_id = 5;
 
 	/* Set a SSID to enable lookup of SSIDExV2 */
-	snd_soc_card_set_pci_ssid(cs35l56->component->card, PCI_VENDOR_ID_DELL, 0x1234);
+	snd_soc_card_set_pci_ssid(snd_soc_component_to_card(cs35l56->component),
+				  PCI_VENDOR_ID_DELL, 0x1234);
 
 	priv->ssidexv2 = "10281234_01_BB_CC";
 
@@ -554,7 +559,7 @@ static int cs35l56_test_case_init_common(struct kunit *test)
 
 	cs35l56->component = snd_soc_component_alloc(cs35l56->base.dev);
 	KUNIT_ASSERT_NOT_NULL(test, cs35l56->component);
-	snd_soc_component_set_drvdata(cs35l56->component, cs35l56);
+	dev_set_drvdata(cs35l56->base.dev, cs35l56);
 	test_hack_component_setup(cs35l56->component, card, NULL);
 
 	if (param) {

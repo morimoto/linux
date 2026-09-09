@@ -71,7 +71,9 @@ struct rk_sai_dev {
 static bool rockchip_sai_stream_valid(struct snd_pcm_substream *substream,
 				      struct snd_soc_dai *dai)
 {
-	struct rk_sai_dev *sai = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 
 	if (!substream)
 		return false;
@@ -481,13 +483,15 @@ static void rockchip_sai_fmt_create(struct rk_sai_dev *sai, unsigned int fmt)
 
 static int rockchip_sai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct rk_sai_dev *sai = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 	unsigned int mask = 0, val = 0;
 	unsigned int clk_gates;
 	unsigned long flags;
 	int ret = 0;
 
-	pm_runtime_get_sync(dai->dev);
+	pm_runtime_get_sync(dev);
 
 	mask = SAI_CKR_MSS_MASK;
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -550,7 +554,7 @@ err_xfer_unlock:
 				clk_gates);
 	spin_unlock_irqrestore(&sai->xfer_lock, flags);
 err_pm_put:
-	pm_runtime_put(dai->dev);
+	pm_runtime_put(dev);
 
 	return ret;
 }
@@ -559,7 +563,9 @@ static int rockchip_sai_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct rk_sai_dev *sai = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 	struct snd_dmaengine_dai_dma_data *dma_data;
 	unsigned int mclk_rate, mclk_req_rate, bclk_rate, div_bclk;
 	unsigned int ch_per_lane, slot_width;
@@ -571,7 +577,7 @@ static int rockchip_sai_hw_params(struct snd_pcm_substream *substream,
 	if (!rockchip_sai_stream_valid(substream, dai))
 		return 0;
 
-	dma_data = snd_soc_dai_get_dma_data(dai, substream);
+	dma_data = snd_soc_dai_stream_dma_data_get(dai, substream);
 	dma_data->maxburst = MAXBURST_PER_FIFO * params_channels(params) / 2;
 
 	pm_runtime_get_sync(sai->dev);
@@ -705,7 +711,9 @@ err_pm_put:
 static int rockchip_sai_prepare(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct rk_sai_dev *sai = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 	unsigned long flags;
 
 	if (!rockchip_sai_stream_valid(substream, dai))
@@ -843,7 +851,9 @@ static int rockchip_sai_parse_paths(struct rk_sai_dev *sai,
 static int rockchip_sai_trigger(struct snd_pcm_substream *substream,
 				int cmd, struct snd_soc_dai *dai)
 {
-	struct rk_sai_dev *sai = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 	int ret = 0;
 
 	if (!rockchip_sai_stream_valid(substream, dai))
@@ -871,11 +881,14 @@ static int rockchip_sai_trigger(struct snd_pcm_substream *substream,
 
 static int rockchip_sai_dai_probe(struct snd_soc_dai *dai)
 {
-	struct rk_sai_dev *sai = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai,
-		sai->has_playback ? &sai->playback_dma_data : NULL,
-		sai->has_capture  ? &sai->capture_dma_data  : NULL);
+	if (sai->has_playback)
+		snd_soc_dai_stream_dma_data_set_playback(dai, &sai->playback_dma_data);
+	if (sai->has_capture)
+		snd_soc_dai_stream_dma_data_set_capture(dai,  &sai->capture_dma_data);
 
 	return 0;
 }
@@ -883,7 +896,9 @@ static int rockchip_sai_dai_probe(struct snd_soc_dai *dai)
 static int rockchip_sai_startup(struct snd_pcm_substream *substream,
 				    struct snd_soc_dai *dai)
 {
-	struct rk_sai_dev *sai = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 	int stream = substream->stream;
 
 	if (!rockchip_sai_stream_valid(substream, dai))
@@ -903,7 +918,9 @@ static int rockchip_sai_startup(struct snd_pcm_substream *substream,
 static void rockchip_sai_shutdown(struct snd_pcm_substream *substream,
 				      struct snd_soc_dai *dai)
 {
-	struct rk_sai_dev *sai = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 
 	if (!rockchip_sai_stream_valid(substream, dai))
 		return;
@@ -915,7 +932,9 @@ static int rockchip_sai_set_tdm_slot(struct snd_soc_dai *dai,
 				     unsigned int tx_mask, unsigned int rx_mask,
 				     int slots, int slot_width)
 {
-	struct rk_sai_dev *sai = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 	unsigned long flags;
 	unsigned int clk_gates;
 	int sw = slot_width;
@@ -931,7 +950,7 @@ static int rockchip_sai_set_tdm_slot(struct snd_soc_dai *dai,
 	if (sw < 16 || sw > 32)
 		return -EINVAL;
 
-	pm_runtime_get_sync(dai->dev);
+	pm_runtime_get_sync(dev);
 	spin_lock_irqsave(&sai->xfer_lock, flags);
 	rockchip_sai_xfer_clk_stop_and_wait(sai, &clk_gates);
 	regmap_update_bits(sai->regmap, SAI_TXCR, SAI_XCR_SBW_MASK,
@@ -942,7 +961,7 @@ static int rockchip_sai_set_tdm_slot(struct snd_soc_dai *dai,
 			   SAI_XFER_CLK_MASK | SAI_XFER_FSS_MASK,
 			   clk_gates);
 	spin_unlock_irqrestore(&sai->xfer_lock, flags);
-	pm_runtime_put(dai->dev);
+	pm_runtime_put(dev);
 
 	return 0;
 }
@@ -950,7 +969,9 @@ static int rockchip_sai_set_tdm_slot(struct snd_soc_dai *dai,
 static int rockchip_sai_set_sysclk(struct snd_soc_dai *dai, int stream,
 				   unsigned int freq, int dir)
 {
-	struct rk_sai_dev *sai = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 
 	sai->mclk_rate = freq;
 
@@ -1246,7 +1267,8 @@ static int rockchip_sai_rd_wait_time_get(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rk_sai_dev *sai = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = sai->wait_time[SNDRV_PCM_STREAM_CAPTURE];
 
@@ -1257,7 +1279,8 @@ static int rockchip_sai_rd_wait_time_put(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rk_sai_dev *sai = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 
 	if (ucontrol->value.integer.value[0] > WAIT_TIME_MS_MAX)
 		return -EINVAL;
@@ -1271,7 +1294,8 @@ static int rockchip_sai_wr_wait_time_get(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rk_sai_dev *sai = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = sai->wait_time[SNDRV_PCM_STREAM_PLAYBACK];
 
@@ -1282,7 +1306,8 @@ static int rockchip_sai_wr_wait_time_put(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rk_sai_dev *sai = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_sai_dev *sai = dev_get_drvdata(dev);
 
 	if (ucontrol->value.integer.value[0] > WAIT_TIME_MS_MAX)
 		return -EINVAL;
@@ -1488,7 +1513,7 @@ static int rockchip_sai_probe(struct platform_device *pdev)
 	if (ret)
 		goto err_runtime_suspend;
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &rockchip_sai_component,
 					      dai, 1);
 	if (ret)

@@ -1610,7 +1610,8 @@ static int arizona_jack_disable_jack_detect(struct arizona_priv *info)
 int arizona_jack_set_jack(struct snd_soc_component *component,
 			  struct snd_soc_jack *jack, void *data)
 {
-	struct arizona_priv *info = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *info = dev_get_drvdata(dev);
 
 	if (jack)
 		return arizona_jack_enable_jack_detect(info, jack);

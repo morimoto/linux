@@ -195,7 +195,9 @@ static int mtk_dai_dmic_load_iir_coeff_table(struct mtk_base_afe *afe)
 
 static int mtk_dai_dmic_configure_array(struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	const u32 mask = PWR2_TOP_CON_DMIC8_SRC_SEL_MASK |
 			 PWR2_TOP_CON_DMIC7_SRC_SEL_MASK |
 			 PWR2_TOP_CON_DMIC6_SRC_SEL_MASK |
@@ -257,7 +259,8 @@ static int mtk_dmic_gain_event(struct snd_soc_dapm_widget *w,
 			       int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_dmic_priv *dmic_priv = afe_priv->dai_priv[MT8188_AFE_IO_DMIC_IN];
 	unsigned int channels = dmic_priv->channels;
@@ -287,7 +290,8 @@ static int mtk_dmic_event(struct snd_soc_dapm_widget *w,
 			  int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_dmic_priv *dmic_priv = afe_priv->dai_priv[MT8188_AFE_IO_DMIC_IN];
 	const struct mtk_dai_dmic_ctrl_reg *reg = NULL;
@@ -392,7 +396,9 @@ static int mtk_dai_dmic_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_dmic_priv *dmic_priv = afe_priv->dai_priv[MT8188_AFE_IO_DMIC_IN];
 	unsigned int rate = params_rate(params);
@@ -540,7 +546,8 @@ static int mtk_dai_dmic_hw_gain_ctrl_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_dmic_priv *dmic_priv = afe_priv->dai_priv[MT8188_AFE_IO_DMIC_IN];
 	unsigned int source = ucontrol->value.enumerated.item[0];
@@ -571,7 +578,8 @@ static int mtk_dai_dmic_hw_gain_ctrl_get(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8188_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_dmic_priv *dmic_priv = afe_priv->dai_priv[MT8188_AFE_IO_DMIC_IN];
 	unsigned int val;

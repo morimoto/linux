@@ -461,9 +461,9 @@ static int rt1318_update_status(struct sdw_slave *slave,
 static int rt1318_classd_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt1318_sdw_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_sdw_priv *rt1318 = dev_get_drvdata(dev);
 	unsigned char ps0 = 0x0, ps3 = 0x3;
 
 	switch (event) {
@@ -547,7 +547,7 @@ static const struct snd_soc_dapm_route rt1318_dapm_routes[] = {
 static int rt1318_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 				int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -555,15 +555,15 @@ static int rt1318_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 static void rt1318_sdw_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static int rt1318_sdw_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1318_sdw_priv *rt1318 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_sdw_priv *rt1318 = dev_get_drvdata(dev);
 	struct sdw_stream_config stream_config;
 	struct sdw_port_config port_config;
 	enum sdw_data_direction direction;
@@ -571,8 +571,8 @@ static int rt1318_sdw_hw_params(struct snd_pcm_substream *substream,
 	int retval, port, num_channels, ch_mask;
 	unsigned int sampling_rate;
 
-	dev_dbg(dai->dev, "%s %s", __func__, dai->name);
-	sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	dev_dbg(dev, "%s %s", __func__, snd_soc_dai_name(dai));
+	sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!sdw_stream)
 		return -EINVAL;
@@ -604,7 +604,7 @@ static int rt1318_sdw_hw_params(struct snd_pcm_substream *substream,
 	retval = sdw_stream_add_slave(rt1318->sdw_slave, &stream_config,
 				&port_config, 1, sdw_stream);
 	if (retval) {
-		dev_err(dai->dev, "%s: Unable to configure port\n", __func__);
+		dev_err(dev, "%s: Unable to configure port\n", __func__);
 		return retval;
 	}
 
@@ -629,7 +629,7 @@ static int rt1318_sdw_hw_params(struct snd_pcm_substream *substream,
 		sampling_rate = RT1318_SDCA_RATE_192000HZ;
 		break;
 	default:
-		dev_err(component->dev, "%s: Rate %d is not supported\n",
+		dev_err(dev, "%s: Rate %d is not supported\n",
 			__func__, params_rate(params));
 		return -EINVAL;
 	}
@@ -645,11 +645,11 @@ static int rt1318_sdw_hw_params(struct snd_pcm_substream *substream,
 static int rt1318_sdw_pcm_hw_free(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1318_sdw_priv *rt1318 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_sdw_priv *rt1318 = dev_get_drvdata(dev);
 	struct sdw_stream_runtime *sdw_stream =
-		snd_soc_dai_get_dma_data(dai, substream);
+		snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!rt1318->sdw_slave)
 		return -EINVAL;
@@ -670,14 +670,15 @@ static const struct sdw_slave_ops rt1318_slave_ops = {
 static int rt1318_sdw_component_probe(struct snd_soc_component *component)
 {
 	int ret;
-	struct rt1318_sdw_priv *rt1318 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1318_sdw_priv *rt1318 = dev_get_drvdata(dev);
 
 	rt1318->component = component;
 
 	if (!rt1318->first_hw_init)
 		return 0;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	dev_dbg(&rt1318->sdw_slave->dev, "%s pm_runtime_resume, ret=%d", __func__, ret);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
@@ -752,7 +753,7 @@ static int rt1318_sdw_init(struct device *dev, struct regmap *regmap,
 	rt1318->hw_init = false;
 	rt1318->first_hw_init = false;
 
-	ret =  devm_snd_soc_register_component(dev,
+	ret =  devm_snd_soc_component_register(dev,
 				&soc_component_sdw_rt1318,
 				rt1318_sdw_dai,
 				ARRAY_SIZE(rt1318_sdw_dai));

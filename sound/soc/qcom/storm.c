@@ -20,6 +20,7 @@ static int storm_ops_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = soc_runtime->card;
+	struct device *dev = snd_soc_card_to_dev(card);
 	snd_pcm_format_t format = params_format(params);
 	unsigned int rate = params_rate(params);
 	unsigned int sysclk_freq;
@@ -27,7 +28,7 @@ static int storm_ops_hw_params(struct snd_pcm_substream *substream,
 
 	bitwidth = snd_pcm_format_width(format);
 	if (bitwidth < 0) {
-		dev_err(card->dev, "invalid bit width given: %d\n", bitwidth);
+		dev_err(dev, "invalid bit width given: %d\n", bitwidth);
 		return bitwidth;
 	}
 
@@ -40,8 +41,7 @@ static int storm_ops_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_dai_set_sysclk(snd_soc_rtd_to_cpu(soc_runtime, 0), 0, sysclk_freq, 0);
 	if (ret) {
-		dev_err(card->dev, "error setting sysclk to %u: %d\n",
-			sysclk_freq, ret);
+		dev_err(dev, "error setting sysclk to %u: %d\n", sysclk_freq, ret);
 		return ret;
 	}
 
@@ -98,7 +98,7 @@ static int storm_platform_probe(struct platform_device *pdev)
 
 	card_driver->owner = THIS_MODULE;
 
-	ret = snd_soc_of_parse_card_name(card, "qcom,model");
+	ret = snd_soc_card_of_parse_name(card, "qcom,model");
 	if (ret) {
 		dev_err(&pdev->dev, "error parsing card name: %d\n", ret);
 		return ret;

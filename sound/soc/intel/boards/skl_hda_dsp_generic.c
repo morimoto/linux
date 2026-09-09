@@ -32,10 +32,16 @@ static void skl_set_hda_codec_autosuspend_delay(struct snd_soc_card *card)
 	struct snd_soc_dai *dai;
 
 	for_each_card_rtds(card, rtd) {
+		struct snd_soc_component *component;
+		struct device *dev;
+
 		if (!strstr(rtd->dai_link->codecs->name, "ehdaudio0D0"))
 			continue;
 		dai = snd_soc_rtd_to_codec(rtd, 0);
-		hda_pvt = snd_soc_component_get_drvdata(dai->component);
+		component = snd_soc_dai_to_component(dai);
+		dev = snd_soc_component_to_dev(component);
+
+		hda_pvt = dev_get_drvdata(dev);
 		if (hda_pvt) {
 			/*
 			 * all codecs are on the same bus, so it's sufficient
@@ -88,7 +94,7 @@ skl_hda_get_board_quirk(struct snd_soc_acpi_mach_params *mach_params)
 static int skl_hda_add_dai_link(struct snd_soc_card *card,
 				struct snd_soc_dai_link *link)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(card);
 
 	/* Ignore the HDMI PCM link if iDisp is not present */
 	if (strstr(link->stream_name, "HDMI") && !ctx->hdmi.idisp_codec)
@@ -154,7 +160,7 @@ static int skl_hda_audio_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	snd_soc_card_set_drvdata(card, ctx);
+	snd_soc_card_set_priv(card, ctx);
 
 	ret = devm_snd_soc_card_register(card, card_driver);
 	if (!ret)

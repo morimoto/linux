@@ -164,14 +164,15 @@ static int gbcodec_mixer_ctl_info(struct snd_kcontrol *kcontrol,
 	struct gb_audio_ctl_elem_info *info;
 	struct gbaudio_module_info *module;
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct gbaudio_codec_info *gbcodec = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct gbaudio_codec_info *gbcodec = dev_get_drvdata(dev);
 
-	dev_dbg(comp->dev, "Entered %s:%s\n", __func__, kcontrol->id.name);
+	dev_dbg(dev, "Entered %s:%s\n", __func__, kcontrol->id.name);
 	data = (struct gbaudio_ctl_pvt *)kcontrol->private_value;
 	info = (struct gb_audio_ctl_elem_info *)data->info;
 
 	if (!info) {
-		dev_err(comp->dev, "NULL info for %s\n", uinfo->id.name);
+		dev_err(dev, "NULL info for %s\n", uinfo->id.name);
 		return -EINVAL;
 	}
 
@@ -199,7 +200,7 @@ static int gbcodec_mixer_ctl_info(struct snd_kcontrol *kcontrol,
 		strscpy(uinfo->value.enumerated.name, name, sizeof(uinfo->value.enumerated.name));
 		break;
 	default:
-		dev_err(comp->dev, "Invalid type: %d for %s:kcontrol\n",
+		dev_err(dev, "Invalid type: %d for %s:kcontrol\n",
 			info->type, kcontrol->id.name);
 		break;
 	}
@@ -215,10 +216,11 @@ static int gbcodec_mixer_ctl_get(struct snd_kcontrol *kcontrol,
 	struct gb_audio_ctl_elem_value gbvalue;
 	struct gbaudio_module_info *module;
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct gbaudio_codec_info *gb = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct gbaudio_codec_info *gb = dev_get_drvdata(dev);
 	struct gb_bundle *bundle;
 
-	dev_dbg(comp->dev, "Entered %s:%s\n", __func__, kcontrol->id.name);
+	dev_dbg(dev, "Entered %s:%s\n", __func__, kcontrol->id.name);
 	module = find_gb_module(gb, kcontrol->id.name);
 	if (!module)
 		return -EINVAL;
@@ -237,7 +239,7 @@ static int gbcodec_mixer_ctl_get(struct snd_kcontrol *kcontrol,
 	gb_pm_runtime_put_autosuspend(bundle);
 
 	if (ret) {
-		dev_err_ratelimited(comp->dev, "%d:Error in %s for %s\n", ret,
+		dev_err_ratelimited(dev, "%d:Error in %s for %s\n", ret,
 				    __func__, kcontrol->id.name);
 		return ret;
 	}
@@ -260,7 +262,7 @@ static int gbcodec_mixer_ctl_get(struct snd_kcontrol *kcontrol,
 				le32_to_cpu(gbvalue.value.enumerated_item[1]);
 		break;
 	default:
-		dev_err(comp->dev, "Invalid type: %d for %s:kcontrol\n",
+		dev_err(dev, "Invalid type: %d for %s:kcontrol\n",
 			info->type, kcontrol->id.name);
 		ret = -EINVAL;
 		break;
@@ -277,10 +279,11 @@ static int gbcodec_mixer_ctl_put(struct snd_kcontrol *kcontrol,
 	struct gb_audio_ctl_elem_value gbvalue;
 	struct gbaudio_module_info *module;
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct gbaudio_codec_info *gb = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct gbaudio_codec_info *gb = dev_get_drvdata(dev);
 	struct gb_bundle *bundle;
 
-	dev_dbg(comp->dev, "Entered %s:%s\n", __func__, kcontrol->id.name);
+	dev_dbg(dev, "Entered %s:%s\n", __func__, kcontrol->id.name);
 	module = find_gb_module(gb, kcontrol->id.name);
 	if (!module)
 		return -EINVAL;
@@ -307,7 +310,7 @@ static int gbcodec_mixer_ctl_put(struct snd_kcontrol *kcontrol,
 				cpu_to_le32(ucontrol->value.enumerated.item[1]);
 		break;
 	default:
-		dev_err(comp->dev, "Invalid type: %d for %s:kcontrol\n",
+		dev_err(dev, "Invalid type: %d for %s:kcontrol\n",
 			info->type, kcontrol->id.name);
 		ret = -EINVAL;
 		break;
@@ -326,7 +329,7 @@ static int gbcodec_mixer_ctl_put(struct snd_kcontrol *kcontrol,
 	gb_pm_runtime_put_autosuspend(bundle);
 
 	if (ret) {
-		dev_err_ratelimited(comp->dev, "%d:Error in %s for %s\n", ret,
+		dev_err_ratelimited(dev, "%d:Error in %s for %s\n", ret,
 				    __func__, kcontrol->id.name);
 	}
 
@@ -544,7 +547,8 @@ static int gbcodec_enum_ctl_get(struct snd_kcontrol *kcontrol,
 {
 	int ret, ctl_id;
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct gbaudio_codec_info *gb = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct gbaudio_codec_info *gb = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	struct gb_audio_ctl_elem_value gbvalue;
 	struct gbaudio_module_info *module;
@@ -570,7 +574,7 @@ static int gbcodec_enum_ctl_get(struct snd_kcontrol *kcontrol,
 	gb_pm_runtime_put_autosuspend(bundle);
 
 	if (ret) {
-		dev_err_ratelimited(comp->dev, "%d:Error in %s for %s\n", ret,
+		dev_err_ratelimited(dev, "%d:Error in %s for %s\n", ret,
 				    __func__, kcontrol->id.name);
 		return ret;
 	}
@@ -589,7 +593,8 @@ static int gbcodec_enum_ctl_put(struct snd_kcontrol *kcontrol,
 {
 	int ret, ctl_id;
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct gbaudio_codec_info *gb = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct gbaudio_codec_info *gb = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	struct gb_audio_ctl_elem_value gbvalue;
 	struct gbaudio_module_info *module;
@@ -627,7 +632,7 @@ static int gbcodec_enum_ctl_put(struct snd_kcontrol *kcontrol,
 	gb_pm_runtime_put_autosuspend(bundle);
 
 	if (ret) {
-		dev_err_ratelimited(comp->dev, "%d:Error in %s for %s\n",
+		dev_err_ratelimited(dev, "%d:Error in %s for %s\n",
 				    ret, __func__, kcontrol->id.name);
 	}
 

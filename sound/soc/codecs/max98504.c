@@ -104,8 +104,9 @@ static bool max98504_readable_register(struct device *dev, unsigned int reg)
 static int max98504_pcm_rx_ev(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *c = snd_soc_dapm_to_component(w->dapm);
-	struct max98504_priv *max98504 = snd_soc_component_get_drvdata(c);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98504_priv *max98504 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -120,9 +121,10 @@ static int max98504_pcm_rx_ev(struct snd_soc_dapm_widget *w,
 	return 0;
 }
 
-static int max98504_component_probe(struct snd_soc_component *c)
+static int max98504_component_probe(struct snd_soc_component *component)
 {
-	struct max98504_priv *max98504 = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98504_priv *max98504 = dev_get_drvdata(dev);
 	struct regmap *map = max98504->regmap;
 	int ret;
 
@@ -154,9 +156,10 @@ static int max98504_component_probe(struct snd_soc_component *c)
 	return 0;
 }
 
-static void max98504_component_remove(struct snd_soc_component *c)
+static void max98504_component_remove(struct snd_soc_component *component)
 {
-	struct max98504_priv *max98504 = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98504_priv *max98504 = dev_get_drvdata(dev);
 
 	regulator_bulk_disable(MAX98504_NUM_SUPPLIES, max98504->supplies);
 }
@@ -200,11 +203,13 @@ static int max98504_set_tdm_slot(struct snd_soc_dai *dai,
 		unsigned int tx_mask, unsigned int rx_mask,
 		int slots, int slot_width)
 {
-	struct max98504_priv *max98504 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98504_priv *max98504 = dev_get_drvdata(dev);
 	struct regmap *map = max98504->regmap;
+	int dai_id = snd_soc_dai_id(dai);
 
-
-	switch (dai->id) {
+	switch (dai_id) {
 	case MAX98504_DAI_ID_PCM:
 		regmap_write(map, MAX98504_PCM_TX_ENABLE, tx_mask);
 		max98504->pcm_rx_channels = rx_mask;
@@ -225,15 +230,18 @@ static int max98504_set_channel_map(struct snd_soc_dai *dai,
 				    unsigned int rx_num,
 				    const unsigned int *rx_slot)
 {
-	struct max98504_priv *max98504 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98504_priv *max98504 = dev_get_drvdata(dev);
 	struct regmap *map = max98504->regmap;
 	unsigned int i, sources = 0;
+	int dai_id = snd_soc_dai_id(dai);
 
 	for (i = 0; i < tx_num; i++)
 		if (tx_slot[i])
 			sources |= (1 << i);
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case MAX98504_DAI_ID_PCM:
 		regmap_write(map, MAX98504_PCM_TX_CHANNEL_SOURCES,
 			     sources);
@@ -350,7 +358,7 @@ static int max98504_i2c_probe(struct i2c_client *client)
 
 	i2c_set_clientdata(client, max98504);
 
-	return devm_snd_soc_register_component(dev, &max98504_component_driver,
+	return devm_snd_soc_component_register(dev, &max98504_component_driver,
 				max98504_dai, ARRAY_SIZE(max98504_dai));
 }
 

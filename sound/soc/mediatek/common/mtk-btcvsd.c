@@ -863,7 +863,8 @@ static const struct snd_pcm_hardware mtk_btcvsd_hardware = {
 static int mtk_pcm_btcvsd_open(struct snd_soc_component *component,
 			       struct snd_pcm_substream *substream)
 {
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 	int ret;
 
 	dev_dbg(bt->dev, "%s(), stream %d, substream %p\n",
@@ -885,7 +886,8 @@ static int mtk_pcm_btcvsd_open(struct snd_soc_component *component,
 static int mtk_pcm_btcvsd_close(struct snd_soc_component *component,
 				struct snd_pcm_substream *substream)
 {
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 	struct mtk_btcvsd_snd_stream *bt_stream = get_bt_stream(bt, substream);
 
 	dev_dbg(bt->dev, "%s(), stream %d\n", __func__, substream->stream);
@@ -899,7 +901,8 @@ static int mtk_pcm_btcvsd_hw_params(struct snd_soc_component *component,
 				    struct snd_pcm_substream *substream,
 				    struct snd_pcm_hw_params *hw_params)
 {
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK &&
 	    params_buffer_bytes(hw_params) % bt->tx->packet_size != 0) {
@@ -916,7 +919,8 @@ static int mtk_pcm_btcvsd_hw_params(struct snd_soc_component *component,
 static int mtk_pcm_btcvsd_hw_free(struct snd_soc_component *component,
 				  struct snd_pcm_substream *substream)
 {
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 		btcvsd_tx_clean_buffer(bt);
@@ -927,7 +931,8 @@ static int mtk_pcm_btcvsd_hw_free(struct snd_soc_component *component,
 static int mtk_pcm_btcvsd_prepare(struct snd_soc_component *component,
 				  struct snd_pcm_substream *substream)
 {
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 	struct mtk_btcvsd_snd_stream *bt_stream = get_bt_stream(bt, substream);
 
 	dev_dbg(bt->dev, "%s(), stream %d\n", __func__, substream->stream);
@@ -939,7 +944,8 @@ static int mtk_pcm_btcvsd_prepare(struct snd_soc_component *component,
 static int mtk_pcm_btcvsd_trigger(struct snd_soc_component *component,
 				  struct snd_pcm_substream *substream, int cmd)
 {
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 	struct mtk_btcvsd_snd_stream *bt_stream = get_bt_stream(bt, substream);
 	int stream = substream->stream;
 	int hw_packet_ptr;
@@ -970,7 +976,8 @@ static snd_pcm_uframes_t mtk_pcm_btcvsd_pointer(
 	struct snd_soc_component *component,
 	struct snd_pcm_substream *substream)
 {
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 	struct mtk_btcvsd_snd_stream *bt_stream;
 	snd_pcm_uframes_t frame = 0;
 	int byte = 0;
@@ -1017,7 +1024,8 @@ static int mtk_pcm_btcvsd_copy(struct snd_soc_component *component,
 			       int channel, unsigned long pos,
 			       struct iov_iter *buf, unsigned long count)
 {
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 		return mtk_btcvsd_snd_write(bt, buf, count);
@@ -1036,7 +1044,8 @@ static int btcvsd_band_get(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = bt->band;
 	return 0;
@@ -1046,7 +1055,8 @@ static int btcvsd_band_set(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 
 	if (ucontrol->value.enumerated.item[0] >= e->items)
@@ -1061,7 +1071,8 @@ static int btcvsd_loopback_get(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 	bool lpbk_en = bt->tx->state == BT_SCO_STATE_LOOPBACK;
 
 	ucontrol->value.integer.value[0] = lpbk_en;
@@ -1072,7 +1083,8 @@ static int btcvsd_loopback_set(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 
 	if (ucontrol->value.integer.value[0]) {
 		mtk_btcvsd_snd_set_state(bt, bt->tx, BT_SCO_STATE_LOOPBACK);
@@ -1088,7 +1100,8 @@ static int btcvsd_tx_mute_get(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 
 	if (!bt->tx) {
 		ucontrol->value.integer.value[0] = 0;
@@ -1103,7 +1116,8 @@ static int btcvsd_tx_mute_set(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 
 	if (!bt->tx)
 		return 0;
@@ -1116,7 +1130,8 @@ static int btcvsd_rx_irq_received_get(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 
 	if (!bt->rx)
 		return 0;
@@ -1129,7 +1144,8 @@ static int btcvsd_rx_timeout_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 
 	if (!bt->rx)
 		return 0;
@@ -1143,7 +1159,8 @@ static int btcvsd_rx_timestamp_get(struct snd_kcontrol *kcontrol,
 				   unsigned int __user *data, unsigned int size)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 	int ret = 0;
 	struct mtk_btcvsd_snd_time_buffer_info time_buffer_info_rx;
 
@@ -1170,7 +1187,8 @@ static int btcvsd_tx_irq_received_get(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 
 	if (!bt->tx)
 		return 0;
@@ -1183,7 +1201,8 @@ static int btcvsd_tx_timeout_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = bt->tx->timeout;
 	return 0;
@@ -1193,7 +1212,8 @@ static int btcvsd_tx_timestamp_get(struct snd_kcontrol *kcontrol,
 				   unsigned int __user *data, unsigned int size)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_btcvsd_snd *bt = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_btcvsd_snd *bt = dev_get_drvdata(dev);
 	int ret = 0;
 	struct mtk_btcvsd_snd_time_buffer_info time_buffer_info_tx;
 
@@ -1241,7 +1261,7 @@ static const struct snd_kcontrol_new mtk_btcvsd_snd_controls[] = {
 
 static int mtk_btcvsd_snd_component_probe(struct snd_soc_component *component)
 {
-	return snd_soc_add_component_controls(component,
+	return snd_soc_component_add_controls(component,
 		mtk_btcvsd_snd_controls,
 		ARRAY_SIZE(mtk_btcvsd_snd_controls));
 }
@@ -1355,7 +1375,7 @@ static int mtk_btcvsd_snd_probe(struct platform_device *pdev)
 	mtk_btcvsd_snd_set_state(btcvsd, btcvsd->tx, BT_SCO_STATE_IDLE);
 	mtk_btcvsd_snd_set_state(btcvsd, btcvsd->rx, BT_SCO_STATE_IDLE);
 
-	ret = devm_snd_soc_register_component(dev, &mtk_btcvsd_snd_platform,
+	ret = devm_snd_soc_component_register(dev, &mtk_btcvsd_snd_platform,
 					      NULL, 0);
 	if (ret)
 		goto unmap_bank2_err;

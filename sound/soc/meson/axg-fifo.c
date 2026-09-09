@@ -51,18 +51,17 @@ static struct snd_soc_dai *axg_fifo_dai(struct snd_pcm_substream *ss)
 	return snd_soc_rtd_to_cpu(rtd, 0);
 }
 
-static struct axg_fifo *axg_fifo_data(struct snd_pcm_substream *ss)
-{
-	struct snd_soc_dai *dai = axg_fifo_dai(ss);
-
-	return snd_soc_dai_get_drvdata(dai);
-}
-
 static struct device *axg_fifo_dev(struct snd_pcm_substream *ss)
 {
 	struct snd_soc_dai *dai = axg_fifo_dai(ss);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
-	return dai->dev;
+	return snd_soc_component_to_dev(component);
+}
+
+static struct axg_fifo *axg_fifo_data(struct snd_pcm_substream *ss)
+{
+	return dev_get_drvdata(axg_fifo_dev(ss));
 }
 
 static void __dma_enable(struct axg_fifo *fifo,  bool enable)
@@ -307,7 +306,7 @@ EXPORT_SYMBOL_GPL(axg_fifo_pcm_close);
 
 int axg_fifo_pcm_new(struct snd_soc_pcm_runtime *rtd, unsigned int type)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(rtd->card);
 	size_t size = axg_fifo_hw.buffer_bytes_max;
 
 	snd_pcm_set_managed_buffer(rtd->pcm->streams[type].substream,
@@ -388,7 +387,7 @@ int axg_fifo_probe(struct platform_device *pdev)
 			 fifo->depth);
 	}
 
-	return devm_snd_soc_register_component(dev, data->component_drv,
+	return devm_snd_soc_component_register(dev, data->component_drv,
 					       data->dai_drv, 1);
 }
 EXPORT_SYMBOL_GPL(axg_fifo_probe);

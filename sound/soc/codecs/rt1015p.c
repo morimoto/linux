@@ -26,10 +26,9 @@ struct rt1015p_priv {
 static int rt1015p_sdb_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt1015p_priv *rt1015p =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1015p_priv *rt1015p = dev_get_drvdata(dev);
 
 	if (!rt1015p->sdb)
 		return 0;
@@ -37,7 +36,7 @@ static int rt1015p_sdb_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		gpiod_set_value_cansleep(rt1015p->sdb, 1);
-		dev_dbg(component->dev, "set sdb to 1");
+		dev_dbg(dev, "set sdb to 1");
 
 		if (!rt1015p->calib_done) {
 			msleep(300);
@@ -46,7 +45,7 @@ static int rt1015p_sdb_event(struct snd_soc_dapm_widget *w,
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		gpiod_set_value_cansleep(rt1015p->sdb, 0);
-		dev_dbg(component->dev, "set sdb to 0");
+		dev_dbg(dev, "set sdb to 0");
 		break;
 	default:
 		break;
@@ -70,7 +69,8 @@ static const struct snd_soc_dapm_route rt1015p_dapm_routes[] = {
 #ifdef CONFIG_PM
 static int rt1015p_suspend(struct snd_soc_component *component)
 {
-	struct rt1015p_priv *rt1015p = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1015p_priv *rt1015p = dev_get_drvdata(dev);
 
 	rt1015p->calib_done = false;
 	return 0;
@@ -117,7 +117,7 @@ static int rt1015p_platform_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, rt1015p);
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&rt1015p_component_driver,
 			&rt1015p_dai_driver, 1);
 }

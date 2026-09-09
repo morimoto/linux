@@ -767,13 +767,16 @@ static int amd_sdw_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct amd_sdw_manager *amd_manager = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct amd_sdw_manager *amd_manager = dev_get_drvdata(dev);
 	struct sdw_amd_dai_runtime *dai_runtime;
 	struct sdw_stream_config sconfig;
+	int id = snd_soc_dai_id(dai);
 	int ch, dir;
 	int ret;
 
-	dai_runtime = amd_manager->dai_runtime_array[dai->id];
+	dai_runtime = amd_manager->dai_runtime_array[id];
 	if (!dai_runtime)
 		return -EIO;
 
@@ -782,7 +785,7 @@ static int amd_sdw_hw_params(struct snd_pcm_substream *substream,
 		dir = SDW_DATA_DIR_RX;
 	else
 		dir = SDW_DATA_DIR_TX;
-	dev_dbg(amd_manager->dev, "dir:%d dai->id:0x%x\n", dir, dai->id);
+	dev_dbg(amd_manager->dev, "dir:%d dai->id:0x%x\n", dir, id);
 
 	sconfig.direction = dir;
 	sconfig.ch_count = ch;
@@ -796,7 +799,7 @@ static int amd_sdw_hw_params(struct snd_pcm_substream *substream,
 	if (!pconfig)
 		return -ENOMEM;
 
-	pconfig->num = dai->id;
+	pconfig->num = id;
 	pconfig->ch_mask = (1 << ch) - 1;
 	ret = sdw_stream_add_master(&amd_manager->bus, &sconfig,
 				    pconfig, 1, dai_runtime->stream);
@@ -808,31 +811,38 @@ static int amd_sdw_hw_params(struct snd_pcm_substream *substream,
 
 static int amd_sdw_hw_free(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	struct amd_sdw_manager *amd_manager = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct amd_sdw_manager *amd_manager = dev_get_drvdata(dev);
 	struct sdw_amd_dai_runtime *dai_runtime;
+	int id = snd_soc_dai_id(dai);
 	int ret;
 
-	dai_runtime = amd_manager->dai_runtime_array[dai->id];
+	dai_runtime = amd_manager->dai_runtime_array[id];
 	if (!dai_runtime)
 		return -EIO;
 
 	ret = sdw_stream_remove_master(&amd_manager->bus, dai_runtime->stream);
 	if (ret < 0)
-		dev_err(dai->dev, "remove manager from stream %s failed: %d\n",
+		dev_err(dev, "remove manager from stream %s failed: %d\n",
 			dai_runtime->stream->name, ret);
 	return ret;
 }
 
 static int amd_set_sdw_stream(struct snd_soc_dai *dai, void *stream, int direction)
 {
-	struct amd_sdw_manager *amd_manager = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct amd_sdw_manager *amd_manager = dev_get_drvdata(dev);
 	struct sdw_amd_dai_runtime *dai_runtime;
+	const char *dai_name = snd_soc_dai_name(dai);
+	int id = snd_soc_dai_id(dai);
 
-	dai_runtime = amd_manager->dai_runtime_array[dai->id];
+	dai_runtime = amd_manager->dai_runtime_array[id];
 	if (stream) {
 		/* first paranoia check */
 		if (dai_runtime) {
-			dev_err(dai->dev, "dai_runtime already allocated for dai %s\n",	dai->name);
+			dev_err(dev, "dai_runtime already allocated for dai %s\n",	dai_name);
 			return -EINVAL;
 		}
 
@@ -844,17 +854,17 @@ static int amd_set_sdw_stream(struct snd_soc_dai *dai, void *stream, int directi
 		dai_runtime->stream_type = SDW_STREAM_PCM;
 		dai_runtime->bus = &amd_manager->bus;
 		dai_runtime->stream = stream;
-		amd_manager->dai_runtime_array[dai->id] = dai_runtime;
+		amd_manager->dai_runtime_array[id] = dai_runtime;
 	} else {
 		/* second paranoia check */
 		if (!dai_runtime) {
-			dev_err(dai->dev, "dai_runtime not allocated for dai %s\n", dai->name);
+			dev_err(dev, "dai_runtime not allocated for dai %s\n", dai_name);
 			return -EINVAL;
 		}
 
 		/* for NULL stream we release allocated dai_runtime */
 		kfree(dai_runtime);
-		amd_manager->dai_runtime_array[dai->id] = NULL;
+		amd_manager->dai_runtime_array[id] = NULL;
 	}
 	return 0;
 }
@@ -866,10 +876,13 @@ static int amd_pcm_set_sdw_stream(struct snd_soc_dai *dai, void *stream, int dir
 
 static void *amd_get_sdw_stream(struct snd_soc_dai *dai, int direction)
 {
-	struct amd_sdw_manager *amd_manager = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct amd_sdw_manager *amd_manager = dev_get_drvdata(dev);
 	struct sdw_amd_dai_runtime *dai_runtime;
+	int id = snd_soc_dai_id(dai);
 
-	dai_runtime = amd_manager->dai_runtime_array[dai->id];
+	dai_runtime = amd_manager->dai_runtime_array[id];
 	if (!dai_runtime)
 		return ERR_PTR(-EINVAL);
 
@@ -926,7 +939,7 @@ static int amd_sdw_register_dais(struct amd_sdw_manager *amd_manager)
 		dais[i].id = i;
 	}
 
-	return devm_snd_soc_register_component(dev, &amd_sdw_dai_component,
+	return devm_snd_soc_component_register(dev, &amd_sdw_dai_component,
 					       dais, num_dais);
 }
 

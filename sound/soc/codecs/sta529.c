@@ -151,7 +151,8 @@ static const struct snd_kcontrol_new sta529_snd_controls[] = {
 static int sta529_set_bias_level(struct snd_soc_component *component, enum
 		snd_soc_bias_level level)
 {
-	struct sta529 *sta529 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta529 *sta529 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -185,7 +186,8 @@ static int sta529_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params,
 		struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int pdata, play_freq_val, record_freq_val;
 	int bclk_to_fs_ratio;
 
@@ -203,7 +205,7 @@ static int sta529_hw_params(struct snd_pcm_substream *substream,
 		bclk_to_fs_ratio = 2;
 		break;
 	default:
-		dev_err(component->dev, "Unsupported format\n");
+		dev_err(dev, "Unsupported format\n");
 		return -EINVAL;
 	}
 
@@ -226,7 +228,7 @@ static int sta529_hw_params(struct snd_pcm_substream *substream,
 		record_freq_val = 0;
 		break;
 	default:
-		dev_err(component->dev, "Unsupported rate\n");
+		dev_err(dev, "Unsupported rate\n");
 		return -EINVAL;
 	}
 
@@ -251,19 +253,20 @@ static int sta529_hw_params(struct snd_pcm_substream *substream,
 
 static int sta529_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u8 val = 0;
 
 	if (mute)
 		val |= CODEC_MUTE_VAL;
 
-	snd_soc_component_update_bits(dai->component, STA529_FFXCFG0, AUDIO_MUTE_MSK, val);
+	snd_soc_component_update_bits(component, STA529_FFXCFG0, AUDIO_MUTE_MSK, val);
 
 	return 0;
 }
 
 static int sta529_set_dai_fmt(struct snd_soc_dai *codec_dai, u32 fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u8 mode = 0;
 
 	/* interface format */
@@ -359,7 +362,7 @@ static int sta529_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, sta529);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&sta529_component_driver, &sta529_dai, 1);
 	if (ret != 0)
 		dev_err(&i2c->dev, "Failed to register CODEC: %d\n", ret);

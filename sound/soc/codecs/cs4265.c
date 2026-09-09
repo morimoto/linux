@@ -318,12 +318,13 @@ static int cs4265_get_clk_index(int mclk, int rate)
 static int cs4265_set_sysclk(struct snd_soc_dai *codec_dai, int clk_id,
 			unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs4265_private *cs4265 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4265_private *cs4265 = dev_get_drvdata(dev);
 	int i;
 
 	if (clk_id != 0) {
-		dev_err(component->dev, "Invalid clk_id %d\n", clk_id);
+		dev_err(dev, "Invalid clk_id %d\n", clk_id);
 		return -EINVAL;
 	}
 	for (i = 0; i < ARRAY_SIZE(clk_map_table); i++) {
@@ -333,14 +334,15 @@ static int cs4265_set_sysclk(struct snd_soc_dai *codec_dai, int clk_id,
 		}
 	}
 	cs4265->sysclk = 0;
-	dev_err(component->dev, "Invalid freq parameter %d\n", freq);
+	dev_err(dev, "Invalid freq parameter %d\n", freq);
 	return -EINVAL;
 }
 
 static int cs4265_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs4265_private *cs4265 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4265_private *cs4265 = dev_get_drvdata(dev);
 	u8 iface = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -379,7 +381,7 @@ static int cs4265_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 
 static int cs4265_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (mute) {
 		snd_soc_component_update_bits(component, CS4265_DAC_CTL,
@@ -403,8 +405,9 @@ static int cs4265_pcm_hw_params(struct snd_pcm_substream *substream,
 				     struct snd_pcm_hw_params *params,
 				     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs4265_private *cs4265 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4265_private *cs4265 = dev_get_drvdata(dev);
 	int index;
 
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE &&
@@ -421,7 +424,7 @@ static int cs4265_pcm_hw_params(struct snd_pcm_substream *substream,
 			clk_map_table[index].mclkdiv << 4);
 
 	} else {
-		dev_err(component->dev, "can't get correct mclk\n");
+		dev_err(dev, "can't get correct mclk\n");
 		return -EINVAL;
 	}
 
@@ -625,7 +628,7 @@ static int cs4265_i2c_probe(struct i2c_client *i2c_client)
 
 	regmap_write(cs4265->regmap, CS4265_PWRCTL, 0x0F);
 
-	return devm_snd_soc_register_component(&i2c_client->dev,
+	return devm_snd_soc_component_register(&i2c_client->dev,
 			&soc_component_cs4265, cs4265_dai,
 			ARRAY_SIZE(cs4265_dai));
 }

@@ -109,12 +109,13 @@ static void tegra210_mvc_conv_vol(struct tegra210_mvc *mvc, u8 chan, s32 val)
 static u32 tegra210_mvc_get_ctrl_reg(struct snd_kcontrol *kcontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mvc *mvc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mvc *mvc = dev_get_drvdata(dev);
 	u32 val;
 
-	pm_runtime_get_sync(cmpnt->dev);
+	pm_runtime_get_sync(dev);
 	regmap_read(mvc->regmap, TEGRA210_MVC_CTRL, &val);
-	pm_runtime_put(cmpnt->dev);
+	pm_runtime_put(dev);
 
 	return val;
 }
@@ -174,7 +175,8 @@ static int tegra210_mvc_get_master_mute(struct snd_kcontrol *kcontrol,
 
 static int tegra210_mvc_volume_switch_timeout(struct snd_soc_component *cmpnt)
 {
-	struct tegra210_mvc *mvc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mvc *mvc = dev_get_drvdata(dev);
 	u32 value;
 	int err;
 
@@ -182,9 +184,7 @@ static int tegra210_mvc_volume_switch_timeout(struct snd_soc_component *cmpnt)
 			value, !(value & TEGRA210_MVC_VOLUME_SWITCH_MASK),
 			10, 10000);
 	if (err < 0)
-		dev_err(cmpnt->dev,
-			"Volume switch trigger is still active, err = %d\n",
-			err);
+		dev_err(dev, "Volume switch trigger is still active, err = %d\n", err);
 
 	return err;
 }
@@ -194,13 +194,14 @@ static int tegra210_mvc_update_mute(struct snd_kcontrol *kcontrol,
 				    bool per_chan_ctrl)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mvc *mvc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mvc *mvc = dev_get_drvdata(dev);
 	u32 mute_val = ucontrol->value.integer.value[0];
 	u32 per_ch_ctrl_val;
 	bool change = false;
 	int err;
 
-	pm_runtime_get_sync(cmpnt->dev);
+	pm_runtime_get_sync(dev);
 
 	err = tegra210_mvc_volume_switch_timeout(cmpnt);
 	if (err < 0)
@@ -231,7 +232,7 @@ static int tegra210_mvc_update_mute(struct snd_kcontrol *kcontrol,
 	}
 
 end:
-	pm_runtime_put(cmpnt->dev);
+	pm_runtime_put(dev);
 
 	if (err < 0)
 		return err;
@@ -260,7 +261,8 @@ static int tegra210_mvc_get_vol(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mvc *mvc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mvc *mvc = dev_get_drvdata(dev);
 	u8 chan = TEGRA210_MVC_GET_CHAN(mc->reg, TEGRA210_MVC_TARGET_VOL);
 	s32 val = mvc->volume[chan];
 
@@ -289,12 +291,13 @@ static int tegra210_mvc_update_vol(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mvc *mvc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mvc *mvc = dev_get_drvdata(dev);
 	u8 chan = TEGRA210_MVC_GET_CHAN(mc->reg, TEGRA210_MVC_TARGET_VOL);
 	int old_volume = mvc->volume[chan];
 	int err, i;
 
-	pm_runtime_get_sync(cmpnt->dev);
+	pm_runtime_get_sync(dev);
 
 	err = tegra210_mvc_volume_switch_timeout(cmpnt);
 	if (err < 0)
@@ -333,7 +336,7 @@ static int tegra210_mvc_update_vol(struct snd_kcontrol *kcontrol,
 	err = 1;
 
 end:
-	pm_runtime_put(cmpnt->dev);
+	pm_runtime_put(dev);
 
 	return err;
 }
@@ -394,7 +397,8 @@ static int tegra210_mvc_get_curve_type(struct snd_kcontrol *kcontrol,
 				       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mvc *mvc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mvc *mvc = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = mvc->curve_type;
 
@@ -405,13 +409,13 @@ static int tegra210_mvc_put_curve_type(struct snd_kcontrol *kcontrol,
 				       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mvc *mvc = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mvc *mvc = dev_get_drvdata(dev);
 	unsigned int value;
 
 	regmap_read(mvc->regmap, TEGRA210_MVC_ENABLE, &value);
 	if (value & TEGRA210_MVC_EN) {
-		dev_err(cmpnt->dev,
-			"Curve type can't be set when MVC is running\n");
+		dev_err(dev, "Curve type can't be set when MVC is running\n");
 		return -EINVAL;
 	}
 
@@ -420,7 +424,7 @@ static int tegra210_mvc_put_curve_type(struct snd_kcontrol *kcontrol,
 
 	mvc->curve_type = ucontrol->value.enumerated.item[0];
 
-	tegra210_mvc_reset_vol_settings(mvc, cmpnt->dev);
+	tegra210_mvc_reset_vol_settings(mvc, dev);
 
 	return 1;
 }
@@ -465,8 +469,9 @@ static int tegra210_mvc_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct device *dev = dai->dev;
-	struct tegra210_mvc *mvc = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_mvc *mvc = dev_get_drvdata(dev);
 	int err, val;
 
 	/*
@@ -739,7 +744,7 @@ static int tegra210_mvc_platform_probe(struct platform_device *pdev)
 
 	regcache_cache_only(mvc->regmap, true);
 
-	err = devm_snd_soc_register_component(dev, &tegra210_mvc_cmpnt,
+	err = devm_snd_soc_component_register(dev, &tegra210_mvc_cmpnt,
 					      tegra210_mvc_dais,
 					      ARRAY_SIZE(tegra210_mvc_dais));
 	if (err)

@@ -253,7 +253,8 @@ static int tas5086_deemph[] = { 0, 32000, 44100, 48000 };
 
 static int tas5086_set_deemph(struct snd_soc_component *component)
 {
-	struct tas5086_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5086_private *priv = dev_get_drvdata(dev);
 	int i, val = 0;
 
 	if (priv->deemph) {
@@ -273,7 +274,8 @@ static int tas5086_get_deemph(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct tas5086_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5086_private *priv = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = priv->deemph;
 
@@ -284,7 +286,8 @@ static int tas5086_put_deemph(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct tas5086_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5086_private *priv = dev_get_drvdata(dev);
 
 	priv->deemph = ucontrol->value.integer.value[0];
 
@@ -295,8 +298,9 @@ static int tas5086_put_deemph(struct snd_kcontrol *kcontrol,
 static int tas5086_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct tas5086_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5086_private *priv = dev_get_drvdata(dev);
 
 	switch (clk_id) {
 	case TAS5086_CLK_IDX_MCLK:
@@ -313,12 +317,13 @@ static int tas5086_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int tas5086_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			       unsigned int format)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct tas5086_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5086_private *priv = dev_get_drvdata(dev);
 
 	/* The TAS5086 can only be slave to all clocks */
 	if ((format & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_CBC_CFC) {
-		dev_err(component->dev, "Invalid clocking mode\n");
+		dev_err(dev, "Invalid clocking mode\n");
 		return -EINVAL;
 	}
 
@@ -351,8 +356,9 @@ static int tas5086_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas5086_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5086_private *priv = dev_get_drvdata(dev);
 	int val;
 	int ret;
 
@@ -363,7 +369,7 @@ static int tas5086_hw_params(struct snd_pcm_substream *substream,
 			     ARRAY_SIZE(tas5086_sample_rates), priv->rate);
 
 	if (val < 0) {
-		dev_err(component->dev, "Invalid sample rate\n");
+		dev_err(dev, "Invalid sample rate\n");
 		return -EINVAL;
 	}
 
@@ -377,7 +383,7 @@ static int tas5086_hw_params(struct snd_pcm_substream *substream,
 	val = index_in_array(tas5086_ratios, ARRAY_SIZE(tas5086_ratios),
 			     priv->mclk / priv->rate);
 	if (val < 0) {
-		dev_err(component->dev, "Invalid MCLK / Fs ratio\n");
+		dev_err(dev, "Invalid MCLK / Fs ratio\n");
 		return -EINVAL;
 	}
 
@@ -414,7 +420,7 @@ static int tas5086_hw_params(struct snd_pcm_substream *substream,
 		val = 0x06;
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI format\n");
+		dev_err(dev, "Invalid DAI format\n");
 		return -EINVAL;
 	}
 
@@ -430,7 +436,7 @@ static int tas5086_hw_params(struct snd_pcm_substream *substream,
 		val += 2;
 		break;
 	default:
-		dev_err(component->dev, "Invalid bit width\n");
+		dev_err(dev, "Invalid bit width\n");
 		return -EINVAL;
 	}
 
@@ -449,8 +455,9 @@ static int tas5086_hw_params(struct snd_pcm_substream *substream,
 
 static int tas5086_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas5086_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5086_private *priv = dev_get_drvdata(dev);
 	unsigned int val = 0;
 
 	if (mute)
@@ -772,7 +779,8 @@ static struct snd_soc_dai_driver tas5086_dai = {
 #ifdef CONFIG_PM
 static int tas5086_soc_suspend(struct snd_soc_component *component)
 {
-	struct tas5086_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5086_private *priv = dev_get_drvdata(dev);
 	int ret;
 
 	/* Shut down all channels */
@@ -787,7 +795,8 @@ static int tas5086_soc_suspend(struct snd_soc_component *component)
 
 static int tas5086_soc_resume(struct snd_soc_component *component)
 {
-	struct tas5086_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5086_private *priv = dev_get_drvdata(dev);
 	int ret;
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(priv->supplies), priv->supplies);
@@ -797,7 +806,7 @@ static int tas5086_soc_resume(struct snd_soc_component *component)
 	tas5086_reset(priv);
 	regcache_mark_dirty(priv->regmap);
 
-	ret = tas5086_init(component->dev, priv);
+	ret = tas5086_init(dev, priv);
 	if (ret < 0)
 		return ret;
 
@@ -822,20 +831,21 @@ MODULE_DEVICE_TABLE(of, tas5086_dt_ids);
 
 static int tas5086_probe(struct snd_soc_component *component)
 {
-	struct tas5086_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5086_private *priv = dev_get_drvdata(dev);
 	int i, ret;
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(priv->supplies), priv->supplies);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to enable regulators: %d\n", ret);
+		dev_err(dev, "Failed to enable regulators: %d\n", ret);
 		return ret;
 	}
 
 	priv->pwm_start_mid_z = 0;
 	priv->charge_period = 1300000; /* hardware default is 1300 ms */
 
-	if (of_match_device(of_match_ptr(tas5086_dt_ids), component->dev)) {
-		struct device_node *of_node = component->dev->of_node;
+	if (of_match_device(of_match_ptr(tas5086_dt_ids), dev)) {
+		struct device_node *of_node = dev->of_node;
 
 		of_property_read_u32(of_node, "ti,charge-period",
 				     &priv->charge_period);
@@ -852,7 +862,7 @@ static int tas5086_probe(struct snd_soc_component *component)
 	}
 
 	tas5086_reset(priv);
-	ret = tas5086_init(component->dev, priv);
+	ret = tas5086_init(dev, priv);
 	if (ret < 0)
 		goto exit_disable_regulators;
 
@@ -871,7 +881,8 @@ exit_disable_regulators:
 
 static void tas5086_remove(struct snd_soc_component *component)
 {
-	struct tas5086_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5086_private *priv = dev_get_drvdata(dev);
 
 	if (priv->reset) {
 		/* Set codec to the reset state */
@@ -975,7 +986,7 @@ static int tas5086_i2c_probe(struct i2c_client *i2c)
 	regulator_bulk_disable(ARRAY_SIZE(priv->supplies), priv->supplies);
 
 	if (ret == 0)
-		ret = devm_snd_soc_register_component(&i2c->dev,
+		ret = devm_snd_soc_component_register(&i2c->dev,
 					     &soc_component_dev_tas5086,
 					     &tas5086_dai, 1);
 

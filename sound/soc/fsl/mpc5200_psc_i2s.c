@@ -38,7 +38,10 @@ static int psc_i2s_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct psc_dma *psc_dma = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct psc_dma *psc_dma = dev_get_drvdata(cpu_dev);
 	u32 mode;
 
 	dev_dbg(psc_dma->dev, "%s(substream=%p) p_size=%i p_bytes=%i"
@@ -89,7 +92,10 @@ static int psc_i2s_hw_params(struct snd_pcm_substream *substream,
 static int psc_i2s_set_sysclk(struct snd_soc_dai *cpu_dai,
 			      int clk_id, unsigned int freq, int dir)
 {
-	struct psc_dma *psc_dma = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct psc_dma *psc_dma = dev_get_drvdata(cpu_dev);
+
 	dev_dbg(psc_dma->dev, "psc_i2s_set_sysclk(cpu_dai=%p, dir=%i)\n",
 				cpu_dai, dir);
 	return (dir == SND_SOC_CLOCK_IN) ? 0 : -EINVAL;
@@ -111,7 +117,10 @@ static int psc_i2s_set_sysclk(struct snd_soc_dai *cpu_dai,
  */
 static int psc_i2s_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int format)
 {
-	struct psc_dma *psc_dma = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct psc_dma *psc_dma = dev_get_drvdata(cpu_dev);
+
 	dev_dbg(psc_dma->dev, "psc_i2s_set_fmt(cpu_dai=%p, format=%i)\n",
 				cpu_dai, format);
 	return (format == SND_SOC_DAIFMT_I2S) ? 0 : -EINVAL;
@@ -176,7 +185,7 @@ static int psc_i2s_of_probe(struct platform_device *op)
 	if (rc != 0)
 		return rc;
 
-	rc = devm_snd_soc_register_component(&op->dev, &psc_i2s_component,
+	rc = devm_snd_soc_component_register(&op->dev, &psc_i2s_component,
 					psc_i2s_dai, ARRAY_SIZE(psc_i2s_dai));
 	if (rc != 0) {
 		pr_err("Failed to register DAI\n");

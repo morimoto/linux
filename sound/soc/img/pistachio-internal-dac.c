@@ -121,9 +121,10 @@ static struct snd_soc_dai_driver pistachio_internal_dac_dais[] = {
 
 static int pistachio_internal_dac_codec_probe(struct snd_soc_component *component)
 {
-	struct pistachio_internal_dac *dac = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pistachio_internal_dac *dac = dev_get_drvdata(dev);
 
-	snd_soc_component_init_regmap(component, dac->regmap);
+	snd_soc_component_regmap_init(component, dac->regmap);
 
 	return 0;
 }
@@ -195,7 +196,7 @@ static int pistachio_internal_dac_probe(struct platform_device *pdev)
 	pm_runtime_enable(dev);
 	pm_runtime_idle(dev);
 
-	ret = devm_snd_soc_register_component(dev,
+	ret = devm_snd_soc_component_register(dev,
 			&pistachio_internal_dac_driver,
 			pistachio_internal_dac_dais,
 			ARRAY_SIZE(pistachio_internal_dac_dais));

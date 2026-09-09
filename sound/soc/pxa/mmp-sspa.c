@@ -83,7 +83,9 @@ static void mmp_sspa_rx_disable(struct sspa_priv *sspa)
 static int mmp_sspa_startup(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct sspa_priv *sspa = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sspa_priv *sspa = dev_get_drvdata(dev);
 
 	clk_prepare_enable(sspa->sysclk);
 	clk_prepare_enable(sspa->clk);
@@ -94,7 +96,9 @@ static int mmp_sspa_startup(struct snd_pcm_substream *substream,
 static void mmp_sspa_shutdown(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct sspa_priv *sspa = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sspa_priv *sspa = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(sspa->clk);
 	clk_disable_unprepare(sspa->sysclk);
@@ -106,8 +110,9 @@ static void mmp_sspa_shutdown(struct snd_pcm_substream *substream,
 static int mmp_sspa_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
 				    int clk_id, unsigned int freq, int dir)
 {
-	struct sspa_priv *sspa = snd_soc_dai_get_drvdata(cpu_dai);
-	struct device *dev = cpu_dai->component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sspa_priv *sspa = dev_get_drvdata(dev);
 	int ret = 0;
 
 	if (dev->of_node)
@@ -134,8 +139,9 @@ static int mmp_sspa_set_dai_pll(struct snd_soc_dai *cpu_dai, int pll_id,
 				 int source, unsigned int freq_in,
 				 unsigned int freq_out)
 {
-	struct sspa_priv *sspa = snd_soc_dai_get_drvdata(cpu_dai);
-	struct device *dev = cpu_dai->component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sspa_priv *sspa = dev_get_drvdata(dev);
 	int ret = 0;
 
 	if (dev->of_node)
@@ -165,7 +171,9 @@ static int mmp_sspa_set_dai_pll(struct snd_soc_dai *cpu_dai, int pll_id,
 static int mmp_sspa_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 				 unsigned int fmt)
 {
-	struct sspa_priv *sspa = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sspa_priv *sspa = dev_get_drvdata(dev);
 
 	/* reset port settings */
 	sspa->sp   = SSPA_SP_WEN | SSPA_SP_S_RST | SSPA_SP_FFLUSH;
@@ -212,8 +220,9 @@ static int mmp_sspa_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *dai)
 {
-	struct sspa_priv *sspa = snd_soc_dai_get_drvdata(dai);
-	struct device *dev = dai->component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sspa_priv *sspa = dev_get_drvdata(dev);
 	u32 sspa_ctrl = sspa->ctrl;
 	int bits;
 	int bitval;
@@ -280,7 +289,9 @@ static int mmp_sspa_hw_params(struct snd_pcm_substream *substream,
 static int mmp_sspa_trigger(struct snd_pcm_substream *substream, int cmd,
 			     struct snd_soc_dai *dai)
 {
-	struct sspa_priv *sspa = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sspa_priv *sspa = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (cmd) {
@@ -324,11 +335,12 @@ static int mmp_sspa_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int mmp_sspa_probe(struct snd_soc_dai *dai)
 {
-	struct sspa_priv *sspa = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sspa_priv *sspa = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai,
-				&sspa->playback_dma_data,
-				&sspa->capture_dma_data);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &sspa->playback_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &sspa->capture_dma_data);
 
 	return 0;
 }
@@ -420,15 +432,15 @@ static int mmp_pcm_mmap(struct snd_soc_component *component,
 static int mmp_sspa_open(struct snd_soc_component *component,
 			 struct snd_pcm_substream *substream)
 {
-	struct sspa_priv *sspa = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sspa_priv *sspa = dev_get_drvdata(dev);
 
-	pm_runtime_get_sync(component->dev);
+	pm_runtime_get_sync(dev);
 
 	/* we can only change the settings if the port is not in use */
 	if ((__raw_readl(sspa->tx_base + SSPA_SP) & SSPA_SP_S_EN) ||
 	    (__raw_readl(sspa->rx_base + SSPA_SP) & SSPA_SP_S_EN)) {
-		dev_err(component->dev,
-			"can't change hardware dai format: stream is in use\n");
+		dev_err(dev, "can't change hardware dai format: stream is in use\n");
 		return -EBUSY;
 	}
 
@@ -457,7 +469,9 @@ static int mmp_sspa_open(struct snd_soc_component *component,
 static int mmp_sspa_close(struct snd_soc_component *component,
 			  struct snd_pcm_substream *substream)
 {
-	pm_runtime_put_sync(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	pm_runtime_put_sync(dev);
 	return 0;
 }
 
@@ -540,7 +554,7 @@ static int asoc_mmp_sspa_probe(struct platform_device *pdev)
 			return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &mmp_sspa_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &mmp_sspa_component,
 					      &mmp_sspa_dai, 1);
 	if (ret)
 		return ret;

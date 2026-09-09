@@ -45,7 +45,7 @@ static const struct snd_soc_component_driver ics43432_component_driver = {
 
 static int ics43432_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&ics43432_component_driver,
 			&ics43432_dai, 1);
 }

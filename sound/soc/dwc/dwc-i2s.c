@@ -228,7 +228,9 @@ static void i2s_stop(struct dw_i2s_dev *dev,
 static int dw_i2s_startup(struct snd_pcm_substream *substream,
 			  struct snd_soc_dai *cpu_dai)
 {
-	struct dw_i2s_dev *dev = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct dw_i2s_dev *dev = dev_get_drvdata(dai_dev);
 
 	if (dev->is_jh7110) {
 		struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
@@ -271,7 +273,9 @@ static void dw_i2s_config(struct dw_i2s_dev *dev, int stream)
 static int dw_i2s_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct dw_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct dw_i2s_dev *dev = dev_get_drvdata(dai_dev);
 	struct i2s_clk_config_data *config = &dev->config;
 	int ret;
 
@@ -346,7 +350,9 @@ static int dw_i2s_hw_params(struct snd_pcm_substream *substream,
 static int dw_i2s_prepare(struct snd_pcm_substream *substream,
 			  struct snd_soc_dai *dai)
 {
-	struct dw_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct dw_i2s_dev *dev = dev_get_drvdata(dai_dev);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 		i2s_write_reg(dev->i2s_base, TXFFR, 1);
@@ -359,7 +365,9 @@ static int dw_i2s_prepare(struct snd_pcm_substream *substream,
 static int dw_i2s_trigger(struct snd_pcm_substream *substream,
 		int cmd, struct snd_soc_dai *dai)
 {
-	struct dw_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct dw_i2s_dev *dev = dev_get_drvdata(dai_dev);
 	int ret = 0;
 
 	switch (cmd) {
@@ -385,7 +393,9 @@ static int dw_i2s_trigger(struct snd_pcm_substream *substream,
 
 static int dw_i2s_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 {
-	struct dw_i2s_dev *dev = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct dw_i2s_dev *dev = dev_get_drvdata(dai_dev);
 	int ret = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -433,7 +443,9 @@ static int dw_i2s_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 static int dw_i2s_set_tdm_slot(struct snd_soc_dai *cpu_dai,	unsigned int tx_mask,
 			   unsigned int rx_mask, int slots, int slot_width)
 {
-	struct dw_i2s_dev *dev = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct dw_i2s_dev *dev = dev_get_drvdata(dai_dev);
 
 	if (slot_width != 32)
 		return -EINVAL;
@@ -458,9 +470,13 @@ static int dw_i2s_set_tdm_slot(struct snd_soc_dai *cpu_dai,	unsigned int tx_mask
 
 static int dw_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct dw_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct dw_i2s_dev *dev = dev_get_drvdata(dai_dev);
 
-	snd_soc_dai_init_dma_data(dai, &dev->play_dma_data, &dev->capture_dma_data);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &dev->play_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &dev->capture_dma_data);
+
 	return 0;
 }
 
@@ -508,7 +524,8 @@ static int dw_i2s_runtime_resume(struct device *dev)
 #ifdef CONFIG_PM
 static int dw_i2s_suspend(struct snd_soc_component *component)
 {
-	struct dw_i2s_dev *dev = snd_soc_component_get_drvdata(component);
+	struct device *cdev = snd_soc_component_to_dev(component);
+	struct dw_i2s_dev *dev = dev_get_drvdata(cdev);
 
 	if (dev->capability & DW_I2S_MASTER)
 		clk_disable(dev->clk);
@@ -517,7 +534,8 @@ static int dw_i2s_suspend(struct snd_soc_component *component)
 
 static int dw_i2s_resume(struct snd_soc_component *component)
 {
-	struct dw_i2s_dev *dev = snd_soc_component_get_drvdata(component);
+	struct device *cdev = snd_soc_component_to_dev(component);
+	struct dw_i2s_dev *dev = dev_get_drvdata(cdev);
 	struct snd_soc_dai *dai;
 	int stream, ret;
 
@@ -529,7 +547,7 @@ static int dw_i2s_resume(struct snd_soc_component *component)
 
 	for_each_component_dais(component, dai) {
 		for_each_pcm_streams(stream)
-			if (snd_soc_dai_stream_active(dai, stream))
+			if (snd_soc_dai_active_stream(dai, stream))
 				dw_i2s_config(dev, stream);
 	}
 
@@ -1011,7 +1029,7 @@ static int dw_i2s_probe(struct platform_device *pdev)
 	}
 
 	dev_set_drvdata(&pdev->dev, dev);
-	ret = devm_snd_soc_register_component(&pdev->dev, &dw_i2s_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &dw_i2s_component,
 					 dw_i2s_dai, 1);
 	if (ret != 0) {
 		dev_err(&pdev->dev, "not able to register dai\n");

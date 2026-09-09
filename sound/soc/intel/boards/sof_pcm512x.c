@@ -70,11 +70,12 @@ static const struct dmi_system_id sof_pcm512x_quirk_table[] = {
 
 static int sof_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(rtd->card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct sof_hdmi_pcm *pcm;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 
-	pcm = devm_kzalloc(rtd->card->dev, sizeof(*pcm), GFP_KERNEL);
+	pcm = devm_kzalloc(dev, sizeof(*pcm), GFP_KERNEL);
 	if (!pcm)
 		return -ENOMEM;
 
@@ -89,7 +90,7 @@ static int sof_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 
 static int sof_pcm512x_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *codec = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *codec = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	snd_soc_component_update_bits(codec, PCM512x_GPIO_EN, 0x08, 0x08);
 	snd_soc_component_update_bits(codec, PCM512x_GPIO_OUTPUT_4, 0x0f, 0x02);
@@ -102,7 +103,7 @@ static int sof_pcm512x_codec_init(struct snd_soc_pcm_runtime *rtd)
 static int aif1_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_soc_component *codec = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *codec = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	snd_soc_component_update_bits(codec, PCM512x_GPIO_CONTROL_1,
 				      0x08, 0x08);
@@ -113,7 +114,7 @@ static int aif1_startup(struct snd_pcm_substream *substream)
 static void aif1_shutdown(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_soc_component *codec = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *codec = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	snd_soc_component_update_bits(codec, PCM512x_GPIO_CONTROL_1,
 				      0x08, 0x00);
@@ -133,7 +134,7 @@ static struct snd_soc_dai_link_component platform_component[] = {
 
 static int sof_card_late_probe(struct snd_soc_card *card)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(card);
 	struct sof_hdmi_pcm *pcm;
 
 	/* HDMI is not supported by SOF on Baytrail/CherryTrail */
@@ -148,7 +149,7 @@ static int sof_card_late_probe(struct snd_soc_card *card)
 
 	pcm = list_first_entry(&ctx->hdmi_pcm_list, struct sof_hdmi_pcm, head);
 
-	return hda_dsp_hdmi_build_controls(card, pcm->codec_dai->component);
+	return hda_dsp_hdmi_build_controls(card, snd_soc_dai_to_component(pcm->codec_dai));
 }
 
 static const struct snd_kcontrol_new sof_controls[] = {
@@ -178,12 +179,13 @@ static int dmic_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	ret = snd_soc_dapm_new_controls(dapm, dmic_widgets,
 					ARRAY_SIZE(dmic_widgets));
 	if (ret) {
-		dev_err(card->dev, "DMic widget addition failed: %d\n", ret);
+		dev_err(dev, "DMic widget addition failed: %d\n", ret);
 		/* Don't need to add routes if widget addition failed */
 		return ret;
 	}
@@ -192,7 +194,7 @@ static int dmic_init(struct snd_soc_pcm_runtime *rtd)
 				      ARRAY_SIZE(dmic_map));
 
 	if (ret)
-		dev_err(card->dev, "DMic map addition failed: %d\n", ret);
+		dev_err(dev, "DMic map addition failed: %d\n", ret);
 
 	return ret;
 }
@@ -409,7 +411,7 @@ static int sof_audio_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	snd_soc_card_set_drvdata(card, ctx);
+	snd_soc_card_set_priv(card, ctx);
 
 	return devm_snd_soc_card_register(card, &sof_audio_card_pcm512x);
 }
@@ -420,7 +422,7 @@ static void sof_pcm512x_remove(struct platform_device *pdev)
 	struct snd_soc_component *component;
 
 	for_each_card_components(card, component) {
-		if (!strcmp(component->name, pcm512x_component[0].name)) {
+		if (!strcmp(snd_soc_component_name(component), pcm512x_component[0].name)) {
 			snd_soc_component_set_jack(component, NULL, NULL);
 			break;
 		}

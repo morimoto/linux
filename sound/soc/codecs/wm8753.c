@@ -224,7 +224,8 @@ static int wm8753_get_dai(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8753_priv *wm8753 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8753_priv *wm8753 = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = wm8753->dai_func;
 	return 0;
@@ -234,7 +235,8 @@ static int wm8753_set_dai(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8753_priv *wm8753 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8753_priv *wm8753 = dev_get_drvdata(dev);
 	u16 ioctl;
 
 	if (wm8753->dai_func == ucontrol->value.enumerated.item[0])
@@ -739,7 +741,7 @@ static int wm8753_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 {
 	u16 reg, enable;
 	int offset;
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
 	if (pll_id < WM8753_PLL1 || pll_id > WM8753_PLL2)
 		return -ENODEV;
@@ -860,8 +862,9 @@ static int get_coeff(int mclk, int rate)
 static int wm8753_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8753_priv *wm8753 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8753_priv *wm8753 = dev_get_drvdata(dev);
 
 	switch (freq) {
 	case 11289600:
@@ -920,8 +923,9 @@ static int wm8753_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8753_priv *wm8753 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8753_priv *wm8753 = dev_get_drvdata(dev);
 	u16 voice = snd_soc_component_read(component, WM8753_PCM) & 0x01f3;
 	u16 srate = snd_soc_component_read(component, WM8753_SRATE1) & 0x017f;
 
@@ -1021,7 +1025,7 @@ static int wm8753_pcm_set_dai_fmt(struct snd_soc_component *component,
 static int wm8753_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 		int div_id, int div)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 reg;
 
 	switch (div_id) {
@@ -1151,8 +1155,9 @@ static int wm8753_i2s_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8753_priv *wm8753 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8753_priv *wm8753 = dev_get_drvdata(dev);
 	u16 srate = snd_soc_component_read(component, WM8753_SRATE1) & 0x01c0;
 	u16 hifi = snd_soc_component_read(component, WM8753_HIFI) & 0x01f3;
 	int coeff;
@@ -1232,7 +1237,8 @@ static int wm8753_mode3_4_set_dai_fmt(struct snd_soc_component *component,
 static int wm8753_hifi_write_dai_fmt(struct snd_soc_component *component,
 		unsigned int fmt)
 {
-	struct wm8753_priv *wm8753 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8753_priv *wm8753 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (wm8753->dai_func) {
@@ -1258,8 +1264,9 @@ static int wm8753_hifi_write_dai_fmt(struct snd_soc_component *component,
 static int wm8753_hifi_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8753_priv *wm8753 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8753_priv *wm8753 = dev_get_drvdata(dev);
 
 	wm8753->hifi_fmt = fmt;
 
@@ -1269,7 +1276,8 @@ static int wm8753_hifi_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int wm8753_voice_write_dai_fmt(struct snd_soc_component *component,
 		unsigned int fmt)
 {
-	struct wm8753_priv *wm8753 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8753_priv *wm8753 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	if (wm8753->dai_func != 0)
@@ -1288,8 +1296,9 @@ static int wm8753_voice_write_dai_fmt(struct snd_soc_component *component,
 static int wm8753_voice_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8753_priv *wm8753 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8753_priv *wm8753 = dev_get_drvdata(dev);
 
 	wm8753->voice_fmt = fmt;
 
@@ -1298,9 +1307,10 @@ static int wm8753_voice_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 static int wm8753_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 mute_reg = snd_soc_component_read(component, WM8753_DAC) & 0xfff7;
-	struct wm8753_priv *wm8753 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8753_priv *wm8753 = dev_get_drvdata(dev);
 
 	/* the digital mute covers the HiFi and Voice DAC's on the WM8753.
 	 * make sure we check if they are not both active when we mute */
@@ -1329,7 +1339,8 @@ static void wm8753_charge_work(struct work_struct *work)
 static int wm8753_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm8753_priv *wm8753 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8753_priv *wm8753 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	u16 pwr_reg = snd_soc_component_read(component, WM8753_PWR1) & 0xfe3e;
 
@@ -1462,7 +1473,8 @@ static struct snd_soc_dai_driver wm8753_dai[] = {
 
 static int wm8753_resume(struct snd_soc_component *component)
 {
-	struct wm8753_priv *wm8753 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8753_priv *wm8753 = dev_get_drvdata(dev);
 
 	regcache_sync(wm8753->regmap);
 
@@ -1471,14 +1483,15 @@ static int wm8753_resume(struct snd_soc_component *component)
 
 static int wm8753_probe(struct snd_soc_component *component)
 {
-	struct wm8753_priv *wm8753 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8753_priv *wm8753 = dev_get_drvdata(dev);
 	int ret;
 
 	INIT_DELAYED_WORK(&wm8753->charge_work, wm8753_charge_work);
 
 	ret = wm8753_reset(component);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to issue reset: %d\n", ret);
+		dev_err(dev, "Failed to issue reset: %d\n", ret);
 		return ret;
 	}
 
@@ -1554,7 +1567,7 @@ static int wm8753_spi_probe(struct spi_device *spi)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&spi->dev, &soc_component_dev_wm8753,
+	ret = devm_snd_soc_component_register(&spi->dev, &soc_component_dev_wm8753,
 				     wm8753_dai, ARRAY_SIZE(wm8753_dai));
 	if (ret != 0)
 		dev_err(&spi->dev, "Failed to register CODEC: %d\n", ret);
@@ -1592,7 +1605,7 @@ static int wm8753_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&i2c->dev, &soc_component_dev_wm8753,
+	ret = devm_snd_soc_component_register(&i2c->dev, &soc_component_dev_wm8753,
 				     wm8753_dai, ARRAY_SIZE(wm8753_dai));
 	if (ret != 0)
 		dev_err(&i2c->dev, "Failed to register CODEC: %d\n", ret);

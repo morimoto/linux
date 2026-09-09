@@ -112,8 +112,9 @@ static int max9850_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max9850_priv *max9850 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9850_priv *max9850 = dev_get_drvdata(dev);
 	u64 lrclk_div;
 	u8 sf, da;
 
@@ -151,8 +152,9 @@ static int max9850_hw_params(struct snd_pcm_substream *substream,
 static int max9850_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct max9850_priv *max9850 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9850_priv *max9850 = dev_get_drvdata(dev);
 
 	/* calculate mclk -> iclk divider */
 	if (freq <= 13000000)
@@ -170,7 +172,7 @@ static int max9850_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 
 static int max9850_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u8 da = 0;
 
 	/* set clock provider for audio interface */
@@ -224,7 +226,8 @@ static int max9850_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 static int max9850_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
-	struct max9850_priv *max9850 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9850_priv *max9850 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -237,8 +240,7 @@ static int max9850_set_bias_level(struct snd_soc_component *component,
 		if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF) {
 			ret = regcache_sync(max9850->regmap);
 			if (ret) {
-				dev_err(component->dev,
-					"Failed to sync cache: %d\n", ret);
+				dev_err(dev, "Failed to sync cache: %d\n", ret);
 				return ret;
 			}
 		}
@@ -326,7 +328,7 @@ static int max9850_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, max9850);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_max9850, &max9850_dai, 1);
 	return ret;
 }

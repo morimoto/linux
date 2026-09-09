@@ -71,7 +71,8 @@ static int bd28623_get_switch_spk(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct bd28623_priv *bd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct bd28623_priv *bd = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = bd->switch_spk;
 
@@ -82,7 +83,8 @@ static int bd28623_set_switch_spk(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct bd28623_priv *bd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct bd28623_priv *bd = dev_get_drvdata(dev);
 
 	if (bd->switch_spk == ucontrol->value.integer.value[0])
 		return 0;
@@ -101,7 +103,8 @@ static const struct snd_kcontrol_new bd28623_controls[] = {
 
 static int bd28623_codec_probe(struct snd_soc_component *component)
 {
-	struct bd28623_priv *bd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct bd28623_priv *bd = dev_get_drvdata(dev);
 	int ret;
 
 	bd->switch_spk = 1;
@@ -117,14 +120,16 @@ static int bd28623_codec_probe(struct snd_soc_component *component)
 
 static void bd28623_codec_remove(struct snd_soc_component *component)
 {
-	struct bd28623_priv *bd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct bd28623_priv *bd = dev_get_drvdata(dev);
 
 	bd28623_power_off(bd);
 }
 
 static int bd28623_codec_suspend(struct snd_soc_component *component)
 {
-	struct bd28623_priv *bd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct bd28623_priv *bd = dev_get_drvdata(dev);
 
 	bd28623_power_off(bd);
 
@@ -133,7 +138,8 @@ static int bd28623_codec_suspend(struct snd_soc_component *component)
 
 static int bd28623_codec_resume(struct snd_soc_component *component)
 {
-	struct bd28623_priv *bd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct bd28623_priv *bd = dev_get_drvdata(dev);
 	int ret;
 
 	ret = bd28623_power_on(bd);
@@ -215,7 +221,7 @@ static int bd28623_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, bd);
 	bd->dev = dev;
 
-	return devm_snd_soc_register_component(dev, &soc_codec_bd,
+	return devm_snd_soc_component_register(dev, &soc_codec_bd,
 					       &soc_dai_bd, 1);
 }
 
