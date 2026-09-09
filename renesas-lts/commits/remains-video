@@ -21,7 +21,6 @@ a48fb184cbf77 media: rcar-vin: Add support for crop function for Gen3 and above
 dc2b76c49b932 media: rcar-isp: Corect start up sequence follow description in HWUM
 e9411b103398b media: rcar-vin: rcar-dma: Fix error state message reports by V4L2 videobuf2 framework
 08473e2d45b9c media: rcar-vin: Add support for R-Car X5H
-8b6658813f574 media: rcar-csi2: Remove v4l2_async_notifier_cleanup in remove function
 
 #
 # Video capture (VIN, CSI-2, ISP) device tree

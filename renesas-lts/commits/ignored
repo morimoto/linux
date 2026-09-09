@@ -1,5 +1,7 @@
 # Empty line below is needed
 
+# Workaround for rmmod, correct fix is to solve the vdev lifetime management
+8b6658813f574 media: rcar-csi2: Remove v4l2_async_notifier_cleanup in remove function
 # Style change
 6dca6dab6a83a media: rcar-csi2: move macro defination to top (no functional changes)
 # Workaround for running the driver in simulator
