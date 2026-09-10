@@ -37,6 +37,11 @@ properties:
           - const: img,img-rogue
       - items:
           - enum:
+              - renesas,r8a779g0-gpu
+          - const: img,img-axm-8-256
+          - const: img,img-rogue
+      - items:
+          - enum:
               - thead,th1520-gpu
           - const: img,img-bxm-4-64
           - const: img,img-rogue
@@ -44,6 +49,7 @@ properties:
           - enum:
               - ti,am62p-gpu
               - ti,j721s2-gpu
+              - renesas,r8a779h0-gpu
           - const: img,img-bxs-4-64
           - const: img,img-rogue
 
@@ -70,7 +76,8 @@ properties:
     minItems: 1
 
   interrupts:
-    maxItems: 1
+    minItems: 1
+    maxItems: 8
 
   power-domains:
     minItems: 1
@@ -172,6 +179,19 @@ allOf:
         power-domain-names: false
       required:
         - power-domains
+
+  - if:
+      not:
+        properties:
+          compatible:
+            contains:
+              enum:
+                - renesas,r8a779g0-gpu
+                - renesas,r8a779h0-gpu
+    then:
+      properties:
+        interrupts:
+          maxItems: 1
 
 examples:
   - |
