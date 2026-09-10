@@ -1,5 +1,15 @@
 # Empty line below is needed
 
-# https://lore.kernel.org/all/20260727122546.4232-4-wsa+renesas@sang-engineering.com/
+# Wolfram
+# - torvalds: a5c811aa0a1550c302855176b309e6ed46ce01fe # dt-bindings: i2c: rcar-i2c: Document R-Car X5H support
+# - torvalds: 87e713f2004811062e5283a5a4efb52c883bb355 # i2c: rcar: add R-Car Gen5 support
+# - torvalds: 7a79b02dd1b09c235c3cf6075bccca2160d1b826 # i2c: rcar: fix reset handling for Gen5
+# https://lore.kernel.org/all/20260826083524.6056-2-wsa+renesas@sang-engineering.com/
 c050a71a66d21 i2c: rcar: add compatible string to support R-Car X5H of I2C module
 037e9778e28e1 dt-bindings: i2c: rcar-i2c: Document R-Car X5H support
+
+# Wolfram
+# https://lore.kernel.org/all/20260825141542.30901-6-wsa+renesas@sang-engineering.com/
+6dd61b9a71617 dmaengine: rcar-dmac: Enable channel 0 when using SMMU
+7da2c066c191c dt-bindings: renesas,rcar-dmac: Add R-Car X5H SoC support
+6a44573397f60 dmaengine: rcar-dmac: Add support for X5H SoC
