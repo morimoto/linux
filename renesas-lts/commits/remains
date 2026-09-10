@@ -1,18 +1,19 @@
-69e19cdfb2cd3 drivers: usb: dwc3: renesas: Reset the controller before hardware initialization
-310014c756cdc arm64: defconfig: Enable virtio-scmi and virtio-i2c
-639c7136f744f arm64: dts: renesas: perceptor: Temporarily disable some drivers in SDKv4.37.0
-b2183b68ddc8a arm64: dts: renesas: perceptor-uio: Add UIO variant without power-domains
-610254cb39547 arm64: dts: renesas: perceptor-uio: Add UIO device support for R8J78070 (R-Car X5HAIH)
-d7f9e0f6feafb arm64: dts: renesas: Add R8J78070 Perceptor board code
-54573ede44e11 arm64: dts: renesas: Add R8J78070 X5HAIH(MDP) DTs
-5df450e29a251 clk: scmi: return 0 instead of -EACCES for restricted clocks on R-Car X5H only
-58e9d9b4f85a5 arm64: defconfig: Disable unused CONFIG_RCAR_SCP_FIXUP
-c1f36d01f9924 firmware: arm_scmi: Remove SCP clock rate fixup workaround
-5cb8af836a786 serial: sh-sci: Use hardcored fck rate as fallback only
-dfb7a0164bb77 arm64: defconfig: Enable NUMA support
-5aedfba433ea5 uio: uio_pdrv_genirq: Fix coding style issues
-ea9ddc30c75ee PCI: dwc: rcar-gen5: Remove rcar_gen5_pcie6_set_max_link_width() function from PCIe6 driver
-e479c887e49d8 net: ethernet: renesas: rswitch3: restart all TX queues on open
+3338438a9bd3c arm64: dts: renesas: perceptor: Enable RPC, PCIe4, PCIe6, UFS device nodes on Perceptor
+855a8c3519458 drivers: usb: dwc3: renesas: Reset the controller before hardware initialization
+8b71298511136 arm64: defconfig: Enable virtio-scmi and virtio-i2c
+c770e53097e1e arm64: dts: renesas: perceptor: Temporarily disable some drivers in SDKv4.37.0
+039401f4eec13 arm64: dts: renesas: perceptor-uio: Add UIO variant without power-domains
+7cad3a54af33a arm64: dts: renesas: perceptor-uio: Add UIO device support for R8J78070 (R-Car X5HAIH)
+ffaf2b3b03610 arm64: dts: renesas: Add R8J78070 Perceptor board code
+098f6d679b4e3 arm64: dts: renesas: Add R8J78070 X5HAIH(MDP) DTs
+8b105e67da199 clk: scmi: return 0 instead of -EACCES for restricted clocks on R-Car X5H only
+673b87936eec3 arm64: defconfig: Disable unused CONFIG_RCAR_SCP_FIXUP
+3b03e0855d916 firmware: arm_scmi: Remove SCP clock rate fixup workaround
+26079e757c501 serial: sh-sci: Use hardcored fck rate as fallback only
+a9cdcb1835516 arm64: defconfig: Enable NUMA support
+3b087c553af20 uio: uio_pdrv_genirq: Fix coding style issues
+52c2fbc3f36fe PCI: dwc: rcar-gen5: Remove rcar_gen5_pcie6_set_max_link_width() function from PCIe6 driver
+4c9a7a9108b56 net: ethernet: renesas: rswitch3: restart all TX queues on open
 0d57e837518ed kconfig: Enable GCC_ASM_GOTO_OUTPUT_BROKEN on GCC 15
 0bcb5baa8c908 clk: Fix clk_set_rate bail-early to respect CLK_GET_RATE_NOCACHE flag
 835689d9e8489 dt-bindings: display: bridge: Add TI TDP2004 DisplayPort redriver

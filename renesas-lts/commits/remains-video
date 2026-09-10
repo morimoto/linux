@@ -1,7 +1,7 @@
 #
 # Video capture (VIN, CSI-2, ISP) drivers
 #
-9046028a16589 media: renesas: Update to fix style issues reported by checkpatch
+25ca7ec5fb8f9 media: renesas: Update to fix style issues reported by checkpatch
 9bfd72f259bdb media: renesas: rcar-vin: Add VIN's parent clock
 bc23821444991 media: renesas: rcar-vin: Add workaround for I/O error to toggle module clock via SCP
 f30498741ab1f media: renesas: rcar-csi2: Add callback support for enable_link
