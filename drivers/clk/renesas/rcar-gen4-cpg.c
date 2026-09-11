@@ -275,6 +275,11 @@ struct cpg_z_clk {
 
 #define to_z_clk(_hw)	container_of(_hw, struct cpg_z_clk, hw)
 
+static int cpg_z_clk_is_busy(struct cpg_z_clk *zclk)
+{
+	return readl(zclk->kick_reg) & CPG_FRQCRB_KICK;
+}
+
 static unsigned long cpg_z_clk_recalc_rate(struct clk_hw *hw,
 					   unsigned long parent_rate)
 {
@@ -327,7 +332,7 @@ static int cpg_z_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 	unsigned int mult;
 	unsigned int i;
 
-	if (readl(zclk->kick_reg) & CPG_FRQCRB_KICK)
+	if (cpg_z_clk_is_busy(zclk))
 		return -EBUSY;
 
 	mult = DIV64_U64_ROUND_CLOSEST(rate * 32ULL * zclk->fixed_div,
@@ -352,7 +357,7 @@ static int cpg_z_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 	 * "super" safe value.
 	 */
 	for (i = 1000; i; i--) {
-		if (!(readl(zclk->kick_reg) & CPG_FRQCRB_KICK))
+		if (!cpg_z_clk_is_busy(zclk))
 			return 0;
 
 		cpu_relax();
