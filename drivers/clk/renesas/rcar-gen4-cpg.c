@@ -327,12 +327,12 @@ static int cpg_z_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 	unsigned int mult;
 	unsigned int i;
 
+	if (readl(zclk->kick_reg) & CPG_FRQCRB_KICK)
+		return -EBUSY;
+
 	mult = DIV64_U64_ROUND_CLOSEST(rate * 32ULL * zclk->fixed_div,
 				       parent_rate);
 	mult = clamp(mult, 1U, 32U);
-
-	if (readl(zclk->kick_reg) & CPG_FRQCRB_KICK)
-		return -EBUSY;
 
 	cpg_reg_modify(zclk->reg, zclk->mask, (32 - mult) << __ffs(zclk->mask));
 
