@@ -38,12 +38,12 @@ static int mtk_hw_gain_event(struct snd_soc_dapm_widget *w,
 			     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int gain_cur;
 	unsigned int gain_con1;
 
-	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
-		__func__, w->name, event);
+	dev_dbg(dev, "%s(), name %s, event 0x%x\n", __func__, w->name, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -126,26 +126,29 @@ static int mtk_dai_gain_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
-	unsigned int rate_reg = mt8186_rate_transform(afe->dev, rate, dai->id);
+	unsigned int rate_reg = mt8186_rate_transform(afe->dev, rate, dai_id);
 
 	dev_dbg(afe->dev, "%s(), id %d, stream %d, rate %d\n",
-		__func__, dai->id, substream->stream, rate);
+		__func__, dai_id, substream->stream, rate);
 
 	/* rate */
 	regmap_update_bits(afe->regmap,
-			   dai->id == MT8186_DAI_HW_GAIN_1 ?
+			   dai_id == MT8186_DAI_HW_GAIN_1 ?
 			   AFE_GAIN1_CON0 : AFE_GAIN2_CON0,
 			   GAIN1_MODE_MASK_SFT,
 			   rate_reg << GAIN1_MODE_SFT);
 
 	/* sample per step */
 	regmap_update_bits(afe->regmap,
-			   dai->id == MT8186_DAI_HW_GAIN_1 ?
+			   dai_id == MT8186_DAI_HW_GAIN_1 ?
 			   AFE_GAIN1_CON0 : AFE_GAIN2_CON0,
 			   GAIN1_SAMPLE_PER_STEP_MASK_SFT,
-			   (dai->id == MT8186_DAI_HW_GAIN_1 ? 0x40 : 0x0) <<
+			   (dai_id == MT8186_DAI_HW_GAIN_1 ? 0x40 : 0x0) <<
 			   GAIN1_SAMPLE_PER_STEP_SFT);
 
 	return 0;

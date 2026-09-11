@@ -159,7 +159,9 @@ static int cv1800b_adc_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct cv1800b_priv *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_priv *priv = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 	u32 val;
 	int ret;
@@ -182,7 +184,9 @@ static int cv1800b_adc_hw_params(struct snd_pcm_substream *substream,
 static int cv1800b_adc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 				   struct snd_soc_dai *dai)
 {
-	struct cv1800b_priv *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_priv *priv = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -205,7 +209,9 @@ static int cv1800b_adc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 static int cv1800b_adc_dai_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 				      unsigned int freq, int dir)
 {
-	struct cv1800b_priv *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_priv *priv = dev_get_drvdata(dev);
 
 	priv->mclk_rate = freq;
 	dev_dbg(priv->dev, "mclk is set to %u\n", freq);
@@ -232,7 +238,8 @@ static int cv1800b_adc_volume_get(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cv1800b_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_priv *priv = dev_get_drvdata(dev);
 	u32 ana0 = readl(priv->regs + CV1800B_RXADC_ANA0);
 
 	unsigned int left = cv1800b_adc_calc_db(ana0, false);
@@ -247,7 +254,8 @@ static int cv1800b_adc_volume_set(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cv1800b_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_priv *priv = dev_get_drvdata(dev);
 
 	u32 v_left = clamp_t(u32, ucontrol->value.integer.value[0], 0, 24);
 	u32 v_right = clamp_t(u32, ucontrol->value.integer.value[1], 0, 24);
@@ -298,7 +306,7 @@ static int cv1800b_adc_probe(struct platform_device *pdev)
 		return PTR_ERR(priv->regs);
 
 	platform_set_drvdata(pdev, priv);
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 					       &cv1800b_adc_component,
 					       &cv1800b_adc_dai, 1);
 }

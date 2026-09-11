@@ -50,7 +50,7 @@ static int sprd_pcm_open(struct snd_soc_component *component,
 			 struct snd_pcm_substream *substream)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct sprd_pcm_dma_private *dma_private;
 	int hw_chan = SPRD_PCM_CHANNEL_MAX;
 	int size, ret, i;
@@ -114,7 +114,7 @@ static int sprd_pcm_close(struct snd_soc_component *component,
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct sprd_pcm_dma_private *dma_private = runtime->private_data;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int size = runtime->hw.periods_max * SPRD_PCM_DMA_LINKLIST_SIZE;
 	int i;
 
@@ -159,7 +159,7 @@ static int sprd_pcm_request_dma_channel(struct snd_soc_component *component,
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct sprd_pcm_dma_private *dma_private = runtime->private_data;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct sprd_pcm_dma_params *dma_params = dma_private->params;
 	int i;
 
@@ -192,6 +192,7 @@ static int sprd_pcm_hw_params(struct snd_soc_component *component,
 	struct sprd_pcm_dma_private *dma_private = runtime->private_data;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct sprd_pcm_dma_params *dma_params;
+	struct device *dev = snd_soc_component_to_dev(component);
 	size_t totsize = params_buffer_bytes(params);
 	size_t period = params_period_bytes(params);
 	int channels = params_channels(params);
@@ -200,9 +201,9 @@ static int sprd_pcm_hw_params(struct snd_soc_component *component,
 	unsigned long flags;
 	int ret, i, j, sg_num;
 
-	dma_params = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	dma_params = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 	if (!dma_params) {
-		dev_warn(component->dev, "no dma parameters setting\n");
+		dev_warn(dev, "no dma parameters setting\n");
 		dma_private->params = NULL;
 		return 0;
 	}
@@ -218,7 +219,7 @@ static int sprd_pcm_hw_params(struct snd_soc_component *component,
 	sg_num = totsize / period;
 	dma_private->dma_addr_offset = totsize / channels;
 
-	sg = devm_kcalloc(component->dev, sg_num, sizeof(*sg), GFP_KERNEL);
+	sg = devm_kcalloc(dev, sg_num, sizeof(*sg), GFP_KERNEL);
 	if (!sg) {
 		ret = -ENOMEM;
 		goto sg_err;
@@ -265,8 +266,7 @@ static int sprd_pcm_hw_params(struct snd_soc_component *component,
 
 		ret = dmaengine_slave_config(chan, &config);
 		if (ret) {
-			dev_err(component->dev,
-				"failed to set slave configuration: %d\n", ret);
+			dev_err(dev, "failed to set slave configuration: %d\n", ret);
 			goto config_err;
 		}
 
@@ -280,7 +280,7 @@ static int sprd_pcm_hw_params(struct snd_soc_component *component,
 								sg_num, dir,
 								flags, &link);
 		if (!data->desc) {
-			dev_err(component->dev, "failed to prepare slave sg\n");
+			dev_err(dev, "failed to prepare slave sg\n");
 			ret = -ENOMEM;
 			goto config_err;
 		}
@@ -291,12 +291,12 @@ static int sprd_pcm_hw_params(struct snd_soc_component *component,
 		}
 	}
 
-	devm_kfree(component->dev, sg);
+	devm_kfree(dev, sg);
 
 	return 0;
 
 config_err:
-	devm_kfree(component->dev, sg);
+	devm_kfree(dev, sg);
 sg_err:
 	sprd_pcm_release_dma_channel(substream);
 	return ret;
@@ -313,6 +313,7 @@ static int sprd_pcm_hw_free(struct snd_soc_component *component,
 static int sprd_pcm_trigger(struct snd_soc_component *component,
 			    struct snd_pcm_substream *substream, int cmd)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct sprd_pcm_dma_private *dma_private =
 		substream->runtime->private_data;
 	int ret = 0, i;
@@ -328,9 +329,7 @@ static int sprd_pcm_trigger(struct snd_soc_component *component,
 			data->cookie = dmaengine_submit(data->desc);
 			ret = dma_submit_error(data->cookie);
 			if (ret) {
-				dev_err(component->dev,
-					"failed to submit dma request: %d\n",
-					ret);
+				dev_err(dev, "failed to submit dma request: %d\n", ret);
 				return ret;
 			}
 
@@ -379,6 +378,7 @@ static snd_pcm_uframes_t sprd_pcm_pointer(struct snd_soc_component *component,
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct sprd_pcm_dma_private *dma_private = runtime->private_data;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int pointer[SPRD_PCM_CHANNEL_MAX];
 	int bytes_of_pointer = 0, sel_max = 0, i;
 	snd_pcm_uframes_t x;
@@ -393,8 +393,7 @@ static snd_pcm_uframes_t sprd_pcm_pointer(struct snd_soc_component *component,
 
 		status = dmaengine_tx_status(data->chan, data->cookie, &state);
 		if (status == DMA_ERROR) {
-			dev_err(component->dev,
-				"failed to get dma channel %d status\n", i);
+			dev_err(dev, "failed to get dma channel %d status\n", i);
 			return 0;
 		}
 
@@ -432,16 +431,16 @@ static snd_pcm_uframes_t sprd_pcm_pointer(struct snd_soc_component *component,
 static int sprd_pcm_new(struct snd_soc_component *component,
 			struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	struct snd_pcm *pcm = rtd->pcm;
 	int ret;
 
-	ret = dma_coerce_mask_and_coherent(card->dev, DMA_BIT_MASK(32));
+	ret = dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
 	if (ret)
 		return ret;
 
 	return snd_pcm_set_fixed_buffer_all(pcm, SNDRV_DMA_TYPE_DEV,
-					    card->dev,
+					    dev,
 					    sprd_pcm_hardware.buffer_bytes_max);
 }
 
@@ -467,7 +466,7 @@ static int sprd_soc_platform_probe(struct platform_device *pdev)
 		dev_warn(&pdev->dev,
 			 "no reserved DMA memory for audio platform device\n");
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &sprd_soc_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &sprd_soc_component,
 					      NULL, 0);
 
 	return ret;

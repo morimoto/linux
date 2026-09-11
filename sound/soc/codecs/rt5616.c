@@ -957,31 +957,33 @@ static int rt5616_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5616_priv *rt5616 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5616_priv *rt5616 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int val_len = 0, val_clk, mask_clk;
 	int pre_div, bclk_ms, frame_size;
 
-	rt5616->lrck[dai->id] = params_rate(params);
+	rt5616->lrck[dai_id] = params_rate(params);
 
-	pre_div = rl6231_get_clk_info(rt5616->sysclk, rt5616->lrck[dai->id]);
+	pre_div = rl6231_get_clk_info(rt5616->sysclk, rt5616->lrck[dai_id]);
 
 	if (pre_div < 0) {
-		dev_err(component->dev, "Unsupported clock setting\n");
+		dev_err(dev, "Unsupported clock setting\n");
 		return -EINVAL;
 	}
 	frame_size = snd_soc_params_to_frame_size(params);
 	if (frame_size < 0) {
-		dev_err(component->dev, "Unsupported frame size: %d\n", frame_size);
+		dev_err(dev, "Unsupported frame size: %d\n", frame_size);
 		return -EINVAL;
 	}
 	bclk_ms = frame_size > 32 ? 1 : 0;
-	rt5616->bclk[dai->id] = rt5616->lrck[dai->id] * (32 << bclk_ms);
+	rt5616->bclk[dai_id] = rt5616->lrck[dai_id] * (32 << bclk_ms);
 
-	dev_dbg(dai->dev, "bclk is %dHz and lrck is %dHz\n",
-		rt5616->bclk[dai->id], rt5616->lrck[dai->id]);
-	dev_dbg(dai->dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
-		bclk_ms, pre_div, dai->id);
+	dev_dbg(dev, "bclk is %dHz and lrck is %dHz\n",
+		rt5616->bclk[dai_id], rt5616->lrck[dai_id]);
+	dev_dbg(dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
+		bclk_ms, pre_div, dai_id);
 
 	switch (params_format(params)) {
 	case SNDRV_PCM_FORMAT_S16_LE:
@@ -1010,17 +1012,19 @@ static int rt5616_hw_params(struct snd_pcm_substream *substream,
 
 static int rt5616_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5616_priv *rt5616 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5616_priv *rt5616 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int reg_val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
-		rt5616->master[dai->id] = 1;
+		rt5616->master[dai_id] = 1;
 		break;
 	case SND_SOC_DAIFMT_CBC_CFC:
 		reg_val |= RT5616_I2S_MS_S;
-		rt5616->master[dai->id] = 0;
+		rt5616->master[dai_id] = 0;
 		break;
 	default:
 		return -EINVAL;
@@ -1062,8 +1066,9 @@ static int rt5616_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt5616_set_dai_sysclk(struct snd_soc_dai *dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5616_priv *rt5616 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5616_priv *rt5616 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0;
 
 	if (freq == rt5616->sysclk && clk_id == rt5616->sysclk_src)
@@ -1077,7 +1082,7 @@ static int rt5616_set_dai_sysclk(struct snd_soc_dai *dai,
 		reg_val |= RT5616_SCLK_SRC_PLL1;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clock id (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock id (%d)\n", clk_id);
 		return -EINVAL;
 	}
 
@@ -1086,7 +1091,7 @@ static int rt5616_set_dai_sysclk(struct snd_soc_dai *dai,
 	rt5616->sysclk = freq;
 	rt5616->sysclk_src = clk_id;
 
-	dev_dbg(dai->dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
+	dev_dbg(dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
 
 	return 0;
 }
@@ -1094,8 +1099,9 @@ static int rt5616_set_dai_sysclk(struct snd_soc_dai *dai,
 static int rt5616_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			      unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5616_priv *rt5616 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5616_priv *rt5616 = dev_get_drvdata(dev);
 	struct rl6231_pll_code pll_code;
 	int ret;
 
@@ -1104,7 +1110,7 @@ static int rt5616_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 		return 0;
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 
 		rt5616->pll_in = 0;
 		rt5616->pll_out = 0;
@@ -1127,17 +1133,17 @@ static int rt5616_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 				    RT5616_PLL1_SRC_BCLK1);
 		break;
 	default:
-		dev_err(component->dev, "Unknown PLL source %d\n", source);
+		dev_err(dev, "Unknown PLL source %d\n", source);
 		return -EINVAL;
 	}
 
 	ret = rl6231_pll_calc(freq_in, freq_out, &pll_code);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupported input clock %d\n", freq_in);
+		dev_err(dev, "Unsupported input clock %d\n", freq_in);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "bypass=%d m=%d n=%d k=%d\n",
+	dev_dbg(dev, "bypass=%d m=%d n=%d k=%d\n",
 		pll_code.m_bp, (pll_code.m_bp ? 0 : pll_code.m_code),
 		pll_code.n_code, pll_code.k_code);
 
@@ -1158,7 +1164,8 @@ static int rt5616_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 static int rt5616_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct rt5616_priv *rt5616 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5616_priv *rt5616 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -1220,10 +1227,11 @@ static int rt5616_set_bias_level(struct snd_soc_component *component,
 
 static int rt5616_probe(struct snd_soc_component *component)
 {
-	struct rt5616_priv *rt5616 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5616_priv *rt5616 = dev_get_drvdata(dev);
 
 	/* Check if MCLK provided */
-	rt5616->mclk = devm_clk_get_optional(component->dev, "mclk");
+	rt5616->mclk = devm_clk_get_optional(dev, "mclk");
 	if (IS_ERR(rt5616->mclk))
 		return PTR_ERR(rt5616->mclk);
 
@@ -1235,7 +1243,8 @@ static int rt5616_probe(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int rt5616_suspend(struct snd_soc_component *component)
 {
-	struct rt5616_priv *rt5616 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5616_priv *rt5616 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt5616->regmap, true);
 	regcache_mark_dirty(rt5616->regmap);
@@ -1245,7 +1254,8 @@ static int rt5616_suspend(struct snd_soc_component *component)
 
 static int rt5616_resume(struct snd_soc_component *component)
 {
-	struct rt5616_priv *rt5616 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5616_priv *rt5616 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt5616->regmap, false);
 	regcache_sync(rt5616->regmap);
@@ -1391,7 +1401,7 @@ static int rt5616_i2c_probe(struct i2c_client *i2c)
 	regmap_update_bits(rt5616->regmap, RT5616_PWR_ANLG1,
 			   RT5616_PWR_LDO_DVO_MASK, RT5616_PWR_LDO_DVO_1_2V);
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 				      &soc_component_dev_rt5616,
 				      rt5616_dai, ARRAY_SIZE(rt5616_dai));
 }

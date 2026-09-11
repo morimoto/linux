@@ -155,8 +155,8 @@ static int create_sdw_dailink(struct snd_soc_card *card,
 			      int *be_id, struct snd_soc_codec_conf **codec_conf,
 			      struct snd_soc_dai_link_component *sdw_platform_component)
 {
-	struct device *dev = card->dev;
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct device *dev = snd_soc_card_to_dev(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct amd_mc_ctx *amd_ctx = (struct amd_mc_ctx *)ctx->private;
 	struct asoc_sdw_endpoint *soc_end;
 	int cpu_pin_id;
@@ -306,8 +306,8 @@ static int create_sdw_dailinks(struct snd_soc_card *card,
 			       struct asoc_sdw_dailink *soc_dais, int num_dais,
 			       struct snd_soc_codec_conf **codec_conf)
 {
-	struct device *dev = card->dev;
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct device *dev = snd_soc_card_to_dev(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct amd_mc_ctx *amd_ctx = (struct amd_mc_ctx *)ctx->private;
 	struct snd_soc_dai_link_component *sdw_platform_component;
 	int i;
@@ -351,8 +351,8 @@ static int create_sdw_dailinks(struct snd_soc_card *card,
 static int create_dmic_dailinks(struct snd_soc_card *card,
 				struct snd_soc_dai_link **dai_links, int *be_id, int no_pcm)
 {
-	struct device *dev = card->dev;
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct device *dev = snd_soc_card_to_dev(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct amd_mc_ctx *amd_ctx = (struct amd_mc_ctx *)ctx->private;
 	struct snd_soc_dai_link_component *pdm_cpu;
 	struct snd_soc_dai_link_component *pdm_platform;
@@ -395,9 +395,9 @@ static int create_dmic_dailinks(struct snd_soc_card *card,
 static int soc_card_dai_links_create(struct snd_soc_card *card,
 				     struct snd_soc_card_driver *card_driver)
 {
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int sdw_be_num = 0, dmic_num = 0;
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct snd_soc_aux_dev *soc_aux;
 	struct snd_soc_codec_conf *codec_conf;
 	struct snd_soc_dai_link *dai_links;

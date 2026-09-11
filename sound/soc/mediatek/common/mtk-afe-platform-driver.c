@@ -49,12 +49,14 @@ EXPORT_SYMBOL_GPL(mtk_afe_combine_sub_dai);
 int mtk_afe_add_sub_dai_control(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mtk_base_afe_dai *dai;
 
 	list_for_each_entry(dai, &afe->sub_dais, list) {
 		if (dai->controls)
-			snd_soc_add_component_controls(component,
+			snd_soc_component_add_controls(component,
 						       dai->controls,
 						       dai->num_controls);
 
@@ -71,7 +73,7 @@ int mtk_afe_add_sub_dai_control(struct snd_soc_component *component)
 						dai->num_dapm_routes);
 	}
 
-	snd_soc_dapm_new_widgets(component->card);
+	snd_soc_dapm_new_widgets(card);
 
 	return 0;
 
@@ -82,11 +84,11 @@ snd_pcm_uframes_t mtk_afe_pcm_pointer(struct snd_soc_component *component,
 				      struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
-	struct mtk_base_afe_memif *memif = &afe->memif[snd_soc_rtd_to_cpu(rtd, 0)->id];
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	struct mtk_base_afe_memif *memif = &afe->memif[snd_soc_dai_id(snd_soc_rtd_to_cpu(rtd, 0))];
 	const struct mtk_base_memif_data *memif_data = memif->data;
 	struct regmap *regmap = afe->regmap;
-	struct device *dev = afe->dev;
 	unsigned int hw_ptr_lower32 = 0, hw_ptr_upper32 = 0;
 	unsigned int hw_base_lower32 = 0, hw_base_upper32 = 0;
 	unsigned long long hw_ptr = 0, hw_base = 0;
@@ -138,7 +140,8 @@ int mtk_afe_pcm_new(struct snd_soc_component *component,
 {
 	size_t size;
 	struct snd_pcm *pcm = rtd->pcm;
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	size = afe->mtk_afe_hardware->buffer_bytes_max;
 	snd_pcm_set_managed_buffer_all(pcm, SNDRV_DMA_TYPE_DEV, afe->dev,
@@ -151,10 +154,11 @@ EXPORT_SYMBOL_GPL(mtk_afe_pcm_new);
 
 static int mtk_afe_component_probe(struct snd_soc_component *component)
 {
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	int ret;
 
-	snd_soc_component_init_regmap(component, afe->regmap);
+	snd_soc_component_regmap_init(component, afe->regmap);
 
 	/* If the list was never initialized there are no sub-DAIs */
 	if (afe->sub_dais.next && afe->sub_dais.prev) {

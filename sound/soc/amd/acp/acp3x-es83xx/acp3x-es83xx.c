@@ -273,8 +273,10 @@ static int acp3x_es83xx_configure_mics(struct acp3x_es83xx_private *priv)
 
 static int acp3x_es83xx_init(struct snd_soc_pcm_runtime *runtime)
 {
-	struct snd_soc_component *codec = snd_soc_rtd_to_codec(runtime, 0)->component;
+	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(runtime, 0);
+	struct snd_soc_component *codec = snd_soc_dai_to_component(dai);
 	struct snd_soc_card *card = runtime->card;
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct acp3x_es83xx_private *priv = get_mach_priv(card);
 	int ret = 0;
 	int num_routes;
@@ -284,7 +286,7 @@ static int acp3x_es83xx_init(struct snd_soc_pcm_runtime *runtime)
 					 &es83xx_jack, es83xx_jack_pins,
 					 ARRAY_SIZE(es83xx_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "jack creation failed %d\n", ret);
+		dev_err(dev, "jack creation failed %d\n", ret);
 		return ret;
 	}
 
@@ -408,7 +410,7 @@ static int acp3x_es83xx_configure_link(struct snd_soc_card *card, struct snd_soc
 static int acp3x_es83xx_probe(struct snd_soc_card *card)
 {
 	int ret = 0;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	const struct dmi_system_id *dmi_id;
 
 	dmi_id = dmi_first_match(acp3x_es83xx_dmi_table);

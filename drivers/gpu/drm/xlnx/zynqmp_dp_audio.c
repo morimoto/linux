@@ -102,8 +102,10 @@ static int dp_dai_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *socdai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct zynqmp_dpsub *dpsub =
-		snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct zynqmp_dpsub *dpsub = dev_get_drvdata(cpu_dev);
 	struct zynqmp_dpsub_audio *audio = dpsub->audio;
 	int ret;
 	u32 sample_rate;
@@ -194,8 +196,10 @@ static int dp_dai_hw_free(struct snd_pcm_substream *substream,
 			  struct snd_soc_dai *socdai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct zynqmp_dpsub *dpsub =
-		snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct zynqmp_dpsub *dpsub = dev_get_drvdata(cpu_dev);
 	struct zynqmp_dpsub_audio *audio = dpsub->audio;
 
 	guard(mutex)(&audio->enable_lock);
@@ -262,7 +266,8 @@ static const struct snd_kcontrol_new zynqmp_dp_snd_controls[] = {
 static unsigned int zynqmp_dp_dai_read(struct snd_soc_component *component,
 				       unsigned int reg)
 {
-	struct zynqmp_dpsub *dpsub = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct zynqmp_dpsub *dpsub = dev_get_drvdata(dev);
 	struct zynqmp_dpsub_audio *audio = dpsub->audio;
 
 	return audio->volumes[reg];
@@ -271,7 +276,8 @@ static unsigned int zynqmp_dp_dai_read(struct snd_soc_component *component,
 static int zynqmp_dp_dai_write(struct snd_soc_component *component,
 			       unsigned int reg, unsigned int val)
 {
-	struct zynqmp_dpsub *dpsub = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct zynqmp_dpsub *dpsub = dev_get_drvdata(dev);
 	struct zynqmp_dpsub_audio *audio = dpsub->audio;
 
 	guard(mutex)(&audio->enable_lock);
@@ -353,7 +359,7 @@ int zynqmp_audio_init(struct zynqmp_dpsub *dpsub)
 		},
 	};
 
-	ret = devm_snd_soc_register_component(dev, &zynqmp_dp_component_driver,
+	ret = devm_snd_soc_component_register(dev, &zynqmp_dp_component_driver,
 					      &audio->dai_driver, 1);
 	if (ret) {
 		dev_err(dev, "Failed to register CPU DAI\n");

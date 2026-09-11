@@ -57,15 +57,16 @@ static const struct snd_soc_jack_pin card_headset_pins[] = {
 static int avs_rt5663_codec_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_card *card = runtime->card;
-	struct rt5663_private *priv = snd_soc_card_get_drvdata(card);
+	struct rt5663_private *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_jack_pin *pins;
 	struct snd_soc_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int num_pins, ret;
 
 	jack = &priv->jack;
 	num_pins = ARRAY_SIZE(card_headset_pins);
 
-	pins = devm_kmemdup_array(card->dev, card_headset_pins, num_pins,
+	pins = devm_kmemdup_array(dev, card_headset_pins, num_pins,
 				  sizeof(card_headset_pins[0]), GFP_KERNEL);
 	if (!pins)
 		return -ENOMEM;
@@ -81,14 +82,16 @@ static int avs_rt5663_codec_init(struct snd_soc_pcm_runtime *runtime)
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_2, KEY_VOLUMEUP);
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_3, KEY_VOLUMEDOWN);
 
-	snd_soc_component_set_jack(snd_soc_rtd_to_codec(runtime, 0)->component, jack, NULL);
+	snd_soc_component_set_jack(
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(runtime, 0)), jack, NULL);
 
 	return 0;
 }
 
 static void avs_rt5663_codec_exit(struct snd_soc_pcm_runtime *runtime)
 {
-	snd_soc_component_set_jack(snd_soc_rtd_to_codec(runtime, 0)->component, NULL, NULL);
+	snd_soc_component_set_jack(
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(runtime, 0)), NULL, NULL);
 }
 
 static int
@@ -120,7 +123,7 @@ static int avs_rt5663_hw_params(struct snd_pcm_substream *substream,
 	int ret;
 
 	/* use ASRC for internal clocks, as PLL rate isn't multiple of BCLK */
-	rt5663_sel_asrc_clk_src(codec_dai->component,
+	rt5663_sel_asrc_clk_src(snd_soc_dai_to_component(codec_dai),
 				RT5663_DA_STEREO_FILTER | RT5663_AD_STEREO_FILTER,
 				RT5663_CLK_SEL_I2S1_ASRC);
 
@@ -182,15 +185,17 @@ static int avs_card_suspend_pre(struct snd_soc_card *card)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_card_get_codec_dai(card, RT5663_CODEC_DAI);
 
-	return snd_soc_component_set_jack(codec_dai->component, NULL, NULL);
+	return snd_soc_component_set_jack(
+		snd_soc_dai_to_component(codec_dai), NULL, NULL);
 }
 
 static int avs_card_resume_post(struct snd_soc_card *card)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_card_get_codec_dai(card, RT5663_CODEC_DAI);
-	struct snd_soc_jack *jack = snd_soc_card_get_drvdata(card);
+	struct snd_soc_jack *jack = snd_soc_card_to_priv(card);
 
-	return snd_soc_component_set_jack(codec_dai->component, jack, NULL);
+	return snd_soc_component_set_jack(
+		snd_soc_dai_to_component(codec_dai), jack, NULL);
 }
 
 static int avs_rt5663_probe(struct platform_device *pdev)
@@ -242,7 +247,7 @@ static int avs_rt5663_probe(struct platform_device *pdev)
 	card_driver->dapm_routes = card_routes;
 	card_driver->num_dapm_routes = ARRAY_SIZE(card_routes);
 	card_driver->fully_routed = true;
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 
 	return devm_snd_soc_card_register(card, card_driver);
 }

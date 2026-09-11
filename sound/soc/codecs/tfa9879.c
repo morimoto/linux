@@ -24,8 +24,9 @@ static int tfa9879_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tfa9879_priv *tfa9879 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tfa9879_priv *tfa9879 = dev_get_drvdata(dev);
 	int fs;
 	int i2s_set = 0;
 
@@ -95,7 +96,7 @@ static int tfa9879_hw_params(struct snd_pcm_substream *substream,
 
 static int tfa9879_mute_stream(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	snd_soc_component_update_bits(component, TFA9879_MISC_CONTROL,
 				      TFA9879_S_MUTE_MASK,
@@ -106,8 +107,9 @@ static int tfa9879_mute_stream(struct snd_soc_dai *dai, int mute, int direction)
 
 static int tfa9879_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tfa9879_priv *tfa9879 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tfa9879_priv *tfa9879 = dev_get_drvdata(dev);
 	int i2s_set;
 	int sck_pol;
 
@@ -300,7 +302,7 @@ static int tfa9879_i2c_probe(struct i2c_client *i2c)
 		regmap_write(tfa9879->regmap,
 			     tfa9879_regs[i].reg, tfa9879_regs[i].def);
 
-	return devm_snd_soc_register_component(&i2c->dev, &tfa9879_component,
+	return devm_snd_soc_component_register(&i2c->dev, &tfa9879_component,
 					       &tfa9879_dai, 1);
 }
 

@@ -32,13 +32,14 @@ static int eukrea_tlv320_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
 	int ret;
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0,
 				     CODEC_CLOCK, SND_SOC_CLOCK_OUT);
 	if (ret) {
-		dev_err(cpu_dai->dev,
-			"Failed to set the codec sysclk.\n");
+		dev_err(cpu_dev, "Failed to set the codec sysclk.\n");
 		return ret;
 	}
 
@@ -48,8 +49,7 @@ static int eukrea_tlv320_hw_params(struct snd_pcm_substream *substream,
 				SND_SOC_CLOCK_IN);
 	/* fsl_ssi lacks the set_sysclk ops */
 	if (ret && ret != -EINVAL) {
-		dev_err(cpu_dai->dev,
-			"Can't set the IMX_SSP_SYS_CLK CPU system clock.\n");
+		dev_err(cpu_dev, "Can't set the IMX_SSP_SYS_CLK CPU system clock.\n");
 		return ret;
 	}
 

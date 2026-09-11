@@ -325,18 +325,19 @@ static void max98926_set_sense_data(struct max98926_priv *max98926)
 static int max98926_dai_set_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct max98926_priv *max98926 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98926_priv *max98926 = dev_get_drvdata(dev);
 	unsigned int invert = 0;
 
-	dev_dbg(component->dev, "%s: fmt 0x%08X\n", __func__, fmt);
+	dev_dbg(dev, "%s: fmt 0x%08X\n", __func__, fmt);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBC_CFC:
 		max98926_set_sense_data(max98926);
 		break;
 	default:
-		dev_err(component->dev, "DAI clock mode unsupported\n");
+		dev_err(dev, "DAI clock mode unsupported\n");
 		return -EINVAL;
 	}
 
@@ -353,7 +354,7 @@ static int max98926_dai_set_fmt(struct snd_soc_dai *codec_dai,
 		invert = MAX98926_DAI_BCI_MASK | MAX98926_DAI_WCI_MASK;
 		break;
 	default:
-		dev_err(component->dev, "DAI invert mode unsupported\n");
+		dev_err(dev, "DAI invert mode unsupported\n");
 		return -EINVAL;
 	}
 
@@ -370,8 +371,9 @@ static int max98926_dai_hw_params(struct snd_pcm_substream *substream,
 {
 	int dai_sr = -EINVAL;
 	int rate = params_rate(params), i;
-	struct snd_soc_component *component = dai->component;
-	struct max98926_priv *max98926 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98926_priv *max98926 = dev_get_drvdata(dev);
 	int blr_clk_ratio;
 
 	switch (params_format(params)) {
@@ -397,8 +399,7 @@ static int max98926_dai_hw_params(struct snd_pcm_substream *substream,
 		max98926->ch_size = 32;
 		break;
 	default:
-		dev_dbg(component->dev, "format unsupported %d\n",
-			params_format(params));
+		dev_dbg(dev, "format unsupported %d\n", params_format(params));
 		return -EINVAL;
 	}
 
@@ -484,7 +485,8 @@ static struct snd_soc_dai_driver max98926_dai[] = {
 
 static int max98926_probe(struct snd_soc_component *component)
 {
-	struct max98926_priv *max98926 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98926_priv *max98926 = dev_get_drvdata(dev);
 
 	max98926->component = component;
 
@@ -561,7 +563,7 @@ static int max98926_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_max98926,
 			max98926_dai, ARRAY_SIZE(max98926_dai));
 	if (ret < 0)

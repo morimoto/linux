@@ -76,7 +76,9 @@ static int bcm63xx_i2s_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
 	int ret = 0;
-	struct bcm_i2s_priv *i2s_priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct bcm_i2s_priv *i2s_priv = dev_get_drvdata(dev);
 
 	ret = clk_set_rate(i2s_priv->i2s_clk, params_rate(params));
 	if (ret < 0)
@@ -90,7 +92,9 @@ static int bcm63xx_i2s_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
 	unsigned int slavemode;
-	struct bcm_i2s_priv *i2s_priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct bcm_i2s_priv *i2s_priv = dev_get_drvdata(dev);
 	struct regmap *regmap_i2s = i2s_priv->regmap_i2s;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
@@ -143,7 +147,9 @@ static void bcm63xx_i2s_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
 	unsigned int enabled, slavemode;
-	struct bcm_i2s_priv *i2s_priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct bcm_i2s_priv *i2s_priv = dev_get_drvdata(dev);
 	struct regmap *regmap_i2s = i2s_priv->regmap_i2s;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
@@ -255,7 +261,7 @@ static int bcm63xx_i2s_dev_probe(struct platform_device *pdev)
 			   I2S_PAD_LVL_LOOP_DIS_MASK,
 			   I2S_PAD_LVL_LOOP_DIS_ENABLE);
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &bcm63xx_i2s_component,
 					      &bcm63xx_i2s_dai, 1);
 	if (ret) {

@@ -60,7 +60,7 @@ static int tse850_get_mux1(struct snd_kcontrol *kctrl,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kctrl);
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
-	struct tse850_priv *tse850 = snd_soc_card_get_drvdata(card);
+	struct tse850_priv *tse850 = snd_soc_card_to_priv(card);
 
 	ucontrol->value.enumerated.item[0] = tse850->loop1_cache;
 
@@ -72,7 +72,7 @@ static int tse850_put_mux1(struct snd_kcontrol *kctrl,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kctrl);
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
-	struct tse850_priv *tse850 = snd_soc_card_get_drvdata(card);
+	struct tse850_priv *tse850 = snd_soc_card_to_priv(card);
 	struct soc_enum *e = (struct soc_enum *)kctrl->private_value;
 	unsigned int val = ucontrol->value.enumerated.item[0];
 
@@ -90,7 +90,7 @@ static int tse850_get_mux2(struct snd_kcontrol *kctrl,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kctrl);
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
-	struct tse850_priv *tse850 = snd_soc_card_get_drvdata(card);
+	struct tse850_priv *tse850 = snd_soc_card_to_priv(card);
 
 	ucontrol->value.enumerated.item[0] = tse850->loop2_cache;
 
@@ -102,7 +102,7 @@ static int tse850_put_mux2(struct snd_kcontrol *kctrl,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kctrl);
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
-	struct tse850_priv *tse850 = snd_soc_card_get_drvdata(card);
+	struct tse850_priv *tse850 = snd_soc_card_to_priv(card);
 	struct soc_enum *e = (struct soc_enum *)kctrl->private_value;
 	unsigned int val = ucontrol->value.enumerated.item[0];
 
@@ -120,7 +120,7 @@ static int tse850_get_mix(struct snd_kcontrol *kctrl,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kctrl);
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
-	struct tse850_priv *tse850 = snd_soc_card_get_drvdata(card);
+	struct tse850_priv *tse850 = snd_soc_card_to_priv(card);
 
 	ucontrol->value.enumerated.item[0] = tse850->add_cache;
 
@@ -132,7 +132,7 @@ static int tse850_put_mix(struct snd_kcontrol *kctrl,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kctrl);
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
-	struct tse850_priv *tse850 = snd_soc_card_get_drvdata(card);
+	struct tse850_priv *tse850 = snd_soc_card_to_priv(card);
 	int connect = !!ucontrol->value.integer.value[0];
 
 	if (tse850->add_cache == connect)
@@ -154,7 +154,7 @@ static int tse850_get_ana(struct snd_kcontrol *kctrl,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kctrl);
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
-	struct tse850_priv *tse850 = snd_soc_card_get_drvdata(card);
+	struct tse850_priv *tse850 = snd_soc_card_to_priv(card);
 	int ret;
 
 	ret = regulator_get_voltage(tse850->ana);
@@ -187,7 +187,7 @@ static int tse850_put_ana(struct snd_kcontrol *kctrl,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kctrl);
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
-	struct tse850_priv *tse850 = snd_soc_card_get_drvdata(card);
+	struct tse850_priv *tse850 = snd_soc_card_to_priv(card);
 	struct soc_enum *e = (struct soc_enum *)kctrl->private_value;
 	unsigned int uV = ucontrol->value.enumerated.item[0];
 	int ret;
@@ -354,7 +354,7 @@ static int tse850_probe(struct platform_device *pdev)
 	if (!card || !tse850)
 		return -ENOMEM;
 
-	snd_soc_card_set_drvdata(card, tse850);
+	snd_soc_card_set_priv(card, tse850);
 
 	ret = tse850_dt_init(pdev);
 	if (ret) {
@@ -407,7 +407,7 @@ err_disable_ana:
 static void tse850_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
-	struct tse850_priv *tse850 = snd_soc_card_get_drvdata(card);
+	struct tse850_priv *tse850 = snd_soc_card_to_priv(card);
 
 	snd_soc_card_unregister(card);
 	regulator_disable(tse850->ana);

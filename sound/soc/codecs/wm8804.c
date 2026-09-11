@@ -134,7 +134,8 @@ static int wm8804_aif_event(struct snd_soc_dapm_widget *w,
 			    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm8804_priv *wm8804 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8804_priv *wm8804 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -214,10 +215,9 @@ static int wm8804_soft_reset(struct wm8804_priv *wm8804)
 
 static int wm8804_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u16 format, master, bcp, lrp;
-
-	component = dai->component;
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
@@ -234,7 +234,7 @@ static int wm8804_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		format = 0x3;
 		break;
 	default:
-		dev_err(dai->dev, "Unknown dai format\n");
+		dev_err(dev, "Unknown dai format\n");
 		return -EINVAL;
 	}
 
@@ -250,7 +250,7 @@ static int wm8804_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		master = 0;
 		break;
 	default:
-		dev_err(dai->dev, "Unknown master/slave configuration\n");
+		dev_err(dev, "Unknown master/slave configuration\n");
 		return -EINVAL;
 	}
 
@@ -271,7 +271,7 @@ static int wm8804_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		lrp = 1;
 		break;
 	default:
-		dev_err(dai->dev, "Unknown polarity configuration\n");
+		dev_err(dev, "Unknown polarity configuration\n");
 		return -EINVAL;
 	}
 
@@ -287,10 +287,9 @@ static int wm8804_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u16 blen;
-
-	component = dai->component;
 
 	switch (params_width(params)) {
 	case 16:
@@ -303,7 +302,7 @@ static int wm8804_hw_params(struct snd_pcm_substream *substream,
 		blen = 0x2;
 		break;
 	default:
-		dev_err(dai->dev, "Unsupported word length: %u\n",
+		dev_err(dev, "Unsupported word length: %u\n",
 			params_width(params));
 		return -EINVAL;
 	}
@@ -401,8 +400,9 @@ static int wm8804_set_pll(struct snd_soc_dai *dai, int pll_id,
 			  int source, unsigned int freq_in,
 			  unsigned int freq_out)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8804_priv *wm8804 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8804_priv *wm8804 = dev_get_drvdata(dev);
 	bool change;
 
 	if (!freq_in || !freq_out) {
@@ -447,9 +447,8 @@ static int wm8804_set_pll(struct snd_soc_dai *dai, int pll_id,
 static int wm8804_set_sysclk(struct snd_soc_dai *dai,
 			     int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component;
-
-	component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	switch (clk_id) {
 	case WM8804_TX_CLKSRC_MCLK:
@@ -457,7 +456,7 @@ static int wm8804_set_sysclk(struct snd_soc_dai *dai,
 				|| (freq >= 16280000 && freq <= 27000000))
 			snd_soc_component_update_bits(component, WM8804_PLL6, 0x80, 0x80);
 		else {
-			dev_err(dai->dev, "OSCCLOCK is not within the "
+			dev_err(dev, "OSCCLOCK is not within the "
 				"recommended range: %uHz\n", freq);
 			return -EINVAL;
 		}
@@ -472,7 +471,7 @@ static int wm8804_set_sysclk(struct snd_soc_dai *dai,
 		snd_soc_component_update_bits(component, WM8804_PLL6, 0x8, 0x8);
 		break;
 	default:
-		dev_err(dai->dev, "Unknown clock source: %d\n", clk_id);
+		dev_err(dev, "Unknown clock source: %d\n", clk_id);
 		return -EINVAL;
 	}
 
@@ -482,21 +481,21 @@ static int wm8804_set_sysclk(struct snd_soc_dai *dai,
 static int wm8804_set_clkdiv(struct snd_soc_dai *dai,
 			     int div_id, int div)
 {
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct wm8804_priv *wm8804;
 
-	component = dai->component;
 	switch (div_id) {
 	case WM8804_CLKOUT_DIV:
 		snd_soc_component_update_bits(component, WM8804_PLL5, 0x30,
 				    (div & 0x3) << 4);
 		break;
 	case WM8804_MCLK_DIV:
-		wm8804 = snd_soc_component_get_drvdata(component);
+		wm8804 = dev_get_drvdata(dev);
 		wm8804->mclk_div = div;
 		break;
 	default:
-		dev_err(dai->dev, "Unknown clock divider: %d\n", div_id);
+		dev_err(dev, "Unknown clock divider: %d\n", div_id);
 		return -EINVAL;
 	}
 	return 0;
@@ -668,7 +667,7 @@ int wm8804_probe(struct device *dev, struct regmap *regmap)
 		}
 	}
 
-	ret = devm_snd_soc_register_component(dev, &soc_component_dev_wm8804,
+	ret = devm_snd_soc_component_register(dev, &soc_component_dev_wm8804,
 				     &wm8804_dai, 1);
 	if (ret < 0) {
 		dev_err(dev, "Failed to register CODEC: %d\n", ret);

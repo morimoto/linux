@@ -41,23 +41,23 @@ int asoc_sdw_cs42l42_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_da
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
-	struct snd_soc_component *component;
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_soc_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
-	component = dai->component;
-	card->components = devm_kasprintf(card->dev, GFP_KERNEL,
+	snd_soc_card_set_components(card, devm_kasprintf(dev, GFP_KERNEL,
 					  "%s hs:cs42l42",
-					  card->components);
-	if (!card->components)
+					  snd_soc_card_components(card)));
+	if (!snd_soc_card_components(card))
 		return -ENOMEM;
 
 	ret = snd_soc_dapm_add_routes(dapm, cs42l42_map,
 				      ARRAY_SIZE(cs42l42_map));
 
 	if (ret) {
-		dev_err(card->dev, "cs42l42 map addition failed: %d\n", ret);
+		dev_err(dev, "cs42l42 map addition failed: %d\n", ret);
 		return ret;
 	}
 
@@ -69,8 +69,7 @@ int asoc_sdw_cs42l42_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_da
 					 cs42l42_jack_pins,
 					 ARRAY_SIZE(cs42l42_jack_pins));
 	if (ret) {
-		dev_err(rtd->card->dev, "Headset Jack creation failed: %d\n",
-			ret);
+		dev_err(dev, "Headset Jack creation failed: %d\n", ret);
 		return ret;
 	}
 
@@ -84,8 +83,7 @@ int asoc_sdw_cs42l42_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_da
 	ret = snd_soc_component_set_jack(component, jack, NULL);
 
 	if (ret)
-		dev_err(rtd->card->dev, "Headset Jack call-back failed: %d\n",
-			ret);
+		dev_err(dev, "Headset Jack call-back failed: %d\n", ret);
 
 	return ret;
 }

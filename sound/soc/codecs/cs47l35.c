@@ -87,9 +87,9 @@ static int cs47l35_adsp_power_ev(struct snd_soc_dapm_widget *w,
 				 struct snd_kcontrol *kcontrol,
 				 int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct cs47l35 *cs47l35 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs47l35 *cs47l35 = dev_get_drvdata(dev);
 	struct madera_priv *priv = &cs47l35->core;
 	struct madera *madera = priv->madera;
 	unsigned int freq;
@@ -1335,7 +1335,8 @@ static const struct snd_soc_dapm_route cs47l35_dapm_routes[] = {
 static int cs47l35_set_fll(struct snd_soc_component *component, int fll_id,
 			   int source, unsigned int fref, unsigned int fout)
 {
-	struct cs47l35 *cs47l35 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs47l35 *cs47l35 = dev_get_drvdata(dev);
 
 	switch (fll_id) {
 	case MADERA_FLL1_REFCLK:
@@ -1506,19 +1507,22 @@ static int cs47l35_open(struct snd_soc_component *component,
 			struct snd_compr_stream *stream)
 {
 	struct snd_soc_pcm_runtime *rtd = stream->private_data;
-	struct cs47l35 *cs47l35 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs47l35 *cs47l35 = dev_get_drvdata(dev);
 	struct madera_priv *priv = &cs47l35->core;
 	struct madera *madera = priv->madera;
+	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
+	const char *dai_name = snd_soc_dai_name(dai);
 	int n_adsp;
 
-	if (strcmp(snd_soc_rtd_to_codec(rtd, 0)->name, "cs47l35-dsp-voicectrl") == 0) {
+	if (strcmp(dai_name, "cs47l35-dsp-voicectrl") == 0) {
 		n_adsp = 2;
-	} else if (strcmp(snd_soc_rtd_to_codec(rtd, 0)->name, "cs47l35-dsp-trace") == 0) {
+	} else if (strcmp(dai_name, "cs47l35-dsp-trace") == 0) {
 		n_adsp = 0;
 	} else {
 		dev_err(madera->dev,
 			"No suitable compressed stream for DAI '%s'\n",
-			snd_soc_rtd_to_codec(rtd, 0)->name);
+			dai_name);
 		return -EINVAL;
 	}
 
@@ -1561,11 +1565,12 @@ static const struct snd_soc_dapm_route cs47l35_mono_routes[] = {
 static int cs47l35_component_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct cs47l35 *cs47l35 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs47l35 *cs47l35 = dev_get_drvdata(dev);
 	struct madera *madera = cs47l35->core.madera;
 	int i, ret;
 
-	snd_soc_component_init_regmap(component, madera->regmap);
+	snd_soc_component_regmap_init(component, madera->regmap);
 
 	scoped_guard(mutex, &madera->dapm_ptr_lock)
 		madera->dapm = snd_soc_component_to_dapm(component);
@@ -1582,7 +1587,7 @@ static int cs47l35_component_probe(struct snd_soc_component *component)
 
 	snd_soc_dapm_disable_pin(dapm, "HAPTICS");
 
-	ret = snd_soc_add_component_controls(component,
+	ret = snd_soc_component_add_controls(component,
 					     madera_adsp_rate_controls,
 					     CS47L35_NUM_ADSP);
 	if (ret)
@@ -1596,7 +1601,8 @@ static int cs47l35_component_probe(struct snd_soc_component *component)
 
 static void cs47l35_component_remove(struct snd_soc_component *component)
 {
-	struct cs47l35 *cs47l35 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs47l35 *cs47l35 = dev_get_drvdata(dev);
 	struct madera *madera = cs47l35->core.madera;
 	int i;
 
@@ -1721,7 +1727,7 @@ static int cs47l35_probe(struct platform_device *pdev)
 	pm_runtime_enable(&pdev->dev);
 	pm_runtime_idle(&pdev->dev);
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &soc_component_dev_cs47l35,
 					      cs47l35_dai,
 					      ARRAY_SIZE(cs47l35_dai));

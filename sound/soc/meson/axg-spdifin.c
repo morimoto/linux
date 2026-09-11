@@ -95,7 +95,9 @@ static unsigned int axg_spdifin_get_rate(struct axg_spdifin *priv)
 static int axg_spdifin_prepare(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct axg_spdifin *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_spdifin *priv = dev_get_drvdata(dev);
 
 	/* Apply both reset */
 	regmap_update_bits(priv->map, SPDIFIN_CTRL0,
@@ -158,13 +160,15 @@ static unsigned int axg_spdifin_mode_timer(struct axg_spdifin *priv,
 static int axg_spdifin_sample_mode_config(struct snd_soc_dai *dai,
 					  struct axg_spdifin *priv)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int rate, t_next;
 	int ret, i = SPDIFIN_MODE_NUM - 1;
 
 	/* Set spdif input reference clock */
 	ret = clk_set_rate(priv->refclk, priv->conf->ref_rate);
 	if (ret) {
-		dev_err(dai->dev, "reference clock rate set failed\n");
+		dev_err(dev, "reference clock rate set failed\n");
 		return ret;
 	}
 
@@ -211,24 +215,26 @@ static int axg_spdifin_sample_mode_config(struct snd_soc_dai *dai,
 
 static int axg_spdifin_dai_probe(struct snd_soc_dai *dai)
 {
-	struct axg_spdifin *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_spdifin *priv = dev_get_drvdata(dev);
 	int ret;
 
 	ret = clk_prepare_enable(priv->pclk);
 	if (ret) {
-		dev_err(dai->dev, "failed to enable pclk\n");
+		dev_err(dev, "failed to enable pclk\n");
 		return ret;
 	}
 
 	ret = axg_spdifin_sample_mode_config(dai, priv);
 	if (ret) {
-		dev_err(dai->dev, "mode configuration failed\n");
+		dev_err(dev, "mode configuration failed\n");
 		goto pclk_err;
 	}
 
 	ret = clk_prepare_enable(priv->refclk);
 	if (ret) {
-		dev_err(dai->dev,
+		dev_err(dev,
 			"failed to enable spdifin reference clock\n");
 		goto pclk_err;
 	}
@@ -245,7 +251,9 @@ pclk_err:
 
 static int axg_spdifin_dai_remove(struct snd_soc_dai *dai)
 {
-	struct axg_spdifin *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_spdifin *priv = dev_get_drvdata(dev);
 
 	regmap_update_bits(priv->map, SPDIFIN_CTRL0, SPDIFIN_CTRL0_EN, 0);
 	clk_disable_unprepare(priv->refclk);
@@ -283,7 +291,8 @@ static int axg_spdifin_get_status(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct axg_spdifin *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct axg_spdifin *priv = dev_get_drvdata(dev);
 	int i, j;
 
 	for (i = 0; i < 6; i++) {
@@ -348,7 +357,8 @@ static int axg_spdifin_rate_lock_get(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct axg_spdifin *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct axg_spdifin *priv = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = axg_spdifin_get_rate(priv);
 
@@ -478,7 +488,7 @@ static int axg_spdifin_probe(struct platform_device *pdev)
 		return PTR_ERR(dai_drv);
 	}
 
-	return devm_snd_soc_register_component(dev, &axg_spdifin_component_drv,
+	return devm_snd_soc_component_register(dev, &axg_spdifin_component_drv,
 					       dai_drv, 1);
 }
 

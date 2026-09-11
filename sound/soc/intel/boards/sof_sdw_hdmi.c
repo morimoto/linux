@@ -19,18 +19,18 @@
 
 int sof_sdw_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(rtd->card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(rtd->card);
 	struct intel_mc_ctx *intel_ctx = (struct intel_mc_ctx *)ctx->private;
 	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
 
-	intel_ctx->hdmi.hdmi_comp = dai->component;
+	intel_ctx->hdmi.hdmi_comp = snd_soc_dai_to_component(dai);
 
 	return 0;
 }
 
 int sof_sdw_hdmi_card_late_probe(struct snd_soc_card *card)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct intel_mc_ctx *intel_ctx = (struct intel_mc_ctx *)ctx->private;
 
 	if (!intel_ctx->hdmi.idisp_codec)

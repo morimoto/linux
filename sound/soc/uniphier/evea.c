@@ -229,7 +229,8 @@ static int evea_get_switch_lin(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct evea_priv *evea = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct evea_priv *evea = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = evea->switch_lin;
 
@@ -240,7 +241,8 @@ static int evea_set_switch_lin(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct evea_priv *evea = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct evea_priv *evea = dev_get_drvdata(dev);
 
 	if (evea->switch_lin == ucontrol->value.integer.value[0])
 		return 0;
@@ -254,7 +256,8 @@ static int evea_get_switch_lo(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct evea_priv *evea = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct evea_priv *evea = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = evea->switch_lo;
 
@@ -265,7 +268,8 @@ static int evea_set_switch_lo(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct evea_priv *evea = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct evea_priv *evea = dev_get_drvdata(dev);
 
 	if (evea->switch_lo == ucontrol->value.integer.value[0])
 		return 0;
@@ -279,7 +283,8 @@ static int evea_get_switch_hp(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct evea_priv *evea = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct evea_priv *evea = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = evea->switch_hp;
 
@@ -290,7 +295,8 @@ static int evea_set_switch_hp(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct evea_priv *evea = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct evea_priv *evea = dev_get_drvdata(dev);
 
 	if (evea->switch_hp == ucontrol->value.integer.value[0])
 		return 0;
@@ -311,7 +317,8 @@ static const struct snd_kcontrol_new evea_controls[] = {
 
 static int evea_codec_probe(struct snd_soc_component *component)
 {
-	struct evea_priv *evea = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct evea_priv *evea = dev_get_drvdata(dev);
 
 	evea->switch_lin = 1;
 	evea->switch_lo = 1;
@@ -325,7 +332,8 @@ static int evea_codec_probe(struct snd_soc_component *component)
 
 static int evea_codec_suspend(struct snd_soc_component *component)
 {
-	struct evea_priv *evea = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct evea_priv *evea = dev_get_drvdata(dev);
 
 	evea_set_power_state_off(evea);
 
@@ -341,7 +349,8 @@ static int evea_codec_suspend(struct snd_soc_component *component)
 
 static int evea_codec_resume(struct snd_soc_component *component)
 {
-	struct evea_priv *evea = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct evea_priv *evea = dev_get_drvdata(dev);
 	int ret;
 
 	ret = clk_prepare_enable(evea->clk);
@@ -511,7 +520,7 @@ static int evea_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, evea);
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &soc_codec_evea,
+	ret = devm_snd_soc_component_register(&pdev->dev, &soc_codec_evea,
 				     soc_dai_evea, ARRAY_SIZE(soc_dai_evea));
 	if (ret)
 		goto err_out_reset_adamv;

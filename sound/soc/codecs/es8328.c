@@ -113,7 +113,8 @@ static const struct {
 
 static int es8328_set_deemph(struct snd_soc_component *component)
 {
-	struct es8328_priv *es8328 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8328_priv *es8328 = dev_get_drvdata(dev);
 	int val, i, best;
 
 	/*
@@ -133,7 +134,7 @@ static int es8328_set_deemph(struct snd_soc_component *component)
 		val = ES8328_DACCONTROL6_DEEMPH_OFF;
 	}
 
-	dev_dbg(component->dev, "Set deemphasis %d\n", val);
+	dev_dbg(dev, "Set deemphasis %d\n", val);
 
 	return snd_soc_component_update_bits(component, ES8328_DACCONTROL6,
 			ES8328_DACCONTROL6_DEEMPH_MASK, val);
@@ -143,7 +144,8 @@ static int es8328_get_deemph(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct es8328_priv *es8328 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8328_priv *es8328 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = es8328->deemph;
 	return 0;
@@ -153,7 +155,8 @@ static int es8328_put_deemph(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct es8328_priv *es8328 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8328_priv *es8328 = dev_get_drvdata(dev);
 	unsigned int deemph = ucontrol->value.integer.value[0];
 	int ret;
 
@@ -440,7 +443,9 @@ static const struct snd_soc_dapm_route es8328_dapm_routes[] = {
 
 static int es8328_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	return snd_soc_component_update_bits(dai->component, ES8328_DACCONTROL3,
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	return snd_soc_component_update_bits(component, ES8328_DACCONTROL3,
 			ES8328_DACCONTROL3_DACMUTE,
 			mute ? ES8328_DACCONTROL3_DACMUTE : 0);
 }
@@ -448,8 +453,9 @@ static int es8328_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int es8328_startup(struct snd_pcm_substream *substream,
 			  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8328_priv *es8328 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8328_priv *es8328 = dev_get_drvdata(dev);
 
 	if (es8328->provider && es8328->sysclk_constraints)
 		snd_pcm_hw_constraint_list(substream->runtime, 0,
@@ -463,8 +469,9 @@ static int es8328_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params,
 	struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8328_priv *es8328 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8328_priv *es8328 = dev_get_drvdata(dev);
 	int ret;
 	int i;
 	int reg;
@@ -478,7 +485,7 @@ static int es8328_hw_params(struct snd_pcm_substream *substream,
 
 	if (es8328->provider) {
 		if (!es8328->sysclk_constraints) {
-			dev_err(component->dev, "No MCLK configured\n");
+			dev_err(dev, "No MCLK configured\n");
 			return -EINVAL;
 		}
 
@@ -488,7 +495,7 @@ static int es8328_hw_params(struct snd_pcm_substream *substream,
 				break;
 
 		if (i == es8328->sysclk_constraints->count) {
-			dev_err(component->dev,
+			dev_err(dev,
 				"LRCLK %d unsupported with current clock\n",
 				params_rate(params));
 			return -EINVAL;
@@ -554,8 +561,9 @@ static int es8328_hw_params(struct snd_pcm_substream *substream,
 static int es8328_set_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct es8328_priv *es8328 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8328_priv *es8328 = dev_get_drvdata(dev);
 	int mclkdiv2 = 0;
 	unsigned int round_freq;
 
@@ -595,8 +603,9 @@ static int es8328_set_sysclk(struct snd_soc_dai *codec_dai,
 static int es8328_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct es8328_priv *es8328 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8328_priv *es8328 = dev_get_drvdata(dev);
 	int ret;
 	u8 dac_mode = 0;
 	u8 adc_mode = 0;
@@ -765,17 +774,16 @@ static struct snd_soc_dai_driver es8328_dai = {
 
 static int es8328_suspend(struct snd_soc_component *component)
 {
-	struct es8328_priv *es8328;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8328_priv *es8328 = dev_get_drvdata(dev);
 	int ret;
-
-	es8328 = snd_soc_component_get_drvdata(component);
 
 	clk_disable_unprepare(es8328->clk);
 
 	ret = regulator_bulk_disable(ARRAY_SIZE(es8328->supplies),
 			es8328->supplies);
 	if (ret) {
-		dev_err(component->dev, "unable to disable regulators\n");
+		dev_err(dev, "unable to disable regulators\n");
 		return ret;
 	}
 	return 0;
@@ -783,26 +791,27 @@ static int es8328_suspend(struct snd_soc_component *component)
 
 static int es8328_resume(struct snd_soc_component *component)
 {
-	struct es8328_priv *es8328 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8328_priv *es8328 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = clk_prepare_enable(es8328->clk);
 	if (ret) {
-		dev_err(component->dev, "unable to enable clock\n");
+		dev_err(dev, "unable to enable clock\n");
 		return ret;
 	}
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(es8328->supplies),
 					es8328->supplies);
 	if (ret) {
-		dev_err(component->dev, "unable to enable regulators\n");
+		dev_err(dev, "unable to enable regulators\n");
 		goto err_clk;
 	}
 
 	regcache_mark_dirty(es8328->regmap);
 	ret = regcache_sync(es8328->regmap);
 	if (ret) {
-		dev_err(component->dev, "unable to sync regcache\n");
+		dev_err(dev, "unable to sync regcache\n");
 		goto err_regulators;
 	}
 
@@ -817,29 +826,29 @@ err_clk:
 
 static int es8328_component_probe(struct snd_soc_component *component)
 {
-	struct es8328_priv *es8328;
-	int ret;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8328_priv *es8328 = dev_get_drvdata(dev);
 
-	es8328 = snd_soc_component_get_drvdata(component);
+	int ret;
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(es8328->supplies),
 					es8328->supplies);
 	if (ret) {
-		dev_err(component->dev, "unable to enable regulators\n");
+		dev_err(dev, "unable to enable regulators\n");
 		return ret;
 	}
 
 	/* Setup clocks */
-	es8328->clk = devm_clk_get(component->dev, NULL);
+	es8328->clk = devm_clk_get(dev, NULL);
 	if (IS_ERR(es8328->clk)) {
-		dev_err(component->dev, "codec clock missing or invalid\n");
+		dev_err(dev, "codec clock missing or invalid\n");
 		ret = PTR_ERR(es8328->clk);
 		goto clk_fail;
 	}
 
 	ret = clk_prepare_enable(es8328->clk);
 	if (ret) {
-		dev_err(component->dev, "unable to prepare codec clk\n");
+		dev_err(dev, "unable to prepare codec clk\n");
 		goto clk_fail;
 	}
 
@@ -853,9 +862,8 @@ clk_fail:
 
 static void es8328_remove(struct snd_soc_component *component)
 {
-	struct es8328_priv *es8328;
-
-	es8328 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8328_priv *es8328 = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(es8328->clk);
 
@@ -918,7 +926,7 @@ int es8328_probe(struct device *dev, struct regmap *regmap)
 
 	dev_set_drvdata(dev, es8328);
 
-	return devm_snd_soc_register_component(dev,
+	return devm_snd_soc_component_register(dev,
 			&es8328_component_driver, &es8328_dai, 1);
 }
 EXPORT_SYMBOL_GPL(es8328_probe);

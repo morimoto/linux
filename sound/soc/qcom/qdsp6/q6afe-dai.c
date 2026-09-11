@@ -39,8 +39,11 @@ static int q6slim_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *dai)
 {
 
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct q6afe_slim_cfg *slim = &dai_data->port_config[dai->id].slim;
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
+	struct q6afe_slim_cfg *slim = &dai_data->port_config[dai_id].slim;
 
 	slim->sample_rate = params_rate(params);
 
@@ -68,9 +71,12 @@ static int q6hdmi_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
 	int channels = params_channels(params);
-	struct q6afe_hdmi_cfg *hdmi = &dai_data->port_config[dai->id].hdmi;
+	struct q6afe_hdmi_cfg *hdmi = &dai_data->port_config[dai_id].hdmi;
 	int ret;
 
 	hdmi->sample_rate = params_rate(params);
@@ -96,10 +102,13 @@ static int q6afe_usb_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *dai)
 {
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int channels = params_channels(params);
 	int rate = params_rate(params);
-	struct q6afe_usb_cfg *usb = &dai_data->port_config[dai->id].usb_audio;
+	struct q6afe_usb_cfg *usb = &dai_data->port_config[dai_id].usb_audio;
 
 	usb->sample_rate = rate;
 	usb->num_channels = channels;
@@ -117,7 +126,7 @@ static int q6afe_usb_hw_params(struct snd_pcm_substream *substream,
 		usb->bit_width = 32;
 		break;
 	default:
-		dev_err(dai->dev, "%s: invalid format %d\n",
+		dev_err(dev, "%s: invalid format %d\n",
 			__func__, params_format(params));
 		return -EINVAL;
 	}
@@ -129,21 +138,27 @@ static int q6i2s_hw_params(struct snd_pcm_substream *substream,
 			   struct snd_pcm_hw_params *params,
 			   struct snd_soc_dai *dai)
 {
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct q6afe_i2s_cfg *i2s = &dai_data->port_config[dai->id].i2s_cfg;
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
+	struct q6afe_i2s_cfg *i2s = &dai_data->port_config[dai_id].i2s_cfg;
 
 	i2s->sample_rate = params_rate(params);
 	i2s->bit_width = params_width(params);
 	i2s->num_channels = params_channels(params);
-	i2s->sd_line_mask = dai_data->priv[dai->id].sd_line_mask;
+	i2s->sd_line_mask = dai_data->priv[dai_id].sd_line_mask;
 
 	return 0;
 }
 
 static int q6i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct q6afe_i2s_cfg *i2s = &dai_data->port_config[dai->id].i2s_cfg;
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
+	struct q6afe_i2s_cfg *i2s = &dai_data->port_config[dai_id].i2s_cfg;
 
 	i2s->fmt = fmt;
 
@@ -156,14 +171,17 @@ static int q6tdm_set_tdm_slot(struct snd_soc_dai *dai,
 				int slots, int slot_width)
 {
 
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct q6afe_tdm_cfg *tdm = &dai_data->port_config[dai->id].tdm;
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
+	struct q6afe_tdm_cfg *tdm = &dai_data->port_config[dai_id].tdm;
 	unsigned int cap_mask;
 	int rc = 0;
 
 	/* HW only supports 16 and 32 bit slot width configuration */
 	if ((slot_width != 16) && (slot_width != 32)) {
-		dev_err(dai->dev, "%s: invalid slot_width %d\n",
+		dev_err(dev, "%s: invalid slot_width %d\n",
 			__func__, slot_width);
 		return -EINVAL;
 	}
@@ -183,21 +201,21 @@ static int q6tdm_set_tdm_slot(struct snd_soc_dai *dai,
 		cap_mask = 0xFFFF;
 		break;
 	default:
-		dev_err(dai->dev, "%s: invalid slots %d\n",
+		dev_err(dev, "%s: invalid slots %d\n",
 			__func__, slots);
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case PRIMARY_TDM_RX_0 ... QUINARY_TDM_TX_7:
 		tdm->nslots_per_frame = slots;
 		tdm->slot_width = slot_width;
 		/* TDM RX dais ids are even and tx are odd */
-		tdm->slot_mask = ((dai->id & 0x1) ? tx_mask : rx_mask) & cap_mask;
+		tdm->slot_mask = ((dai_id & 0x1) ? tx_mask : rx_mask) & cap_mask;
 		break;
 	default:
-		dev_err(dai->dev, "%s: invalid dai id 0x%x\n",
-			__func__, dai->id);
+		dev_err(dev, "%s: invalid dai id 0x%x\n",
+			__func__, dai_id);
 		return -EINVAL;
 	}
 
@@ -209,20 +227,23 @@ static int q6tdm_set_channel_map(struct snd_soc_dai *dai,
 				unsigned int rx_num, const unsigned int *rx_slot)
 {
 
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct q6afe_tdm_cfg *tdm = &dai_data->port_config[dai->id].tdm;
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
+	struct q6afe_tdm_cfg *tdm = &dai_data->port_config[dai_id].tdm;
 	int rc = 0;
 	int i = 0;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case PRIMARY_TDM_RX_0 ... QUINARY_TDM_TX_7:
-		if (dai->id & 0x1) {
+		if (dai_id & 0x1) {
 			if (!tx_slot) {
-				dev_err(dai->dev, "tx slot not found\n");
+				dev_err(dev, "tx slot not found\n");
 				return -EINVAL;
 			}
 			if (tx_num > AFE_PORT_MAX_AUDIO_CHAN_CNT) {
-				dev_err(dai->dev, "invalid tx num %d\n",
+				dev_err(dev, "invalid tx num %d\n",
 					tx_num);
 				return -EINVAL;
 			}
@@ -237,11 +258,11 @@ static int q6tdm_set_channel_map(struct snd_soc_dai *dai,
 		} else {
 			/* rx */
 			if (!rx_slot) {
-				dev_err(dai->dev, "rx slot not found\n");
+				dev_err(dev, "rx slot not found\n");
 				return -EINVAL;
 			}
 			if (rx_num > AFE_PORT_MAX_AUDIO_CHAN_CNT) {
-				dev_err(dai->dev, "invalid rx num %d\n",
+				dev_err(dev, "invalid rx num %d\n",
 					rx_num);
 				return -EINVAL;
 			}
@@ -257,8 +278,8 @@ static int q6tdm_set_channel_map(struct snd_soc_dai *dai,
 
 		break;
 	default:
-		dev_err(dai->dev, "%s: invalid dai id 0x%x\n",
-			__func__, dai->id);
+		dev_err(dev, "%s: invalid dai id 0x%x\n",
+			__func__, dai_id);
 		return -EINVAL;
 	}
 
@@ -269,15 +290,18 @@ static int q6tdm_hw_params(struct snd_pcm_substream *substream,
 			   struct snd_pcm_hw_params *params,
 			   struct snd_soc_dai *dai)
 {
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct q6afe_tdm_cfg *tdm = &dai_data->port_config[dai->id].tdm;
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
+	struct q6afe_tdm_cfg *tdm = &dai_data->port_config[dai_id].tdm;
 
 	tdm->bit_width = params_width(params);
 	tdm->sample_rate = params_rate(params);
 	tdm->num_channels = params_channels(params);
-	tdm->data_align_type = dai_data->priv[dai->id].data_align;
-	tdm->sync_src = dai_data->priv[dai->id].sync_src;
-	tdm->sync_mode = dai_data->priv[dai->id].sync_mode;
+	tdm->data_align_type = dai_data->priv[dai_id].data_align;
+	tdm->sync_src = dai_data->priv[dai_id].sync_src;
+	tdm->sync_mode = dai_data->priv[dai_id].sync_mode;
 
 	return 0;
 }
@@ -289,12 +313,15 @@ static int q6dma_set_channel_map(struct snd_soc_dai *dai,
 				 const unsigned int *rx_ch_mask)
 {
 
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct q6afe_cdc_dma_cfg *cfg = &dai_data->port_config[dai->id].dma_cfg;
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
+	struct q6afe_cdc_dma_cfg *cfg = &dai_data->port_config[dai_id].dma_cfg;
 	int ch_mask;
 	int rc = 0;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case WSA_CODEC_DMA_TX_0:
 	case WSA_CODEC_DMA_TX_1:
 	case WSA_CODEC_DMA_TX_2:
@@ -308,12 +335,12 @@ static int q6dma_set_channel_map(struct snd_soc_dai *dai,
 	case TX_CODEC_DMA_TX_4:
 	case TX_CODEC_DMA_TX_5:
 		if (!tx_ch_mask) {
-			dev_err(dai->dev, "tx slot not found\n");
+			dev_err(dev, "tx slot not found\n");
 			return -EINVAL;
 		}
 
 		if (tx_num > AFE_PORT_MAX_AUDIO_CHAN_CNT) {
-			dev_err(dai->dev, "invalid tx num %d\n",
+			dev_err(dev, "invalid tx num %d\n",
 				tx_num);
 			return -EINVAL;
 		}
@@ -332,11 +359,11 @@ static int q6dma_set_channel_map(struct snd_soc_dai *dai,
 	case RX_CODEC_DMA_RX_7:
 		/* rx */
 		if (!rx_ch_mask) {
-			dev_err(dai->dev, "rx slot not found\n");
+			dev_err(dev, "rx slot not found\n");
 			return -EINVAL;
 		}
 		if (rx_num > AFE_PORT_MAX_AUDIO_CHAN_CNT) {
-			dev_err(dai->dev, "invalid rx num %d\n",
+			dev_err(dev, "invalid rx num %d\n",
 				rx_num);
 			return -EINVAL;
 		}
@@ -344,8 +371,8 @@ static int q6dma_set_channel_map(struct snd_soc_dai *dai,
 
 		break;
 	default:
-		dev_err(dai->dev, "%s: invalid dai id 0x%x\n",
-			__func__, dai->id);
+		dev_err(dev, "%s: invalid dai id 0x%x\n",
+			__func__, dai_id);
 		return -EINVAL;
 	}
 
@@ -358,8 +385,11 @@ static int q6dma_hw_params(struct snd_pcm_substream *substream,
 			   struct snd_pcm_hw_params *params,
 			   struct snd_soc_dai *dai)
 {
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct q6afe_cdc_dma_cfg *cfg = &dai_data->port_config[dai->id].dma_cfg;
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
+	struct q6afe_cdc_dma_cfg *cfg = &dai_data->port_config[dai_id].dma_cfg;
 
 	cfg->bit_width = params_width(params);
 	cfg->sample_rate = params_rate(params);
@@ -370,80 +400,86 @@ static int q6dma_hw_params(struct snd_pcm_substream *substream,
 static void q6afe_dai_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int rc;
 
-	if (!dai_data->is_port_started[dai->id])
+	if (!dai_data->is_port_started[dai_id])
 		return;
 
-	rc = q6afe_port_stop(dai_data->port[dai->id]);
+	rc = q6afe_port_stop(dai_data->port[dai_id]);
 	if (rc < 0)
-		dev_err(dai->dev, "fail to close AFE port (%d)\n", rc);
+		dev_err(dev, "fail to close AFE port (%d)\n", rc);
 
-	dai_data->is_port_started[dai->id] = false;
+	dai_data->is_port_started[dai_id] = false;
 
 }
 
 static int q6afe_dai_prepare(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int rc;
 
-	if (dai_data->is_port_started[dai->id]) {
+	if (dai_data->is_port_started[dai_id]) {
 		/* stop the port and restart with new port config */
-		rc = q6afe_port_stop(dai_data->port[dai->id]);
+		rc = q6afe_port_stop(dai_data->port[dai_id]);
 		if (rc < 0) {
-			dev_err(dai->dev, "fail to close AFE port (%d)\n", rc);
+			dev_err(dev, "fail to close AFE port (%d)\n", rc);
 			return rc;
 		}
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case HDMI_RX:
 	case DISPLAY_PORT_RX:
-		q6afe_hdmi_port_prepare(dai_data->port[dai->id],
-					&dai_data->port_config[dai->id].hdmi);
+		q6afe_hdmi_port_prepare(dai_data->port[dai_id],
+					&dai_data->port_config[dai_id].hdmi);
 		break;
 	case SLIMBUS_0_RX ... SLIMBUS_6_TX:
-		q6afe_slim_port_prepare(dai_data->port[dai->id],
-					&dai_data->port_config[dai->id].slim);
+		q6afe_slim_port_prepare(dai_data->port[dai_id],
+					&dai_data->port_config[dai_id].slim);
 		break;
 	case SENARY_MI2S_RX ... SENARY_MI2S_TX:
 	case QUINARY_MI2S_RX ... QUINARY_MI2S_TX:
 	case PRIMARY_MI2S_RX ... QUATERNARY_MI2S_TX:
 	case LPI_MI2S_RX_0 ... LPI_MI2S_TX_4:
 	case LPI_MI2S_RX_5 ... LPI_MI2S_TX_6:
-		rc = q6afe_i2s_port_prepare(dai_data->port[dai->id],
-			       &dai_data->port_config[dai->id].i2s_cfg);
+		rc = q6afe_i2s_port_prepare(dai_data->port[dai_id],
+			       &dai_data->port_config[dai_id].i2s_cfg);
 		if (rc < 0) {
-			dev_err(dai->dev, "fail to prepare AFE port %x\n",
-				dai->id);
+			dev_err(dev, "fail to prepare AFE port %x\n",
+				dai_id);
 			return rc;
 		}
 		break;
 	case PRIMARY_TDM_RX_0 ... QUINARY_TDM_TX_7:
-		q6afe_tdm_port_prepare(dai_data->port[dai->id],
-					&dai_data->port_config[dai->id].tdm);
+		q6afe_tdm_port_prepare(dai_data->port[dai_id],
+					&dai_data->port_config[dai_id].tdm);
 		break;
 	case WSA_CODEC_DMA_RX_0 ... RX_CODEC_DMA_RX_7:
-		q6afe_cdc_dma_port_prepare(dai_data->port[dai->id],
-					   &dai_data->port_config[dai->id].dma_cfg);
+		q6afe_cdc_dma_port_prepare(dai_data->port[dai_id],
+					   &dai_data->port_config[dai_id].dma_cfg);
 		break;
 	case USB_RX:
-		q6afe_usb_port_prepare(dai_data->port[dai->id],
-				       &dai_data->port_config[dai->id].usb_audio);
+		q6afe_usb_port_prepare(dai_data->port[dai_id],
+				       &dai_data->port_config[dai_id].usb_audio);
 		break;
 	default:
 		return -EINVAL;
 	}
 
-	rc = q6afe_port_start(dai_data->port[dai->id]);
+	rc = q6afe_port_start(dai_data->port[dai_id]);
 	if (rc < 0) {
-		dev_err(dai->dev, "fail to start AFE port %x\n", dai->id);
+		dev_err(dev, "fail to start AFE port %x\n", dai_id);
 		return rc;
 	}
-	dai_data->is_port_started[dai->id] = true;
+	dai_data->is_port_started[dai_id] = true;
 
 	return 0;
 }
@@ -454,11 +490,14 @@ static int q6slim_set_channel_map(struct snd_soc_dai *dai,
 				  unsigned int rx_num,
 				  const unsigned int *rx_slot)
 {
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct q6afe_port_config *pcfg = &dai_data->port_config[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
+	struct q6afe_port_config *pcfg = &dai_data->port_config[dai_id];
 	int i;
 
-	if (dai->id & 0x1) {
+	if (dai_id & 0x1) {
 		/* TX */
 		if (!tx_slot) {
 			pr_err("%s: tx slot not found\n", __func__);
@@ -490,8 +529,11 @@ static int q6slim_set_channel_map(struct snd_soc_dai *dai,
 static int q6afe_mi2s_set_sysclk(struct snd_soc_dai *dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
-	struct q6afe_port *port = dai_data->port[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
+	struct q6afe_port *port = dai_data->port[dai_id];
 
 	switch (clk_id) {
 	case LPAIF_DIG_CLK:
@@ -686,25 +728,31 @@ static const struct snd_soc_dapm_route q6afe_dapm_routes[] = {
 
 static int msm_dai_q6_dai_probe(struct snd_soc_dai *dai)
 {
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
 	struct q6afe_port *port;
+	int dai_id = snd_soc_dai_id(dai);
 
-	port = q6afe_port_get_from_id(dai->dev, dai->id);
+	port = q6afe_port_get_from_id(dev, dai_id);
 	if (IS_ERR(port)) {
-		dev_err(dai->dev, "Unable to get afe port\n");
+		dev_err(dev, "Unable to get afe port\n");
 		return -EINVAL;
 	}
-	dai_data->port[dai->id] = port;
+	dai_data->port[dai_id] = port;
 
 	return 0;
 }
 
 static int msm_dai_q6_dai_remove(struct snd_soc_dai *dai)
 {
-	struct q6afe_dai_data *dai_data = dev_get_drvdata(dai->dev);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6afe_dai_data *dai_data = dev_get_drvdata(dev);
 
-	q6afe_port_put(dai_data->port[dai->id]);
-	dai_data->port[dai->id] = NULL;
+	q6afe_port_put(dai_data->port[dai_id]);
+	dai_data->port[dai_id] = NULL;
 
 	return 0;
 }
@@ -1060,7 +1108,7 @@ static const struct snd_soc_dapm_widget q6afe_dai_widgets[] = {
 };
 
 static const struct snd_soc_component_driver q6afe_dai_component = {
-	.name		= "q6afe-dai-component",
+	.name = "q6afe-dai-component",
 	.dapm_widgets = q6afe_dai_widgets,
 	.num_dapm_widgets = ARRAY_SIZE(q6afe_dai_widgets),
 	.dapm_routes = q6afe_dapm_routes,
@@ -1177,7 +1225,7 @@ static int q6afe_dai_dev_probe(struct platform_device *pdev)
 	cfg.q6usb_ops = &q6afe_usb_ops;
 	dais = q6dsp_audio_ports_set_config(dev, &cfg, &num_dais);
 
-	return devm_snd_soc_register_component(dev, &q6afe_dai_component, dais, num_dais);
+	return devm_snd_soc_component_register(dev, &q6afe_dai_component, dais, num_dais);
 }
 
 #ifdef CONFIG_OF

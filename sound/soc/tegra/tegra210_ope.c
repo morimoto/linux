@@ -68,8 +68,9 @@ static int tegra210_ope_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct device *dev = dai->dev;
-	struct tegra210_ope *ope = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_ope *ope = dev_get_drvdata(dev);
 	int err;
 
 	/* Set RX and TX CIF */
@@ -87,14 +88,15 @@ static int tegra210_ope_hw_params(struct snd_pcm_substream *substream,
 		return err;
 	}
 
-	tegra210_mbdrc_hw_params(dai->component);
+	tegra210_mbdrc_hw_params(component);
 
 	return err;
 }
 
 static int tegra210_ope_component_probe(struct snd_soc_component *cmpnt)
 {
-	struct tegra210_ope *ope = dev_get_drvdata(cmpnt->dev);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_ope *ope = dev_get_drvdata(dev);
 
 	tegra210_peq_component_init(cmpnt);
 	tegra210_mbdrc_component_init(cmpnt);
@@ -110,7 +112,7 @@ static int tegra210_ope_component_probe(struct snd_soc_component *cmpnt)
 	 * assignment is done to highlight this. This is needed for ASoC
 	 * core to access correct regmap during DAPM path setup.
 	 */
-	snd_soc_component_init_regmap(cmpnt, ope->regmap);
+	snd_soc_component_regmap_init(cmpnt, ope->regmap);
 
 	return 0;
 }
@@ -202,7 +204,8 @@ static int tegra210_ope_get_data_dir(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_ope *ope = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_ope *ope = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = ope->data_dir;
 
@@ -213,7 +216,8 @@ static int tegra210_ope_put_data_dir(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_ope *ope = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_ope *ope = dev_get_drvdata(dev);
 	unsigned int value = ucontrol->value.enumerated.item[0];
 
 	if (value == ope->data_dir)
@@ -333,7 +337,7 @@ static int tegra210_ope_probe(struct platform_device *pdev)
 	if (err < 0)
 		return err;
 
-	err = devm_snd_soc_register_component(dev, &tegra210_ope_cmpnt,
+	err = devm_snd_soc_component_register(dev, &tegra210_ope_cmpnt,
 					      tegra210_ope_dais,
 					      ARRAY_SIZE(tegra210_ope_dais));
 	if (err)

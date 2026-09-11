@@ -20,7 +20,8 @@ static int ssm2305_power_event(struct snd_soc_dapm_widget *w,
 			       struct snd_kcontrol *kctrl, int event)
 {
 	struct snd_soc_component *c = snd_soc_dapm_to_component(w->dapm);
-	struct ssm2305 *data = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct ssm2305 *data = dev_get_drvdata(dev);
 
 	gpiod_set_value_cansleep(data->gpiod_shutdown,
 				 SND_SOC_DAPM_EVENT_ON(event));
@@ -72,7 +73,7 @@ static int ssm2305_probe(struct platform_device *pdev)
 		return dev_err_probe(dev, PTR_ERR(priv->gpiod_shutdown),
 				     "Failed to get 'shutdown' gpio\n");
 
-	return devm_snd_soc_register_component(dev, &ssm2305_component_driver,
+	return devm_snd_soc_component_register(dev, &ssm2305_component_driver,
 					       NULL, 0);
 }
 

@@ -33,7 +33,9 @@ struct framer_codec {
 static int framer_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				   unsigned int rx_mask, int slots, int width)
 {
-	struct framer_codec *framer = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct framer_codec *framer = dev_get_drvdata(dai_dev);
 
 	switch (width) {
 	case 0:
@@ -41,20 +43,20 @@ static int framer_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask
 	case 8:
 		break;
 	default:
-		dev_err(dai->dev, "tdm slot width %d not supported\n", width);
+		dev_err(dai_dev, "tdm slot width %d not supported\n", width);
 		return -EINVAL;
 	}
 
 	framer->max_chan_playback = hweight32(tx_mask);
 	if (framer->max_chan_playback > FRAMER_NB_CHANNEL) {
-		dev_err(dai->dev, "too many tx slots defined (mask = 0x%x) supported max %d\n",
+		dev_err(dai_dev, "too many tx slots defined (mask = 0x%x) supported max %d\n",
 			tx_mask, FRAMER_NB_CHANNEL);
 		return -EINVAL;
 	}
 
 	framer->max_chan_capture = hweight32(rx_mask);
 	if (framer->max_chan_capture > FRAMER_NB_CHANNEL) {
-		dev_err(dai->dev, "too many rx slots defined (mask = 0x%x) supported max %d\n",
+		dev_err(dai_dev, "too many rx slots defined (mask = 0x%x) supported max %d\n",
 			rx_mask, FRAMER_NB_CHANNEL);
 		return -EINVAL;
 	}
@@ -73,13 +75,15 @@ static int framer_dai_hw_rule_channels_by_format(struct snd_soc_dai *dai,
 	struct snd_interval *c = hw_param_interval(params, SNDRV_PCM_HW_PARAM_CHANNELS);
 	snd_pcm_format_t format = params_format(params);
 	struct snd_interval ch = {0};
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
 	int width;
 
 	width = snd_pcm_format_physical_width(format);
 	if (width == 8 || width == 16 || width == 32 || width == 64) {
 		ch.max = nb_ts * 8 / width;
 	} else {
-		dev_err(dai->dev, "format physical width %d not supported\n", width);
+		dev_err(dai_dev, "format physical width %d not supported\n", width);
 		return -EINVAL;
 	}
 
@@ -92,7 +96,9 @@ static int framer_dai_hw_rule_playback_channels_by_format(struct snd_pcm_hw_para
 							  struct snd_pcm_hw_rule *rule)
 {
 	struct snd_soc_dai *dai = rule->private;
-	struct framer_codec *framer = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct framer_codec *framer = dev_get_drvdata(dev);
 
 	return framer_dai_hw_rule_channels_by_format(dai, params, framer->max_chan_playback);
 }
@@ -101,7 +107,9 @@ static int framer_dai_hw_rule_capture_channels_by_format(struct snd_pcm_hw_param
 							 struct snd_pcm_hw_rule *rule)
 {
 	struct snd_soc_dai *dai = rule->private;
-	struct framer_codec *framer = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct framer_codec *framer = dev_get_drvdata(dev);
 
 	return framer_dai_hw_rule_channels_by_format(dai, params, framer->max_chan_capture);
 }
@@ -115,9 +123,11 @@ static int framer_dai_hw_rule_format_by_channels(struct snd_soc_dai *dai,
 	unsigned int slot_width;
 	snd_pcm_format_t format;
 	struct snd_mask f_new;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
 
 	if (!channels || channels > nb_ts) {
-		dev_err(dai->dev, "channels %u not supported\n", nb_ts);
+		dev_err(dai_dev, "channels %u not supported\n", nb_ts);
 		return -EINVAL;
 	}
 
@@ -138,7 +148,9 @@ static int framer_dai_hw_rule_playback_format_by_channels(struct snd_pcm_hw_para
 							  struct snd_pcm_hw_rule *rule)
 {
 	struct snd_soc_dai *dai = rule->private;
-	struct framer_codec *framer = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct framer_codec *framer = dev_get_drvdata(dev);
 
 	return framer_dai_hw_rule_format_by_channels(dai, params, framer->max_chan_playback);
 }
@@ -147,7 +159,9 @@ static int framer_dai_hw_rule_capture_format_by_channels(struct snd_pcm_hw_param
 							 struct snd_pcm_hw_rule *rule)
 {
 	struct snd_soc_dai *dai = rule->private;
-	struct framer_codec *framer = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct framer_codec *framer = dev_get_drvdata(dev);
 
 	return framer_dai_hw_rule_format_by_channels(dai, params, framer->max_chan_capture);
 }
@@ -185,7 +199,9 @@ static u64 framer_formats(u8 nb_ts)
 static int framer_dai_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct framer_codec *framer = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct framer_codec *framer = dev_get_drvdata(dai_dev);
 	snd_pcm_hw_rule_func_t hw_rule_channels_by_format;
 	snd_pcm_hw_rule_func_t hw_rule_format_by_channels;
 	unsigned int frame_bits;
@@ -207,7 +223,7 @@ static int framer_dai_startup(struct snd_pcm_substream *substream,
 	ret = snd_pcm_hw_constraint_mask64(substream->runtime,
 					   SNDRV_PCM_HW_PARAM_FORMAT, format);
 	if (ret) {
-		dev_err(dai->dev, "Failed to add format constraint (%d)\n", ret);
+		dev_err(dai_dev, "Failed to add format constraint (%d)\n", ret);
 		return ret;
 	}
 
@@ -215,7 +231,7 @@ static int framer_dai_startup(struct snd_pcm_substream *substream,
 				  hw_rule_channels_by_format, dai,
 				  SNDRV_PCM_HW_PARAM_FORMAT, -1);
 	if (ret) {
-		dev_err(dai->dev, "Failed to add channels rule (%d)\n", ret);
+		dev_err(dai_dev, "Failed to add channels rule (%d)\n", ret);
 		return ret;
 	}
 
@@ -223,7 +239,7 @@ static int framer_dai_startup(struct snd_pcm_substream *substream,
 				  hw_rule_format_by_channels, dai,
 				  SNDRV_PCM_HW_PARAM_CHANNELS, -1);
 	if (ret) {
-		dev_err(dai->dev, "Failed to add format rule (%d)\n", ret);
+		dev_err(dai_dev, "Failed to add format rule (%d)\n", ret);
 		return ret;
 	}
 
@@ -231,7 +247,7 @@ static int framer_dai_startup(struct snd_pcm_substream *substream,
 					   SNDRV_PCM_HW_PARAM_FRAME_BITS,
 					   frame_bits);
 	if (ret < 0) {
-		dev_err(dai->dev, "Failed to add frame_bits constraint (%d)\n", ret);
+		dev_err(dai_dev, "Failed to add frame_bits constraint (%d)\n", ret);
 		return ret;
 	}
 
@@ -301,51 +317,54 @@ static int framer_carrier_notifier(struct notifier_block *nb, unsigned long acti
 
 static int framer_component_probe(struct snd_soc_component *component)
 {
-	struct framer_codec *framer = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct framer_codec *framer = dev_get_drvdata(dev);
 	struct framer_status status;
+	const char *name_prefix = snd_soc_component_name_prefix(component);
 	char *name;
 	int ret;
 
 	INIT_WORK(&framer->carrier_work, framer_carrier_work);
 
 	name = "carrier";
-	if (component->name_prefix) {
-		name = kasprintf(GFP_KERNEL, "%s carrier", component->name_prefix);
+	if (name_prefix) {
+		name = kasprintf(GFP_KERNEL, "%s carrier", name_prefix);
 		if (!name)
 			return -ENOMEM;
 	}
 
-	ret = snd_soc_card_jack_new(component->card, name, FRAMER_JACK_MASK, &framer->jack);
-	if (component->name_prefix)
+	ret = snd_soc_card_jack_new(card, name, FRAMER_JACK_MASK, &framer->jack);
+	if (name_prefix)
 		kfree(name); /* A copy is done by snd_soc_card_jack_new */
 	if (ret) {
-		dev_err(component->dev, "Cannot create jack\n");
+		dev_err(dev, "Cannot create jack\n");
 		return ret;
 	}
 
 	ret = framer_init(framer->framer);
 	if (ret) {
-		dev_err(component->dev, "framer init failed (%d)\n", ret);
+		dev_err(dev, "framer init failed (%d)\n", ret);
 		return ret;
 	}
 
 	ret = framer_power_on(framer->framer);
 	if (ret) {
-		dev_err(component->dev, "framer power-on failed (%d)\n", ret);
+		dev_err(dev, "framer power-on failed (%d)\n", ret);
 		goto framer_exit;
 	}
 
 	/* Be sure that get_status is supported */
 	ret = framer_get_status(framer->framer, &status);
 	if (ret) {
-		dev_err(component->dev, "get framer status failed (%d)\n", ret);
+		dev_err(dev, "get framer status failed (%d)\n", ret);
 		goto framer_power_off;
 	}
 
 	framer->nb.notifier_call = framer_carrier_notifier;
 	ret = framer_notifier_register(framer->framer, &framer->nb);
 	if (ret) {
-		dev_err(component->dev, "Cannot register event notifier\n");
+		dev_err(dev, "Cannot register event notifier\n");
 		goto framer_power_off;
 	}
 
@@ -363,7 +382,8 @@ framer_exit:
 
 static void framer_component_remove(struct snd_soc_component *component)
 {
-	struct framer_codec *framer = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct framer_codec *framer = dev_get_drvdata(dev);
 
 	framer_notifier_unregister(framer->framer, &framer->nb);
 	cancel_work_sync(&framer->carrier_work);
@@ -394,7 +414,7 @@ static int framer_codec_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, framer);
 
-	return devm_snd_soc_register_component(&pdev->dev, &framer_component_driver,
+	return devm_snd_soc_component_register(&pdev->dev, &framer_component_driver,
 					       &framer_dai_driver, 1);
 }
 

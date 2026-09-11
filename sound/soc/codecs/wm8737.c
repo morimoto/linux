@@ -324,8 +324,9 @@ static int wm8737_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8737_priv *wm8737 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8737_priv *wm8737 = dev_get_drvdata(dev);
 	int i;
 	u16 clocking = 0;
 	u16 af = 0;
@@ -344,7 +345,7 @@ static int wm8737_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (i == ARRAY_SIZE(coeff_div)) {
-		dev_err(component->dev, "%dHz MCLK can't support %dHz\n",
+		dev_err(dev, "%dHz MCLK can't support %dHz\n",
 			wm8737->mclk, params_rate(params));
 		return -EINVAL;
 	}
@@ -378,8 +379,9 @@ static int wm8737_hw_params(struct snd_pcm_substream *substream,
 static int wm8737_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8737_priv *wm8737 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8737_priv *wm8737 = dev_get_drvdata(dev);
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(coeff_div); i++) {
@@ -390,7 +392,7 @@ static int wm8737_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		}
 	}
 
-	dev_err(component->dev, "MCLK rate %dHz not supported\n", freq);
+	dev_err(dev, "MCLK rate %dHz not supported\n", freq);
 
 	return -EINVAL;
 }
@@ -399,7 +401,7 @@ static int wm8737_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int wm8737_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 af = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -450,7 +452,8 @@ static int wm8737_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int wm8737_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm8737_priv *wm8737 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8737_priv *wm8737 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -469,9 +472,7 @@ static int wm8737_set_bias_level(struct snd_soc_component *component,
 			ret = regulator_bulk_enable(ARRAY_SIZE(wm8737->supplies),
 						    wm8737->supplies);
 			if (ret != 0) {
-				dev_err(component->dev,
-					"Failed to enable supplies: %d\n",
-					ret);
+				dev_err(dev, "Failed to enable supplies: %d\n", ret);
 				return ret;
 			}
 
@@ -553,20 +554,21 @@ static struct snd_soc_dai_driver wm8737_dai = {
 
 static int wm8737_probe(struct snd_soc_component *component)
 {
-	struct wm8737_priv *wm8737 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8737_priv *wm8737 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(wm8737->supplies),
 				    wm8737->supplies);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to enable supplies: %d\n", ret);
+		dev_err(dev, "Failed to enable supplies: %d\n", ret);
 		goto err_get;
 	}
 
 	ret = wm8737_reset(component);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to issue reset\n");
+		dev_err(dev, "Failed to issue reset\n");
 		goto err_enable;
 	}
 
@@ -649,7 +651,7 @@ static int wm8737_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, wm8737);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 				&soc_component_dev_wm8737, &wm8737_dai, 1);
 
 	return ret;
@@ -699,7 +701,7 @@ static int wm8737_spi_probe(struct spi_device *spi)
 
 	spi_set_drvdata(spi, wm8737);
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 				&soc_component_dev_wm8737, &wm8737_dai, 1);
 
 	return ret;

@@ -159,7 +159,8 @@ static int wm5110_sysclk_ev(struct snd_soc_dapm_widget *w,
 			    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 	struct regmap *regmap = arizona->regmap;
 	const struct reg_default *patch = NULL;
 	int i, patch_size;
@@ -196,13 +197,14 @@ static int wm5110_adsp_power_ev(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 	unsigned int v;
 	int ret;
 
 	ret = regmap_read(arizona->regmap, ARIZONA_SYSTEM_CLOCK_1, &v);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to read SYSCLK state: %d\n", ret);
+		dev_err(dev, "Failed to read SYSCLK state: %d\n", ret);
 		return ret;
 	}
 
@@ -288,7 +290,8 @@ static const struct reg_sequence wm5110_dre_right_enable[] = {
 static int wm5110_hp_pre_enable(struct snd_soc_dapm_widget *w)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 	unsigned int val = snd_soc_component_read(component, ARIZONA_DRE_ENABLE);
 	const struct reg_sequence *wseq;
@@ -325,7 +328,8 @@ static int wm5110_hp_pre_enable(struct snd_soc_dapm_widget *w)
 static int wm5110_hp_pre_disable(struct snd_soc_dapm_widget *w)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	unsigned int val = snd_soc_component_read(component, ARIZONA_DRE_ENABLE);
 
 	switch (w->shift) {
@@ -364,7 +368,8 @@ static int wm5110_hp_ev(struct snd_soc_dapm_widget *w,
 			struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 
 	switch (priv->arizona->rev) {
 	case 0 ... 3:
@@ -404,7 +409,8 @@ static int wm5110_put_dre(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	unsigned int ena, dre;
@@ -508,8 +514,9 @@ static int wm5110_in_analog_ev(struct snd_soc_dapm_widget *w,
 			       struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
-	struct wm5110_priv *wm5110 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
+	struct wm5110_priv *wm5110 = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 	unsigned int reg, mask;
 	struct reg_sequence analog_seq[] = {
@@ -567,7 +574,8 @@ static int wm5110_in_ev(struct snd_soc_dapm_widget *w,
 			struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 
 	switch (arizona->rev) {
@@ -2050,7 +2058,8 @@ static const struct snd_soc_dapm_route wm5110_dapm_routes[] = {
 static int wm5110_set_fll(struct snd_soc_component *component, int fll_id,
 			  int source, unsigned int Fref, unsigned int Fout)
 {
-	struct wm5110_priv *wm5110 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm5110_priv *wm5110 = dev_get_drvdata(dev);
 
 	switch (fll_id) {
 	case WM5110_FLL1:
@@ -2249,18 +2258,21 @@ static int wm5110_open(struct snd_soc_component *component,
 		       struct snd_compr_stream *stream)
 {
 	struct snd_soc_pcm_runtime *rtd = stream->private_data;
-	struct wm5110_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm5110_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->core.arizona;
+	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
+	const char *dai_name = snd_soc_dai_name(dai);
 	int n_adsp;
 
-	if (strcmp(snd_soc_rtd_to_codec(rtd, 0)->name, "wm5110-dsp-voicectrl") == 0) {
+	if (strcmp(dai_name, "wm5110-dsp-voicectrl") == 0) {
 		n_adsp = 2;
-	} else if (strcmp(snd_soc_rtd_to_codec(rtd, 0)->name, "wm5110-dsp-trace") == 0) {
+	} else if (strcmp(dai_name, "wm5110-dsp-trace") == 0) {
 		n_adsp = 0;
 	} else {
 		dev_err(arizona->dev,
 			"No suitable compressed stream for DAI '%s'\n",
-			snd_soc_rtd_to_codec(rtd, 0)->name);
+			dai_name);
 		return -EINVAL;
 	}
 
@@ -2298,12 +2310,13 @@ static irqreturn_t wm5110_adsp2_irq(int irq, void *data)
 static int wm5110_component_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm5110_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm5110_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->core.arizona;
 	int i, ret;
 
 	arizona->dapm = dapm;
-	snd_soc_component_init_regmap(component, arizona->regmap);
+	snd_soc_component_regmap_init(component, arizona->regmap);
 
 	ret = arizona_init_spk(component);
 	if (ret < 0)
@@ -2318,7 +2331,7 @@ static int wm5110_component_probe(struct snd_soc_component *component)
 			goto err_adsp2_codec_probe;
 	}
 
-	ret = snd_soc_add_component_controls(component,
+	ret = snd_soc_component_add_controls(component,
 					     arizona_adsp2_rate_controls,
 					     WM5110_NUM_ADSP);
 	if (ret)
@@ -2337,7 +2350,8 @@ err_adsp2_codec_probe:
 
 static void wm5110_component_remove(struct snd_soc_component *component)
 {
-	struct wm5110_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm5110_priv *priv = dev_get_drvdata(dev);
 	int i;
 
 	for (i = 0; i < WM5110_NUM_ADSP; ++i)
@@ -2487,7 +2501,7 @@ static int wm5110_probe(struct platform_device *pdev)
 	if (ret < 0)
 		goto err_dsp_irq;
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &soc_component_dev_wm5110,
 					      wm5110_dai,
 					      ARRAY_SIZE(wm5110_dai));

@@ -367,7 +367,9 @@ static int cv1800b_i2s_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct cv1800b_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_i2s *i2s = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 	unsigned int channels = params_channels(params);
 	unsigned int physical_width = params_physical_width(params);
@@ -431,7 +433,9 @@ static int cv1800b_i2s_hw_params(struct snd_pcm_substream *substream,
 static int cv1800b_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 			       struct snd_soc_dai *dai)
 {
-	struct cv1800b_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_i2s *i2s = dev_get_drvdata(dev);
 	u32 val;
 
 	val = readl(i2s->base + CV1800B_I2S_ENABLE);
@@ -459,10 +463,13 @@ static int cv1800b_i2s_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct cv1800b_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_i2s *i2s = dev_get_drvdata(dev);
 	struct snd_soc_dai_link *dai_link = rtd->dai_link;
+	const char *dai_name = snd_soc_dai_name(dai);
 
-	dev_dbg(i2s->dev, "%s: dai=%s substream=%d\n", __func__, dai->name,
+	dev_dbg(i2s->dev, "%s: dai=%s substream=%d\n", __func__, dai_name,
 		substream->stream);
 	/**
 	 * Ensure DMA is stopped before DAI
@@ -474,20 +481,26 @@ static int cv1800b_i2s_startup(struct snd_pcm_substream *substream,
 
 static int cv1800b_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct cv1800b_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_i2s *i2s = dev_get_drvdata(dev);
 
 	if (!i2s) {
-		dev_err(dai->dev, "no drvdata in DAI probe\n");
+		dev_err(dev, "no drvdata in DAI probe\n");
 		return -ENODEV;
 	}
 
-	snd_soc_dai_init_dma_data(dai, &i2s->playback_dma, &i2s->capture_dma);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &i2s->playback_dma);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &i2s->capture_dma);
+
 	return 0;
 }
 
 static int cv1800b_i2s_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct cv1800b_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_i2s *i2s = dev_get_drvdata(dev);
 	u32 val;
 	u32 master;
 
@@ -518,7 +531,9 @@ static int cv1800b_i2s_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int cv1800b_i2s_dai_set_bclk_ratio(struct snd_soc_dai *dai,
 					  unsigned int ratio)
 {
-	struct cv1800b_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_i2s *i2s = dev_get_drvdata(dev);
 
 	if (ratio == 0)
 		return -EINVAL;
@@ -530,7 +545,9 @@ static int cv1800b_i2s_dai_set_bclk_ratio(struct snd_soc_dai *dai,
 static int cv1800b_i2s_dai_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 				      unsigned int freq, int dir)
 {
-	struct cv1800b_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cv1800b_i2s *i2s = dev_get_drvdata(dev);
 	int ret;
 	u32 val;
 	bool output_enable = (dir == SND_SOC_CLOCK_OUT) ? true : false;
@@ -665,7 +682,7 @@ static int cv1800b_i2s_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, i2s);
 	cv1800b_i2s_setup_tdm(i2s);
 
-	ret = devm_snd_soc_register_component(dev, &cv1800b_i2s_component,
+	ret = devm_snd_soc_component_register(dev, &cv1800b_i2s_component,
 					      &cv1800b_i2s_dai_template, 1);
 	if (ret)
 		return ret;

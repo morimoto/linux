@@ -14,20 +14,22 @@ static int hda_codec_dai_startup(struct snd_pcm_substream *substream, struct snd
 	struct hda_pcm_stream *stream_info;
 	struct hda_codec *codec;
 	struct hda_pcm *pcm;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
 	int ret;
 
-	codec = dev_to_hda_codec(dai->dev);
-	stream_info = snd_soc_dai_get_dma_data(dai, substream);
+	codec = dev_to_hda_codec(dai_dev);
+	stream_info = snd_soc_dai_stream_dma_data_get(dai, substream);
 	pcm = container_of(stream_info, struct hda_pcm, stream[substream->stream]);
 
-	dev_dbg(dai->dev, "open stream codec: %08x, info: %p, pcm: %p %s substream: %p\n",
+	dev_dbg(dai_dev, "open stream codec: %08x, info: %p, pcm: %p %s substream: %p\n",
 		codec->core.vendor_id, stream_info, pcm, pcm->name, substream);
 
 	snd_hda_codec_pcm_get(pcm);
 
 	ret = stream_info->ops.open(stream_info, codec, substream);
 	if (ret < 0) {
-		dev_err(dai->dev, "codec open failed: %d\n", ret);
+		dev_err(dai_dev, "codec open failed: %d\n", ret);
 		snd_hda_codec_pcm_put(pcm);
 		return ret;
 	}
@@ -40,29 +42,33 @@ static void hda_codec_dai_shutdown(struct snd_pcm_substream *substream, struct s
 	struct hda_pcm_stream *stream_info;
 	struct hda_codec *codec;
 	struct hda_pcm *pcm;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
 	int ret;
 
-	codec = dev_to_hda_codec(dai->dev);
-	stream_info = snd_soc_dai_get_dma_data(dai, substream);
+	codec = dev_to_hda_codec(dai_dev);
+	stream_info = snd_soc_dai_stream_dma_data_get(dai, substream);
 	pcm = container_of(stream_info, struct hda_pcm, stream[substream->stream]);
 
-	dev_dbg(dai->dev, "close stream codec: %08x, info: %p, pcm: %p %s substream: %p\n",
+	dev_dbg(dai_dev, "close stream codec: %08x, info: %p, pcm: %p %s substream: %p\n",
 		codec->core.vendor_id, stream_info, pcm, pcm->name, substream);
 
 	ret = stream_info->ops.close(stream_info, codec, substream);
 	if (ret < 0)
-		dev_err(dai->dev, "codec close failed: %d\n", ret);
+		dev_err(dai_dev, "codec close failed: %d\n", ret);
 
 	snd_hda_codec_pcm_put(pcm);
 }
 
 static int hda_codec_dai_hw_free(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
 	struct hda_pcm_stream *stream_info;
 	struct hda_codec *codec;
 
-	codec = dev_to_hda_codec(dai->dev);
-	stream_info = snd_soc_dai_get_dma_data(dai, substream);
+	codec = dev_to_hda_codec(dai_dev);
+	stream_info = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	snd_hda_codec_cleanup(codec, stream_info, substream);
 
@@ -75,13 +81,15 @@ static int hda_codec_dai_prepare(struct snd_pcm_substream *substream, struct snd
 	struct hda_pcm_stream *stream_info;
 	struct hdac_stream *stream;
 	struct hda_codec *codec;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
 	unsigned int format;
 	unsigned int bits;
 	int ret;
 
-	codec = dev_to_hda_codec(dai->dev);
+	codec = dev_to_hda_codec(dai_dev);
 	stream = substream->runtime->private_data;
-	stream_info = snd_soc_dai_get_dma_data(dai, substream);
+	stream_info = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	bits = snd_hdac_stream_format_bits(runtime->format, runtime->subformat,
 					   stream_info->maxbps);
@@ -89,7 +97,7 @@ static int hda_codec_dai_prepare(struct snd_pcm_substream *substream, struct snd
 
 	ret = snd_hda_codec_prepare(codec, stream_info, stream->stream_tag, format, substream);
 	if (ret < 0) {
-		dev_err(dai->dev, "codec prepare failed: %d\n", ret);
+		dev_err(dai_dev, "codec prepare failed: %d\n", ret);
 		return ret;
 	}
 

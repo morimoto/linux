@@ -107,17 +107,19 @@ static int aif1_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, DA7213_CLKSRC_MCLK,
 				     19200000, SND_SOC_CLOCK_IN);
 	if (ret < 0)
-		dev_err(codec_dai->dev, "can't set codec sysclk configuration\n");
+		dev_err(dev, "can't set codec sysclk configuration\n");
 
 	ret = snd_soc_dai_set_pll(codec_dai, 0,
 			DA7213_SYSCLK_PLL_SRM, 0, DA7213_PLL_FREQ_OUT_98304000);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "failed to start PLL: %d\n", ret);
+		dev_err(dev, "failed to start PLL: %d\n", ret);
 		return -EIO;
 	}
 
@@ -128,12 +130,14 @@ static int aif1_hw_free(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = snd_soc_dai_set_pll(codec_dai, 0,
 				  DA7213_SYSCLK_MCLK, 0, 0);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "failed to stop PLL: %d\n", ret);
+		dev_err(dev, "failed to stop PLL: %d\n", ret);
 		return -EIO;
 	}
 

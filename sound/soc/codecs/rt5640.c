@@ -459,14 +459,15 @@ static int set_dmic_clk(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 	int idx, rate;
 
 	rate = rt5640->sysclk / rl6231_get_pre_div(rt5640->regmap,
 		RT5640_ADDA_CLK1, RT5640_I2S_PD1_SFT);
 	idx = rl6231_calc_dmic_clk(rate);
 	if (idx < 0)
-		dev_err(component->dev, "Failed to set DMIC clock\n");
+		dev_err(dev, "Failed to set DMIC clock\n");
 	else
 		snd_soc_component_update_bits(component, RT5640_DMIC, RT5640_DMIC_CLK_MASK,
 					idx << RT5640_DMIC_CLK_SFT);
@@ -477,7 +478,8 @@ static int is_using_asrc(struct snd_soc_dapm_widget *source,
 			 struct snd_soc_dapm_widget *sink)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	if (!rt5640->asrc_en)
 		return 0;
@@ -915,7 +917,8 @@ static const struct snd_kcontrol_new rt5640_sdi_mux =
 
 static void hp_amp_power_on(struct snd_soc_component *component)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	/* depop parameters */
 	regmap_update_bits(rt5640->regmap, RT5640_PR_BASE +
@@ -941,7 +944,8 @@ static void hp_amp_power_on(struct snd_soc_component *component)
 
 static void rt5640_pmu_depop(struct snd_soc_component *component)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	regmap_update_bits(rt5640->regmap, RT5640_DEPOP_M2,
 		RT5640_DEPOP_MASK | RT5640_DIG_DP_MASK,
@@ -968,7 +972,8 @@ static int rt5640_hp_event(struct snd_soc_dapm_widget *w,
 			   struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -1037,7 +1042,8 @@ static int rt5640_hp_post_event(struct snd_soc_dapm_widget *w,
 			   struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -1696,33 +1702,35 @@ static int get_sdp_info(struct snd_soc_component *component, int dai_id)
 static int rt5640_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int val_len = 0, val_clk, mask_clk;
 	int dai_sel, pre_div, bclk_ms, frame_size;
 
-	rt5640->lrck[dai->id] = params_rate(params);
-	pre_div = rl6231_get_clk_info(rt5640->sysclk, rt5640->lrck[dai->id]);
+	rt5640->lrck[dai_id] = params_rate(params);
+	pre_div = rl6231_get_clk_info(rt5640->sysclk, rt5640->lrck[dai_id]);
 	if (pre_div < 0) {
-		dev_err(component->dev, "Unsupported clock setting %d for DAI %d\n",
-			rt5640->lrck[dai->id], dai->id);
+		dev_err(dev, "Unsupported clock setting %d for DAI %d\n",
+			rt5640->lrck[dai_id], dai_id);
 		return -EINVAL;
 	}
 	frame_size = snd_soc_params_to_frame_size(params);
 	if (frame_size < 0) {
-		dev_err(component->dev, "Unsupported frame size: %d\n", frame_size);
+		dev_err(dev, "Unsupported frame size: %d\n", frame_size);
 		return frame_size;
 	}
 	if (frame_size > 32)
 		bclk_ms = 1;
 	else
 		bclk_ms = 0;
-	rt5640->bclk[dai->id] = rt5640->lrck[dai->id] * (32 << bclk_ms);
+	rt5640->bclk[dai_id] = rt5640->lrck[dai_id] * (32 << bclk_ms);
 
-	dev_dbg(dai->dev, "bclk is %dHz and lrck is %dHz\n",
-		rt5640->bclk[dai->id], rt5640->lrck[dai->id]);
-	dev_dbg(dai->dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
-				bclk_ms, pre_div, dai->id);
+	dev_dbg(dev, "bclk is %dHz and lrck is %dHz\n",
+		rt5640->bclk[dai_id], rt5640->lrck[dai_id]);
+	dev_dbg(dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
+				bclk_ms, pre_div, dai_id);
 
 	switch (params_width(params)) {
 	case 16:
@@ -1740,9 +1748,9 @@ static int rt5640_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	dai_sel = get_sdp_info(component, dai->id);
+	dai_sel = get_sdp_info(component, dai_id);
 	if (dai_sel < 0) {
-		dev_err(component->dev, "Failed to get sdp info: %d\n", dai_sel);
+		dev_err(dev, "Failed to get sdp info: %d\n", dai_sel);
 		return -EINVAL;
 	}
 	if (dai_sel & RT5640_U_IF1) {
@@ -1767,18 +1775,20 @@ static int rt5640_hw_params(struct snd_pcm_substream *substream,
 
 static int rt5640_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int reg_val = 0;
 	int dai_sel;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
-		rt5640->master[dai->id] = 1;
+		rt5640->master[dai_id] = 1;
 		break;
 	case SND_SOC_DAIFMT_CBC_CFC:
 		reg_val |= RT5640_I2S_MS_S;
-		rt5640->master[dai->id] = 0;
+		rt5640->master[dai_id] = 0;
 		break;
 	default:
 		return -EINVAL;
@@ -1810,9 +1820,9 @@ static int rt5640_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
-	dai_sel = get_sdp_info(component, dai->id);
+	dai_sel = get_sdp_info(component, dai_id);
 	if (dai_sel < 0) {
-		dev_err(component->dev, "Failed to get sdp info: %d\n", dai_sel);
+		dev_err(dev, "Failed to get sdp info: %d\n", dai_sel);
 		return -EINVAL;
 	}
 	if (dai_sel & RT5640_U_IF1) {
@@ -1832,8 +1842,9 @@ static int rt5640_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt5640_set_dai_sysclk(struct snd_soc_dai *dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0;
 	unsigned int pll_bit = 0;
 	int ret;
@@ -1859,7 +1870,7 @@ static int rt5640_set_dai_sysclk(struct snd_soc_dai *dai,
 		reg_val |= RT5640_SCLK_SRC_RCCLK;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clock id (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock id (%d)\n", clk_id);
 		return -EINVAL;
 	}
 	snd_soc_component_update_bits(component, RT5640_PWR_ANLG2,
@@ -1869,15 +1880,16 @@ static int rt5640_set_dai_sysclk(struct snd_soc_dai *dai,
 	rt5640->sysclk = freq;
 	rt5640->sysclk_src = clk_id;
 
-	dev_dbg(dai->dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
+	dev_dbg(dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
 	return 0;
 }
 
 static int rt5640_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 	struct rl6231_pll_code pll_code;
 	int ret;
 
@@ -1886,7 +1898,7 @@ static int rt5640_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 		return 0;
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 
 		rt5640->pll_in = 0;
 		rt5640->pll_out = 0;
@@ -1909,17 +1921,17 @@ static int rt5640_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			RT5640_PLL1_SRC_MASK, RT5640_PLL1_SRC_BCLK2);
 		break;
 	default:
-		dev_err(component->dev, "Unknown PLL source %d\n", source);
+		dev_err(dev, "Unknown PLL source %d\n", source);
 		return -EINVAL;
 	}
 
 	ret = rl6231_pll_calc(freq_in, freq_out, &pll_code);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupported input clock %d\n", freq_in);
+		dev_err(dev, "Unsupported input clock %d\n", freq_in);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "bypass=%d m=%d n=%d k=%d\n",
+	dev_dbg(dev, "bypass=%d m=%d n=%d k=%d\n",
 		pll_code.m_bp, (pll_code.m_bp ? 0 : pll_code.m_code),
 		pll_code.n_code, pll_code.k_code);
 
@@ -1939,7 +1951,8 @@ static int rt5640_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 static int rt5640_set_bias_level(struct snd_soc_component *component,
 			enum snd_soc_bias_level level)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -2009,7 +2022,8 @@ static int rt5640_set_bias_level(struct snd_soc_component *component,
 int rt5640_dmic_enable(struct snd_soc_component *component,
 		       bool dmic1_data_pin, bool dmic2_data_pin)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	regmap_update_bits(rt5640->regmap, RT5640_GPIO_CTRL1,
 		RT5640_GP2_PIN_MASK, RT5640_GP2_PIN_DMIC1_SCL);
@@ -2035,7 +2049,8 @@ EXPORT_SYMBOL_GPL(rt5640_dmic_enable);
 int rt5640_sel_asrc_clk_src(struct snd_soc_component *component,
 		unsigned int filter_mask, unsigned int clk_src)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 	unsigned int asrc2_mask = 0;
 	unsigned int asrc2_value = 0;
 
@@ -2105,7 +2120,8 @@ EXPORT_SYMBOL_GPL(rt5640_sel_asrc_clk_src);
 void rt5640_enable_micbias1_for_ovcd(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	snd_soc_dapm_mutex_lock(dapm);
 	snd_soc_dapm_force_enable_pin_unlocked(dapm, "LDO2");
@@ -2121,7 +2137,8 @@ EXPORT_SYMBOL_GPL(rt5640_enable_micbias1_for_ovcd);
 void rt5640_disable_micbias1_for_ovcd(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	snd_soc_dapm_mutex_lock(dapm);
 	if (rt5640->use_platform_clock)
@@ -2135,7 +2152,8 @@ EXPORT_SYMBOL_GPL(rt5640_disable_micbias1_for_ovcd);
 
 static void rt5640_enable_micbias1_ovcd_irq(struct snd_soc_component *component)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	snd_soc_component_update_bits(component, RT5640_IRQ_CTRL2,
 		RT5640_IRQ_MB1_OC_MASK, RT5640_IRQ_MB1_OC_NOR);
@@ -2144,7 +2162,8 @@ static void rt5640_enable_micbias1_ovcd_irq(struct snd_soc_component *component)
 
 static void rt5640_disable_micbias1_ovcd_irq(struct snd_soc_component *component)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	snd_soc_component_update_bits(component, RT5640_IRQ_CTRL2,
 		RT5640_IRQ_MB1_OC_MASK, RT5640_IRQ_MB1_OC_BP);
@@ -2159,17 +2178,19 @@ static void rt5640_clear_micbias1_ovcd(struct snd_soc_component *component)
 
 static bool rt5640_micbias1_ovcd(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int val;
 
 	val = snd_soc_component_read(component, RT5640_IRQ_CTRL2);
-	dev_dbg(component->dev, "irq ctrl2 %#04x\n", val);
+	dev_dbg(dev, "irq ctrl2 %#04x\n", val);
 
 	return (val & RT5640_MB1_OC_STATUS);
 }
 
 static bool rt5640_jack_inserted(struct snd_soc_component *component)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 	int val;
 
 	if (rt5640->jd_gpio)
@@ -2177,7 +2198,7 @@ static bool rt5640_jack_inserted(struct snd_soc_component *component)
 	else
 		val = snd_soc_component_read(component, RT5640_INT_IRQ_ST);
 
-	dev_dbg(component->dev, "irq status %#04x\n", val);
+	dev_dbg(dev, "irq status %#04x\n", val);
 
 	if (rt5640->jd_inverted)
 		return !(val & RT5640_JD_STATUS);
@@ -2196,7 +2217,8 @@ static bool rt5640_jack_inserted(struct snd_soc_component *component)
 
 static void rt5640_start_button_press_work(struct snd_soc_component *component)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	rt5640->poll_count = 0;
 	rt5640->press_count = 0;
@@ -2212,6 +2234,7 @@ static void rt5640_button_press_work(struct work_struct *work)
 	struct rt5640_priv *rt5640 =
 		container_of(work, struct rt5640_priv, bp_work.work);
 	struct snd_soc_component *component = rt5640->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	/* Check the jack was not removed underneath us */
 	if (!rt5640_jack_inserted(component))
@@ -2241,7 +2264,7 @@ static void rt5640_button_press_work(struct work_struct *work)
 	}
 
 	if (rt5640->pressed && !rt5640->press_reported) {
-		dev_dbg(component->dev, "headset button press\n");
+		dev_dbg(dev, "headset button press\n");
 		snd_soc_jack_report(rt5640->jack, SND_JACK_BTN_0,
 				    SND_JACK_BTN_0);
 		rt5640->press_reported = true;
@@ -2249,7 +2272,7 @@ static void rt5640_button_press_work(struct work_struct *work)
 
 	if (rt5640->release_count >= BP_THRESHOLD) {
 		if (rt5640->press_reported) {
-			dev_dbg(component->dev, "headset button release\n");
+			dev_dbg(dev, "headset button release\n");
 			snd_soc_jack_report(rt5640->jack, 0, SND_JACK_BTN_0);
 		}
 		/* Re-enable OVCD IRQ to detect next press */
@@ -2262,6 +2285,7 @@ static void rt5640_button_press_work(struct work_struct *work)
 
 int rt5640_detect_headset(struct snd_soc_component *component, struct gpio_desc *hp_det_gpio)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int i, headset_count = 0, headphone_count = 0;
 
 	/*
@@ -2292,13 +2316,13 @@ int rt5640_detect_headset(struct snd_soc_component *component, struct gpio_desc 
 			 * 2nd ring contact and the ground, so a TRS connector
 			 * without a mic contact and thus plain headphones.
 			 */
-			dev_dbg(component->dev, "jack mic-gnd shorted\n");
+			dev_dbg(dev, "jack mic-gnd shorted\n");
 			headset_count = 0;
 			headphone_count++;
 			if (headphone_count == JACK_DETECT_COUNT)
 				return SND_JACK_HEADPHONE;
 		} else {
-			dev_dbg(component->dev, "jack mic-gnd open\n");
+			dev_dbg(dev, "jack mic-gnd open\n");
 			headphone_count = 0;
 			headset_count++;
 			if (headset_count == JACK_DETECT_COUNT)
@@ -2306,7 +2330,7 @@ int rt5640_detect_headset(struct snd_soc_component *component, struct gpio_desc 
 		}
 	}
 
-	dev_err(component->dev, "Error detecting headset vs headphones, bad contact?, assuming headphones\n");
+	dev_err(dev, "Error detecting headset vs headphones, bad contact?, assuming headphones\n");
 	return SND_JACK_HEADPHONE;
 }
 EXPORT_SYMBOL_GPL(rt5640_detect_headset);
@@ -2316,6 +2340,7 @@ static void rt5640_jack_work(struct work_struct *work)
 	struct rt5640_priv *rt5640 =
 		container_of(work, struct rt5640_priv, jack_work.work);
 	struct snd_soc_component *component = rt5640->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int status;
 
 	if (rt5640->jd_src == RT5640_JD_SRC_HDA_HEADER) {
@@ -2324,8 +2349,7 @@ static void rt5640_jack_work(struct work_struct *work)
 		/* mic jack */
 		val = snd_soc_component_read(component, RT5640_INT_IRQ_ST);
 		hda_mic_plugged = !(val & RT5640_JD_STATUS);
-		dev_dbg(component->dev, "mic jack status %d\n",
-			hda_mic_plugged);
+		dev_dbg(dev, "mic jack status %d\n", hda_mic_plugged);
 
 		snd_soc_component_update_bits(component, RT5640_IRQ_CTRL1,
 			RT5640_JD_P_MASK, !hda_mic_plugged << RT5640_JD_P_SFT);
@@ -2336,8 +2360,7 @@ static void rt5640_jack_work(struct work_struct *work)
 		/* headphone jack */
 		val = snd_soc_component_read(component, RT5640_GCTL2);
 		hda_hp_plugged = !(val & (0x1 << 11));
-		dev_dbg(component->dev, "headphone jack status %d\n",
-			hda_hp_plugged);
+		dev_dbg(dev, "headphone jack status %d\n", hda_hp_plugged);
 
 		snd_soc_component_update_bits(component, RT5640_GCTL2,
 			(0x1 << 10), !hda_hp_plugged << 10);
@@ -2360,7 +2383,7 @@ static void rt5640_jack_work(struct work_struct *work)
 			}
 			snd_soc_jack_report(rt5640->jack, 0,
 					    SND_JACK_HEADSET | SND_JACK_BTN_0);
-			dev_dbg(component->dev, "jack unplugged\n");
+			dev_dbg(dev, "jack unplugged\n");
 		}
 	} else if (!(rt5640->jack->status & SND_JACK_HEADPHONE)) {
 		/* Jack inserted */
@@ -2374,10 +2397,10 @@ static void rt5640_jack_work(struct work_struct *work)
 			/* No more need for overcurrent detect. */
 			rt5640_disable_micbias1_for_ovcd(component);
 		}
-		dev_dbg(component->dev, "detect status %#02x\n", status);
+		dev_dbg(dev, "detect status %#02x\n", status);
 		snd_soc_jack_report(rt5640->jack, status, SND_JACK_HEADSET);
 	} else if (rt5640->ovcd_irq_enabled && rt5640_micbias1_ovcd(component)) {
-		dev_dbg(component->dev, "OVCD IRQ\n");
+		dev_dbg(dev, "OVCD IRQ\n");
 
 		/*
 		 * The ovcd IRQ keeps firing while the button is pressed, so
@@ -2446,7 +2469,8 @@ static void rt5640_disable_irq_and_cancel_work(void *data)
 
 void rt5640_set_ovcd_params(struct snd_soc_component *component)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	snd_soc_component_write(component, RT5640_PR_BASE + RT5640_BIAS_CUR4,
 		0xa800 | rt5640->ovcd_sf);
@@ -2471,7 +2495,8 @@ EXPORT_SYMBOL_GPL(rt5640_set_ovcd_params);
 
 static void rt5640_disable_jack_detect(struct snd_soc_component *component)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	/*
 	 * soc_remove_component() force-disables jack and thus rt5640->jack
@@ -2496,7 +2521,8 @@ static void rt5640_enable_jack_detect(struct snd_soc_component *component,
 				      struct snd_soc_jack *jack,
 				      struct rt5640_set_jack_data *jack_data)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 	int ret;
 
 	/* Select JD-source */
@@ -2560,7 +2586,7 @@ static void rt5640_enable_jack_detect(struct snd_soc_component *component,
 					      IRQF_TRIGGER_FALLING,
 					      "rt5640-jd-gpio", rt5640);
 		if (ret < 0) {
-			dev_warn(component->dev, "Failed to request jd GPIO IRQ %d: %d\n",
+			dev_warn(dev, "Failed to request jd GPIO IRQ %d: %d\n",
 				 rt5640->jd_gpio_irq, ret);
 			rt5640_disable_jack_detect(component);
 			return;
@@ -2575,7 +2601,7 @@ static void rt5640_enable_jack_detect(struct snd_soc_component *component,
 				      IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
 				      "rt5640", rt5640);
 	if (ret < 0) {
-		dev_warn(component->dev, "Failed to request IRQ %d: %d\n", rt5640->irq, ret);
+		dev_warn(dev, "Failed to request IRQ %d: %d\n", rt5640->irq, ret);
 		rt5640_disable_jack_detect(component);
 		return;
 	}
@@ -2594,7 +2620,8 @@ static const struct snd_soc_dapm_route rt5640_hda_jack_dapm_routes[] = {
 static void rt5640_enable_hda_jack_detect(
 	struct snd_soc_component *component, struct snd_soc_jack *jack)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -2628,7 +2655,7 @@ static void rt5640_enable_hda_jack_detect(
 	ret = request_any_context_irq(rt5640->irq, rt5640_irq,
 				      IRQF_TRIGGER_RISING, "rt5640", rt5640);
 	if (ret < 0) {
-		dev_warn(component->dev, "Failed to request IRQ %d: %d\n", rt5640->irq, ret);
+		dev_warn(dev, "Failed to request IRQ %d: %d\n", rt5640->irq, ret);
 		rt5640->jack = NULL;
 		return;
 	}
@@ -2644,7 +2671,8 @@ static void rt5640_enable_hda_jack_detect(
 static int rt5640_set_jack(struct snd_soc_component *component,
 			   struct snd_soc_jack *jack, void *data)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	if (jack) {
 		if (rt5640->jd_src == RT5640_JD_SRC_HDA_HEADER)
@@ -2661,14 +2689,15 @@ static int rt5640_set_jack(struct snd_soc_component *component,
 static int rt5640_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 	u32 dmic1_data_pin = 0;
 	u32 dmic2_data_pin = 0;
 	bool dmic_en = false;
 	u32 val;
 
 	/* Check if MCLK provided */
-	rt5640->mclk = devm_clk_get_optional(component->dev, "mclk");
+	rt5640->mclk = devm_clk_get_optional(dev, "mclk");
 	if (IS_ERR(rt5640->mclk))
 		return PTR_ERR(rt5640->mclk);
 
@@ -2683,7 +2712,7 @@ static int rt5640_probe(struct snd_soc_component *component)
 	switch (snd_soc_component_read(component, RT5640_RESET) & RT5640_ID_MASK) {
 	case RT5640_ID_5640:
 	case RT5640_ID_5642:
-		snd_soc_add_component_controls(component,
+		snd_soc_component_add_controls(component,
 			rt5640_specific_snd_controls,
 			ARRAY_SIZE(rt5640_specific_snd_controls));
 		snd_soc_dapm_new_controls(dapm,
@@ -2702,8 +2731,7 @@ static int rt5640_probe(struct snd_soc_component *component)
 			ARRAY_SIZE(rt5639_specific_dapm_routes));
 		break;
 	default:
-		dev_err(component->dev,
-			"The driver is for RT5639 RT5640 or RT5642 only\n");
+		dev_err(dev, "The driver is for RT5639 RT5640 or RT5642 only\n");
 		return -ENODEV;
 	}
 
@@ -2712,31 +2740,31 @@ static int rt5640_probe(struct snd_soc_component *component)
 	 * rather then relying only on properties set by the firmware.
 	 * Therefor the property parsing MUST be done here, rather then from
 	 * rt5640_i2c_probe(), so that the platform-code can attach extra
-	 * properties before calling snd_soc_register_card().
+	 * properties before calling snd_soc_card_register().
 	 */
-	if (device_property_read_bool(component->dev, "realtek,in1-differential"))
+	if (device_property_read_bool(dev, "realtek,in1-differential"))
 		snd_soc_component_update_bits(component, RT5640_IN1_IN2,
 					      RT5640_IN_DF1, RT5640_IN_DF1);
 
-	if (device_property_read_bool(component->dev, "realtek,in2-differential"))
+	if (device_property_read_bool(dev, "realtek,in2-differential"))
 		snd_soc_component_update_bits(component, RT5640_IN3_IN4,
 					      RT5640_IN_DF2, RT5640_IN_DF2);
 
-	if (device_property_read_bool(component->dev, "realtek,in3-differential"))
+	if (device_property_read_bool(dev, "realtek,in3-differential"))
 		snd_soc_component_update_bits(component, RT5640_IN1_IN2,
 					      RT5640_IN_DF2, RT5640_IN_DF2);
 
-	if (device_property_read_bool(component->dev, "realtek,lout-differential"))
+	if (device_property_read_bool(dev, "realtek,lout-differential"))
 		snd_soc_component_update_bits(component, RT5640_GCTL1,
 					      RT5640_EN_LOUT_DF, RT5640_EN_LOUT_DF);
 
-	if (device_property_read_u32(component->dev, "realtek,dmic1-data-pin",
+	if (device_property_read_u32(dev, "realtek,dmic1-data-pin",
 				     &val) == 0 && val) {
 		dmic1_data_pin = val - 1;
 		dmic_en = true;
 	}
 
-	if (device_property_read_u32(component->dev, "realtek,dmic2-data-pin",
+	if (device_property_read_u32(dev, "realtek,dmic2-data-pin",
 				     &val) == 0 && val) {
 		dmic2_data_pin = val - 1;
 		dmic_en = true;
@@ -2745,16 +2773,15 @@ static int rt5640_probe(struct snd_soc_component *component)
 	if (dmic_en)
 		rt5640_dmic_enable(component, dmic1_data_pin, dmic2_data_pin);
 
-	if (device_property_read_u32(component->dev,
-				     "realtek,jack-detect-source", &val) == 0) {
+	if (device_property_read_u32(dev, "realtek,jack-detect-source", &val) == 0) {
 		if (val <= RT5640_JD_SRC_HDA_HEADER)
 			rt5640->jd_src = val;
 		else
-			dev_warn(component->dev, "Warning: Invalid jack-detect-source value: %d, leaving jack-detect disabled\n",
+			dev_warn(dev, "Warning: Invalid jack-detect-source value: %d, leaving jack-detect disabled\n",
 				 val);
 	}
 
-	if (!device_property_read_bool(component->dev, "realtek,jack-detect-not-inverted"))
+	if (!device_property_read_bool(dev, "realtek,jack-detect-not-inverted"))
 		rt5640->jd_inverted = true;
 
 	/*
@@ -2765,8 +2792,7 @@ static int rt5640_probe(struct snd_soc_component *component)
 	rt5640->ovcd_th = RT5640_MIC1_OVTH_2000UA;
 	rt5640->ovcd_sf = RT5640_MIC_OVCD_SF_0P75;
 
-	if (device_property_read_u32(component->dev,
-			"realtek,over-current-threshold-microamp", &val) == 0) {
+	if (device_property_read_u32(dev, "realtek,over-current-threshold-microamp", &val) == 0) {
 		switch (val) {
 		case 600:
 			rt5640->ovcd_th = RT5640_MIC1_OVTH_600UA;
@@ -2778,17 +2804,16 @@ static int rt5640_probe(struct snd_soc_component *component)
 			rt5640->ovcd_th = RT5640_MIC1_OVTH_2000UA;
 			break;
 		default:
-			dev_warn(component->dev, "Warning: Invalid over-current-threshold-microamp value: %d, defaulting to 2000uA\n",
+			dev_warn(dev, "Warning: Invalid over-current-threshold-microamp value: %d, defaulting to 2000uA\n",
 				 val);
 		}
 	}
 
-	if (device_property_read_u32(component->dev,
-			"realtek,over-current-scale-factor", &val) == 0) {
+	if (device_property_read_u32(dev, "realtek,over-current-scale-factor", &val) == 0) {
 		if (val <= RT5640_OVCD_SF_1P5)
 			rt5640->ovcd_sf = val << RT5640_MIC_OVCD_SF_SFT;
 		else
-			dev_warn(component->dev, "Warning: Invalid over-current-scale-factor value: %d, defaulting to 0.75\n",
+			dev_warn(dev, "Warning: Invalid over-current-scale-factor value: %d, defaulting to 0.75\n",
 				 val);
 	}
 
@@ -2803,7 +2828,8 @@ static void rt5640_remove(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int rt5640_suspend(struct snd_soc_component *component)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	if (rt5640->jack) {
@@ -2825,7 +2851,8 @@ static int rt5640_suspend(struct snd_soc_component *component)
 
 static int rt5640_resume(struct snd_soc_component *component)
 {
-	struct rt5640_priv *rt5640 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5640_priv *rt5640 = dev_get_drvdata(dev);
 
 	if (rt5640->ldo1_en) {
 		gpiod_set_value_cansleep(rt5640->ldo1_en, 1);
@@ -3063,7 +3090,7 @@ static int rt5640_i2c_probe(struct i2c_client *i2c)
 	if (ret)
 		return ret;
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 				      &soc_component_dev_rt5640,
 				      rt5640_dai, ARRAY_SIZE(rt5640_dai));
 }

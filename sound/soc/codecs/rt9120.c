@@ -158,11 +158,12 @@ static const struct snd_soc_dapm_route rt9120_dapm_routes[] = {
 
 static int rt9120_codec_probe(struct snd_soc_component *comp)
 {
-	struct rt9120_data *data = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct rt9120_data *data = dev_get_drvdata(dev);
 
-	snd_soc_component_init_regmap(comp, data->regmap);
+	snd_soc_component_regmap_init(comp, data->regmap);
 
-	pm_runtime_get_sync(comp->dev);
+	pm_runtime_get_sync(dev);
 
 	/* Internal setting */
 	if (data->chip_idx == CHIP_IDX_RT9120S) {
@@ -171,20 +172,24 @@ static int rt9120_codec_probe(struct snd_soc_component *comp)
 	} else
 		snd_soc_component_write(comp, RT9120_REG_INTERNAL0, 0x04);
 
-	pm_runtime_mark_last_busy(comp->dev);
-	pm_runtime_put(comp->dev);
+	pm_runtime_mark_last_busy(dev);
+	pm_runtime_put(dev);
 
 	return 0;
 }
 
 static int rt9120_codec_suspend(struct snd_soc_component *comp)
 {
-	return pm_runtime_force_suspend(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+
+	return pm_runtime_force_suspend(dev);
 }
 
 static int rt9120_codec_resume(struct snd_soc_component *comp)
 {
-	return pm_runtime_force_resume(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+
+	return pm_runtime_force_resume(dev);
 }
 
 static const struct snd_soc_component_driver rt9120_component_driver = {
@@ -202,7 +207,8 @@ static const struct snd_soc_component_driver rt9120_component_driver = {
 
 static int rt9120_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *comp = dai->component;
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
 	unsigned int format;
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
@@ -222,7 +228,7 @@ static int rt9120_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		format = RT9120_CFG_FMT_DSPB;
 		break;
 	default:
-		dev_err(dai->dev, "Unknown dai format\n");
+		dev_err(dev, "Unknown dai format\n");
 		return -EINVAL;
 	}
 
@@ -236,7 +242,8 @@ static int rt9120_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *param,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *comp = dai->component;
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
 	unsigned int param_width, param_slot_width, auto_sync;
 	int width, fs;
 
@@ -252,7 +259,7 @@ static int rt9120_hw_params(struct snd_pcm_substream *substream,
 		param_width = RT9120_CFG_AUDBIT_24;
 		break;
 	default:
-		dev_err(dai->dev, "Unsupported data width [%d]\n", width);
+		dev_err(dev, "Unsupported data width [%d]\n", width);
 		return -EINVAL;
 	}
 
@@ -270,7 +277,7 @@ static int rt9120_hw_params(struct snd_pcm_substream *substream,
 		param_slot_width = RT9120_CFG_WORDLEN_32;
 		break;
 	default:
-		dev_err(dai->dev, "Unsupported slot width [%d]\n", width);
+		dev_err(dev, "Unsupported slot width [%d]\n", width);
 		return -EINVAL;
 	}
 
@@ -588,7 +595,7 @@ static int rt9120_probe(struct i2c_client *i2c)
 	pm_runtime_mark_last_busy(&i2c->dev);
 	pm_runtime_enable(&i2c->dev);
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 					       &rt9120_component_driver,
 					       &rt9120_dai, 1);
 }

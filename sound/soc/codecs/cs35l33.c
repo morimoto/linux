@@ -196,7 +196,8 @@ static int cs35l33_spkrdrv_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l33_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l33_private *priv = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -205,15 +206,15 @@ static int cs35l33_spkrdrv_event(struct snd_soc_dapm_widget *w,
 			priv->amp_cal = true;
 			regmap_update_bits(priv->regmap, CS35L33_CLASSD_CTL,
 				    CS35L33_AMP_CAL, 0);
-			dev_dbg(component->dev, "Amp calibration done\n");
+			dev_dbg(dev, "Amp calibration done\n");
 		}
-		dev_dbg(component->dev, "Amp turned on\n");
+		dev_dbg(dev, "Amp turned on\n");
 		break;
 	case SND_SOC_DAPM_POST_PMD:
-		dev_dbg(component->dev, "Amp turned off\n");
+		dev_dbg(dev, "Amp turned off\n");
 		break;
 	default:
-		dev_err(component->dev, "Invalid event = 0x%x\n", event);
+		dev_err(dev, "Invalid event = 0x%x\n", event);
 		break;
 	}
 
@@ -224,7 +225,8 @@ static int cs35l33_sdin_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l33_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l33_private *priv = dev_get_drvdata(dev);
 	unsigned int val;
 
 	switch (event) {
@@ -234,14 +236,14 @@ static int cs35l33_sdin_event(struct snd_soc_dapm_widget *w,
 		val = priv->is_tdm_mode ? 0 : CS35L33_PDN_TDM;
 		regmap_update_bits(priv->regmap, CS35L33_PWRCTL2,
 				    CS35L33_PDN_TDM, val);
-		dev_dbg(component->dev, "BST turned on\n");
+		dev_dbg(dev, "BST turned on\n");
 		break;
 	case SND_SOC_DAPM_POST_PMU:
-		dev_dbg(component->dev, "SDIN turned on\n");
+		dev_dbg(dev, "SDIN turned on\n");
 		if (!priv->amp_cal) {
 			regmap_update_bits(priv->regmap, CS35L33_CLASSD_CTL,
 				    CS35L33_AMP_CAL, CS35L33_AMP_CAL);
-			dev_dbg(component->dev, "Amp calibration started\n");
+			dev_dbg(dev, "Amp calibration started\n");
 			usleep_range(10000, 11000);
 		}
 		break;
@@ -251,10 +253,10 @@ static int cs35l33_sdin_event(struct snd_soc_dapm_widget *w,
 		usleep_range(4000, 4100);
 		regmap_update_bits(priv->regmap, CS35L33_PWRCTL1,
 				    CS35L33_PDN_BST, CS35L33_PDN_BST);
-		dev_dbg(component->dev, "BST and SDIN turned off\n");
+		dev_dbg(dev, "BST and SDIN turned off\n");
 		break;
 	default:
-		dev_err(component->dev, "Invalid event = 0x%x\n", event);
+		dev_err(dev, "Invalid event = 0x%x\n", event);
 
 	}
 
@@ -265,7 +267,8 @@ static int cs35l33_sdout_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l33_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l33_private *priv = dev_get_drvdata(dev);
 	unsigned int mask = CS35L33_SDOUT_3ST_I2S | CS35L33_PDN_TDM;
 	unsigned int mask2 = CS35L33_SDOUT_3ST_TDM;
 	unsigned int val, val2;
@@ -283,15 +286,15 @@ static int cs35l33_sdout_event(struct snd_soc_dapm_widget *w,
 			/* set sdout_3st_tdm */
 			val2 = CS35L33_SDOUT_3ST_TDM;
 		}
-		dev_dbg(component->dev, "SDOUT turned on\n");
+		dev_dbg(dev, "SDOUT turned on\n");
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		val = CS35L33_SDOUT_3ST_I2S | CS35L33_PDN_TDM;
 		val2 = CS35L33_SDOUT_3ST_TDM;
-		dev_dbg(component->dev, "SDOUT turned off\n");
+		dev_dbg(dev, "SDOUT turned off\n");
 		break;
 	default:
-		dev_err(component->dev, "Invalid event = 0x%x\n", event);
+		dev_err(dev, "Invalid event = 0x%x\n", event);
 		return 0;
 	}
 
@@ -358,7 +361,8 @@ static int cs35l33_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
 	unsigned int val;
-	struct cs35l33_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l33_private *priv = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
@@ -435,19 +439,20 @@ static int cs35l33_get_mclk_coeff(int mclk, int srate)
 
 static int cs35l33_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs35l33_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l33_private *priv = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
 		regmap_update_bits(priv->regmap, CS35L33_ADSP_CTL,
 			CS35L33_MS_MASK, CS35L33_MS_MASK);
-		dev_dbg(component->dev, "Audio port in master mode\n");
+		dev_dbg(dev, "Audio port in master mode\n");
 		break;
 	case SND_SOC_DAIFMT_CBC_CFC:
 		regmap_update_bits(priv->regmap, CS35L33_ADSP_CTL,
 			CS35L33_MS_MASK, 0);
-		dev_dbg(component->dev, "Audio port in slave mode\n");
+		dev_dbg(dev, "Audio port in slave mode\n");
 		break;
 	default:
 		return -EINVAL;
@@ -460,11 +465,11 @@ static int cs35l33_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 		 * closely, it is dsp-a with fsync shifted left by half bclk
 		 */
 		priv->is_tdm_mode = true;
-		dev_dbg(component->dev, "Audio port in TDM mode\n");
+		dev_dbg(dev, "Audio port in TDM mode\n");
 		break;
 	case SND_SOC_DAIFMT_I2S:
 		priv->is_tdm_mode = false;
-		dev_dbg(component->dev, "Audio port in I2S mode\n");
+		dev_dbg(dev, "Audio port in I2S mode\n");
 		break;
 	default:
 		return -EINVAL;
@@ -477,8 +482,9 @@ static int cs35l33_pcm_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs35l33_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l33_private *priv = dev_get_drvdata(dev);
 	int sample_size = params_width(params);
 	int coeff = cs35l33_get_mclk_coeff(priv->mclk_int, params_rate(params));
 
@@ -499,7 +505,7 @@ static int cs35l33_pcm_hw_params(struct snd_pcm_substream *substream,
 			sample_size << CS35L33_AUDIN_RX_DEPTH_SHIFT);
 	}
 
-	dev_dbg(component->dev, "sample rate=%d, bits per sample=%d\n",
+	dev_dbg(dev, "sample rate=%d, bits per sample=%d\n",
 		params_rate(params), params_width(params));
 
 	return 0;
@@ -526,8 +532,9 @@ static int cs35l33_pcm_startup(struct snd_pcm_substream *substream,
 
 static int cs35l33_set_tristate(struct snd_soc_dai *dai, int tristate)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs35l33_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l33_private *priv = dev_get_drvdata(dev);
 
 	if (tristate) {
 		regmap_update_bits(priv->regmap, CS35L33_PWRCTL2,
@@ -547,9 +554,10 @@ static int cs35l33_set_tristate(struct snd_soc_dai *dai, int tristate)
 static int cs35l33_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct cs35l33_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l33_private *priv = dev_get_drvdata(dev);
 	unsigned int reg, bit_pos, i;
 	int slot, slot_num;
 
@@ -561,7 +569,7 @@ static int cs35l33_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	if (slot >= 0) {
 		regmap_update_bits(priv->regmap, CS35L33_RX_AUD,
 			CS35L33_X_LOC, slot);
-		dev_dbg(component->dev, "Audio starts from slots %d", slot);
+		dev_dbg(dev, "Audio starts from slots %d", slot);
 	}
 
 	/*
@@ -587,7 +595,7 @@ static int cs35l33_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 		if (slot_num == 0) {
 			regmap_update_bits(priv->regmap, CS35L33_TX_VMON,
 				CS35L33_X_STATE | CS35L33_X_LOC, slot);
-			dev_dbg(component->dev, "VMON enabled in slots %d-%d",
+			dev_dbg(dev, "VMON enabled in slots %d-%d",
 				slot, slot + 1);
 		}
 
@@ -595,7 +603,7 @@ static int cs35l33_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 		if (slot_num == 3) {
 			regmap_update_bits(priv->regmap, CS35L33_TX_IMON,
 				CS35L33_X_STATE | CS35L33_X_LOC, slot);
-			dev_dbg(component->dev, "IMON enabled in slots %d-%d",
+			dev_dbg(dev, "IMON enabled in slots %d-%d",
 				slot, slot + 1);
 		}
 
@@ -605,7 +613,7 @@ static int cs35l33_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				CS35L33_X_STATE | CS35L33_X_LOC, slot);
 			snd_soc_dapm_add_routes(dapm,
 				&cs35l33_vp_vbst_mon_route[0], 2);
-			dev_dbg(component->dev, "VPMON enabled in slots %d", slot);
+			dev_dbg(dev, "VPMON enabled in slots %d", slot);
 		}
 
 		/* configure VBSTMON_TX_LOC */
@@ -614,8 +622,7 @@ static int cs35l33_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				CS35L33_X_STATE | CS35L33_X_LOC, slot);
 			snd_soc_dapm_add_routes(dapm,
 				&cs35l33_vp_vbst_mon_route[2], 2);
-			dev_dbg(component->dev,
-				"VBSTMON enabled in slots %d", slot);
+			dev_dbg(dev, "VBSTMON enabled in slots %d", slot);
 		}
 
 		/* Enable the relevant tx slot */
@@ -635,7 +642,8 @@ static int cs35l33_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 static int cs35l33_component_set_sysclk(struct snd_soc_component *component,
 		int clk_id, int source, unsigned int freq, int dir)
 {
-	struct cs35l33_private *cs35l33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l33_private *cs35l33 = dev_get_drvdata(dev);
 
 	switch (freq) {
 	case CS35L33_MCLK_5644:
@@ -657,7 +665,7 @@ static int cs35l33_component_set_sysclk(struct snd_soc_component *component,
 		return -EINVAL;
 	}
 
-	dev_dbg(component->dev, "external mclk freq=%d, internal mclk freq=%d\n",
+	dev_dbg(dev, "external mclk freq=%d, internal mclk freq=%d\n",
 		freq, cs35l33->mclk_int);
 
 	return 0;
@@ -703,7 +711,8 @@ static int cs35l33_set_hg_data(struct snd_soc_component *component,
 {
 	struct cs35l33_hg *hg_config = &pdata->hg_config;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct cs35l33_private *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l33_private *priv = dev_get_drvdata(dev);
 
 	if (hg_config->enable_hg_algo) {
 		regmap_update_bits(priv->regmap, CS35L33_HG_MEMLDO_CTL,
@@ -749,18 +758,19 @@ static int cs35l33_set_hg_data(struct snd_soc_component *component,
 
 static int cs35l33_set_bst_ipk(struct snd_soc_component *component, unsigned int bst)
 {
-	struct cs35l33_private *cs35l33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l33_private *cs35l33 = dev_get_drvdata(dev);
 	int ret = 0, steps = 0;
 
 	/* Boost current in uA */
 	if (bst > 3600000 || bst < 1850000) {
-		dev_err(component->dev, "Invalid boost current %d\n", bst);
+		dev_err(dev, "Invalid boost current %d\n", bst);
 		ret = -EINVAL;
 		goto err;
 	}
 
 	if (bst % 15625) {
-		dev_err(component->dev, "Current not a multiple of 15625uA (%d)\n",
+		dev_err(dev, "Current not a multiple of 15625uA (%d)\n",
 			bst);
 		ret = -EINVAL;
 		goto err;
@@ -780,10 +790,11 @@ err:
 
 static int cs35l33_probe(struct snd_soc_component *component)
 {
-	struct cs35l33_private *cs35l33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l33_private *cs35l33 = dev_get_drvdata(dev);
 
 	cs35l33->component = component;
-	pm_runtime_get_sync(component->dev);
+	pm_runtime_get_sync(dev);
 
 	regmap_update_bits(cs35l33->regmap, CS35L33_PROTECT_CTL,
 		CS35L33_ALIVE_WD_DIS, 0x8);
@@ -826,7 +837,7 @@ static int cs35l33_probe(struct snd_soc_component *component)
 		CS35L33_M_OTE | CS35L33_M_OTW | CS35L33_M_AMP_SHORT |
 		CS35L33_M_CAL_ERR, 0);
 
-	pm_runtime_put_sync(component->dev);
+	pm_runtime_put_sync(dev);
 
 	return 0;
 }
@@ -971,6 +982,7 @@ static irqreturn_t cs35l33_irq_thread(int irq, void *data)
 {
 	struct cs35l33_private *cs35l33 = data;
 	struct snd_soc_component *component = cs35l33->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int sticky_val1, sticky_val2, current_val, mask1, mask2;
 
 	regmap_read(cs35l33->regmap, CS35L33_INT_STATUS_2,
@@ -992,10 +1004,9 @@ static irqreturn_t cs35l33_irq_thread(int irq, void *data)
 	/* handle the interrupts */
 
 	if (sticky_val1 & CS35L33_AMP_SHORT) {
-		dev_crit(component->dev, "Amp short error\n");
+		dev_crit(dev, "Amp short error\n");
 		if (!(current_val & CS35L33_AMP_SHORT)) {
-			dev_dbg(component->dev,
-				"Amp short error release\n");
+			dev_dbg(dev, "Amp short error release\n");
 			regmap_update_bits(cs35l33->regmap,
 				CS35L33_AMP_CTL,
 				CS35L33_AMP_SHORT_RLS, 0);
@@ -1010,13 +1021,13 @@ static irqreturn_t cs35l33_irq_thread(int irq, void *data)
 	}
 
 	if (sticky_val1 & CS35L33_CAL_ERR) {
-		dev_err(component->dev, "Cal error\n");
+		dev_err(dev, "Cal error\n");
 
 		/* redo the calibration in next power up */
 		cs35l33->amp_cal = false;
 
 		if (!(current_val & CS35L33_CAL_ERR)) {
-			dev_dbg(component->dev, "Cal error release\n");
+			dev_dbg(dev, "Cal error release\n");
 			regmap_update_bits(cs35l33->regmap,
 				CS35L33_AMP_CTL, CS35L33_CAL_ERR_RLS,
 				0);
@@ -1030,10 +1041,9 @@ static irqreturn_t cs35l33_irq_thread(int irq, void *data)
 	}
 
 	if (sticky_val1 & CS35L33_OTE) {
-		dev_crit(component->dev, "Over temperature error\n");
+		dev_crit(dev, "Over temperature error\n");
 		if (!(current_val & CS35L33_OTE)) {
-			dev_dbg(component->dev,
-				"Over temperature error release\n");
+			dev_dbg(dev, "Over temperature error release\n");
 			regmap_update_bits(cs35l33->regmap,
 				CS35L33_AMP_CTL, CS35L33_OTE_RLS, 0);
 			regmap_update_bits(cs35l33->regmap,
@@ -1045,10 +1055,9 @@ static irqreturn_t cs35l33_irq_thread(int irq, void *data)
 	}
 
 	if (sticky_val1 & CS35L33_OTW) {
-		dev_err(component->dev, "Over temperature warning\n");
+		dev_err(dev, "Over temperature warning\n");
 		if (!(current_val & CS35L33_OTW)) {
-			dev_dbg(component->dev,
-				"Over temperature warning release\n");
+			dev_dbg(dev, "Over temperature warning release\n");
 			regmap_update_bits(cs35l33->regmap,
 				CS35L33_AMP_CTL, CS35L33_OTW_RLS, 0);
 			regmap_update_bits(cs35l33->regmap,
@@ -1059,22 +1068,19 @@ static irqreturn_t cs35l33_irq_thread(int irq, void *data)
 		}
 	}
 	if (CS35L33_ALIVE_ERR & sticky_val1)
-		dev_err(component->dev, "ERROR: ADSPCLK Interrupt\n");
+		dev_err(dev, "ERROR: ADSPCLK Interrupt\n");
 
 	if (CS35L33_MCLK_ERR & sticky_val1)
-		dev_err(component->dev, "ERROR: MCLK Interrupt\n");
+		dev_err(dev, "ERROR: MCLK Interrupt\n");
 
 	if (CS35L33_VMON_OVFL & sticky_val2)
-		dev_err(component->dev,
-			"ERROR: VMON Overflow Interrupt\n");
+		dev_err(dev, "ERROR: VMON Overflow Interrupt\n");
 
 	if (CS35L33_IMON_OVFL & sticky_val2)
-		dev_err(component->dev,
-			"ERROR: IMON Overflow Interrupt\n");
+		dev_err(dev, "ERROR: IMON Overflow Interrupt\n");
 
 	if (CS35L33_VPMON_OVFL & sticky_val2)
-		dev_err(component->dev,
-			"ERROR: VPMON Overflow Interrupt\n");
+		dev_err(dev, "ERROR: VPMON Overflow Interrupt\n");
 
 	return IRQ_HANDLED;
 }
@@ -1241,7 +1247,7 @@ static int cs35l33_i2c_probe(struct i2c_client *i2c_client)
 	pm_runtime_set_active(&i2c_client->dev);
 	pm_runtime_enable(&i2c_client->dev);
 
-	ret = devm_snd_soc_register_component(&i2c_client->dev,
+	ret = devm_snd_soc_component_register(&i2c_client->dev,
 			&soc_component_dev_cs35l33, &cs35l33_dai, 1);
 	if (ret < 0) {
 		dev_err(&i2c_client->dev, "%s: Register component failed\n",

@@ -2467,9 +2467,10 @@ static const struct media_entity_operations tda1997x_media_ops = {
 static int tda1997x_pcm_startup(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct v4l2_subdev *sd = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct v4l2_subdev *sd = dev_get_drvdata(dev);
 	struct tda1997x_state *state = to_state(sd);
-	struct snd_soc_component *component = dai->component;
 	struct snd_pcm_runtime *rtd = substream->runtime;
 	int rate, err;
 
@@ -2477,11 +2478,11 @@ static int tda1997x_pcm_startup(struct snd_pcm_substream *substream,
 	err = snd_pcm_hw_constraint_minmax(rtd, SNDRV_PCM_HW_PARAM_RATE,
 					   rate, rate);
 	if (err < 0) {
-		dev_err(component->dev, "failed to constrain samplerate to %dHz\n",
+		dev_err(dev, "failed to constrain samplerate to %dHz\n",
 			rate);
 		return err;
 	}
-	dev_info(component->dev, "set samplerate constraint to %dHz\n", rate);
+	dev_info(dev, "set samplerate constraint to %dHz\n", rate);
 
 	return 0;
 }
@@ -2770,7 +2771,7 @@ static int tda1997x_probe(struct i2c_client *client)
 		else
 			formats = SNDRV_PCM_FMTBIT_S16_LE;
 		tda1997x_audio_dai.capture.formats = formats;
-		ret = devm_snd_soc_register_component(&state->client->dev,
+		ret = devm_snd_soc_component_register(&state->client->dev,
 					     &tda1997x_codec_driver,
 					     &tda1997x_audio_dai, 1);
 		if (ret) {

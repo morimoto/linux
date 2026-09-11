@@ -72,9 +72,10 @@ static int tas6424_dac_event(struct snd_soc_dapm_widget *w,
 			     struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct tas6424_data *tas6424 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas6424_data *tas6424 = dev_get_drvdata(dev);
 
-	dev_dbg(component->dev, "%s() event=0x%0x\n", __func__, event);
+	dev_dbg(dev, "%s() event=0x%0x\n", __func__, event);
 
 	if (event & SND_SOC_DAPM_POST_PMU) {
 		/* Observe codec shutdown-to-active time */
@@ -110,12 +111,13 @@ static int tas6424_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int rate = params_rate(params);
 	unsigned int width = params_width(params);
 	u8 sap_ctrl = 0;
 
-	dev_dbg(component->dev, "%s() rate=%u width=%u\n", __func__, rate, width);
+	dev_dbg(dev, "%s() rate=%u width=%u\n", __func__, rate, width);
 
 	switch (rate) {
 	case 44100:
@@ -128,7 +130,7 @@ static int tas6424_hw_params(struct snd_pcm_substream *substream,
 		sap_ctrl |= TAS6424_SAP_RATE_96000;
 		break;
 	default:
-		dev_err(component->dev, "unsupported sample rate: %u\n", rate);
+		dev_err(dev, "unsupported sample rate: %u\n", rate);
 		return -EINVAL;
 	}
 
@@ -139,7 +141,7 @@ static int tas6424_hw_params(struct snd_pcm_substream *substream,
 	case 24:
 		break;
 	default:
-		dev_err(component->dev, "unsupported sample width: %u\n", width);
+		dev_err(dev, "unsupported sample width: %u\n", width);
 		return -EINVAL;
 	}
 
@@ -153,17 +155,18 @@ static int tas6424_hw_params(struct snd_pcm_substream *substream,
 
 static int tas6424_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u8 serial_format = 0;
 
-	dev_dbg(component->dev, "%s() fmt=0x%0x\n", __func__, fmt);
+	dev_dbg(dev, "%s() fmt=0x%0x\n", __func__, fmt);
 
 	/* clock masters */
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBC_CFC:
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI clocking\n");
+		dev_err(dev, "Invalid DAI clocking\n");
 		return -EINVAL;
 	}
 
@@ -172,7 +175,7 @@ static int tas6424_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	case SND_SOC_DAIFMT_NB_NF:
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI clock signal polarity\n");
+		dev_err(dev, "Invalid DAI clock signal polarity\n");
 		return -EINVAL;
 	}
 
@@ -196,7 +199,7 @@ static int tas6424_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		serial_format |= TAS6424_SAP_LEFTJ;
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI interface format\n");
+		dev_err(dev, "Invalid DAI interface format\n");
 		return -EINVAL;
 	}
 
@@ -210,11 +213,12 @@ static int tas6424_set_dai_tdm_slot(struct snd_soc_dai *dai,
 				    unsigned int tx_mask, unsigned int rx_mask,
 				    int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int first_slot, last_slot;
 	bool sap_tdm_slot_last;
 
-	dev_dbg(component->dev, "%s() tx_mask=%d rx_mask=%d\n", __func__,
+	dev_dbg(dev, "%s() tx_mask=%d rx_mask=%d\n", __func__,
 		tx_mask, rx_mask);
 
 	if (!tx_mask || !rx_mask)
@@ -229,7 +233,7 @@ static int tas6424_set_dai_tdm_slot(struct snd_soc_dai *dai,
 	last_slot = __fls(rx_mask);
 
 	if (last_slot - first_slot != 4) {
-		dev_err(component->dev, "tdm mask must cover 4 contiguous slots\n");
+		dev_err(dev, "tdm mask must cover 4 contiguous slots\n");
 		return -EINVAL;
 	}
 
@@ -241,7 +245,7 @@ static int tas6424_set_dai_tdm_slot(struct snd_soc_dai *dai,
 		sap_tdm_slot_last = true;
 		break;
 	default:
-		dev_err(component->dev, "tdm mask must start at slot 0 or 4\n");
+		dev_err(dev, "tdm mask must start at slot 0 or 4\n");
 		return -EINVAL;
 	}
 
@@ -253,11 +257,12 @@ static int tas6424_set_dai_tdm_slot(struct snd_soc_dai *dai,
 
 static int tas6424_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas6424_data *tas6424 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas6424_data *tas6424 = dev_get_drvdata(dev);
 	unsigned int val;
 
-	dev_dbg(component->dev, "%s() mute=%d\n", __func__, mute);
+	dev_dbg(dev, "%s() mute=%d\n", __func__, mute);
 
 	if (tas6424->mute_gpio) {
 		gpiod_set_value_cansleep(tas6424->mute_gpio, mute);
@@ -276,7 +281,8 @@ static int tas6424_mute(struct snd_soc_dai *dai, int mute, int direction)
 
 static int tas6424_power_off(struct snd_soc_component *component)
 {
-	struct tas6424_data *tas6424 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas6424_data *tas6424 = dev_get_drvdata(dev);
 	int ret;
 
 	snd_soc_component_write(component, TAS6424_CH_STATE_CTRL, TAS6424_ALL_STATE_HIZ);
@@ -287,7 +293,7 @@ static int tas6424_power_off(struct snd_soc_component *component)
 	ret = regulator_bulk_disable(ARRAY_SIZE(tas6424->supplies),
 				     tas6424->supplies);
 	if (ret < 0) {
-		dev_err(component->dev, "failed to disable supplies: %d\n", ret);
+		dev_err(dev, "failed to disable supplies: %d\n", ret);
 		return ret;
 	}
 
@@ -296,7 +302,8 @@ static int tas6424_power_off(struct snd_soc_component *component)
 
 static int tas6424_power_on(struct snd_soc_component *component)
 {
-	struct tas6424_data *tas6424 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas6424_data *tas6424 = dev_get_drvdata(dev);
 	int ret;
 	u8 chan_states;
 	int no_auto_diags = 0;
@@ -308,7 +315,7 @@ static int tas6424_power_on(struct snd_soc_component *component)
 	ret = regulator_bulk_enable(ARRAY_SIZE(tas6424->supplies),
 				    tas6424->supplies);
 	if (ret < 0) {
-		dev_err(component->dev, "failed to enable supplies: %d\n", ret);
+		dev_err(dev, "failed to enable supplies: %d\n", ret);
 		return ret;
 	}
 
@@ -316,7 +323,7 @@ static int tas6424_power_on(struct snd_soc_component *component)
 
 	ret = regcache_sync(tas6424->regmap);
 	if (ret < 0) {
-		dev_err(component->dev, "failed to sync regcache: %d\n", ret);
+		dev_err(dev, "failed to sync regcache: %d\n", ret);
 		return ret;
 	}
 
@@ -346,9 +353,10 @@ static int tas6424_power_on(struct snd_soc_component *component)
 static int tas6424_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
-	dev_dbg(component->dev, "%s() level=%d\n", __func__, level);
+	dev_dbg(dev, "%s() level=%d\n", __func__, level);
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
@@ -770,7 +778,7 @@ static int tas6424_i2c_probe(struct i2c_client *client)
 
 	INIT_DELAYED_WORK(&tas6424->fault_check_work, tas6424_fault_check_work);
 
-	ret = devm_snd_soc_register_component(dev, &soc_codec_dev_tas6424,
+	ret = devm_snd_soc_component_register(dev, &soc_codec_dev_tas6424,
 				     tas6424_dai, ARRAY_SIZE(tas6424_dai));
 	if (ret < 0) {
 		dev_err(dev, "unable to register codec: %d\n", ret);

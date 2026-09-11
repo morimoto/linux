@@ -57,13 +57,15 @@ static int bells_set_bias_level(struct snd_soc_card *card,
 	struct snd_soc_component *component;
 	struct bells_drvdata *bells = snd_soc_card_to_priv(card);
 	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct device *codec_dev;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[DAI_DSP_CODEC]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[DAI_DSP_CODEC]);
 	codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	component = codec_dai->component;
+	component = snd_soc_dai_to_component(codec_dai);
+	codec_dev = snd_soc_component_to_dev(component);
 
-	if (snd_soc_dapm_to_dev(dapm) != codec_dai->dev)
+	if (snd_soc_dapm_to_dev(dapm) != codec_dev)
 		return 0;
 
 	switch (level) {
@@ -104,13 +106,15 @@ static int bells_set_bias_level_post(struct snd_soc_card *card,
 	struct snd_soc_component *component;
 	struct bells_drvdata *bells = snd_soc_card_to_priv(card);
 	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct device *codec_dev;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[DAI_DSP_CODEC]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[DAI_DSP_CODEC]);
 	codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	component = codec_dai->component;
+	component = snd_soc_dai_to_component(codec_dai);
+	codec_dev = snd_soc_component_to_dev(component);
 
-	if (snd_soc_dapm_to_dev(dapm) != codec_dai->dev)
+	if (snd_soc_dapm_to_dev(dapm) != codec_dev)
 		return 0;
 
 	switch (level) {
@@ -144,82 +148,95 @@ static int bells_late_probe(struct snd_soc_card *card)
 	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_component *wm0010;
-	struct snd_soc_component *component;
 	struct snd_soc_dai *aif1_dai;
 	struct snd_soc_dai *aif2_dai;
 	struct snd_soc_dai *aif3_dai;
 	struct snd_soc_dai *wm9081_dai;
+	struct snd_soc_component *aif1_component;
+	struct snd_soc_component *aif2_component;
+	struct snd_soc_component *wm9081_component;
+	struct device *aif1_dev;
+	struct device *aif2_dev;
+	struct device *wm9081_dev;
+	struct device *wm0010_dev;
+	int num_rtd = snd_soc_card_to_num_rtd(card);
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[DAI_AP_DSP]);
-	wm0010 = snd_soc_rtd_to_codec(rtd, 0)->component;
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[DAI_AP_DSP]);
+	wm0010 = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
+	wm0010_dev = snd_soc_component_to_dev(wm0010);
 
-	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[DAI_DSP_CODEC]);
-	component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[DAI_DSP_CODEC]);
 	aif1_dai = snd_soc_rtd_to_codec(rtd, 0);
+	aif1_component = snd_soc_dai_to_component(aif1_dai);
+	aif1_dev = snd_soc_component_to_dev(aif1_component);
 
-	ret = snd_soc_component_set_sysclk(component, ARIZONA_CLK_SYSCLK,
+	ret = snd_soc_component_set_sysclk(aif1_component, ARIZONA_CLK_SYSCLK,
 				       ARIZONA_CLK_SRC_FLL1,
 				       bells->sysclk_rate,
 				       SND_SOC_CLOCK_IN);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to set SYSCLK: %d\n", ret);
+		dev_err(aif1_dev, "Failed to set SYSCLK: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_component_set_sysclk(wm0010, 0, 0, SYS_MCLK_RATE, 0);
 	if (ret != 0) {
-		dev_err(wm0010->dev, "Failed to set WM0010 clock: %d\n", ret);
+		dev_err(wm0010_dev, "Failed to set WM0010 clock: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(aif1_dai, ARIZONA_CLK_SYSCLK, 0, 0);
 	if (ret != 0)
-		dev_err(aif1_dai->dev, "Failed to set AIF1 clock: %d\n", ret);
+		dev_err(aif1_dev, "Failed to set AIF1 clock: %d\n", ret);
 
-	ret = snd_soc_component_set_sysclk(component, ARIZONA_CLK_OPCLK, 0,
+	ret = snd_soc_component_set_sysclk(aif1_component, ARIZONA_CLK_OPCLK, 0,
 				       SYS_MCLK_RATE, SND_SOC_CLOCK_OUT);
 	if (ret != 0)
-		dev_err(component->dev, "Failed to set OPCLK: %d\n", ret);
+		dev_err(aif1_dev, "Failed to set OPCLK: %d\n", ret);
 
-	if (card->num_rtd == DAI_CODEC_CP)
+	if (num_rtd == DAI_CODEC_CP)
 		return 0;
 
-	ret = snd_soc_component_set_sysclk(component, ARIZONA_CLK_ASYNCCLK,
+	ret = snd_soc_component_set_sysclk(aif1_component, ARIZONA_CLK_ASYNCCLK,
 				       ARIZONA_CLK_SRC_FLL2,
 				       bells->asyncclk_rate,
 				       SND_SOC_CLOCK_IN);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to set ASYNCCLK: %d\n", ret);
+		dev_err(aif1_dev, "Failed to set ASYNCCLK: %d\n", ret);
 		return ret;
 	}
 
-	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[DAI_CODEC_CP]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[DAI_CODEC_CP]);
 	aif2_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	aif2_component = snd_soc_dai_to_component(aif2_dai);
+	aif2_dev = snd_soc_component_to_dev(aif2_component);
 
 	ret = snd_soc_dai_set_sysclk(aif2_dai, ARIZONA_CLK_ASYNCCLK, 0, 0);
 	if (ret != 0) {
-		dev_err(aif2_dai->dev, "Failed to set AIF2 clock: %d\n", ret);
+		dev_err(aif2_dev, "Failed to set AIF2 clock: %d\n", ret);
 		return ret;
 	}
 
-	if (card->num_rtd == DAI_CODEC_SUB)
+	if (num_rtd == DAI_CODEC_SUB)
 		return 0;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[DAI_CODEC_SUB]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[DAI_CODEC_SUB]);
 	aif3_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	wm9081_dai = snd_soc_rtd_to_codec(rtd, 0);
+	wm9081_component = snd_soc_dai_to_component(wm9081_dai);
+	wm9081_dev = snd_soc_component_to_dev(wm9081_component);
 
 	ret = snd_soc_dai_set_sysclk(aif3_dai, ARIZONA_CLK_SYSCLK, 0, 0);
 	if (ret != 0) {
-		dev_err(aif1_dai->dev, "Failed to set AIF1 clock: %d\n", ret);
+		dev_err(aif1_dev, "Failed to set AIF1 clock: %d\n", ret);
 		return ret;
 	}
 
-	ret = snd_soc_component_set_sysclk(wm9081_dai->component, WM9081_SYSCLK_MCLK,
+	ret = snd_soc_component_set_sysclk(wm9081_component, WM9081_SYSCLK_MCLK,
 				       0, SYS_MCLK_RATE, 0);
 	if (ret != 0) {
-		dev_err(wm9081_dai->dev, "Failed to set MCLK: %d\n", ret);
+		dev_err(wm9081_dev, "Failed to set MCLK: %d\n", ret);
 		return ret;
 	}
 

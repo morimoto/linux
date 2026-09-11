@@ -42,7 +42,8 @@
 static int wm8958_dsp2_fw(struct snd_soc_component *component, const char *name,
 			  const struct firmware *fw, bool check)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	u64 data64;
 	u32 data32;
 	const u8 *data;
@@ -55,14 +56,14 @@ static int wm8958_dsp2_fw(struct snd_soc_component *component, const char *name,
 		return 0;
 
 	if (fw->size < 32) {
-		dev_err(component->dev, "%s: firmware too short (%zd bytes)\n",
+		dev_err(dev, "%s: firmware too short (%zd bytes)\n",
 			name, fw->size);
 		goto err;
 	}
 
 	if (memcmp(fw->data, "WMFW", 4) != 0) {
 		data32 = get_unaligned_be32(fw->data);
-		dev_err(component->dev, "%s: firmware has bad file magic %08x\n",
+		dev_err(dev, "%s: firmware has bad file magic %08x\n",
 			name, data32);
 		goto err;
 	}
@@ -71,24 +72,24 @@ static int wm8958_dsp2_fw(struct snd_soc_component *component, const char *name,
 	data32 = get_unaligned_be32(fw->data + 8);
 
 	if ((data32 >> 24) & 0xff) {
-		dev_err(component->dev, "%s: unsupported firmware version %d\n",
+		dev_err(dev, "%s: unsupported firmware version %d\n",
 			name, (data32 >> 24) & 0xff);
 		goto err;
 	}
 	if ((data32 & 0xffff) != 8958) {
-		dev_err(component->dev, "%s: unsupported target device %d\n",
+		dev_err(dev, "%s: unsupported target device %d\n",
 			name, data32 & 0xffff);
 		goto err;
 	}
 	if (((data32 >> 16) & 0xff) != 0xc) {
-		dev_err(component->dev, "%s: unsupported target core %d\n",
+		dev_err(dev, "%s: unsupported target core %d\n",
 			name, (data32 >> 16) & 0xff);
 		goto err;
 	}
 
 	if (check) {
 		data64 = get_unaligned_be64(fw->data + 24);
-		dev_info(component->dev, "%s timestamp %llx\n",  name, data64);
+		dev_info(dev, "%s timestamp %llx\n",  name, data64);
 	} else {
 		snd_soc_component_write(component, 0x102, 0x2);
 		snd_soc_component_write(component, 0x900, 0x2);
@@ -98,19 +99,17 @@ static int wm8958_dsp2_fw(struct snd_soc_component *component, const char *name,
 	len = fw->size - len;
 	while (len) {
 		if (len < 12) {
-			dev_err(component->dev, "%s short data block of %zd\n",
-				name, len);
+			dev_err(dev, "%s short data block of %zd\n", name, len);
 			goto err;
 		}
 
 		block_len = get_unaligned_be32(data + 4);
 		if (block_len + 8 > len) {
-			dev_err(component->dev, "%zd byte block longer than file\n",
-				block_len);
+			dev_err(dev, "%zd byte block longer than file\n", block_len);
 			goto err;
 		}
 		if (block_len == 0) {
-			dev_err(component->dev, "Zero length block\n");
+			dev_err(dev, "Zero length block\n");
 			goto err;
 		}
 
@@ -125,10 +124,10 @@ static int wm8958_dsp2_fw(struct snd_soc_component *component, const char *name,
 			str = kzalloc(block_len + 1, GFP_KERNEL);
 			if (str) {
 				memcpy(str, data + 8, block_len);
-				dev_info(component->dev, "%s: %s\n", name, str);
+				dev_info(dev, "%s: %s\n", name, str);
 				kfree(str);
 			} else {
-				dev_err(component->dev, "Out of memory\n");
+				dev_err(dev, "Out of memory\n");
 			}
 			break;
 		case WM_FW_BLOCK_PM:
@@ -138,7 +137,7 @@ static int wm8958_dsp2_fw(struct snd_soc_component *component, const char *name,
 		case WM_FW_BLOCK_I:
 		case WM_FW_BLOCK_A:
 		case WM_FW_BLOCK_C:
-			dev_dbg(component->dev, "%s: %zd bytes of %x@%x\n", name,
+			dev_dbg(dev, "%s: %zd bytes of %x@%x\n", name,
 				block_len, (data32 >> 24) & 0xff,
 				data32 & 0xffffff);
 
@@ -154,7 +153,7 @@ static int wm8958_dsp2_fw(struct snd_soc_component *component, const char *name,
 
 			break;
 		default:
-			dev_warn(component->dev, "%s: unknown block type %d\n",
+			dev_warn(dev, "%s: unknown block type %d\n",
 				 name, (data32 >> 24) & 0xff);
 			break;
 		}
@@ -167,10 +166,10 @@ static int wm8958_dsp2_fw(struct snd_soc_component *component, const char *name,
 	}
 
 	if (!check) {
-		dev_dbg(component->dev, "%s: download done\n", name);
+		dev_dbg(dev, "%s: download done\n", name);
 		wm8994->cur_fw = fw;
 	} else {
-		dev_info(component->dev, "%s: got firmware\n", name);
+		dev_info(dev, "%s: got firmware\n", name);
 	}
 
 	goto ok;
@@ -188,7 +187,8 @@ ok:
 
 static void wm8958_dsp_start_mbc(struct snd_soc_component *component, int path)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	int i;
 
@@ -232,7 +232,8 @@ static void wm8958_dsp_start_mbc(struct snd_soc_component *component, int path)
 
 static void wm8958_dsp_start_vss(struct snd_soc_component *component, int path)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	int i, ena;
 
@@ -293,7 +294,8 @@ static void wm8958_dsp_start_vss(struct snd_soc_component *component, int path)
 
 static void wm8958_dsp_start_enh_eq(struct snd_soc_component *component, int path)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	int i;
 
@@ -324,7 +326,8 @@ static void wm8958_dsp_start_enh_eq(struct snd_soc_component *component, int pat
 
 static void wm8958_dsp_apply(struct snd_soc_component *component, int path, int start)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	int pwr_reg = snd_soc_component_read(component, WM8994_POWER_MANAGEMENT_5);
 	int ena, reg, aif;
 
@@ -355,7 +358,7 @@ static void wm8958_dsp_apply(struct snd_soc_component *component, int path, int 
 
 	reg = snd_soc_component_read(component, WM8958_DSP2_PROGRAM);
 
-	dev_dbg(component->dev, "DSP path %d %d startup: %d, power: %x, DSP: %x\n",
+	dev_dbg(dev, "DSP path %d %d startup: %d, power: %x, DSP: %x\n",
 		path, wm8994->dsp_active, start, pwr_reg, reg);
 
 	if (start && ena) {
@@ -386,7 +389,7 @@ static void wm8958_dsp_apply(struct snd_soc_component *component, int path, int 
 
 		wm8994->dsp_active = path;
 
-		dev_dbg(component->dev, "DSP running in path %d\n", path);
+		dev_dbg(dev, "DSP running in path %d\n", path);
 	}
 
 	if (!start && wm8994->dsp_active == path) {
@@ -405,7 +408,7 @@ static void wm8958_dsp_apply(struct snd_soc_component *component, int path, int 
 
 		wm8994->dsp_active = -1;
 
-		dev_dbg(component->dev, "DSP stopped\n");
+		dev_dbg(dev, "DSP stopped\n");
 	}
 }
 
@@ -413,7 +416,8 @@ int wm8958_aif_ev(struct snd_soc_dapm_widget *w,
 		  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm8994 *control = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994 *control = dev_get_drvdata(dev->parent);
 	int i;
 
 	if (control->type != WM8958)
@@ -455,7 +459,8 @@ static int wm8958_put_mbc_enum(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	int value = ucontrol->value.enumerated.item[0];
 	int reg;
@@ -477,7 +482,8 @@ static int wm8958_get_mbc_enum(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = wm8994->mbc_cfg;
 
@@ -499,7 +505,8 @@ static int wm8958_mbc_get(struct snd_kcontrol *kcontrol,
 {
 	int mbc = kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wm8994->mbc_ena[mbc];
 
@@ -511,7 +518,8 @@ static int wm8958_mbc_put(struct snd_kcontrol *kcontrol,
 {
 	int mbc = kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	if (wm8994->mbc_ena[mbc] == ucontrol->value.integer.value[0])
 		return 0;
@@ -520,7 +528,7 @@ static int wm8958_mbc_put(struct snd_kcontrol *kcontrol,
 		return -EINVAL;
 
 	if (wm8958_dsp2_busy(wm8994, mbc)) {
-		dev_dbg(component->dev, "DSP2 active on %d already\n", mbc);
+		dev_dbg(dev, "DSP2 active on %d already\n", mbc);
 		return -EBUSY;
 	}
 
@@ -545,7 +553,8 @@ static int wm8958_put_vss_enum(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	int value = ucontrol->value.enumerated.item[0];
 	int reg;
@@ -567,7 +576,8 @@ static int wm8958_get_vss_enum(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = wm8994->vss_cfg;
 
@@ -578,7 +588,8 @@ static int wm8958_put_vss_hpf_enum(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	int value = ucontrol->value.enumerated.item[0];
 	int reg;
@@ -600,7 +611,8 @@ static int wm8958_get_vss_hpf_enum(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = wm8994->vss_hpf_cfg;
 
@@ -622,7 +634,8 @@ static int wm8958_vss_get(struct snd_kcontrol *kcontrol,
 {
 	int vss = kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wm8994->vss_ena[vss];
 
@@ -634,7 +647,8 @@ static int wm8958_vss_put(struct snd_kcontrol *kcontrol,
 {
 	int vss = kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	if (wm8994->vss_ena[vss] == ucontrol->value.integer.value[0])
 		return 0;
@@ -646,7 +660,7 @@ static int wm8958_vss_put(struct snd_kcontrol *kcontrol,
 		return -ENODEV;
 
 	if (wm8958_dsp2_busy(wm8994, vss)) {
-		dev_dbg(component->dev, "DSP2 active on %d already\n", vss);
+		dev_dbg(dev, "DSP2 active on %d already\n", vss);
 		return -EBUSY;
 	}
 
@@ -683,7 +697,8 @@ static int wm8958_hpf_get(struct snd_kcontrol *kcontrol,
 {
 	int hpf = kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	if (hpf < 3)
 		ucontrol->value.integer.value[0] = wm8994->hpf1_ena[hpf % 3];
@@ -698,7 +713,8 @@ static int wm8958_hpf_put(struct snd_kcontrol *kcontrol,
 {
 	int hpf = kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	if (hpf < 3) {
 		if (wm8994->hpf1_ena[hpf % 3] ==
@@ -717,7 +733,7 @@ static int wm8958_hpf_put(struct snd_kcontrol *kcontrol,
 		return -ENODEV;
 
 	if (wm8958_dsp2_busy(wm8994, hpf % 3)) {
-		dev_dbg(component->dev, "DSP2 active on %d already\n", hpf);
+		dev_dbg(dev, "DSP2 active on %d already\n", hpf);
 		return -EBUSY;
 	}
 
@@ -745,7 +761,8 @@ static int wm8958_put_enh_eq_enum(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	int value = ucontrol->value.enumerated.item[0];
 	int reg;
@@ -767,7 +784,8 @@ static int wm8958_get_enh_eq_enum(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = wm8994->enh_eq_cfg;
 
@@ -789,7 +807,8 @@ static int wm8958_enh_eq_get(struct snd_kcontrol *kcontrol,
 {
 	int eq = kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wm8994->enh_eq_ena[eq];
 
@@ -801,7 +820,8 @@ static int wm8958_enh_eq_put(struct snd_kcontrol *kcontrol,
 {
 	int eq = kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	if (wm8994->enh_eq_ena[eq] == ucontrol->value.integer.value[0])
 		return 0;
@@ -813,7 +833,7 @@ static int wm8958_enh_eq_put(struct snd_kcontrol *kcontrol,
 		return -ENODEV;
 
 	if (wm8958_dsp2_busy(wm8994, eq)) {
-		dev_dbg(component->dev, "DSP2 active on %d already\n", eq);
+		dev_dbg(dev, "DSP2 active on %d already\n", eq);
 		return -EBUSY;
 	}
 
@@ -862,7 +882,8 @@ WM8958_ENH_EQ_SWITCH("AIF2DAC Enhanced EQ Switch", 2),
 static void wm8958_enh_eq_loaded(const struct firmware *fw, void *context)
 {
 	struct snd_soc_component *component = context;
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	if (fw && (wm8958_dsp2_fw(component, "ENH_EQ", fw, true) == 0)) {
 		guard(mutex)(&wm8994->fw_lock);
@@ -873,7 +894,8 @@ static void wm8958_enh_eq_loaded(const struct firmware *fw, void *context)
 static void wm8958_mbc_vss_loaded(const struct firmware *fw, void *context)
 {
 	struct snd_soc_component *component = context;
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	if (fw && (wm8958_dsp2_fw(component, "MBC+VSS", fw, true) == 0)) {
 		guard(mutex)(&wm8994->fw_lock);
@@ -884,7 +906,8 @@ static void wm8958_mbc_vss_loaded(const struct firmware *fw, void *context)
 static void wm8958_mbc_loaded(const struct firmware *fw, void *context)
 {
 	struct snd_soc_component *component = context;
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 
 	if (fw && (wm8958_dsp2_fw(component, "MBC", fw, true) == 0)) {
 		guard(mutex)(&wm8994->fw_lock);
@@ -894,30 +917,31 @@ static void wm8958_mbc_loaded(const struct firmware *fw, void *context)
 
 void wm8958_dsp2_init(struct snd_soc_component *component)
 {
-	struct wm8994_priv *wm8994 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8994_priv *wm8994 = dev_get_drvdata(dev);
 	struct wm8994 *control = wm8994->wm8994;
 	struct wm8994_pdata *pdata = &control->pdata;
 	int ret, i;
 
 	wm8994->dsp_active = -1;
 
-	snd_soc_add_component_controls(component, wm8958_mbc_snd_controls,
+	snd_soc_component_add_controls(component, wm8958_mbc_snd_controls,
 			     ARRAY_SIZE(wm8958_mbc_snd_controls));
-	snd_soc_add_component_controls(component, wm8958_vss_snd_controls,
+	snd_soc_component_add_controls(component, wm8958_vss_snd_controls,
 			     ARRAY_SIZE(wm8958_vss_snd_controls));
-	snd_soc_add_component_controls(component, wm8958_enh_eq_snd_controls,
+	snd_soc_component_add_controls(component, wm8958_enh_eq_snd_controls,
 			     ARRAY_SIZE(wm8958_enh_eq_snd_controls));
 
 
 	/* We don't *require* firmware and don't want to delay boot */
 	request_firmware_nowait(THIS_MODULE, FW_ACTION_UEVENT,
-				"wm8958_mbc.wfw", component->dev, GFP_KERNEL,
+				"wm8958_mbc.wfw", dev, GFP_KERNEL,
 				component, wm8958_mbc_loaded);
 	request_firmware_nowait(THIS_MODULE, FW_ACTION_UEVENT,
-				"wm8958_mbc_vss.wfw", component->dev, GFP_KERNEL,
+				"wm8958_mbc_vss.wfw", dev, GFP_KERNEL,
 				component, wm8958_mbc_vss_loaded);
 	request_firmware_nowait(THIS_MODULE, FW_ACTION_UEVENT,
-				"wm8958_enh_eq.wfw", component->dev, GFP_KERNEL,
+				"wm8958_enh_eq.wfw", dev, GFP_KERNEL,
 				component, wm8958_enh_eq_loaded);
 
 	if (pdata->num_mbc_cfgs) {
@@ -939,10 +963,10 @@ void wm8958_dsp2_init(struct snd_soc_component *component)
 		wm8994->mbc_enum.items = pdata->num_mbc_cfgs;
 		wm8994->mbc_enum.texts = wm8994->mbc_texts;
 
-		ret = snd_soc_add_component_controls(wm8994->hubs.component,
+		ret = snd_soc_component_add_controls(wm8994->hubs.component,
 						 mbc_control, 1);
 		if (ret != 0)
-			dev_err(wm8994->hubs.component->dev,
+			dev_err(dev,
 				"Failed to add MBC mode controls: %d\n", ret);
 	}
 
@@ -965,11 +989,10 @@ void wm8958_dsp2_init(struct snd_soc_component *component)
 		wm8994->vss_enum.items = pdata->num_vss_cfgs;
 		wm8994->vss_enum.texts = wm8994->vss_texts;
 
-		ret = snd_soc_add_component_controls(wm8994->hubs.component,
+		ret = snd_soc_component_add_controls(wm8994->hubs.component,
 						 vss_control, 1);
 		if (ret != 0)
-			dev_err(wm8994->hubs.component->dev,
-				"Failed to add VSS mode controls: %d\n", ret);
+			dev_err(dev, "Failed to add VSS mode controls: %d\n", ret);
 	}
 
 	if (pdata->num_vss_hpf_cfgs) {
@@ -992,12 +1015,10 @@ void wm8958_dsp2_init(struct snd_soc_component *component)
 		wm8994->vss_hpf_enum.items = pdata->num_vss_hpf_cfgs;
 		wm8994->vss_hpf_enum.texts = wm8994->vss_hpf_texts;
 
-		ret = snd_soc_add_component_controls(wm8994->hubs.component,
+		ret = snd_soc_component_add_controls(wm8994->hubs.component,
 						 hpf_control, 1);
 		if (ret != 0)
-			dev_err(wm8994->hubs.component->dev,
-				"Failed to add VSS HPFmode controls: %d\n",
-				ret);
+			dev_err(dev, "Failed to add VSS HPFmode controls: %d\n", ret);
 	}
 
 	if (pdata->num_enh_eq_cfgs) {
@@ -1020,11 +1041,9 @@ void wm8958_dsp2_init(struct snd_soc_component *component)
 		wm8994->enh_eq_enum.items = pdata->num_enh_eq_cfgs;
 		wm8994->enh_eq_enum.texts = wm8994->enh_eq_texts;
 
-		ret = snd_soc_add_component_controls(wm8994->hubs.component,
+		ret = snd_soc_component_add_controls(wm8994->hubs.component,
 						 eq_control, 1);
 		if (ret != 0)
-			dev_err(wm8994->hubs.component->dev,
-				"Failed to add enhanced EQ controls: %d\n",
-				ret);
+			dev_err(dev, "Failed to add enhanced EQ controls: %d\n", ret);
 	}
 }

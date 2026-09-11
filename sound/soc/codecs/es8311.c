@@ -449,8 +449,9 @@ static void es8311_set_sysclk_constraints(unsigned int mclk_freq,
 
 static int es8311_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8311_priv *es8311 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8311_priv *es8311 = dev_get_drvdata(dev);
 
 	if (direction == SNDRV_PCM_STREAM_PLAYBACK) {
 		unsigned int mask = ES8311_DAC1_DAC_DSMMUTE |
@@ -466,8 +467,9 @@ static int es8311_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int es8311_startup(struct snd_pcm_substream *substream,
 			  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8311_priv *es8311 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8311_priv *es8311 = dev_get_drvdata(dev);
 
 	if (es8311->constraints.list) {
 		snd_pcm_hw_constraint_list(substream->runtime, 0,
@@ -482,8 +484,9 @@ static int es8311_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8311_priv *es8311 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8311_priv *es8311 = dev_get_drvdata(dev);
 	unsigned int wl;
 	int par_width = params_width(params);
 
@@ -519,8 +522,7 @@ static int es8311_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (es8311->mclk_freq > ES8311_MCLK_MAX_FREQ) {
-		dev_err(component->dev, "mclk frequency %lu too high\n",
-			es8311->mclk_freq);
+		dev_err(dev, "mclk frequency %lu too high\n", es8311->mclk_freq);
 		return -EINVAL;
 	}
 
@@ -530,12 +532,10 @@ static int es8311_hw_params(struct snd_pcm_substream *substream,
 
 	if (!mclk_freq) {
 		if (es8311->provider) {
-			dev_err(component->dev,
-				"mclk not configured, cannot run as master\n");
+			dev_err(dev, "mclk not configured, cannot run as master\n");
 			return -EINVAL;
 		}
-		dev_dbg(component->dev,
-			"mclk not configured, use bclk as internal mclk\n");
+		dev_dbg(dev, "mclk not configured, use bclk as internal mclk\n");
 
 		clkmgr = ES8311_CLKMGR1_MCLK_SEL;
 
@@ -545,7 +545,7 @@ static int es8311_hw_params(struct snd_pcm_substream *substream,
 	struct es8311_mclk_coeff coeff;
 	int ret = es8311_get_mclk_coeff(mclk_freq, rate, &coeff);
 	if (ret) {
-		dev_err(component->dev, "unable to find mclk coefficient\n");
+		dev_err(dev, "unable to find mclk coefficient\n");
 		return ret;
 	}
 
@@ -604,9 +604,7 @@ static int es8311_hw_params(struct snd_pcm_substream *substream,
 		snd_soc_component_write(component, ES8311_CLKMGR8, clkmgr);
 
 		if (div_lrclk % (2 * width) != 0) {
-			dev_err(component->dev,
-				"unable to divide mclk %u to generate bclk\n",
-				mclk_freq);
+			dev_err(dev, "unable to divide mclk %u to generate bclk\n", mclk_freq);
 			return -EINVAL;
 		}
 
@@ -623,9 +621,7 @@ static int es8311_hw_params(struct snd_pcm_substream *substream,
 					break;
 			}
 			if (i == ARRAY_SIZE(es8311_bclk_divs)) {
-				dev_err(component->dev,
-					"bclk divider %u not supported\n",
-					div_bclk);
+				dev_err(dev, "bclk divider %u not supported\n", div_bclk);
 				return -EINVAL;
 			}
 
@@ -641,11 +637,12 @@ static int es8311_hw_params(struct snd_pcm_substream *substream,
 static int es8311_set_sysclk(struct snd_soc_dai *codec_dai, int clk_id,
 			     unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct es8311_priv *es8311 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8311_priv *es8311 = dev_get_drvdata(dev);
 
 	if (freq > ES8311_MCLK_MAX_FREQ) {
-		dev_err(component->dev, "invalid frequency %u: too high\n",
+		dev_err(dev, "invalid frequency %u: too high\n",
 			freq);
 		return -EINVAL;
 	}
@@ -662,7 +659,7 @@ static int es8311_set_sysclk(struct snd_soc_dai *codec_dai, int clk_id,
 
 	int ret = clk_set_rate(es8311->mclk, freq);
 	if (ret) {
-		dev_err(component->dev, "unable to set mclk rate\n");
+		dev_err(dev, "unable to set mclk rate\n");
 		return ret;
 	}
 
@@ -673,8 +670,9 @@ static int es8311_set_sysclk(struct snd_soc_dai *codec_dai, int clk_id,
 
 static int es8311_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct es8311_priv *es8311 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8311_priv *es8311 = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -705,7 +703,7 @@ static int es8311_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 		sdp |= ES8311_SDP_FMT_LEFT_J;
 		break;
 	case SND_SOC_DAIFMT_RIGHT_J:
-		dev_err(component->dev, "right justified mode not supported\n");
+		dev_err(dev, "right justified mode not supported\n");
 		return -EINVAL;
 	case SND_SOC_DAIFMT_DSP_B:
 		sdp |= ES8311_SDP_LRP;
@@ -717,8 +715,7 @@ static int es8311_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 		case SND_SOC_DAIFMT_IB_NF:
 			break;
 		default:
-			dev_err(component->dev,
-				"inverted fsync not supported in dsp mode\n");
+			dev_err(dev, "inverted fsync not supported in dsp mode\n");
 			return -EINVAL;
 		}
 		break;
@@ -759,7 +756,8 @@ static int es8311_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 static int es8311_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct es8311_priv *es8311 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8311_priv *es8311 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -772,8 +770,7 @@ static int es8311_set_bias_level(struct snd_soc_component *component,
 		if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF) {
 			ret = clk_prepare_enable(es8311->mclk);
 			if (ret) {
-				dev_err(component->dev,
-					"unable to prepare mclk\n");
+				dev_err(dev, "unable to prepare mclk\n");
 				return ret;
 			}
 
@@ -871,9 +868,8 @@ static void es8311_reset(struct snd_soc_component *component, bool reset)
 
 static int es8311_suspend(struct snd_soc_component *component)
 {
-	struct es8311_priv *es8311;
-
-	es8311 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8311_priv *es8311 = dev_get_drvdata(dev);
 
 	es8311_reset(component, true);
 
@@ -885,17 +881,16 @@ static int es8311_suspend(struct snd_soc_component *component)
 
 static int es8311_resume(struct snd_soc_component *component)
 {
-	struct es8311_priv *es8311;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8311_priv *es8311 = dev_get_drvdata(dev);
 	int ret;
-
-	es8311 = snd_soc_component_get_drvdata(component);
 
 	es8311_reset(component, false);
 
 	regcache_cache_only(es8311->regmap, false);
 	ret = regcache_sync(es8311->regmap);
 	if (ret) {
-		dev_err(component->dev, "unable to sync regcache\n");
+		dev_err(dev, "unable to sync regcache\n");
 		return ret;
 	}
 
@@ -904,13 +899,12 @@ static int es8311_resume(struct snd_soc_component *component)
 
 static int es8311_component_probe(struct snd_soc_component *component)
 {
-	struct es8311_priv *es8311;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8311_priv *es8311 = dev_get_drvdata(dev);
 
-	es8311 = snd_soc_component_get_drvdata(component);
-
-	es8311->mclk = devm_clk_get_optional(component->dev, "mclk");
+	es8311->mclk = devm_clk_get_optional(dev, "mclk");
 	if (IS_ERR(es8311->mclk)) {
-		dev_err(component->dev, "invalid mclk\n");
+		dev_err(dev, "invalid mclk\n");
 		return PTR_ERR(es8311->mclk);
 	}
 
@@ -969,7 +963,7 @@ static int es8311_i2c_probe(struct i2c_client *i2c_client)
 
 	i2c_set_clientdata(i2c_client, es8311);
 
-	return devm_snd_soc_register_component(dev, &es8311_component_driver,
+	return devm_snd_soc_component_register(dev, &es8311_component_driver,
 					       &es8311_dai, 1);
 }
 

@@ -25,13 +25,14 @@ struct x1e80100_snd_data {
 
 static int x1e80100_snd_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct x1e80100_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct x1e80100_snd_data *data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_jack *dp_jack = NULL;
+	int dai_id = snd_soc_dai_id(cpu_dai);
 	int dp_pcm_id = 0;
 
-	switch (cpu_dai->id) {
+	switch (dai_id) {
 	case WSA_CODEC_DMA_RX_0:
 	case WSA_CODEC_DMA_RX_1:
 		/*
@@ -55,7 +56,7 @@ static int x1e80100_snd_init(struct snd_soc_pcm_runtime *rtd)
 		dp_jack = &data->dp_jack[dp_pcm_id];
 		break;
 	case DISPLAY_PORT_RX_1 ... DISPLAY_PORT_RX_7:
-		dp_pcm_id = cpu_dai->id - DISPLAY_PORT_RX_1 + 1;
+		dp_pcm_id = dai_id - DISPLAY_PORT_RX_1 + 1;
 		dp_jack = &data->dp_jack[dp_pcm_id];
 		break;
 	default:
@@ -76,9 +77,10 @@ static int x1e80100_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 						      SNDRV_PCM_HW_PARAM_RATE);
 	struct snd_interval *channels = hw_param_interval(params,
 							  SNDRV_PCM_HW_PARAM_CHANNELS);
+	int dai_id = snd_soc_dai_id(cpu_dai);
 
 	rate->min = rate->max = 48000;
-	switch (cpu_dai->id) {
+	switch (dai_id) {
 	case TX_CODEC_DMA_TX_0:
 	case TX_CODEC_DMA_TX_1:
 	case TX_CODEC_DMA_TX_2:
@@ -124,12 +126,13 @@ static int x1e80100_snd_prepare(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct x1e80100_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct x1e80100_snd_data *data = snd_soc_card_to_priv(rtd->card);
 	unsigned int channels = substream->runtime->channels;
 	unsigned int rx_slot[4];
+	int dai_id = snd_soc_dai_id(cpu_dai);
 	int ret;
 
-	switch (cpu_dai->id) {
+	switch (dai_id) {
 	case WSA_CODEC_DMA_RX_0:
 	case WSA_CODEC_DMA_RX_1:
 		ret = x1e80100_snd_hw_map_channels(rx_slot, channels);
@@ -145,16 +148,17 @@ static int x1e80100_snd_prepare(struct snd_pcm_substream *substream)
 		break;
 	}
 
-	return qcom_snd_sdw_prepare(substream, &data->stream_prepared[cpu_dai->id]);
+	return qcom_snd_sdw_prepare(substream, &data->stream_prepared[dai_id]);
 }
 
 static int x1e80100_snd_hw_free(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct x1e80100_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct x1e80100_snd_data *data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	int dai_id = snd_soc_dai_id(cpu_dai);
 
-	return qcom_snd_sdw_hw_free(substream, &data->stream_prepared[cpu_dai->id]);
+	return qcom_snd_sdw_hw_free(substream, &data->stream_prepared[dai_id]);
 }
 
 static const struct snd_soc_ops x1e80100_be_ops = {
@@ -196,7 +200,7 @@ static int x1e80100_platform_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	card_driver->owner = THIS_MODULE;
-	snd_soc_card_set_drvdata(card, data);
+	snd_soc_card_set_priv(card, data);
 
 	ret = qcom_snd_parse_of(card, card_driver);
 	if (ret)

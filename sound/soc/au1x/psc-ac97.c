@@ -58,7 +58,11 @@ static struct au1xpsc_audio_data *au1xpsc_ac97_workdata;
 static inline struct au1xpsc_audio_data *ac97_to_pscdata(struct snd_ac97 *x)
 {
 	struct snd_soc_card *c = x->bus->card->private_data;
-	return snd_soc_dai_get_drvdata(c->snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *dai = snd_soc_rtd_to_cpu(c->rtd, 0)
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	return dev_get_drvdata(dev);
 }
 
 #else
@@ -208,7 +212,9 @@ static int au1xpsc_ac97_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct au1xpsc_audio_data *pscdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct au1xpsc_audio_data *pscdata = dev_get_drvdata(dev);
 	unsigned long r, ro, stat;
 	int t, stype = substream->stream;
 
@@ -286,7 +292,9 @@ out:
 static int au1xpsc_ac97_trigger(struct snd_pcm_substream *substream,
 				int cmd, struct snd_soc_dai *dai)
 {
-	struct au1xpsc_audio_data *pscdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct au1xpsc_audio_data *pscdata = dev_get_drvdata(dev);
 	int ret, stype = substream->stream;
 
 	ret = 0;
@@ -320,8 +328,11 @@ static int au1xpsc_ac97_trigger(struct snd_pcm_substream *substream,
 static int au1xpsc_ac97_startup(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct au1xpsc_audio_data *pscdata = snd_soc_dai_get_drvdata(dai);
-	snd_soc_dai_set_dma_data(dai, substream, &pscdata->dmaids[0]);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct au1xpsc_audio_data *pscdata = dev_get_drvdata(dev);
+
+	snd_soc_dai_stream_dma_data_set(dai, substream, &pscdata->dmaids[0]);
 	return 0;
 }
 
@@ -410,7 +421,7 @@ static int au1xpsc_ac97_drvprobe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	ret = snd_soc_register_component(&pdev->dev, &au1xpsc_ac97_component,
+	ret = snd_soc_component_register(&pdev->dev, &au1xpsc_ac97_component,
 					 &wd->dai_drv, 1);
 	if (ret)
 		return ret;
@@ -423,7 +434,7 @@ static void au1xpsc_ac97_drvremove(struct platform_device *pdev)
 {
 	struct au1xpsc_audio_data *wd = platform_get_drvdata(pdev);
 
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_component_unregister(&pdev->dev);
 
 	/* disable PSC completely */
 	__raw_writel(0, AC97_CFG(wd));

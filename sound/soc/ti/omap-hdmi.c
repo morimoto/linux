@@ -40,7 +40,7 @@ struct hdmi_audio_data *card_drvdata_substream(struct snd_pcm_substream *ss)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(ss);
 
-	return snd_soc_card_get_drvdata(rtd->card);
+	return snd_soc_card_to_priv(rtd->card);
 }
 
 static void hdmi_dai_abort(struct device *dev)
@@ -61,6 +61,8 @@ static int hdmi_dai_startup(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *dai)
 {
 	struct hdmi_audio_data *ad = card_drvdata_substream(substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 	/*
 	 * Make sure that the period bytes are multiple of the DMA packet size.
@@ -69,19 +71,19 @@ static int hdmi_dai_startup(struct snd_pcm_substream *substream,
 	ret = snd_pcm_hw_constraint_step(substream->runtime, 0,
 					 SNDRV_PCM_HW_PARAM_PERIOD_BYTES, 128);
 	if (ret < 0) {
-		dev_err(dai->dev, "Could not apply period constraint: %d\n",
+		dev_err(dev, "Could not apply period constraint: %d\n",
 			ret);
 		return ret;
 	}
 	ret = snd_pcm_hw_constraint_step(substream->runtime, 0,
 					 SNDRV_PCM_HW_PARAM_BUFFER_BYTES, 128);
 	if (ret < 0) {
-		dev_err(dai->dev, "Could not apply buffer constraint: %d\n",
+		dev_err(dev, "Could not apply buffer constraint: %d\n",
 			ret);
 		return ret;
 	}
 
-	snd_soc_dai_set_dma_data(dai, substream, &ad->dma_data);
+	snd_soc_dai_stream_dma_data_set(dai, substream, &ad->dma_data);
 
 	scoped_guard(mutex, &ad->current_stream_lock)
 		ad->current_stream = substream;
@@ -103,6 +105,8 @@ static int hdmi_dai_hw_params(struct snd_pcm_substream *substream,
 	struct hdmi_audio_data *ad = card_drvdata_substream(substream);
 	struct snd_aes_iec958 *iec = &ad->iec;
 	struct snd_cea_861_aud_if *cea = &ad->cea;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	WARN_ON(ad->current_stream != substream);
 
@@ -114,7 +118,7 @@ static int hdmi_dai_hw_params(struct snd_pcm_substream *substream,
 		ad->dma_data.maxburst = 32;
 		break;
 	default:
-		dev_err(dai->dev, "format not supported!\n");
+		dev_err(dev, "format not supported!\n");
 		return -EINVAL;
 	}
 
@@ -165,7 +169,7 @@ static int hdmi_dai_hw_params(struct snd_pcm_substream *substream,
 		iec->status[3] |= IEC958_AES3_CON_FS_192000;
 		break;
 	default:
-		dev_err(dai->dev, "rate not supported!\n");
+		dev_err(dev, "rate not supported!\n");
 		return -EINVAL;
 	}
 
@@ -187,7 +191,7 @@ static int hdmi_dai_hw_params(struct snd_pcm_substream *substream,
 		iec->status[4] |= IEC958_AES4_CON_MAX_WORDLEN_24;
 		break;
 	default:
-		dev_err(dai->dev, "format not supported!\n");
+		dev_err(dev, "format not supported!\n");
 		return -EINVAL;
 	}
 
@@ -337,7 +341,7 @@ static int omap_hdmi_audio_probe(struct platform_device *pdev)
 	default:
 		return -EINVAL;
 	}
-	ret = devm_snd_soc_register_component(ad->dssdev, &omap_hdmi_component,
+	ret = devm_snd_soc_component_register(ad->dssdev, &omap_hdmi_component,
 					 dai_drv, 1);
 	if (ret)
 		return ret;
@@ -378,7 +382,7 @@ static int omap_hdmi_audio_probe(struct platform_device *pdev)
 	if (ret)
 		return dev_err_probe(dev, ret, "snd_soc_card_register() failed\n");
 
-	snd_soc_card_set_drvdata(card, ad);
+	snd_soc_card_set_priv(card, ad);
 
 	dev_set_drvdata(dev, ad);
 

@@ -48,7 +48,9 @@ struct axi_spdif {
 static int axi_spdif_trigger(struct snd_pcm_substream *substream, int cmd,
 	struct snd_soc_dai *dai)
 {
-	struct axi_spdif *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axi_spdif *spdif = dev_get_drvdata(dev);
 	unsigned int val;
 
 	switch (cmd) {
@@ -75,7 +77,9 @@ static int axi_spdif_trigger(struct snd_pcm_substream *substream, int cmd,
 static int axi_spdif_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct axi_spdif *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axi_spdif *spdif = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 	unsigned int clkdiv, stat;
 
@@ -107,9 +111,11 @@ static int axi_spdif_hw_params(struct snd_pcm_substream *substream,
 
 static int axi_spdif_dai_probe(struct snd_soc_dai *dai)
 {
-	struct axi_spdif *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axi_spdif *spdif = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, &spdif->dma_data, NULL);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &spdif->dma_data);
 
 	return 0;
 }
@@ -117,7 +123,9 @@ static int axi_spdif_dai_probe(struct snd_soc_dai *dai)
 static int axi_spdif_startup(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct axi_spdif *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axi_spdif *spdif = dev_get_drvdata(dev);
 	int ret;
 
 	ret = snd_pcm_hw_constraint_ratnums(substream->runtime, 0,
@@ -139,7 +147,9 @@ static int axi_spdif_startup(struct snd_pcm_substream *substream,
 static void axi_spdif_shutdown(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct axi_spdif *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axi_spdif *spdif = dev_get_drvdata(dev);
 
 	regmap_update_bits(spdif->regmap, AXI_SPDIF_REG_CTRL,
 		AXI_SPDIF_CTRL_TXEN, 0);
@@ -223,7 +233,7 @@ static int axi_spdif_probe(struct platform_device *pdev)
 	spdif->rate_constraints.rats = &spdif->ratnum;
 	spdif->rate_constraints.nrats = 1;
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &axi_spdif_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &axi_spdif_component,
 					 &axi_spdif_dai, 1);
 	if (ret)
 		goto err_clk_disable;

@@ -195,10 +195,11 @@ static const struct snd_soc_dapm_route rk3036_codec_dapm_routes[] = {
 
 static int rk3036_codec_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int reg01_val = 0,  reg02_val = 0, reg03_val = 0;
 
-	dev_dbg(component->dev, "rk3036_codec dai set fmt : %08x\n", fmt);
+	dev_dbg(dev, "rk3036_codec dai set fmt : %08x\n", fmt);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBC_CFC:
@@ -210,7 +211,7 @@ static int rk3036_codec_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 			     INNO_R01_I2SMODE_MASTER;
 		break;
 	default:
-		dev_err(component->dev, "invalid fmt\n");
+		dev_err(dev, "invalid fmt\n");
 		return -EINVAL;
 	}
 
@@ -228,7 +229,7 @@ static int rk3036_codec_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		reg02_val |= INNO_R02_DACM_LJM;
 		break;
 	default:
-		dev_err(component->dev, "set dai format failed\n");
+		dev_err(dev, "set dai format failed\n");
 		return -EINVAL;
 	}
 
@@ -250,7 +251,7 @@ static int rk3036_codec_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		reg03_val |= INNO_R03_BCP_REVERSAL;
 		break;
 	default:
-		dev_err(component->dev, "set dai format failed\n");
+		dev_err(dev, "set dai format failed\n");
 		return -EINVAL;
 	}
 
@@ -267,7 +268,7 @@ static int rk3036_codec_dai_hw_params(struct snd_pcm_substream *substream,
 				      struct snd_pcm_hw_params *hw_params,
 				      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int reg02_val = 0, reg03_val = 0;
 
 	switch (params_format(hw_params)) {
@@ -458,7 +459,7 @@ static int rk3036_codec_platform_probe(struct platform_device *pdev)
 	priv->dev = &pdev->dev;
 	dev_set_drvdata(&pdev->dev, priv);
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &rk3036_codec_driver,
+	ret = devm_snd_soc_component_register(&pdev->dev, &rk3036_codec_driver,
 				     rk3036_codec_dai_driver,
 				     ARRAY_SIZE(rk3036_codec_dai_driver));
 	if (ret) {

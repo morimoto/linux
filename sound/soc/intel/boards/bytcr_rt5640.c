@@ -208,6 +208,8 @@ static void log_quirks(struct device *dev)
 static int byt_rt5640_prepare_and_enable_pll1(struct snd_soc_dai *codec_dai,
 					      int rate)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	/* Configure the PLL before selecting it */
@@ -238,14 +240,14 @@ static int byt_rt5640_prepare_and_enable_pll1(struct snd_soc_dai *codec_dai,
 	}
 
 	if (ret < 0) {
-		dev_err(codec_dai->component->dev, "can't set pll: %d\n", ret);
+		dev_err(dev, "can't set pll: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5640_SCLK_S_PLL1,
 				     rate * 512, SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(codec_dai->component->dev, "can't set clock %d\n", ret);
+		dev_err(dev, "can't set clock %d\n", ret);
 		return ret;
 	}
 
@@ -259,12 +261,13 @@ static struct snd_soc_dai *byt_rt5640_get_codec_dai(struct snd_soc_dapm_context 
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
 	struct snd_soc_dai *codec_dai;
+	struct device *dev = snd_soc_card_to_dev(card);
 
 	codec_dai = snd_soc_card_get_codec_dai(card, BYT_CODEC_DAI1);
 	if (!codec_dai)
 		codec_dai = snd_soc_card_get_codec_dai(card, BYT_CODEC_DAI2);
 	if (!codec_dai)
-		dev_err(card->dev, "Error codec dai not found\n");
+		dev_err(dev, "Error codec dai not found\n");
 
 	return codec_dai;
 }
@@ -275,7 +278,8 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 	struct snd_soc_dapm_context *dapm = w->dapm;
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
 	struct snd_soc_dai *codec_dai;
-	struct byt_rt5640_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_rt5640_private *priv = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	codec_dai = byt_rt5640_get_codec_dai(dapm);
@@ -285,7 +289,7 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 	if (SND_SOC_DAPM_EVENT_ON(event)) {
 		ret = clk_prepare_enable(priv->mclk);
 		if (ret < 0) {
-			dev_err(card->dev, "could not configure MCLK state: %d\n", ret);
+			dev_err(dev, "could not configure MCLK state: %d\n", ret);
 			return ret;
 		}
 		ret = byt_rt5640_prepare_and_enable_pll1(codec_dai, 48000);
@@ -305,7 +309,7 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 	}
 
 	if (ret < 0) {
-		dev_err(card->dev, "can't set codec sysclk: %d\n", ret);
+		dev_err(dev, "can't set codec sysclk: %d\n", ret);
 		return ret;
 	}
 
@@ -333,7 +337,7 @@ static int byt_rt5640_event_lineout(struct snd_soc_dapm_widget *w,
 	if (SND_SOC_DAPM_EVENT_ON(event))
 		gpio_ctrl3_val |= RT5640_GP1_OUT_HI;
 
-	snd_soc_component_update_bits(codec_dai->component, RT5640_GPIO_CTRL3,
+	snd_soc_component_update_bits(snd_soc_dai_to_component(codec_dai), RT5640_GPIO_CTRL3,
 		RT5640_GP1_PF_MASK | RT5640_GP1_OUT_MASK, gpio_ctrl3_val);
 
 	return 0;
@@ -1281,33 +1285,34 @@ static const struct acpi_gpio_mapping amcr0f28_gpios[] = {
 
 static int byt_rt5640_get_amcr0f28_settings(struct snd_soc_card *card)
 {
-	struct byt_rt5640_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_rt5640_private *priv = snd_soc_card_to_priv(card);
 	struct rt5640_set_jack_data *data = &priv->jack_data;
 	struct acpi_device *adev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret = 0;
 
 	adev = acpi_dev_get_first_match_dev("AMCR0F28", "1", -1);
 	if (!adev) {
-		dev_err(card->dev, "error cannot find AMCR0F28 adev\n");
+		dev_err(dev, "error cannot find AMCR0F28 adev\n");
 		return -ENOENT;
 	}
 
 	data->codec_irq_override = acpi_dev_gpio_irq_get(adev, 0);
 	if (data->codec_irq_override < 0) {
 		ret = data->codec_irq_override;
-		dev_err(card->dev, "error %d getting codec IRQ\n", ret);
+		dev_err(dev, "error %d getting codec IRQ\n", ret);
 		goto put_adev;
 	}
 
 	if (BYT_RT5640_JDSRC(byt_rt5640_quirk) == RT5640_JD_SRC_EXT_GPIO) {
 		acpi_dev_add_driver_gpios(adev, amcr0f28_gpios);
-		data->jd_gpio = devm_fwnode_gpiod_get(card->dev, acpi_fwnode_handle(adev),
+		data->jd_gpio = devm_fwnode_gpiod_get(dev, acpi_fwnode_handle(adev),
 						      "rt5640-jd", GPIOD_IN, "rt5640-jd");
 		acpi_dev_remove_driver_gpios(adev);
 
 		if (IS_ERR(data->jd_gpio)) {
 			ret = PTR_ERR(data->jd_gpio);
-			dev_err(card->dev, "error %d getting jd GPIO\n", ret);
+			dev_err(dev, "error %d getting jd GPIO\n", ret);
 		}
 	}
 
@@ -1320,9 +1325,10 @@ static int byt_rt5640_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_card *card = runtime->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct byt_rt5640_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_rt5640_private *priv = snd_soc_card_to_priv(card);
 	struct rt5640_set_jack_data *jack_data = &priv->jack_data;
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(runtime, 0)->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(runtime, 0));
+	struct device *dev = snd_soc_card_to_dev(card);
 	const struct snd_soc_dapm_route *custom_map = NULL;
 	int num_routes = 0;
 	int ret;
@@ -1344,10 +1350,10 @@ static int byt_rt5640_init(struct snd_soc_pcm_runtime *runtime)
 				RT5640_AD_MONO_R_FILTER,
 				RT5640_CLK_SEL_ASRC);
 
-	ret = snd_soc_add_card_controls(card, byt_rt5640_controls,
+	ret = snd_soc_card_add_controls(card, byt_rt5640_controls,
 					ARRAY_SIZE(byt_rt5640_controls));
 	if (ret) {
-		dev_err(card->dev, "unable to add card controls\n");
+		dev_err(dev, "unable to add card controls\n");
 		return ret;
 	}
 
@@ -1439,7 +1445,7 @@ static int byt_rt5640_init(struct snd_soc_pcm_runtime *runtime)
 	else
 		ret = clk_set_rate(priv->mclk, 19200000);
 	if (ret) {
-		dev_err(card->dev, "unable to set MCLK rate\n");
+		dev_err(dev, "unable to set MCLK rate\n");
 		return ret;
 	}
 
@@ -1449,7 +1455,7 @@ static int byt_rt5640_init(struct snd_soc_pcm_runtime *runtime)
 						 &priv->jack, rt5640_pins,
 						 ARRAY_SIZE(rt5640_pins));
 		if (ret) {
-			dev_err(card->dev, "Jack creation failed %d\n", ret);
+			dev_err(dev, "Jack creation failed %d\n", ret);
 			return ret;
 		}
 		snd_jack_set_key(priv->jack.jack, SND_JACK_BTN_0,
@@ -1503,7 +1509,7 @@ static int byt_rt5640_init(struct snd_soc_pcm_runtime *runtime)
 static void byt_rt5640_exit(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_card *card = runtime->card;
-	struct byt_rt5640_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_rt5640_private *priv = snd_soc_card_to_priv(card);
 
 	if (byt_rt5640_quirk & BYT_RT5640_JD_HP_ELITEP_1000G2) {
 		snd_soc_jack_free_gpios(&priv->jack2, 1, &rt5640_jack2_gpio);
@@ -1640,8 +1646,10 @@ static int byt_rt5640_suspend(struct snd_soc_card *card)
 		return 0;
 
 	for_each_card_components(card, component) {
-		if (!strcmp(component->name, byt_rt5640_codec_name)) {
-			dev_dbg(component->dev, "disabling jack detect before suspend\n");
+		struct device *dev = snd_soc_component_to_dev(component);
+
+		if (!strcmp(snd_soc_component_name(component), byt_rt5640_codec_name)) {
+			dev_dbg(dev, "disabling jack detect before suspend\n");
 			snd_soc_component_set_jack(component, NULL, NULL);
 			break;
 		}
@@ -1652,15 +1660,17 @@ static int byt_rt5640_suspend(struct snd_soc_card *card)
 
 static int byt_rt5640_resume(struct snd_soc_card *card)
 {
-	struct byt_rt5640_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_rt5640_private *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_component *component;
 
 	if (!BYT_RT5640_JDSRC(byt_rt5640_quirk))
 		return 0;
 
 	for_each_card_components(card, component) {
-		if (!strcmp(component->name, byt_rt5640_codec_name)) {
-			dev_dbg(component->dev, "re-enabling jack detect after resume\n");
+		struct device *dev = snd_soc_component_to_dev(component);
+
+		if (!strcmp(snd_soc_component_name(component), byt_rt5640_codec_name)) {
+			dev_dbg(dev, "re-enabling jack detect after resume\n");
 			snd_soc_component_set_jack(component, &priv->jack,
 						   &priv->jack_data);
 			break;
@@ -1977,7 +1987,7 @@ err_device:
 static void snd_byt_rt5640_mc_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
-	struct byt_rt5640_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_rt5640_private *priv = snd_soc_card_to_priv(card);
 
 	if (byt_rt5640_quirk & BYT_RT5640_JD_HP_ELITEP_1000G2)
 		acpi_dev_remove_driver_gpios(ACPI_COMPANION(priv->codec_dev));

@@ -72,18 +72,19 @@
 	dev_dbg(_fll->arizona->dev, "FLL%d: " fmt, _fll->id, ##__VA_ARGS__)
 
 #define arizona_aif_err(_dai, fmt, ...) \
-	dev_err(_dai->dev, "AIF%d: " fmt, _dai->id, ##__VA_ARGS__)
+	dev_err(snd_soc_component_to_dev(snd_soc_dai_to_component(_dai)), "AIF%d: " fmt, snd_soc_dai_id(_dai), ##__VA_ARGS__)
 #define arizona_aif_warn(_dai, fmt, ...) \
-	dev_warn(_dai->dev, "AIF%d: " fmt, _dai->id, ##__VA_ARGS__)
+	dev_warn(snd_soc_component_to_dev(snd_soc_dai_to_component(_dai)), "AIF%d: " fmt, snd_soc_dai_id(_dai), ##__VA_ARGS__)
 #define arizona_aif_dbg(_dai, fmt, ...) \
-	dev_dbg(_dai->dev, "AIF%d: " fmt, _dai->id, ##__VA_ARGS__)
+	dev_dbg(snd_soc_component_to_dev(snd_soc_dai_to_component(_dai)), "AIF%d: " fmt, snd_soc_dai_id(_dai), ##__VA_ARGS__)
 
 static int arizona_spk_ev(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *kcontrol,
 			  int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 	int val;
 
 	switch (event) {
@@ -171,7 +172,8 @@ static const struct snd_soc_dapm_widget arizona_spkr =
 int arizona_init_spk(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 	int ret;
 
@@ -240,7 +242,8 @@ static const struct snd_soc_dapm_route arizona_mono_routes[] = {
 int arizona_init_mono(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 	int i;
 
@@ -257,7 +260,8 @@ EXPORT_SYMBOL_GPL(arizona_init_mono);
 int arizona_init_gpio(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 	int i;
 
@@ -878,7 +882,8 @@ EXPORT_SYMBOL_GPL(arizona_voice_trigger_switch);
 
 static void arizona_in_set_vu(struct snd_soc_component *component, int ena)
 {
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	unsigned int val;
 	int i;
 
@@ -906,7 +911,8 @@ int arizona_in_ev(struct snd_soc_dapm_widget *w, struct snd_kcontrol *kcontrol,
 		  int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	unsigned int reg;
 
 	if (w->shift % 2)
@@ -953,7 +959,8 @@ int arizona_out_ev(struct snd_soc_dapm_widget *w,
 		   int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 
 	switch (event) {
@@ -996,7 +1003,7 @@ int arizona_out_ev(struct snd_soc_dapm_widget *w,
 		case ARIZONA_OUT4R_ENA_SHIFT:
 			priv->out_up_pending--;
 			if (!priv->out_up_pending && priv->out_up_delay) {
-				dev_dbg(component->dev, "Power up delay: %d\n",
+				dev_dbg(dev, "Power up delay: %d\n",
 					priv->out_up_delay);
 				fsleep(priv->out_up_delay);
 				priv->out_up_delay = 0;
@@ -1050,7 +1057,7 @@ int arizona_out_ev(struct snd_soc_dapm_widget *w,
 		case ARIZONA_OUT4R_ENA_SHIFT:
 			priv->out_down_pending--;
 			if (!priv->out_down_pending && priv->out_down_delay) {
-				dev_dbg(component->dev, "Power down delay: %d\n",
+				dev_dbg(dev, "Power down delay: %d\n",
 					priv->out_down_delay);
 				fsleep(priv->out_down_delay);
 				priv->out_down_delay = 0;
@@ -1072,7 +1079,8 @@ int arizona_hp_ev(struct snd_soc_dapm_widget *w, struct snd_kcontrol *kcontrol,
 		  int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 	unsigned int mask = 1 << w->shift;
 	unsigned int val;
@@ -1108,13 +1116,14 @@ EXPORT_SYMBOL_GPL(arizona_hp_ev);
 
 static int arizona_dvfs_enable(struct snd_soc_component *component)
 {
-	const struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	const struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 	int ret;
 
 	ret = regulator_set_voltage(arizona->dcvdd, 1800000, 1800000);
 	if (ret) {
-		dev_err(component->dev, "Failed to boost DCVDD: %d\n", ret);
+		dev_err(dev, "Failed to boost DCVDD: %d\n", ret);
 		return ret;
 	}
 
@@ -1123,7 +1132,7 @@ static int arizona_dvfs_enable(struct snd_soc_component *component)
 				 ARIZONA_SUBSYS_MAX_FREQ,
 				 ARIZONA_SUBSYS_MAX_FREQ);
 	if (ret) {
-		dev_err(component->dev, "Failed to enable subsys max: %d\n", ret);
+		dev_err(dev, "Failed to enable subsys max: %d\n", ret);
 		regulator_set_voltage(arizona->dcvdd, 1200000, 1800000);
 		return ret;
 	}
@@ -1133,7 +1142,8 @@ static int arizona_dvfs_enable(struct snd_soc_component *component)
 
 static int arizona_dvfs_disable(struct snd_soc_component *component)
 {
-	const struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	const struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 	int ret;
 
@@ -1141,13 +1151,13 @@ static int arizona_dvfs_disable(struct snd_soc_component *component)
 				 ARIZONA_DYNAMIC_FREQUENCY_SCALING_1,
 				 ARIZONA_SUBSYS_MAX_FREQ, 0);
 	if (ret) {
-		dev_err(component->dev, "Failed to disable subsys max: %d\n", ret);
+		dev_err(dev, "Failed to disable subsys max: %d\n", ret);
 		return ret;
 	}
 
 	ret = regulator_set_voltage(arizona->dcvdd, 1200000, 1800000);
 	if (ret) {
-		dev_err(component->dev, "Failed to unboost DCVDD: %d\n", ret);
+		dev_err(dev, "Failed to unboost DCVDD: %d\n", ret);
 		return ret;
 	}
 
@@ -1156,7 +1166,8 @@ static int arizona_dvfs_disable(struct snd_soc_component *component)
 
 int arizona_dvfs_up(struct snd_soc_component *component, unsigned int flags)
 {
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	int ret = 0;
 
 	guard(mutex)(&priv->dvfs_lock);
@@ -1175,7 +1186,8 @@ EXPORT_SYMBOL_GPL(arizona_dvfs_up);
 
 int arizona_dvfs_down(struct snd_soc_component *component, unsigned int flags)
 {
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	unsigned int old_reqs;
 	int ret = 0;
 
@@ -1195,7 +1207,8 @@ int arizona_dvfs_sysclk_ev(struct snd_soc_dapm_widget *w,
 			   struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	int ret = 0;
 
 	guard(mutex)(&priv->dvfs_lock);
@@ -1272,7 +1285,8 @@ static unsigned int arizona_opclk_ref_44k1_rates[] = {
 static int arizona_set_opclk(struct snd_soc_component *component,
 			     unsigned int clk, unsigned int freq)
 {
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	unsigned int reg;
 	unsigned int *rates;
 	int ref, div, refclk;
@@ -1300,7 +1314,7 @@ static int arizona_set_opclk(struct snd_soc_component *component,
 		div = 1;
 		while (rates[ref] / div >= freq && div < 32) {
 			if (rates[ref] / div == freq) {
-				dev_dbg(component->dev, "Configured %dHz OPCLK\n",
+				dev_dbg(dev, "Configured %dHz OPCLK\n",
 					freq);
 				snd_soc_component_update_bits(component, reg,
 						    ARIZONA_OPCLK_DIV_MASK |
@@ -1314,7 +1328,7 @@ static int arizona_set_opclk(struct snd_soc_component *component,
 		}
 	}
 
-	dev_err(component->dev, "Unable to generate %dHz OPCLK\n", freq);
+	dev_err(dev, "Unable to generate %dHz OPCLK\n", freq);
 	return -EINVAL;
 }
 
@@ -1322,14 +1336,15 @@ int arizona_clk_ev(struct snd_soc_dapm_widget *w,
 		   struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 	unsigned int val;
 	int clk_idx;
 	int ret;
 
 	ret = regmap_read(arizona->regmap, w->reg, &val);
 	if (ret) {
-		dev_err(component->dev, "Failed to check clock source: %d\n", ret);
+		dev_err(dev, "Failed to check clock source: %d\n", ret);
 		return ret;
 	}
 
@@ -1361,7 +1376,8 @@ EXPORT_SYMBOL_GPL(arizona_clk_ev);
 int arizona_set_sysclk(struct snd_soc_component *component, int clk_id,
 		       int source, unsigned int freq, int dir)
 {
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 	char *name;
 	unsigned int reg;
@@ -1437,12 +1453,14 @@ EXPORT_SYMBOL_GPL(arizona_set_sysclk);
 
 static int arizona_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	int lrclk, bclk, mode, base;
 
-	base = dai->driver->base;
+	base = dai_driver->base;
 
 	lrclk = 0;
 	bclk = 0;
@@ -1612,9 +1630,11 @@ static const struct snd_pcm_hw_constraint_list arizona_constraint = {
 static int arizona_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
-	struct arizona_dai_priv *dai_priv = &priv->dai[dai->id - 1];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
+	struct arizona_dai_priv *dai_priv = &priv->dai[dai_id - 1];
 	unsigned int base_rate;
 
 	if (!substream->runtime)
@@ -1646,7 +1666,8 @@ static int arizona_startup(struct snd_pcm_substream *substream,
 static void arizona_wm5102_set_dac_comp(struct snd_soc_component *component,
 					unsigned int rate)
 {
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 	struct reg_sequence dac_comp[] = {
 		{ 0x80, 0x3 },
@@ -1670,10 +1691,13 @@ static int arizona_hw_params_rate(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
-	struct arizona_dai_priv *dai_priv = &priv->dai[dai->id - 1];
-	int base = dai->driver->base;
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
+	struct arizona_dai_priv *dai_priv = &priv->dai[dai_id - 1];
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	int base = dai_driver->base;
 	int i, sr_val, ret;
 
 	/*
@@ -1770,16 +1794,19 @@ static int arizona_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
-	int base = dai->driver->base;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	int base = dai_driver->base;
 	const int *rates;
+	int dai_id = snd_soc_dai_id(dai);
 	int i, ret, val;
 	int channels = params_channels(params);
-	int chan_limit = arizona->pdata.max_channels_clocked[dai->id - 1];
-	int tdm_width = arizona->tdm_width[dai->id - 1];
-	int tdm_slots = arizona->tdm_slots[dai->id - 1];
+	int chan_limit = arizona->pdata.max_channels_clocked[dai_id - 1];
+	int tdm_width = arizona->tdm_width[dai_id - 1];
+	int tdm_slots = arizona->tdm_slots[dai_id - 1];
 	int bclk, lrclk, wl, frame, bclk_target;
 	bool reconfig;
 	unsigned int aif_tx_state, aif_rx_state;
@@ -1904,10 +1931,13 @@ static const char *arizona_dai_clk_str(int clk_id)
 static int arizona_dai_set_sysclk(struct snd_soc_dai *dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
-	struct arizona_dai_priv *dai_priv = &priv->dai[dai->id - 1];
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
+	struct arizona_dai_priv *dai_priv = &priv->dai[dai_id - 1];
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	struct snd_soc_dapm_route routes[2];
 
 	switch (clk_id) {
@@ -1922,17 +1952,16 @@ static int arizona_dai_set_sysclk(struct snd_soc_dai *dai,
 		return 0;
 
 	if (snd_soc_dai_active(dai)) {
-		dev_err(component->dev, "Can't change clock on active DAI %d\n",
-			dai->id);
+		dev_err(dev, "Can't change clock on active DAI %d\n", dai_id);
 		return -EBUSY;
 	}
 
-	dev_dbg(component->dev, "Setting AIF%d to %s\n", dai->id + 1,
+	dev_dbg(dev, "Setting AIF%d to %s\n", dai_id + 1,
 		arizona_dai_clk_str(clk_id));
 
 	memset(&routes, 0, sizeof(routes));
-	routes[0].sink = dai->driver->capture.stream_name;
-	routes[1].sink = dai->driver->playback.stream_name;
+	routes[0].sink = dai_driver->capture.stream_name;
+	routes[1].sink = dai_driver->playback.stream_name;
 
 	routes[0].source = arizona_dai_clk_str(dai_priv->clk);
 	routes[1].source = arizona_dai_clk_str(dai_priv->clk);
@@ -1949,8 +1978,9 @@ static int arizona_dai_set_sysclk(struct snd_soc_dai *dai,
 
 static int arizona_set_tristate(struct snd_soc_dai *dai, int tristate)
 {
-	struct snd_soc_component *component = dai->component;
-	int base = dai->driver->base;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	int base = dai_driver->base;
 	unsigned int reg;
 
 	if (tristate)
@@ -1967,8 +1997,9 @@ static void arizona_set_channels_to_mask(struct snd_soc_dai *dai,
 					 unsigned int base,
 					 int channels, unsigned int mask)
 {
-	struct snd_soc_component *component = dai->component;
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 	int slot, i;
 
@@ -1989,15 +2020,18 @@ static void arizona_set_channels_to_mask(struct snd_soc_dai *dai,
 static int arizona_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
-	int base = dai->driver->base;
-	int rx_max_chan = dai->driver->playback.channels_max;
-	int tx_max_chan = dai->driver->capture.channels_max;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	int base = dai_driver->base;
+	int rx_max_chan = dai_driver->playback.channels_max;
+	int tx_max_chan = dai_driver->capture.channels_max;
 
 	/* Only support TDM for the physical AIFs */
-	if (dai->id > ARIZONA_MAX_AIF)
+	if (dai_id > ARIZONA_MAX_AIF)
 		return -ENOTSUPP;
 
 	if (slots == 0) {
@@ -2010,8 +2044,8 @@ static int arizona_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	arizona_set_channels_to_mask(dai, base + ARIZONA_AIF_FRAME_CTRL_11,
 				     rx_max_chan, rx_mask);
 
-	arizona->tdm_width[dai->id - 1] = slot_width;
-	arizona->tdm_slots[dai->id - 1] = slots;
+	arizona->tdm_width[dai_id - 1] = slot_width;
+	arizona->tdm_slots[dai_id - 1] = slots;
 
 	return 0;
 }
@@ -2731,7 +2765,8 @@ int arizona_eq_coeff_put(struct snd_kcontrol *kcontrol,
 			 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 	struct soc_bytes *params = (void *)kcontrol->private_value;
 	unsigned int val;
 	__be16 *data;
@@ -2775,7 +2810,8 @@ int arizona_lhpf_coeff_put(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 	__be16 *data = (__be16 *)ucontrol->value.bytes.data;
 	s16 val = be16_to_cpu(*data);
 

@@ -273,7 +273,8 @@ static int qmc_audio_of_xlate_dai_name(struct snd_soc_component *component,
 				       const struct of_phandle_args *args,
 				       const char **dai_name)
 {
-	struct qmc_audio *qmc_audio = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qmc_audio *qmc_audio = dev_get_drvdata(dev);
 	struct snd_soc_dai_driver *dai_driver;
 	int id = args->args[0];
 	int i;
@@ -346,14 +347,18 @@ static const struct snd_soc_component_driver qmc_audio_soc_platform = {
 
 static unsigned int qmc_dai_get_index(struct snd_soc_dai *dai)
 {
-	struct qmc_audio *qmc_audio = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qmc_audio *qmc_audio = dev_get_drvdata(dev);
 
 	return dai->driver - qmc_audio->dai_drivers;
 }
 
 static struct qmc_dai *qmc_dai_get_data(struct snd_soc_dai *dai)
 {
-	struct qmc_audio *qmc_audio = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qmc_audio *qmc_audio = dev_get_drvdata(dev);
 	unsigned int index;
 
 	index = qmc_dai_get_index(dai);
@@ -941,7 +946,7 @@ static int qmc_audio_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, qmc_audio);
 
-	ret = devm_snd_soc_register_component(qmc_audio->dev,
+	ret = devm_snd_soc_component_register(qmc_audio->dev,
 					      &qmc_audio_soc_platform,
 					      qmc_audio->dai_drivers,
 					      qmc_audio->num_dais);

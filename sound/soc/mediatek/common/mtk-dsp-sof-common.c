@@ -14,7 +14,7 @@ int mtk_sof_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 			   struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(card);
 	const struct mtk_sof_priv *sof_priv = soc_card_data->sof_priv;
 	int i, j, ret = 0;
 
@@ -32,7 +32,7 @@ int mtk_sof_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 				continue;
 
 			for_each_rtd_cpu_dais(runtime, j, cpu_dai) {
-				if (snd_soc_dai_stream_active(cpu_dai, conn->stream_dir) > 0) {
+				if (snd_soc_dai_active_stream(cpu_dai, conn->stream_dir) > 0) {
 					sof_dai_link = runtime->dai_link;
 					break;
 				}
@@ -54,10 +54,11 @@ int mtk_sof_card_probe(struct snd_soc_card *card)
 {
 	int i;
 	struct snd_soc_dai_link *dai_link;
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(card);
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(card);
 
 	/* Set stream_name to help sof bind widgets */
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (dai_link->no_pcm && !dai_link->stream_name && dai_link->name)
 			dai_link->stream_name = dai_link->name;
 	}
@@ -71,7 +72,7 @@ EXPORT_SYMBOL_GPL(mtk_sof_card_probe);
 static struct snd_soc_pcm_runtime *mtk_sof_find_tplg_be(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(card);
 	const struct mtk_sof_priv *sof_priv = soc_card_data->sof_priv;
 	struct snd_soc_pcm_runtime *fe;
 	struct snd_soc_pcm_runtime *be;
@@ -111,7 +112,7 @@ static int mtk_sof_check_tplg_be_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 						struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(card);
 	const struct mtk_sof_priv *sof_priv = soc_card_data->sof_priv;
 	struct snd_soc_pcm_runtime *sof_be;
 	struct mtk_dai_link *dai_link;
@@ -142,11 +143,12 @@ int mtk_sof_card_late_probe(struct snd_soc_card *card)
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_component *sof_comp = NULL;
-	struct mtk_soc_card_data *soc_card_data =
-		snd_soc_card_get_drvdata(card);
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(card);
 	const struct mtk_sof_priv *sof_priv = soc_card_data->sof_priv;
 	struct snd_soc_dai_link *dai_link;
 	struct mtk_dai_link *mtk_dai_link;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int i;
 
 	/* 1. find sof component */
@@ -157,16 +159,14 @@ int mtk_sof_card_late_probe(struct snd_soc_card *card)
 	}
 
 	if (!sof_comp) {
-		dev_info(card->dev, "probe without sof-audio-component\n");
+		dev_info(dev, "probe without sof-audio-component\n");
 		return 0;
 	}
 
 	/* 2. overwrite all BE fixups, and backup the existing fixup */
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (dai_link->be_hw_params_fixup) {
-			mtk_dai_link = devm_kzalloc(card->dev,
-						    sizeof(*mtk_dai_link),
-						    GFP_KERNEL);
+			mtk_dai_link = devm_kzalloc(dev, sizeof(*mtk_dai_link), GFP_KERNEL);
 			if (!mtk_dai_link)
 				return -ENOMEM;
 
@@ -198,7 +198,9 @@ int mtk_sof_card_late_probe(struct snd_soc_card *card)
 			for_each_rtd_cpu_dais(sof_rtd, j, cpu_dai) {
 				struct snd_soc_dapm_route route;
 				struct snd_soc_dapm_path *p = NULL;
-				struct snd_soc_dapm_widget *widget = snd_soc_dai_get_widget(cpu_dai, conn->stream_dir);
+				struct snd_soc_dapm_widget *widget = snd_soc_dai_stream_widget_get(cpu_dai, conn->stream_dir);
+				struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+				struct device *cpu_dev = snd_soc_component_to_dev(component);
 
 				memset(&route, 0, sizeof(route));
 				if (conn->stream_dir == SNDRV_PCM_STREAM_CAPTURE && widget) {
@@ -214,13 +216,13 @@ int mtk_sof_card_late_probe(struct snd_soc_card *card)
 						snd_soc_dapm_add_routes(dapm, &route, 1);
 					}
 				} else {
-					dev_err(cpu_dai->dev, "stream dir and widget not pair\n");
+					dev_err(cpu_dev, "stream dir and widget not pair\n");
 				}
 			}
 
 			/* overwrite SOF BE fixup */
 			sof_rtd->dai_link->be_hw_params_fixup =
-				sof_comp->driver->be_hw_params_fixup;
+				snd_soc_component_to_driver(sof_comp)->be_hw_params_fixup;
 		}
 	}
 

@@ -21,7 +21,8 @@ int snd_sof_volume_get(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *sm = (struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_sof_control *scontrol = sm->dobj.private;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	const struct sof_ipc_tplg_ops *tplg_ops = sof_ipc_get_ops(sdev, tplg);
 
 	if (tplg_ops && tplg_ops->control && tplg_ops->control->volume_get)
@@ -36,7 +37,8 @@ int snd_sof_volume_put(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *sm = (struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_sof_control *scontrol = sm->dobj.private;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	const struct sof_ipc_tplg_ops *tplg_ops = sof_ipc_get_ops(sdev, tplg);
 
 	if (tplg_ops && tplg_ops->control && tplg_ops->control->volume_put)
@@ -73,7 +75,8 @@ int snd_sof_switch_get(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *sm = (struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_sof_control *scontrol = sm->dobj.private;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	const struct sof_ipc_tplg_ops *tplg_ops = sof_ipc_get_ops(sdev, tplg);
 
 	if (tplg_ops && tplg_ops->control && tplg_ops->control->switch_get)
@@ -88,7 +91,8 @@ int snd_sof_switch_put(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *sm = (struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_sof_control *scontrol = sm->dobj.private;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	const struct sof_ipc_tplg_ops *tplg_ops = sof_ipc_get_ops(sdev, tplg);
 
 	if (tplg_ops && tplg_ops->control && tplg_ops->control->switch_put)
@@ -103,7 +107,8 @@ int snd_sof_enum_get(struct snd_kcontrol *kcontrol,
 	struct soc_enum *se = (struct soc_enum *)kcontrol->private_value;
 	struct snd_sof_control *scontrol = se->dobj.private;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	const struct sof_ipc_tplg_ops *tplg_ops = sof_ipc_get_ops(sdev, tplg);
 
 	if (tplg_ops && tplg_ops->control && tplg_ops->control->enum_get)
@@ -118,7 +123,8 @@ int snd_sof_enum_put(struct snd_kcontrol *kcontrol,
 	struct soc_enum *se = (struct soc_enum *)kcontrol->private_value;
 	struct snd_sof_control *scontrol = se->dobj.private;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	const struct sof_ipc_tplg_ops *tplg_ops = sof_ipc_get_ops(sdev, tplg);
 
 	if (tplg_ops && tplg_ops->control && tplg_ops->control->enum_put)
@@ -133,7 +139,8 @@ int snd_sof_bytes_get(struct snd_kcontrol *kcontrol,
 	struct soc_bytes_ext *be = (struct soc_bytes_ext *)kcontrol->private_value;
 	struct snd_sof_control *scontrol = be->dobj.private;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	const struct sof_ipc_tplg_ops *tplg_ops = sof_ipc_get_ops(sdev, tplg);
 
 	if (tplg_ops && tplg_ops->control && tplg_ops->control->bytes_get)
@@ -148,7 +155,8 @@ int snd_sof_bytes_put(struct snd_kcontrol *kcontrol,
 	struct soc_bytes_ext *be = (struct soc_bytes_ext *)kcontrol->private_value;
 	struct snd_sof_control *scontrol = be->dobj.private;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	const struct sof_ipc_tplg_ops *tplg_ops = sof_ipc_get_ops(sdev, tplg);
 
 	if (tplg_ops && tplg_ops->control && tplg_ops->control->bytes_put)
@@ -164,7 +172,8 @@ int snd_sof_bytes_ext_put(struct snd_kcontrol *kcontrol,
 	struct soc_bytes_ext *be = (struct soc_bytes_ext *)kcontrol->private_value;
 	struct snd_sof_control *scontrol = be->dobj.private;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	const struct sof_ipc_tplg_ops *tplg_ops = sof_ipc_get_ops(sdev, tplg);
 
 	/* make sure we have at least a header */
@@ -183,7 +192,8 @@ int snd_sof_bytes_ext_volatile_get(struct snd_kcontrol *kcontrol, unsigned int _
 	struct soc_bytes_ext *be = (struct soc_bytes_ext *)kcontrol->private_value;
 	struct snd_sof_control *scontrol = be->dobj.private;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	const struct sof_ipc_tplg_ops *tplg_ops = sof_ipc_get_ops(sdev, tplg);
 	int ret, err;
 
@@ -192,9 +202,9 @@ int snd_sof_bytes_ext_volatile_get(struct snd_kcontrol *kcontrol, unsigned int _
 	    !tplg_ops->control->bytes_ext_volatile_get)
 		return 0;
 
-	ret = pm_runtime_resume_and_get(scomp->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0 && ret != -EACCES) {
-		dev_err_ratelimited(scomp->dev, "%s: failed to resume %d\n", __func__, ret);
+		dev_err_ratelimited(dev, "%s: failed to resume %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -205,9 +215,9 @@ int snd_sof_bytes_ext_volatile_get(struct snd_kcontrol *kcontrol, unsigned int _
 								binary_data,
 								size);
 
-	err = pm_runtime_put_autosuspend(scomp->dev);
+	err = pm_runtime_put_autosuspend(dev);
 	if (err < 0)
-		dev_err_ratelimited(scomp->dev, "%s: failed to idle %d\n", __func__, err);
+		dev_err_ratelimited(dev, "%s: failed to idle %d\n", __func__, err);
 
 	return ret;
 }
@@ -219,7 +229,8 @@ int snd_sof_bytes_ext_get(struct snd_kcontrol *kcontrol,
 	struct soc_bytes_ext *be = (struct soc_bytes_ext *)kcontrol->private_value;
 	struct snd_sof_control *scontrol = be->dobj.private;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	const struct sof_ipc_tplg_ops *tplg_ops = sof_ipc_get_ops(sdev, tplg);
 
 	if (tplg_ops && tplg_ops->control && tplg_ops->control->bytes_ext_get)

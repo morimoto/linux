@@ -334,8 +334,9 @@ static int ssm2518_lookup_mcs(struct ssm2518 *ssm2518,
 static int ssm2518_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ssm2518 *ssm2518 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2518 *ssm2518 = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 	unsigned int ctrl1, ctrl1_mask;
 	int mcs;
@@ -389,7 +390,9 @@ static int ssm2518_hw_params(struct snd_pcm_substream *substream,
 
 static int ssm2518_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct ssm2518 *ssm2518 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2518 *ssm2518 = dev_get_drvdata(dev);
 	unsigned int val;
 
 	if (mute)
@@ -403,7 +406,9 @@ static int ssm2518_mute(struct snd_soc_dai *dai, int mute, int direction)
 
 static int ssm2518_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct ssm2518 *ssm2518 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2518 *ssm2518 = dev_get_drvdata(dev);
 	unsigned int ctrl1 = 0, ctrl2 = 0;
 	bool invert_fclk;
 	int ret;
@@ -499,7 +504,8 @@ static int ssm2518_set_power(struct ssm2518 *ssm2518, bool enable)
 static int ssm2518_set_bias_level(struct snd_soc_component *component,
 	enum snd_soc_bias_level level)
 {
-	struct ssm2518 *ssm2518 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2518 *ssm2518 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret = 0;
 
@@ -523,7 +529,9 @@ static int ssm2518_set_bias_level(struct snd_soc_component *component,
 static int ssm2518_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	unsigned int rx_mask, int slots, int width)
 {
-	struct ssm2518 *ssm2518 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2518 *ssm2518 = dev_get_drvdata(dev);
 	unsigned int ctrl1, ctrl2;
 	int left_slot, right_slot;
 	int ret;
@@ -608,7 +616,9 @@ static int ssm2518_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 static int ssm2518_startup(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct ssm2518 *ssm2518 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2518 *ssm2518 = dev_get_drvdata(dev);
 
 	if (ssm2518->constraints)
 		snd_pcm_hw_constraint_list(substream->runtime, 0,
@@ -657,7 +667,8 @@ static struct snd_soc_dai_driver ssm2518_dai = {
 static int ssm2518_set_sysclk(struct snd_soc_component *component, int clk_id,
 	int source, unsigned int freq, int dir)
 {
-	struct ssm2518 *ssm2518 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ssm2518 *ssm2518 = dev_get_drvdata(dev);
 	unsigned int val;
 
 	if (clk_id != SSM2518_SYSCLK)
@@ -793,7 +804,7 @@ static int ssm2518_i2c_probe(struct i2c_client *i2c)
 	if (ret)
 		return ret;
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 			&ssm2518_component_driver,
 			&ssm2518_dai, 1);
 }

@@ -217,11 +217,11 @@ static int q6apm_dai_prepare(struct snd_soc_component *component,
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct q6apm_dai_rtd *prtd = runtime->private_data;
 	struct audioreach_module_config cfg = {};
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct q6apm_dai_data *pdata;
 	int ret;
 
-	pdata = snd_soc_component_get_drvdata(component);
+	pdata = dev_get_drvdata(dev);
 	if (!pdata)
 		return -EINVAL;
 
@@ -313,6 +313,7 @@ static int q6apm_dai_prepare(struct snd_soc_component *component,
 
 static int q6apm_dai_ack(struct snd_soc_component *component, struct snd_pcm_substream *substream)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct q6apm_dai_rtd *prtd = runtime->private_data;
 	int i, ret = 0, avail_periods;
@@ -325,7 +326,7 @@ static int q6apm_dai_ack(struct snd_soc_component *component, struct snd_pcm_sub
 		for (i = 0; i < avail_periods; i++) {
 			ret = q6apm_write_async(prtd->graph, prtd->pcm_count, 0, 0, NO_TIMESTAMP);
 			if (ret < 0) {
-				dev_err(component->dev, "Error queuing playback buffer %d\n", ret);
+				dev_err(dev, "Error queuing playback buffer %d\n", ret);
 				return ret;
 			}
 			prtd->queue_ptr += runtime->period_size;
@@ -370,14 +371,15 @@ static int q6apm_dai_open(struct snd_soc_component *component,
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *soc_prtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_prtd, 0);
-	struct device *dev = component->dev;
+	struct snd_soc_dai_driver *cpu_driver = snd_soc_dai_to_driver(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct q6apm_dai_data *pdata;
 	struct q6apm_dai_rtd *prtd;
 	int graph_id, ret;
 
-	graph_id = cpu_dai->driver->id;
+	graph_id = cpu_driver->id;
 
-	pdata = snd_soc_component_get_drvdata(component);
+	pdata = dev_get_drvdata(dev);
 	if (!pdata) {
 		dev_err(dev, "Drv data not found ..\n");
 		return -EINVAL;
@@ -534,13 +536,13 @@ static int q6apm_dai_memory_map(struct snd_soc_component *component,
 				int graph_id, bool is_push_pull)
 {
 	struct q6apm_dai_data *pdata;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	phys_addr_t phys;
 	int ret;
 
-	pdata = snd_soc_component_get_drvdata(component);
+	pdata = dev_get_drvdata(dev);
 	if (!pdata) {
-		dev_err(component->dev, "Drv data not found ..\n");
+		dev_err(dev, "Drv data not found ..\n");
 		return -EINVAL;
 	}
 
@@ -571,6 +573,7 @@ static int q6apm_dai_memory_map(struct snd_soc_component *component,
 
 static int q6apm_dai_pcm_new(struct snd_soc_component *component, struct snd_soc_pcm_runtime *rtd)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_pcm *pcm = rtd->pcm;
 	/*
@@ -583,7 +586,7 @@ static int q6apm_dai_pcm_new(struct snd_soc_component *component, struct snd_soc
 	bool is_push_pull;
 	struct snd_pcm_substream *substream = NULL;
 
-	graph_id = cpu_dai->driver->id;
+	graph_id = snd_soc_dai_to_driver(cpu_dai)->id;
 
 	/* Note: DSP backend dais are uni-directional ONLY(either playback or capture) */
 	if (pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream)
@@ -593,13 +596,13 @@ static int q6apm_dai_pcm_new(struct snd_soc_component *component, struct snd_soc
 
 
 	if (substream) {
-		is_push_pull = q6apm_is_graph_in_push_pull_mode_from_id(component->dev,
+		is_push_pull = q6apm_is_graph_in_push_pull_mode_from_id(dev,
 									graph_id,
 									substream->stream);
 		if (is_push_pull)
 			size += POS_BUFFER_BYTES;
 
-		ret = snd_pcm_set_fixed_buffer_all(pcm, SNDRV_DMA_TYPE_DEV, component->dev, size);
+		ret = snd_pcm_set_fixed_buffer_all(pcm, SNDRV_DMA_TYPE_DEV, dev, size);
 		if (ret)
 			return ret;
 
@@ -614,6 +617,7 @@ static int q6apm_dai_pcm_new(struct snd_soc_component *component, struct snd_soc
 static void q6apm_dai_memory_unmap(struct snd_soc_component *component,
 				   struct snd_pcm_substream *substream)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_soc_pcm_runtime *soc_prtd;
 	struct snd_soc_dai *cpu_dai;
 	int graph_id;
@@ -626,11 +630,11 @@ static void q6apm_dai_memory_unmap(struct snd_soc_component *component,
 	if (!cpu_dai)
 		return;
 
-	graph_id = cpu_dai->driver->id;
-	q6apm_unmap_memory_fixed_region(component->dev, graph_id);
+	graph_id = snd_soc_dai_to_driver(cpu_dai)->id;
+	q6apm_unmap_memory_fixed_region(dev, graph_id);
 
-	if (q6apm_is_graph_in_push_pull_mode_from_id(component->dev, graph_id, substream->stream))
-		q6apm_unmap_pos_buffer(component->dev, graph_id);
+	if (q6apm_is_graph_in_push_pull_mode_from_id(dev, graph_id, substream->stream))
+		q6apm_unmap_pos_buffer(dev, graph_id);
 }
 
 static void q6apm_dai_pcm_free(struct snd_soc_component *component, struct snd_pcm *pcm)
@@ -651,15 +655,16 @@ static int q6apm_dai_compr_open(struct snd_soc_component *component,
 {
 	struct snd_soc_pcm_runtime *rtd = stream->private_data;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_dai_driver *cpu_driver = snd_soc_dai_to_driver(cpu_dai);
 	struct snd_compr_runtime *runtime = stream->runtime;
 	struct q6apm_dai_rtd *prtd;
 	struct q6apm_dai_data *pdata;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret, size;
 	int graph_id;
 
-	graph_id = cpu_dai->driver->id;
-	pdata = snd_soc_component_get_drvdata(component);
+	graph_id = cpu_driver->id;
+	pdata = dev_get_drvdata(dev);
 	if (!pdata)
 		return -EINVAL;
 
@@ -698,12 +703,13 @@ static int q6apm_dai_compr_open(struct snd_soc_component *component,
 static int q6apm_dai_compr_free(struct snd_soc_component *component,
 				struct snd_compr_stream *stream)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_compr_runtime *runtime = stream->runtime;
 	struct q6apm_dai_rtd *prtd = runtime->private_data;
 
 	q6apm_graph_stop(prtd->graph);
 	q6apm_free_fragments(prtd->graph, SNDRV_PCM_STREAM_PLAYBACK);
-	q6apm_unmap_memory_fixed_region(component->dev, prtd->graph->id);
+	q6apm_unmap_memory_fixed_region(dev, prtd->graph->id);
 	q6apm_graph_close(prtd->graph);
 	snd_dma_free_pages(&prtd->dma_buffer);
 	prtd->graph = NULL;
@@ -816,10 +822,11 @@ static int q6apm_dai_compr_set_params(struct snd_soc_component *component,
 	struct q6apm_dai_data *pdata;
 	struct audioreach_module_config cfg = {};
 	struct snd_codec *codec = &params->codec;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int dir = stream->direction;
 	int ret;
 
-	pdata = snd_soc_component_get_drvdata(component);
+	pdata = dev_get_drvdata(dev);
 	if (!pdata)
 		return -EINVAL;
 
@@ -831,7 +838,7 @@ static int q6apm_dai_compr_set_params(struct snd_soc_component *component,
 	if (prtd->next_track != true) {
 		memcpy(&prtd->codec, codec, sizeof(*codec));
 
-		ret = q6apm_set_real_module_id(component->dev, prtd->graph, codec->id);
+		ret = q6apm_set_real_module_id(dev, prtd->graph, codec->id);
 		if (ret)
 			return ret;
 
@@ -887,18 +894,17 @@ static int q6apm_dai_compr_set_metadata(struct snd_soc_component *component,
 					struct snd_compr_stream *stream,
 					struct snd_compr_metadata *metadata)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_compr_runtime *runtime = stream->runtime;
 	struct q6apm_dai_rtd *prtd = runtime->private_data;
 	int ret = 0;
 
 	switch (metadata->key) {
 	case SNDRV_COMPRESS_ENCODER_PADDING:
-		q6apm_remove_trailing_silence(component->dev, prtd->graph,
-					      metadata->value[0]);
+		q6apm_remove_trailing_silence(dev, prtd->graph, metadata->value[0]);
 		break;
 	case SNDRV_COMPRESS_ENCODER_DELAY:
-		q6apm_remove_initial_silence(component->dev, prtd->graph,
-					     metadata->value[0]);
+		q6apm_remove_initial_silence(dev, prtd->graph, metadata->value[0]);
 		break;
 	default:
 		ret = -EINVAL;
@@ -914,7 +920,7 @@ static int q6apm_dai_compr_mmap(struct snd_soc_component *component,
 {
 	struct snd_compr_runtime *runtime = stream->runtime;
 	struct q6apm_dai_rtd *prtd = runtime->private_data;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	return dma_mmap_coherent(dev, vma, prtd->dma_buffer.area, prtd->dma_buffer.addr,
 				 prtd->dma_buffer.bytes);
@@ -1037,7 +1043,7 @@ static int q6apm_dai_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(dev, pdata);
 
-	return devm_snd_soc_register_component(dev, &q6apm_fe_dai_component, NULL, 0);
+	return devm_snd_soc_component_register(dev, &q6apm_fe_dai_component, NULL, 0);
 }
 
 #ifdef CONFIG_OF

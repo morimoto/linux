@@ -87,7 +87,9 @@ static int es7241_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct es7241_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct es7241_data *priv = dev_get_drvdata(dai_dev);
 	unsigned int rate = params_rate(params);
 	unsigned int mfs = priv->mclk / rate;
 	int i;
@@ -105,14 +107,16 @@ static int es7241_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	/* should not happen */
-	dev_err(dai->dev, "unsupported rate: %u\n", rate);
+	dev_err(dai_dev, "unsupported rate: %u\n", rate);
 	return -EINVAL;
 }
 
 static int es7241_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 			     unsigned int freq, int dir)
 {
-	struct es7241_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es7241_data *priv = dev_get_drvdata(dev);
 
 	if (dir == SND_SOC_CLOCK_IN && clk_id == 0) {
 		priv->mclk = freq;
@@ -124,15 +128,17 @@ static int es7241_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 static int es7241_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct es7241_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct es7241_data *priv = dev_get_drvdata(dai_dev);
 
 	if ((fmt & SND_SOC_DAIFMT_INV_MASK) != SND_SOC_DAIFMT_NB_NF) {
-		dev_err(dai->dev, "Unsupported dai clock inversion\n");
+		dev_err(dai_dev, "Unsupported dai clock inversion\n");
 		return -EINVAL;
 	}
 
 	if ((fmt & SND_SOC_DAIFMT_FORMAT_MASK) != priv->fmt) {
-		dev_err(dai->dev, "Invalid dai format\n");
+		dev_err(dai_dev, "Invalid dai format\n");
 		return -EINVAL;
 	}
 
@@ -145,7 +151,7 @@ static int es7241_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		break;
 
 	default:
-		dev_err(dai->dev, "Unsupported clock configuration\n");
+		dev_err(dai_dev, "Unsupported clock configuration\n");
 		return -EINVAL;
 	}
 
@@ -290,7 +296,7 @@ static int es7241_probe(struct platform_device *pdev)
 		return dev_err_probe(dev, PTR_ERR(priv->m1),
 				     "Failed to get 'm1' gpio");
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 				      &es7241_component_driver,
 				      &es7241_dai, 1);
 }

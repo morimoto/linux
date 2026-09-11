@@ -898,8 +898,8 @@ static void mt6359_accdet_init(struct mt6359_accdet *priv)
 int mt6359_accdet_enable_jack_detect(struct snd_soc_component *component,
 				     struct snd_soc_jack *jack)
 {
-	struct mt6359_accdet *priv =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mt6359_accdet *priv = dev_get_drvdata(dev);
 
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_1, KEY_VOLUMEDOWN);
@@ -1017,7 +1017,7 @@ static int mt6359_accdet_probe(struct platform_device *pdev)
 	}
 
 	platform_set_drvdata(pdev, priv);
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &mt6359_accdet_soc_driver,
 					      NULL, 0);
 	if (ret) {

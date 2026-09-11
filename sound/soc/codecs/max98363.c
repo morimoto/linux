@@ -196,10 +196,9 @@ static int max98363_sdw_dai_hw_params(struct snd_pcm_substream *substream,
 				      struct snd_pcm_hw_params *params,
 				      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98363_priv *max98363 =
-		snd_soc_component_get_drvdata(component);
-
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct max98363_priv *max98363 = dev_get_drvdata(dai_dev);
 	struct sdw_stream_config stream_config;
 	struct sdw_port_config port_config;
 	enum sdw_data_direction direction;
@@ -208,7 +207,7 @@ static int max98363_sdw_dai_hw_params(struct snd_pcm_substream *substream,
 
 	int ret;
 
-	stream = snd_soc_dai_get_dma_data(dai, substream);
+	stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!stream)
 		return -EINVAL;
@@ -229,7 +228,7 @@ static int max98363_sdw_dai_hw_params(struct snd_pcm_substream *substream,
 
 	if (stream_config.ch_count > runtime->hw.channels_max) {
 		stream_config.ch_count = runtime->hw.channels_max;
-		dev_info(dai->dev, "Number of channels: %d (requested: %d)\n",
+		dev_info(dai_dev, "Number of channels: %d (requested: %d)\n",
 			 stream_config.ch_count, params_channels(params));
 	}
 	port_config.ch_mask = GENMASK((int)stream_config.ch_count - 1, 0);
@@ -237,11 +236,11 @@ static int max98363_sdw_dai_hw_params(struct snd_pcm_substream *substream,
 	ret = sdw_stream_add_slave(max98363->slave, &stream_config,
 				   &port_config, 1, stream);
 	if (ret) {
-		dev_err(dai->dev, "Unable to configure port\n");
+		dev_err(dai_dev, "Unable to configure port\n");
 		return ret;
 	}
 
-	dev_dbg(component->dev, "Format supported %d", params_format(params));
+	dev_dbg(dai_dev, "Format supported %d", params_format(params));
 
 	return 0;
 }
@@ -249,11 +248,11 @@ static int max98363_sdw_dai_hw_params(struct snd_pcm_substream *substream,
 static int max98363_pcm_hw_free(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98363_priv *max98363 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98363_priv *max98363 = dev_get_drvdata(dev);
 	struct sdw_stream_runtime *stream =
-		snd_soc_dai_get_dma_data(dai, substream);
+		snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!max98363->slave)
 		return -EINVAL;
@@ -266,7 +265,7 @@ static int max98363_pcm_hw_free(struct snd_pcm_substream *substream,
 static int max98363_set_sdw_stream(struct snd_soc_dai *dai,
 				   void *sdw_stream, int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -400,7 +399,7 @@ static int max98363_init(struct sdw_slave *slave, struct regmap *regmap)
 	max98363->first_hw_init = false;
 
 	/* codec registration  */
-	ret = devm_snd_soc_register_component(dev, &soc_codec_dev_max98363,
+	ret = devm_snd_soc_component_register(dev, &soc_codec_dev_max98363,
 					      max98363_dai,
 					      ARRAY_SIZE(max98363_dai));
 	if (ret < 0) {

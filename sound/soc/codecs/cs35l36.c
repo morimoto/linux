@@ -456,8 +456,8 @@ static int cs35l36_ldm_sel_get(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l36_private *cs35l36 =
-			snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l36_private *cs35l36 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = cs35l36->ldm_mode_sel;
 
@@ -468,8 +468,8 @@ static int cs35l36_ldm_sel_put(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l36_private *cs35l36 =
-			snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l36_private *cs35l36 = dev_get_drvdata(dev);
 	int val = (ucontrol->value.integer.value[0]) ? CS35L36_NG_AMP_EN_MASK :
 						       0;
 
@@ -500,10 +500,9 @@ static const struct snd_kcontrol_new cs35l36_aud_controls[] = {
 static int cs35l36_main_amp_event(struct snd_soc_dapm_widget *w,
 				  struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-			snd_soc_dapm_to_component(w->dapm);
-	struct cs35l36_private *cs35l36 =
-			snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l36_private *cs35l36 = dev_get_drvdata(dev);
 	u32 reg;
 
 	switch (event) {
@@ -542,7 +541,7 @@ static int cs35l36_main_amp_event(struct snd_soc_dapm_widget *w,
 		usleep_range(2000, 2100);
 		break;
 	default:
-		dev_dbg(component->dev, "Invalid event = 0x%x\n", event);
+		dev_dbg(dev, "Invalid event = 0x%x\n", event);
 		return -EINVAL;
 	}
 
@@ -552,10 +551,9 @@ static int cs35l36_main_amp_event(struct snd_soc_dapm_widget *w,
 static int cs35l36_boost_event(struct snd_soc_dapm_widget *w,
 			       struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-			snd_soc_dapm_to_component(w->dapm);
-	struct cs35l36_private *cs35l36 =
-			snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l36_private *cs35l36 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -573,7 +571,7 @@ static int cs35l36_boost_event(struct snd_soc_dapm_widget *w,
 					   CS35L36_BST_EN_SHIFT);
 		break;
 	default:
-		dev_dbg(component->dev, "Invalid event = 0x%x\n", event);
+		dev_dbg(dev, "Invalid event = 0x%x\n", event);
 		return -EINVAL;
 	}
 
@@ -751,8 +749,9 @@ static const struct snd_soc_dapm_route cs35l36_audio_map[] = {
 static int cs35l36_set_dai_fmt(struct snd_soc_dai *component_dai,
 			       unsigned int fmt)
 {
-	struct cs35l36_private *cs35l36 =
-			snd_soc_component_get_drvdata(component_dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(component_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l36_private *cs35l36 = dev_get_drvdata(dev);
 	unsigned int asp_fmt, lrclk_fmt, sclk_fmt, clock_provider, clk_frc;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -861,8 +860,9 @@ static int cs35l36_pcm_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct cs35l36_private *cs35l36 =
-			snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l36_private *cs35l36 = dev_get_drvdata(dev);
 	unsigned int asp_width, global_fs = params_rate(params);
 	int i;
 
@@ -905,9 +905,9 @@ static int cs35l36_pcm_hw_params(struct snd_pcm_substream *substream,
 static int cs35l36_dai_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 				  unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs35l36_private *cs35l36 =
-			snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l36_private *cs35l36 = dev_get_drvdata(dev);
 	int fs1, fs2;
 
 	if (freq > CS35L36_FS_NOM_6MHZ) {
@@ -1002,8 +1002,8 @@ static int cs35l36_component_set_sysclk(struct snd_soc_component *component,
 				int clk_id, int source, unsigned int freq,
 				int dir)
 {
-	struct cs35l36_private *cs35l36 =
-			snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l36_private *cs35l36 = dev_get_drvdata(dev);
 	const struct cs35l36_pll_config *clk_cfg;
 	int prev_clksrc;
 	bool pdm_switch;
@@ -1032,7 +1032,7 @@ static int cs35l36_component_set_sysclk(struct snd_soc_component *component,
 
 	clk_cfg = cs35l36_get_clk_config(cs35l36, freq);
 	if (clk_cfg == NULL) {
-		dev_err(component->dev, "Invalid CLK Config Freq: %d\n", freq);
+		dev_err(dev, "Invalid CLK Config Freq: %d\n", freq);
 		return -EINVAL;
 	}
 
@@ -1153,8 +1153,8 @@ static int cs35l36_boost_inductor(struct cs35l36_private *cs35l36, int inductor)
 
 static int cs35l36_component_probe(struct snd_soc_component *component)
 {
-	struct cs35l36_private *cs35l36 =
-			snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l36_private *cs35l36 = dev_get_drvdata(dev);
 	int ret;
 
 	if ((cs35l36->rev_id == CS35L36_REV_A0) && cs35l36->pdata.dcm_mode) {
@@ -1889,7 +1889,7 @@ static int cs35l36_i2c_probe(struct i2c_client *i2c_client)
 	dev_info(&i2c_client->dev, "Cirrus Logic CS35L%d, Revision: %02X\n",
 		 cs35l36->chip_version, reg_revid >> 8);
 
-	ret =  devm_snd_soc_register_component(dev, &soc_component_dev_cs35l36,
+	ret =  devm_snd_soc_component_register(dev, &soc_component_dev_cs35l36,
 					       cs35l36_dai,
 					       ARRAY_SIZE(cs35l36_dai));
 	if (ret < 0) {

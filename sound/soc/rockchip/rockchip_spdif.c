@@ -106,7 +106,9 @@ static int rk_spdif_hw_params(struct snd_pcm_substream *substream,
 			      struct snd_pcm_hw_params *params,
 			      struct snd_soc_dai *dai)
 {
-	struct rk_spdif_dev *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_spdif_dev *spdif = dev_get_drvdata(dev);
 	unsigned int mclk_rate = clk_get_rate(spdif->mclk);
 	unsigned int val = SPDIF_CFGR_HALFWORD_ENABLE;
 	int bmc, div, ret, i;
@@ -171,7 +173,9 @@ static int rk_spdif_hw_params(struct snd_pcm_substream *substream,
 static int rk_spdif_trigger(struct snd_pcm_substream *substream,
 			    int cmd, struct snd_soc_dai *dai)
 {
-	struct rk_spdif_dev *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_spdif_dev *spdif = dev_get_drvdata(dev);
 	int ret;
 
 	switch (cmd) {
@@ -215,9 +219,11 @@ static int rk_spdif_trigger(struct snd_pcm_substream *substream,
 
 static int rk_spdif_dai_probe(struct snd_soc_dai *dai)
 {
-	struct rk_spdif_dev *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_spdif_dev *spdif = dev_get_drvdata(dev);
 
-	snd_soc_dai_dma_data_set_playback(dai, &spdif->playback_dma_data);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &spdif->playback_dma_data);
 
 	return 0;
 }
@@ -225,7 +231,9 @@ static int rk_spdif_dai_probe(struct snd_soc_dai *dai)
 static int rk_spdif_set_sysclk(struct snd_soc_dai *dai,
 			       int clk_id, unsigned int freq, int dir)
 {
-	struct rk_spdif_dev *spdif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk_spdif_dev *spdif = dev_get_drvdata(dev);
 	int ret;
 
 	if (!freq)
@@ -398,7 +406,7 @@ static int rk_spdif_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &rk_spdif_component,
 					      &rk_spdif_dai, 1);
 	if (ret)

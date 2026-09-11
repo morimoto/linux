@@ -192,6 +192,7 @@ static int wm8961_hp_event(struct snd_soc_dapm_widget *w,
 			   struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u16 hp_reg = snd_soc_component_read(component, WM8961_ANALOGUE_HP_0);
 	u16 cp_reg = snd_soc_component_read(component, WM8961_CHARGE_PUMP_1);
 	u16 pwr_reg = snd_soc_component_read(component, WM8961_PWR_MGMT_2);
@@ -224,7 +225,7 @@ static int wm8961_hp_event(struct snd_soc_dapm_widget *w,
 		dcs_reg |=
 			WM8961_DCS_ENA_CHAN_HPR | WM8961_DCS_TRIG_STARTUP_HPR |
 			WM8961_DCS_ENA_CHAN_HPL | WM8961_DCS_TRIG_STARTUP_HPL;
-		dev_dbg(component->dev, "Enabling DC servo\n");
+		dev_dbg(dev, "Enabling DC servo\n");
 
 		snd_soc_component_write(component, WM8961_DC_SERVO_1, dcs_reg);
 		do {
@@ -235,9 +236,9 @@ static int wm8961_hp_event(struct snd_soc_dapm_widget *w,
 				WM8961_DCS_TRIG_STARTUP_HPL));
 		if (dcs_reg & (WM8961_DCS_TRIG_STARTUP_HPR |
 			       WM8961_DCS_TRIG_STARTUP_HPL))
-			dev_err(component->dev, "DC servo timed out\n");
+			dev_err(dev, "DC servo timed out\n");
 		else
-			dev_dbg(component->dev, "DC servo startup complete\n");
+			dev_dbg(dev, "DC servo startup complete\n");
 
 		/* Enable the output stage */
 		hp_reg |= WM8961_HPR_ENA_OUTP | WM8961_HPL_ENA_OUTP;
@@ -272,7 +273,7 @@ static int wm8961_hp_event(struct snd_soc_dapm_widget *w,
 		snd_soc_component_write(component, WM8961_PWR_MGMT_2, pwr_reg);
 
 		/* Disable the charge pump */
-		dev_dbg(component->dev, "Disabling charge pump\n");
+		dev_dbg(dev, "Disabling charge pump\n");
 		snd_soc_component_write(component, WM8961_CHARGE_PUMP_1,
 			     cp_reg & ~WM8961_CP_ENA);
 	}
@@ -502,15 +503,16 @@ static int wm8961_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8961_priv *wm8961 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8961_priv *wm8961 = dev_get_drvdata(dev);
 	int i, best, target, fs;
 	u16 reg;
 
 	fs = params_rate(params);
 
 	if (!wm8961->sysclk) {
-		dev_err(component->dev, "MCLK has not been specified\n");
+		dev_err(dev, "MCLK has not been specified\n");
 		return -EINVAL;
 	}
 
@@ -525,20 +527,18 @@ static int wm8961_hw_params(struct snd_pcm_substream *substream,
 	reg &= ~WM8961_SAMPLE_RATE_MASK;
 	reg |= wm8961_srate[best].val;
 	snd_soc_component_write(component, WM8961_ADDITIONAL_CONTROL_3, reg);
-	dev_dbg(component->dev, "Selected SRATE %dHz for %dHz\n",
+	dev_dbg(dev, "Selected SRATE %dHz for %dHz\n",
 		wm8961_srate[best].rate, fs);
 
 	/* Select a CLK_SYS/fs ratio equal to or higher than required */
 	target = wm8961->sysclk / fs;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK && target < 64) {
-		dev_err(component->dev,
-			"SYSCLK must be at least 64*fs for DAC\n");
+		dev_err(dev, "SYSCLK must be at least 64*fs for DAC\n");
 		return -EINVAL;
 	}
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE && target < 256) {
-		dev_err(component->dev,
-			"SYSCLK must be at least 256*fs for ADC\n");
+		dev_err(dev, "SYSCLK must be at least 256*fs for ADC\n");
 		return -EINVAL;
 	}
 
@@ -547,10 +547,10 @@ static int wm8961_hw_params(struct snd_pcm_substream *substream,
 			break;
 	}
 	if (i == ARRAY_SIZE(wm8961_clk_sys_ratio)) {
-		dev_err(component->dev, "Unable to generate CLK_SYS_RATE\n");
+		dev_err(dev, "Unable to generate CLK_SYS_RATE\n");
 		return -EINVAL;
 	}
-	dev_dbg(component->dev, "Selected CLK_SYS_RATE of %d for %d/%d=%d\n",
+	dev_dbg(dev, "Selected CLK_SYS_RATE of %d for %d/%d=%d\n",
 		wm8961_clk_sys_ratio[i].ratio, wm8961->sysclk, fs,
 		wm8961->sysclk / fs);
 
@@ -593,21 +593,22 @@ static int wm8961_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 			     unsigned int freq,
 			     int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8961_priv *wm8961 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8961_priv *wm8961 = dev_get_drvdata(dev);
 	u16 reg = snd_soc_component_read(component, WM8961_CLOCKING1);
 
 	if (freq > 33000000) {
-		dev_err(component->dev, "MCLK must be <33MHz\n");
+		dev_err(dev, "MCLK must be <33MHz\n");
 		return -EINVAL;
 	}
 
 	if (freq > 16500000) {
-		dev_dbg(component->dev, "Using MCLK/2 for %dHz MCLK\n", freq);
+		dev_dbg(dev, "Using MCLK/2 for %dHz MCLK\n", freq);
 		reg |= WM8961_MCLKDIV;
 		freq /= 2;
 	} else {
-		dev_dbg(component->dev, "Using MCLK/1 for %dHz MCLK\n", freq);
+		dev_dbg(dev, "Using MCLK/1 for %dHz MCLK\n", freq);
 		reg &= ~WM8961_MCLKDIV;
 	}
 
@@ -620,7 +621,7 @@ static int wm8961_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 static int wm8961_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 aif = snd_soc_component_read(component, WM8961_AUDIO_INTERFACE_0);
 
 	aif &= ~(WM8961_BCLKINV | WM8961_LRP |
@@ -687,7 +688,7 @@ static int wm8961_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 static int wm8961_set_tristate(struct snd_soc_dai *dai, int tristate)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 reg = snd_soc_component_read(component, WM8961_ADDITIONAL_CONTROL_2);
 
 	if (tristate)
@@ -700,7 +701,7 @@ static int wm8961_set_tristate(struct snd_soc_dai *dai, int tristate)
 
 static int wm8961_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 reg = snd_soc_component_read(component, WM8961_ADC_DAC_CONTROL_1);
 
 	if (mute)
@@ -715,7 +716,7 @@ static int wm8961_mute(struct snd_soc_dai *dai, int mute, int direction)
 
 static int wm8961_set_clkdiv(struct snd_soc_dai *dai, int div_id, int div)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 reg;
 
 	switch (div_id) {
@@ -893,7 +894,7 @@ static int wm8961_probe(struct snd_soc_component *component)
 
 static int wm8961_resume(struct snd_soc_component *component)
 {
-	snd_soc_component_cache_sync(component);
+	snd_soc_component_regcache_sync(component);
 
 	return 0;
 }
@@ -979,7 +980,7 @@ static int wm8961_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, wm8961);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8961, &wm8961_dai, 1);
 
 	return ret;

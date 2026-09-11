@@ -31,7 +31,9 @@
 static int loongson_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 				struct snd_soc_dai *dai)
 {
-	struct loongson_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct loongson_i2s *i2s = dev_get_drvdata(dev);
 	unsigned int mask;
 	int ret = 0;
 
@@ -61,7 +63,9 @@ static int loongson_i2s_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct loongson_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct loongson_i2s *i2s = dev_get_drvdata(dev);
 	u32 clk_rate = i2s->clk_rate;
 	u32 sysclk = i2s->sysclk;
 	u32 bits = params_width(params);
@@ -116,7 +120,9 @@ static int loongson_i2s_hw_params(struct snd_pcm_substream *substream,
 static int loongson_i2s_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 				       unsigned int freq, int dir)
 {
-	struct loongson_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct loongson_i2s *i2s = dev_get_drvdata(dev);
 
 	i2s->sysclk = freq;
 
@@ -156,7 +162,9 @@ static int loongson_i2s_enable_bclk(struct loongson_i2s *i2s)
 
 static int loongson_i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct loongson_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct loongson_i2s *i2s = dev_get_drvdata(dev);
 	int ret;
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
@@ -180,19 +188,19 @@ static int loongson_i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 				   I2S_CTRL_MASTER);
 		ret = loongson_i2s_enable_bclk(i2s);
 		if (ret < 0)
-			dev_warn(dai->dev, "wait BCLK ready timeout\n");
+			dev_warn(dev, "wait BCLK ready timeout\n");
 		break;
 	case SND_SOC_DAIFMT_BC_FP:
 		/* Enable MCLK */
 		ret = loongson_i2s_enable_mclk(i2s);
 		if (ret < 0)
-			dev_warn(dai->dev, "wait MCLK ready timeout\n");
+			dev_warn(dev, "wait MCLK ready timeout\n");
 		break;
 	case SND_SOC_DAIFMT_BP_FP:
 		/* Enable MCLK */
 		ret = loongson_i2s_enable_mclk(i2s);
 		if (ret < 0)
-			dev_warn(dai->dev, "wait MCLK ready timeout\n");
+			dev_warn(dev, "wait MCLK ready timeout\n");
 
 		/* Enable master mode */
 		regmap_update_bits(i2s->regmap, LS_I2S_CTRL, I2S_CTRL_MASTER,
@@ -200,7 +208,7 @@ static int loongson_i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 		ret = loongson_i2s_enable_bclk(i2s);
 		if (ret < 0)
-			dev_warn(dai->dev, "wait BCLK ready timeout\n");
+			dev_warn(dev, "wait BCLK ready timeout\n");
 		break;
 	default:
 		return -EINVAL;
@@ -211,11 +219,13 @@ static int loongson_i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 static int loongson_i2s_dai_probe(struct snd_soc_dai *cpu_dai)
 {
-	struct loongson_i2s *i2s = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct loongson_i2s *i2s = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(cpu_dai, &i2s->playback_dma_data,
-				  &i2s->capture_dma_data);
-	snd_soc_dai_set_drvdata(cpu_dai, i2s);
+	snd_soc_dai_stream_dma_data_set_playback(cpu_dai, &i2s->playback_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(cpu_dai,  &i2s->capture_dma_data);
+	dev_set_drvdata(dev, i2s);
 
 	return 0;
 }

@@ -150,7 +150,7 @@ static const struct snd_soc_dapm_route cs35l32_audio_map[] = {
 
 static int cs35l32_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -171,7 +171,7 @@ static int cs35l32_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 
 static int cs35l32_set_tristate(struct snd_soc_dai *dai, int tristate)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	return snd_soc_component_update_bits(component, CS35L32_PWRCTL2,
 					CS35L32_SDOUT_3ST, tristate << 3);
@@ -480,7 +480,7 @@ static int cs35l32_i2c_probe(struct i2c_client *i2c_client)
 	/* Clear MCLK Error Bit since we don't have the clock yet */
 	regmap_read(cs35l32->regmap, CS35L32_INT_STATUS_1, &reg);
 
-	ret = devm_snd_soc_register_component(&i2c_client->dev,
+	ret = devm_snd_soc_component_register(&i2c_client->dev,
 			&soc_component_dev_cs35l32, cs35l32_dai,
 			ARRAY_SIZE(cs35l32_dai));
 	if (ret < 0)

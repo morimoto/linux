@@ -148,7 +148,8 @@ static const char *wm0010_state_to_str(enum wm0010_state state)
 /* Called with wm0010->lock held */
 static void wm0010_halt(struct snd_soc_component *component)
 {
-	struct wm0010_priv *wm0010 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm0010_priv *wm0010 = dev_get_drvdata(dev);
 	enum wm0010_state state;
 
 	/* Fetch the wm0010 state */
@@ -202,13 +203,13 @@ static void wm0010_boot_xfer_complete(void *data)
 {
 	struct wm0010_boot_xfer *xfer = data;
 	struct snd_soc_component *component = xfer->component;
-	struct wm0010_priv *wm0010 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm0010_priv *wm0010 = dev_get_drvdata(dev);
 	u32 *out32 = xfer->t.rx_buf;
 	int i;
 
 	if (xfer->m.status != 0) {
-		dev_err(component->dev, "SPI transfer failed: %d\n",
-			xfer->m.status);
+		dev_err(dev, "SPI transfer failed: %d\n", xfer->m.status);
 		wm0010_mark_boot_failure(wm0010);
 		if (xfer->done)
 			complete(xfer->done);
@@ -216,94 +217,92 @@ static void wm0010_boot_xfer_complete(void *data)
 	}
 
 	for (i = 0; i < xfer->t.len / 4; i++) {
-		dev_dbg(component->dev, "%d: %04x\n", i, out32[i]);
+		dev_dbg(dev, "%d: %04x\n", i, out32[i]);
 
 		switch (be32_to_cpu(out32[i])) {
 		case 0xe0e0e0e0:
-			dev_err(component->dev,
-				"%d: ROM error reported in stage 2\n", i);
+			dev_err(dev, "%d: ROM error reported in stage 2\n", i);
 			wm0010_mark_boot_failure(wm0010);
 			break;
 
 		case 0x55555555:
 			if (wm0010->state < WM0010_STAGE2)
 				break;
-			dev_err(component->dev,
-				"%d: ROM bootloader running in stage 2\n", i);
+			dev_err(dev, "%d: ROM bootloader running in stage 2\n", i);
 			wm0010_mark_boot_failure(wm0010);
 			break;
 
 		case 0x0fed0000:
-			dev_dbg(component->dev, "Stage2 loader running\n");
+			dev_dbg(dev, "Stage2 loader running\n");
 			break;
 
 		case 0x0fed0007:
-			dev_dbg(component->dev, "CODE_HDR packet received\n");
+			dev_dbg(dev, "CODE_HDR packet received\n");
 			break;
 
 		case 0x0fed0008:
-			dev_dbg(component->dev, "CODE_DATA packet received\n");
+			dev_dbg(dev, "CODE_DATA packet received\n");
 			break;
 
 		case 0x0fed0009:
-			dev_dbg(component->dev, "Download complete\n");
+			dev_dbg(dev, "Download complete\n");
 			break;
 
 		case 0x0fed000c:
-			dev_dbg(component->dev, "Application start\n");
+			dev_dbg(dev, "Application start\n");
 			break;
 
 		case 0x0fed000e:
-			dev_dbg(component->dev, "PLL packet received\n");
+			dev_dbg(dev, "PLL packet received\n");
 			wm0010->pll_running = true;
 			break;
 
 		case 0x0fed0025:
-			dev_err(component->dev, "Device reports image too long\n");
+			dev_err(dev, "Device reports image too long\n");
 			wm0010_mark_boot_failure(wm0010);
 			break;
 
 		case 0x0fed002c:
-			dev_err(component->dev, "Device reports bad SPI packet\n");
+			dev_err(dev, "Device reports bad SPI packet\n");
 			wm0010_mark_boot_failure(wm0010);
 			break;
 
 		case 0x0fed0031:
-			dev_err(component->dev, "Device reports SPI read overflow\n");
+			dev_err(dev, "Device reports SPI read overflow\n");
 			wm0010_mark_boot_failure(wm0010);
 			break;
 
 		case 0x0fed0032:
-			dev_err(component->dev, "Device reports SPI underclock\n");
+			dev_err(dev, "Device reports SPI underclock\n");
 			wm0010_mark_boot_failure(wm0010);
 			break;
 
 		case 0x0fed0033:
-			dev_err(component->dev, "Device reports bad header packet\n");
+			dev_err(dev, "Device reports bad header packet\n");
 			wm0010_mark_boot_failure(wm0010);
 			break;
 
 		case 0x0fed0034:
-			dev_err(component->dev, "Device reports invalid packet type\n");
+			dev_err(dev, "Device reports invalid packet type\n");
 			wm0010_mark_boot_failure(wm0010);
 			break;
 
 		case 0x0fed0035:
-			dev_err(component->dev, "Device reports data before header error\n");
+			dev_err(dev, "Device reports data before header error\n");
 			wm0010_mark_boot_failure(wm0010);
 			break;
 
 		case 0x0fed0038:
-			dev_err(component->dev, "Device reports invalid PLL packet\n");
+			dev_err(dev, "Device reports invalid PLL packet\n");
 			break;
 
 		case 0x0fed003a:
-			dev_err(component->dev, "Device reports packet alignment error\n");
+			dev_err(dev, "Device reports packet alignment error\n");
 			wm0010_mark_boot_failure(wm0010);
 			break;
 
 		default:
-			dev_err(component->dev, "Unrecognised return 0x%x\n",
+			dev_err(dev, "Unrecognised return 0x%x\n",
 			    be32_to_cpu(out32[i]));
 			wm0010_mark_boot_failure(wm0010);
 			break;
@@ -327,8 +326,9 @@ static void byte_swap_64(u64 *data_in, u64 *data_out, u32 len)
 
 static int wm0010_firmware_load(const char *name, struct snd_soc_component *component)
 {
-	struct spi_device *spi = to_spi_device(component->dev);
-	struct wm0010_priv *wm0010 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spi_device *spi = to_spi_device(dev);
+	struct wm0010_priv *wm0010 = dev_get_drvdata(dev);
 	struct list_head xfer_list;
 	struct wm0010_boot_xfer *xfer;
 	int ret;
@@ -342,10 +342,9 @@ static int wm0010_firmware_load(const char *name, struct snd_soc_component *comp
 	INIT_LIST_HEAD(&xfer_list);
 
 	const struct firmware *fw __free(firmware) = NULL;
-	ret = request_firmware(&fw, name, component->dev);
+	ret = request_firmware(&fw, name, dev);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to request application(%s): %d\n",
-			name, ret);
+		dev_err(dev, "Failed to request application(%s): %d\n", name, ret);
 		return ret;
 	}
 
@@ -359,23 +358,21 @@ static int wm0010_firmware_load(const char *name, struct snd_soc_component *comp
 
 	/* First record should be INFO */
 	if (rec->command != DFW_CMD_INFO) {
-		dev_err(component->dev, "First record not INFO\r\n");
+		dev_err(dev, "First record not INFO\r\n");
 		return -EINVAL;
 	}
 
 	if (inforec->info_version != INFO_VERSION) {
-		dev_err(component->dev,
-			"Unsupported version (%02d) of INFO record\r\n",
+		dev_err(dev, "Unsupported version (%02d) of INFO record\r\n",
 			inforec->info_version);
 		return -EINVAL;
 	}
 
-	dev_dbg(component->dev, "Version v%02d INFO record found\r\n",
-		inforec->info_version);
+	dev_dbg(dev, "Version v%02d INFO record found\r\n", inforec->info_version);
 
 	/* Check it's a DSP file */
 	if (dsp != DEVICE_ID_WM0010) {
-		dev_err(component->dev, "Not a WM0010 firmware file.\r\n");
+		dev_err(dev, "Not a WM0010 firmware file.\r\n");
 		return -EINVAL;
 	}
 
@@ -384,8 +381,7 @@ static int wm0010_firmware_load(const char *name, struct snd_soc_component *comp
 	rec = (void *)&rec->data[rec->length];
 
 	while (offset < fw->size) {
-		dev_dbg(component->dev,
-			"Packet: command %d, data length = 0x%x\r\n",
+		dev_dbg(dev, "Packet: command %d, data length = 0x%x\r\n",
 			rec->command, rec->length);
 		len = rec->length + 8;
 
@@ -439,18 +435,18 @@ static int wm0010_firmware_load(const char *name, struct snd_soc_component *comp
 		rec = (void *)&rec->data[rec->length];
 
 		if (offset >= fw->size) {
-			dev_dbg(component->dev, "All transfers scheduled\n");
+			dev_dbg(dev, "All transfers scheduled\n");
 			xfer->done = &done;
 		}
 
 		ret = spi_async(spi, &xfer->m);
 		if (ret != 0) {
-			dev_err(component->dev, "Write failed: %d\n", ret);
+			dev_err(dev, "Write failed: %d\n", ret);
 			goto abort;
 		}
 
 		if (wm0010->boot_failed) {
-			dev_dbg(component->dev, "Boot fail!\n");
+			dev_dbg(dev, "Boot fail!\n");
 			ret = -EINVAL;
 			goto abort;
 		}
@@ -475,22 +471,22 @@ abort:
 
 static int wm0010_stage2_load(struct snd_soc_component *component)
 {
-	struct spi_device *spi = to_spi_device(component->dev);
-	struct wm0010_priv *wm0010 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spi_device *spi = to_spi_device(dev);
+	struct wm0010_priv *wm0010 = dev_get_drvdata(dev);
 	struct spi_message m;
 	struct spi_transfer t;
 	int i;
 	int ret = 0;
 
 	const struct firmware *fw __free(firmware) = NULL;
-	ret = request_firmware(&fw, "wm0010_stage2.bin", component->dev);
+	ret = request_firmware(&fw, "wm0010_stage2.bin", dev);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to request stage2 loader: %d\n",
-			ret);
+		dev_err(dev, "Failed to request stage2 loader: %d\n", ret);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "Downloading %zu byte stage 2 loader\n", fw->size);
+	dev_dbg(dev, "Downloading %zu byte stage 2 loader\n", fw->size);
 
 	/* Copy to local buffer first as vmalloc causes problems for dma */
 	u32 *img __free(kfree) =
@@ -512,20 +508,18 @@ static int wm0010_stage2_load(struct snd_soc_component *component)
 	t.speed_hz = wm0010->sysclk / 10;
 	spi_message_add_tail(&t, &m);
 
-	dev_dbg(component->dev, "Starting initial download at %dHz\n",
-		t.speed_hz);
+	dev_dbg(dev, "Starting initial download at %dHz\n", t.speed_hz);
 
 	ret = spi_sync(spi, &m);
 	if (ret != 0) {
-		dev_err(component->dev, "Initial download failed: %d\n", ret);
+		dev_err(dev, "Initial download failed: %d\n", ret);
 		return ret;
 	}
 
 	/* Look for errors from the boot ROM */
 	for (i = 0; i < fw->size; i++) {
 		if (out[i] != 0x55) {
-			dev_err(component->dev, "Boot ROM error: %x in %d\n",
-				out[i], i);
+			dev_err(dev, "Boot ROM error: %x in %d\n", out[i], i);
 			wm0010_mark_boot_failure(wm0010);
 			return -EBUSY;
 		}
@@ -536,8 +530,9 @@ static int wm0010_stage2_load(struct snd_soc_component *component)
 
 static int wm0010_boot(struct snd_soc_component *component)
 {
-	struct spi_device *spi = to_spi_device(component->dev);
-	struct wm0010_priv *wm0010 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spi_device *spi = to_spi_device(dev);
+	struct wm0010_priv *wm0010 = dev_get_drvdata(dev);
 	unsigned long flags;
 	int ret;
 	struct spi_message m;
@@ -554,7 +549,7 @@ static int wm0010_boot(struct snd_soc_component *component)
 	spin_unlock_irqrestore(&wm0010->irq_lock, flags);
 
 	if (wm0010->sysclk > 26000000) {
-		dev_err(component->dev, "Max DSP clock frequency is 26MHz\n");
+		dev_err(dev, "Max DSP clock frequency is 26MHz\n");
 		ret = -ECANCELED;
 		goto err;
 	}
@@ -562,7 +557,7 @@ static int wm0010_boot(struct snd_soc_component *component)
 	mutex_lock(&wm0010->lock);
 	wm0010->pll_running = false;
 
-	dev_dbg(component->dev, "max_spi_freq: %d\n", wm0010->max_spi_freq);
+	dev_dbg(dev, "max_spi_freq: %d\n", wm0010->max_spi_freq);
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(wm0010->core_supplies),
 				    wm0010->core_supplies);
@@ -587,7 +582,7 @@ static int wm0010_boot(struct snd_soc_component *component)
 
 	if (!wait_for_completion_timeout(&wm0010->boot_completion,
 					 msecs_to_jiffies(20)))
-		dev_err(component->dev, "Failed to get interrupt from DSP\n");
+		dev_err(dev, "Failed to get interrupt from DSP\n");
 
 	spin_lock_irqsave(&wm0010->irq_lock, flags);
 	wm0010->state = WM0010_BOOTROM;
@@ -599,7 +594,7 @@ static int wm0010_boot(struct snd_soc_component *component)
 
 	if (!wait_for_completion_timeout(&wm0010->boot_completion,
 					 msecs_to_jiffies(20)))
-		dev_err(component->dev, "Failed to get interrupt from DSP loader.\n");
+		dev_err(dev, "Failed to get interrupt from DSP loader.\n");
 
 	spin_lock_irqsave(&wm0010->irq_lock, flags);
 	wm0010->state = WM0010_STAGE2;
@@ -640,14 +635,14 @@ static int wm0010_boot(struct snd_soc_component *component)
 
 		ret = spi_sync(spi, &m);
 		if (ret) {
-			dev_err(component->dev, "First PLL write failed: %d\n", ret);
+			dev_err(dev, "First PLL write failed: %d\n", ret);
 			goto abort_swap;
 		}
 
 		/* Use a second send of the message to get the return status */
 		ret = spi_sync(spi, &m);
 		if (ret) {
-			dev_err(component->dev, "Second PLL write failed: %d\n", ret);
+			dev_err(dev, "Second PLL write failed: %d\n", ret);
 			goto abort_swap;
 		}
 
@@ -656,7 +651,7 @@ static int wm0010_boot(struct snd_soc_component *component)
 		/* Look for PLL active code from the DSP */
 		for (i = 0; i < len / 4; i++) {
 			if (*p == 0x0e00ed0f) {
-				dev_dbg(component->dev, "PLL packet received\n");
+				dev_dbg(dev, "PLL packet received\n");
 				wm0010->pll_running = true;
 				break;
 			}
@@ -666,7 +661,7 @@ static int wm0010_boot(struct snd_soc_component *component)
 		kfree(img_swap);
 		kfree(out);
 	} else
-		dev_dbg(component->dev, "Not enabling DSP PLL.");
+		dev_dbg(dev, "Not enabling DSP PLL.");
 
 	ret = wm0010_firmware_load("wm0010.dfw", component);
 
@@ -702,7 +697,8 @@ err:
 static int wm0010_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm0010_priv *wm0010 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm0010_priv *wm0010 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -728,7 +724,8 @@ static int wm0010_set_bias_level(struct snd_soc_component *component,
 static int wm0010_set_sysclk(struct snd_soc_component *component, int source,
 			     int clk_id, unsigned int freq, int dir)
 {
-	struct wm0010_priv *wm0010 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm0010_priv *wm0010 = dev_get_drvdata(dev);
 	unsigned int i;
 
 	wm0010->sysclk = freq;
@@ -823,7 +820,8 @@ static irqreturn_t wm0010_irq(int irq, void *data)
 
 static int wm0010_probe(struct snd_soc_component *component)
 {
-	struct wm0010_priv *wm0010 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm0010_priv *wm0010 = dev_get_drvdata(dev);
 
 	wm0010->component = component;
 
@@ -907,7 +905,7 @@ static int wm0010_spi_probe(struct spi_device *spi)
 	else
 		wm0010->board_max_spi_speed = 0;
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 				     &soc_component_dev_wm0010, wm0010_dai,
 				     ARRAY_SIZE(wm0010_dai));
 	if (ret < 0)

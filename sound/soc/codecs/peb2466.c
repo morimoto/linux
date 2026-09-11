@@ -278,7 +278,8 @@ static int peb2466_lkup_ctrl_put(struct snd_kcontrol *kcontrol,
 	struct peb2466_lkup_ctrl *lkup_ctrl =
 		(struct peb2466_lkup_ctrl *)kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	unsigned int index;
 	int ret;
 
@@ -318,7 +319,7 @@ static int peb2466_add_lkup_ctrl(struct snd_soc_component *component,
 	control.put = peb2466_lkup_ctrl_put;
 	control.private_value = (unsigned long)lkup_ctrl;
 
-	return snd_soc_add_component_controls(component, &control, 1);
+	return snd_soc_component_add_controls(component, &control, 1);
 }
 
 enum peb2466_tone_freq {
@@ -379,7 +380,8 @@ static int peb2466_tg_freq_get(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 
 	switch (e->reg) {
@@ -417,7 +419,8 @@ static int peb2466_tg_freq_put(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int *tg_freq_item;
 	u8 cr1_reg, cr1_mask;
@@ -669,7 +672,9 @@ static const struct snd_soc_dapm_route peb2466_dapm_routes[] = {
 static int peb2466_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				    unsigned int rx_mask, int slots, int width)
 {
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	unsigned int chan;
 	unsigned int mask;
 	u8 slot;
@@ -681,7 +686,7 @@ static int peb2466_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mas
 	case 8:
 		break;
 	default:
-		dev_err(dai->dev, "tdm slot width %d not supported\n", width);
+		dev_err(dev, "tdm slot width %d not supported\n", width);
 		return -EINVAL;
 	}
 
@@ -692,7 +697,7 @@ static int peb2466_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mas
 		if (mask & 0x1) {
 			ret = regmap_write(peb2466->regmap, PEB2466_CR5(chan), slot);
 			if (ret) {
-				dev_err(dai->dev, "chan %d set tx tdm slot failed (%d)\n",
+				dev_err(dev, "chan %d set tx tdm slot failed (%d)\n",
 					chan, ret);
 				return ret;
 			}
@@ -702,7 +707,7 @@ static int peb2466_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mas
 		slot++;
 	}
 	if (mask) {
-		dev_err(dai->dev, "too much tx slots defined (mask = 0x%x) support max %d\n",
+		dev_err(dev, "too much tx slots defined (mask = 0x%x) support max %d\n",
 			tx_mask, PEB2466_NB_CHANNEL);
 		return -EINVAL;
 	}
@@ -715,7 +720,7 @@ static int peb2466_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mas
 		if (mask & 0x1) {
 			ret = regmap_write(peb2466->regmap, PEB2466_CR4(chan), slot);
 			if (ret) {
-				dev_err(dai->dev, "chan %d set rx tdm slot failed (%d)\n",
+				dev_err(dev, "chan %d set rx tdm slot failed (%d)\n",
 					chan, ret);
 				return ret;
 			}
@@ -725,7 +730,7 @@ static int peb2466_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mas
 		slot++;
 	}
 	if (mask) {
-		dev_err(dai->dev, "too much rx slots defined (mask = 0x%x) support max %d\n",
+		dev_err(dev, "too much rx slots defined (mask = 0x%x) support max %d\n",
 			rx_mask, PEB2466_NB_CHANNEL);
 		return -EINVAL;
 	}
@@ -736,7 +741,9 @@ static int peb2466_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mas
 
 static int peb2466_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	u8 xr6;
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
@@ -747,7 +754,7 @@ static int peb2466_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		xr6 = PEB2466_XR6_PCM_OFFSET(0);
 		break;
 	default:
-		dev_err(dai->dev, "Unsupported format 0x%x\n",
+		dev_err(dev, "Unsupported format 0x%x\n",
 			fmt & SND_SOC_DAIFMT_FORMAT_MASK);
 		return -EINVAL;
 	}
@@ -758,7 +765,9 @@ static int peb2466_dai_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	unsigned int ch;
 	int ret;
 	u8 cr1;
@@ -796,7 +805,9 @@ static struct snd_pcm_hw_constraint_list peb2466_sample_bits_constr = {
 static int peb2466_dai_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	unsigned int max_ch;
 	int ret;
 
@@ -937,12 +948,13 @@ static int peb2466_reset_audio(struct peb2466 *peb2466)
 static int peb2466_fw_parse_thfilter(struct snd_soc_component *component,
 				     u16 tag, u32 lng, const u8 *data)
 {
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	u8 mask;
 	int ret;
 	int i;
 
-	dev_info(component->dev, "fw TH filter: mask %x, %*phN\n", *data,
+	dev_info(dev, "fw TH filter: mask %x, %*phN\n", *data,
 		 lng - 1, data + 1);
 
 	/*
@@ -986,12 +998,13 @@ static int peb2466_fw_parse_thfilter(struct snd_soc_component *component,
 static int peb2466_fw_parse_imr1filter(struct snd_soc_component *component,
 				       u16 tag, u32 lng, const u8 *data)
 {
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	u8 mask;
 	int ret;
 	int i;
 
-	dev_info(component->dev, "fw IM/R1 filter: mask %x, %*phN\n", *data,
+	dev_info(dev, "fw IM/R1 filter: mask %x, %*phN\n", *data,
 		 lng - 1, data + 1);
 
 	/*
@@ -1029,12 +1042,13 @@ static int peb2466_fw_parse_imr1filter(struct snd_soc_component *component,
 static int peb2466_fw_parse_frxfilter(struct snd_soc_component *component,
 				      u16 tag, u32 lng, const u8 *data)
 {
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	u8 mask;
 	int ret;
 	int i;
 
-	dev_info(component->dev, "fw FRX filter: mask %x, %*phN\n", *data,
+	dev_info(dev, "fw FRX filter: mask %x, %*phN\n", *data,
 		 lng - 1, data + 1);
 
 	/*
@@ -1067,12 +1081,13 @@ static int peb2466_fw_parse_frxfilter(struct snd_soc_component *component,
 static int peb2466_fw_parse_frrfilter(struct snd_soc_component *component,
 				      u16 tag, u32 lng, const u8 *data)
 {
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	u8 mask;
 	int ret;
 	int i;
 
-	dev_info(component->dev, "fw FRR filter: mask %x, %*phN\n", *data,
+	dev_info(dev, "fw FRR filter: mask %x, %*phN\n", *data,
 		 lng - 1, data + 1);
 
 	/*
@@ -1105,12 +1120,13 @@ static int peb2466_fw_parse_frrfilter(struct snd_soc_component *component,
 static int peb2466_fw_parse_axfilter(struct snd_soc_component *component,
 				     u16 tag, u32 lng, const u8 *data)
 {
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	u8 mask;
 	int ret;
 	int i;
 
-	dev_info(component->dev, "fw AX filter: mask %x, %*phN\n", *data,
+	dev_info(dev, "fw AX filter: mask %x, %*phN\n", *data,
 		 lng - 1, data + 1);
 
 	/*
@@ -1143,12 +1159,13 @@ static int peb2466_fw_parse_axfilter(struct snd_soc_component *component,
 static int peb2466_fw_parse_arfilter(struct snd_soc_component *component,
 				     u16 tag, u32 lng, const u8 *data)
 {
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	u8 mask;
 	int ret;
 	int i;
 
-	dev_info(component->dev, "fw AR filter: mask %x, %*phN\n", *data,
+	dev_info(dev, "fw AR filter: mask %x, %*phN\n", *data,
 		 lng - 1, data + 1);
 
 	/*
@@ -1188,7 +1205,8 @@ static const char * const peb2466_ax_ctrl_names[] = {
 static int peb2466_fw_parse_axtable(struct snd_soc_component *component,
 				    u16 tag, u32 lng, const u8 *data)
 {
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	struct peb2466_lkup_ctrl *lkup_ctrl;
 	struct peb2466_lookup *lookup;
 	u8 (*table)[4];
@@ -1218,7 +1236,7 @@ static int peb2466_fw_parse_axtable(struct snd_soc_component *component,
 
 	/* Check Lng and extract the table size. */
 	if (lng < 13 || ((lng - 13) % 4)) {
-		dev_err(component->dev, "fw AX table lng %u invalid\n", lng);
+		dev_err(dev, "fw AX table lng %u invalid\n", lng);
 		return -EINVAL;
 	}
 	table_size = lng - 13;
@@ -1227,12 +1245,12 @@ static int peb2466_fw_parse_axtable(struct snd_soc_component *component,
 	step = get_unaligned_be32(data + 5);
 	init_index = get_unaligned_be32(data + 9);
 	if (init_index >= (table_size / 4)) {
-		dev_err(component->dev, "fw AX table index %u out of table[%u]\n",
+		dev_err(dev, "fw AX table index %u out of table[%u]\n",
 			init_index, table_size / 4);
 		return -EINVAL;
 	}
 
-	dev_info(component->dev,
+	dev_info(dev,
 		 "fw AX table: mask %x, min %d, step %d, %u items, tbl[%u] %*phN\n",
 		 *data, min_val, step, table_size / 4, init_index,
 		 4, data + 13 + (init_index * 4));
@@ -1292,7 +1310,8 @@ static const char * const peb2466_ar_ctrl_names[] = {
 static int peb2466_fw_parse_artable(struct snd_soc_component *component,
 				    u16 tag, u32 lng, const u8 *data)
 {
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	struct peb2466_lkup_ctrl *lkup_ctrl;
 	struct peb2466_lookup *lookup;
 	u8 (*table)[4];
@@ -1322,7 +1341,7 @@ static int peb2466_fw_parse_artable(struct snd_soc_component *component,
 
 	/* Check Lng and extract the table size. */
 	if (lng < 13 || ((lng - 13) % 4)) {
-		dev_err(component->dev, "fw AR table lng %u invalid\n", lng);
+		dev_err(dev, "fw AR table lng %u invalid\n", lng);
 		return -EINVAL;
 	}
 	table_size = lng - 13;
@@ -1331,12 +1350,12 @@ static int peb2466_fw_parse_artable(struct snd_soc_component *component,
 	step = get_unaligned_be32(data + 5);
 	init_index = get_unaligned_be32(data + 9);
 	if (init_index >= (table_size / 4)) {
-		dev_err(component->dev, "fw AR table index %u out of table[%u]\n",
+		dev_err(dev, "fw AR table index %u out of table[%u]\n",
 			init_index, table_size / 4);
 		return -EINVAL;
 	}
 
-	dev_info(component->dev,
+	dev_info(dev,
 		 "fw AR table: mask %x, min %d, step %d, %u items, tbl[%u] %*phN\n",
 		 *data, min_val, step, table_size / 4, init_index,
 		 4, data + 13 + (init_index * 4));
@@ -1441,6 +1460,7 @@ static const struct peb2466_fw_tag_def *peb2466_fw_get_tag_def(u16 tag)
 static int peb2466_fw_parse(struct snd_soc_component *component,
 			    const u8 *data, size_t size)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	const struct peb2466_fw_tag_def *tag_def;
 	size_t left;
 	const u8 *buf;
@@ -1472,14 +1492,14 @@ static int peb2466_fw_parse(struct snd_soc_component *component,
 	buf = data;
 
 	if (left < 4) {
-		dev_err(component->dev, "fw size %zu, exp at least 4\n", left);
+		dev_err(dev, "fw size %zu, exp at least 4\n", left);
 		return -EINVAL;
 	}
 
 	/* Check magic */
 	val16 = get_unaligned_be16(buf);
 	if (val16 != 0x2466) {
-		dev_err(component->dev, "fw magic 0x%04x exp 0x2466\n", val16);
+		dev_err(dev, "fw magic 0x%04x exp 0x2466\n", val16);
 		return -EINVAL;
 	}
 	buf += 2;
@@ -1488,7 +1508,7 @@ static int peb2466_fw_parse(struct snd_soc_component *component,
 	/* Check version */
 	val16 = get_unaligned_be16(buf);
 	if (val16 != 0x0100) {
-		dev_err(component->dev, "fw magic 0x%04x exp 0x0100\n", val16);
+		dev_err(dev, "fw magic 0x%04x exp 0x0100\n", val16);
 		return -EINVAL;
 	}
 	buf += 2;
@@ -1496,7 +1516,7 @@ static int peb2466_fw_parse(struct snd_soc_component *component,
 
 	while (left) {
 		if (left < 6) {
-			dev_err(component->dev, "fw %td/%zu left %zu, exp at least 6\n",
+			dev_err(dev, "fw %td/%zu left %zu, exp at least 6\n",
 				buf - data, size, left);
 			return -EINVAL;
 		}
@@ -1505,19 +1525,19 @@ static int peb2466_fw_parse(struct snd_soc_component *component,
 		lng = get_unaligned_be32(buf + 2);
 		tag_def = peb2466_fw_get_tag_def(tag);
 		if (!tag_def) {
-			dev_err(component->dev, "fw %td/%zu tag 0x%04x unknown\n",
+			dev_err(dev, "fw %td/%zu tag 0x%04x unknown\n",
 				buf - data, size, tag);
 			return -EINVAL;
 		}
 		if (lng < tag_def->lng_min || lng > tag_def->lng_max) {
-			dev_err(component->dev, "fw %td/%zu tag 0x%04x lng %u, exp [%u;%u]\n",
+			dev_err(dev, "fw %td/%zu tag 0x%04x lng %u, exp [%u;%u]\n",
 				buf - data, size, tag, lng, tag_def->lng_min, tag_def->lng_max);
 			return -EINVAL;
 		}
 		buf += 6;
 		left -= 6;
 		if (left < lng) {
-			dev_err(component->dev, "fw %td/%zu tag 0x%04x lng %u, left %zu\n",
+			dev_err(dev, "fw %td/%zu tag 0x%04x lng %u, left %zu\n",
 				buf - data, size, tag, lng, left);
 			return -EINVAL;
 		}
@@ -1525,7 +1545,7 @@ static int peb2466_fw_parse(struct snd_soc_component *component,
 		/* TLV block is valid -> parse the data part */
 		ret = tag_def->parse(component, tag, lng, buf);
 		if (ret) {
-			dev_err(component->dev, "fw %td/%zu tag 0x%04x lng %u parse failed\n",
+			dev_err(dev, "fw %td/%zu tag 0x%04x lng %u parse failed\n",
 				buf - data, size, tag, lng);
 			return ret;
 		}
@@ -1538,10 +1558,11 @@ static int peb2466_fw_parse(struct snd_soc_component *component,
 
 static int peb2466_load_coeffs(struct snd_soc_component *component, const char *fw_name)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	const struct firmware *fw __free(firmware) = NULL;
 	int ret;
 
-	ret = request_firmware(&fw, fw_name, component->dev);
+	ret = request_firmware(&fw, fw_name, dev);
 	if (ret)
 		return ret;
 
@@ -1550,7 +1571,8 @@ static int peb2466_load_coeffs(struct snd_soc_component *component, const char *
 
 static int peb2466_component_probe(struct snd_soc_component *component)
 {
-	struct peb2466 *peb2466 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct peb2466 *peb2466 = dev_get_drvdata(dev);
 	const char *firmware_name;
 	int ret;
 
@@ -2014,7 +2036,7 @@ static int peb2466_spi_probe(struct spi_device *spi)
 		goto failed;
 	}
 
-	ret = devm_snd_soc_register_component(&spi->dev, &peb2466_component_driver,
+	ret = devm_snd_soc_component_register(&spi->dev, &peb2466_component_driver,
 					      &peb2466_dai_driver, 1);
 	if (ret)
 		goto failed;

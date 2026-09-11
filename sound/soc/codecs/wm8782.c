@@ -37,8 +37,9 @@ struct wm8782_priv {
 static int wm8782_dai_startup(struct snd_pcm_substream *sub, struct snd_soc_dai *dai)
 {
 	struct snd_pcm_runtime *runtime = sub->runtime;
-	struct wm8782_priv *priv =
-		snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8782_priv *priv = dev_get_drvdata(dev);
 
 	return snd_pcm_hw_constraint_minmax(runtime, SNDRV_PCM_HW_PARAM_RATE,
 					   8000, priv->max_rate);
@@ -74,27 +75,31 @@ static struct snd_soc_dai_driver wm8782_dai = {
 
 static int wm8782_soc_probe(struct snd_soc_component *component)
 {
-	struct wm8782_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8782_priv *priv = dev_get_drvdata(dev);
 	return regulator_bulk_enable(ARRAY_SIZE(priv->supplies), priv->supplies);
 }
 
 static void wm8782_soc_remove(struct snd_soc_component *component)
 {
-	struct wm8782_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8782_priv *priv = dev_get_drvdata(dev);
 	regulator_bulk_disable(ARRAY_SIZE(priv->supplies), priv->supplies);
 }
 
 #ifdef CONFIG_PM
 static int wm8782_soc_suspend(struct snd_soc_component *component)
 {
-	struct wm8782_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8782_priv *priv = dev_get_drvdata(dev);
 	regulator_bulk_disable(ARRAY_SIZE(priv->supplies), priv->supplies);
 	return 0;
 }
 
 static int wm8782_soc_resume(struct snd_soc_component *component)
 {
-	struct wm8782_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8782_priv *priv = dev_get_drvdata(dev);
 	return regulator_bulk_enable(ARRAY_SIZE(priv->supplies), priv->supplies);
 }
 #else
@@ -158,7 +163,7 @@ static int wm8782_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&soc_component_dev_wm8782, &wm8782_dai, 1);
 }
 

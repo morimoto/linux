@@ -210,8 +210,8 @@ static int rt5514_spi_hw_params(struct snd_soc_component *component,
 				struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *hw_params)
 {
-	struct rt5514_dsp *rt5514_dsp =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_dsp *rt5514_dsp = dev_get_drvdata(dev);
 	u8 buf[8];
 
 	guard(mutex)(&rt5514_dsp->dma_lock);
@@ -229,8 +229,8 @@ static int rt5514_spi_hw_params(struct snd_soc_component *component,
 static int rt5514_spi_hw_free(struct snd_soc_component *component,
 			      struct snd_pcm_substream *substream)
 {
-	struct rt5514_dsp *rt5514_dsp =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_dsp *rt5514_dsp = dev_get_drvdata(dev);
 
 	scoped_guard(mutex, &rt5514_dsp->dma_lock)
 		rt5514_dsp->substream = NULL;
@@ -245,8 +245,8 @@ static snd_pcm_uframes_t rt5514_spi_pcm_pointer(
 		struct snd_pcm_substream *substream)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	struct rt5514_dsp *rt5514_dsp =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5514_dsp *rt5514_dsp = dev_get_drvdata(dev);
 
 	return bytes_to_frames(runtime, rt5514_dsp->dma_offset);
 }
@@ -254,18 +254,18 @@ static snd_pcm_uframes_t rt5514_spi_pcm_pointer(
 
 static int rt5514_spi_pcm_probe(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct rt5514_dsp *rt5514_dsp;
 	int ret;
 
-	rt5514_dsp = devm_kzalloc(component->dev, sizeof(*rt5514_dsp),
-			GFP_KERNEL);
+	rt5514_dsp = devm_kzalloc(dev, sizeof(*rt5514_dsp), GFP_KERNEL);
 	if (!rt5514_dsp)
 		return -ENOMEM;
 
 	rt5514_dsp->dev = &rt5514_spi->dev;
 	mutex_init(&rt5514_dsp->dma_lock);
 	INIT_DELAYED_WORK(&rt5514_dsp->copy_work, rt5514_spi_copy_work);
-	snd_soc_component_set_drvdata(component, rt5514_dsp);
+	dev_set_drvdata(dev, rt5514_dsp);
 
 	if (rt5514_spi->irq) {
 		ret = devm_request_threaded_irq(&rt5514_spi->dev,
@@ -442,7 +442,7 @@ static int rt5514_spi_probe(struct spi_device *spi)
 
 	rt5514_spi = spi;
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 					      &rt5514_spi_component,
 					      &rt5514_spi_dai, 1);
 	if (ret < 0) {

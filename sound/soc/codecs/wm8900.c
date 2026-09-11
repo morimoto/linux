@@ -626,7 +626,7 @@ static int wm8900_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params,
 	struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 reg;
 
 	reg = snd_soc_component_read(component, WM8900_REG_AUDIO1) & ~0x60;
@@ -745,7 +745,8 @@ static int fll_factors(struct _fll_div *fll_div, unsigned int Fref,
 static int wm8900_set_fll(struct snd_soc_component *component,
 	int fll_id, unsigned int freq_in, unsigned int freq_out)
 {
-	struct wm8900_priv *wm8900 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8900_priv *wm8900 = dev_get_drvdata(dev);
 	struct _fll_div fll_div;
 
 	if (wm8900->fll_in == freq_in && wm8900->fll_out == freq_out)
@@ -809,13 +810,15 @@ reenable:
 static int wm8900_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 		int source, unsigned int freq_in, unsigned int freq_out)
 {
-	return wm8900_set_fll(codec_dai->component, pll_id, freq_in, freq_out);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+
+	return wm8900_set_fll(component, pll_id, freq_in, freq_out);
 }
 
 static int wm8900_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 				 int div_id, int div)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
 	switch (div_id) {
 	case WM8900_BCLK_DIV:
@@ -857,7 +860,7 @@ static int wm8900_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 static int wm8900_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			      unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	unsigned int clocking1, aif1, aif3, aif4;
 
 	clocking1 = snd_soc_component_read(component, WM8900_REG_CLOCKING1);
@@ -969,7 +972,7 @@ static int wm8900_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 static int wm8900_mute(struct snd_soc_dai *codec_dai, int mute, int direction)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 reg;
 
 	reg = snd_soc_component_read(component, WM8900_REG_DACCTRL);
@@ -1134,7 +1137,8 @@ static int wm8900_set_bias_level(struct snd_soc_component *component,
 
 static int wm8900_suspend(struct snd_soc_component *component)
 {
-	struct wm8900_priv *wm8900 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8900_priv *wm8900 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int fll_out = wm8900->fll_out;
 	int fll_in  = wm8900->fll_in;
@@ -1143,7 +1147,7 @@ static int wm8900_suspend(struct snd_soc_component *component)
 	/* Stop the FLL in an orderly fashion */
 	ret = wm8900_set_fll(component, 0, 0, 0);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to stop FLL\n");
+		dev_err(dev, "Failed to stop FLL\n");
 		return ret;
 	}
 
@@ -1157,7 +1161,8 @@ static int wm8900_suspend(struct snd_soc_component *component)
 
 static int wm8900_resume(struct snd_soc_component *component)
 {
-	struct wm8900_priv *wm8900 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8900_priv *wm8900 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -1165,7 +1170,7 @@ static int wm8900_resume(struct snd_soc_component *component)
 
 	ret = regcache_sync(wm8900->regmap);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to restore cache: %d\n", ret);
+		dev_err(dev, "Failed to restore cache: %d\n", ret);
 		return ret;
 	}
 
@@ -1181,7 +1186,7 @@ static int wm8900_resume(struct snd_soc_component *component)
 
 		ret = wm8900_set_fll(component, 0, fll_in, fll_out);
 		if (ret != 0) {
-			dev_err(component->dev, "Failed to restart FLL\n");
+			dev_err(dev, "Failed to restart FLL\n");
 			return ret;
 		}
 	}
@@ -1192,11 +1197,12 @@ static int wm8900_resume(struct snd_soc_component *component)
 static int wm8900_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int reg;
 
 	reg = snd_soc_component_read(component, WM8900_REG_ID);
 	if (reg != 0x8900) {
-		dev_err(component->dev, "Device is not a WM8900 - ID %x\n", reg);
+		dev_err(dev, "Device is not a WM8900 - ID %x\n", reg);
 		return -ENODEV;
 	}
 
@@ -1268,7 +1274,7 @@ static int wm8900_spi_probe(struct spi_device *spi)
 
 	spi_set_drvdata(spi, wm8900);
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 			&soc_component_dev_wm8900, &wm8900_dai, 1);
 
 	return ret;
@@ -1299,7 +1305,7 @@ static int wm8900_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, wm8900);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8900, &wm8900_dai, 1);
 
 	return ret;

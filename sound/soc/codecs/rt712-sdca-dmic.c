@@ -245,7 +245,8 @@ static int rt712_sdca_dmic_set_gain_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt712_sdca_priv *rt712 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt712_sdca_priv *rt712 = dev_get_drvdata(dev);
 	struct rt712_sdca_dmic_kctrl_priv *p =
 		(struct rt712_sdca_dmic_kctrl_priv *)kcontrol->private_value;
 	unsigned int regvalue, ctl, i;
@@ -276,7 +277,8 @@ static int rt712_sdca_dmic_set_gain_put(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct rt712_sdca_dmic_kctrl_priv *p =
 		(struct rt712_sdca_dmic_kctrl_priv *)kcontrol->private_value;
-	struct rt712_sdca_priv *rt712 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt712_sdca_priv *rt712 = dev_get_drvdata(dev);
 	unsigned int gain_val[4];
 	unsigned int i, adc_vol_flag = 0, changed = 0;
 	unsigned int regvalue[4];
@@ -339,7 +341,8 @@ static int rt712_sdca_dmic_fu1e_capture_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt712_sdca_dmic_priv *rt712 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt712_sdca_dmic_priv *rt712 = dev_get_drvdata(dev);
 	struct rt712_sdca_dmic_kctrl_priv *p =
 		(struct rt712_sdca_dmic_kctrl_priv *)kcontrol->private_value;
 	unsigned int i;
@@ -354,7 +357,8 @@ static int rt712_sdca_dmic_fu1e_capture_put(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt712_sdca_dmic_priv *rt712 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt712_sdca_dmic_priv *rt712 = dev_get_drvdata(dev);
 	struct rt712_sdca_dmic_kctrl_priv *p =
 		(struct rt712_sdca_dmic_kctrl_priv *)kcontrol->private_value;
 	int err, changed = 0, i;
@@ -429,7 +433,8 @@ static int rt712_sdca_dmic_mux_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
-	struct rt712_sdca_dmic_priv *rt712 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt712_sdca_dmic_priv *rt712 = dev_get_drvdata(dev);
 	unsigned int val = 0, mask_sft;
 
 	if (strstr(ucontrol->id.name, "ADC 25 Mux"))
@@ -452,7 +457,8 @@ static int rt712_sdca_dmic_mux_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
-	struct rt712_sdca_dmic_priv *rt712 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt712_sdca_dmic_priv *rt712 = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int *item = ucontrol->value.enumerated.item;
 	unsigned int val, val2 = 0, change, mask_sft;
@@ -511,9 +517,9 @@ static const struct snd_kcontrol_new rt712_sdca_dmic_adc26_mux =
 static int rt712_sdca_dmic_fu1e_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt712_sdca_dmic_priv *rt712 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt712_sdca_dmic_priv *rt712 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -531,9 +537,9 @@ static int rt712_sdca_dmic_fu1e_event(struct snd_soc_dapm_widget *w,
 static int rt712_sdca_dmic_pde11_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt712_sdca_dmic_priv *rt712 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt712_sdca_dmic_priv *rt712 = dev_get_drvdata(dev);
 	unsigned char ps0 = 0x0, ps3 = 0x3;
 
 	switch (event) {
@@ -586,7 +592,8 @@ static const struct snd_soc_dapm_route rt712_sdca_dmic_audio_map[] = {
 
 static int rt712_sdca_dmic_probe(struct snd_soc_component *component)
 {
-	struct rt712_sdca_dmic_priv *rt712 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt712_sdca_dmic_priv *rt712 = dev_get_drvdata(dev);
 	int ret;
 
 	rt712->component = component;
@@ -594,7 +601,7 @@ static int rt712_sdca_dmic_probe(struct snd_soc_component *component)
 	if (!rt712->first_hw_init)
 		return 0;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -615,7 +622,7 @@ static const struct snd_soc_component_driver soc_sdca_dev_rt712_dmic = {
 static int rt712_sdca_dmic_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 				int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -623,23 +630,24 @@ static int rt712_sdca_dmic_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_str
 static void rt712_sdca_dmic_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static int rt712_sdca_dmic_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt712_sdca_dmic_priv *rt712 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt712_sdca_dmic_priv *rt712 = dev_get_drvdata(dev);
 	struct sdw_stream_config stream_config;
 	struct sdw_port_config port_config;
 	struct sdw_stream_runtime *sdw_stream;
 	int retval, num_channels;
 	unsigned int sampling_rate;
 
-	dev_dbg(dai->dev, "%s %s", __func__, dai->name);
-	sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	dev_dbg(dev, "%s %s", __func__, snd_soc_dai_name(dai));
+	sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!sdw_stream)
 		return -EINVAL;
@@ -659,12 +667,12 @@ static int rt712_sdca_dmic_hw_params(struct snd_pcm_substream *substream,
 	retval = sdw_stream_add_slave(rt712->slave, &stream_config,
 					&port_config, 1, sdw_stream);
 	if (retval) {
-		dev_err(dai->dev, "%s: Unable to configure port\n", __func__);
+		dev_err(dev, "%s: Unable to configure port\n", __func__);
 		return retval;
 	}
 
 	if (params_channels(params) > 4) {
-		dev_err(component->dev, "%s: Unsupported channels %d\n",
+		dev_err(dev, "%s: Unsupported channels %d\n",
 			__func__, params_channels(params));
 		return -EINVAL;
 	}
@@ -690,7 +698,7 @@ static int rt712_sdca_dmic_hw_params(struct snd_pcm_substream *substream,
 		sampling_rate = RT712_SDCA_RATE_192000HZ;
 		break;
 	default:
-		dev_err(component->dev, "%s: Rate %d is not supported\n",
+		dev_err(dev, "%s: Rate %d is not supported\n",
 			__func__, params_rate(params));
 		return -EINVAL;
 	}
@@ -709,10 +717,11 @@ static int rt712_sdca_dmic_hw_params(struct snd_pcm_substream *substream,
 static int rt712_sdca_dmic_hw_free(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt712_sdca_dmic_priv *rt712 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt712_sdca_dmic_priv *rt712 = dev_get_drvdata(dev);
 	struct sdw_stream_runtime *sdw_stream =
-		snd_soc_dai_get_dma_data(dai, substream);
+		snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!rt712->slave)
 		return -EINVAL;
@@ -776,7 +785,7 @@ static int rt712_sdca_dmic_init(struct device *dev, struct regmap *regmap,
 	rt712->fu1e_mixer_mute[0] = rt712->fu1e_mixer_mute[1] =
 		rt712->fu1e_mixer_mute[2] = rt712->fu1e_mixer_mute[3] = true;
 
-	ret =  devm_snd_soc_register_component(dev,
+	ret =  devm_snd_soc_component_register(dev,
 			&soc_sdca_dev_rt712_dmic,
 			rt712_sdca_dmic_dai,
 			ARRAY_SIZE(rt712_sdca_dmic_dai));

@@ -103,7 +103,8 @@ static int ad193x_check_pll(struct snd_soc_dapm_widget *source,
 			    struct snd_soc_dapm_widget *sink)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
-	struct ad193x_priv *ad193x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ad193x_priv *ad193x = dev_get_drvdata(dev);
 
 	return !!ad193x->sysclk;
 }
@@ -145,7 +146,9 @@ static inline bool ad193x_has_adc(const struct ad193x_priv *ad193x)
 
 static int ad193x_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct ad193x_priv *ad193x = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ad193x_priv *ad193x = dev_get_drvdata(dev);
 
 	if (mute)
 		regmap_update_bits(ad193x->regmap, AD193X_DAC_CTRL2,
@@ -161,7 +164,9 @@ static int ad193x_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int ad193x_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			       unsigned int rx_mask, int slots, int width)
 {
-	struct ad193x_priv *ad193x = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ad193x_priv *ad193x = dev_get_drvdata(dev);
 	unsigned int channels;
 
 	switch (slots) {
@@ -194,7 +199,9 @@ static int ad193x_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 static int ad193x_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct ad193x_priv *ad193x = snd_soc_component_get_drvdata(codec_dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ad193x_priv *ad193x = dev_get_drvdata(dev);
 	unsigned int adc_serfmt = 0;
 	unsigned int dac_serfmt = 0;
 	unsigned int adc_fmt = 0;
@@ -281,9 +288,10 @@ static int ad193x_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int ad193x_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct ad193x_priv *ad193x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ad193x_priv *ad193x = dev_get_drvdata(dev);
 
 	if (clk_id == AD193X_SYSCLK_MCLK) {
 		/* MCLK must be 512 x fs */
@@ -314,12 +322,13 @@ static int ad193x_hw_params(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
 	int word_len = 0, master_rate = 0;
-	struct snd_soc_component *component = dai->component;
-	struct ad193x_priv *ad193x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ad193x_priv *ad193x = dev_get_drvdata(dev);
 	bool is_playback = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	u8 dacc0;
 
-	dev_dbg(dai->dev, "%s() rate=%u format=%#x width=%u channels=%u\n",
+	dev_dbg(dev, "%s() rate=%u format=%#x width=%u channels=%u\n",
 		__func__, params_rate(params), params_format(params),
 		params_width(params), params_channels(params));
 
@@ -365,7 +374,7 @@ static int ad193x_hw_params(struct snd_pcm_substream *substream,
 			dacc0 = AD193X_DAC_SR_192;
 			break;
 		default:
-			dev_err(dai->dev, "invalid sampling rate: %d\n", params_rate(params));
+			dev_err(dev, "invalid sampling rate: %d\n", params_rate(params));
 			return -EINVAL;
 		}
 
@@ -485,7 +494,8 @@ static void ad193x_reg_default_init(struct ad193x_priv *ad193x)
 
 static int ad193x_component_probe(struct snd_soc_component *component)
 {
-	struct ad193x_priv *ad193x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ad193x_priv *ad193x = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int num, ret;
 
@@ -496,7 +506,7 @@ static int ad193x_component_probe(struct snd_soc_component *component)
 	if (ad193x_has_adc(ad193x)) {
 		/* add adc controls */
 		num = ARRAY_SIZE(ad193x_adc_snd_controls);
-		ret = snd_soc_add_component_controls(component,
+		ret = snd_soc_component_add_controls(component,
 						 ad193x_adc_snd_controls,
 						 num);
 		if (ret)
@@ -558,9 +568,9 @@ int ad193x_probe(struct device *dev, struct regmap *regmap,
 	dev_set_drvdata(dev, ad193x);
 
 	if (ad193x_has_adc(ad193x))
-		return devm_snd_soc_register_component(dev, &soc_component_dev_ad193x,
+		return devm_snd_soc_component_register(dev, &soc_component_dev_ad193x,
 						       &ad193x_dai, 1);
-	return devm_snd_soc_register_component(dev, &soc_component_dev_ad193x,
+	return devm_snd_soc_component_register(dev, &soc_component_dev_ad193x,
 		&ad193x_no_adc_dai, 1);
 }
 EXPORT_SYMBOL_GPL(ad193x_probe);

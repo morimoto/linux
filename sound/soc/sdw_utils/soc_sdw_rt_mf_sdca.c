@@ -64,7 +64,7 @@ int asoc_sdw_rt_mf_sdca_spk_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd
 	int ret;
 
 	/* acquire codec name */
-	snprintf(codec_name, CODEC_NAME_SIZE, "%s", dai->name);
+	snprintf(codec_name, CODEC_NAME_SIZE, "%s", snd_soc_dai_name(dai));
 
 	/* acquire corresponding route map and size */
 	const struct codec_route_map *route_map = get_codec_route_map(codec_name);

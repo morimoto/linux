@@ -193,11 +193,9 @@ static int sn624x_dapm_pde_event(struct snd_soc_dapm_widget *w,
 				 struct snd_kcontrol *kcontrol, int event,
 				 unsigned int fun, unsigned int ent)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct sn624x_sdca_priv *sn624x =
-		snd_soc_component_get_drvdata(component);
-	struct device *dev = component->dev;
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sn624x_sdca_priv *sn624x = dev_get_drvdata(dev);
 	int ret;
 
 	if (!sn624x || !sn624x->regmap)
@@ -264,11 +262,9 @@ static int sn624x_fu_mute_event(struct snd_soc_dapm_widget *w,
 				unsigned int vol_l, unsigned int vol_r,
 				unsigned int vol_val)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct sn624x_sdca_priv *sn624x =
-		snd_soc_component_get_drvdata(component);
-	struct device *dev = component->dev;
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sn624x_sdca_priv *sn624x = dev_get_drvdata(dev);
 	int ret;
 
 	if (!sn624x || !sn624x->regmap)
@@ -340,14 +336,13 @@ static int sn624x_fu_spk_event(struct snd_soc_dapm_widget *w,
 static int sn624x_fu_mic2_event(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct sn624x_sdca_priv *sn624x =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sn624x_sdca_priv *sn624x = dev_get_drvdata(dev);
 	int ret;
 
 	if (event == SND_SOC_DAPM_POST_PMU && sn624x)
-		sn624x_uaj_ge35_apply_detected_mode(component->dev, sn624x);
+		sn624x_uaj_ge35_apply_detected_mode(dev, sn624x);
 
 	ret = sn624x_fu_mute_event(w, kcontrol, event,
 				   SN624X_REG_JACK_CAP_MUTE, 0,
@@ -867,7 +862,7 @@ static int sn624x_jack_rpm_get(struct sn624x_sdca_priv *sn624x)
 	if (!sn624x->component)
 		return -ENODEV;
 
-	dev = sn624x->component->dev;
+	dev = snd_soc_component_to_dev(sn624x->component);
 	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0) {
 		if (ret != -EACCES) {
@@ -884,11 +879,13 @@ static int sn624x_jack_rpm_get(struct sn624x_sdca_priv *sn624x)
 
 static void sn624x_jack_rpm_put(struct sn624x_sdca_priv *sn624x)
 {
+	struct device *dev = snd_soc_component_to_dev(sn624x->component);
+
 	if (!sn624x || !sn624x->jack_rpm || !sn624x->component)
 		return;
 
-	pm_runtime_mark_last_busy(sn624x->component->dev);
-	pm_runtime_put_autosuspend(sn624x->component->dev);
+	pm_runtime_mark_last_busy(dev);
+	pm_runtime_put_autosuspend(dev);
 	sn624x->jack_rpm = false;
 }
 
@@ -978,11 +975,11 @@ static void sn624x_sdca_jack_init(struct sn624x_sdca_priv *sn624x)
 static int sn624x_sdca_set_jack_detect(struct snd_soc_component *component,
 				       struct snd_soc_jack *hs_jack, void *data)
 {
-	struct sn624x_sdca_priv *sn624x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sn624x_sdca_priv *sn624x = dev_get_drvdata(dev);
 	int ret;
 
-	dev_dbg(component->dev,
-		 "sn624x: set_jack: hs_jack=%p first_hw_init=%d hw_init=%d\n",
+	dev_dbg(dev, "sn624x: set_jack: hs_jack=%p first_hw_init=%d hw_init=%d\n",
 		 hs_jack, sn624x->first_hw_init, sn624x->hw_init);
 
 	if (!hs_jack) {
@@ -1421,7 +1418,8 @@ static const struct sdw_slave_ops sn624x_sdca_slave_ops = {
 
 static int sn624x_sdca_probe(struct snd_soc_component *component)
 {
-	struct sn624x_sdca_priv *sn624x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sn624x_sdca_priv *sn624x = dev_get_drvdata(dev);
 	int ret;
 
 	sn624x->component = component;
@@ -1429,7 +1427,7 @@ static int sn624x_sdca_probe(struct snd_soc_component *component)
 	if (!sn624x->first_hw_init)
 		return 0;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -1440,50 +1438,50 @@ static int sn624x_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 				     struct snd_pcm_hw_params *params,
 				     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sn624x_sdca_priv *sn624x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sn624x_sdca_priv *sn624x = dev_get_drvdata(dev);
 	struct sdw_stream_config stream_config = {};
 	struct sdw_port_config port_config = {};
 	struct sdw_stream_runtime *sdw_stream;
 	unsigned int sampling_rate;
+	const char *dai_name = snd_soc_dai_name(dai);
+	int dai_id = snd_soc_dai_id(dai);
 	int port;
 	int ret;
 
-	dev_dbg(dai->dev,
-		 "sn624x: hw_params: entered dai=%s id=%d stream=%s\n",
-		 dai->name, dai->id, snd_pcm_stream_str(substream));
+	dev_dbg(dev, "sn624x: hw_params: entered dai=%s id=%d stream=%s\n",
+		 dai_name, dai_id, snd_pcm_stream_str(substream));
 
-	sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 	if (!sdw_stream) {
-		dev_warn(dai->dev,
-			 "sn624x: hw_params: no SDW stream (set_stream not run yet?)\n");
+		dev_warn(dev, "sn624x: hw_params: no SDW stream (set_stream not run yet?)\n");
 		return -EINVAL;
 	}
 	if (!sn624x->slave) {
-		dev_warn(dai->dev, "sn624x: hw_params: slave NULL\n");
+		dev_warn(dev, "sn624x: hw_params: slave NULL\n");
 		return -EINVAL;
 	}
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES) {
-		dev_err(dai->dev,
-			"sn624x: hw_params: pm_runtime_resume failed (%d)\n", ret);
+		dev_err(dev, "sn624x: hw_params: pm_runtime_resume failed (%d)\n", ret);
 		return ret;
 	}
 
 	snd_sdw_params_to_config(substream, params, &stream_config, &port_config);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-		if (dai->id == SN624X_DAI_JACK)
+		if (dai_id == SN624X_DAI_JACK)
 			port = SN624X_PORT_JACK_PLAYBACK;
-		else if (dai->id == SN624X_DAI_SPEAKER)
+		else if (dai_id == SN624X_DAI_SPEAKER)
 			port = SN624X_PORT_SPEAKER_PLAYBACK;
 		else
 			return -EINVAL;
 	} else {
-		if (dai->id == SN624X_DAI_JACK)
+		if (dai_id == SN624X_DAI_JACK)
 			port = SN624X_PORT_JACK_CAPTURE;
-		else if (dai->id == SN624X_DAI_DMIC)
+		else if (dai_id == SN624X_DAI_DMIC)
 			port = SN624X_PORT_DMIC_CAPTURE;
 		else
 			return -EINVAL;
@@ -1493,7 +1491,7 @@ static int sn624x_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 	ret = sdw_stream_add_slave(sn624x->slave, &stream_config,
 				   &port_config, 1, sdw_stream);
 	if (ret) {
-		dev_err(dai->dev, "%s: sdw_stream_add_slave port %d failed: %d\n",
+		dev_err(dev, "%s: sdw_stream_add_slave port %d failed: %d\n",
 			__func__, port, ret);
 		return ret;
 	}
@@ -1513,12 +1511,12 @@ static int sn624x_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 		sampling_rate = SN624X_SDCA_RATE_192000HZ;
 		break;
 	default:
-		dev_err(dai->dev, "%s: Rate %d is not supported\n",
+		dev_err(dev, "%s: Rate %d is not supported\n",
 			__func__, params_rate(params));
 		return -EINVAL;
 	}
 
-	if (dai->id == SN624X_DAI_JACK) {
+	if (dai_id == SN624X_DAI_JACK) {
 		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 			ret = regmap_write(sn624x->regmap,
 					   SN624X_REG_JACK_OUT_RATE_SEL,
@@ -1527,10 +1525,10 @@ static int sn624x_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 			ret = regmap_write(sn624x->regmap,
 					   SN624X_REG_JACK_CAP_RATE_SEL,
 					   sampling_rate);
-	} else if (dai->id == SN624X_DAI_SPEAKER) {
+	} else if (dai_id == SN624X_DAI_SPEAKER) {
 		ret = regmap_write(sn624x->regmap, SN624X_REG_RATE_SEL,
 				   sampling_rate);
-	} else if (dai->id == SN624X_DAI_DMIC) {
+	} else if (dai_id == SN624X_DAI_DMIC) {
 		ret = regmap_write(sn624x->regmap, SN624X_REG_DMIC_CAP_RATE_SEL,
 				   sampling_rate);
 	} else {
@@ -1543,9 +1541,10 @@ static int sn624x_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 static int sn624x_sdca_pcm_hw_free(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct sn624x_sdca_priv *sn624x = snd_soc_component_get_drvdata(dai->component);
-	struct sdw_stream_runtime *sdw_stream =
-		snd_soc_dai_get_dma_data(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sn624x_sdca_priv *sn624x = dev_get_drvdata(dev);
+	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!sn624x->slave)
 		return -EINVAL;
@@ -1556,14 +1555,14 @@ static int sn624x_sdca_pcm_hw_free(struct snd_pcm_substream *substream,
 static int sn624x_sdca_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 				      int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 	return 0;
 }
 
 static void sn624x_sdca_shutdown(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static const struct snd_soc_dapm_widget sn624x_sdca_dapm_widgets[] = {
@@ -1710,7 +1709,7 @@ int sn624x_sdca_init(struct device *dev, struct regmap *regmap,
 
 	regcache_cache_only(sn624x->regmap, true);
 
-	ret = devm_snd_soc_register_component(dev,
+	ret = devm_snd_soc_component_register(dev,
 					      &soc_sdca_dev_sn624x, sn624x_sdca_dai,
 					      ARRAY_SIZE(sn624x_sdca_dai));
 	if (ret < 0)

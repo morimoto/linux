@@ -543,7 +543,9 @@ static irqreturn_t davinci_mcasp_common_irq_handler(int irq, void *data)
 static int davinci_mcasp_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 					 unsigned int fmt)
 {
-	struct davinci_mcasp *mcasp = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 	int ret = 0;
 	u32 data_delay;
 	bool fs_pol_rising;
@@ -809,7 +811,9 @@ static int __davinci_mcasp_set_clkdiv(struct davinci_mcasp *mcasp, int div_id,
 static int davinci_mcasp_set_clkdiv(struct snd_soc_dai *dai, int div_id,
 				    int div)
 {
-	struct davinci_mcasp *mcasp = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 
 	return __davinci_mcasp_set_clkdiv(mcasp, div_id, div, 1);
 }
@@ -817,7 +821,9 @@ static int davinci_mcasp_set_clkdiv(struct snd_soc_dai *dai, int div_id,
 static int davinci_mcasp_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 				    unsigned int freq, int dir)
 {
-	struct davinci_mcasp *mcasp = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 
 	pm_runtime_get_sync(mcasp->dev);
 
@@ -957,7 +963,9 @@ static int davinci_mcasp_set_tdm_slot(struct snd_soc_dai *dai,
 				      unsigned int rx_mask,
 				      int slots, int slot_width)
 {
-	struct davinci_mcasp *mcasp = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 
 	if (mcasp->op_mode == DAVINCI_MCASP_DIT_MODE)
 		return 0;
@@ -1441,7 +1449,9 @@ static snd_pcm_sframes_t davinci_mcasp_delay(
 			struct snd_pcm_substream *substream,
 			struct snd_soc_dai *cpu_dai)
 {
-	struct davinci_mcasp *mcasp = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 	u32 fifo_use;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
@@ -1461,7 +1471,9 @@ static int davinci_mcasp_hw_params(struct snd_pcm_substream *substream,
 					struct snd_pcm_hw_params *params,
 					struct snd_soc_dai *cpu_dai)
 {
-	struct davinci_mcasp *mcasp = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 	int word_length;
 	int channels = params_channels(params);
 	int period_size = params_period_size(params);
@@ -1569,7 +1581,9 @@ static int davinci_mcasp_hw_params(struct snd_pcm_substream *substream,
 static int davinci_mcasp_trigger(struct snd_pcm_substream *substream,
 				     int cmd, struct snd_soc_dai *cpu_dai)
 {
-	struct davinci_mcasp *mcasp = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (cmd) {
@@ -1764,7 +1778,9 @@ static int davinci_mcasp_hw_rule_min_periodsize(
 static int davinci_mcasp_startup(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *cpu_dai)
 {
-	struct davinci_mcasp *mcasp = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 	struct davinci_mcasp_ruledata *ruledata =
 					&mcasp->ruledata[substream->stream];
 	u32 max_channels = 0;
@@ -1891,7 +1907,9 @@ static int davinci_mcasp_startup(struct snd_pcm_substream *substream,
 static void davinci_mcasp_shutdown(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *cpu_dai)
 {
-	struct davinci_mcasp *mcasp = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 
 	mcasp->substreams[substream->stream] = NULL;
 	mcasp->active_serializers[substream->stream] = 0;
@@ -1918,7 +1936,9 @@ static int davinci_mcasp_iec958_get(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *uctl)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct davinci_mcasp *mcasp = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 
 	memcpy(uctl->value.iec958.status, &mcasp->iec958_status,
 	       sizeof(mcasp->iec958_status));
@@ -1930,7 +1950,9 @@ static int davinci_mcasp_iec958_put(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *uctl)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct davinci_mcasp *mcasp = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 
 	memcpy(&mcasp->iec958_status, uctl->value.iec958.status,
 	       sizeof(mcasp->iec958_status));
@@ -1942,7 +1964,9 @@ static int davinci_mcasp_iec958_con_mask_get(struct snd_kcontrol *kcontrol,
 					     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct davinci_mcasp *mcasp = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 
 	memset(ucontrol->value.iec958.status, 0xff, sizeof(mcasp->iec958_status));
 	return 0;
@@ -1978,15 +2002,17 @@ static void davinci_mcasp_init_iec958_status(struct davinci_mcasp *mcasp)
 
 static int davinci_mcasp_dai_probe(struct snd_soc_dai *dai)
 {
-	struct davinci_mcasp *mcasp = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 	int stream;
 
 	for_each_pcm_streams(stream)
-		snd_soc_dai_dma_data_set(dai, stream, &mcasp->dma_data[stream]);
+		snd_soc_dai_stream_dma_data_set(dai, stream, &mcasp->dma_data[stream]);
 
 	if (mcasp->op_mode == DAVINCI_MCASP_DIT_MODE) {
 		davinci_mcasp_init_iec958_status(mcasp);
-		snd_soc_add_dai_controls(dai, davinci_mcasp_iec958_ctls,
+		snd_soc_dai_add_controls(dai, davinci_mcasp_iec958_ctls,
 					 ARRAY_SIZE(davinci_mcasp_iec958_ctls));
 	}
 
@@ -2071,7 +2097,8 @@ static struct snd_soc_dai_driver davinci_mcasp_dai[] = {
 static int davinci_mcasp_of_xlate_dai_id(struct snd_soc_component *component,
 					 struct device_node *endpoint)
 {
-	struct davinci_mcasp *mcasp = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_mcasp *mcasp = dev_get_drvdata(dev);
 	struct device_node *port;
 	u32 port_reg = 0;
 
@@ -2705,7 +2732,7 @@ static int davinci_mcasp_register_component(struct davinci_mcasp *mcasp,
 	int i;
 
 	if (mcasp->graph_mode == MCASP_GRAPH_NONE || mcasp->num_dais <= 1)
-		return devm_snd_soc_register_component(&pdev->dev,
+		return devm_snd_soc_component_register(&pdev->dev,
 						       &davinci_mcasp_component,
 						       &davinci_mcasp_dai[mcasp->op_mode], 1);
 
@@ -2740,7 +2767,7 @@ static int davinci_mcasp_register_component(struct davinci_mcasp *mcasp,
 		}
 	}
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 					       &davinci_mcasp_component,
 					       dais, mcasp->num_dais);
 }

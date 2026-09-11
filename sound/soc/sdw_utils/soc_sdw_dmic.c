@@ -25,12 +25,13 @@ int asoc_sdw_dmic_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	ret = snd_soc_dapm_new_controls(dapm, dmic_widgets,
 					ARRAY_SIZE(dmic_widgets));
 	if (ret) {
-		dev_err(card->dev, "DMic widget addition failed: %d\n", ret);
+		dev_err(dev, "DMic widget addition failed: %d\n", ret);
 		/* Don't need to add routes if widget addition failed */
 		return ret;
 	}
@@ -39,7 +40,7 @@ int asoc_sdw_dmic_init(struct snd_soc_pcm_runtime *rtd)
 				      ARRAY_SIZE(dmic_map));
 
 	if (ret)
-		dev_err(card->dev, "DMic map addition failed: %d\n", ret);
+		dev_err(dev, "DMic map addition failed: %d\n", ret);
 
 	return ret;
 }

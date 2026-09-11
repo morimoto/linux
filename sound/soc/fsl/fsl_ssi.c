@@ -635,7 +635,10 @@ static int fsl_ssi_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct fsl_ssi *ssi = dev_get_drvdata(cpu_dev);
 	int ret;
 
 	ret = clk_prepare_enable(ssi->clk);
@@ -659,7 +662,10 @@ static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct fsl_ssi *ssi = dev_get_drvdata(cpu_dev);
 
 	clk_disable_unprepare(ssi->clk);
 }
@@ -681,7 +687,9 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *hw_params)
 {
 	bool tx2, tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
-	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_ssi *ssi = dev_get_drvdata(dai_dev);
 	struct regmap *regs = ssi->regs;
 	u32 pm = 999, div2, psr, stccr, mask, afreq, factor, i;
 	unsigned long clkrate, baudrate, tmprate;
@@ -716,7 +724,7 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
 	 * never greater than 1/5 IPG clock rate
 	 */
 	if (freq * 5 > clk_get_rate(ssi->clk)) {
-		dev_err(dai->dev, "bitclk > ipgclk / 5\n");
+		dev_err(dai_dev, "bitclk > ipgclk / 5\n");
 		return -EINVAL;
 	}
 
@@ -765,7 +773,7 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
 
 	/* No proper pm found if it is still remaining the initial value */
 	if (pm == 999) {
-		dev_err(dai->dev, "failed to handle the required sysclk\n");
+		dev_err(dai_dev, "failed to handle the required sysclk\n");
 		return -EINVAL;
 	}
 
@@ -779,7 +787,7 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
 	if (!baudclk_is_used) {
 		ret = clk_set_rate(ssi->baudclk, baudrate);
 		if (ret) {
-			dev_err(dai->dev, "failed to set baudclk rate\n");
+			dev_err(dai_dev, "failed to set baudclk rate\n");
 			return -EINVAL;
 		}
 	}
@@ -806,7 +814,9 @@ static int fsl_ssi_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
 	bool tx2, tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
-	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_ssi *ssi = dev_get_drvdata(dev);
 	struct fsl_ssi_regvals *vals = ssi->regvals;
 	struct regmap *regs = ssi->regs;
 	unsigned int channels = params_channels(hw_params);
@@ -891,7 +901,10 @@ static int fsl_ssi_hw_free(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct fsl_ssi *ssi = dev_get_drvdata(cpu_dev);
 
 	if (fsl_ssi_is_i2s_clock_provider(ssi) &&
 	    ssi->baudclk_streams & BIT(substream->stream)) {
@@ -1037,7 +1050,9 @@ static int _fsl_ssi_set_dai_fmt(struct fsl_ssi *ssi, unsigned int fmt)
  */
 static int fsl_ssi_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_ssi *ssi = dev_get_drvdata(dev);
 
 	/* AC97 configured DAIFMT earlier in the probe() */
 	if (fsl_ssi_is_ac97(ssi))
@@ -1057,19 +1072,21 @@ static int fsl_ssi_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
 				    u32 rx_mask, int slots, int slot_width)
 {
-	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_ssi *ssi = dev_get_drvdata(dai_dev);
 	struct regmap *regs = ssi->regs;
 	u32 val;
 
 	/* The word length should be 8, 10, 12, 16, 18, 20, 22 or 24 */
 	if (slot_width & 1 || slot_width < 8 || slot_width > 24) {
-		dev_err(dai->dev, "invalid slot width: %d\n", slot_width);
+		dev_err(dai_dev, "invalid slot width: %d\n", slot_width);
 		return -EINVAL;
 	}
 
 	/* The slot number should be >= 2 if using Network mode or I2S mode */
 	if (ssi->i2s_net && slots < 2) {
-		dev_err(dai->dev, "slot number should be >= 2 in I2S or NET\n");
+		dev_err(dai_dev, "slot number should be >= 2 in I2S or NET\n");
 		return -EINVAL;
 	}
 
@@ -1108,7 +1125,10 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
 			   struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct fsl_ssi *ssi = dev_get_drvdata(cpu_dev);
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 
 	switch (cmd) {
@@ -1142,11 +1162,14 @@ static int fsl_ssi_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int fsl_ssi_dai_probe(struct snd_soc_dai *dai)
 {
-	struct fsl_ssi *ssi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_ssi *ssi = dev_get_drvdata(dev);
 
-	if (ssi->soc->imx && ssi->use_dma)
-		snd_soc_dai_init_dma_data(dai, &ssi->dma_params_tx,
-					  &ssi->dma_params_rx);
+	if (ssi->soc->imx && ssi->use_dma) {
+		snd_soc_dai_stream_dma_data_set_playback(dai, &ssi->dma_params_tx);
+		snd_soc_dai_stream_dma_data_set_capture(dai,  &ssi->dma_params_rx);
+	}
 
 	return 0;
 }
@@ -1620,7 +1643,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
 		}
 	}
 
-	ret = devm_snd_soc_register_component(dev, &fsl_ssi_component,
+	ret = devm_snd_soc_component_register(dev, &fsl_ssi_component,
 					      &ssi->cpu_dai_drv, 1);
 	if (ret) {
 		dev_err(dev, "failed to register DAI: %d\n", ret);

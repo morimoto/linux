@@ -132,7 +132,10 @@ static int chv3_dma_open(struct snd_soc_component *component,
 			 struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct chv3_i2s_dev *i2s = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct chv3_i2s_dev *i2s = dev_get_drvdata(cpu_dev);
 	int res;
 
 	snd_soc_set_runtime_hwparams(substream, &chv3_dma_hw);
@@ -153,7 +156,10 @@ static int chv3_dma_close(struct snd_soc_component *component,
 			  struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct chv3_i2s_dev *i2s = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct chv3_i2s_dev *i2s = dev_get_drvdata(cpu_dev);
 
 	if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE)
 		chv3_i2s_wr(i2s, I2S_RX_ENABLE, 0);
@@ -166,7 +172,10 @@ static int chv3_dma_close(struct snd_soc_component *component,
 static int chv3_dma_pcm_new(struct snd_soc_component *component,
 			    struct snd_soc_pcm_runtime *rtd)
 {
-	struct chv3_i2s_dev *i2s = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct chv3_i2s_dev *i2s = dev_get_drvdata(cpu_dev);
 	struct snd_pcm_substream *substream;
 	int res;
 
@@ -201,7 +210,10 @@ static int chv3_dma_prepare(struct snd_soc_component *component,
 			    struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct chv3_i2s_dev *i2s = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct chv3_i2s_dev *i2s = dev_get_drvdata(cpu_dev);
 	unsigned int buffer_bytes, period_bytes, period_size;
 
 	buffer_bytes = snd_pcm_lib_buffer_bytes(substream);
@@ -230,7 +242,10 @@ static snd_pcm_uframes_t chv3_dma_pointer(struct snd_soc_component *component,
 					  struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct chv3_i2s_dev *i2s = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct chv3_i2s_dev *i2s = dev_get_drvdata(cpu_dev);
 	u32 frame_bytes, buffer_bytes;
 	u32 idx_bytes;
 
@@ -253,7 +268,10 @@ static int chv3_dma_ack(struct snd_soc_component *component,
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct chv3_i2s_dev *i2s = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct chv3_i2s_dev *i2s = dev_get_drvdata(cpu_dev);
 	unsigned int bytes, idx;
 
 	bytes = frames_to_bytes(runtime, runtime->control->appl_ptr);
@@ -308,7 +326,7 @@ static int chv3_i2s_probe(struct platform_device *pdev)
 	if (res)
 		return res;
 
-	res = devm_snd_soc_register_component(&pdev->dev, &chv3_i2s_comp,
+	res = devm_snd_soc_component_register(&pdev->dev, &chv3_i2s_comp,
 					      &chv3_i2s_dai, 1);
 	if (res) {
 		dev_err(&pdev->dev, "couldn't register component: %d\n", res);

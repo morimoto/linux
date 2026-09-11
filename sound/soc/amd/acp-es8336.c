@@ -61,14 +61,14 @@ static int st_es8336_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_card *card;
 	struct snd_soc_component *codec;
 
-	codec = snd_soc_rtd_to_codec(rtd, 0)->component;
+	codec = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	card = rtd->card;
 
 	ret = snd_soc_card_jack_new_pins(card, "Headset", SND_JACK_HEADSET | SND_JACK_BTN_0,
 					 &st_jack, st_es8316_jack_pins,
 					 ARRAY_SIZE(st_es8316_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+		dev_err(snd_soc_card_to_dev(card), "HP jack creation failed %d\n", ret);
 		return ret;
 	}
 	snd_jack_set_key(st_jack.jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
@@ -112,7 +112,7 @@ static int st_es8336_codec_startup(struct snd_pcm_substream *substream)
 	runtime = substream->runtime;
 	rtd = snd_soc_substream_to_rtd(substream);
 	card = rtd->card;
-	machine = snd_soc_card_get_drvdata(card);
+	machine = snd_soc_card_to_priv(card);
 	codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, ES8336_PLL_FREQ, SND_SOC_CLOCK_IN);
 	if (ret < 0) {
@@ -192,6 +192,7 @@ static const struct acpi_gpio_mapping acpi_es8336_gpios[] = {
 static int st_es8336_late_probe(struct snd_soc_card *card)
 {
 	struct acpi_device *adev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	adev = acpi_dev_get_first_match_dev("ESSX8336", NULL, -1);
@@ -201,17 +202,17 @@ static int st_es8336_late_probe(struct snd_soc_card *card)
 	codec_dev = acpi_get_first_physical_node(adev);
 	acpi_dev_put(adev);
 	if (!codec_dev) {
-		dev_err(card->dev, "can not find codec dev\n");
+		dev_err(dev, "can not find codec dev\n");
 		return -ENODEV;
 	}
 
 	ret = devm_acpi_dev_add_driver_gpios(codec_dev, acpi_es8336_gpios);
 	if (ret)
-		dev_warn(card->dev, "Failed to add driver gpios\n");
+		dev_warn(dev, "Failed to add driver gpios\n");
 
 	gpio_pa = gpiod_get_optional(codec_dev, "pa-enable", GPIOD_OUT_LOW);
 	if (IS_ERR(gpio_pa)) {
-		ret = dev_err_probe(card->dev, PTR_ERR(gpio_pa),
+		ret = dev_err_probe(dev, PTR_ERR(gpio_pa),
 				    "could not get pa-enable GPIO\n");
 		put_device(codec_dev);
 		return ret;
@@ -285,12 +286,12 @@ static int st_es8336_probe(struct platform_device *pdev)
 		return -ENODEV;
 	}
 
-	snd_soc_card_set_drvdata(card, machine);
+	snd_soc_card_set_priv(card, machine);
 	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret) {
 		return dev_err_probe(&pdev->dev, ret,
 				     "devm_snd_soc_card_register(%s) failed\n",
-				     card->name);
+				     st_card.default_name);
 	}
 	return 0;
 }

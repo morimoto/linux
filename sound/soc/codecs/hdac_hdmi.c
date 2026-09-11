@@ -439,11 +439,14 @@ static int hdac_hdmi_setup_audio_infoframe(struct hdac_device *hdev,
 static int hdac_hdmi_set_stream(struct snd_soc_dai *dai,
 				void *stream, int direction)
 {
-	struct hdac_hdmi_priv *hdmi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct hdac_hdmi_priv *hdmi = dev_get_drvdata(dev);
 	struct hdac_device *hdev = hdmi->hdev;
 	struct hdac_hdmi_dai_port_map *dai_map;
 	struct hdac_hdmi_pcm *pcm;
 	struct hdac_stream *hstream;
+	int dai_id = snd_soc_dai_id(dai);
 
 	if (!stream)
 		return -EINVAL;
@@ -452,7 +455,7 @@ static int hdac_hdmi_set_stream(struct snd_soc_dai *dai,
 
 	dev_dbg(&hdev->dev, "%s: strm_tag: %d\n", __func__, hstream->stream_tag);
 
-	dai_map = &hdmi->dai_map[dai->id];
+	dai_map = &hdmi->dai_map[dai_id];
 
 	pcm = hdac_hdmi_get_pcm_from_cvt(hdmi, dai_map->cvt);
 
@@ -465,16 +468,20 @@ static int hdac_hdmi_set_stream(struct snd_soc_dai *dai,
 static int hdac_hdmi_set_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *hparams, struct snd_soc_dai *dai)
 {
-	struct hdac_hdmi_priv *hdmi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct hdac_hdmi_priv *hdmi = dev_get_drvdata(dev);
 	struct hdac_hdmi_dai_port_map *dai_map;
 	struct hdac_hdmi_pcm *pcm;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	unsigned int bits;
+	int dai_id = snd_soc_dai_id(dai);
 	int format;
 
-	dai_map = &hdmi->dai_map[dai->id];
+	dai_map = &hdmi->dai_map[dai_id];
 
 	bits = snd_hdac_stream_format_bits(params_format(hparams), SNDRV_PCM_SUBFORMAT_STD,
-					   dai->driver->playback.sig_bits);
+					   dai_driver->playback.sig_bits);
 	format = snd_hdac_stream_format(params_channels(hparams), bits, params_rate(hparams));
 
 	pcm = hdac_hdmi_get_pcm_from_cvt(hdmi, dai_map->cvt);
@@ -590,14 +597,17 @@ static void hdac_hdmi_verify_connect_sel_all_pins(struct hdac_device *hdev)
 static int hdac_hdmi_pcm_open(struct snd_pcm_substream *substream,
 			struct snd_soc_dai *dai)
 {
-	struct hdac_hdmi_priv *hdmi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct hdac_hdmi_priv *hdmi = dev_get_drvdata(dev);
 	struct hdac_device *hdev = hdmi->hdev;
 	struct hdac_hdmi_dai_port_map *dai_map;
 	struct hdac_hdmi_cvt *cvt;
 	struct hdac_hdmi_port *port;
 	int ret;
+	int dai_id = snd_soc_dai_id(dai);
 
-	dai_map = &hdmi->dai_map[dai->id];
+	dai_map = &hdmi->dai_map[dai_id];
 
 	cvt = dai_map->cvt;
 	port = hdac_hdmi_get_port_from_cvt(hdev, hdmi, cvt);
@@ -633,11 +643,14 @@ static int hdac_hdmi_pcm_open(struct snd_pcm_substream *substream,
 static void hdac_hdmi_pcm_close(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct hdac_hdmi_priv *hdmi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct hdac_hdmi_priv *hdmi = dev_get_drvdata(dev);
 	struct hdac_hdmi_dai_port_map *dai_map;
 	struct hdac_hdmi_pcm *pcm;
+	int dai_id = snd_soc_dai_id(dai);
 
-	dai_map = &hdmi->dai_map[dai->id];
+	dai_map = &hdmi->dai_map[dai_id];
 
 	pcm = hdac_hdmi_get_pcm_from_cvt(hdmi, dai_map->cvt);
 
@@ -1593,6 +1606,8 @@ static void hdac_hdmi_eld_notify_cb(void *aptr, int port, int pipe)
 	struct hdac_hdmi_pin *pin;
 	struct hdac_hdmi_port *hport = NULL;
 	struct snd_soc_component *component = hdmi->component;
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(component);
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(soc_card);
 	int i;
 
 	/* Don't know how this mapping is derived */
@@ -1607,8 +1622,7 @@ static void hdac_hdmi_eld_notify_cb(void *aptr, int port, int pipe)
 	 * connection states are updated in anyway at the end of the resume,
 	 * we can skip it when received during PM process.
 	 */
-	if (snd_power_get_state(component->card->snd_card) !=
-			SNDRV_CTL_POWER_D0)
+	if (snd_power_get_state(snd_card) != SNDRV_CTL_POWER_D0)
 		return;
 
 	if (atomic_read(&hdev->in_pm))
@@ -1670,9 +1684,12 @@ static void hdac_hdmi_present_sense_all_pins(struct hdac_device *hdev,
 
 static int hdmi_codec_probe(struct snd_soc_component *component)
 {
-	struct hdac_hdmi_priv *hdmi = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct hdac_hdmi_priv *hdmi = dev_get_drvdata(dev);
 	struct hdac_device *hdev = hdmi->hdev;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(component);
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(soc_card);
 	struct hdac_ext_link *hlink;
 	int ret;
 
@@ -1703,7 +1720,7 @@ static int hdmi_codec_probe(struct snd_soc_component *component)
 
 	hdac_hdmi_present_sense_all_pins(hdev, hdmi, true);
 	/* Imp: Store the card pointer in hda_codec */
-	hdmi->card = component->card->snd_card;
+	hdmi->card = snd_card;
 
 	/*
 	 * Setup a device_link between card device and HDMI codec device.
@@ -1714,7 +1731,7 @@ static int hdmi_codec_probe(struct snd_soc_component *component)
 	 * Let's use the flag DL_FLAG_AUTOREMOVE_CONSUMER. This can make
 	 * sure the device link is freed when the machine driver is removed.
 	 */
-	device_link_add(component->card->dev, &hdev->dev, DL_FLAG_RPM_ACTIVE |
+	device_link_add(snd_soc_card_to_dev(soc_card), &hdev->dev, DL_FLAG_RPM_ACTIVE |
 			DL_FLAG_AUTOREMOVE_CONSUMER);
 	/*
 	 * hdac_device core already sets the state to active and calls
@@ -1729,7 +1746,8 @@ static int hdmi_codec_probe(struct snd_soc_component *component)
 
 static void hdmi_codec_remove(struct snd_soc_component *component)
 {
-	struct hdac_hdmi_priv *hdmi = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct hdac_hdmi_priv *hdmi = dev_get_drvdata(dev);
 	struct hdac_device *hdev = hdmi->hdev;
 	int ret;
 
@@ -1910,7 +1928,7 @@ static int hdac_hdmi_dev_probe(struct hdac_device *hdev)
 	snd_hdac_refresh_widgets(hdev);
 
 	/* ASoC specific initialization */
-	ret = devm_snd_soc_register_component(&hdev->dev, &hdmi_hda_codec,
+	ret = devm_snd_soc_component_register(&hdev->dev, &hdmi_hda_codec,
 					hdmi_dais, num_dais);
 
 	snd_hdac_ext_bus_link_put(hdev->bus, hlink);

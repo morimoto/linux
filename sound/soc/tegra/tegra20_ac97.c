@@ -176,7 +176,9 @@ static inline void tegra20_ac97_stop_capture(struct tegra20_ac97 *ac97)
 static int tegra20_ac97_trigger(struct snd_pcm_substream *substream, int cmd,
 				struct snd_soc_dai *dai)
 {
-	struct tegra20_ac97 *ac97 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra20_ac97 *ac97 = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -204,10 +206,12 @@ static int tegra20_ac97_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int tegra20_ac97_probe(struct snd_soc_dai *dai)
 {
-	struct tegra20_ac97 *ac97 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra20_ac97 *ac97 = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai,	&ac97->playback_dma_data,
-					&ac97->capture_dma_data);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &ac97->playback_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &ac97->capture_dma_data);
 
 	return 0;
 }
@@ -396,7 +400,7 @@ static int tegra20_ac97_platform_probe(struct platform_device *pdev)
 		goto err_clk_disable_unprepare;
 	}
 
-	ret = snd_soc_register_component(&pdev->dev, &tegra20_ac97_component,
+	ret = snd_soc_component_register(&pdev->dev, &tegra20_ac97_component,
 					 &tegra20_ac97_dai, 1);
 	if (ret) {
 		dev_err(&pdev->dev, "Could not register DAI: %d\n", ret);
@@ -416,7 +420,7 @@ static int tegra20_ac97_platform_probe(struct platform_device *pdev)
 	return 0;
 
 err_unregister_component:
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_component_unregister(&pdev->dev);
 err_clk_disable_unprepare:
 	clk_disable_unprepare(ac97->clk_ac97);
 err_clk_put:
@@ -430,7 +434,7 @@ static void tegra20_ac97_platform_remove(struct platform_device *pdev)
 	struct tegra20_ac97 *ac97 = dev_get_drvdata(&pdev->dev);
 
 	tegra_pcm_platform_unregister(&pdev->dev);
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_component_unregister(&pdev->dev);
 
 	clk_disable_unprepare(ac97->clk_ac97);
 

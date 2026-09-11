@@ -114,7 +114,8 @@ static int mt8186_i2s_hd_get(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mtk_afe_i2s_priv *i2s_priv;
 
 	i2s_priv = get_i2s_priv_by_name(afe, kcontrol->id.name);
@@ -127,7 +128,8 @@ static int mt8186_i2s_hd_set(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mtk_afe_i2s_priv *i2s_priv;
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	int hd_en;
@@ -359,13 +361,13 @@ static int mtk_i2s_en_event(struct snd_soc_dapm_widget *w,
 			    int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mtk_afe_i2s_priv *i2s_priv;
 
 	i2s_priv = get_i2s_priv_by_name(afe, w->name);
 
-	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
-		__func__, w->name, event);
+	dev_dbg(dev, "%s(), name %s, event 0x%x\n", __func__, w->name, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -386,10 +388,10 @@ static int mtk_apll_event(struct snd_soc_dapm_widget *w,
 			  int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
-	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
-		__func__, w->name, event);
+	dev_dbg(dev, "%s(), name %s, event 0x%x\n", __func__, w->name, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -416,11 +418,11 @@ static int mtk_mclk_en_event(struct snd_soc_dapm_widget *w,
 			     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mtk_afe_i2s_priv *i2s_priv;
 
-	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
-		__func__, w->name, event);
+	dev_dbg(dev, "%s(), name %s, event 0x%x\n", __func__, w->name, event);
 
 	i2s_priv = get_i2s_priv_by_name(afe, w->name);
 
@@ -539,7 +541,8 @@ static int mtk_afe_i2s_share_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = sink;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mtk_afe_i2s_priv *i2s_priv;
 
 	i2s_priv = get_i2s_priv_by_name(afe, sink->name);
@@ -554,7 +557,8 @@ static int mtk_afe_i2s_hd_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = sink;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mtk_afe_i2s_priv *i2s_priv;
 
 	i2s_priv = get_i2s_priv_by_name(afe, sink->name);
@@ -577,7 +581,8 @@ static int mtk_afe_i2s_apll_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = sink;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mtk_afe_i2s_priv *i2s_priv;
 	int cur_apll;
 	int i2s_need_apll;
@@ -596,7 +601,8 @@ static int mtk_afe_i2s_mclk_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = sink;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mtk_afe_i2s_priv *i2s_priv;
 
 	i2s_priv = get_i2s_priv_by_name(afe, sink->name);
@@ -619,7 +625,8 @@ static int mtk_afe_mclk_apll_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = sink;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mtk_afe_i2s_priv *i2s_priv;
 	int cur_apll;
 
@@ -810,14 +817,17 @@ static int mtk_dai_connsys_i2s_hw_params(struct snd_pcm_substream *substream,
 					 struct snd_pcm_hw_params *params,
 					 struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 	unsigned int rate_reg = mt8186_rate_transform(afe->dev,
-						      rate, dai->id);
+						      rate, dai_id);
 	unsigned int i2s_con = 0;
 
 	dev_dbg(afe->dev, "%s(), id %d, stream %d, rate %d\n",
-		__func__, dai->id, substream->stream, rate);
+		__func__, dai_id, substream->stream, rate);
 
 	/* non-inverse, i2s mode, slave, 16bits, from connsys */
 	i2s_con |= 0 << INV_PAD_CTRL_SFT;
@@ -859,8 +869,11 @@ static int mtk_dai_connsys_i2s_hw_params(struct snd_pcm_substream *substream,
 static int mtk_dai_connsys_i2s_trigger(struct snd_pcm_substream *substream,
 				       int cmd, struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
+	int dai_id = snd_soc_dai_id(dai);
 
 	dev_dbg(afe->dev, "%s(), cmd %d, stream %d\n",
 		__func__, cmd, substream->stream);
@@ -890,7 +903,7 @@ static int mtk_dai_connsys_i2s_trigger(struct snd_pcm_substream *substream,
 				   CON0_ASM_ON_MASK_SFT,
 				   BIT(CON0_ASM_ON_SFT));
 
-		afe_priv->dai_on[dai->id] = true;
+		afe_priv->dai_on[dai_id] = true;
 		return 0;
 	case SNDRV_PCM_TRIGGER_STOP:
 	case SNDRV_PCM_TRIGGER_SUSPEND:
@@ -907,7 +920,7 @@ static int mtk_dai_connsys_i2s_trigger(struct snd_pcm_substream *substream,
 		regmap_update_bits(afe->regmap, AFE_CONNSYS_I2S_CON,
 				   I2S_BYPSRC_MASK_SFT, BIT(I2S_BYPSRC_SFT));
 
-		afe_priv->dai_on[dai->id] = false;
+		afe_priv->dai_on[dai_id] = false;
 		return 0;
 	default:
 		return -EINVAL;
@@ -992,17 +1005,23 @@ static int mtk_dai_i2s_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	return mtk_dai_i2s_config(afe, params, dai->id);
+	return mtk_dai_i2s_config(afe, params, dai_id);
 }
 
 static int mtk_dai_i2s_set_sysclk(struct snd_soc_dai *dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct mtk_base_afe *afe = dev_get_drvdata(dai->dev);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
-	struct mtk_afe_i2s_priv *i2s_priv = afe_priv->dai_priv[dai->id];
+	struct mtk_afe_i2s_priv *i2s_priv = afe_priv->dai_priv[dai_id];
 	int apll;
 	int apll_rate;
 
