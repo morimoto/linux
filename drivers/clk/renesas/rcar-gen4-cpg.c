@@ -392,11 +392,14 @@ static struct clk * __init cpg_z_clk_register(const char *name,
 	init.parent_names = &parent_name;
 	init.num_parents = 1;
 
-	if (offset < 32) {
+	if (offset < FRQCRC0_offset) {
+		zclk->reg = reg + CPG_FRQCRB;
+	} else if (offset < FRQCRC1_offset) {
 		zclk->reg = reg + CPG_FRQCRC0;
+		offset -= FRQCRC0_offset;
 	} else {
 		zclk->reg = reg + CPG_FRQCRC1;
-		offset -= 32;
+		offset -= FRQCRC1_offset;
 	}
 	zclk->kick_reg = reg + CPG_FRQCRB;
 	zclk->hw.init = &init;

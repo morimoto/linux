@@ -82,4 +82,11 @@ struct clk *rcar_gen4_cpg_clk_register(struct device *dev,
 int rcar_gen4_cpg_init(const struct rcar_gen4_cpg_pll_config *config,
 		       unsigned int clk_extalr, u32 mode);
 
+#define FRQCRB_offset	0
+#define FRQCRC0_offset	32
+#define FRQCRC1_offset	64
+#define FRQCRB_pos(p)	(FRQCRB_offset  + p)
+#define FRQCRC0_pos(p)	(FRQCRC0_offset + p)
+#define FRQCRC1_pos(p)	(FRQCRC1_offset + p)
+
 #endif
