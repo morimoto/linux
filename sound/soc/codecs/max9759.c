@@ -26,7 +26,8 @@ static int pga_event(struct snd_soc_dapm_widget *w,
 		     struct snd_kcontrol *control, int event)
 {
 	struct snd_soc_component *c = snd_soc_dapm_to_component(w->dapm);
-	struct max9759 *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct max9759 *priv = dev_get_drvdata(dev);
 
 	if (SND_SOC_DAPM_EVENT_ON(event))
 		gpiod_set_value_cansleep(priv->gpiod_shutdown, 0);
@@ -43,7 +44,8 @@ static int speaker_gain_control_get(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct max9759 *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct max9759 *priv = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = priv->gain;
 
@@ -62,7 +64,8 @@ static int speaker_gain_control_put(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct max9759 *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct max9759 *priv = dev_get_drvdata(dev);
 
 	if (ucontrol->value.integer.value[0] < 0 ||
 	    ucontrol->value.integer.value[0] > 3)
@@ -84,7 +87,8 @@ static int speaker_mute_get(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct max9759 *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct max9759 *priv = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = !priv->is_mute;
 
@@ -95,7 +99,8 @@ static int speaker_mute_put(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct max9759 *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct max9759 *priv = dev_get_drvdata(dev);
 
 	priv->is_mute = !ucontrol->value.integer.value[0];
 
@@ -171,7 +176,7 @@ static int max9759_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	return devm_snd_soc_register_component(dev, &max9759_component_driver,
+	return devm_snd_soc_component_register(dev, &max9759_component_driver,
 					       NULL, 0);
 }
 

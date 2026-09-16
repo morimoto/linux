@@ -371,7 +371,8 @@ static inline int arizona_register_notifier(struct snd_soc_component *component,
 					    (struct notifier_block *nb,
 					    unsigned long action, void *data))
 {
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 
 	nb->notifier_call = notify;
@@ -382,7 +383,8 @@ static inline int arizona_register_notifier(struct snd_soc_component *component,
 static inline int arizona_unregister_notifier(struct snd_soc_component *component,
 					      struct notifier_block *nb)
 {
-	struct arizona_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->arizona;
 
 	return blocking_notifier_chain_unregister(&arizona->notifier, nb);

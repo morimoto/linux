@@ -175,8 +175,9 @@ static const struct snd_pcm_hw_constraint_list constraints_36864 = {
 static int wm8741_startup(struct snd_pcm_substream *substream,
 			  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8741_priv *wm8741 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8741_priv *wm8741 = dev_get_drvdata(dev);
 
 	if (wm8741->sysclk)
 		snd_pcm_hw_constraint_list(substream->runtime, 0,
@@ -190,8 +191,9 @@ static int wm8741_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8741_priv *wm8741 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8741_priv *wm8741 = dev_get_drvdata(dev);
 	unsigned int iface, mode;
 	int i;
 
@@ -199,7 +201,7 @@ static int wm8741_hw_params(struct snd_pcm_substream *substream,
 	 * MCLK supplied to the CODEC - enforce this.
 	 */
 	if (!wm8741->sysclk) {
-		dev_err(component->dev,
+		dev_err(dev,
 			"No MCLK configured, call set_sysclk() on init or in hw_params\n");
 		return -EINVAL;
 	}
@@ -211,7 +213,7 @@ static int wm8741_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (i == wm8741->sysclk_constraints->count) {
-		dev_err(component->dev, "LRCLK %d unsupported with MCLK %d\n",
+		dev_err(dev, "LRCLK %d unsupported with MCLK %d\n",
 			params_rate(params), wm8741->sysclk);
 		return -EINVAL;
 	}
@@ -231,7 +233,7 @@ static int wm8741_hw_params(struct snd_pcm_substream *substream,
 		iface = 0x3;
 		break;
 	default:
-		dev_dbg(component->dev, "wm8741_hw_params:    Unsupported bit size param = %d",
+		dev_dbg(dev, "wm8741_hw_params:    Unsupported bit size param = %d",
 			params_width(params));
 		return -EINVAL;
 	}
@@ -244,7 +246,7 @@ static int wm8741_hw_params(struct snd_pcm_substream *substream,
 	else
 		mode = 0x00;
 
-	dev_dbg(component->dev, "wm8741_hw_params:    bit size param = %d, rate param = %d",
+	dev_dbg(dev, "wm8741_hw_params:    bit size param = %d, rate param = %d",
 		params_width(params), params_rate(params));
 
 	snd_soc_component_update_bits(component, WM8741_FORMAT_CONTROL, WM8741_IWL_MASK,
@@ -258,10 +260,11 @@ static int wm8741_hw_params(struct snd_pcm_substream *substream,
 static int wm8741_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8741_priv *wm8741 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8741_priv *wm8741 = dev_get_drvdata(dev);
 
-	dev_dbg(component->dev, "wm8741_set_dai_sysclk info: freq=%dHz\n", freq);
+	dev_dbg(dev, "wm8741_set_dai_sysclk info: freq=%dHz\n", freq);
 
 	switch (freq) {
 	case 0:
@@ -303,7 +306,8 @@ static int wm8741_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int wm8741_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int iface;
 
 	/* check master/slave audio interface */
@@ -353,7 +357,7 @@ static int wm8741_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	}
 
 
-	dev_dbg(component->dev, "wm8741_set_dai_fmt:    Format=%x, Clock Inv=%x\n",
+	dev_dbg(dev, "wm8741_set_dai_fmt:    Format=%x, Clock Inv=%x\n",
 				fmt & SND_SOC_DAIFMT_FORMAT_MASK,
 				((fmt & SND_SOC_DAIFMT_INV_MASK)));
 
@@ -366,7 +370,7 @@ static int wm8741_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 static int wm8741_mute(struct snd_soc_dai *codec_dai, int mute, int direction)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
 	snd_soc_component_update_bits(component, WM8741_VOLUME_CONTROL,
 			WM8741_SOFT_MASK, !!mute << WM8741_SOFT_SHIFT);
@@ -418,7 +422,7 @@ static struct snd_soc_dai_driver wm8741_dai = {
 #ifdef CONFIG_PM
 static int wm8741_resume(struct snd_soc_component *component)
 {
-	snd_soc_component_cache_sync(component);
+	snd_soc_component_regcache_sync(component);
 	return 0;
 }
 #else
@@ -427,7 +431,8 @@ static int wm8741_resume(struct snd_soc_component *component)
 
 static int wm8741_configure(struct snd_soc_component *component)
 {
-	struct wm8741_priv *wm8741 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8741_priv *wm8741 = dev_get_drvdata(dev);
 
 	/* Configure differential mode */
 	switch (wm8741->pdata.diff_mode) {
@@ -458,22 +463,23 @@ static int wm8741_configure(struct snd_soc_component *component)
 
 static int wm8741_add_controls(struct snd_soc_component *component)
 {
-	struct wm8741_priv *wm8741 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8741_priv *wm8741 = dev_get_drvdata(dev);
 
 	switch (wm8741->pdata.diff_mode) {
 	case WM8741_DIFF_MODE_STEREO:
 	case WM8741_DIFF_MODE_STEREO_REVERSED:
-		snd_soc_add_component_controls(component,
+		snd_soc_component_add_controls(component,
 				wm8741_snd_controls_stereo,
 				ARRAY_SIZE(wm8741_snd_controls_stereo));
 		break;
 	case WM8741_DIFF_MODE_MONO_LEFT:
-		snd_soc_add_component_controls(component,
+		snd_soc_component_add_controls(component,
 				wm8741_snd_controls_mono_left,
 				ARRAY_SIZE(wm8741_snd_controls_mono_left));
 		break;
 	case WM8741_DIFF_MODE_MONO_RIGHT:
-		snd_soc_add_component_controls(component,
+		snd_soc_component_add_controls(component,
 				wm8741_snd_controls_mono_right,
 				ARRAY_SIZE(wm8741_snd_controls_mono_right));
 		break;
@@ -486,35 +492,36 @@ static int wm8741_add_controls(struct snd_soc_component *component)
 
 static int wm8741_probe(struct snd_soc_component *component)
 {
-	struct wm8741_priv *wm8741 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8741_priv *wm8741 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(wm8741->supplies),
 				    wm8741->supplies);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to enable supplies: %d\n", ret);
+		dev_err(dev, "Failed to enable supplies: %d\n", ret);
 		goto err_get;
 	}
 
 	ret = wm8741_reset(component);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to issue reset\n");
+		dev_err(dev, "Failed to issue reset\n");
 		goto err_enable;
 	}
 
 	ret = wm8741_configure(component);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to change default settings\n");
+		dev_err(dev, "Failed to change default settings\n");
 		goto err_enable;
 	}
 
 	ret = wm8741_add_controls(component);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to add controls\n");
+		dev_err(dev, "Failed to add controls\n");
 		goto err_enable;
 	}
 
-	dev_dbg(component->dev, "Successful registration\n");
+	dev_dbg(dev, "Successful registration\n");
 	return ret;
 
 err_enable:
@@ -525,7 +532,8 @@ err_get:
 
 static void wm8741_remove(struct snd_soc_component *component)
 {
-	struct wm8741_priv *wm8741 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8741_priv *wm8741 = dev_get_drvdata(dev);
 
 	regulator_bulk_disable(ARRAY_SIZE(wm8741->supplies), wm8741->supplies);
 }
@@ -612,7 +620,7 @@ static int wm8741_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, wm8741);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 				     &soc_component_dev_wm8741, &wm8741_dai, 1);
 
 	return ret;
@@ -670,7 +678,7 @@ static int wm8741_spi_probe(struct spi_device *spi)
 
 	spi_set_drvdata(spi, wm8741);
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 			&soc_component_dev_wm8741, &wm8741_dai, 1);
 	return ret;
 }

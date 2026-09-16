@@ -225,7 +225,9 @@ static int jh7110_pwmdac_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params,
 				   struct snd_soc_dai *dai)
 {
-	struct jh7110_pwmdac_dev *dev = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct jh7110_pwmdac_dev *dev = dev_get_drvdata(dai_dev);
 	unsigned long core_clk_rate;
 	int ret;
 
@@ -259,7 +261,7 @@ static int jh7110_pwmdac_hw_params(struct snd_pcm_substream *substream,
 		core_clk_rate = 12288000;
 		break;
 	default:
-		dev_err(dai->dev, "%d rate not supported\n",
+		dev_err(dai_dev, "%d rate not supported\n",
 			params_rate(params));
 		return -EINVAL;
 	}
@@ -272,7 +274,7 @@ static int jh7110_pwmdac_hw_params(struct snd_pcm_substream *substream,
 		dev->play_dma_data.addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
 		break;
 	default:
-		dev_err(dai->dev, "%d channels not supported\n",
+		dev_err(dai_dev, "%d channels not supported\n",
 			params_channels(params));
 		return -EINVAL;
 	}
@@ -286,7 +288,7 @@ static int jh7110_pwmdac_hw_params(struct snd_pcm_substream *substream,
 
 	ret = clk_set_rate(dev->clks[1].clk, core_clk_rate);
 	if (ret)
-		return dev_err_probe(dai->dev, ret,
+		return dev_err_probe(dai_dev, ret,
 				     "failed to set rate %lu for core clock\n",
 				     core_clk_rate);
 
@@ -296,7 +298,9 @@ static int jh7110_pwmdac_hw_params(struct snd_pcm_substream *substream,
 static int jh7110_pwmdac_trigger(struct snd_pcm_substream *substream, int cmd,
 				 struct snd_soc_dai *dai)
 {
-	struct jh7110_pwmdac_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct jh7110_pwmdac_dev *dev = dev_get_drvdata(dai_dev);
 	int ret = 0;
 
 	switch (cmd) {
@@ -348,10 +352,12 @@ err_rst_apb:
 
 static int jh7110_pwmdac_dai_probe(struct snd_soc_dai *dai)
 {
-	struct jh7110_pwmdac_dev *dev = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct jh7110_pwmdac_dev *dev = dev_get_drvdata(dai_dev);
 
-	snd_soc_dai_init_dma_data(dai, &dev->play_dma_data, NULL);
-	snd_soc_dai_set_drvdata(dai, dev);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &dev->play_dma_data);
+	dev_set_drvdata(dai_dev, dev);
 
 	return 0;
 }
@@ -364,7 +370,7 @@ static const struct snd_soc_dai_ops jh7110_pwmdac_dai_ops = {
 };
 
 static const struct snd_soc_component_driver jh7110_pwmdac_component = {
-	.name		= "jh7110-pwmdac",
+	.name	= "jh7110-pwmdac",
 };
 
 static struct snd_soc_dai_driver jh7110_pwmdac_dai = {
@@ -473,7 +479,7 @@ static int jh7110_pwmdac_probe(struct platform_device *pdev)
 
 	dev->dev = &pdev->dev;
 	dev_set_drvdata(&pdev->dev, dev);
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &jh7110_pwmdac_component,
 					      &jh7110_pwmdac_dai, 1);
 	if (ret)

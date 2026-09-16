@@ -117,8 +117,9 @@ static int hda_probes_compr_pointer(struct sof_client_dev *cdev,
 {
 	struct hdac_ext_stream *hext_stream = hda_compr_get_stream(cstream);
 	struct snd_soc_pcm_stream *pstream;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 
-	pstream = &dai->driver->capture;
+	pstream = &dai_driver->capture;
 	tstamp->copied_total = hdac_stream(hext_stream)->curr_pos;
 	tstamp->sampling_rate = snd_pcm_rate_bit_to_rate(pstream->rates);
 

@@ -22,7 +22,9 @@
 static int fsl_aud2htx_trigger(struct snd_pcm_substream *substream, int cmd,
 			       struct snd_soc_dai *dai)
 {
-	struct fsl_aud2htx *aud2htx = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_aud2htx *aud2htx = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -49,7 +51,9 @@ static int fsl_aud2htx_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int fsl_aud2htx_dai_probe(struct snd_soc_dai *cpu_dai)
 {
-	struct fsl_aud2htx *aud2htx = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_aud2htx *aud2htx = dev_get_drvdata(dai_dev);
 
 	/* DMA request when number of entries < WTMK_LOW */
 	regmap_update_bits(aud2htx->regmap, AUD2HTX_CTRL_EXT,
@@ -72,8 +76,8 @@ static int fsl_aud2htx_dai_probe(struct snd_soc_dai *cpu_dai)
 			   AUD2HTX_CTRE_WH_MASK,
 			   AUD2HTX_WTMK_HIGH << AUD2HTX_CTRE_WH_SHIFT);
 
-	snd_soc_dai_init_dma_data(cpu_dai, &aud2htx->dma_params_tx,
-				  &aud2htx->dma_params_rx);
+	snd_soc_dai_stream_dma_data_set_playback(cpu_dai, &aud2htx->dma_params_tx);
+	snd_soc_dai_stream_dma_data_set_capture(cpu_dai,  &aud2htx->dma_params_rx);
 
 	return 0;
 }
@@ -243,7 +247,7 @@ static int fsl_aud2htx_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &fsl_aud2htx_component,
 					      &fsl_aud2htx_dai, 1);
 	if (ret) {

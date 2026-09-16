@@ -728,9 +728,10 @@ static void wsa881x_init(struct wsa881x_priv *wsa881x)
 
 static int wsa881x_component_probe(struct snd_soc_component *comp)
 {
-	struct wsa881x_priv *wsa881x = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wsa881x_priv *wsa881x = dev_get_drvdata(dev);
 
-	snd_soc_component_init_regmap(comp, wsa881x->regmap);
+	snd_soc_component_regmap_init(comp, wsa881x->regmap);
 
 	return 0;
 }
@@ -739,13 +740,14 @@ static int wsa881x_put_pa_gain(struct snd_kcontrol *kc,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kc);
+	struct device *dev = snd_soc_component_to_dev(comp);
 	struct soc_mixer_control *mc =
 			(struct soc_mixer_control *)kc->private_value;
 	int max = mc->max;
 	unsigned int mask = (1 << fls(max)) - 1;
 	int val, ret, min_gain, max_gain;
 
-	ret = pm_runtime_resume_and_get(comp->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -770,12 +772,12 @@ static int wsa881x_put_pa_gain(struct snd_kcontrol *kc,
 			      WSA881X_SPKR_PAG_GAIN_MASK,
 			      val << 4);
 		if (ret < 0)
-			dev_err(comp->dev, "Failed to change PA gain");
+			dev_err(dev, "Failed to change PA gain");
 
 		usleep_range(1000, 1010);
 	}
 
-	pm_runtime_put_autosuspend(comp->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return 1;
 }
@@ -784,7 +786,8 @@ static int wsa881x_get_port(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct wsa881x_priv *data = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wsa881x_priv *data = dev_get_drvdata(dev);
 	struct soc_mixer_control *mixer =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	int portidx = mixer->reg;
@@ -816,7 +819,8 @@ static int wsa881x_set_port(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct wsa881x_priv *data = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wsa881x_priv *data = dev_get_drvdata(dev);
 	struct soc_mixer_control *mixer =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	int portidx = mixer->reg;
@@ -879,7 +883,8 @@ static const struct snd_soc_dapm_route wsa881x_audio_map[] = {
 static int wsa881x_visense_txfe_ctrl(struct snd_soc_component *comp,
 				     bool enable)
 {
-	struct wsa881x_priv *wsa881x = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wsa881x_priv *wsa881x = dev_get_drvdata(dev);
 
 	if (enable) {
 		regmap_multi_reg_write(wsa881x->regmap, wsa881x_vi_txfe_en_2_0,
@@ -913,7 +918,8 @@ static int wsa881x_spkr_pa_event(struct snd_soc_dapm_widget *w,
 				 struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wsa881x_priv *wsa881x = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wsa881x_priv *wsa881x = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -974,7 +980,9 @@ static int wsa881x_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct wsa881x_priv *wsa881x = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa881x_priv *wsa881x = dev_get_drvdata(dev);
 	int i;
 
 	wsa881x->active_ports = 0;
@@ -995,7 +1003,9 @@ static int wsa881x_hw_params(struct snd_pcm_substream *substream,
 static int wsa881x_hw_free(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct wsa881x_priv *wsa881x = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa881x_priv *wsa881x = dev_get_drvdata(dev);
 
 	sdw_stream_remove_slave(wsa881x->slave, wsa881x->sruntime);
 
@@ -1005,7 +1015,9 @@ static int wsa881x_hw_free(struct snd_pcm_substream *substream,
 static int wsa881x_set_sdw_stream(struct snd_soc_dai *dai,
 				  void *stream, int direction)
 {
-	struct wsa881x_priv *wsa881x = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa881x_priv *wsa881x = dev_get_drvdata(dev);
 
 	wsa881x->sruntime = stream;
 
@@ -1014,7 +1026,9 @@ static int wsa881x_set_sdw_stream(struct snd_soc_dai *dai,
 
 static int wsa881x_digital_mute(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct wsa881x_priv *wsa881x = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wsa881x_priv *wsa881x = dev_get_drvdata(dev);
 
 	if (mute)
 		regmap_update_bits(wsa881x->regmap, WSA881X_SPKR_DRV_EN, 0x80,
@@ -1143,7 +1157,7 @@ static int wsa881x_probe(struct sdw_slave *pdev,
 	pm_runtime_set_active(dev);
 	pm_runtime_enable(dev);
 
-	return devm_snd_soc_register_component(dev,
+	return devm_snd_soc_component_register(dev,
 					       &wsa881x_component_drv,
 					       wsa881x_dais,
 					       ARRAY_SIZE(wsa881x_dais));

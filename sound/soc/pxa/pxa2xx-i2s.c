@@ -168,7 +168,7 @@ static int pxa2xx_i2s_hw_params(struct snd_pcm_substream *substream,
 	else
 		dma_data = &pxa2xx_i2s_pcm_stereo_in;
 
-	snd_soc_dai_set_dma_data(dai, substream, dma_data);
+	snd_soc_dai_stream_dma_data_set(dai, substream, dma_data);
 
 	/* is port used by another stream */
 	if (!(SACR0 & SACR0_ENB)) {
@@ -294,7 +294,10 @@ static int pxa2xx_soc_pcm_resume(struct snd_soc_component *component)
 
 static int pxa2xx_i2s_probe(struct snd_soc_dai *dai)
 {
-	clk_i2s = clk_get(dai->dev, "I2SCLK");
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	clk_i2s = clk_get(dev, "I2SCLK");
 	if (IS_ERR(clk_i2s))
 		return PTR_ERR(clk_i2s);
 
@@ -311,8 +314,8 @@ static int pxa2xx_i2s_probe(struct snd_soc_dai *dai)
 	/* Along with FIFO servicing */
 	writel(readl(i2s_reg_base + SAIMR) & (~(SAIMR_RFS | SAIMR_TFS)), i2s_reg_base + SAIMR);
 
-	snd_soc_dai_init_dma_data(dai, &pxa2xx_i2s_pcm_stereo_out,
-		&pxa2xx_i2s_pcm_stereo_in);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &pxa2xx_i2s_pcm_stereo_out);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &pxa2xx_i2s_pcm_stereo_in);
 
 	return 0;
 }
@@ -385,7 +388,7 @@ static int pxa2xx_i2s_drv_probe(struct platform_device *pdev)
 	pxa2xx_i2s_pcm_stereo_out.addr = res->start + SADR;
 	pxa2xx_i2s_pcm_stereo_in.addr = res->start + SADR;
 
-	return devm_snd_soc_register_component(&pdev->dev, &pxa_i2s_component,
+	return devm_snd_soc_component_register(&pdev->dev, &pxa_i2s_component,
 					       &pxa_i2s_dai, 1);
 }
 

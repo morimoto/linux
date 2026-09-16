@@ -478,7 +478,8 @@ static int cs42l42_hp_adc_ev(struct snd_soc_dapm_widget *w,
 			     struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs42l42_private *cs42l42 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l42_private *cs42l42 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -563,7 +564,8 @@ static const struct snd_soc_dapm_route cs42l42_audio_map[] = {
 
 static int cs42l42_set_jack(struct snd_soc_component *component, struct snd_soc_jack *jk, void *d)
 {
-	struct cs42l42_private *cs42l42 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l42_private *cs42l42 = dev_get_drvdata(dev);
 
 	/* Prevent race with interrupt handler */
 	guard(mutex)(&cs42l42->irq_lock);
@@ -664,7 +666,8 @@ static const struct cs42l42_pll_params pll_ratio_table[] = {
 int cs42l42_pll_config(struct snd_soc_component *component, unsigned int clk,
 		       unsigned int sample_rate)
 {
-	struct cs42l42_private *cs42l42 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l42_private *cs42l42 = dev_get_drvdata(dev);
 	int i;
 
 	/* Don't reconfigure if there is an audio stream running */
@@ -752,7 +755,8 @@ EXPORT_SYMBOL_NS_GPL(cs42l42_pll_config, "SND_SOC_CS42L42_CORE");
 
 void cs42l42_src_config(struct snd_soc_component *component, unsigned int sample_rate)
 {
-	struct cs42l42_private *cs42l42 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l42_private *cs42l42 = dev_get_drvdata(dev);
 	unsigned int fs;
 
 	/* Don't reconfigure if there is an audio stream running */
@@ -787,11 +791,12 @@ EXPORT_SYMBOL_NS_GPL(cs42l42_src_config, "SND_SOC_CS42L42_CORE");
 static int cs42l42_asp_config(struct snd_soc_component *component,
 			      unsigned int sclk, unsigned int sample_rate)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	u32 fsync = sclk / sample_rate;
 
 	/* Set up the LRCLK */
 	if (((fsync * sample_rate) != sclk) || ((fsync % 2) != 0)) {
-		dev_err(component->dev,
+		dev_err(dev,
 			"Unsupported sclk %d/sample rate %d\n",
 			sclk,
 			sample_rate);
@@ -826,7 +831,7 @@ static int cs42l42_asp_config(struct snd_soc_component *component,
 
 static int cs42l42_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u32 asp_cfg_val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -888,8 +893,9 @@ static int cs42l42_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 
 static int cs42l42_dai_startup(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l42_private *cs42l42 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l42_private *cs42l42 = dev_get_drvdata(dev);
 
 	/*
 	 * Sample rates < 44.1 kHz would produce an out-of-range SCLK with
@@ -909,8 +915,9 @@ static int cs42l42_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l42_private *cs42l42 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l42_private *cs42l42 = dev_get_drvdata(dev);
 	unsigned int channels = params_channels(params);
 	unsigned int width = (params_width(params) / 8) - 1;
 	unsigned int sample_rate = params_rate(params);
@@ -991,8 +998,9 @@ static int cs42l42_pcm_hw_params(struct snd_pcm_substream *substream,
 static int cs42l42_set_sysclk(struct snd_soc_dai *dai,
 				int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l42_private *cs42l42 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l42_private *cs42l42 = dev_get_drvdata(dev);
 	int i;
 
 	if (freq == 0) {
@@ -1007,7 +1015,7 @@ static int cs42l42_set_sysclk(struct snd_soc_dai *dai,
 		}
 	}
 
-	dev_err(component->dev, "SCLK %u not supported\n", freq);
+	dev_err(dev, "SCLK %u not supported\n", freq);
 
 	return -EINVAL;
 }
@@ -1015,8 +1023,9 @@ static int cs42l42_set_sysclk(struct snd_soc_dai *dai,
 static int cs42l42_set_bclk_ratio(struct snd_soc_dai *dai,
 				unsigned int bclk_ratio)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l42_private *cs42l42 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l42_private *cs42l42 = dev_get_drvdata(dev);
 
 	cs42l42->bclk_ratio = bclk_ratio;
 
@@ -1025,8 +1034,9 @@ static int cs42l42_set_bclk_ratio(struct snd_soc_dai *dai,
 
 int cs42l42_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l42_private *cs42l42 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l42_private *cs42l42 = dev_get_drvdata(dev);
 	unsigned int regval;
 	int ret;
 
@@ -1090,7 +1100,7 @@ int cs42l42_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 							       CS42L42_PLL_LOCK_POLL_US,
 							       CS42L42_PLL_LOCK_TIMEOUT_US);
 				if (ret < 0)
-					dev_warn(component->dev, "PLL failed to lock: %d\n", ret);
+					dev_warn(dev, "PLL failed to lock: %d\n", ret);
 
 				/* PLL must be running to drive glitchless switch logic */
 				snd_soc_component_update_bits(component,
@@ -2355,7 +2365,7 @@ int cs42l42_common_probe(struct cs42l42_private *cs42l42,
 	}
 
 	/* Register codec now so it can EPROBE_DEFER */
-	ret = devm_snd_soc_register_component(cs42l42->dev, component_drv, dai, 1);
+	ret = devm_snd_soc_component_register(cs42l42->dev, component_drv, dai, 1);
 	if (ret < 0)
 		goto err;
 

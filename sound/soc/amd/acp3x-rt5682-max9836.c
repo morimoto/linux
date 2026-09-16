@@ -54,17 +54,18 @@ static int acp3x_5682_init(struct snd_soc_pcm_runtime *rtd)
 	int ret;
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *codec_dev = snd_soc_component_to_dev(component);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 
-	dev_info(rtd->dev, "codec dai name = %s\n", codec_dai->name);
+	dev_info(rtd->dev, "codec dai name = %s\n", snd_soc_dai_name(codec_dai));
 
 	/* set rt5682 dai fmt */
 	ret =  snd_soc_dai_set_fmt(codec_dai, SND_SOC_DAIFMT_I2S
 			| SND_SOC_DAIFMT_NB_NF
 			| SND_SOC_DAIFMT_CBP_CFP);
 	if (ret < 0) {
-		dev_err(rtd->card->dev,
-				"Failed to set rt5682 dai fmt: %d\n", ret);
+		dev_err(card_dev, "Failed to set rt5682 dai fmt: %d\n", ret);
 		return ret;
 	}
 
@@ -93,11 +94,11 @@ static int acp3x_5682_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	rt5682_dai_wclk = devm_clk_get(component->dev, "rt5682-dai-wclk");
+	rt5682_dai_wclk = devm_clk_get(codec_dev, "rt5682-dai-wclk");
 	if (IS_ERR(rt5682_dai_wclk))
 		return PTR_ERR(rt5682_dai_wclk);
 
-	rt5682_dai_bclk = devm_clk_get(component->dev, "rt5682-dai-bclk");
+	rt5682_dai_bclk = devm_clk_get(codec_dev, "rt5682-dai-bclk");
 	if (IS_ERR(rt5682_dai_bclk))
 		return PTR_ERR(rt5682_dai_bclk);
 
@@ -109,7 +110,7 @@ static int acp3x_5682_init(struct snd_soc_pcm_runtime *rtd)
 					 pco_jack_pins,
 					 ARRAY_SIZE(pco_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+		dev_err(card_dev, "HP jack creation failed %d\n", ret);
 		return ret;
 	}
 
@@ -155,7 +156,7 @@ static int acp3x_1015_hw_params(struct snd_pcm_substream *substream,
 	srate = params_rate(params);
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-		if (strcmp(codec_dai->name, "rt1015-aif"))
+		if (strcmp(snd_soc_dai_name(codec_dai), "rt1015-aif"))
 			continue;
 
 		ret = snd_soc_dai_set_pll(codec_dai, 0, RT1015_PLL_S_BCLK,
@@ -200,7 +201,7 @@ static int acp3x_5682_startup(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp3x_platform_info *machine = snd_soc_card_get_drvdata(card);
+	struct acp3x_platform_info *machine = snd_soc_card_to_priv(card);
 
 	machine->play_i2s_instance = I2S_SP_INSTANCE;
 	machine->cap_i2s_instance = I2S_SP_INSTANCE;
@@ -218,7 +219,7 @@ static int acp3x_max_startup(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp3x_platform_info *machine = snd_soc_card_get_drvdata(card);
+	struct acp3x_platform_info *machine = snd_soc_card_to_priv(card);
 
 	machine->play_i2s_instance = I2S_BT_INSTANCE;
 
@@ -235,7 +236,7 @@ static int acp3x_ec_dmic0_startup(struct snd_pcm_substream *substream)
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct acp3x_platform_info *machine = snd_soc_card_get_drvdata(card);
+	struct acp3x_platform_info *machine = snd_soc_card_to_priv(card);
 
 	machine->cap_i2s_instance = I2S_BT_INSTANCE;
 	snd_soc_dai_set_bclk_ratio(codec_dai, 64);
@@ -516,7 +517,7 @@ static int acp3x_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	card_spk_dai_link_present(card_driver->dai_link, card_driver->default_name);
-	snd_soc_card_set_drvdata(card, machine);
+	snd_soc_card_set_priv(card, machine);
 
 	dmic_sel = devm_gpiod_get(&pdev->dev, "dmic", GPIOD_OUT_LOW);
 	if (IS_ERR(dmic_sel)) {

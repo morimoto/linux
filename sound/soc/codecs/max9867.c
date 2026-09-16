@@ -53,7 +53,8 @@ static int max9867_adc_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct max9867_priv *max9867 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9867_priv *max9867 = dev_get_drvdata(dev);
 	enum max9867_adc_dac adc_dac;
 
 	if (!snd_soc_dapm_widget_name_cmp(w, "ADCL"))
@@ -79,7 +80,8 @@ static int max9867_filter_get(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max9867_priv *max9867 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9867_priv *max9867 = dev_get_drvdata(dev);
 	unsigned int reg;
 	int ret;
 
@@ -99,7 +101,8 @@ static int max9867_filter_set(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max9867_priv *max9867 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9867_priv *max9867 = dev_get_drvdata(dev);
 	unsigned int reg, mode = ucontrol->value.enumerated.item[0];
 	int ret;
 
@@ -312,8 +315,9 @@ static const struct snd_pcm_hw_constraint_list max9867_constraints_48k = {
 static int max9867_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-        struct max9867_priv *max9867 =
-		snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+        struct max9867_priv *max9867 = dev_get_drvdata(dev);
 
 	if (max9867->constraints)
 		snd_pcm_hw_constraint_list(substream->runtime, 0,
@@ -327,8 +331,9 @@ static int max9867_dai_hw_params(struct snd_pcm_substream *substream,
 {
 	int value, freq = 0;
 	unsigned long int rate, ratio;
-	struct snd_soc_component *component = dai->component;
-	struct max9867_priv *max9867 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9867_priv *max9867 = dev_get_drvdata(dev);
 	unsigned int ni = DIV_ROUND_CLOSEST_ULL(96ULL * 0x10000 * params_rate(params),
 						max9867->pclk);
 
@@ -419,8 +424,9 @@ static int max9867_dai_hw_params(struct snd_pcm_substream *substream,
 
 static int max9867_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max9867_priv *max9867 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9867_priv *max9867 = dev_get_drvdata(dev);
 
 	return regmap_update_bits(max9867->regmap, MAX9867_DACLEVEL,
 				  1 << 6, !!mute << 6);
@@ -429,8 +435,9 @@ static int max9867_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int max9867_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct max9867_priv *max9867 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9867_priv *max9867 = dev_get_drvdata(dev);
 	int value = 0;
 
 	/* Set the prescaler based on the master clock frequency*/
@@ -444,9 +451,7 @@ static int max9867_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		value |= MAX9867_PSCLK_40_60;
 		max9867->pclk = freq / 4;
 	} else {
-		dev_err(component->dev,
-			"Invalid clock frequency %uHz (required 10-60MHz)\n",
-			freq);
+		dev_err(dev, "Invalid clock frequency %uHz (required 10-60MHz)\n", freq);
 		return -EINVAL;
 	}
 	if (freq % 48000 == 0)
@@ -454,9 +459,7 @@ static int max9867_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 	else if (freq % 44100 == 0)
 		max9867->constraints = &max9867_constraints_44k1;
 	else
-		dev_warn(component->dev,
-			 "Unable to set exact rate with %uHz clock frequency\n",
-			 freq);
+		dev_warn(dev, "Unable to set exact rate with %uHz clock frequency\n", freq);
 	max9867->sysclk = freq;
 	value = value << MAX9867_PSCLK_SHIFT;
 	regmap_update_bits(max9867->regmap, MAX9867_SYSCLK,
@@ -467,8 +470,9 @@ static int max9867_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int max9867_dai_set_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct max9867_priv *max9867 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9867_priv *max9867 = dev_get_drvdata(dev);
 	u8 iface1A, iface1B;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -590,7 +594,8 @@ static int max9867_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
 	int err;
-	struct max9867_priv *max9867 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9867_priv *max9867 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -684,7 +689,7 @@ static int max9867_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 	dev_info(&i2c->dev, "device revision: %x\n", reg);
-	ret = devm_snd_soc_register_component(&i2c->dev, &max9867_component,
+	ret = devm_snd_soc_component_register(&i2c->dev, &max9867_component,
 			max9867_dai, ARRAY_SIZE(max9867_dai));
 	if (ret < 0) {
 		dev_err(&i2c->dev, "Failed to register component: %d\n", ret);

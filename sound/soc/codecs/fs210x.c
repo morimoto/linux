@@ -693,11 +693,12 @@ static int fs210x_set_hw_params(struct fs210x_priv *fs210x)
 static int fs210x_dai_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	const struct snd_pcm_hw_constraint_list *list;
-	struct fs210x_priv *fs210x;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fs210x_priv *fs210x = dev_get_drvdata(dev);
 	int ret;
 
-	fs210x = snd_soc_component_get_drvdata(dai->component);
 	if (!fs210x) {
 		pr_err("dai_startup: fs210x is null\n");
 		return -EINVAL;
@@ -734,9 +735,9 @@ static int fs210x_dai_startup(struct snd_pcm_substream *substream,
 
 static int fs210x_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct fs210x_priv *fs210x;
-
-	fs210x = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fs210x_priv *fs210x = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBC_CFC:
@@ -754,6 +755,8 @@ static int fs210x_dai_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev;
 	struct fs210x_priv *fs210x;
 	int chn_num;
 	int ret;
@@ -761,7 +764,8 @@ static int fs210x_dai_hw_params(struct snd_pcm_substream *substream,
 	if (substream->stream != SNDRV_PCM_STREAM_PLAYBACK)
 		return 0;
 
-	fs210x = snd_soc_component_get_drvdata(dai->component);
+	dev = snd_soc_component_to_dev(component);
+	fs210x = dev_get_drvdata(dev);
 
 	fs210x->srate = params_rate(params);
 	fs210x->bclk  = snd_soc_params_to_bclk(params);
@@ -783,13 +787,16 @@ static int fs210x_dai_hw_params(struct snd_pcm_substream *substream,
 
 static int fs210x_dai_mute(struct snd_soc_dai *dai, int mute, int stream)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev;
 	struct fs210x_priv *fs210x;
 	unsigned long delay;
 
 	if (stream != SNDRV_PCM_STREAM_PLAYBACK)
 		return 0;
 
-	fs210x = snd_soc_component_get_drvdata(dai->component);
+	dev = snd_soc_component_to_dev(component);
+	fs210x = dev_get_drvdata(dev);
 
 	scoped_guard(mutex, &fs210x->lock) {
 		if (!fs210x->is_inited || fs210x->is_suspended)
@@ -810,9 +817,9 @@ static int fs210x_dai_mute(struct snd_soc_dai *dai, int mute, int stream)
 static int fs210x_dai_trigger(struct snd_pcm_substream *substream,
 			      int cmd, struct snd_soc_dai *dai)
 {
-	struct fs210x_priv *fs210x;
-
-	fs210x = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fs210x_priv *fs210x = dev_get_drvdata(dev);
 
 	scoped_guard(mutex, &fs210x->lock) {
 		if (!fs210x->is_inited || fs210x->is_suspended || fs210x->is_playing)
@@ -908,6 +915,7 @@ static int fs210x_get_drvdata_from_kctrl(struct snd_kcontrol *kctrl,
 					 struct fs210x_priv **fs210x)
 {
 	struct snd_soc_component *cmpnt;
+	struct device *dev;
 
 	if (!kctrl) {
 		pr_err("fs210x: kcontrol is null\n");
@@ -920,7 +928,8 @@ static int fs210x_get_drvdata_from_kctrl(struct snd_kcontrol *kctrl,
 		return -EINVAL;
 	}
 
-	*fs210x = snd_soc_component_get_drvdata(cmpnt);
+	dev = snd_soc_component_to_dev(cmpnt);
+	*fs210x = dev_get_drvdata(dev);
 
 	return 0;
 }
@@ -1042,7 +1051,8 @@ static int fs210x_playback_event(struct snd_soc_dapm_widget *w,
 				 struct snd_kcontrol *kc, int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct fs210x_priv *fs210x = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct fs210x_priv *fs210x = dev_get_drvdata(dev);
 	int ret = 0;
 
 	guard(mutex)(&fs210x->lock);
@@ -1162,7 +1172,7 @@ static int fs210x_add_mixer_controls(struct fs210x_priv *fs210x,
 		count = ARRAY_SIZE(fs210x_vol_control);
 	}
 
-	ret = snd_soc_add_component_controls(cmpnt, kctrl, count);
+	ret = snd_soc_component_add_controls(cmpnt, kctrl, count);
 	if (ret)
 		return ret;
 
@@ -1176,15 +1186,15 @@ static int fs210x_add_mixer_controls(struct fs210x_priv *fs210x,
 	kctrl = fs210x_scene_control;
 	count = ARRAY_SIZE(fs210x_scene_control);
 
-	return snd_soc_add_component_controls(cmpnt, kctrl, count);
+	return snd_soc_component_add_controls(cmpnt, kctrl, count);
 }
 
 static int fs210x_probe(struct snd_soc_component *cmpnt)
 {
-	struct fs210x_priv *fs210x;
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct fs210x_priv *fs210x = dev_get_drvdata(dev);
 	int ret;
 
-	fs210x = snd_soc_component_get_drvdata(cmpnt);
 	if (!fs210x || !fs210x->dev)
 		return -EINVAL;
 
@@ -1206,9 +1216,9 @@ static int fs210x_probe(struct snd_soc_component *cmpnt)
 
 static void fs210x_remove(struct snd_soc_component *cmpnt)
 {
-	struct fs210x_priv *fs210x;
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct fs210x_priv *fs210x = dev_get_drvdata(dev);
 
-	fs210x = snd_soc_component_get_drvdata(cmpnt);
 	if (!fs210x || !fs210x->dev)
 		return;
 
@@ -1219,10 +1229,10 @@ static void fs210x_remove(struct snd_soc_component *cmpnt)
 #ifdef CONFIG_PM
 static int fs210x_suspend(struct snd_soc_component *cmpnt)
 {
-	struct fs210x_priv *fs210x;
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct fs210x_priv *fs210x = dev_get_drvdata(dev);
 	int ret;
 
-	fs210x = snd_soc_component_get_drvdata(cmpnt);
 	if (!fs210x || !fs210x->dev)
 		return -EINVAL;
 
@@ -1252,10 +1262,10 @@ static int fs210x_suspend(struct snd_soc_component *cmpnt)
 
 static int fs210x_resume(struct snd_soc_component *cmpnt)
 {
-	struct fs210x_priv *fs210x;
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct fs210x_priv *fs210x = dev_get_drvdata(dev);
 	int ret;
 
-	fs210x = snd_soc_component_get_drvdata(cmpnt);
 	if (!fs210x || !fs210x->dev)
 		return -EINVAL;
 
@@ -1443,7 +1453,7 @@ static int fs210x_register_snd_component(struct fs210x_priv *fs210x)
 		dai_drv->capture.rates  = FS2105S_RATES;
 	}
 
-	ret = snd_soc_register_component(fs210x->dev,
+	ret = snd_soc_component_register(fs210x->dev,
 					 &fs210x_soc_component_dev,
 					 dai_drv, 1);
 	return ret;
@@ -1527,7 +1537,7 @@ static void fs210x_i2c_remove(struct i2c_client *client)
 {
 	struct fs210x_priv *fs210x = i2c_get_clientdata(client);
 
-	snd_soc_unregister_component(fs210x->dev);
+	snd_soc_component_unregister(fs210x->dev);
 	fs210x_deinit(fs210x);
 }
 

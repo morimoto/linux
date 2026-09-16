@@ -53,19 +53,20 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
 	struct snd_soc_dai *codec_dai;
-	struct cht_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct cht_mc_private *ctx = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	codec_dai = snd_soc_card_get_codec_dai(card, CHT_CODEC_DAI);
 	if (!codec_dai) {
-		dev_err(card->dev, "Codec dai not found; Unable to set platform clock\n");
+		dev_err(dev, "Codec dai not found; Unable to set platform clock\n");
 		return -EIO;
 	}
 
 	if (SND_SOC_DAPM_EVENT_ON(event)) {
 		ret = clk_prepare_enable(ctx->mclk);
 		if (ret < 0) {
-			dev_err(card->dev,
+			dev_err(dev,
 				"could not configure MCLK state: %d\n", ret);
 			return ret;
 		}
@@ -74,7 +75,7 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 		ret = snd_soc_dai_set_pll(codec_dai, 0, RT5670_PLL1_S_MCLK,
 				CHT_PLAT_CLK_3_HZ, 48000 * 512);
 		if (ret < 0) {
-			dev_err(card->dev, "can't set codec pll: %d\n", ret);
+			dev_err(dev, "can't set codec pll: %d\n", ret);
 			clk_disable_unprepare(ctx->mclk);
 			return ret;
 		}
@@ -83,7 +84,7 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 		ret = snd_soc_dai_set_sysclk(codec_dai, RT5670_SCLK_S_PLL1,
 			48000 * 512, SND_SOC_CLOCK_IN);
 		if (ret < 0) {
-			dev_err(card->dev, "can't set codec sysclk: %d\n", ret);
+			dev_err(dev, "can't set codec sysclk: %d\n", ret);
 			clk_disable_unprepare(ctx->mclk);
 			return ret;
 		}
@@ -96,7 +97,7 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 		ret = snd_soc_dai_set_sysclk(codec_dai, RT5670_SCLK_S_RCCLK,
 					     48000 * 512, SND_SOC_CLOCK_IN);
 		if (ret < 0) {
-			dev_err(card->dev, "failed to set codec sysclk: %d\n", ret);
+			dev_err(dev, "failed to set codec sysclk: %d\n", ret);
 			return ret;
 		}
 
@@ -193,10 +194,11 @@ static int cht_codec_init(struct snd_soc_pcm_runtime *runtime)
 	int ret;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(runtime->card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(runtime, 0);
-	struct snd_soc_component *component = codec_dai->component;
-	struct cht_mc_private *ctx = snd_soc_card_get_drvdata(runtime->card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cht_mc_private *ctx = snd_soc_card_to_priv(runtime->card);
 
-	if (devm_acpi_dev_add_driver_gpios(component->dev, cht_rt5672_gpios))
+	if (devm_acpi_dev_add_driver_gpios(dev, cht_rt5672_gpios))
 		dev_warn(runtime->dev, "Unable to add GPIO mapping table\n");
 
 	/* Select codec ASRC clock source to track I2S1 clock, because codec
@@ -264,7 +266,7 @@ static int cht_codec_init(struct snd_soc_pcm_runtime *runtime)
 static int cht_codec_fixup(struct snd_soc_pcm_runtime *rtd,
 			    struct snd_pcm_hw_params *params)
 {
-	struct cht_mc_private *ctx = snd_soc_card_get_drvdata(rtd->card);
+	struct cht_mc_private *ctx = snd_soc_card_to_priv(rtd->card);
 	struct snd_interval *rate = hw_param_interval(params,
 			SNDRV_PCM_HW_PARAM_RATE);
 	struct snd_interval *channels = hw_param_interval(params,
@@ -384,13 +386,15 @@ static struct snd_soc_dai_link cht_dailink[] = {
 static int cht_suspend_pre(struct snd_soc_card *card)
 {
 	struct snd_soc_component *component;
-	struct cht_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct cht_mc_private *ctx = snd_soc_card_to_priv(card);
 
 	for_each_card_components(card, component) {
-		if (!strncmp(component->name,
+		struct device *dev = snd_soc_component_to_dev(component);
+
+		if (!strncmp(snd_soc_component_name(component),
 			     ctx->codec_name, sizeof(ctx->codec_name))) {
 
-			dev_dbg(component->dev, "disabling jack detect before going to suspend.\n");
+			dev_dbg(dev, "disabling jack detect before going to suspend.\n");
 			rt5670_jack_suspend(component);
 			break;
 		}
@@ -401,13 +405,15 @@ static int cht_suspend_pre(struct snd_soc_card *card)
 static int cht_resume_post(struct snd_soc_card *card)
 {
 	struct snd_soc_component *component;
-	struct cht_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct cht_mc_private *ctx = snd_soc_card_to_priv(card);
 
 	for_each_card_components(card, component) {
-		if (!strncmp(component->name,
+		struct device *dev = snd_soc_component_to_dev(component);
+
+		if (!strncmp(snd_soc_component_name(component),
 			     ctx->codec_name, sizeof(ctx->codec_name))) {
 
-			dev_dbg(component->dev, "enabling jack detect for resume.\n");
+			dev_dbg(dev, "enabling jack detect for resume.\n");
 			rt5670_jack_resume(component);
 			break;
 		}

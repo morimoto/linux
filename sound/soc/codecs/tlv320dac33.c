@@ -161,7 +161,8 @@ static const u8 dac33_reg[DAC33_CACHEREGNUM] = {
 static inline unsigned int dac33_read_reg_cache(struct snd_soc_component *component,
 						unsigned reg)
 {
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	u8 *cache = dac33->reg_cache;
 	if (reg >= DAC33_CACHEREGNUM)
 		return 0;
@@ -172,7 +173,8 @@ static inline unsigned int dac33_read_reg_cache(struct snd_soc_component *compon
 static inline void dac33_write_reg_cache(struct snd_soc_component *component,
 					 u8 reg, u8 value)
 {
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	u8 *cache = dac33->reg_cache;
 	if (reg >= DAC33_CACHEREGNUM)
 		return;
@@ -183,7 +185,8 @@ static inline void dac33_write_reg_cache(struct snd_soc_component *component,
 static int dac33_read(struct snd_soc_component *component, unsigned int reg,
 		      u8 *value)
 {
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	int val, ret = 0;
 
 	*value = reg & 0xff;
@@ -192,7 +195,7 @@ static int dac33_read(struct snd_soc_component *component, unsigned int reg,
 	if (dac33->chip_power) {
 		val = i2c_smbus_read_byte_data(dac33->i2c, value[0]);
 		if (val < 0) {
-			dev_err(component->dev, "Read failed (%d)\n", val);
+			dev_err(dev, "Read failed (%d)\n", val);
 			value[0] = dac33_read_reg_cache(component, reg);
 			ret = val;
 		} else {
@@ -209,7 +212,8 @@ static int dac33_read(struct snd_soc_component *component, unsigned int reg,
 static int dac33_write(struct snd_soc_component *component, unsigned int reg,
 		       unsigned int value)
 {
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	u8 data[2];
 	int ret = 0;
 
@@ -225,7 +229,7 @@ static int dac33_write(struct snd_soc_component *component, unsigned int reg,
 	if (dac33->chip_power) {
 		ret = i2c_master_send(dac33->i2c, data, 2);
 		if (ret != 2)
-			dev_err(component->dev, "Write failed (%d)\n", ret);
+			dev_err(dev, "Write failed (%d)\n", ret);
 		else
 			ret = 0;
 	}
@@ -236,7 +240,8 @@ static int dac33_write(struct snd_soc_component *component, unsigned int reg,
 static int dac33_write_locked(struct snd_soc_component *component, unsigned int reg,
 			      unsigned int value)
 {
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 
 	guard(mutex)(&dac33->mutex);
 
@@ -247,7 +252,8 @@ static int dac33_write_locked(struct snd_soc_component *component, unsigned int 
 static int dac33_write16(struct snd_soc_component *component, unsigned int reg,
 		       unsigned int value)
 {
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	u8 data[3];
 	int ret = 0;
 
@@ -269,7 +275,7 @@ static int dac33_write16(struct snd_soc_component *component, unsigned int reg,
 		data[0] |= DAC33_I2C_ADDR_AUTOINC;
 		ret = i2c_master_send(dac33->i2c, data, 3);
 		if (ret != 3)
-			dev_err(component->dev, "Write failed (%d)\n", ret);
+			dev_err(dev, "Write failed (%d)\n", ret);
 		else
 			ret = 0;
 	}
@@ -279,7 +285,8 @@ static int dac33_write16(struct snd_soc_component *component, unsigned int reg,
 
 static void dac33_init_chip(struct snd_soc_component *component)
 {
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 
 	if (unlikely(!dac33->chip_power))
 		return;
@@ -360,14 +367,15 @@ static inline void dac33_disable_digital(struct snd_soc_component *component)
 
 static int dac33_hard_power(struct snd_soc_component *component, int power)
 {
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	guard(mutex)(&dac33->mutex);
 
 	/* Safety check */
 	if (unlikely(power == dac33->chip_power)) {
-		dev_dbg(component->dev, "Trying to set the same power state: %s\n",
+		dev_dbg(dev, "Trying to set the same power state: %s\n",
 			power ? "ON" : "OFF");
 		return ret;
 	}
@@ -376,8 +384,7 @@ static int dac33_hard_power(struct snd_soc_component *component, int power)
 		ret = regulator_bulk_enable(ARRAY_SIZE(dac33->supplies),
 					  dac33->supplies);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to enable supplies: %d\n", ret);
+			dev_err(dev, "Failed to enable supplies: %d\n", ret);
 			return ret;
 		}
 
@@ -405,8 +412,7 @@ static int dac33_hard_power(struct snd_soc_component *component, int power)
 		ret = regulator_bulk_disable(ARRAY_SIZE(dac33->supplies),
 					     dac33->supplies);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to disable supplies: %d\n", ret);
+			dev_err(dev, "Failed to disable supplies: %d\n", ret);
 			return ret;
 		}
 
@@ -420,7 +426,8 @@ static int dac33_playback_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -440,7 +447,8 @@ static int dac33_get_fifo_mode(struct snd_kcontrol *kcontrol,
 			 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = dac33->fifo_mode;
 
@@ -451,7 +459,8 @@ static int dac33_set_fifo_mode(struct snd_kcontrol *kcontrol,
 			 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	if (dac33->fifo_mode == ucontrol->value.enumerated.item[0])
@@ -654,6 +663,7 @@ static int dac33_set_bias_level(struct snd_soc_component *component,
 static inline void dac33_prefill_handler(struct tlv320dac33_priv *dac33)
 {
 	struct snd_soc_component *component = dac33->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int delay;
 
 	switch (dac33->fifo_mode) {
@@ -690,8 +700,7 @@ static inline void dac33_prefill_handler(struct tlv320dac33_priv *dac33)
 		dac33_write(component, DAC33_FIFO_IRQ_MASK, DAC33_MUT);
 		break;
 	default:
-		dev_warn(component->dev, "Unhandled FIFO mode: %d\n",
-							dac33->fifo_mode);
+		dev_warn(dev, "Unhandled FIFO mode: %d\n", dac33->fifo_mode);
 		break;
 	}
 }
@@ -699,6 +708,7 @@ static inline void dac33_prefill_handler(struct tlv320dac33_priv *dac33)
 static inline void dac33_playback_handler(struct tlv320dac33_priv *dac33)
 {
 	struct snd_soc_component *component = dac33->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	switch (dac33->fifo_mode) {
 	case DAC33_FIFO_MODE1:
@@ -713,8 +723,7 @@ static inline void dac33_playback_handler(struct tlv320dac33_priv *dac33)
 		/* At the moment we are not using interrupts in mode7 */
 		break;
 	default:
-		dev_warn(component->dev, "Unhandled FIFO mode: %d\n",
-							dac33->fifo_mode);
+		dev_warn(dev, "Unhandled FIFO mode: %d\n", dac33->fifo_mode);
 		break;
 	}
 }
@@ -752,10 +761,11 @@ static void dac33_work(struct work_struct *work)
 	}
 }
 
-static irqreturn_t dac33_interrupt_handler(int irq, void *dev)
+static irqreturn_t dac33_interrupt_handler(int irq, void *device)
 {
-	struct snd_soc_component *component = dev;
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = device;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 
 	scoped_guard(spinlock_irqsave, &dac33->lock)
 		dac33->t_stamp1 = ktime_to_us(ktime_get());
@@ -769,6 +779,7 @@ static irqreturn_t dac33_interrupt_handler(int irq, void *dev)
 
 static void dac33_oscwait(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int timeout = 60;
 	u8 reg;
 
@@ -777,15 +788,15 @@ static void dac33_oscwait(struct snd_soc_component *component)
 		dac33_read(component, DAC33_INT_OSC_STATUS, &reg);
 	} while (((reg & 0x03) != DAC33_OSCSTATUS_NORMAL) && timeout--);
 	if ((reg & 0x03) != DAC33_OSCSTATUS_NORMAL)
-		dev_err(component->dev,
-			"internal oscillator calibration failed\n");
+		dev_err(dev, "internal oscillator calibration failed\n");
 }
 
 static int dac33_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 
 	/* Stream started, save the substream pointer */
 	dac33->substream = substream;
@@ -796,8 +807,9 @@ static int dac33_startup(struct snd_pcm_substream *substream,
 static void dac33_shutdown(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 
 	dac33->substream = NULL;
 }
@@ -808,8 +820,9 @@ static int dac33_hw_params(struct snd_pcm_substream *substream,
 			   struct snd_pcm_hw_params *params,
 			   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 
 	/* Check parameters for validity */
 	switch (params_rate(params)) {
@@ -817,8 +830,7 @@ static int dac33_hw_params(struct snd_pcm_substream *substream,
 	case 48000:
 		break;
 	default:
-		dev_err(component->dev, "unsupported rate %d\n",
-			params_rate(params));
+		dev_err(dev, "unsupported rate %d\n", params_rate(params));
 		return -EINVAL;
 	}
 
@@ -832,8 +844,7 @@ static int dac33_hw_params(struct snd_pcm_substream *substream,
 		dac33->burst_rate = CALC_BURST_RATE(dac33->burst_bclkdiv, 64);
 		break;
 	default:
-		dev_err(component->dev, "unsupported width %d\n",
-			params_width(params));
+		dev_err(dev, "unsupported width %d\n", params_width(params));
 		return -EINVAL;
 	}
 
@@ -853,7 +864,8 @@ static int dac33_hw_params(struct snd_pcm_substream *substream,
 static int dac33_prepare_chip(struct snd_pcm_substream *substream,
 			      struct snd_soc_component *component)
 {
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	unsigned int oscset, ratioset, pwr_ctrl, reg_tmp;
 	u8 aictrl_a, aictrl_b, fifoctrl_a;
 
@@ -865,8 +877,7 @@ static int dac33_prepare_chip(struct snd_pcm_substream *substream,
 					 dac33->refclk);
 		break;
 	default:
-		dev_err(component->dev, "unsupported rate %d\n",
-			substream->runtime->rate);
+		dev_err(dev, "unsupported rate %d\n", substream->runtime->rate);
 		return -EINVAL;
 	}
 
@@ -887,8 +898,7 @@ static int dac33_prepare_chip(struct snd_pcm_substream *substream,
 		aictrl_a |= (DAC33_NCYCL_32 | DAC33_WLEN_24);
 		break;
 	default:
-		dev_err(component->dev, "unsupported format %d\n",
-			substream->runtime->format);
+		dev_err(dev, "unsupported format %d\n", substream->runtime->format);
 		return -EINVAL;
 	}
 
@@ -1048,7 +1058,8 @@ static int dac33_prepare_chip(struct snd_pcm_substream *substream,
 static void dac33_calculate_times(struct snd_pcm_substream *substream,
 				  struct snd_soc_component *component)
 {
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	unsigned int period_size = substream->runtime->period_size;
 	unsigned int rate = substream->runtime->rate;
 	unsigned int nsample_limit;
@@ -1105,8 +1116,9 @@ static void dac33_calculate_times(struct snd_pcm_substream *substream,
 static int dac33_pcm_trigger(struct snd_pcm_substream *substream, int cmd,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (cmd) {
@@ -1137,8 +1149,9 @@ static snd_pcm_sframes_t dac33_dai_delay(
 			struct snd_pcm_substream *substream,
 			struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	unsigned long long t0, t1, t_now;
 	unsigned int time_delta, uthr;
 	int samples_out, samples_in, samples;
@@ -1268,8 +1281,7 @@ static snd_pcm_sframes_t dac33_dai_delay(
 		}
 		break;
 	default:
-		dev_warn(component->dev, "Unhandled FIFO mode: %d\n",
-							dac33->fifo_mode);
+		dev_warn(dev, "Unhandled FIFO mode: %d\n", dac33->fifo_mode);
 		break;
 	}
 
@@ -1279,8 +1291,9 @@ static snd_pcm_sframes_t dac33_dai_delay(
 static int dac33_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	u8 ioc_reg, asrcb_reg;
 
 	ioc_reg = dac33_read_reg_cache(component, DAC33_INT_OSC_CTRL);
@@ -1295,7 +1308,7 @@ static int dac33_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		asrcb_reg &= ~DAC33_SRCREFSEL;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clock ID (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock ID (%d)\n", clk_id);
 		break;
 	}
 	dac33->refclk = freq;
@@ -1309,8 +1322,9 @@ static int dac33_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int dac33_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			     unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	u8 aictrl_a, aictrl_b;
 
 	aictrl_a = dac33_read_reg_cache(component, DAC33_SER_AUDIOIF_CTRL_A);
@@ -1322,7 +1336,7 @@ static int dac33_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		break;
 	case SND_SOC_DAIFMT_CBC_CFC:
 		if (dac33->fifo_mode) {
-			dev_err(component->dev, "FIFO mode requires provider mode\n");
+			dev_err(dev, "FIFO mode requires provider mode\n");
 			return -EINVAL;
 		} else
 			aictrl_a &= ~(DAC33_MSBCLK | DAC33_MSWCLK);
@@ -1348,8 +1362,7 @@ static int dac33_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		aictrl_a |= DAC33_AFMT_LEFT_J;
 		break;
 	default:
-		dev_err(component->dev, "Unsupported format (%u)\n",
-			fmt & SND_SOC_DAIFMT_FORMAT_MASK);
+		dev_err(dev, "Unsupported format (%u)\n", fmt & SND_SOC_DAIFMT_FORMAT_MASK);
 		return -EINVAL;
 	}
 
@@ -1361,7 +1374,8 @@ static int dac33_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 static int dac33_soc_probe(struct snd_soc_component *component)
 {
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	dac33->component = component;
@@ -1369,14 +1383,14 @@ static int dac33_soc_probe(struct snd_soc_component *component)
 	/* Read the tlv320dac33 ID registers */
 	ret = dac33_hard_power(component, 1);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to power up component: %d\n", ret);
+		dev_err(dev, "Failed to power up component: %d\n", ret);
 		goto err_power;
 	}
 	ret = dac33_read_id(component);
 	dac33_hard_power(component, 0);
 
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to read chip ID: %d\n", ret);
+		dev_err(dev, "Failed to read chip ID: %d\n", ret);
 		ret = -ENODEV;
 		goto err_power;
 	}
@@ -1385,10 +1399,9 @@ static int dac33_soc_probe(struct snd_soc_component *component)
 	if (dac33->irq >= 0) {
 		ret = request_irq(dac33->irq, dac33_interrupt_handler,
 				  IRQF_TRIGGER_RISING,
-				  component->name, component);
+				  snd_soc_component_name(component), component);
 		if (ret < 0) {
-			dev_err(component->dev, "Could not request IRQ%d (%d)\n",
-						dac33->irq, ret);
+			dev_err(dev, "Could not request IRQ%d (%d)\n", dac33->irq, ret);
 			dac33->irq = -1;
 		}
 		if (dac33->irq != -1) {
@@ -1398,7 +1411,7 @@ static int dac33_soc_probe(struct snd_soc_component *component)
 
 	/* Only add the FIFO controls, if we have valid IRQ number */
 	if (dac33->irq >= 0)
-		snd_soc_add_component_controls(component, dac33_mode_snd_controls,
+		snd_soc_component_add_controls(component, dac33_mode_snd_controls,
 				     ARRAY_SIZE(dac33_mode_snd_controls));
 
 err_power:
@@ -1407,7 +1420,8 @@ err_power:
 
 static void dac33_soc_remove(struct snd_soc_component *component)
 {
-	struct tlv320dac33_priv *dac33 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tlv320dac33_priv *dac33 = dev_get_drvdata(dev);
 
 	if (dac33->irq >= 0) {
 		free_irq(dac33->irq, dac33->component);
@@ -1513,7 +1527,7 @@ static int dac33_i2c_probe(struct i2c_client *client)
 		goto err;
 	}
 
-	ret = devm_snd_soc_register_component(&client->dev,
+	ret = devm_snd_soc_component_register(&client->dev,
 			&soc_component_dev_tlv320dac33, &dac33_dai, 1);
 	if (ret < 0)
 		goto err;

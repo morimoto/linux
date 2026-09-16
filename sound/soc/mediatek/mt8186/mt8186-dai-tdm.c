@@ -101,13 +101,13 @@ static int mtk_tdm_en_event(struct snd_soc_dapm_widget *w,
 			    int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 	int dai_id = get_tdm_id_by_name(w->name);
 	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai_id];
 
-	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
-		__func__, w->name, event);
+	dev_dbg(dev, "%s(), name %s, event 0x%x\n", __func__, w->name, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -128,12 +128,13 @@ static int mtk_tdm_mck_en_event(struct snd_soc_dapm_widget *w,
 				int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 	int dai_id = get_tdm_id_by_name(w->name);
 	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai_id];
 
-	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x, dai_id %d\n",
+	dev_dbg(dev, "%s(), name %s, event 0x%x, dai_id %d\n",
 		__func__, w->name, event, dai_id);
 
 	switch (event) {
@@ -200,7 +201,8 @@ static int mtk_afe_tdm_mclk_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = sink;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 	int dai_id = get_tdm_id_by_name(w->name);
 	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai_id];
@@ -213,7 +215,8 @@ static int mtk_afe_tdm_mclk_apll_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = sink;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 	int dai_id = get_tdm_id_by_name(w->name);
 	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai_id];
@@ -230,7 +233,8 @@ static int mtk_afe_tdm_hd_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = sink;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 	int dai_id = get_tdm_id_by_name(w->name);
 	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai_id];
@@ -243,7 +247,8 @@ static int mtk_afe_tdm_apll_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = sink;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 	int dai_id = get_tdm_id_by_name(w->name);
 	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai_id];
@@ -273,7 +278,8 @@ static int mt8186_tdm_hd_get(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 	int dai_id = get_tdm_id_by_name(kcontrol->id.name);
 	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai_id];
@@ -287,7 +293,8 @@ static int mt8186_tdm_hd_set(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 	int dai_id = get_tdm_id_by_name(kcontrol->id.name);
 	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai_id];
@@ -364,9 +371,11 @@ static int mtk_dai_tdm_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
-	int tdm_id = dai->id;
+	int tdm_id = snd_soc_dai_id(dai);
 	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[tdm_id];
 	unsigned int tdm_mode = tdm_priv->tdm_mode;
 	unsigned int data_mode = tdm_priv->data_mode;
@@ -387,7 +396,7 @@ static int mtk_dai_tdm_hw_params(struct snd_pcm_substream *substream,
 	unsigned int tran_relatch_rate;
 
 	tdm_priv->rate = rate;
-	tran_rate = mt8186_rate_transform(afe->dev, rate, dai->id);
+	tran_rate = mt8186_rate_transform(afe->dev, rate, tdm_id);
 	tran_relatch_rate = mt8186_tdm_relatch_rate_transform(afe->dev, rate);
 
 	/* calculate mclk_rate, if not set explicitly */
@@ -459,9 +468,12 @@ static int mtk_dai_tdm_hw_params(struct snd_pcm_substream *substream,
 static int mtk_dai_tdm_set_sysclk(struct snd_soc_dai *dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct mtk_base_afe *afe = dev_get_drvdata(dai->dev);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
-	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai->id];
+	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai_id];
 
 	if (dir != SND_SOC_CLOCK_IN) {
 		dev_err(afe->dev, "%s(), dir != SND_SOC_CLOCK_OUT", __func__);
@@ -475,9 +487,12 @@ static int mtk_dai_tdm_set_sysclk(struct snd_soc_dai *dai,
 
 static int mtk_dai_tdm_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct mtk_base_afe *afe = dev_get_drvdata(dai->dev);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
-	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai->id];
+	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai_id];
 
 	/* DAI mode*/
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
@@ -551,11 +566,14 @@ static int mtk_dai_tdm_set_tdm_slot(struct snd_soc_dai *dai,
 				    int slots,
 				    int slot_width)
 {
-	struct mtk_base_afe *afe = dev_get_drvdata(dai->dev);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
-	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai->id];
+	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[dai_id];
 
-	dev_dbg(dai->dev, "%s %d slot_width %d\n", __func__, dai->id, slot_width);
+	dev_dbg(dev, "%s %d slot_width %d\n", __func__, dai_id, slot_width);
 
 	tdm_priv->lrck_width = slot_width;
 

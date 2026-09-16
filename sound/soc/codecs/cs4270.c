@@ -245,8 +245,9 @@ static bool cs4270_reg_is_volatile(struct device *dev, unsigned int reg)
 static int cs4270_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs4270_private *cs4270 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4270_private *cs4270 = dev_get_drvdata(dev);
 
 	cs4270->mclk = freq;
 	return 0;
@@ -268,8 +269,9 @@ static int cs4270_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int cs4270_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			      unsigned int format)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs4270_private *cs4270 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4270_private *cs4270 = dev_get_drvdata(dev);
 
 	/* set DAI format */
 	switch (format & SND_SOC_DAIFMT_FORMAT_MASK) {
@@ -278,7 +280,7 @@ static int cs4270_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		cs4270->mode = format & SND_SOC_DAIFMT_FORMAT_MASK;
 		break;
 	default:
-		dev_err(component->dev, "invalid dai format\n");
+		dev_err(dev, "invalid dai format\n");
 		return -EINVAL;
 	}
 
@@ -292,7 +294,7 @@ static int cs4270_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		break;
 	default:
 		/* all other modes are unsupported by the hardware */
-		dev_err(component->dev, "Unknown master/slave configuration\n");
+		dev_err(dev, "Unknown master/slave configuration\n");
 		return -EINVAL;
 	}
 
@@ -317,8 +319,9 @@ static int cs4270_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs4270_private *cs4270 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4270_private *cs4270 = dev_get_drvdata(dev);
 	int ret;
 	unsigned int i;
 	unsigned int rate;
@@ -337,7 +340,7 @@ static int cs4270_hw_params(struct snd_pcm_substream *substream,
 
 	if (i == NUM_MCLK_RATIOS) {
 		/* We did not find a matching ratio */
-		dev_err(component->dev, "could not find matching ratio\n");
+		dev_err(dev, "could not find matching ratio\n");
 		return -EINVAL;
 	}
 
@@ -354,7 +357,7 @@ static int cs4270_hw_params(struct snd_pcm_substream *substream,
 
 	ret = snd_soc_component_write(component, CS4270_MODE, reg);
 	if (ret < 0) {
-		dev_err(component->dev, "i2c write failed\n");
+		dev_err(dev, "i2c write failed\n");
 		return ret;
 	}
 
@@ -371,13 +374,13 @@ static int cs4270_hw_params(struct snd_pcm_substream *substream,
 		reg |= CS4270_FORMAT_DAC_LJ | CS4270_FORMAT_ADC_LJ;
 		break;
 	default:
-		dev_err(component->dev, "unknown dai format\n");
+		dev_err(dev, "unknown dai format\n");
 		return -EINVAL;
 	}
 
 	ret = snd_soc_component_write(component, CS4270_FORMAT, reg);
 	if (ret < 0) {
-		dev_err(component->dev, "i2c write failed\n");
+		dev_err(dev, "i2c write failed\n");
 		return ret;
 	}
 
@@ -397,8 +400,9 @@ static int cs4270_hw_params(struct snd_pcm_substream *substream,
  */
 static int cs4270_dai_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs4270_private *cs4270 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4270_private *cs4270 = dev_get_drvdata(dev);
 	int reg6;
 
 	reg6 = snd_soc_component_read(component, CS4270_MUTE);
@@ -431,7 +435,8 @@ static int cs4270_soc_put_mute(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs4270_private *cs4270 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4270_private *cs4270 = dev_get_drvdata(dev);
 	int left = !ucontrol->value.integer.value[0];
 	int right = !ucontrol->value.integer.value[1];
 
@@ -502,7 +507,8 @@ static struct snd_soc_dai_driver cs4270_dai = {
  */
 static int cs4270_probe(struct snd_soc_component *component)
 {
-	struct cs4270_private *cs4270 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4270_private *cs4270 = dev_get_drvdata(dev);
 	int ret;
 
 	/* Disable auto-mute.  This feature appears to be buggy.  In some
@@ -512,7 +518,7 @@ static int cs4270_probe(struct snd_soc_component *component)
 	 */
 	ret = snd_soc_component_update_bits(component, CS4270_MUTE, CS4270_MUTE_AUTO, 0);
 	if (ret < 0) {
-		dev_err(component->dev, "i2c write failed\n");
+		dev_err(dev, "i2c write failed\n");
 		return ret;
 	}
 
@@ -524,7 +530,7 @@ static int cs4270_probe(struct snd_soc_component *component)
 	ret = snd_soc_component_update_bits(component, CS4270_TRANS,
 		CS4270_TRANS_SOFT | CS4270_TRANS_ZERO, 0);
 	if (ret < 0) {
-		dev_err(component->dev, "i2c write failed\n");
+		dev_err(dev, "i2c write failed\n");
 		return ret;
 	}
 
@@ -542,7 +548,8 @@ static int cs4270_probe(struct snd_soc_component *component)
  */
 static void cs4270_remove(struct snd_soc_component *component)
 {
-	struct cs4270_private *cs4270 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4270_private *cs4270 = dev_get_drvdata(dev);
 
 	regulator_bulk_disable(ARRAY_SIZE(cs4270->supplies), cs4270->supplies);
 };
@@ -560,7 +567,8 @@ static void cs4270_remove(struct snd_soc_component *component)
 
 static int cs4270_soc_suspend(struct snd_soc_component *component)
 {
-	struct cs4270_private *cs4270 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4270_private *cs4270 = dev_get_drvdata(dev);
 	int reg, ret;
 
 	reg = snd_soc_component_read(component, CS4270_PWRCTL) | CS4270_PWRCTL_PDN_ALL;
@@ -579,7 +587,8 @@ static int cs4270_soc_suspend(struct snd_soc_component *component)
 
 static int cs4270_soc_resume(struct snd_soc_component *component)
 {
-	struct cs4270_private *cs4270 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs4270_private *cs4270 = dev_get_drvdata(dev);
 	int reg, ret;
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(cs4270->supplies),
@@ -728,7 +737,7 @@ static int cs4270_i2c_probe(struct i2c_client *i2c_client)
 
 	i2c_set_clientdata(i2c_client, cs4270);
 
-	ret = devm_snd_soc_register_component(&i2c_client->dev,
+	ret = devm_snd_soc_component_register(&i2c_client->dev,
 			&soc_component_device_cs4270, &cs4270_dai, 1);
 	return ret;
 }

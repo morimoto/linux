@@ -30,7 +30,8 @@ static int snow_card_hw_params(struct snd_pcm_substream *substream,
 		73728000U, 67737602U, 49152000U, 45158401U, 32768001U
 	};
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snow_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct snow_priv *priv = snd_soc_card_to_priv(rtd->card);
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	int bfs, psr, rfs, bitwidth;
 	unsigned long int rclk;
 	long int freq = -EINVAL;
@@ -38,12 +39,12 @@ static int snow_card_hw_params(struct snd_pcm_substream *substream,
 
 	bitwidth = snd_pcm_format_width(params_format(params));
 	if (bitwidth < 0) {
-		dev_err(rtd->card->dev, "Invalid bit-width: %d\n", bitwidth);
+		dev_err(dev, "Invalid bit-width: %d\n", bitwidth);
 		return bitwidth;
 	}
 
 	if (bitwidth != 16 && bitwidth != 24) {
-		dev_err(rtd->card->dev, "Unsupported bit-width: %d\n", bitwidth);
+		dev_err(dev, "Unsupported bit-width: %d\n", bitwidth);
 		return -EINVAL;
 	}
 
@@ -83,13 +84,13 @@ static int snow_card_hw_params(struct snd_pcm_substream *substream,
 		}
 	}
 	if (freq < 0) {
-		dev_err(rtd->card->dev, "Unsupported RCLK rate: %lu\n", rclk);
+		dev_err(dev, "Unsupported RCLK rate: %lu\n", rclk);
 		return -EINVAL;
 	}
 
 	ret = clk_set_rate(priv->clk_i2s_bus, freq);
 	if (ret < 0) {
-		dev_err(rtd->card->dev, "I2S bus clock rate set failed\n");
+		dev_err(dev, "I2S bus clock rate set failed\n");
 		return ret;
 	}
 
@@ -105,7 +106,7 @@ static int snow_late_probe(struct snd_soc_card *card)
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *codec_dai;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[0]);
+	rtd = snd_soc_card_to_rtd(card, &snd_soc_card_to_driver(card)->dai_link[0]);
 
 	/* In the multi-codec case codec_dais 0 is MAX98095 and 1 is HDMI. */
 	codec_dai = snd_soc_rtd_to_codec(rtd, 0);
@@ -206,9 +207,9 @@ static int snow_probe(struct platform_device *pdev)
 	link->platforms->of_node = link->cpus->of_node;
 
 	/* Update card-name if provided through DT, else use default name */
-	snd_soc_of_parse_card_name(card, "samsung,model");
+	snd_soc_card_of_parse_name(card, "samsung,model");
 
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 
 	ret = devm_snd_soc_card_register(card, &snow_snd);
 	if (ret)

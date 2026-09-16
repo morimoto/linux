@@ -593,7 +593,7 @@ void snd_sof_control_notify(struct snd_sof_dev *sdev,
 /*
  * Topology.
  * There is no snd_sof_free_topology since topology components will
- * be freed by snd_soc_unregister_component,
+ * be freed by snd_soc_component_unregister(),
  */
 int snd_sof_load_topology(struct snd_soc_component *scomp, const char *file);
 
@@ -616,7 +616,8 @@ static inline
 struct snd_sof_pcm *snd_sof_find_spcm_dai(struct snd_soc_component *scomp,
 					  struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct snd_sof_pcm *spcm;
 
 	list_for_each_entry(spcm, &sdev->pcm_list, list) {
@@ -640,19 +641,19 @@ void snd_sof_pcm_init_elapsed_work(struct work_struct *work);
  * consistent and useful prints.
  */
 #define spcm_dbg(__spcm, __dir, __fmt, ...)					\
-	dev_dbg((__spcm)->scomp->dev, "pcm%u (%s), dir %d: " __fmt,		\
+	dev_dbg(snd_soc_component_to_dev((__spcm)->scomp), "pcm%u (%s), dir %d: " __fmt, \
 		le32_to_cpu((__spcm)->pcm.pcm_id),				\
 		(__spcm)->pcm.pcm_name, __dir,					\
 		##__VA_ARGS__)
 
 #define spcm_dbg_ratelimited(__spcm, __dir, __fmt, ...)				\
-	dev_dbg_ratelimited((__spcm)->scomp->dev, "pcm%u (%s), dir %d: " __fmt,	\
+	dev_dbg_ratelimited(snd_soc_component_to_dev((__spcm)->scomp), "pcm%u (%s), dir %d: " __fmt, \
 			    le32_to_cpu((__spcm)->pcm.pcm_id),			\
 			    (__spcm)->pcm.pcm_name, __dir,			\
 			    ##__VA_ARGS__)
 
 #define spcm_err(__spcm, __dir, __fmt, ...)					\
-	dev_err((__spcm)->scomp->dev, "%s: pcm%u (%s), dir %d: " __fmt,		\
+	dev_err(snd_soc_component_to_dev((__spcm)->scomp), "%s: pcm%u (%s), dir %d: " __fmt, \
 		__func__, le32_to_cpu((__spcm)->pcm.pcm_id),			\
 		(__spcm)->pcm.pcm_name, __dir,					\
 		##__VA_ARGS__)

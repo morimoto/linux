@@ -39,8 +39,8 @@ static unsigned long sof_cs42l42_quirk = SOF_SSP_PORT_CODEC(2);
 
 static int sof_cs42l42_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(rtd->card);
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct sof_card_private *ctx = snd_soc_card_to_priv(rtd->card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	struct snd_soc_jack *jack = &ctx->headset_jack;
 	int ret;
 
@@ -76,7 +76,7 @@ static int sof_cs42l42_init(struct snd_soc_pcm_runtime *rtd)
 
 static void sof_cs42l42_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	snd_soc_component_set_jack(component, NULL, NULL);
 }

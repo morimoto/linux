@@ -53,7 +53,7 @@ struct t9015 {
 
 static int t9015_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int val;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -182,7 +182,8 @@ static const struct snd_soc_dapm_route t9015_dapm_routes[] = {
 static int t9015_set_bias_level(struct snd_soc_component *component,
 				enum snd_soc_bias_level level)
 {
-	struct t9015 *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct t9015 *priv = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	enum snd_soc_bias_level now = snd_soc_dapm_get_bias_level(dapm);
 	int ret;
@@ -201,7 +202,7 @@ static int t9015_set_bias_level(struct snd_soc_component *component,
 	case SND_SOC_BIAS_STANDBY:
 		ret = regulator_enable(priv->avdd);
 		if (ret) {
-			dev_err(component->dev, "AVDD enable failed\n");
+			dev_err(dev, "AVDD enable failed\n");
 			return ret;
 		}
 
@@ -293,7 +294,7 @@ static int t9015_probe(struct platform_device *pdev)
 	 */
 	regmap_write(regmap, LINEOUT_CFG, 0x1111);
 
-	return devm_snd_soc_register_component(dev, &t9015_codec_driver,
+	return devm_snd_soc_component_register(dev, &t9015_codec_driver,
 					       &t9015_dai, 1);
 }
 

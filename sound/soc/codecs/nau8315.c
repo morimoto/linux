@@ -29,9 +29,9 @@ struct nau8315_priv {
 static int nau8315_daiops_trigger(struct snd_pcm_substream *substream,
 		int cmd, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8315_priv *nau8315 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8315_priv *nau8315 = dev_get_drvdata(dev);
 
 	if (!nau8315->enable)
 		return 0;
@@ -42,14 +42,14 @@ static int nau8315_daiops_trigger(struct snd_pcm_substream *substream,
 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
 		if (nau8315->enpin_switch) {
 			gpiod_set_value(nau8315->enable, 1);
-			dev_dbg(component->dev, "set enable to 1");
+			dev_dbg(dev, "set enable to 1");
 		}
 		break;
 	case SNDRV_PCM_TRIGGER_STOP:
 	case SNDRV_PCM_TRIGGER_SUSPEND:
 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
 		gpiod_set_value(nau8315->enable, 0);
-		dev_dbg(component->dev, "set enable to 0");
+		dev_dbg(dev, "set enable to 0");
 		break;
 	}
 
@@ -59,10 +59,9 @@ static int nau8315_daiops_trigger(struct snd_pcm_substream *substream,
 static int nau8315_enpin_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct nau8315_priv *nau8315 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8315_priv *nau8315 = dev_get_drvdata(dev);
 
 	if (event & SND_SOC_DAPM_PRE_PMU)
 		nau8315->enpin_switch = 1;
@@ -128,7 +127,7 @@ static int nau8315_platform_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, nau8315);
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&nau8315_component_driver,
 			&nau8315_dai_driver, 1);
 }

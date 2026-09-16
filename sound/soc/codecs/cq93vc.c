@@ -32,7 +32,7 @@ static const struct snd_kcontrol_new cq93vc_snd_controls[] = {
 
 static int cq93vc_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u8 reg;
 
 	if (mute)
@@ -111,9 +111,10 @@ static struct snd_soc_dai_driver cq93vc_dai = {
 
 static int cq93vc_probe(struct snd_soc_component *component)
 {
-	struct davinci_vc *davinci_vc = component->dev->platform_data;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct davinci_vc *davinci_vc = dev->platform_data;
 
-	snd_soc_component_init_regmap(component, davinci_vc->regmap);
+	snd_soc_component_regmap_init(component, davinci_vc->regmap);
 
 	return 0;
 }
@@ -130,7 +131,7 @@ static const struct snd_soc_component_driver soc_component_dev_cq93vc = {
 
 static int cq93vc_platform_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&soc_component_dev_cq93vc, &cq93vc_dai, 1);
 }
 

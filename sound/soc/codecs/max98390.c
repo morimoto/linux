@@ -162,14 +162,14 @@ static const struct reg_default max98390_reg_defaults[] = {
 
 static int max98390_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 	unsigned int mode;
 	unsigned int format;
 	unsigned int invert = 0;
 
-	dev_dbg(component->dev, "%s: fmt 0x%08X\n", __func__, fmt);
+	dev_dbg(dev, "%s: fmt 0x%08X\n", __func__, fmt);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBC_CFC:
@@ -180,7 +180,7 @@ static int max98390_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 		mode = MAX98390_PCM_MASTER_MODE_MASTER;
 		break;
 	default:
-		dev_err(component->dev, "DAI clock mode unsupported\n");
+		dev_err(dev, "DAI clock mode unsupported\n");
 		return -EINVAL;
 	}
 
@@ -196,7 +196,7 @@ static int max98390_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 		invert = MAX98390_PCM_MODE_CFG_PCM_BCLKEDGE;
 		break;
 	default:
-		dev_err(component->dev, "DAI invert mode unsupported\n");
+		dev_err(dev, "DAI invert mode unsupported\n");
 		return -EINVAL;
 	}
 
@@ -249,8 +249,8 @@ static int max98390_get_bclk_sel(int bclk)
 static int max98390_set_clock(struct snd_soc_component *component,
 		struct snd_pcm_hw_params *params)
 {
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 	/* codec MCLK rate in master mode */
 	static int rate_table[] = {
 		5644800, 6000000, 6144000, 6500000,
@@ -270,7 +270,7 @@ static int max98390_set_clock(struct snd_soc_component *component,
 				break;
 		}
 		if (i == ARRAY_SIZE(rate_table)) {
-			dev_err(component->dev, "failed to find proper clock rate.\n");
+			dev_err(dev, "failed to find proper clock rate.\n");
 			return -EINVAL;
 		}
 
@@ -284,8 +284,7 @@ static int max98390_set_clock(struct snd_soc_component *component,
 		/* BCLK configuration */
 		value = max98390_get_bclk_sel(blr_clk_ratio);
 		if (!value) {
-			dev_err(component->dev, "format unsupported %d\n",
-				params_format(params));
+			dev_err(dev, "format unsupported %d\n", params_format(params));
 			return -EINVAL;
 		}
 
@@ -301,10 +300,9 @@ static int max98390_dai_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params,
 		struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component =
-		dai->component;
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 
 	unsigned int sampling_rate;
 	unsigned int chan_sz;
@@ -321,7 +319,7 @@ static int max98390_dai_hw_params(struct snd_pcm_substream *substream,
 		chan_sz = MAX98390_PCM_MODE_CFG_CHANSZ_32;
 		break;
 	default:
-		dev_err(component->dev, "format unsupported %d\n",
+		dev_err(dev, "format unsupported %d\n",
 			params_format(params));
 		goto err;
 	}
@@ -330,8 +328,7 @@ static int max98390_dai_hw_params(struct snd_pcm_substream *substream,
 		MAX98390_PCM_MODE_CFG,
 		MAX98390_PCM_MODE_CFG_CHANSZ_MASK, chan_sz);
 
-	dev_dbg(component->dev, "format supported %d",
-		params_format(params));
+	dev_dbg(dev, "format supported %d", params_format(params));
 
 	/* sampling rate configuration */
 	switch (params_rate(params)) {
@@ -363,8 +360,7 @@ static int max98390_dai_hw_params(struct snd_pcm_substream *substream,
 		sampling_rate = MAX98390_PCM_SR_SET1_SR_48000;
 		break;
 	default:
-		dev_err(component->dev, "rate %d not supported\n",
-			params_rate(params));
+		dev_err(dev, "rate %d not supported\n", params_rate(params));
 		goto err;
 	}
 
@@ -383,9 +379,9 @@ static int max98390_dai_tdm_slot(struct snd_soc_dai *dai,
 		unsigned int tx_mask, unsigned int rx_mask,
 		int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 
 	int bsel;
 	unsigned int chan_sz;
@@ -395,14 +391,12 @@ static int max98390_dai_tdm_slot(struct snd_soc_dai *dai,
 	else
 		max98390->tdm_mode = true;
 
-	dev_dbg(component->dev,
-		"Tdm mode : %d\n", max98390->tdm_mode);
+	dev_dbg(dev, "Tdm mode : %d\n", max98390->tdm_mode);
 
 	/* BCLK configuration */
 	bsel = max98390_get_bclk_sel(slots * slot_width);
 	if (!bsel) {
-		dev_err(component->dev, "BCLK %d not supported\n",
-			slots * slot_width);
+		dev_err(dev, "BCLK %d not supported\n", slots * slot_width);
 		return -EINVAL;
 	}
 
@@ -423,8 +417,7 @@ static int max98390_dai_tdm_slot(struct snd_soc_dai *dai,
 		chan_sz = MAX98390_PCM_MODE_CFG_CHANSZ_32;
 		break;
 	default:
-		dev_err(component->dev, "format unsupported %d\n",
-			slot_width);
+		dev_err(dev, "format unsupported %d\n", slot_width);
 		return -EINVAL;
 	}
 
@@ -454,9 +447,9 @@ static int max98390_dai_tdm_slot(struct snd_soc_dai *dai,
 static int max98390_dai_set_sysclk(struct snd_soc_dai *dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 
 	max98390->sysclk = freq;
 	return 0;
@@ -482,10 +475,9 @@ static const struct snd_soc_dai_ops max98390_dai_ops = {
 static int max98390_dac_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -545,8 +537,8 @@ static int max98390_ref_rdc_put(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 
 	max98390->ref_rdc_value = ucontrol->value.integer.value[0];
 
@@ -564,8 +556,8 @@ static int max98390_ref_rdc_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = max98390->ref_rdc_value;
 
@@ -576,8 +568,8 @@ static int max98390_ambient_temp_put(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 
 	max98390->ambient_temp_value = ucontrol->value.integer.value[0];
 
@@ -593,8 +585,8 @@ static int max98390_ambient_temp_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = max98390->ambient_temp_value;
 
@@ -605,8 +597,9 @@ static int max98390_adaptive_rdc_put(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	dev_warn(component->dev, "Put adaptive rdc not supported\n");
+	dev_warn(dev, "Put adaptive rdc not supported\n");
 
 	return 0;
 }
@@ -616,8 +609,8 @@ static int max98390_adaptive_rdc_get(struct snd_kcontrol *kcontrol,
 {
 	int rdc, rdc0;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 
 	regmap_read(max98390->regmap, THERMAL_RDC_RD_BACK_BYTE1, &rdc);
 	regmap_read(max98390->regmap, THERMAL_RDC_RD_BACK_BYTE0, &rdc0);
@@ -637,7 +630,8 @@ static int max98390_dsm_calib_put(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct max98390_priv *max98390 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	unsigned int rdc, rdc_cal_result, rdc_integer, rdc_factor, temp, val;
 
@@ -675,8 +669,7 @@ static int max98390_dsm_calib_put(struct snd_kcontrol *kcontrol,
 	rdc_integer =  rdc_cal_result * 937  / 65536;
 	rdc_factor = ((rdc_cal_result * 937 * 100) / 65536) - (rdc_integer * 100);
 
-	dev_info(component->dev,
-		 "rdc resistance about %d.%02d ohm, reg=0x%X temp reg=0x%X\n",
+	dev_info(dev, "rdc resistance about %d.%02d ohm, reg=0x%X temp reg=0x%X\n",
 		 rdc_integer, rdc_factor, rdc_cal_result, temp);
 
 	return 0;
@@ -796,8 +789,8 @@ static int max98390_dsm_init(struct snd_soc_component *component)
 	int param_size, param_start_addr;
 	char filename[128];
 	const char *vendor, *product;
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 	char *dsm_param;
 
 	vendor = dmi_get_system_info(DMI_SYS_VENDOR);
@@ -816,23 +809,19 @@ static int max98390_dsm_init(struct snd_soc_component *component)
 	}
 
 	const struct firmware *fw __free(firmware) = NULL;
-	ret = request_firmware(&fw, filename, component->dev);
+	ret = request_firmware(&fw, filename, dev);
 	if (ret) {
-		ret = request_firmware(&fw, "dsm_param.bin", component->dev);
+		ret = request_firmware(&fw, "dsm_param.bin", dev);
 		if (ret) {
-			ret = request_firmware(&fw, "dsmparam.bin",
-				component->dev);
+			ret = request_firmware(&fw, "dsmparam.bin", dev);
 			if (ret)
 				return ret;
 		}
 	}
 
-	dev_dbg(component->dev,
-		"max98390: param fw size %zd\n",
-		fw->size);
+	dev_dbg(dev, "max98390: param fw size %zd\n", fw->size);
 	if (fw->size < MAX98390_DSM_PARAM_MIN_SIZE) {
-		dev_err(component->dev,
-			"param fw is invalid.\n");
+		dev_err(dev, "param fw is invalid.\n");
 		return -EINVAL;
 	}
 	dsm_param = (char *)fw->data;
@@ -841,8 +830,7 @@ static int max98390_dsm_init(struct snd_soc_component *component)
 	if (param_size > MAX98390_DSM_PARAM_MAX_SIZE ||
 		param_start_addr < MAX98390_IRQ_CTRL ||
 		fw->size < param_size + MAX98390_DSM_PAYLOAD_OFFSET) {
-		dev_err(component->dev,
-			"param fw is invalid.\n");
+		dev_err(dev, "param fw is invalid.\n");
 		return -EINVAL;
 	}
 	regmap_write(max98390->regmap, MAX98390_R203A_AMP_EN, 0x80);
@@ -856,8 +844,8 @@ static int max98390_dsm_init(struct snd_soc_component *component)
 
 static void max98390_init_regs(struct snd_soc_component *component)
 {
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 
 	regmap_write(max98390->regmap, MAX98390_CLK_MON, 0x6f);
 	regmap_write(max98390->regmap, MAX98390_DAT_MON, 0x00);
@@ -912,8 +900,8 @@ static void max98390_init_regs(struct snd_soc_component *component)
 
 static int max98390_probe(struct snd_soc_component *component)
 {
-	struct max98390_priv *max98390 =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98390_priv *max98390 = dev_get_drvdata(dev);
 
 	regmap_write(max98390->regmap, MAX98390_SOFTWARE_RESET, 0x01);
 	/* Sleep reset settle time */
@@ -1100,7 +1088,7 @@ static int max98390_i2c_probe(struct i2c_client *i2c)
 	}
 	dev_info(&i2c->dev, "MAX98390 revisionID: 0x%02X\n", reg);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_codec_dev_max98390,
 			max98390_dai, ARRAY_SIZE(max98390_dai));
 

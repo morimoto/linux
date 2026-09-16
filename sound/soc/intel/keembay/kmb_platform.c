@@ -251,10 +251,9 @@ static int kmb_pcm_open(struct snd_soc_component *component,
 			struct snd_pcm_substream *substream)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct kmb_i2s_info *kmb_i2s;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct kmb_i2s_info *kmb_i2s = dev_get_drvdata(dev);
 
-	kmb_i2s = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
 	snd_soc_set_runtime_hwparams(substream, &kmb_pcm_hardware);
 	snd_pcm_hw_constraint_integer(runtime, SNDRV_PCM_HW_PARAM_PERIODS);
 	runtime->private_data = kmb_i2s;
@@ -402,13 +401,15 @@ static const struct snd_soc_component_driver kmb_component_dma = {
 
 static int kmb_probe(struct snd_soc_dai *cpu_dai)
 {
-	struct kmb_i2s_info *kmb_i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct kmb_i2s_info *kmb_i2s = dev_get_drvdata(dev);
 
 	if (kmb_i2s->use_pio)
 		return 0;
 
-	snd_soc_dai_init_dma_data(cpu_dai, &kmb_i2s->play_dma_data,
-				  &kmb_i2s->capture_dma_data);
+	snd_soc_dai_stream_dma_data_set_playback(cpu_dai, &kmb_i2s->play_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(cpu_dai,  &kmb_i2s->capture_dma_data);
 
 	return 0;
 }
@@ -494,7 +495,9 @@ static void kmb_disable_clk(void *clk)
 
 static int kmb_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 {
-	struct kmb_i2s_info *kmb_i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct kmb_i2s_info *kmb_i2s = dev_get_drvdata(dev);
 	int ret;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -526,7 +529,9 @@ static int kmb_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 static int kmb_dai_trigger(struct snd_pcm_substream *substream,
 			   int cmd, struct snd_soc_dai *cpu_dai)
 {
-	struct kmb_i2s_info *kmb_i2s  = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct kmb_i2s_info *kmb_i2s  = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -580,7 +585,9 @@ static int kmb_dai_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *hw_params,
 			     struct snd_soc_dai *cpu_dai)
 {
-	struct kmb_i2s_info *kmb_i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct kmb_i2s_info *kmb_i2s = dev_get_drvdata(dev);
 	struct i2s_clk_config_data *config = &kmb_i2s->config;
 	u32 write_val;
 	int ret;
@@ -676,7 +683,9 @@ static int kmb_dai_hw_params(struct snd_pcm_substream *substream,
 static int kmb_dai_prepare(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *cpu_dai)
 {
-	struct kmb_i2s_info *kmb_i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct kmb_i2s_info *kmb_i2s = dev_get_drvdata(dev);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 		writel(1, kmb_i2s->i2s_base + TXFFR);
@@ -689,7 +698,9 @@ static int kmb_dai_prepare(struct snd_pcm_substream *substream,
 static int kmb_dai_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *cpu_dai)
 {
-	struct kmb_i2s_info *kmb_i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct kmb_i2s_info *kmb_i2s = dev_get_drvdata(dev);
 	struct snd_dmaengine_dai_dma_data *dma_data;
 
 	if (kmb_i2s->use_pio)
@@ -700,7 +711,7 @@ static int kmb_dai_startup(struct snd_pcm_substream *substream,
 	else
 		dma_data = &kmb_i2s->capture_dma_data;
 
-	snd_soc_dai_set_dma_data(cpu_dai, substream, dma_data);
+	snd_soc_dai_stream_dma_data_set(cpu_dai, substream, dma_data);
 
 	return 0;
 }
@@ -708,7 +719,9 @@ static int kmb_dai_startup(struct snd_pcm_substream *substream,
 static int kmb_dai_hw_free(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *cpu_dai)
 {
-	struct kmb_i2s_info *kmb_i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct kmb_i2s_info *kmb_i2s = dev_get_drvdata(dev);
 	/* I2S Programming sequence in Keem_Bay_VPU_DB_v1.1 */
 	if (kmb_i2s->use_pio)
 		kmb_i2s_clear_irqs(kmb_i2s, substream->stream);
@@ -883,7 +896,7 @@ static int kmb_plat_dai_probe(struct platform_device *pdev)
 				return ret;
 			}
 		}
-		ret = devm_snd_soc_register_component(dev, &kmb_component,
+		ret = devm_snd_soc_component_register(dev, &kmb_component,
 						      kmb_i2s_dai, 1);
 	} else {
 		kmb_i2s->play_dma_data.addr = res->start + I2S_TXDMA;
@@ -895,7 +908,7 @@ static int kmb_plat_dai_probe(struct platform_device *pdev)
 				ret);
 			return ret;
 		}
-		ret = devm_snd_soc_register_component(dev, &kmb_component_dma,
+		ret = devm_snd_soc_component_register(dev, &kmb_component_dma,
 						      kmb_i2s_dai, 1);
 	}
 

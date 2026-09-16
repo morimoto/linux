@@ -37,15 +37,15 @@
 static int atmel_pcm_new(struct snd_soc_component *component,
 			 struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	int ret;
 
-	ret = dma_coerce_mask_and_coherent(card->dev, DMA_BIT_MASK(32));
+	ret = dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
 	if (ret)
 		return ret;
 
 	snd_pcm_set_managed_buffer_all(rtd->pcm, SNDRV_DMA_TYPE_DEV,
-				       card->dev, ATMEL_SSC_DMABUF_SIZE,
+				       dev, ATMEL_SSC_DMABUF_SIZE,
 				       ATMEL_SSC_DMABUF_SIZE);
 
 	return 0;
@@ -145,7 +145,8 @@ static int atmel_pcm_hw_params(struct snd_soc_component *component,
 	/* this may get called several times by oss emulation
 	 * with different params */
 
-	prtd->params = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	prtd->params = snd_soc_dai_stream_dma_data_get(
+		snd_soc_rtd_to_cpu(rtd, 0), substream->stream);
 	prtd->params->dma_intr_handler = atmel_pcm_dma_irq;
 
 	prtd->dma_buffer = runtime->dma_addr;
@@ -321,7 +322,7 @@ static const struct snd_soc_component_driver atmel_soc_platform = {
 
 int atmel_pcm_pdc_platform_register(struct device *dev)
 {
-	return devm_snd_soc_register_component(dev, &atmel_soc_platform,
+	return devm_snd_soc_component_register(dev, &atmel_soc_platform,
 					       NULL, 0);
 }
 EXPORT_SYMBOL(atmel_pcm_pdc_platform_register);

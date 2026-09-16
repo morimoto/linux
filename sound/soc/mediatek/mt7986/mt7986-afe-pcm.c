@@ -108,7 +108,8 @@ static int mt7986_memif_fs(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_component *component = snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	return mt7986_afe_rate_transform(afe->dev, rate);
 }
@@ -118,7 +119,8 @@ static int mt7986_irq_fs(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_component *component = snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	return mt7986_afe_rate_transform(afe->dev, rate);
 }
@@ -559,13 +561,13 @@ static int mt7986_afe_pcm_dev_probe(struct platform_device *pdev)
 	afe->runtime_suspend = mt7986_afe_runtime_suspend;
 
 	/* register component */
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &mtk_afe_pcm_platform,
 					      NULL, 0);
 	if (ret)
 		return dev_err_probe(dev, ret, "Cannot register AFE component\n");
 
-	ret = devm_snd_soc_register_component(afe->dev,
+	ret = devm_snd_soc_component_register(afe->dev,
 					      &mt7986_afe_pcm_dai_component,
 					      afe->dai_drivers,
 					      afe->num_dai_drivers);

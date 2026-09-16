@@ -1375,7 +1375,8 @@ static int wcd934x_codec_enable_mclk(struct snd_soc_dapm_widget *w,
 				     struct snd_kcontrol *kc, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd934x_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -1481,13 +1482,15 @@ static int wcd934x_swrm_clock(struct wcd934x_codec *wcd, bool enable)
 static int wcd934x_set_prim_interpolator_rate(struct snd_soc_dai *dai,
 					      u8 rate_val, u32 rate)
 {
-	struct snd_soc_component *comp = dai->component;
-	struct wcd934x_codec *wcd = dev_get_drvdata(comp->dev);
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	struct wcd934x_slim_ch *ch;
+	int dai_id = snd_soc_dai_id(dai);
 	u8 cfg0, cfg1, inp0_sel, inp1_sel, inp2_sel;
 	int inp, j;
 
-	list_for_each_entry(ch, &wcd->dai[dai->id].slim_ch_list, list) {
+	list_for_each_entry(ch, &wcd->dai[dai_id].slim_ch_list, list) {
 		inp = ch->shift + INTn_1_INP_SEL_RX0;
 		/*
 		 * Loop through all interpolator MUX inputs and find out
@@ -1538,12 +1541,14 @@ static int wcd934x_set_prim_interpolator_rate(struct snd_soc_dai *dai,
 static int wcd934x_set_mix_interpolator_rate(struct snd_soc_dai *dai,
 					     int rate_val, u32 rate)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wcd934x_codec *wcd = dev_get_drvdata(component->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	struct wcd934x_slim_ch *ch;
+	int dai_id = snd_soc_dai_id(dai);
 	int val, j;
 
-	list_for_each_entry(ch, &wcd->dai[dai->id].slim_ch_list, list) {
+	list_for_each_entry(ch, &wcd->dai[dai_id].slim_ch_list, list) {
 		for (j = 0; j < WCD934X_NUM_INTERPOLATORS; j++) {
 			/* Interpolators 5 and 6 are not aviliable in Tavil */
 			if (j == INTERP_LO3_NA || j == INTERP_LO4_NA)
@@ -1560,9 +1565,7 @@ static int wcd934x_set_mix_interpolator_rate(struct snd_soc_dai *dai,
 				if ((j == INTERP_EAR) &&
 				    (rate_val < 0x4 ||
 				     rate_val > 0x7)) {
-					dev_err(component->dev,
-						"Invalid rate for AIF_PB DAI(%d)\n",
-						dai->id);
+					dev_err(dev, "Invalid rate for AIF_PB DAI(%d)\n", dai_id);
 					return -EINVAL;
 				}
 
@@ -1580,6 +1583,8 @@ static int wcd934x_set_mix_interpolator_rate(struct snd_soc_dai *dai,
 static int wcd934x_set_interpolator_rate(struct snd_soc_dai *dai,
 					 u32 sample_rate)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int rate_val = 0;
 	int i, ret;
 
@@ -1590,7 +1595,7 @@ static int wcd934x_set_interpolator_rate(struct snd_soc_dai *dai,
 		}
 	}
 	if ((i == ARRAY_SIZE(sr_val_tbl)) || (rate_val < 0)) {
-		dev_err(dai->dev, "Unsupported sample rate: %d\n", sample_rate);
+		dev_err(dev, "Unsupported sample rate: %d\n", sample_rate);
 		return -EINVAL;
 	}
 
@@ -1607,14 +1612,16 @@ static int wcd934x_set_interpolator_rate(struct snd_soc_dai *dai,
 static int wcd934x_set_decimator_rate(struct snd_soc_dai *dai,
 				      u8 rate_val, u32 rate)
 {
-	struct snd_soc_component *comp = dai->component;
-	struct wcd934x_codec *wcd = snd_soc_component_get_drvdata(comp);
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	u8 shift = 0, shift_val = 0, tx_mux_sel;
 	struct wcd934x_slim_ch *ch;
+	int dai_id = snd_soc_dai_id(dai);
 	int tx_port, tx_port_reg;
 	int decimator = -1;
 
-	list_for_each_entry(ch, &wcd->dai[dai->id].slim_ch_list, list) {
+	list_for_each_entry(ch, &wcd->dai[dai_id].slim_ch_list, list) {
 		tx_port = ch->port;
 		/* Find the SB TX MUX input - which decimator is connected */
 		switch (tx_port) {
@@ -1645,7 +1652,7 @@ static int wcd934x_set_decimator_rate(struct snd_soc_dai *dai,
 			break;
 		default:
 			dev_err(wcd->dev, "Invalid SLIM TX%u port DAI ID:%d\n",
-				tx_port, dai->id);
+				tx_port, dai_id);
 			return -EINVAL;
 		}
 
@@ -1768,10 +1775,11 @@ static int wcd934x_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct wcd934x_codec *wcd;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int ret, tx_fs_rate = 0;
-
-	wcd = snd_soc_component_get_drvdata(dai->component);
 
 	switch (substream->stream) {
 	case SNDRV_PCM_STREAM_PLAYBACK:
@@ -1783,7 +1791,7 @@ static int wcd934x_hw_params(struct snd_pcm_substream *substream,
 		}
 		switch (params_width(params)) {
 		case 16 ... 24:
-			wcd->dai[dai->id].sconfig.bps = params_width(params);
+			wcd->dai[dai_id].sconfig.bps = params_width(params);
 			break;
 		default:
 			dev_err(wcd->dev, "Invalid format 0x%x\n",
@@ -1830,7 +1838,7 @@ static int wcd934x_hw_params(struct snd_pcm_substream *substream,
 		}
 		switch (params_width(params)) {
 		case 16 ... 32:
-			wcd->dai[dai->id].sconfig.bps = params_width(params);
+			wcd->dai[dai_id].sconfig.bps = params_width(params);
 			break;
 		default:
 			dev_err(wcd->dev, "Invalid format 0x%x\n",
@@ -1844,20 +1852,21 @@ static int wcd934x_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	wcd->dai[dai->id].sconfig.rate = params_rate(params);
+	wcd->dai[dai_id].sconfig.rate = params_rate(params);
 
-	return wcd934x_slim_set_hw_params(wcd, &wcd->dai[dai->id], substream->stream);
+	return wcd934x_slim_set_hw_params(wcd, &wcd->dai[dai_id], substream->stream);
 }
 
 static int wcd934x_hw_free(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct wcd_slim_codec_dai_data *dai_data;
-	struct wcd934x_codec *wcd;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	wcd = snd_soc_component_get_drvdata(dai->component);
-
-	dai_data = &wcd->dai[dai->id];
+	dai_data = &wcd->dai[dai_id];
 
 	kfree(dai_data->sconfig.chs);
 
@@ -1867,13 +1876,14 @@ static int wcd934x_hw_free(struct snd_pcm_substream *substream,
 static int wcd934x_trigger(struct snd_pcm_substream *substream, int cmd,
 			   struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct wcd_slim_codec_dai_data *dai_data;
-	struct wcd934x_codec *wcd;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	struct slim_stream_config *cfg;
+	int dai_id = snd_soc_dai_id(dai);
 
-	wcd = snd_soc_component_get_drvdata(dai->component);
-
-	dai_data = &wcd->dai[dai->id];
+	dai_data = &wcd->dai[dai_id];
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -1902,10 +1912,10 @@ static int wcd934x_set_channel_map(struct snd_soc_dai *dai,
 				   unsigned int rx_num,
 				   const unsigned int *rx_slot)
 {
-	struct wcd934x_codec *wcd;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	int i;
-
-	wcd = snd_soc_component_get_drvdata(dai->component);
 
 	if (tx_num > WCD934X_TX_MAX || rx_num > WCD934X_RX_MAX) {
 		dev_err(wcd->dev, "Invalid tx %d or rx %d channel count\n",
@@ -1936,13 +1946,14 @@ static int wcd934x_get_channel_map(const struct snd_soc_dai *dai,
 				   unsigned int *tx_num, unsigned int *tx_slot,
 				   unsigned int *rx_num, unsigned int *rx_slot)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct wcd934x_slim_ch *ch;
-	struct wcd934x_codec *wcd;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int i = 0;
 
-	wcd = snd_soc_component_get_drvdata(dai->component);
-
-	switch (dai->id) {
+	switch (dai_id) {
 	case AIF1_PB:
 	case AIF2_PB:
 	case AIF3_PB:
@@ -1953,7 +1964,7 @@ static int wcd934x_get_channel_map(const struct snd_soc_dai *dai,
 			return -EINVAL;
 		}
 
-		list_for_each_entry(ch, &wcd->dai[dai->id].slim_ch_list, list)
+		list_for_each_entry(ch, &wcd->dai[dai_id].slim_ch_list, list)
 			rx_slot[i++] = ch->ch_num;
 
 		*rx_num = i;
@@ -1967,13 +1978,13 @@ static int wcd934x_get_channel_map(const struct snd_soc_dai *dai,
 			return -EINVAL;
 		}
 
-		list_for_each_entry(ch, &wcd->dai[dai->id].slim_ch_list, list)
+		list_for_each_entry(ch, &wcd->dai[dai_id].slim_ch_list, list)
 			tx_slot[i++] = ch->ch_num;
 
 		*tx_num = i;
 		break;
 	default:
-		dev_err(wcd->dev, "Invalid DAI ID %x\n", dai->id);
+		dev_err(wcd->dev, "Invalid DAI ID %x\n", dai_id);
 		break;
 	}
 
@@ -2163,7 +2174,8 @@ static struct clk *wcd934x_register_mclk_output(struct wcd934x_codec *wcd)
 
 static int wcd934x_init_dmic(struct snd_soc_component *comp)
 {
-	struct wcd934x_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	u32 def_dmic_rate, dmic_clk_drv;
 	int ret;
 
@@ -2208,7 +2220,8 @@ static void wcd934x_hw_init(struct wcd934x_codec *wcd)
 
 static int wcd934x_comp_init(struct snd_soc_component *component)
 {
-	struct wcd934x_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 
 	wcd934x_hw_init(wcd);
 	wcd934x_enable_efuse_sensing(wcd);
@@ -2313,11 +2326,11 @@ static void wcd934x_mbhc_program_btn_thr(struct snd_soc_component *component,
 					 int *btn_low, int *btn_high,
 					 int num_btn, bool is_micbias)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int i, vth;
 
 	if (num_btn > WCD_MBHC_DEF_BUTTONS) {
-		dev_err(component->dev, "%s: invalid number of buttons: %d\n",
-			__func__, num_btn);
+		dev_err(dev, "%s: invalid number of buttons: %d\n", __func__, num_btn);
 		return;
 	}
 
@@ -2357,7 +2370,8 @@ static void wcd934x_mbhc_hph_l_pull_up_control(struct snd_soc_component *compone
 static int wcd934x_micbias_control(struct snd_soc_component *component,
 			    int micb_num, int req, bool is_dapm)
 {
-	struct wcd934x_codec *wcd934x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd934x = dev_get_drvdata(dev);
 	int micb_index = micb_num - 1;
 	u16 micb_reg;
 
@@ -2375,8 +2389,7 @@ static int wcd934x_micbias_control(struct snd_soc_component *component,
 		micb_reg = WCD934X_ANA_MICB4;
 		break;
 	default:
-		dev_err(component->dev, "%s: Invalid micbias number: %d\n",
-			__func__, micb_num);
+		dev_err(dev, "%s: Invalid micbias number: %d\n", __func__, micb_num);
 		return -EINVAL;
 	}
 	guard(mutex)(&wcd934x->micb_lock);
@@ -2447,7 +2460,8 @@ static int wcd934x_micbias_control(struct snd_soc_component *component,
 static int wcd934x_mbhc_request_micbias(struct snd_soc_component *component,
 					int micb_num, int req)
 {
-	struct wcd934x_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	int ret;
 
 	if (req == MICB_ENABLE)
@@ -2480,7 +2494,8 @@ static void wcd934x_mbhc_micb_ramp_control(struct snd_soc_component *component,
 static int wcd934x_mbhc_micb_adjust_voltage(struct snd_soc_component *component,
 					    int req_volt, int micb_num)
 {
-	struct wcd934x_codec *wcd934x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd934x = dev_get_drvdata(dev);
 	int cur_vout_ctl, req_vout_ctl, micb_reg, micb_en;
 
 	switch (micb_num) {
@@ -2513,7 +2528,7 @@ static int wcd934x_mbhc_micb_adjust_voltage(struct snd_soc_component *component,
 	cur_vout_ctl = snd_soc_component_read_field(component, micb_reg,
 						    WCD934X_MICB_VAL_MASK);
 
-	req_vout_ctl = wcd_get_micb_vout_ctl_val(component->dev, req_volt);
+	req_vout_ctl = wcd_get_micb_vout_ctl_val(dev, req_volt);
 	if (req_vout_ctl < 0)
 		return -EINVAL;
 
@@ -2546,7 +2561,8 @@ static int wcd934x_mbhc_micb_adjust_voltage(struct snd_soc_component *component,
 static int wcd934x_mbhc_micb_ctrl_threshold_mic(struct snd_soc_component *component,
 						int micb_num, bool req_en)
 {
-	struct wcd934x_codec *wcd934x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd934x = dev_get_drvdata(dev);
 	int rc, micb_mv;
 
 	if (micb_num != MIC_BIAS_2)
@@ -2628,7 +2644,8 @@ static void wcd934x_mbhc_zdet_ramp(struct snd_soc_component *component,
 				 struct wcd934x_mbhc_zdet_param *zdet_param,
 				 int32_t *zl, int32_t *zr, s16 *d1_a)
 {
-	struct wcd934x_codec *wcd934x = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd934x = dev_get_drvdata(dev);
 	int32_t zdet = 0;
 
 	snd_soc_component_write_field(component, WCD934X_MBHC_NEW_ZDET_ANA_CTL,
@@ -2687,7 +2704,8 @@ static void wcd934x_wcd_mbhc_qfuse_cal(struct snd_soc_component *component,
 static void wcd934x_wcd_mbhc_calc_impedance(struct snd_soc_component *component,
 					    uint32_t *zl, uint32_t *zr)
 {
-	struct wcd934x_codec *wcd934x = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd934x = dev_get_drvdata(dev);
 	s16 reg0, reg1, reg2, reg3, reg4;
 	int32_t z1L, z1R, z1Ls;
 	int zMono, z_diff1, z_diff2;
@@ -2757,8 +2775,7 @@ left_ch_impedance:
 		*zl = z1L/1000;
 		wcd934x_wcd_mbhc_qfuse_cal(component, zl, 0);
 	}
-	dev_info(component->dev, "%s: impedance on HPH_L = %d(ohms)\n",
-		__func__, *zl);
+	dev_info(dev, "%s: impedance on HPH_L = %d(ohms)\n", __func__, *zl);
 
 	/* Start of right impedance ramp and calculation */
 	wcd934x_mbhc_zdet_ramp(component, zdet_param_ptr, NULL, &z1R, d1);
@@ -2789,23 +2806,19 @@ right_ch_impedance:
 		*zr = z1R/1000;
 		wcd934x_wcd_mbhc_qfuse_cal(component, zr, 1);
 	}
-	dev_err(component->dev, "%s: impedance on HPH_R = %d(ohms)\n",
-		__func__, *zr);
+	dev_err(dev, "%s: impedance on HPH_R = %d(ohms)\n", __func__, *zr);
 
 	/* Mono/stereo detection */
 	if ((*zl == WCD934X_ZDET_FLOATING_IMPEDANCE) &&
 		(*zr == WCD934X_ZDET_FLOATING_IMPEDANCE)) {
-		dev_dbg(component->dev,
-			"%s: plug type is invalid or extension cable\n",
-			__func__);
+		dev_dbg(dev, "%s: plug type is invalid or extension cable\n", __func__);
 		goto zdet_complete;
 	}
 	if ((*zl == WCD934X_ZDET_FLOATING_IMPEDANCE) ||
 	    (*zr == WCD934X_ZDET_FLOATING_IMPEDANCE) ||
 	    ((*zl < WCD_MONO_HS_MIN_THR) && (*zr > WCD_MONO_HS_MIN_THR)) ||
 	    ((*zl > WCD_MONO_HS_MIN_THR) && (*zr < WCD_MONO_HS_MIN_THR))) {
-		dev_dbg(component->dev,
-			"%s: Mono plug type with one ch floating or shorted to GND\n",
+		dev_dbg(dev, "%s: Mono plug type with one ch floating or shorted to GND\n",
 			__func__);
 		wcd_mbhc_set_hph_type(wcd934x->mbhc, WCD_MBHC_HPH_MONO);
 		goto zdet_complete;
@@ -2829,12 +2842,10 @@ right_ch_impedance:
 	z_diff1 = (z1Ls > zMono) ? (z1Ls - zMono) : (zMono - z1Ls);
 	z_diff2 = ((*zl) > z1Ls) ? ((*zl) - z1Ls) : (z1Ls - (*zl));
 	if ((z_diff1 * (*zl + z1Ls)) > (z_diff2 * (z1Ls + zMono))) {
-		dev_err(component->dev, "%s: stereo plug type detected\n",
-			__func__);
+		dev_err(dev, "%s: stereo plug type detected\n", __func__);
 		wcd_mbhc_set_hph_type(wcd934x->mbhc, WCD_MBHC_HPH_STEREO);
 	} else {
-		dev_err(component->dev, "%s: MONO plug type detected\n",
-			__func__);
+		dev_err(dev, "%s: MONO plug type detected\n", __func__);
 		wcd_mbhc_set_hph_type(wcd934x->mbhc, WCD_MBHC_HPH_MONO);
 	}
 
@@ -2898,7 +2909,8 @@ static int wcd934x_get_hph_type(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wcd934x_codec *wcd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wcd_mbhc_get_hph_type(wcd->mbhc);
 
@@ -2912,12 +2924,13 @@ static int wcd934x_hph_impedance_get(struct snd_kcontrol *kcontrol,
 	bool hphr;
 	struct soc_mixer_control *mc;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wcd934x_codec *wcd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 
 	mc = (struct soc_mixer_control *)(kcontrol->private_value);
 	hphr = mc->shift;
 	wcd_mbhc_get_impedance(wcd->mbhc, &zl, &zr);
-	dev_dbg(component->dev, "%s: zl=%u(ohms), zr=%u(ohms)\n", __func__, zl, zr);
+	dev_dbg(dev, "%s: zl=%u(ohms), zr=%u(ohms)\n", __func__, zl, zr);
 	ucontrol->value.integer.value[0] = hphr ? zr : zl;
 
 	return 0;
@@ -2936,8 +2949,9 @@ static const struct snd_kcontrol_new impedance_detect_controls[] = {
 
 static int wcd934x_mbhc_init(struct snd_soc_component *component)
 {
-	struct wcd934x_ddata *data = dev_get_drvdata(component->dev->parent);
-	struct wcd934x_codec *wcd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_ddata *data = dev_get_drvdata(dev->parent);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	struct wcd_mbhc_intr *intr_ids = &wcd->intr_ids;
 
 	intr_ids->mbhc_sw_intr = regmap_irq_get_virq(data->irq_data,
@@ -2961,9 +2975,9 @@ static int wcd934x_mbhc_init(struct snd_soc_component *component)
 		return -EINVAL;
 	}
 
-	snd_soc_add_component_controls(component, impedance_detect_controls,
+	snd_soc_component_add_controls(component, impedance_detect_controls,
 				       ARRAY_SIZE(impedance_detect_controls));
-	snd_soc_add_component_controls(component, hph_type_detect_controls,
+	snd_soc_component_add_controls(component, hph_type_detect_controls,
 				       ARRAY_SIZE(hph_type_detect_controls));
 
 	return 0;
@@ -2971,7 +2985,8 @@ static int wcd934x_mbhc_init(struct snd_soc_component *component)
 
 static void wcd934x_mbhc_deinit(struct snd_soc_component *component)
 {
-	struct wcd934x_codec *wcd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 
 	if (!wcd->mbhc)
 		return;
@@ -2981,10 +2996,11 @@ static void wcd934x_mbhc_deinit(struct snd_soc_component *component)
 
 static int wcd934x_comp_probe(struct snd_soc_component *component)
 {
-	struct wcd934x_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	int i, ret;
 
-	snd_soc_component_init_regmap(component, wcd->regmap);
+	snd_soc_component_regmap_init(component, wcd->regmap);
 	wcd->component = component;
 
 	/* Class-H Init*/
@@ -3003,19 +3019,20 @@ static int wcd934x_comp_probe(struct snd_soc_component *component)
 
 	ret = wcd934x_init_dmic(component);
 	if (ret) {
-		dev_err(component->dev, "Failed to Initialize micbias\n");
+		dev_err(dev, "Failed to Initialize micbias\n");
 		return ret;
 	}
 
 	if (wcd934x_mbhc_init(component))
-		dev_err(component->dev, "Failed to Initialize MBHC\n");
+		dev_err(dev, "Failed to Initialize MBHC\n");
 
 	return 0;
 }
 
 static void wcd934x_comp_remove(struct snd_soc_component *comp)
 {
-	struct wcd934x_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 
 	wcd934x_mbhc_deinit(comp);
 	wcd_clsh_ctrl_free(wcd->clsh_ctrl);
@@ -3025,7 +3042,8 @@ static int wcd934x_comp_set_sysclk(struct snd_soc_component *comp,
 				   int clk_id, int source,
 				   unsigned int freq, int dir)
 {
-	struct wcd934x_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	int val = WCD934X_CODEC_RPM_CLK_MCLK_CFG_9P6MHZ;
 
 	wcd->rate = freq;
@@ -3154,8 +3172,9 @@ static int wcd934x_compander_get(struct snd_kcontrol *kc,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kc);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int comp = ((struct soc_mixer_control *)kc->private_value)->shift;
-	struct wcd934x_codec *wcd = dev_get_drvdata(component->dev);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wcd->comp_enabled[comp];
 
@@ -3166,7 +3185,8 @@ static int wcd934x_compander_set(struct snd_kcontrol *kc,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kc);
-	struct wcd934x_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	int comp = ((struct soc_mixer_control *)kc->private_value)->shift;
 	int value = ucontrol->value.integer.value[0];
 	int sel;
@@ -3207,7 +3227,8 @@ static int wcd934x_rx_hph_mode_get(struct snd_kcontrol *kc,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kc);
-	struct wcd934x_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = wcd->hph_mode;
 
@@ -3218,7 +3239,8 @@ static int wcd934x_rx_hph_mode_put(struct snd_kcontrol *kc,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kc);
-	struct wcd934x_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	u32 mode_val;
 
 	mode_val = ucontrol->value.enumerated.item[0];
@@ -3372,13 +3394,13 @@ static int wcd934x_int_dem_inp_mux_put(struct snd_kcontrol *kc,
 static int wcd934x_dec_enum_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
-	struct snd_soc_component *comp;
+	struct snd_soc_component *comp = snd_soc_dapm_kcontrol_to_component(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(comp);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int val;
 	u16 mic_sel_reg = 0;
 	u8 mic_sel;
 
-	comp = snd_soc_dapm_kcontrol_to_component(kcontrol);
 
 	val = ucontrol->value.enumerated.item[0];
 	if (val > e->items - 1)
@@ -3412,7 +3434,7 @@ static int wcd934x_dec_enum_put(struct snd_kcontrol *kcontrol,
 			mic_sel_reg = WCD934X_CDC_TX7_TX_PATH_CFG0;
 		break;
 	default:
-		dev_err(comp->dev, "%s: e->reg: 0x%x not expected\n",
+		dev_err(dev, "%s: e->reg: 0x%x not expected\n",
 			__func__, e->reg);
 		return -EINVAL;
 	}
@@ -4077,7 +4099,8 @@ static void wcd934x_codec_enable_int_port(struct wcd_slim_codec_dai_data *dai,
 	int port_num = 0;
 	unsigned short reg = 0;
 	unsigned int val = 0;
-	struct wcd934x_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	struct wcd934x_slim_ch *ch;
 
 	list_for_each_entry(ch, &dai->slim_ch_list, list) {
@@ -4100,7 +4123,8 @@ static int wcd934x_codec_enable_slim(struct snd_soc_dapm_widget *w,
 				     struct snd_kcontrol *kc, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd934x_codec *wcd = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	struct wcd_slim_codec_dai_data *dai = &wcd->dai[w->shift];
 
 	switch (event) {
@@ -4189,7 +4213,8 @@ static void wcd934x_codec_hphdelay_lutbypass(struct snd_soc_component *comp,
 static int wcd934x_config_compander(struct snd_soc_component *comp,
 				    int interp_n, int event)
 {
-	struct wcd934x_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	int compander;
 	u16 comp_ctl0_reg, rx_path_cfg0_reg;
 
@@ -4373,7 +4398,8 @@ static int wcd934x_codec_ear_dac_event(struct snd_soc_dapm_widget *w,
 				       struct snd_kcontrol *kc, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd934x_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -4399,7 +4425,8 @@ static int wcd934x_codec_hphl_dac_event(struct snd_soc_dapm_widget *w,
 					int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd934x_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	int hph_mode = wcd->hph_mode;
 	u8 dem_inp;
 
@@ -4451,7 +4478,8 @@ static int wcd934x_codec_hphr_dac_event(struct snd_soc_dapm_widget *w,
 					int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd934x_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	int hph_mode = wcd->hph_mode;
 	u8 dem_inp;
 
@@ -4500,7 +4528,8 @@ static int wcd934x_codec_lineout_dac_event(struct snd_soc_dapm_widget *w,
 					   struct snd_kcontrol *kc, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd934x_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -4521,7 +4550,8 @@ static int wcd934x_codec_enable_hphl_pa(struct snd_soc_dapm_widget *w,
 					int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd934x_codec *wcd = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -4585,7 +4615,8 @@ static int wcd934x_codec_enable_hphr_pa(struct snd_soc_dapm_widget *w,
 					int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd934x_codec *wcd = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -4694,6 +4725,7 @@ static u32 wcd934x_get_dmic_sample_rate(struct snd_soc_component *comp,
 static u8 wcd934x_get_dmic_clk_val(struct snd_soc_component *comp,
 				   u32 mclk_rate, u32 dmic_clk_rate)
 {
+	struct device *dev = snd_soc_component_to_dev(comp);
 	u32 div_factor;
 	u8 dmic_ctl_val;
 
@@ -4704,9 +4736,7 @@ static u8 wcd934x_get_dmic_clk_val(struct snd_soc_component *comp,
 		dmic_ctl_val = WCD934X_DMIC_CLK_DIV_3;
 
 	if (dmic_clk_rate == 0) {
-		dev_err(comp->dev,
-			"%s: dmic_sample_rate cannot be 0\n",
-			__func__);
+		dev_err(dev, "%s: dmic_sample_rate cannot be 0\n", __func__);
 		goto done;
 	}
 
@@ -4731,8 +4761,7 @@ static u8 wcd934x_get_dmic_clk_val(struct snd_soc_component *comp,
 		dmic_ctl_val = WCD934X_DMIC_CLK_DIV_16;
 		break;
 	default:
-		dev_err(comp->dev,
-			"%s: Invalid div_factor %u, clk_rate(%u), dmic_rate(%u)\n",
+		dev_err(dev, "%s: Invalid div_factor %u, clk_rate(%u), dmic_rate(%u)\n",
 			__func__, div_factor, mclk_rate, dmic_clk_rate);
 		break;
 	}
@@ -4745,7 +4774,8 @@ static int wcd934x_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 				     struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd934x_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	u8  dmic_clk_en = 0x01;
 	u16 dmic_clk_reg;
 	s32 *dmic_clk_cnt;
@@ -4757,14 +4787,13 @@ static int wcd934x_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 
 	wname = strpbrk(w->name, "012345");
 	if (!wname) {
-		dev_err(comp->dev, "%s: widget not found\n", __func__);
+		dev_err(dev, "%s: widget not found\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = kstrtouint(wname, 10, &dmic);
 	if (ret < 0) {
-		dev_err(comp->dev, "%s: Invalid DMIC line on the codec\n",
-			__func__);
+		dev_err(dev, "%s: Invalid DMIC line on the codec\n", __func__);
 		return -EINVAL;
 	}
 
@@ -4785,8 +4814,7 @@ static int wcd934x_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 		dmic_clk_reg = WCD934X_CPE_SS_DMIC2_CTL;
 		break;
 	default:
-		dev_err(comp->dev, "%s: Invalid DMIC Selection\n",
-			__func__);
+		dev_err(dev, "%s: Invalid DMIC Selection\n", __func__);
 		return -EINVAL;
 	}
 
@@ -4911,6 +4939,7 @@ static int wcd934x_codec_enable_dec(struct snd_soc_dapm_widget *w,
 				    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(comp);
 	unsigned int decimator;
 	char *dec_adc_mux_name = NULL;
 	char *widget_name;
@@ -4927,23 +4956,20 @@ static int wcd934x_codec_enable_dec(struct snd_soc_dapm_widget *w,
 	widget_name = wname;
 	dec_adc_mux_name = strsep(&widget_name, " ");
 	if (!dec_adc_mux_name) {
-		dev_err(comp->dev, "%s: Invalid decimator = %s\n",
-			__func__, w->name);
+		dev_err(dev, "%s: Invalid decimator = %s\n", __func__, w->name);
 		return -EINVAL;
 	}
 	dec_adc_mux_name = widget_name;
 
 	dec = strpbrk(dec_adc_mux_name, "012345678");
 	if (!dec) {
-		dev_err(comp->dev, "%s: decimator index not found\n",
-			__func__);
+		dev_err(dev, "%s: decimator index not found\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = kstrtouint(dec, 10, &decimator);
 	if (ret < 0) {
-		dev_err(comp->dev, "%s: Invalid decimator = %s\n",
-			__func__, wname);
+		dev_err(dev, "%s: Invalid decimator = %s\n", __func__, wname);
 		return -EINVAL;
 	}
 
@@ -5753,7 +5779,8 @@ static const struct snd_soc_dapm_route wcd934x_audio_map[] = {
 static int wcd934x_codec_set_jack(struct snd_soc_component *comp,
 				  struct snd_soc_jack *jack, void *data)
 {
-	struct wcd934x_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd934x_codec *wcd = dev_get_drvdata(dev);
 	int ret = 0;
 
 	if (!wcd->mbhc)
@@ -5881,7 +5908,7 @@ static int wcd934x_codec_probe(struct platform_device *pdev)
 	wcd934x_register_mclk_output(wcd);
 	platform_set_drvdata(pdev, wcd);
 
-	return devm_snd_soc_register_component(dev, &wcd934x_component_drv,
+	return devm_snd_soc_component_register(dev, &wcd934x_component_drv,
 					       wcd934x_slim_dais,
 					       ARRAY_SIZE(wcd934x_slim_dais));
 }

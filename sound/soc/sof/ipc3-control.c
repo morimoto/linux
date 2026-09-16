@@ -15,7 +15,8 @@
 static int sof_ipc3_set_get_kcontrol_data(struct snd_sof_control *scontrol,
 					  bool set, bool lock)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scontrol->scomp);
+	struct device *dev = snd_soc_component_to_dev(scontrol->scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_ipc_ctrl_data *cdata = scontrol->ipc_control_data;
 	const struct sof_ipc_ops *iops = sdev->ipc->ops;
 	enum sof_ipc_ctrl_type ctrl_type;
@@ -128,12 +129,13 @@ static void sof_ipc3_refresh_control(struct snd_sof_control *scontrol)
 {
 	struct sof_ipc_ctrl_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	int ret;
 
 	if (!scontrol->comp_data_dirty)
 		return;
 
-	if (!pm_runtime_active(scomp->dev))
+	if (!pm_runtime_active(dev))
 		return;
 
 	/* set the ABI header values */
@@ -144,7 +146,7 @@ static void sof_ipc3_refresh_control(struct snd_sof_control *scontrol)
 	scontrol->comp_data_dirty = false;
 	ret = sof_ipc3_set_get_kcontrol_data(scontrol, false, true);
 	if (ret < 0) {
-		dev_err(scomp->dev, "Failed to get control data: %d\n", ret);
+		dev_err(dev, "Failed to get control data: %d\n", ret);
 
 		/* Set the flag to re-try next time to get the data */
 		scontrol->comp_data_dirty = true;
@@ -174,6 +176,7 @@ static bool sof_ipc3_volume_put(struct snd_sof_control *scontrol,
 {
 	struct sof_ipc_ctrl_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	unsigned int channels = scontrol->num_channels;
 	unsigned int i;
 	bool change = false;
@@ -189,12 +192,11 @@ static bool sof_ipc3_volume_put(struct snd_sof_control *scontrol,
 	}
 
 	/* notify DSP of mixer updates */
-	if (pm_runtime_active(scomp->dev)) {
+	if (pm_runtime_active(dev)) {
 		int ret = sof_ipc3_set_get_kcontrol_data(scontrol, true, true);
 
 		if (ret < 0) {
-			dev_err(scomp->dev, "Failed to set mixer updates for %s\n",
-				scontrol->name);
+			dev_err(dev, "Failed to set mixer updates for %s\n", scontrol->name);
 			return false;
 		}
 	}
@@ -223,6 +225,7 @@ static bool sof_ipc3_switch_put(struct snd_sof_control *scontrol,
 {
 	struct sof_ipc_ctrl_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	unsigned int channels = scontrol->num_channels;
 	unsigned int i;
 	bool change = false;
@@ -237,12 +240,11 @@ static bool sof_ipc3_switch_put(struct snd_sof_control *scontrol,
 	}
 
 	/* notify DSP of mixer updates */
-	if (pm_runtime_active(scomp->dev)) {
+	if (pm_runtime_active(dev)) {
 		int ret = sof_ipc3_set_get_kcontrol_data(scontrol, true, true);
 
 		if (ret < 0) {
-			dev_err(scomp->dev, "Failed to set mixer updates for %s\n",
-				scontrol->name);
+			dev_err(dev, "Failed to set mixer updates for %s\n", scontrol->name);
 			return false;
 		}
 	}
@@ -271,6 +273,7 @@ static bool sof_ipc3_enum_put(struct snd_sof_control *scontrol,
 {
 	struct sof_ipc_ctrl_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	unsigned int channels = scontrol->num_channels;
 	unsigned int i;
 	bool change = false;
@@ -285,12 +288,11 @@ static bool sof_ipc3_enum_put(struct snd_sof_control *scontrol,
 	}
 
 	/* notify DSP of enum updates */
-	if (pm_runtime_active(scomp->dev)) {
+	if (pm_runtime_active(dev)) {
 		int ret = sof_ipc3_set_get_kcontrol_data(scontrol, true, true);
 
 		if (ret < 0) {
-			dev_err(scomp->dev, "Failed to set enum updates for %s\n",
-				scontrol->name);
+			dev_err(dev, "Failed to set enum updates for %s\n", scontrol->name);
 			return false;
 		}
 	}
@@ -303,13 +305,14 @@ static int sof_ipc3_bytes_get(struct snd_sof_control *scontrol,
 {
 	struct sof_ipc_ctrl_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	struct sof_abi_hdr *data = cdata->data;
 	size_t size;
 
 	sof_ipc3_refresh_control(scontrol);
 
 	if (scontrol->max_size > sizeof(ucontrol->value.bytes.data)) {
-		dev_err_ratelimited(scomp->dev, "data max %zu exceeds ucontrol data array size\n",
+		dev_err_ratelimited(dev, "data max %zu exceeds ucontrol data array size\n",
 				    scontrol->max_size);
 		return -EINVAL;
 	}
@@ -317,8 +320,7 @@ static int sof_ipc3_bytes_get(struct snd_sof_control *scontrol,
 	/* be->max has been verified to be >= sizeof(struct sof_abi_hdr) */
 	if (data->size > scontrol->max_size - sizeof(*cdata) -
 				    sizeof(*data)) {
-		dev_err_ratelimited(scomp->dev,
-				    "%u bytes of control data is invalid, max is %zu\n",
+		dev_err_ratelimited(dev, "%u bytes of control data is invalid, max is %zu\n",
 				    data->size,
 				    scontrol->max_size - sizeof(*cdata) -
 				    sizeof(*data));
@@ -341,10 +343,11 @@ static int sof_ipc3_bytes_put(struct snd_sof_control *scontrol,
 	struct sof_abi_hdr *data = cdata->data;
 	const struct sof_abi_hdr *new_hdr =
 		(const struct sof_abi_hdr *)ucontrol->value.bytes.data;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	size_t size;
 
 	if (scontrol->max_size > sizeof(ucontrol->value.bytes.data)) {
-		dev_err_ratelimited(scomp->dev, "data max %zu exceeds ucontrol data array size\n",
+		dev_err_ratelimited(dev, "data max %zu exceeds ucontrol data array size\n",
 				    scontrol->max_size);
 		return -EINVAL;
 	}
@@ -352,8 +355,7 @@ static int sof_ipc3_bytes_put(struct snd_sof_control *scontrol,
 	/* Validate the new data's size, not the old one */
 	if (new_hdr->size > scontrol->max_size - sizeof(*cdata) -
 				    sizeof(*new_hdr)) {
-		dev_err_ratelimited(scomp->dev,
-				    "data size too big %u bytes max is %zu\n",
+		dev_err_ratelimited(dev, "data size too big %u bytes max is %zu\n",
 				    new_hdr->size,
 				    scontrol->max_size - sizeof(*cdata) -
 				    sizeof(*new_hdr));
@@ -366,7 +368,7 @@ static int sof_ipc3_bytes_put(struct snd_sof_control *scontrol,
 	memcpy(data, ucontrol->value.bytes.data, size);
 
 	/* notify DSP of byte control updates */
-	if (pm_runtime_active(scomp->dev))
+	if (pm_runtime_active(dev))
 		return sof_ipc3_set_get_kcontrol_data(scontrol, true, true);
 
 	return 0;
@@ -380,6 +382,7 @@ static int sof_ipc3_bytes_ext_put(struct snd_sof_control *scontrol,
 	struct sof_ipc_ctrl_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;
 	struct snd_ctl_tlv header;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	int ret = -EINVAL;
 
 	/*
@@ -392,29 +395,28 @@ static int sof_ipc3_bytes_ext_put(struct snd_sof_control *scontrol,
 
 	/* make sure TLV info is consistent */
 	if (header.length + sizeof(struct snd_ctl_tlv) > size) {
-		dev_err_ratelimited(scomp->dev, "Inconsistent TLV, data %d + header %zu > %d\n",
+		dev_err_ratelimited(dev, "Inconsistent TLV, data %d + header %zu > %d\n",
 				    header.length, sizeof(struct snd_ctl_tlv), size);
 		return -EINVAL;
 	}
 
 	/* be->max is coming from topology */
 	if (header.length > scontrol->max_size - sizeof(*cdata)) {
-		dev_err_ratelimited(scomp->dev, "Bytes data size %u exceeds max %zu\n",
+		dev_err_ratelimited(dev, "Bytes data size %u exceeds max %zu\n",
 				    header.length, scontrol->max_size - sizeof(*cdata));
 		return -EINVAL;
 	}
 
 	/* Ensure the data is large enough to contain the ABI header */
 	if (header.length < sizeof(struct sof_abi_hdr)) {
-		dev_err_ratelimited(scomp->dev,
-				    "Bytes data size %u less than ABI header %zu\n",
+		dev_err_ratelimited(dev, "Bytes data size %u less than ABI header %zu\n",
 				    header.length, sizeof(struct sof_abi_hdr));
 		return -EINVAL;
 	}
 
 	/* Check that header id matches the command */
 	if (header.numid != cdata->cmd) {
-		dev_err_ratelimited(scomp->dev, "Incorrect command for bytes put %d\n",
+		dev_err_ratelimited(dev, "Incorrect command for bytes put %d\n",
 				    header.numid);
 		return -EINVAL;
 	}
@@ -433,24 +435,24 @@ static int sof_ipc3_bytes_ext_put(struct snd_sof_control *scontrol,
 	}
 
 	if (cdata->data->magic != SOF_ABI_MAGIC) {
-		dev_err_ratelimited(scomp->dev, "Wrong ABI magic 0x%08x\n", cdata->data->magic);
+		dev_err_ratelimited(dev, "Wrong ABI magic 0x%08x\n", cdata->data->magic);
 		goto err_restore;
 	}
 
 	if (SOF_ABI_VERSION_INCOMPATIBLE(SOF_ABI_VERSION, cdata->data->abi)) {
-		dev_err_ratelimited(scomp->dev, "Incompatible ABI version 0x%08x\n",
+		dev_err_ratelimited(dev, "Incompatible ABI version 0x%08x\n",
 				    cdata->data->abi);
 		goto err_restore;
 	}
 
 	/* be->max has been verified to be >= sizeof(struct sof_abi_hdr) */
 	if (cdata->data->size > scontrol->max_size - sizeof(*cdata) - sizeof(struct sof_abi_hdr)) {
-		dev_err_ratelimited(scomp->dev, "Mismatch in ABI data size (truncated?)\n");
+		dev_err_ratelimited(dev, "Mismatch in ABI data size (truncated?)\n");
 		goto err_restore;
 	}
 
 	/* notify DSP of byte control updates */
-	if (pm_runtime_active(scomp->dev)) {
+	if (pm_runtime_active(dev)) {
 		/* Actually send the data to the DSP; this is an opportunity to validate the data */
 		return sof_ipc3_set_get_kcontrol_data(scontrol, true, true);
 	}
@@ -475,6 +477,7 @@ static int _sof_ipc3_bytes_ext_get(struct snd_sof_control *scontrol,
 	struct sof_ipc_ctrl_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;
 	struct snd_ctl_tlv header;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	size_t data_size;
 
 	/*
@@ -501,8 +504,7 @@ static int _sof_ipc3_bytes_ext_get(struct snd_sof_control *scontrol,
 	/* check data size doesn't exceed max coming from topology */
 	if (cdata->data->size > scontrol->max_size - sizeof(*cdata) -
 				sizeof(struct sof_abi_hdr)) {
-		dev_err_ratelimited(scomp->dev,
-				    "User data size %u exceeds max size %zu\n",
+		dev_err_ratelimited(dev, "User data size %u exceeds max size %zu\n",
 				    cdata->data->size,
 				    scontrol->max_size - sizeof(*cdata) -
 				    sizeof(struct sof_abi_hdr));
@@ -544,13 +546,14 @@ static void snd_sof_update_control(struct snd_sof_control *scontrol,
 {
 	struct snd_soc_component *scomp = scontrol->scomp;
 	struct sof_ipc_ctrl_data *local_cdata;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	int i;
 
 	local_cdata = scontrol->ipc_control_data;
 
 	if (cdata->cmd == SOF_CTRL_CMD_BINARY) {
 		if (cdata->num_elems != local_cdata->data->size) {
-			dev_err(scomp->dev, "cdata binary size mismatch %u - %u\n",
+			dev_err(dev, "cdata binary size mismatch %u - %u\n",
 				cdata->num_elems, local_cdata->data->size);
 			return;
 		}
@@ -558,8 +561,7 @@ static void snd_sof_update_control(struct snd_sof_control *scontrol,
 		/* Verify the size fits within the allocation */
 		if (cdata->num_elems > scontrol->max_size - sizeof(*local_cdata) -
 					sizeof(*local_cdata->data)) {
-			dev_err(scomp->dev,
-				"cdata binary size %u exceeds buffer\n",
+			dev_err(dev, "cdata binary size %u exceeds buffer\n",
 				cdata->num_elems);
 			return;
 		}
@@ -567,7 +569,7 @@ static void snd_sof_update_control(struct snd_sof_control *scontrol,
 		/* copy the new binary data */
 		memcpy(local_cdata->data, cdata->data, cdata->num_elems);
 	} else if (cdata->num_elems != scontrol->num_channels) {
-		dev_err(scomp->dev, "cdata channel count mismatch %u - %d\n",
+		dev_err(dev, "cdata channel count mismatch %u - %d\n",
 			cdata->num_elems, scontrol->num_channels);
 	} else {
 		/* copy the new values */
@@ -585,6 +587,8 @@ static void sof_ipc3_control_update(struct snd_sof_dev *sdev, void *ipc_control_
 	struct snd_kcontrol *kc = NULL;
 	struct soc_mixer_control *sm;
 	struct soc_bytes_ext *be;
+	struct snd_soc_card *soc_card;
+	struct snd_card *snd_card;
 	size_t expected_size;
 	struct soc_enum *se;
 	bool found = false;
@@ -697,7 +701,9 @@ static void sof_ipc3_control_update(struct snd_sof_dev *sdev, void *ipc_control_
 		/* Mark the scontrol that the value/data is changed in SOF */
 		scontrol->comp_data_dirty = true;
 
-	snd_ctl_notify_one(swidget->scomp->card->snd_card, SNDRV_CTL_EVENT_MASK_VALUE, kc, 0);
+	soc_card = snd_soc_component_to_card(swidget->scomp);
+	snd_card = snd_soc_card_to_snd_card(soc_card);
+	snd_ctl_notify_one(snd_card, SNDRV_CTL_EVENT_MASK_VALUE, kc, 0);
 }
 
 static int sof_ipc3_widget_kcontrol_setup(struct snd_sof_dev *sdev,

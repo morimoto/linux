@@ -150,7 +150,9 @@ static inline void armada_38x_set_pll(void __iomem *base, unsigned long rate)
 static int kirkwood_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 		unsigned int fmt)
 {
-	struct kirkwood_dma_data *priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct kirkwood_dma_data *priv = dev_get_drvdata(dev);
 	unsigned long mask;
 	unsigned long value;
 
@@ -215,12 +217,14 @@ static inline void kirkwood_set_dco(void __iomem *io, unsigned long rate)
 static void kirkwood_set_rate(struct snd_soc_dai *dai,
 	struct kirkwood_dma_data *priv, unsigned long rate)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	uint32_t clks_ctrl;
 
 	if (IS_ERR(priv->extclk)) {
 		/* use internal dco for the supported rates
 		 * defined in kirkwood_i2s_dai */
-		dev_dbg(dai->dev, "%s: dco set rate = %lu\n",
+		dev_dbg(dev, "%s: dco set rate = %lu\n",
 			__func__, rate);
 		if (priv->pll_config)
 			armada_38x_set_pll(priv->pll_config, rate);
@@ -231,7 +235,7 @@ static void kirkwood_set_rate(struct snd_soc_dai *dai,
 	} else {
 		/* use the external clock for the other rates
 		 * defined in kirkwood_i2s_dai_extclk */
-		dev_dbg(dai->dev, "%s: extclk set rate = %lu -> %lu\n",
+		dev_dbg(dev, "%s: extclk set rate = %lu -> %lu\n",
 			__func__, rate, 256 * rate);
 		clk_set_rate(priv->extclk, 256 * rate);
 
@@ -243,9 +247,11 @@ static void kirkwood_set_rate(struct snd_soc_dai *dai,
 static int kirkwood_i2s_startup(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct kirkwood_dma_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct kirkwood_dma_data *priv = dev_get_drvdata(dev);
 
-	snd_soc_dai_set_dma_data(dai, substream, priv);
+	snd_soc_dai_stream_dma_data_set(dai, substream, priv);
 	return 0;
 }
 
@@ -253,7 +259,9 @@ static int kirkwood_i2s_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct kirkwood_dma_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct kirkwood_dma_data *priv = dev_get_drvdata(dev);
 	uint32_t ctl_play, ctl_rec;
 	unsigned int i2s_reg;
 	unsigned long i2s_value;
@@ -348,7 +356,9 @@ static int kirkwood_i2s_play_trigger(struct snd_pcm_substream *substream,
 				int cmd, struct snd_soc_dai *dai)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	struct kirkwood_dma_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct kirkwood_dma_data *priv = dev_get_drvdata(dev);
 	uint32_t ctl, value;
 
 	ctl = readl(priv->io + KIRKWOOD_PLAYCTL);
@@ -368,7 +378,7 @@ static int kirkwood_i2s_play_trigger(struct snd_pcm_substream *substream,
 		} while (timeout--);
 
 		if ((ctl | value) & KIRKWOOD_PLAYCTL_PLAY_BUSY)
-			dev_notice(dai->dev, "timed out waiting for busy to deassert: %08x\n",
+			dev_notice(dev, "timed out waiting for busy to deassert: %08x\n",
 				   ctl);
 	}
 
@@ -376,7 +386,7 @@ static int kirkwood_i2s_play_trigger(struct snd_pcm_substream *substream,
 	case SNDRV_PCM_TRIGGER_START:
 		/* configure */
 		ctl = priv->ctl_play;
-		if (dai->id == 0)
+		if (snd_soc_dai_id(dai) == 0)
 			ctl &= ~KIRKWOOD_PLAYCTL_SPDIF_EN;	/* i2s */
 		else
 			ctl &= ~KIRKWOOD_PLAYCTL_I2S_EN;	/* spdif */
@@ -435,7 +445,9 @@ static int kirkwood_i2s_play_trigger(struct snd_pcm_substream *substream,
 static int kirkwood_i2s_rec_trigger(struct snd_pcm_substream *substream,
 				int cmd, struct snd_soc_dai *dai)
 {
-	struct kirkwood_dma_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct kirkwood_dma_data *priv = dev_get_drvdata(dev);
 	uint32_t ctl, value;
 
 	value = readl(priv->io + KIRKWOOD_RECCTL);
@@ -444,7 +456,7 @@ static int kirkwood_i2s_rec_trigger(struct snd_pcm_substream *substream,
 	case SNDRV_PCM_TRIGGER_START:
 		/* configure */
 		ctl = priv->ctl_rec;
-		if (dai->id == 0)
+		if (snd_soc_dai_id(dai) == 0)
 			ctl &= ~KIRKWOOD_RECCTL_SPDIF_EN;	/* i2s */
 		else
 			ctl &= ~KIRKWOOD_RECCTL_I2S_EN;		/* spdif */
@@ -724,10 +736,10 @@ static int kirkwood_i2s_dev_probe(struct platform_device *pdev)
 		priv->ctl_rec |= KIRKWOOD_RECCTL_BURST_128;
 	}
 
-	err = snd_soc_register_component(&pdev->dev, &kirkwood_soc_component,
+	err = snd_soc_component_register(&pdev->dev, &kirkwood_soc_component,
 					 soc_dai, 2);
 	if (err) {
-		dev_err(&pdev->dev, "snd_soc_register_component failed\n");
+		dev_err(&pdev->dev, "snd_soc_component_register failed\n");
 		goto err_component;
 	}
 
@@ -747,7 +759,7 @@ static void kirkwood_i2s_dev_remove(struct platform_device *pdev)
 {
 	struct kirkwood_dma_data *priv = dev_get_drvdata(&pdev->dev);
 
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_component_unregister(&pdev->dev);
 	if (!IS_ERR(priv->extclk))
 		clk_disable_unprepare(priv->extclk);
 	clk_disable_unprepare(priv->clk);

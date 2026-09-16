@@ -151,7 +151,9 @@ static int dummy_dma_open(struct snd_soc_component *component,
 	 * override their hwparams
 	 */
 	for_each_rtd_components(rtd, i, component) {
-		if (component->driver == &dummy_platform)
+		const struct snd_soc_component_driver *driver = snd_soc_component_to_driver(component);
+
+		if (driver == &dummy_platform)
 			return 0;
 	}
 
@@ -237,7 +239,7 @@ static struct snd_soc_dai_driver dummy_dai = {
 
 int snd_soc_dai_is_dummy(const struct snd_soc_dai *dai)
 {
-	if (dai->driver == &dummy_dai)
+	if (snd_soc_dai_to_driver(dai) == &dummy_dai)
 		return 1;
 	return 0;
 }
@@ -245,8 +247,10 @@ EXPORT_SYMBOL_GPL(snd_soc_dai_is_dummy);
 
 int snd_soc_component_is_dummy(struct snd_soc_component *component)
 {
-	return ((component->driver == &dummy_platform) ||
-		(component->driver == &dummy_codec));
+	const struct snd_soc_component_driver *driver = snd_soc_component_to_driver(component);
+
+	return ((driver == &dummy_platform) ||
+		(driver == &dummy_codec));
 }
 
 struct snd_soc_dai_link_component snd_soc_dummy_dlc = {
@@ -273,13 +277,11 @@ static int snd_soc_dummy_probe(struct faux_device *fdev)
 {
 	int ret;
 
-	ret = devm_snd_soc_register_component(&fdev->dev,
-					      &dummy_codec, &dummy_dai, 1);
+	ret = devm_snd_soc_component_register(&fdev->dev, &dummy_codec, &dummy_dai, 1);
 	if (ret < 0)
 		return ret;
 
-	ret = devm_snd_soc_register_component(&fdev->dev, &dummy_platform,
-					      NULL, 0);
+	ret = devm_snd_soc_component_register(&fdev->dev, &dummy_platform, NULL, 0);
 
 	return ret;
 }

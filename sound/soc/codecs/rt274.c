@@ -337,7 +337,8 @@ static bool rt274_readable_register(struct device *dev, unsigned int reg)
 #ifdef CONFIG_PM
 static void rt274_index_sync(struct snd_soc_component *component)
 {
-	struct rt274_priv *rt274 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt274_priv *rt274 = dev_get_drvdata(dev);
 	int i;
 
 	for (i = 0; i < INDEX_CACHE_SIZE; i++) {
@@ -400,7 +401,8 @@ static irqreturn_t rt274_irq(int irq, void *data);
 static int rt274_mic_detect(struct snd_soc_component *component,
 	struct snd_soc_jack *jack,  void *data)
 {
-	struct rt274_priv *rt274 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt274_priv *rt274 = dev_get_drvdata(dev);
 
 	rt274->jack = jack;
 
@@ -614,8 +616,9 @@ static int rt274_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt274_priv *rt274 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt274_priv *rt274 = dev_get_drvdata(dev);
 	unsigned int val = 0;
 	int d_len_code = 0, c_len_code = 0;
 
@@ -625,7 +628,7 @@ static int rt274_hw_params(struct snd_pcm_substream *substream,
 	case 48000:
 		break;
 	default:
-		dev_err(component->dev, "Unsupported sample rate %d\n",
+		dev_err(dev, "Unsupported sample rate %d\n",
 					params_rate(params));
 		return -EINVAL;
 	}
@@ -633,7 +636,7 @@ static int rt274_hw_params(struct snd_pcm_substream *substream,
 	case 12288000:
 	case 24576000:
 		if (params_rate(params) != 48000) {
-			dev_err(component->dev, "Sys_clk is not matched (%d %d)\n",
+			dev_err(dev, "Sys_clk is not matched (%d %d)\n",
 					params_rate(params), rt274->sys_clk);
 			return -EINVAL;
 		}
@@ -641,7 +644,7 @@ static int rt274_hw_params(struct snd_pcm_substream *substream,
 	case 11289600:
 	case 22579200:
 		if (params_rate(params) != 44100) {
-			dev_err(component->dev, "Sys_clk is not matched (%d %d)\n",
+			dev_err(dev, "Sys_clk is not matched (%d %d)\n",
 					params_rate(params), rt274->sys_clk);
 			return -EINVAL;
 		}
@@ -652,8 +655,7 @@ static int rt274_hw_params(struct snd_pcm_substream *substream,
 		/* bit 3:0 Number of Channel */
 		val |= (params_channels(params) - 1);
 	} else {
-		dev_err(component->dev, "Unsupported channels %d\n",
-					params_channels(params));
+		dev_err(dev, "Unsupported channels %d\n", params_channels(params));
 		return -EINVAL;
 	}
 
@@ -692,7 +694,7 @@ static int rt274_hw_params(struct snd_pcm_substream *substream,
 
 	snd_soc_component_update_bits(component,
 		RT274_I2S_CTRL1, 0xc018, d_len_code << 3 | c_len_code << 14);
-	dev_dbg(component->dev, "format val = 0x%x\n", val);
+	dev_dbg(dev, "format val = 0x%x\n", val);
 
 	snd_soc_component_update_bits(component, RT274_DAC_FORMAT, 0x407f, val);
 	snd_soc_component_update_bits(component, RT274_ADC_FORMAT, 0x407f, val);
@@ -702,8 +704,9 @@ static int rt274_hw_params(struct snd_pcm_substream *substream,
 
 static int rt274_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt274_priv *rt274 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt274_priv *rt274 = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -750,8 +753,9 @@ static int rt274_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt274_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt274_priv *rt274 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt274_priv *rt274 = dev_get_drvdata(dev);
 
 	switch (source) {
 	case RT274_PLL2_S_MCLK:
@@ -759,7 +763,7 @@ static int rt274_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 				RT274_PLL2_SRC_MASK, RT274_PLL2_SRC_MCLK);
 		break;
 	default:
-		dev_warn(component->dev, "invalid pll source, use BCLK\n");
+		dev_warn(dev, "invalid pll source, use BCLK\n");
 		fallthrough;
 	case RT274_PLL2_S_BCLK:
 		snd_soc_component_update_bits(component, RT274_PLL2_CTRL,
@@ -787,7 +791,7 @@ static int rt274_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			snd_soc_component_write(component, 0x7c, 0x080e);
 			break;
 		default:
-			dev_warn(component->dev, "invalid freq_in, assume 4.8M\n");
+			dev_warn(dev, "invalid freq_in, assume 4.8M\n");
 			fallthrough;
 		case 100:
 			snd_soc_component_write(component, 0x7a, 0xaab6);
@@ -803,11 +807,12 @@ static int rt274_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 static int rt274_set_dai_sysclk(struct snd_soc_dai *dai,
 				int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt274_priv *rt274 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt274_priv *rt274 = dev_get_drvdata(dev);
 	unsigned int clk_src, mclk_en;
 
-	dev_dbg(component->dev, "%s freq=%d\n", __func__, freq);
+	dev_dbg(dev, "%s freq=%d\n", __func__, freq);
 
 	switch (clk_id) {
 	case RT274_SCLK_S_MCLK:
@@ -825,7 +830,7 @@ static int rt274_set_dai_sysclk(struct snd_soc_dai *dai,
 	default:
 		mclk_en = RT274_MCLK_MODE_DIS;
 		clk_src = RT274_CLK_SRC_MCLK;
-		dev_warn(component->dev, "invalid sysclk source, use PLL1\n");
+		dev_warn(dev, "invalid sysclk source, use PLL1\n");
 		break;
 	}
 	snd_soc_component_update_bits(component, RT274_MCLK_CTRL,
@@ -836,7 +841,7 @@ static int rt274_set_dai_sysclk(struct snd_soc_dai *dai,
 	switch (freq) {
 	case 19200000:
 		if (clk_id == RT274_SCLK_S_MCLK) {
-			dev_err(component->dev, "Should not use MCLK\n");
+			dev_err(dev, "Should not use MCLK\n");
 			return -EINVAL;
 		}
 		snd_soc_component_update_bits(component,
@@ -844,7 +849,7 @@ static int rt274_set_dai_sysclk(struct snd_soc_dai *dai,
 		break;
 	case 24000000:
 		if (clk_id == RT274_SCLK_S_MCLK) {
-			dev_err(component->dev, "Should not use MCLK\n");
+			dev_err(dev, "Should not use MCLK\n");
 			return -EINVAL;
 		}
 		snd_soc_component_update_bits(component,
@@ -861,7 +866,7 @@ static int rt274_set_dai_sysclk(struct snd_soc_dai *dai,
 			RT274_MCLK_CTRL, 0x1fcf, 0x1543);
 		break;
 	default:
-		dev_err(component->dev, "Unsupported system clock\n");
+		dev_err(dev, "Unsupported system clock\n");
 		return -EINVAL;
 	}
 
@@ -873,10 +878,11 @@ static int rt274_set_dai_sysclk(struct snd_soc_dai *dai,
 
 static int rt274_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt274_priv *rt274 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt274_priv *rt274 = dev_get_drvdata(dev);
 
-	dev_dbg(component->dev, "%s ratio=%d\n", __func__, ratio);
+	dev_dbg(dev, "%s ratio=%d\n", __func__, ratio);
 	rt274->fs = ratio;
 	if ((ratio / 50) == 0)
 		snd_soc_component_update_bits(component,
@@ -893,7 +899,8 @@ static int rt274_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			unsigned int rx_mask, int slots, int slot_width)
 
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	if (rx_mask || tx_mask) {
 		snd_soc_component_update_bits(component,
@@ -914,8 +921,7 @@ static int rt274_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			RT274_I2S_CTRL1, RT274_TDM_CH_NUM, RT274_TDM_2CH);
 		break;
 	default:
-		dev_err(component->dev,
-			"Support 2 or 4 slots TDM only\n");
+		dev_err(dev, "Support 2 or 4 slots TDM only\n");
 		return -EINVAL;
 	}
 
@@ -978,7 +984,8 @@ static irqreturn_t rt274_irq(int irq, void *data)
 
 static int rt274_probe(struct snd_soc_component *component)
 {
-	struct rt274_priv *rt274 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt274_priv *rt274 = dev_get_drvdata(dev);
 
 	rt274->component = component;
 	INIT_DELAYED_WORK(&rt274->jack_detect_work, rt274_jack_detect_work);
@@ -991,7 +998,8 @@ static int rt274_probe(struct snd_soc_component *component)
 
 static void rt274_remove(struct snd_soc_component *component)
 {
-	struct rt274_priv *rt274 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt274_priv *rt274 = dev_get_drvdata(dev);
 
 	cancel_delayed_work_sync(&rt274->jack_detect_work);
 	rt274->component = NULL;
@@ -1000,7 +1008,8 @@ static void rt274_remove(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int rt274_suspend(struct snd_soc_component *component)
 {
-	struct rt274_priv *rt274 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt274_priv *rt274 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt274->regmap, true);
 	regcache_mark_dirty(rt274->regmap);
@@ -1010,7 +1019,8 @@ static int rt274_suspend(struct snd_soc_component *component)
 
 static int rt274_resume(struct snd_soc_component *component)
 {
-	struct rt274_priv *rt274 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt274_priv *rt274 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt274->regmap, false);
 	rt274_index_sync(component);
@@ -1206,7 +1216,7 @@ static int rt274_i2c_probe(struct i2c_client *i2c)
 		}
 	}
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 				     &soc_component_dev_rt274,
 				     rt274_dai, ARRAY_SIZE(rt274_dai));
 

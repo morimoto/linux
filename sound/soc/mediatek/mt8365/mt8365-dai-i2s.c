@@ -513,10 +513,13 @@ static void mt8365_dai_set_enable(struct mtk_base_afe *afe,
 static int mt8365_dai_i2s_startup(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8365_afe_private *afe_priv = afe->platform_priv;
-	struct mtk_afe_i2s_priv *i2s_data = afe_priv->dai_priv[dai->id];
-	struct mt8365_be_dai_data *be = &afe_priv->be_data[dai->id - MT8365_AFE_BACKEND_BASE];
+	struct mtk_afe_i2s_priv *i2s_data = afe_priv->dai_priv[dai_id];
+	struct mt8365_be_dai_data *be = &afe_priv->be_data[dai_id - MT8365_AFE_BACKEND_BASE];
 	bool i2s_in_slave =
 		(substream->stream == SNDRV_PCM_STREAM_CAPTURE) &&
 		((be->fmt_mode & SND_SOC_DAIFMT_MASTER_MASK) ==
@@ -539,10 +542,13 @@ static int mt8365_dai_i2s_startup(struct snd_pcm_substream *substream,
 static void mt8365_dai_i2s_shutdown(struct snd_pcm_substream *substream,
 				    struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8365_afe_private *afe_priv = afe->platform_priv;
-	struct mtk_afe_i2s_priv *i2s_data = afe_priv->dai_priv[dai->id];
-	struct mt8365_be_dai_data *be = &afe_priv->be_data[dai->id - MT8365_AFE_BACKEND_BASE];
+	struct mtk_afe_i2s_priv *i2s_data = afe_priv->dai_priv[dai_id];
+	struct mt8365_be_dai_data *be = &afe_priv->be_data[dai_id - MT8365_AFE_BACKEND_BASE];
 	bool reset_i2s_out_change = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 	bool reset_i2s_in_change = (substream->stream == SNDRV_PCM_STREAM_CAPTURE);
 	bool i2s_in_slave =
@@ -586,10 +592,13 @@ static void mt8365_dai_i2s_shutdown(struct snd_pcm_substream *substream,
 static int mt8365_dai_i2s_prepare(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8365_afe_private *afe_priv = afe->platform_priv;
-	struct mtk_afe_i2s_priv *i2s_data = afe_priv->dai_priv[dai->id];
-	struct mt8365_be_dai_data *be = &afe_priv->be_data[dai->id - MT8365_AFE_BACKEND_BASE];
+	struct mtk_afe_i2s_priv *i2s_data = afe_priv->dai_priv[dai_id];
+	struct mt8365_be_dai_data *be = &afe_priv->be_data[dai_id - MT8365_AFE_BACKEND_BASE];
 	bool apply_i2s_out_change = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 	bool apply_i2s_in_change = (substream->stream == SNDRV_PCM_STREAM_CAPTURE);
 	unsigned int rate = substream->runtime->rate;
@@ -668,7 +677,9 @@ static int mt8365_afe_2nd_i2s_hw_params(struct snd_pcm_substream *substream,
 					struct snd_pcm_hw_params *params,
 					struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int width_val = params_width(params) > 16 ?
 		(AFE_CONN_24BIT_O00 | AFE_CONN_24BIT_O01) : 0;
 
@@ -681,9 +692,12 @@ static int mt8365_afe_2nd_i2s_hw_params(struct snd_pcm_substream *substream,
 
 static int mt8365_afe_2nd_i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8365_afe_private *afe_priv = afe->platform_priv;
-	struct mt8365_be_dai_data *be = &afe_priv->be_data[dai->id - MT8365_AFE_BACKEND_BASE];
+	struct mt8365_be_dai_data *be = &afe_priv->be_data[dai_id - MT8365_AFE_BACKEND_BASE];
 
 	be->fmt_mode = 0;
 

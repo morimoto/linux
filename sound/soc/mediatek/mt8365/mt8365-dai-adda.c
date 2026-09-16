@@ -128,7 +128,9 @@ static void mt8365_dai_set_adda_in_enable(struct mtk_base_afe *afe, bool enable)
 static int mt8365_dai_int_adda_startup(struct snd_pcm_substream *substream,
 				       struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int stream = substream->stream;
 
 	mt8365_afe_enable_main_clk(afe);
@@ -146,10 +148,13 @@ static int mt8365_dai_int_adda_startup(struct snd_pcm_substream *substream,
 static void mt8365_dai_int_adda_shutdown(struct snd_pcm_substream *substream,
 					 struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8365_afe_private *afe_priv = afe->platform_priv;
 	struct mt8365_be_dai_data *be =
-		&afe_priv->be_data[dai->id - MT8365_AFE_BACKEND_BASE];
+		&afe_priv->be_data[dai_id - MT8365_AFE_BACKEND_BASE];
 	unsigned int stream = substream->stream;
 
 	if (be->prepared[stream]) {
@@ -175,10 +180,13 @@ static void mt8365_dai_int_adda_shutdown(struct snd_pcm_substream *substream,
 static int mt8365_dai_int_adda_prepare(struct snd_pcm_substream *substream,
 				       struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8365_afe_private *afe_priv = afe->platform_priv;
 	struct mt8365_be_dai_data *be =
-		&afe_priv->be_data[dai->id - MT8365_AFE_BACKEND_BASE];
+		&afe_priv->be_data[dai_id - MT8365_AFE_BACKEND_BASE];
 	unsigned int rate = substream->runtime->rate;
 	int bit_width = snd_pcm_format_width(substream->runtime->format);
 	int ret;

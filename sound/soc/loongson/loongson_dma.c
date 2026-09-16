@@ -270,7 +270,7 @@ static int loongson_idma_pcm_open(struct snd_soc_component *component,
 	if (!prtd->dma_pos_desc)
 		goto pos_err;
 
-	dma_data = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	dma_data = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 	prtd->dma_data = dma_data;
 
 	substream->runtime->private_data = prtd;
@@ -313,7 +313,7 @@ static int loongson_idma_pcm_mmap(struct snd_soc_component *component,
 static int loongson_idma_pcm_new(struct snd_soc_component *component,
 				 struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(rtd->card);
 	struct snd_pcm_substream *substream;
 	struct loongson_idma_data *dma_data;
 	unsigned int i;
@@ -324,8 +324,9 @@ static int loongson_idma_pcm_new(struct snd_soc_component *component,
 		if (!substream)
 			continue;
 
-		dma_data = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0),
-						    substream);
+		dma_data = snd_soc_dai_stream_dma_data_get(
+					snd_soc_rtd_to_cpu(rtd, 0),
+					substream->stream);
 		ret = devm_request_irq(card->dev, dma_data->irq,
 				       loongson_idma_pcm_dma_irq,
 				       IRQF_TRIGGER_HIGH, LS_I2S_DRVNAME,

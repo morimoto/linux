@@ -57,7 +57,9 @@ static void spdif_out_configure(struct spdif_out_dev *host)
 static int spdif_out_startup(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *cpu_dai)
 {
-	struct spdif_out_dev *host = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_out_dev *host = dev_get_drvdata(dev);
 	int ret;
 
 	if (substream->stream != SNDRV_PCM_STREAM_PLAYBACK)
@@ -76,7 +78,9 @@ static int spdif_out_startup(struct snd_pcm_substream *substream,
 static void spdif_out_shutdown(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct spdif_out_dev *host = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_out_dev *host = dev_get_drvdata(dev);
 
 	if (substream->stream != SNDRV_PCM_STREAM_PLAYBACK)
 		return;
@@ -103,7 +107,9 @@ static int spdif_out_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params,
 		struct snd_soc_dai *dai)
 {
-	struct spdif_out_dev *host = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_out_dev *host = dev_get_drvdata(dev);
 	u32 rate, core_freq;
 
 	if (substream->stream != SNDRV_PCM_STREAM_PLAYBACK)
@@ -148,7 +154,9 @@ static int spdif_out_hw_params(struct snd_pcm_substream *substream,
 static int spdif_out_trigger(struct snd_pcm_substream *substream, int cmd,
 		struct snd_soc_dai *dai)
 {
-	struct spdif_out_dev *host = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_out_dev *host = dev_get_drvdata(dev);
 	u32 ctrl;
 	int ret = 0;
 
@@ -187,7 +195,9 @@ static int spdif_out_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int spdif_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct spdif_out_dev *host = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_out_dev *host = dev_get_drvdata(dev);
 	u32 val;
 
 	host->saved_params.mute = mute;
@@ -211,7 +221,9 @@ static int spdif_mute_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct spdif_out_dev *host = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_out_dev *host = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = host->saved_params.mute;
 	return 0;
@@ -221,7 +233,9 @@ static int spdif_mute_put(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct spdif_out_dev *host = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_out_dev *host = dev_get_drvdata(dev);
 
 	if (host->saved_params.mute == ucontrol->value.integer.value[0])
 		return 0;
@@ -238,13 +252,16 @@ static const struct snd_kcontrol_new spdif_out_controls[] = {
 
 static int spdif_soc_dai_probe(struct snd_soc_dai *dai)
 {
-	struct spdif_out_dev *host = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_out_dev *host = dev_get_drvdata(dev);
 
 	host->dma_params_tx.filter_data = &host->dma_params;
 
-	snd_soc_dai_dma_data_set_playback(dai, &host->dma_params_tx);
+	snd_soc_dai_stream_dma_data_set(dai, SNDRV_PCM_STREAM_PLAYBACK,
+					&host->dma_params_tx);
 
-	return snd_soc_add_dai_controls(dai, spdif_out_controls,
+	return snd_soc_dai_add_controls(dai, spdif_out_controls,
 				ARRAY_SIZE(spdif_out_controls));
 }
 
@@ -303,7 +320,7 @@ static int spdif_out_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, host);
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &spdif_out_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &spdif_out_component,
 					      &spdif_out_dai, 1);
 	if (ret)
 		return ret;

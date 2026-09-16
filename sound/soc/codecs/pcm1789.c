@@ -52,8 +52,9 @@ static bool pcm1789_writeable_reg(struct device *dev, unsigned int reg)
 static int pcm1789_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			       unsigned int format)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct pcm1789_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm1789_private *priv = dev_get_drvdata(dev);
 
 	priv->format = format;
 
@@ -62,8 +63,9 @@ static int pcm1789_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 static int pcm1789_mute(struct snd_soc_dai *codec_dai, int mute, int direction)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct pcm1789_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm1789_private *priv = dev_get_drvdata(dev);
 
 	return regmap_update_bits(priv->regmap, PCM1789_SOFT_MUTE,
 				  PCM1789_MUTE_MASK,
@@ -74,8 +76,9 @@ static int pcm1789_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *codec_dai)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct pcm1789_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm1789_private *priv = dev_get_drvdata(dev);
 	int val = 0, ret;
 
 	priv->rate = params_rate(params);
@@ -116,7 +119,7 @@ static int pcm1789_hw_params(struct snd_pcm_substream *substream,
 		}
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI format\n");
+		dev_err(dev, "Invalid DAI format\n");
 		return -EINVAL;
 	}
 
@@ -143,8 +146,9 @@ static void pcm1789_work_queue(struct work_struct *work)
 static int pcm1789_trigger(struct snd_pcm_substream *substream, int cmd,
 			   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm1789_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm1789_private *priv = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (cmd) {
@@ -260,7 +264,7 @@ int pcm1789_common_init(struct device *dev, struct regmap *regmap)
 
 	INIT_WORK(&pcm1789->work, pcm1789_work_queue);
 
-	return devm_snd_soc_register_component(dev, &soc_component_dev_pcm1789,
+	return devm_snd_soc_component_register(dev, &soc_component_dev_pcm1789,
 					       &pcm1789_dai, 1);
 }
 EXPORT_SYMBOL_GPL(pcm1789_common_init);

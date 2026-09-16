@@ -93,12 +93,13 @@ static const struct snd_pcm_hw_constraint_list sysclk_constraints[] = {
 	{ .count = ARRAY_SIZE(hp_rates), .list = hp_rates, },
 };
 
-#define to_twl6040(component)	dev_get_drvdata((component)->dev->parent)
+#define to_twl6040(dev)	dev_get_drvdata(dev->parent)
 
 static unsigned int twl6040_read(struct snd_soc_component *component, unsigned int reg)
 {
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
-	struct twl6040 *twl6040 = to_twl6040(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
+	struct twl6040 *twl6040 = to_twl6040(dev);
 	u8 value;
 
 	if (reg >= TWL6040_CACHEREGNUM)
@@ -123,7 +124,8 @@ static unsigned int twl6040_read(struct snd_soc_component *component, unsigned i
 static bool twl6040_can_write_to_chip(struct snd_soc_component *component,
 				  unsigned int reg)
 {
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 
 	switch (reg) {
 	case TWL6040_REG_HSLCTL:
@@ -142,7 +144,8 @@ static bool twl6040_can_write_to_chip(struct snd_soc_component *component,
 static inline void twl6040_update_dl12_cache(struct snd_soc_component *component,
 					     u8 reg, u8 value)
 {
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 
 	switch (reg) {
 	case TWL6040_REG_HSLCTL:
@@ -160,7 +163,8 @@ static inline void twl6040_update_dl12_cache(struct snd_soc_component *component
 static int twl6040_write(struct snd_soc_component *component,
 			unsigned int reg, unsigned int value)
 {
-	struct twl6040 *twl6040 = to_twl6040(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040 *twl6040 = to_twl6040(dev);
 
 	if (reg >= TWL6040_CACHEREGNUM)
 		return -EIO;
@@ -251,7 +255,8 @@ static int twl6040_ep_drv_event(struct snd_soc_dapm_widget *w,
 			struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 	int ret = 0;
 
 	if (SND_SOC_DAPM_EVENT_ON(event)) {
@@ -271,7 +276,8 @@ static int twl6040_ep_drv_event(struct snd_soc_dapm_widget *w,
 static void twl6040_hs_jack_report(struct snd_soc_component *component,
 				   struct snd_soc_jack *jack, int report)
 {
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 	int status;
 
 	guard(mutex)(&priv->mutex);
@@ -287,7 +293,8 @@ static void twl6040_hs_jack_report(struct snd_soc_component *component,
 void twl6040_hs_jack_detect(struct snd_soc_component *component,
 				struct snd_soc_jack *jack, int report)
 {
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 	struct twl6040_jack_data *hs_jack = &priv->hs_jack;
 
 	hs_jack->jack = jack;
@@ -311,7 +318,8 @@ static void twl6040_accessory_work(struct work_struct *work)
 static irqreturn_t twl6040_audio_handler(int irq, void *data)
 {
 	struct snd_soc_component *component = data;
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 
 	queue_delayed_work(system_power_efficient_wq,
 			   &priv->hs_jack.work, msecs_to_jiffies(200));
@@ -472,7 +480,8 @@ static int twl6040_headset_power_get_enum(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = priv->hs_power_mode;
 
@@ -483,7 +492,8 @@ static int twl6040_headset_power_put_enum(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 	int high_perf = ucontrol->value.enumerated.item[0];
 	int ret = 0;
 
@@ -500,7 +510,8 @@ static int twl6040_pll_get_enum(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = priv->pll_power_mode;
 
@@ -511,7 +522,8 @@ static int twl6040_pll_put_enum(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 
 	priv->pll_power_mode = ucontrol->value.enumerated.item[0];
 
@@ -542,7 +554,8 @@ EXPORT_SYMBOL_GPL(twl6040_get_dl1_gain);
 
 int twl6040_get_clk_id(struct snd_soc_component *component)
 {
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 
 	return priv->pll_power_mode;
 }
@@ -559,7 +572,8 @@ EXPORT_SYMBOL_GPL(twl6040_get_trim_value);
 
 int twl6040_get_hs_step_size(struct snd_soc_component *component)
 {
-	struct twl6040 *twl6040 = to_twl6040(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040 *twl6040 = to_twl6040(dev);
 
 	if (twl6040_get_revid(twl6040) < TWL6040_REV_ES1_3)
 		/* For ES under ES_1.3 HS step is 2 mV */
@@ -817,8 +831,9 @@ static const struct snd_soc_dapm_route intercon[] = {
 static int twl6040_set_bias_level(struct snd_soc_component *component,
 				enum snd_soc_bias_level level)
 {
-	struct twl6040 *twl6040 = to_twl6040(component);
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040 *twl6040 = to_twl6040(dev);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (level) {
@@ -858,8 +873,9 @@ static int twl6040_set_bias_level(struct snd_soc_component *component,
 static int twl6040_startup(struct snd_pcm_substream *substream,
 			struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 
 	snd_pcm_hw_constraint_list(substream->runtime, 0,
 				SNDRV_PCM_HW_PARAM_RATE,
@@ -872,8 +888,9 @@ static int twl6040_hw_params(struct snd_pcm_substream *substream,
 			struct snd_pcm_hw_params *params,
 			struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 	int rate;
 
 	rate = params_rate(params);
@@ -884,8 +901,7 @@ static int twl6040_hw_params(struct snd_pcm_substream *substream,
 	case 88200:
 		/* These rates are not supported when HPPLL is in use */
 		if (unlikely(priv->pll == TWL6040_SYSCLK_SEL_HPPLL)) {
-			dev_err(component->dev, "HPPLL does not support rate %d\n",
-				rate);
+			dev_err(dev, "HPPLL does not support rate %d\n", rate);
 			return -EINVAL;
 		}
 		priv->sysclk = 17640000;
@@ -898,7 +914,7 @@ static int twl6040_hw_params(struct snd_pcm_substream *substream,
 		priv->sysclk = 19200000;
 		break;
 	default:
-		dev_err(component->dev, "unsupported rate %d\n", rate);
+		dev_err(dev, "unsupported rate %d\n", rate);
 		return -EINVAL;
 	}
 
@@ -908,20 +924,20 @@ static int twl6040_hw_params(struct snd_pcm_substream *substream,
 static int twl6040_prepare(struct snd_pcm_substream *substream,
 			struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct twl6040 *twl6040 = to_twl6040(component);
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040 *twl6040 = to_twl6040(dev);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 	int ret;
 
 	if (!priv->sysclk) {
-		dev_err(component->dev,
-			"no mclk configured, call set_sysclk() on init\n");
+		dev_err(dev, "no mclk configured, call set_sysclk() on init\n");
 		return -EINVAL;
 	}
 
 	ret = twl6040_set_pll(twl6040, priv->pll, priv->clk_in, priv->sysclk);
 	if (ret) {
-		dev_err(component->dev, "Can not set PLL (%d)\n", ret);
+		dev_err(dev, "Can not set PLL (%d)\n", ret);
 		return -EPERM;
 	}
 
@@ -931,8 +947,9 @@ static int twl6040_prepare(struct snd_pcm_substream *substream,
 static int twl6040_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 
 	switch (clk_id) {
 	case TWL6040_SYSCLK_SEL_LPPLL:
@@ -941,7 +958,7 @@ static int twl6040_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		priv->clk_in = freq;
 		break;
 	default:
-		dev_err(component->dev, "unknown clk_id %d\n", clk_id);
+		dev_err(dev, "unknown clk_id %d\n", clk_id);
 		return -EINVAL;
 	}
 
@@ -951,8 +968,9 @@ static int twl6040_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static void twl6040_mute_path(struct snd_soc_component *component, enum twl6040_dai_id id,
 			     int mute)
 {
-	struct twl6040 *twl6040 = to_twl6040(component);
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040 *twl6040 = to_twl6040(dev);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 	int hslctl, hsrctl, earctl;
 	int hflctl, hfrctl;
 
@@ -998,14 +1016,17 @@ static void twl6040_mute_path(struct snd_soc_component *component, enum twl6040_
 
 static int twl6040_mute_stream(struct snd_soc_dai *dai, int mute, int direction)
 {
-	switch (dai->id) {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	int dai_id = snd_soc_dai_id(dai);
+
+	switch (dai_id) {
 	case TWL6040_DAI_LEGACY:
-		twl6040_mute_path(dai->component, TWL6040_DAI_DL1, mute);
-		twl6040_mute_path(dai->component, TWL6040_DAI_DL2, mute);
+		twl6040_mute_path(component, TWL6040_DAI_DL1, mute);
+		twl6040_mute_path(component, TWL6040_DAI_DL2, mute);
 		break;
 	case TWL6040_DAI_DL1:
 	case TWL6040_DAI_DL2:
-		twl6040_mute_path(dai->component, dai->id, mute);
+		twl6040_mute_path(component, dai_id, mute);
 		break;
 	default:
 		break;
@@ -1096,15 +1117,16 @@ static struct snd_soc_dai_driver twl6040_dai[] = {
 static int twl6040_probe(struct snd_soc_component *component)
 {
 	struct twl6040_data *priv;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct platform_device *pdev = to_platform_device(component->dev);
+	struct platform_device *pdev = to_platform_device(dev);
 	int ret = 0;
 
-	priv = devm_kzalloc(component->dev, sizeof(*priv), GFP_KERNEL);
+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (priv == NULL)
 		return -ENOMEM;
 
-	snd_soc_component_set_drvdata(component, priv);
+	dev_set_drvdata(dev, priv);
 
 	priv->component = component;
 
@@ -1121,7 +1143,7 @@ static int twl6040_probe(struct snd_soc_component *component)
 					IRQF_NO_SUSPEND | IRQF_ONESHOT,
 					"twl6040_irq_plug", component);
 	if (ret) {
-		dev_err(component->dev, "PLUG IRQ request failed: %d\n", ret);
+		dev_err(dev, "PLUG IRQ request failed: %d\n", ret);
 		return ret;
 	}
 
@@ -1133,7 +1155,8 @@ static int twl6040_probe(struct snd_soc_component *component)
 
 static void twl6040_remove(struct snd_soc_component *component)
 {
-	struct twl6040_data *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct twl6040_data *priv = dev_get_drvdata(dev);
 
 	free_irq(priv->plug_irq, component);
 }
@@ -1157,7 +1180,7 @@ static const struct snd_soc_component_driver soc_component_dev_twl6040 = {
 
 static int twl6040_codec_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 				      &soc_component_dev_twl6040,
 				      twl6040_dai, ARRAY_SIZE(twl6040_dai));
 }

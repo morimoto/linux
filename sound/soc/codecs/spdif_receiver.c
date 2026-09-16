@@ -59,7 +59,7 @@ static struct snd_soc_dai_driver dir_stub_dai = {
 
 static int spdif_dir_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&soc_codec_spdif_dir,
 			&dir_stub_dai, 1);
 }

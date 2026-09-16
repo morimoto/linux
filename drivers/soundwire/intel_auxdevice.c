@@ -355,7 +355,7 @@ static int intel_link_probe(struct auxiliary_device *auxdev,
 	/* Set ops */
 	bus->ops = &sdw_intel_ops;
 
-	/* set driver data, accessed by snd_soc_dai_get_drvdata() */
+	/* set driver data, accessed by snd_dev_get_drvdata() */
 	auxiliary_set_drvdata(auxdev, cdns);
 
 	/* use generic bandwidth allocation algorithm */

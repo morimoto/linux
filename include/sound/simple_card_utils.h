@@ -87,8 +87,8 @@ struct simple_util_priv {
 #define simple_priv_to_card_driver(priv)	(&(priv)->card_driver)
 
 #define simple_priv_to_props(priv, i)	((priv)->dai_props + (i))
-#define simple_priv_to_dev(priv)	(simple_priv_to_card(priv)->dev)
-#define simple_priv_to_link(priv, i)	(simple_priv_to_card(priv)->dai_link + (i))
+#define simple_priv_to_dev(priv)	snd_soc_card_to_dev(simple_priv_to_card(priv))
+#define simple_priv_to_link(priv, i)	(snd_soc_card_to_driver(simple_priv_to_card(priv))->dai_link + (i))
 
 #define simple_props_to_dlc_cpu(props, i)	((props)->cpus + i)
 #define simple_props_to_dlc_codec(props, i)	((props)->codecs + i)

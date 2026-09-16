@@ -101,7 +101,8 @@ struct mt6358_priv {
 int mt6358_set_mtkaif_protocol(struct snd_soc_component *cmpnt,
 			       int mtkaif_protocol)
 {
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 
 	priv->mtkaif_protocol = mtkaif_protocol;
 	return 0;
@@ -320,7 +321,8 @@ static int mt6358_put_volsw(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 			(struct soc_mixer_control *)kcontrol->private_value;
 	unsigned int reg = 0;
@@ -441,7 +443,8 @@ static int mt6358_get_wov(struct snd_kcontrol *kcontrol,
 			  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = priv->wov_enabled;
 	return 0;
@@ -451,7 +454,8 @@ static int mt6358_put_wov(struct snd_kcontrol *kcontrol,
 			  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 	int enabled = ucontrol->value.integer.value[0];
 
 	if (enabled < 0 || enabled > 1)
@@ -475,7 +479,8 @@ static int mt6358_dmic_mode_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = priv->dmic_one_wire_mode;
 	dev_dbg(priv->dev, "%s() dmic_mode = %d", __func__, priv->dmic_one_wire_mode);
@@ -487,7 +492,8 @@ static int mt6358_dmic_mode_set(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 	int enabled = ucontrol->value.integer.value[0];
 
 	if (enabled < 0 || enabled > 1)
@@ -791,7 +797,8 @@ static int mt_clksq_event(struct snd_soc_dapm_widget *w,
 			  int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 
 	dev_dbg(priv->dev, "%s(), event = 0x%x\n", __func__, event);
 
@@ -814,7 +821,8 @@ static int mt_sgen_event(struct snd_soc_dapm_widget *w,
 			 int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 
 	dev_dbg(priv->dev, "%s(), event = 0x%x\n", __func__, event);
 
@@ -853,7 +861,8 @@ static int mt_aif_in_event(struct snd_soc_dapm_widget *w,
 			   int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 
 	dev_info(priv->dev, "%s(), event 0x%x, rate %d\n",
 		 __func__, event, priv->dl_rate);
@@ -1285,7 +1294,8 @@ static int mt_hp_event(struct snd_soc_dapm_widget *w,
 		       int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 	unsigned int mux = snd_soc_dapm_kcontrol_get_value(w->kcontrols[0]);
 	int device = DEVICE_HP;
 
@@ -1343,7 +1353,8 @@ static int mt_rcv_event(struct snd_soc_dapm_widget *w,
 			int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 
 	dev_info(priv->dev, "%s(), event 0x%x, mux %u\n",
 		 __func__,
@@ -1471,7 +1482,8 @@ static int mt_aif_out_event(struct snd_soc_dapm_widget *w,
 			    int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 
 	dev_dbg(priv->dev, "%s(), event 0x%x, rate %d\n",
 		__func__, event, priv->ul_rate);
@@ -1495,7 +1507,8 @@ static int mt_adc_supply_event(struct snd_soc_dapm_widget *w,
 			       int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 
 	dev_dbg(priv->dev, "%s(), event 0x%x\n",
 		__func__, event);
@@ -1826,7 +1839,8 @@ static int mt_mic_type_event(struct snd_soc_dapm_widget *w,
 			     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 	unsigned int mux = snd_soc_dapm_kcontrol_get_value(w->kcontrols[0]);
 
 	dev_dbg(priv->dev, "%s(), event 0x%x, mux %u\n",
@@ -1872,7 +1886,8 @@ static int mt_adc_l_event(struct snd_soc_dapm_widget *w,
 			  int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 	unsigned int mux = snd_soc_dapm_kcontrol_get_value(w->kcontrols[0]);
 
 	dev_dbg(priv->dev, "%s(), event = 0x%x, mux %u\n",
@@ -1888,7 +1903,8 @@ static int mt_adc_r_event(struct snd_soc_dapm_widget *w,
 			  int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 	unsigned int mux = snd_soc_dapm_kcontrol_get_value(w->kcontrols[0]);
 
 	dev_dbg(priv->dev, "%s(), event = 0x%x, mux %u\n",
@@ -1904,7 +1920,8 @@ static int mt_pga_left_event(struct snd_soc_dapm_widget *w,
 			     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 	unsigned int mux = snd_soc_dapm_kcontrol_get_value(w->kcontrols[0]);
 
 	dev_dbg(priv->dev, "%s(), event = 0x%x, mux %u\n",
@@ -1920,7 +1937,8 @@ static int mt_pga_right_event(struct snd_soc_dapm_widget *w,
 			      int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 	unsigned int mux = snd_soc_dapm_kcontrol_get_value(w->kcontrols[0]);
 
 	dev_dbg(priv->dev, "%s(), event = 0x%x, mux %u\n",
@@ -2247,8 +2265,9 @@ static int mt6358_codec_dai_hw_params(struct snd_pcm_substream *substream,
 				      struct snd_pcm_hw_params *params,
 				      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *cmpnt = dai->component;
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct snd_soc_component *cmpnt = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 
 	dev_info(priv->dev, "%s(), substream->stream %d, rate %d, number %d\n",
@@ -2331,10 +2350,11 @@ static void mt6358_codec_init_reg(struct mt6358_priv *priv)
 
 static int mt6358_codec_probe(struct snd_soc_component *cmpnt)
 {
-	struct mt6358_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6358_priv *priv = dev_get_drvdata(dev);
 	int ret;
 
-	snd_soc_component_init_regmap(cmpnt, priv->regmap);
+	snd_soc_component_regmap_init(cmpnt, priv->regmap);
 
 	mt6358_codec_init_reg(priv);
 
@@ -2400,7 +2420,7 @@ static int mt6358_platform_driver_probe(struct platform_device *pdev)
 	dev_info(priv->dev, "%s(), dev name %s\n",
 		 __func__, dev_name(&pdev->dev));
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 				      &mt6358_soc_component_driver,
 				      mt6358_dai_driver,
 				      ARRAY_SIZE(mt6358_dai_driver));

@@ -595,8 +595,8 @@ static int pcmdev_get_volsw(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol, int vol_ctrl_type)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct pcmdevice_priv *pcm_dev =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcmdevice_priv *pcm_dev = dev_get_drvdata(dev);
 	struct pcmdevice_mixer_control *mc =
 		(struct pcmdevice_mixer_control *)kcontrol->private_value;
 	int max = mc->max, ret;
@@ -667,8 +667,8 @@ static int pcmdev_put_volsw(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol, int vol_ctrl_type)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct pcmdevice_priv *pcm_dev =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcmdevice_priv *pcm_dev = dev_get_drvdata(dev);
 	struct pcmdevice_mixer_control *mc =
 		(struct pcmdevice_mixer_control *)kcontrol->private_value;
 	int max = mc->max, rc;
@@ -1140,8 +1140,8 @@ static int pcmdevice_info_profile(
 	struct snd_ctl_elem_info *uinfo)
 {
 	struct snd_soc_component *codec = snd_kcontrol_chip(kcontrol);
-	struct pcmdevice_priv *pcm_dev =
-		snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct pcmdevice_priv *pcm_dev = dev_get_drvdata(dev);
 
 	uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
 	uinfo->count = 1;
@@ -1156,8 +1156,8 @@ static int pcmdevice_get_profile_id(
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *codec = snd_kcontrol_chip(kcontrol);
-	struct pcmdevice_priv *pcm_dev =
-		snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct pcmdevice_priv *pcm_dev = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = pcm_dev->cur_conf;
 
@@ -1169,8 +1169,8 @@ static int pcmdevice_set_profile_id(
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *codec = snd_kcontrol_chip(kcontrol);
-	struct pcmdevice_priv *pcm_dev =
-		snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct pcmdevice_priv *pcm_dev = dev_get_drvdata(dev);
 	int nr_profile = ucontrol->value.integer.value[0];
 	int max = pcm_dev->regbin.ncfgs - 1;
 	int ret = 0;
@@ -1391,7 +1391,7 @@ static int pcmdev_gain_ctrl_add(struct pcmdevice_priv *pcm_dev,
 		mix_index++;
 	}
 
-	ret = snd_soc_add_component_controls(comp, pcmdev_controls, mix_index);
+	ret = snd_soc_component_add_controls(comp, pcmdev_controls, mix_index);
 	if (ret)
 		dev_err(pcm_dev->dev, "%s: add_controls err = %d\n",
 			__func__, ret);
@@ -1426,7 +1426,7 @@ static int pcmdev_profile_ctrl_add(struct pcmdevice_priv *pcm_dev)
 	pcmdev_ctrl->get = pcmdevice_get_profile_id;
 	pcmdev_ctrl->put = pcmdevice_set_profile_id;
 
-	ret = snd_soc_add_component_controls(comp, pcmdev_ctrl, 1);
+	ret = snd_soc_component_add_controls(comp, pcmdev_ctrl, 1);
 	if (ret)
 		dev_err(pcm_dev->dev, "%s: add_controls err = %d\n",
 			__func__, ret);
@@ -1575,9 +1575,11 @@ out:
 
 static int pcmdevice_comp_probe(struct snd_soc_component *comp)
 {
-	struct pcmdevice_priv *pcm_dev = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct pcmdevice_priv *pcm_dev = dev_get_drvdata(dev);
 	struct i2c_adapter *adap = pcm_dev->client->adapter;
 	const struct firmware *fw_entry __free(firmware) = NULL;
+	const char *name_prefix = snd_soc_component_name_prefix(comp);
 	int ret, i, j;
 
 	guard(mutex)(&pcm_dev->codec_lock);
@@ -1592,7 +1594,7 @@ static int pcmdevice_comp_probe(struct snd_soc_component *comp)
 		}
 	}
 
-	if (comp->name_prefix) {
+	if (name_prefix) {
 		/* There's name_prefix defined in DTS. Bin file name will be
 		 * name_prefix.bin stores the firmware including register
 		 * setting and params for different filters inside chips, it
@@ -1601,7 +1603,7 @@ static int pcmdevice_comp_probe(struct snd_soc_component *comp)
 		 * one single codec, all of them share the same bin file.
 		 */
 		scnprintf(pcm_dev->bin_name, PCMDEVICE_BIN_FILENAME_LEN,
-			"%s.bin", comp->name_prefix);
+			"%s.bin", name_prefix);
 	} else {
 		/* There's NO name_prefix defined in DTS. Bin file name will be
 		 * device-name[defined in pcmdevice_i2c_id]-i2c-bus_id
@@ -1637,7 +1639,8 @@ static int pcmdevice_comp_probe(struct snd_soc_component *comp)
 
 static void pcmdevice_comp_remove(struct snd_soc_component *codec)
 {
-	struct pcmdevice_priv *pcm_dev = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct pcmdevice_priv *pcm_dev = dev_get_drvdata(dev);
 
 	if (!pcm_dev)
 		return;
@@ -1871,8 +1874,9 @@ out:
 
 static int pcmdevice_mute(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *codec = dai->component;
-	struct pcmdevice_priv *pcm_dev = snd_soc_component_get_drvdata(codec);
+	struct snd_soc_component *codec = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct pcmdevice_priv *pcm_dev = dev_get_drvdata(dev);
 	unsigned char block_type;
 
 	if (pcm_dev->fw_state == PCMDEVICE_FW_LOAD_FAILED) {
@@ -1894,7 +1898,9 @@ static int pcmdevice_mute(struct snd_soc_dai *dai, int mute, int stream)
 static int pcmdevice_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct pcmdevice_priv *pcm_dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcmdevice_priv *pcm_dev = dev_get_drvdata(dev);
 	unsigned int fsrate;
 	unsigned int slot_width;
 	int bclk_rate;
@@ -2120,7 +2126,7 @@ static int pcmdevice_i2c_probe(struct i2c_client *i2c)
 		dev_err(pcm_dev->dev, "No irq provided\n");
 
 skip_interrupt:
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 		&soc_codec_driver_pcmdevice, pcmdevice_dai_driver,
 		ARRAY_SIZE(pcmdevice_dai_driver));
 	if (ret < 0)

@@ -69,8 +69,9 @@ static int lochnagar_sc_hw_rule_rate(struct snd_pcm_hw_params *params,
 static int lochnagar_sc_startup(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *comp = dai->component;
-	struct lochnagar_sc_priv *priv = snd_soc_component_get_drvdata(comp);
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct lochnagar_sc_priv *priv = dev_get_drvdata(dev);
 	int ret;
 
 	ret = snd_pcm_hw_constraint_list(substream->runtime, 0,
@@ -88,13 +89,15 @@ static int lochnagar_sc_startup(struct snd_pcm_substream *substream,
 static int lochnagar_sc_line_startup(struct snd_pcm_substream *substream,
 				     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *comp = dai->component;
-	struct lochnagar_sc_priv *priv = snd_soc_component_get_drvdata(comp);
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct lochnagar_sc_priv *priv = dev_get_drvdata(dev);
+	struct device *dai_dev = snd_soc_component_to_dev(comp);
 	int ret;
 
 	ret = clk_prepare_enable(priv->mclk);
 	if (ret < 0) {
-		dev_err(dai->dev, "Failed to enable MCLK: %d\n", ret);
+		dev_err(dai_dev, "Failed to enable MCLK: %d\n", ret);
 		return ret;
 	}
 
@@ -110,8 +113,9 @@ static int lochnagar_sc_line_startup(struct snd_pcm_substream *substream,
 static void lochnagar_sc_line_shutdown(struct snd_pcm_substream *substream,
 				       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *comp = dai->component;
-	struct lochnagar_sc_priv *priv = snd_soc_component_get_drvdata(comp);
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct lochnagar_sc_priv *priv = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(priv->mclk);
 }
@@ -246,7 +250,7 @@ static int lochnagar_sc_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, priv);
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 					       &lochnagar_sc_driver,
 					       lochnagar_sc_dai,
 					       ARRAY_SIZE(lochnagar_sc_dai));

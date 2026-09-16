@@ -112,8 +112,11 @@ static struct snd_soc_jack mt8173_rt5650_jack, mt8173_rt5650_hdmi_jack;
 static int mt8173_rt5650_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_card *card = runtime->card;
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(runtime, 0)->component;
-	const char *codec_capture_dai = snd_soc_rtd_to_codec(runtime, 1)->name;
+	struct snd_soc_dai *codec0_dai = snd_soc_rtd_to_codec(runtime, 0);
+	struct snd_soc_dai *codec1_dai = snd_soc_rtd_to_codec(runtime, 1);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec0_dai);
+	const char *codec_capture_dai = snd_soc_dai_name(codec1_dai);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	rt5645_sel_asrc_clk_src(component,
@@ -129,8 +132,7 @@ static int mt8173_rt5650_init(struct snd_soc_pcm_runtime *runtime)
 					RT5645_AD_STEREO_FILTER,
 					RT5645_CLK_SEL_I2S2_ASRC);
 	} else {
-		dev_warn(card->dev,
-			 "Only one dai codec found in DTS, enabled rt5645 AD filter\n");
+		dev_warn(dev, "Only one dai codec found in DTS, enabled rt5645 AD filter\n");
 		rt5645_sel_asrc_clk_src(component,
 					RT5645_AD_STEREO_FILTER,
 					RT5645_CLK_SEL_I2S1_ASRC);
@@ -145,7 +147,7 @@ static int mt8173_rt5650_init(struct snd_soc_pcm_runtime *runtime)
 					 mt8173_rt5650_jack_pins,
 					 ARRAY_SIZE(mt8173_rt5650_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "Can't new Headset Jack %d\n", ret);
+		dev_err(dev, "Can't new Headset Jack %d\n", ret);
 		return ret;
 	}
 
@@ -157,6 +159,8 @@ static int mt8173_rt5650_init(struct snd_soc_pcm_runtime *runtime)
 
 static int mt8173_rt5650_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 {
+	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	int ret;
 
 	ret = snd_soc_card_jack_new(rtd->card, "HDMI Jack", SND_JACK_AVOUT,
@@ -164,8 +168,7 @@ static int mt8173_rt5650_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 	if (ret)
 		return ret;
 
-	return snd_soc_component_set_jack(snd_soc_rtd_to_codec(rtd, 0)->component,
-					  &mt8173_rt5650_hdmi_jack, NULL);
+	return snd_soc_component_set_jack(component, &mt8173_rt5650_hdmi_jack, NULL);
 }
 
 enum {

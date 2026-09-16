@@ -661,7 +661,7 @@ static s32 tac_set_sdw_stream(struct snd_soc_dai *dai,
 			      void *sdw_stream, s32 direction)
 {
 	if (sdw_stream)
-		snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+		snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -669,7 +669,7 @@ static s32 tac_set_sdw_stream(struct snd_soc_dai *dai,
 static void tac_sdw_shutdown(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static int tac_clear_latch(struct tac5xx2_prv *priv)
@@ -683,12 +683,14 @@ static int tac_sdw_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tac5xx2_prv *tac_dev = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tac5xx2_prv *tac_dev = dev_get_drvdata(dev);
 	struct sdw_slave *sdw_peripheral = tac_dev->sdw_peripheral;
 	struct sdw_stream_runtime *sdw_stream;
 	struct sdw_stream_config stream_config = {0};
 	struct sdw_port_config port_config = {0};
+	int dai_id = snd_soc_dai_id(dai);
 	u8 sample_rate_idx = 0;
 	int function_id;
 	int pde_entity;
@@ -701,7 +703,7 @@ static int tac_sdw_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 	if (!sdw_stream) {
 		dev_err(tac_dev->dev, "failed to get dma data");
 		return -EINVAL;
@@ -711,7 +713,7 @@ static int tac_sdw_hw_params(struct snd_pcm_substream *substream,
 	if (ret)
 		dev_warn(tac_dev->dev, "clear latch failed, err=%d", ret);
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case TAC5XX2_DMIC:
 		function_id = TAC_FUNCTION_ID_SM;
 		pde_entity = TAC_SDCA_ENT_PDE11;
@@ -733,7 +735,7 @@ static int tac_sdw_hw_params(struct snd_pcm_substream *substream,
 				TAC_SDW_PORT_NUM_SPK_CAPTURE;
 		break;
 	default:
-		dev_err(tac_dev->dev, "Invalid dai id: %d for power up\n", dai->id);
+		dev_err(tac_dev->dev, "Invalid dai id: %d for power up\n", dai_id);
 		return -EINVAL;
 	}
 
@@ -742,7 +744,7 @@ static int tac_sdw_hw_params(struct snd_pcm_substream *substream,
 	ret = sdw_stream_add_slave(sdw_peripheral, &stream_config,
 				   &port_config, 1, sdw_stream);
 	if (ret) {
-		dev_err(dai->dev,
+		dev_err(tac_dev->dev,
 			"Unable to configure port %d: %d\n", port_num, ret);
 		return ret;
 	}
@@ -824,14 +826,17 @@ static int tac_sdw_hw_params(struct snd_pcm_substream *substream,
 static int tac_sdw_pcm_hw_free(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
-	struct tac5xx2_prv *tac_dev = snd_soc_component_get_drvdata(dai->component);
+	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tac5xx2_prv *tac_dev = dev_get_drvdata(dev);
 	int pde_entity, function_id;
+	int dai_id = snd_soc_dai_id(dai);
 	int ret;
 
 	sdw_stream_remove_slave(tac_dev->sdw_peripheral, sdw_stream);
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case TAC5XX2_DMIC:
 		pde_entity = TAC_SDCA_ENT_PDE11;
 		function_id = TAC_FUNCTION_ID_SM;
@@ -846,7 +851,7 @@ static int tac_sdw_pcm_hw_free(struct snd_pcm_substream *substream,
 		pde_entity = TAC_SDCA_ENT_PDE23;
 		break;
 	default:
-		dev_err(tac_dev->dev, "unhandled dai %d for power down\n", dai->id);
+		dev_err(tac_dev->dev, "unhandled dai %d for power down\n", dai_id);
 		return -EINVAL;
 	}
 
@@ -1047,7 +1052,8 @@ disable_interrupts:
 static int tac5xx2_set_jack(struct snd_soc_component *component,
 			    struct snd_soc_jack *hs_jack, void *data)
 {
-	struct tac5xx2_prv *tac_dev = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tac5xx2_prv *tac_dev = dev_get_drvdata(dev);
 	int ret;
 
 	tac_dev->hs_jack = hs_jack;
@@ -1056,17 +1062,15 @@ static int tac5xx2_set_jack(struct snd_soc_component *component,
 	if (!tac_dev->first_hw_init_done)
 		return 0;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0) {
 		if (ret != -EACCES) {
-			dev_err(component->dev,
-				"%s: failed to resume %d\n", __func__, ret);
+			dev_err(dev, "%s: failed to resume %d\n", __func__, ret);
 			return ret;
 		}
 
 		/* pm_runtime not enabled yet */
-		dev_dbg(component->dev,
-			"%s: skipping jack init for now\n", __func__);
+		dev_dbg(dev, "%s: skipping jack init for now\n", __func__);
 		return 0;
 	}
 
@@ -1074,8 +1078,8 @@ static int tac5xx2_set_jack(struct snd_soc_component *component,
 	if (ret)
 		dev_err(tac_dev->dev, "jack init failed, err=%d\n", ret);
 
-	pm_runtime_mark_last_busy(component->dev);
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_mark_last_busy(dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return ret;
 }
@@ -1352,10 +1356,11 @@ static struct snd_soc_dai_driver tas2883_dai_driver[] = {
 
 static s32 tac_component_probe(struct snd_soc_component *component)
 {
-	struct tac5xx2_prv *tac_dev = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tac5xx2_prv *tac_dev = dev_get_drvdata(dev);
 	int ret;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -1366,21 +1371,21 @@ static s32 tac_component_probe(struct snd_soc_component *component)
 					tac_uaj_widgets,
 					ARRAY_SIZE(tac_uaj_widgets));
 	if (ret) {
-		dev_err(component->dev, "Failed to add UAJ widgets: %d\n", ret);
+		dev_err(dev, "Failed to add UAJ widgets: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dapm_add_routes(snd_soc_component_to_dapm(component),
 				      tac_uaj_routes, ARRAY_SIZE(tac_uaj_routes));
 	if (ret) {
-		dev_err(component->dev, "Failed to add UAJ routes: %d\n", ret);
+		dev_err(dev, "Failed to add UAJ routes: %d\n", ret);
 		return ret;
 	}
 
-	ret = snd_soc_add_component_controls(component, tac_uaj_controls,
+	ret = snd_soc_component_add_controls(component, tac_uaj_controls,
 					     ARRAY_SIZE(tac_uaj_controls));
 	if (ret) {
-		dev_err(component->dev, "Failed to add UAJ controls: %d\n", ret);
+		dev_err(dev, "Failed to add UAJ controls: %d\n", ret);
 			return ret;
 	}
 
@@ -1391,7 +1396,8 @@ done_comp_probe:
 
 static void tac_component_remove(struct snd_soc_component *codec)
 {
-	struct tac5xx2_prv *tac_dev = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct tac5xx2_prv *tac_dev = dev_get_drvdata(dev);
 
 	tac_dev->component = NULL;
 }
@@ -1450,7 +1456,7 @@ static s32 tac_init(struct tac5xx2_prv *tac_dev)
 	if (tac_has_uaj_support(tac_dev))
 		component_driver->set_jack = tac5xx2_set_jack;
 
-	ret = devm_snd_soc_register_component(tac_dev->dev, component_driver,
+	ret = devm_snd_soc_component_register(tac_dev->dev, component_driver,
 					      dai_drv, num_dais);
 	if (ret) {
 		dev_err(tac_dev->dev, "%s: codec register error:%d.\n",

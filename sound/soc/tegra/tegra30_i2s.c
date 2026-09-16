@@ -75,7 +75,9 @@ disable_clocks:
 static int tegra30_i2s_set_fmt(struct snd_soc_dai *dai,
 				unsigned int fmt)
 {
-	struct tegra30_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra30_i2s *i2s = dev_get_drvdata(dev);
 	unsigned int mask = 0, val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
@@ -123,9 +125,9 @@ static int tegra30_i2s_set_fmt(struct snd_soc_dai *dai,
 		return -EINVAL;
 	}
 
-	pm_runtime_get_sync(dai->dev);
+	pm_runtime_get_sync(dev);
 	regmap_update_bits(i2s->regmap, TEGRA30_I2S_CTRL, mask, val);
-	pm_runtime_put(dai->dev);
+	pm_runtime_put(dev);
 
 	return 0;
 }
@@ -134,8 +136,9 @@ static int tegra30_i2s_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct device *dev = dai->dev;
-	struct tegra30_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra30_i2s *i2s = dev_get_drvdata(dev);
 	unsigned int mask, val, reg;
 	int ret, sample_size, srate, i2sclock, bitcnt;
 	struct tegra30_ahub_cif_conf cif_conf;
@@ -238,7 +241,9 @@ static void tegra30_i2s_stop_capture(struct tegra30_i2s *i2s)
 static int tegra30_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 				struct snd_soc_dai *dai)
 {
-	struct tegra30_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra30_i2s *i2s = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -268,10 +273,12 @@ static int tegra30_i2s_set_tdm(struct snd_soc_dai *dai,
 			       unsigned int tx_mask, unsigned int rx_mask,
 			       int slots, int slot_width)
 {
-	struct tegra30_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra30_i2s *i2s = dev_get_drvdata(dev);
 	unsigned int mask, val;
 
-	dev_dbg(dai->dev, "%s: txmask=0x%08x rxmask=0x%08x slots=%d width=%d\n",
+	dev_dbg(dev, "%s: txmask=0x%08x rxmask=0x%08x slots=%d width=%d\n",
 		 __func__, tx_mask, rx_mask, slots, slot_width);
 
 	mask = TEGRA30_I2S_SLOT_CTRL_TOTAL_SLOTS_MASK |
@@ -282,22 +289,24 @@ static int tegra30_i2s_set_tdm(struct snd_soc_dai *dai,
 	      (rx_mask << TEGRA30_I2S_SLOT_CTRL_RX_SLOT_ENABLES_SHIFT) |
 	      ((slots - 1) << TEGRA30_I2S_SLOT_CTRL_TOTAL_SLOTS_SHIFT);
 
-	pm_runtime_get_sync(dai->dev);
+	pm_runtime_get_sync(dev);
 	regmap_update_bits(i2s->regmap, TEGRA30_I2S_SLOT_CTRL, mask, val);
 	/* set the fsync width to minimum of 1 clock width */
 	regmap_update_bits(i2s->regmap, TEGRA30_I2S_CH_CTRL,
 			   TEGRA30_I2S_CH_CTRL_FSYNC_WIDTH_MASK, 0x0);
-	pm_runtime_put(dai->dev);
+	pm_runtime_put(dev);
 
 	return 0;
 }
 
 static int tegra30_i2s_probe(struct snd_soc_dai *dai)
 {
-	struct tegra30_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra30_i2s *i2s = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai,	&i2s->playback_dma_data,
-					&i2s->capture_dma_data);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &i2s->playback_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &i2s->capture_dma_data);
 
 	return 0;
 }
@@ -507,7 +516,7 @@ static int tegra30_i2s_platform_probe(struct platform_device *pdev)
 		goto err_free_rx_fifo;
 	}
 
-	ret = snd_soc_register_component(&pdev->dev, &tegra30_i2s_component,
+	ret = snd_soc_component_register(&pdev->dev, &tegra30_i2s_component,
 				   &i2s->dai, 1);
 	if (ret) {
 		dev_err(&pdev->dev, "Could not register DAI: %d\n", ret);
@@ -526,7 +535,7 @@ static int tegra30_i2s_platform_probe(struct platform_device *pdev)
 	return 0;
 
 err_unregister_component:
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_component_unregister(&pdev->dev);
 err_unroute_rx_fifo:
 	tegra30_ahub_unset_rx_cif_source(i2s->capture_fifo_cif);
 err_free_rx_fifo:
@@ -546,7 +555,7 @@ static void tegra30_i2s_platform_remove(struct platform_device *pdev)
 	struct tegra30_i2s *i2s = dev_get_drvdata(&pdev->dev);
 
 	tegra_pcm_platform_unregister(&pdev->dev);
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_component_unregister(&pdev->dev);
 
 	tegra30_ahub_unset_rx_cif_source(i2s->capture_fifo_cif);
 	tegra30_ahub_free_rx_fifo(i2s->capture_fifo_cif);

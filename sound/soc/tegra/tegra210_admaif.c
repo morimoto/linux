@@ -401,10 +401,12 @@ static int tegra_admaif_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct device *dev = dai->dev;
-	struct tegra_admaif *admaif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra_admaif *admaif = dev_get_drvdata(dev);
 	struct tegra_cif_conf cif_conf;
 	unsigned int reg, path;
+	int dai_id = snd_soc_dai_id(dai);
 	int valid_bit, channels;
 
 	memset(&cif_conf, 0, sizeof(struct tegra_cif_conf));
@@ -441,14 +443,14 @@ static int tegra_admaif_hw_params(struct snd_pcm_substream *substream,
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		path = ADMAIF_TX_PATH;
-		reg = CH_TX_REG(TEGRA_ADMAIF_CH_ACIF_TX_CTRL, dai->id);
+		reg = CH_TX_REG(TEGRA_ADMAIF_CH_ACIF_TX_CTRL, dai_id);
 	} else {
 		path = ADMAIF_RX_PATH;
-		reg = CH_RX_REG(TEGRA_ADMAIF_CH_ACIF_RX_CTRL, dai->id);
+		reg = CH_RX_REG(TEGRA_ADMAIF_CH_ACIF_RX_CTRL, dai_id);
 	}
 
-	cif_conf.mono_conv = admaif->mono_to_stereo[path][dai->id];
-	cif_conf.stereo_conv = admaif->stereo_to_mono[path][dai->id];
+	cif_conf.mono_conv = admaif->mono_to_stereo[path][dai_id];
+	cif_conf.stereo_conv = admaif->stereo_to_mono[path][dai_id];
 
 	tegra_admaif_set_pack_mode(admaif->regmap, reg, valid_bit);
 
@@ -462,22 +464,25 @@ static int tegra_admaif_hw_params(struct snd_pcm_substream *substream,
 
 static int tegra_admaif_start(struct snd_soc_dai *dai, int direction)
 {
-	struct tegra_admaif *admaif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra_admaif *admaif = dev_get_drvdata(dev);
 	unsigned int reg, mask, val;
+	int dai_id = snd_soc_dai_id(dai);
 
 	switch (direction) {
 	case SNDRV_PCM_STREAM_PLAYBACK:
 		mask = TX_ENABLE_MASK;
 		val = TX_ENABLE;
-		reg = CH_TX_REG(TEGRA_ADMAIF_TX_ENABLE, dai->id);
+		reg = CH_TX_REG(TEGRA_ADMAIF_TX_ENABLE, dai_id);
 		break;
 	case SNDRV_PCM_STREAM_CAPTURE:
 		mask = RX_ENABLE_MASK;
 		val = RX_ENABLE;
-		reg = CH_RX_REG(TEGRA_ADMAIF_RX_ENABLE, dai->id);
+		reg = CH_RX_REG(TEGRA_ADMAIF_RX_ENABLE, dai_id);
 		break;
 	default:
-		dev_err(dai->dev, "invalid stream direction: %d\n", direction);
+		dev_err(dev, "invalid stream direction: %d\n", direction);
 		return -EINVAL;
 	}
 
@@ -488,30 +493,33 @@ static int tegra_admaif_start(struct snd_soc_dai *dai, int direction)
 
 static int tegra_admaif_stop(struct snd_soc_dai *dai, int direction)
 {
-	struct tegra_admaif *admaif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra_admaif *admaif = dev_get_drvdata(dev);
 	unsigned int enable_reg, status_reg, reset_reg, mask, val;
 	char *dir_name;
 	int err, enable;
+	int dai_id = snd_soc_dai_id(dai);
 
 	switch (direction) {
 	case SNDRV_PCM_STREAM_PLAYBACK:
 		mask = TX_ENABLE_MASK;
 		enable = TX_ENABLE;
 		dir_name = "TX";
-		enable_reg = CH_TX_REG(TEGRA_ADMAIF_TX_ENABLE, dai->id);
-		status_reg = CH_TX_REG(TEGRA_ADMAIF_TX_STATUS, dai->id);
-		reset_reg = CH_TX_REG(TEGRA_ADMAIF_TX_SOFT_RESET, dai->id);
+		enable_reg = CH_TX_REG(TEGRA_ADMAIF_TX_ENABLE, dai_id);
+		status_reg = CH_TX_REG(TEGRA_ADMAIF_TX_STATUS, dai_id);
+		reset_reg = CH_TX_REG(TEGRA_ADMAIF_TX_SOFT_RESET, dai_id);
 		break;
 	case SNDRV_PCM_STREAM_CAPTURE:
 		mask = RX_ENABLE_MASK;
 		enable = RX_ENABLE;
 		dir_name = "RX";
-		enable_reg = CH_RX_REG(TEGRA_ADMAIF_RX_ENABLE, dai->id);
-		status_reg = CH_RX_REG(TEGRA_ADMAIF_RX_STATUS, dai->id);
-		reset_reg = CH_RX_REG(TEGRA_ADMAIF_RX_SOFT_RESET, dai->id);
+		enable_reg = CH_RX_REG(TEGRA_ADMAIF_RX_ENABLE, dai_id);
+		status_reg = CH_RX_REG(TEGRA_ADMAIF_RX_STATUS, dai_id);
+		reset_reg = CH_RX_REG(TEGRA_ADMAIF_RX_SOFT_RESET, dai_id);
 		break;
 	default:
-		dev_err(dai->dev, "invalid stream direction: %d\n", direction);
+		dev_err(dev, "invalid stream direction: %d\n", direction);
 		return -EINVAL;
 	}
 
@@ -522,8 +530,8 @@ static int tegra_admaif_stop(struct snd_soc_dai *dai, int direction)
 	err = regmap_read_poll_timeout_atomic(admaif->regmap, status_reg, val,
 					      !(val & enable), 10, 10000);
 	if (err < 0)
-		dev_warn(dai->dev, "timeout: failed to disable ADMAIF%d_%s\n",
-			 dai->id + 1, dir_name);
+		dev_warn(dev, "timeout: failed to disable ADMAIF%d_%s\n",
+			 dai_id + 1, dir_name);
 
 	/* SW reset */
 	regmap_update_bits(admaif->regmap, reset_reg, SW_RESET_MASK, SW_RESET);
@@ -533,8 +541,8 @@ static int tegra_admaif_stop(struct snd_soc_dai *dai, int direction)
 					      !(val & SW_RESET_MASK & SW_RESET),
 					      10, 10000);
 	if (err) {
-		dev_err(dai->dev, "timeout: SW reset failed for ADMAIF%d_%s\n",
-			dai->id + 1, dir_name);
+		dev_err(dev, "timeout: SW reset failed for ADMAIF%d_%s\n",
+			dai_id + 1, dir_name);
 		return err;
 	}
 
@@ -544,6 +552,8 @@ static int tegra_admaif_stop(struct snd_soc_dai *dai, int direction)
 static int tegra_admaif_trigger(struct snd_pcm_substream *substream, int cmd,
 				struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int err;
 
 	err = snd_dmaengine_pcm_trigger(substream, cmd);
@@ -560,7 +570,7 @@ static int tegra_admaif_trigger(struct snd_pcm_substream *substream, int cmd,
 	case SNDRV_PCM_TRIGGER_SUSPEND:
 		return tegra_admaif_stop(dai, substream->stream);
 	default:
-		dev_err(dai->dev, "invalid trigger command: %d\n", cmd);
+		dev_err(dev, "invalid trigger command: %d\n", cmd);
 		return -EINVAL;
 	}
 }
@@ -569,7 +579,8 @@ static int tegra210_admaif_pget_mono_to_stereo(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra_admaif *admaif = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra_admaif *admaif = dev_get_drvdata(dev);
 	struct soc_enum *ec = (struct soc_enum *)kcontrol->private_value;
 
 	ucontrol->value.enumerated.item[0] =
@@ -582,7 +593,8 @@ static int tegra210_admaif_pput_mono_to_stereo(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra_admaif *admaif = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra_admaif *admaif = dev_get_drvdata(dev);
 	struct soc_enum *ec = (struct soc_enum *)kcontrol->private_value;
 	unsigned int value = ucontrol->value.enumerated.item[0];
 
@@ -598,7 +610,8 @@ static int tegra210_admaif_cget_mono_to_stereo(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra_admaif *admaif = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra_admaif *admaif = dev_get_drvdata(dev);
 	struct soc_enum *ec = (struct soc_enum *)kcontrol->private_value;
 
 	ucontrol->value.enumerated.item[0] =
@@ -611,7 +624,8 @@ static int tegra210_admaif_cput_mono_to_stereo(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra_admaif *admaif = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra_admaif *admaif = dev_get_drvdata(dev);
 	struct soc_enum *ec = (struct soc_enum *)kcontrol->private_value;
 	unsigned int value = ucontrol->value.enumerated.item[0];
 
@@ -627,7 +641,8 @@ static int tegra210_admaif_pget_stereo_to_mono(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra_admaif *admaif = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra_admaif *admaif = dev_get_drvdata(dev);
 	struct soc_enum *ec = (struct soc_enum *)kcontrol->private_value;
 
 	ucontrol->value.enumerated.item[0] =
@@ -640,7 +655,8 @@ static int tegra210_admaif_pput_stereo_to_mono(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra_admaif *admaif = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra_admaif *admaif = dev_get_drvdata(dev);
 	struct soc_enum *ec = (struct soc_enum *)kcontrol->private_value;
 	unsigned int value = ucontrol->value.enumerated.item[0];
 
@@ -656,7 +672,8 @@ static int tegra210_admaif_cget_stereo_to_mono(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra_admaif *admaif = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra_admaif *admaif = dev_get_drvdata(dev);
 	struct soc_enum *ec = (struct soc_enum *)kcontrol->private_value;
 
 	ucontrol->value.enumerated.item[0] =
@@ -669,7 +686,8 @@ static int tegra210_admaif_cput_stereo_to_mono(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra_admaif *admaif = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra_admaif *admaif = dev_get_drvdata(dev);
 	struct soc_enum *ec = (struct soc_enum *)kcontrol->private_value;
 	unsigned int value = ucontrol->value.enumerated.item[0];
 
@@ -683,10 +701,13 @@ static int tegra210_admaif_cput_stereo_to_mono(struct snd_kcontrol *kcontrol,
 
 static int tegra_admaif_dai_probe(struct snd_soc_dai *dai)
 {
-	struct tegra_admaif *admaif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra_admaif *admaif = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	snd_soc_dai_init_dma_data(dai,	&admaif->playback_dma_data[dai->id],
-					&admaif->capture_dma_data[dai->id]);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &admaif->playback_dma_data[dai_id]);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &admaif->capture_dma_data[dai_id]);
 
 	return 0;
 }
@@ -1065,7 +1086,7 @@ static int tegra_admaif_probe(struct platform_device *pdev)
 		}
 	}
 
-	err = devm_snd_soc_register_component(&pdev->dev,
+	err = devm_snd_soc_component_register(&pdev->dev,
 					      admaif->soc_data->cmpnt,
 					      admaif->soc_data->dais,
 					      admaif->soc_data->num_ch);

@@ -60,13 +60,14 @@ static int cs47l24_adsp_power_ev(struct snd_soc_dapm_widget *w,
 				 struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct arizona *arizona = dev_get_drvdata(component->dev->parent);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct arizona *arizona = dev_get_drvdata(dev->parent);
 	unsigned int v;
 	int ret;
 
 	ret = regmap_read(arizona->regmap, ARIZONA_SYSTEM_CLOCK_1, &v);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to read SYSCLK state: %d\n", ret);
+		dev_err(dev, "Failed to read SYSCLK state: %d\n", ret);
 		return ret;
 	}
 
@@ -934,7 +935,8 @@ static const struct snd_soc_dapm_route cs47l24_dapm_routes[] = {
 static int cs47l24_set_fll(struct snd_soc_component *component, int fll_id,
 			   int source, unsigned int Fref, unsigned int Fout)
 {
-	struct cs47l24_priv *cs47l24 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs47l24_priv *cs47l24 = dev_get_drvdata(dev);
 
 	switch (fll_id) {
 	case CS47L24_FLL1:
@@ -1076,18 +1078,21 @@ static int cs47l24_open(struct snd_soc_component *component,
 			struct snd_compr_stream *stream)
 {
 	struct snd_soc_pcm_runtime *rtd = stream->private_data;
-	struct cs47l24_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs47l24_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->core.arizona;
+	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
+	const char *dai_name = snd_soc_dai_name(dai);
 	int n_adsp;
 
-	if (strcmp(snd_soc_rtd_to_codec(rtd, 0)->name, "cs47l24-dsp-voicectrl") == 0) {
+	if (strcmp(dai_name, "cs47l24-dsp-voicectrl") == 0) {
 		n_adsp = 2;
-	} else if (strcmp(snd_soc_rtd_to_codec(rtd, 0)->name, "cs47l24-dsp-trace") == 0) {
+	} else if (strcmp(dai_name, "cs47l24-dsp-trace") == 0) {
 		n_adsp = 1;
 	} else {
 		dev_err(arizona->dev,
 			"No suitable compressed stream for DAI '%s'\n",
-			snd_soc_rtd_to_codec(rtd, 0)->name);
+			dai_name);
 		return -EINVAL;
 	}
 
@@ -1125,12 +1130,13 @@ static irqreturn_t cs47l24_adsp2_irq(int irq, void *data)
 static int cs47l24_component_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct cs47l24_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs47l24_priv *priv = dev_get_drvdata(dev);
 	struct arizona *arizona = priv->core.arizona;
 	int ret;
 
 	arizona->dapm = dapm;
-	snd_soc_component_init_regmap(component, arizona->regmap);
+	snd_soc_component_regmap_init(component, arizona->regmap);
 
 	ret = arizona_init_spk(component);
 	if (ret < 0)
@@ -1147,7 +1153,7 @@ static int cs47l24_component_probe(struct snd_soc_component *component)
 	if (ret)
 		goto err_adsp2_codec_probe;
 
-	ret = snd_soc_add_component_controls(component,
+	ret = snd_soc_component_add_controls(component,
 					     &arizona_adsp2_rate_controls[1],
 					     2);
 	if (ret)
@@ -1166,7 +1172,8 @@ err_adsp2_codec_probe:
 
 static void cs47l24_component_remove(struct snd_soc_component *component)
 {
-	struct cs47l24_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs47l24_priv *priv = dev_get_drvdata(dev);
 
 	wm_adsp2_component_remove(&priv->core.adsp[1], component);
 	wm_adsp2_component_remove(&priv->core.adsp[2], component);
@@ -1303,7 +1310,7 @@ static int cs47l24_probe(struct platform_device *pdev)
 	if (ret < 0)
 		goto err_dsp_irq;
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &soc_component_dev_cs47l24,
 					      cs47l24_dai,
 					      ARRAY_SIZE(cs47l24_dai));

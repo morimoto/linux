@@ -103,7 +103,8 @@ static int cs35l56_dspwait_get_volsw(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 
 	cs35l56_wait_dsp_ready(cs35l56);
 	return snd_soc_get_volsw(kcontrol, ucontrol);
@@ -113,7 +114,8 @@ static int cs35l56_dspwait_put_volsw(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 
 	cs35l56_wait_dsp_ready(cs35l56);
 	return snd_soc_put_volsw(kcontrol, ucontrol);
@@ -128,7 +130,8 @@ static int cs35l56_cal_set_status_ctl_get(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 
 	return cs35l56_cal_set_status_get(&cs35l56->base, ucontrol);
 }
@@ -253,7 +256,8 @@ static int cs35l56_play_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 	unsigned int val;
 	int ret;
 
@@ -394,7 +398,8 @@ static int cs35l56_dsp_event(struct snd_soc_dapm_widget *w,
 			     struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 
 	dev_dbg(cs35l56->base.dev, "%s: %d\n", __func__, event);
 
@@ -403,14 +408,18 @@ static int cs35l56_dsp_event(struct snd_soc_dapm_widget *w,
 
 static int cs35l56_asp_dai_probe(struct snd_soc_dai *codec_dai)
 {
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(codec_dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 
 	return cs35l56_set_asp_patch(&cs35l56->base);
 }
 
 static int cs35l56_asp_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(codec_dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 	unsigned int val;
 
 	dev_dbg(cs35l56->base.dev, "%s: %#x\n", __func__, fmt);
@@ -489,7 +498,9 @@ static unsigned int cs35l56_make_tdm_config_word(unsigned int reg_val, unsigned 
 static int cs35l56_asp_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 					unsigned int rx_mask, int slots, int slot_width)
 {
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 
 	if ((slots == 0) || (slot_width == 0)) {
 		dev_dbg(cs35l56->base.dev, "tdm config cleared\n");
@@ -535,7 +546,9 @@ static int cs35l56_asp_dai_hw_params(struct snd_pcm_substream *substream,
 				     struct snd_pcm_hw_params *params,
 				     struct snd_soc_dai *dai)
 {
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 	u8 asp_width, asp_wl;
 
@@ -593,7 +606,9 @@ static int cs35l56_asp_dai_hw_params(struct snd_pcm_substream *substream,
 static int cs35l56_asp_dai_set_sysclk(struct snd_soc_dai *dai,
 				      int clk_id, unsigned int freq, int dir)
 {
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 	int freq_id;
 
 	if (freq == 0) {
@@ -634,13 +649,15 @@ static const struct snd_soc_dai_ops cs35l56_ops = {
 static void cs35l56_sdw_dai_shutdown(struct snd_pcm_substream *substream,
 				     struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static int cs35l56_sdw_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 					unsigned int rx_mask, int slots, int slot_width)
 {
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 
 	/* rx/tx are from point of view of the CPU end so opposite to our rx/tx */
 	cs35l56->rx_mask = tx_mask;
@@ -653,8 +670,10 @@ static int cs35l56_sdw_dai_hw_params(struct snd_pcm_substream *substream,
 				     struct snd_pcm_hw_params *params,
 				     struct snd_soc_dai *dai)
 {
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(dai->component);
-	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dai_dev);
+	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 	struct sdw_stream_config sconfig;
 	struct sdw_port_config pconfig;
 	int ret;
@@ -693,7 +712,7 @@ static int cs35l56_sdw_dai_hw_params(struct snd_pcm_substream *substream,
 	ret = sdw_stream_add_slave(cs35l56->sdw_peripheral, &sconfig, &pconfig,
 				   1, sdw_stream);
 	if (ret) {
-		dev_err(dai->dev, "Failed to add sdw stream: %d\n", ret);
+		dev_err(dai_dev, "Failed to add sdw stream: %d\n", ret);
 		return ret;
 	}
 
@@ -703,8 +722,10 @@ static int cs35l56_sdw_dai_hw_params(struct snd_pcm_substream *substream,
 static int cs35l56_sdw_dai_hw_free(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(dai->component);
-	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
+	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!cs35l56->sdw_peripheral)
 		return -EINVAL;
@@ -717,7 +738,7 @@ static int cs35l56_sdw_dai_hw_free(struct snd_pcm_substream *substream,
 static int cs35l56_sdw_dai_set_stream(struct snd_soc_dai *dai,
 				      void *sdw_stream, int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -1111,7 +1132,8 @@ static int cs35l56_cal_data_rb_ctl_get(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 
 	if (!cs35l56->base.cal_data_valid)
 		return -ENODATA;
@@ -1126,7 +1148,8 @@ static int cs35l56_cal_data_ctl_get(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 
 	/*
 	 * This control is write-only but mixer libraries often try to read
@@ -1143,7 +1166,8 @@ static int cs35l56_cal_data_ctl_set(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 	const struct cirrus_amp_cal_data *cal_data = (const void *)ucontrol->value.bytes.data;
 	int ret;
 
@@ -1165,7 +1189,8 @@ static int cs35l56_cal_ambient_ctl_get(struct snd_kcontrol *kcontrol,
 				       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = cs35l56->ambient_ctl_value;
 
@@ -1176,7 +1201,8 @@ static int cs35l56_cal_ambient_ctl_set(struct snd_kcontrol *kcontrol,
 				       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm;
 	int temperature = ucontrol->value.integer.value[0];
 	int ret;
@@ -1222,7 +1248,8 @@ static int cs35l56_calibrate_ctl_set(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm;
 	int ret;
 
@@ -1284,7 +1311,7 @@ VISIBLE_IF_KUNIT int cs35l56_set_fw_suffix(struct cs35l56_private *cs35l56)
 		 */
 		if ((cs35l56->base.type == 0x56) && (cs35l56->base.rev == 0xb0)) {
 			cs35l56->fallback_fw_suffix = cs35l56->dsp.fwf_suffix;
-			cs35l56->dsp.fwf_suffix = cs35l56->component->name_prefix;
+			cs35l56->dsp.fwf_suffix = snd_soc_component_name_prefix(cs35l56->component);
 
 			return 0;
 		}
@@ -1299,7 +1326,8 @@ VISIBLE_IF_KUNIT int cs35l56_set_fw_suffix(struct cs35l56_private *cs35l56)
 	 * Try searching for a firmware with this qualifier first, else
 	 * fallback to standard naming.
 	 */
-	if (snd_soc_card_get_pci_ssid(cs35l56->component->card, &vendor, &device) < 0) {
+	if (snd_soc_card_get_pci_ssid(snd_soc_component_to_card(cs35l56->component),
+				      &vendor, &device) < 0) {
 		vendor_id = cs_amp_devm_get_vendor_specific_variant_id(cs35l56->base.dev, -1, -1);
 	} else {
 		vendor_id = cs_amp_devm_get_vendor_specific_variant_id(cs35l56->base.dev,
@@ -1315,7 +1343,7 @@ VISIBLE_IF_KUNIT int cs35l56_set_fw_suffix(struct cs35l56_private *cs35l56)
 		if (cs35l56->dsp.fwf_suffix)
 			cs35l56->fallback_fw_suffix = cs35l56->dsp.fwf_suffix;
 		else
-			cs35l56->fallback_fw_suffix = cs35l56->component->name_prefix;
+			cs35l56->fallback_fw_suffix = snd_soc_component_name_prefix(cs35l56->component);
 
 		cs35l56->dsp.fwf_suffix = devm_kasprintf(cs35l56->base.dev, GFP_KERNEL,
 							 "%s-%s",
@@ -1331,7 +1359,9 @@ EXPORT_SYMBOL_IF_KUNIT(cs35l56_set_fw_suffix);
 
 VISIBLE_IF_KUNIT int cs35l56_set_fw_name(struct snd_soc_component *component)
 {
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 	unsigned short vendor, device;
 	int ret;
 
@@ -1353,7 +1383,7 @@ VISIBLE_IF_KUNIT int cs35l56_set_fw_name(struct snd_soc_component *component)
 	}
 
 	if (!cs35l56->dsp.system_name &&
-	    (snd_soc_card_get_pci_ssid(component->card, &vendor, &device) == 0)) {
+	    (snd_soc_card_get_pci_ssid(card, &vendor, &device) == 0)) {
 		/* Append a speaker qualifier if there is a speaker ID */
 		if (cs35l56->speaker_id >= 0) {
 			cs35l56->dsp.system_name = devm_kasprintf(cs35l56->base.dev,
@@ -1378,8 +1408,9 @@ EXPORT_SYMBOL_IF_KUNIT(cs35l56_set_fw_name);
 static int _cs35l56_component_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
-	struct dentry *debugfs_root = component->debugfs_root;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
+	struct dentry *debugfs_root = snd_soc_component_to_debugfs_root(component);
 	int ret;
 
 	BUILD_BUG_ON(ARRAY_SIZE(cs35l56_tx_input_texts) != ARRAY_SIZE(cs35l56_tx_input_values));
@@ -1408,12 +1439,12 @@ static int _cs35l56_component_probe(struct snd_soc_component *component)
 	case 0x54:
 	case 0x56:
 	case 0x57:
-		ret = snd_soc_add_component_controls(component, cs35l56_controls,
+		ret = snd_soc_component_add_controls(component, cs35l56_controls,
 						     ARRAY_SIZE(cs35l56_controls));
 		break;
 	case 0x63:
 	case 0x62:
-		ret = snd_soc_add_component_controls(component, cs35l63_controls,
+		ret = snd_soc_component_add_controls(component, cs35l63_controls,
 						     ARRAY_SIZE(cs35l63_controls));
 		break;
 	default:
@@ -1422,13 +1453,13 @@ static int _cs35l56_component_probe(struct snd_soc_component *component)
 	}
 
 	if (!ret && IS_ENABLED(CONFIG_SND_SOC_CS35L56_CAL_SET_CTRL)) {
-		ret = snd_soc_add_component_controls(component,
+		ret = snd_soc_component_add_controls(component,
 						     cs35l56_cal_data_restore_controls,
 						     ARRAY_SIZE(cs35l56_cal_data_restore_controls));
 	}
 
 	if (!ret && IS_ENABLED(CONFIG_SND_SOC_CS35L56_CAL_PERFORM_CTRL)) {
-		ret = snd_soc_add_component_controls(component,
+		ret = snd_soc_component_add_controls(component,
 						     cs35l56_cal_perform_controls,
 						     ARRAY_SIZE(cs35l56_cal_perform_controls));
 	}
@@ -1450,7 +1481,8 @@ static int _cs35l56_component_probe(struct snd_soc_component *component)
 
 static void cs35l56_component_remove(struct snd_soc_component *component)
 {
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 
 	cancel_work_sync(&cs35l56->dsp_work);
 
@@ -1484,7 +1516,8 @@ static int cs35l56_component_probe(struct snd_soc_component *component)
 static int cs35l56_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
-	struct cs35l56_private *cs35l56 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l56_private *cs35l56 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -1956,7 +1989,7 @@ static int cs35l56_component_register(struct cs35l56_private *cs35l56)
 {
 	int ret;
 
-	ret = snd_soc_register_component(cs35l56->base.dev,
+	ret = snd_soc_component_register(cs35l56->base.dev,
 					 &soc_component_dev_cs35l56,
 					 cs35l56_dai, ARRAY_SIZE(cs35l56_dai));
 	if (ret < 0) {
@@ -2206,7 +2239,7 @@ void cs35l56_remove(struct cs35l56_private *cs35l56)
 {
 	cancel_work_sync(&cs35l56->component_register_work);
 	if (cs35l56->component_registered)
-		snd_soc_unregister_component(cs35l56->base.dev);
+		snd_soc_component_unregister(cs35l56->base.dev);
 
 	cs35l56->base.init_done = false;
 

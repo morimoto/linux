@@ -57,7 +57,9 @@ struct axi_i2s {
 static int axi_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 	struct snd_soc_dai *dai)
 {
-	struct axi_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axi_i2s *i2s = dev_get_drvdata(dev);
 	unsigned int mask, val;
 
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE)
@@ -88,7 +90,9 @@ static int axi_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 static int axi_i2s_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct axi_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axi_i2s *i2s = dev_get_drvdata(dev);
 	unsigned int bclk_div, word_size;
 	unsigned int bclk_rate;
 
@@ -106,7 +110,9 @@ static int axi_i2s_hw_params(struct snd_pcm_substream *substream,
 static int axi_i2s_startup(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct axi_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axi_i2s *i2s = dev_get_drvdata(dev);
 	uint32_t mask;
 	int ret;
 
@@ -129,19 +135,23 @@ static int axi_i2s_startup(struct snd_pcm_substream *substream,
 static void axi_i2s_shutdown(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct axi_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axi_i2s *i2s = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(i2s->clk_ref);
 }
 
 static int axi_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct axi_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axi_i2s *i2s = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(
-		dai,
-		i2s->has_playback ? &i2s->playback_dma_data : NULL,
-		i2s->has_capture  ? &i2s->capture_dma_data  : NULL);
+	if (i2s->has_playback)
+		snd_soc_dai_stream_dma_data_set_playback(dai, &i2s->playback_dma_data);
+	if (i2s->has_capture)
+		snd_soc_dai_stream_dma_data_set_capture(dai, &i2s->capture_dma_data);
 
 	return 0;
 }
@@ -254,7 +264,7 @@ static int axi_i2s_probe(struct platform_device *pdev)
 
 	regmap_write(i2s->regmap, AXI_I2S_REG_RESET, AXI_I2S_RESET_GLOBAL);
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &axi_i2s_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &axi_i2s_component,
 					 &axi_i2s_dai, 1);
 	if (ret)
 		goto err_clk_disable;

@@ -150,7 +150,9 @@ static const struct snd_soc_dapm_route jz4740_codec_dapm_routes[] = {
 static int jz4740_codec_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct jz4740_codec *jz4740_codec = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz4740_codec *jz4740_codec = dev_get_drvdata(dev);
 	uint32_t val;
 
 	switch (params_rate(params)) {
@@ -232,7 +234,8 @@ static int jz4740_codec_set_bias_level(struct snd_soc_component *component,
 	enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct jz4740_codec *jz4740_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz4740_codec *jz4740_codec = dev_get_drvdata(dev);
 	struct regmap *regmap = jz4740_codec->regmap;
 	unsigned int mask;
 
@@ -271,7 +274,8 @@ static int jz4740_codec_set_bias_level(struct snd_soc_component *component,
 
 static int jz4740_codec_dev_probe(struct snd_soc_component *component)
 {
-	struct jz4740_codec *jz4740_codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz4740_codec *jz4740_codec = dev_get_drvdata(dev);
 
 	regmap_update_bits(jz4740_codec->regmap, JZ4740_REG_CODEC_1,
 			JZ4740_CODEC_1_SW2_ENABLE, JZ4740_CODEC_1_SW2_ENABLE);
@@ -327,7 +331,7 @@ static int jz4740_codec_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, jz4740_codec);
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 			&soc_codec_dev_jz4740_codec, &jz4740_codec_dai, 1);
 	if (ret)
 		dev_err(&pdev->dev, "Failed to register codec\n");

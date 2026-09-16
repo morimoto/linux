@@ -242,7 +242,8 @@ static const struct reg_default rt1305_reg[] = {
 
 static int rt1305_reg_init(struct snd_soc_component *component)
 {
-	struct rt1305_priv *rt1305 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1305_priv *rt1305 = dev_get_drvdata(dev);
 
 	regmap_multi_reg_write(rt1305->regmap, init_list, RT1305_INIT_REG_LEN);
 	return 0;
@@ -404,9 +405,9 @@ static const struct snd_kcontrol_new rt1305_snd_controls[] = {
 static int rt1305_is_rc_clk_from_pll(struct snd_soc_dapm_widget *source,
 			 struct snd_soc_dapm_widget *sink)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(source->dapm);
-	struct rt1305_priv *rt1305 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1305_priv *rt1305 = dev_get_drvdata(dev);
 	unsigned int val;
 
 	val = snd_soc_component_read(component, RT1305_CLK_1);
@@ -421,9 +422,9 @@ static int rt1305_is_rc_clk_from_pll(struct snd_soc_dapm_widget *source,
 static int rt1305_is_sys_clk_from_pll(struct snd_soc_dapm_widget *source,
 			 struct snd_soc_dapm_widget *sink)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(source->dapm);
-	struct rt1305_priv *rt1305 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1305_priv *rt1305 = dev_get_drvdata(dev);
 
 	if (rt1305->sysclk_src == RT1305_FS_SYS_PRE_S_PLL1)
 		return 1;
@@ -623,15 +624,17 @@ static int rt1305_get_clk_info(int sclk, int rate)
 static int rt1305_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1305_priv *rt1305 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1305_priv *rt1305 = dev_get_drvdata(dev);
 	unsigned int val_len = 0, val_clk, mask_clk;
 	int pre_div, bclk_ms, frame_size;
+	int dai_id = snd_soc_dai_id(dai);
 
 	rt1305->lrck = params_rate(params);
 	pre_div = rt1305_get_clk_info(rt1305->sysclk, rt1305->lrck);
 	if (pre_div < 0) {
-		dev_warn(component->dev, "Force using PLL ");
+		dev_warn(dev, "Force using PLL ");
 		snd_soc_dai_set_pll(dai, 0, RT1305_PLL1_S_BCLK,
 			rt1305->lrck * 64, rt1305->lrck * 256);
 		snd_soc_dai_set_sysclk(dai, RT1305_FS_SYS_PRE_S_PLL1,
@@ -640,7 +643,7 @@ static int rt1305_hw_params(struct snd_pcm_substream *substream,
 	}
 	frame_size = snd_soc_params_to_frame_size(params);
 	if (frame_size < 0) {
-		dev_err(component->dev, "Unsupported frame size: %d\n",
+		dev_err(dev, "Unsupported frame size: %d\n",
 			frame_size);
 		return -EINVAL;
 	}
@@ -648,11 +651,11 @@ static int rt1305_hw_params(struct snd_pcm_substream *substream,
 	bclk_ms = frame_size > 32;
 	rt1305->bclk = rt1305->lrck * (32 << bclk_ms);
 
-	dev_dbg(component->dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
-				bclk_ms, pre_div, dai->id);
+	dev_dbg(dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
+				bclk_ms, pre_div, dai_id);
 
-	dev_dbg(component->dev, "lrck is %dHz and pre_div is %d for iis %d\n",
-				rt1305->lrck, pre_div, dai->id);
+	dev_dbg(dev, "lrck is %dHz and pre_div is %d for iis %d\n",
+				rt1305->lrck, pre_div, dai_id);
 
 	switch (params_width(params)) {
 	case 16:
@@ -671,7 +674,7 @@ static int rt1305_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT1305_AIF1:
 		mask_clk = RT1305_DIV_FS_SYS_MASK;
 		val_clk = pre_div << RT1305_DIV_FS_SYS_SFT;
@@ -680,7 +683,7 @@ static int rt1305_hw_params(struct snd_pcm_substream *substream,
 			val_len);
 		break;
 	default:
-		dev_err(component->dev, "Invalid dai->id: %d\n", dai->id);
+		dev_err(dev, "Invalid dai_id: %d\n", dai_id);
 		return -EINVAL;
 	}
 
@@ -692,9 +695,11 @@ static int rt1305_hw_params(struct snd_pcm_substream *substream,
 
 static int rt1305_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1305_priv *rt1305 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1305_priv *rt1305 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0, reg1_val = 0;
+	int dai_id = snd_soc_dai_id(dai);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -735,7 +740,7 @@ static int rt1305_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT1305_AIF1:
 		snd_soc_component_update_bits(component, RT1305_I2S_SET_1,
 			RT1305_SEL_I2S_OUT_MODE_MASK, reg_val);
@@ -744,7 +749,7 @@ static int rt1305_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 			reg1_val);
 		break;
 	default:
-		dev_err(component->dev, "Invalid dai->id: %d\n", dai->id);
+		dev_err(dev, "Invalid dai_id: %d\n", dai_id);
 		return -EINVAL;
 	}
 	return 0;
@@ -753,7 +758,8 @@ static int rt1305_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt1305_set_component_sysclk(struct snd_soc_component *component,
 		int clk_id, int source, unsigned int freq, int dir)
 {
-	struct rt1305_priv *rt1305 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1305_priv *rt1305 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0;
 
 	if (freq == rt1305->sysclk && clk_id == rt1305->sysclk_src)
@@ -773,7 +779,7 @@ static int rt1305_set_component_sysclk(struct snd_soc_component *component,
 		reg_val |= RT1305_SEL_FS_SYS_PRE_RCCLK;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clock id (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock id (%d)\n", clk_id);
 		return -EINVAL;
 	}
 	snd_soc_component_update_bits(component, RT1305_CLK_1,
@@ -781,8 +787,7 @@ static int rt1305_set_component_sysclk(struct snd_soc_component *component,
 	rt1305->sysclk = freq;
 	rt1305->sysclk_src = clk_id;
 
-	dev_dbg(component->dev, "Sysclk is %dHz and clock id is %d\n",
-		freq, clk_id);
+	dev_dbg(dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
 
 	return 0;
 }
@@ -791,7 +796,8 @@ static int rt1305_set_component_pll(struct snd_soc_component *component,
 		int pll_id, int source, unsigned int freq_in,
 		unsigned int freq_out)
 {
-	struct rt1305_priv *rt1305 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1305_priv *rt1305 = dev_get_drvdata(dev);
 	struct rl6231_pll_code pll_code;
 	int ret;
 
@@ -800,7 +806,7 @@ static int rt1305_set_component_pll(struct snd_soc_component *component,
 		return 0;
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 
 		rt1305->pll_in = 0;
 		rt1305->pll_out = 0;
@@ -833,17 +839,17 @@ static int rt1305_set_component_pll(struct snd_soc_component *component,
 		freq_in = 98304000;
 		break;
 	default:
-		dev_err(component->dev, "Unknown PLL Source %d\n", source);
+		dev_err(dev, "Unknown PLL Source %d\n", source);
 		return -EINVAL;
 	}
 
 	ret = rl6231_pll_calc(freq_in, freq_out, &pll_code);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupported input clock %d\n", freq_in);
+		dev_err(dev, "Unsupported input clock %d\n", freq_in);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "bypass=%d m=%d n=%d k=%d\n",
+	dev_dbg(dev, "bypass=%d m=%d n=%d k=%d\n",
 		pll_code.m_bp, (pll_code.m_bp ? 0 : pll_code.m_code),
 		pll_code.n_code, pll_code.k_code);
 
@@ -863,7 +869,8 @@ static int rt1305_set_component_pll(struct snd_soc_component *component,
 
 static int rt1305_probe(struct snd_soc_component *component)
 {
-	struct rt1305_priv *rt1305 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1305_priv *rt1305 = dev_get_drvdata(dev);
 
 	rt1305->component = component;
 
@@ -875,7 +882,8 @@ static int rt1305_probe(struct snd_soc_component *component)
 
 static void rt1305_remove(struct snd_soc_component *component)
 {
-	struct rt1305_priv *rt1305 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1305_priv *rt1305 = dev_get_drvdata(dev);
 
 	rt1305_reset(rt1305->regmap);
 }
@@ -883,7 +891,8 @@ static void rt1305_remove(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int rt1305_suspend(struct snd_soc_component *component)
 {
-	struct rt1305_priv *rt1305 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1305_priv *rt1305 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt1305->regmap, true);
 	regcache_mark_dirty(rt1305->regmap);
@@ -893,7 +902,8 @@ static int rt1305_suspend(struct snd_soc_component *component)
 
 static int rt1305_resume(struct snd_soc_component *component)
 {
-	struct rt1305_priv *rt1305 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1305_priv *rt1305 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt1305->regmap, false);
 	regcache_sync(rt1305->regmap);
@@ -1155,7 +1165,7 @@ static int rt1305_i2c_probe(struct i2c_client *i2c)
 	rt1305_reset(rt1305->regmap);
 	rt1305_calibrate(rt1305);
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_rt1305,
 			rt1305_dai, ARRAY_SIZE(rt1305_dai));
 }

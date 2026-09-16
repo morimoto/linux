@@ -114,11 +114,12 @@ static int ntp8918_load_firmware(struct ntp8918_priv *ntp8918)
 
 static int ntp8918_snd_suspend(struct snd_soc_component *component)
 {
-	struct ntp8918_priv *ntp8918 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ntp8918_priv *ntp8918 = dev_get_drvdata(dev);
 
-	regcache_cache_only(component->regmap, true);
+	snd_soc_component_regcache_cache_only(component, true);
 
-	regmap_multi_reg_write_bypassed(component->regmap,
+	snd_soc_component_regmap_multi_reg_write_bypassed(component,
 					ntp8918_sound_off,
 					ARRAY_SIZE(ntp8918_sound_off));
 
@@ -129,7 +130,7 @@ static int ntp8918_snd_suspend(struct snd_soc_component *component)
 	fsleep(500);
 	reset_control_assert(ntp8918->reset);
 
-	regcache_mark_dirty(component->regmap);
+	snd_soc_component_regcache_mark_dirty(component);
 	clk_disable_unprepare(ntp8918->bck);
 
 	return 0;
@@ -137,7 +138,8 @@ static int ntp8918_snd_suspend(struct snd_soc_component *component)
 
 static int ntp8918_snd_resume(struct snd_soc_component *component)
 {
-	struct ntp8918_priv *ntp8918 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ntp8918_priv *ntp8918 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = clk_prepare_enable(ntp8918->bck);
@@ -146,7 +148,7 @@ static int ntp8918_snd_resume(struct snd_soc_component *component)
 
 	ntp8918_reset_gpio(ntp8918);
 
-	regmap_multi_reg_write_bypassed(component->regmap,
+	snd_soc_component_regmap_multi_reg_write_bypassed(component,
 					ntp8918_sound_on,
 					ARRAY_SIZE(ntp8918_sound_on));
 
@@ -156,8 +158,8 @@ static int ntp8918_snd_resume(struct snd_soc_component *component)
 		return ret;
 	}
 
-	regcache_cache_only(component->regmap, false);
-	snd_soc_component_cache_sync(component);
+	snd_soc_component_regcache_cache_only(component, false);
+	snd_soc_component_regcache_sync(component);
 
 	return 0;
 }
@@ -165,10 +167,10 @@ static int ntp8918_snd_resume(struct snd_soc_component *component)
 static int ntp8918_probe(struct snd_soc_component *component)
 {
 	int ret;
-	struct ntp8918_priv *ntp8918 = snd_soc_component_get_drvdata(component);
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ntp8918_priv *ntp8918 = dev_get_drvdata(dev);
 
-	ret = snd_soc_add_component_controls(component, ntp8918_vol_control,
+	ret = snd_soc_component_add_controls(component, ntp8918_vol_control,
 			ARRAY_SIZE(ntp8918_vol_control));
 	if (ret)
 		return dev_err_probe(dev, ret, "Failed to add controls\n");
@@ -206,8 +208,9 @@ static int ntp8918_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ntp8918_priv *ntp8918 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ntp8918_priv *ntp8918 = dev_get_drvdata(dev);
 	unsigned int input_fmt = 0;
 	unsigned int gsa_fmt = 0;
 	unsigned int gsa_fmt_mask;
@@ -282,8 +285,9 @@ static int ntp8918_hw_params(struct snd_pcm_substream *substream,
 
 static int ntp8918_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ntp8918_priv *ntp8918 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ntp8918_priv *ntp8918 = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
@@ -301,8 +305,9 @@ static int ntp8918_digital_mute(struct snd_soc_dai *dai, int mute, int stream)
 {
 	unsigned int mute_mask = NTP8918_SOFT_MUTE_SM1 |
 				 NTP8918_SOFT_MUTE_SM2;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
-	return snd_soc_component_update_bits(dai->component, NTP8918_SOFT_MUTE,
+	return snd_soc_component_update_bits(component, NTP8918_SOFT_MUTE,
 					     mute_mask, mute ? mute_mask : 0);
 }
 
@@ -363,7 +368,7 @@ static int ntp8918_i2c_probe(struct i2c_client *i2c)
 		return dev_err_probe(&i2c->dev, PTR_ERR(regmap),
 				     "Failed to allocate regmap\n");
 
-	ret = devm_snd_soc_register_component(&i2c->dev, &soc_component_ntp8918,
+	ret = devm_snd_soc_component_register(&i2c->dev, &soc_component_ntp8918,
 					      &ntp8918_dai, 1);
 	if (ret)
 		return dev_err_probe(&i2c->dev, ret,

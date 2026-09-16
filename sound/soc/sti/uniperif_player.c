@@ -571,7 +571,9 @@ static int uni_player_ctl_iec958_get(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *player = priv->dai_data.uni;
 	struct snd_aes_iec958 *iec958 = &player->stream_settings.iec958;
 
@@ -587,7 +589,9 @@ static int uni_player_ctl_iec958_put(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *player = priv->dai_data.uni;
 	struct snd_aes_iec958 *iec958 =  &player->stream_settings.iec958;
 
@@ -635,7 +639,9 @@ static int snd_sti_clk_adjustment_get(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *player = priv->dai_data.uni;
 
 	guard(mutex)(&player->ctrl_lock);
@@ -648,7 +654,9 @@ static int snd_sti_clk_adjustment_put(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *player = priv->dai_data.uni;
 	int ret = 0;
 
@@ -685,7 +693,9 @@ static struct snd_kcontrol_new *snd_sti_iec_ctl[] = {
 static int uni_player_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *player = priv->dai_data.uni;
 	int ret;
 
@@ -716,7 +726,9 @@ static int uni_player_startup(struct snd_pcm_substream *substream,
 static int uni_player_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 				 unsigned int freq, int dir)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *player = priv->dai_data.uni;
 	int ret;
 
@@ -737,7 +749,9 @@ static int uni_player_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 static int uni_player_prepare(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *player = priv->dai_data.uni;
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	int transfer_size, trigger_limit;
@@ -967,7 +981,9 @@ EXPORT_SYMBOL_GPL(uni_player_resume);
 static int uni_player_trigger(struct snd_pcm_substream *substream,
 			      int cmd, struct snd_soc_dai *dai)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *player = priv->dai_data.uni;
 
 	switch (cmd) {
@@ -985,7 +1001,9 @@ static int uni_player_trigger(struct snd_pcm_substream *substream,
 static void uni_player_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *player = priv->dai_data.uni;
 
 	guard(spinlock_irqsave)(&player->irq_lock);

@@ -34,8 +34,9 @@ struct dmic {
 static int dmic_daiops_trigger(struct snd_pcm_substream *substream,
 			       int cmd, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct dmic *dmic = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct dmic *dmic = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_STOP:
@@ -55,7 +56,8 @@ static const struct snd_soc_dai_ops dmic_dai_ops = {
 static int dmic_aif_event(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *kcontrol, int event) {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct dmic *dmic = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct dmic *dmic = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (event) {
@@ -106,29 +108,26 @@ static struct snd_soc_dai_driver dmic_dai = {
 
 static int dmic_component_probe(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct dmic *dmic;
 
-	dmic = devm_kzalloc(component->dev, sizeof(*dmic), GFP_KERNEL);
+	dmic = devm_kzalloc(dev, sizeof(*dmic), GFP_KERNEL);
 	if (!dmic)
 		return -ENOMEM;
 
-	dmic->vref = devm_regulator_get_optional(component->dev, "vref");
+	dmic->vref = devm_regulator_get_optional(dev, "vref");
 	if (IS_ERR(dmic->vref)) {
 		if (PTR_ERR(dmic->vref) != -ENODEV)
-			return dev_err_probe(component->dev, PTR_ERR(dmic->vref),
-					     "Failed to get vref\n");
+			return dev_err_probe(dev, PTR_ERR(dmic->vref), "Failed to get vref\n");
 		dmic->vref = NULL;
 	}
 
-	dmic->gpio_en = devm_gpiod_get_optional(component->dev,
-						"dmicen", GPIOD_OUT_LOW);
+	dmic->gpio_en = devm_gpiod_get_optional(dev, "dmicen", GPIOD_OUT_LOW);
 	if (IS_ERR(dmic->gpio_en))
 		return PTR_ERR(dmic->gpio_en);
 
-	device_property_read_u32(component->dev, "wakeup-delay-ms",
-				 &dmic->wakeup_delay);
-	device_property_read_u32(component->dev, "modeswitch-delay-ms",
-				 &dmic->modeswitch_delay);
+	device_property_read_u32(dev, "wakeup-delay-ms", &dmic->wakeup_delay);
+	device_property_read_u32(dev, "modeswitch-delay-ms", &dmic->modeswitch_delay);
 	if (wakeup_delay)
 		dmic->wakeup_delay  = wakeup_delay;
 	if (modeswitch_delay)
@@ -137,7 +136,7 @@ static int dmic_component_probe(struct snd_soc_component *component)
 	if (dmic->modeswitch_delay > MAX_MODESWITCH_DELAY)
 		dmic->modeswitch_delay = MAX_MODESWITCH_DELAY;
 
-	snd_soc_component_set_drvdata(component, dmic);
+	dev_set_drvdata(dev, dmic);
 
 	return 0;
 }
@@ -188,7 +187,7 @@ static int dmic_dev_probe(struct platform_device *pdev)
 		}
 	}
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&soc_dmic, dai_drv, 1);
 }
 

@@ -218,7 +218,8 @@ static int wm9712_hp_mixer_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct wm9712_priv *wm9712 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9712_priv *wm9712 = dev_get_drvdata(dev);
 	unsigned int val = ucontrol->value.integer.value[0];
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
@@ -260,7 +261,8 @@ static int wm9712_hp_mixer_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct wm9712_priv *wm9712 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9712_priv *wm9712 = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	unsigned int shift, mixer;
@@ -518,7 +520,7 @@ static const struct snd_soc_dapm_route wm9712_audio_map[] = {
 static int ac97_prepare(struct snd_pcm_substream *substream,
 			struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int reg;
 	struct snd_pcm_runtime *runtime = substream->runtime;
 
@@ -535,7 +537,7 @@ static int ac97_prepare(struct snd_pcm_substream *substream,
 static int ac97_aux_prepare(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 
 	snd_soc_component_update_bits(component, AC97_EXTENDED_STATUS, 0x1, 0x1);
@@ -609,7 +611,8 @@ static int wm9712_set_bias_level(struct snd_soc_component *component,
 
 static int wm9712_soc_resume(struct snd_soc_component *component)
 {
-	struct wm9712_priv *wm9712 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9712_priv *wm9712 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -621,14 +624,15 @@ static int wm9712_soc_resume(struct snd_soc_component *component)
 	snd_soc_dapm_force_bias_level(dapm, SND_SOC_BIAS_STANDBY);
 
 	if (ret == 0)
-		snd_soc_component_cache_sync(component);
+		snd_soc_component_regcache_sync(component);
 
 	return ret;
 }
 
 static int wm9712_soc_probe(struct snd_soc_component *component)
 {
-	struct wm9712_priv *wm9712 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9712_priv *wm9712 = dev_get_drvdata(dev);
 	struct regmap *regmap;
 
 	if (wm9712->mfd_pdata) {
@@ -641,8 +645,7 @@ static int wm9712_soc_probe(struct snd_soc_component *component)
 						      WM9712_VENDOR_ID_MASK);
 		if (IS_ERR(wm9712->ac97)) {
 			ret = PTR_ERR(wm9712->ac97);
-			dev_err(component->dev,
-				"Failed to register AC97 codec: %d\n", ret);
+			dev_err(dev, "Failed to register AC97 codec: %d\n", ret);
 			return ret;
 		}
 
@@ -655,7 +658,7 @@ static int wm9712_soc_probe(struct snd_soc_component *component)
 		return -ENXIO;
 	}
 
-	snd_soc_component_init_regmap(component, regmap);
+	snd_soc_component_regmap_init(component, regmap);
 
 	/* set alc mux to none */
 	snd_soc_component_update_bits(component, AC97_VIDEO, 0x3000, 0x3000);
@@ -665,10 +668,11 @@ static int wm9712_soc_probe(struct snd_soc_component *component)
 
 static void wm9712_soc_remove(struct snd_soc_component *component)
 {
-	struct wm9712_priv *wm9712 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9712_priv *wm9712 = dev_get_drvdata(dev);
 
 	if (IS_ENABLED(CONFIG_SND_SOC_AC97_BUS) && !wm9712->mfd_pdata) {
-		snd_soc_component_exit_regmap(component);
+		snd_soc_component_regmap_exit(component);
 		snd_soc_free_ac97_component(wm9712->ac97);
 	}
 }
@@ -703,7 +707,7 @@ static int wm9712_probe(struct platform_device *pdev)
 	wm9712->mfd_pdata = dev_get_platdata(&pdev->dev);
 	platform_set_drvdata(pdev, wm9712);
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&soc_component_dev_wm9712, wm9712_dai, ARRAY_SIZE(wm9712_dai));
 }
 

@@ -155,7 +155,8 @@ static void tas2552_sw_shutdown(struct tas2552_data *tas2552, int sw_shutdown)
 static int tas2552_setup_pll(struct snd_soc_component *component,
 			     struct snd_pcm_hw_params *params)
 {
-	struct tas2552_data *tas2552 = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2552_data *tas2552 = dev_get_drvdata(dev);
 	bool bypass_pll = false;
 	unsigned int pll_clk = params_rate(params) * 512;
 	unsigned int pll_clkin = tas2552->pll_clkin;
@@ -236,8 +237,9 @@ static int tas2552_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2552_data *tas2552 = dev_get_drvdata(component->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2552_data *tas2552 = dev_get_drvdata(dev);
 	int cpf;
 	u8 ser_ctrl1_reg, wclk_rate;
 
@@ -259,7 +261,7 @@ static int tas2552_hw_params(struct snd_pcm_substream *substream,
 		cpf = 64 + tas2552->tdm_delay;
 		break;
 	default:
-		dev_err(component->dev, "Not supported sample size: %d\n",
+		dev_err(dev, "Not supported sample size: %d\n",
 			params_width(params));
 		return -EINVAL;
 	}
@@ -308,7 +310,7 @@ static int tas2552_hw_params(struct snd_pcm_substream *substream,
 		wclk_rate = TAS2552_WCLK_FREQ_176_192KHZ;
 		break;
 	default:
-		dev_err(component->dev, "Not supported sample rate: %d\n",
+		dev_err(dev, "Not supported sample rate: %d\n",
 			params_rate(params));
 		return -EINVAL;
 	}
@@ -325,8 +327,9 @@ static int tas2552_hw_params(struct snd_pcm_substream *substream,
 static int tas2552_prepare(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2552_data *tas2552 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2552_data *tas2552 = dev_get_drvdata(dev);
 	int delay = 0;
 
 	/* TDM slot selection only valid in DSP_A/_B mode */
@@ -343,8 +346,9 @@ static int tas2552_prepare(struct snd_pcm_substream *substream,
 
 static int tas2552_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2552_data *tas2552 = dev_get_drvdata(component->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2552_data *tas2552 = dev_get_drvdata(dev);
 	u8 serial_format;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -361,7 +365,7 @@ static int tas2552_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		serial_format = (TAS2552_BCLKDIR | TAS2552_WCLKDIR);
 		break;
 	default:
-		dev_vdbg(component->dev, "DAI Format master is not found\n");
+		dev_vdbg(dev, "DAI Format master is not found\n");
 		return -EINVAL;
 	}
 
@@ -380,7 +384,7 @@ static int tas2552_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		serial_format |= TAS2552_DATAFORMAT_LEFT_J;
 		break;
 	default:
-		dev_vdbg(component->dev, "DAI Format is not found\n");
+		dev_vdbg(dev, "DAI Format is not found\n");
 		return -EINVAL;
 	}
 	tas2552->dai_fmt = fmt & SND_SOC_DAIFMT_FORMAT_MASK;
@@ -393,8 +397,9 @@ static int tas2552_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int tas2552_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 				  unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2552_data *tas2552 = dev_get_drvdata(component->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2552_data *tas2552 = dev_get_drvdata(dev);
 	u8 reg, mask, val;
 
 	switch (clk_id) {
@@ -402,8 +407,7 @@ static int tas2552_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 	case TAS2552_PLL_CLKIN_IVCLKIN:
 		if (freq < 512000 || freq > 24576000) {
 			/* out of range PLL_CLKIN, fall back to use BCLK */
-			dev_warn(component->dev, "Out of range PLL_CLKIN: %u\n",
-				 freq);
+			dev_warn(dev, "Out of range PLL_CLKIN: %u\n", freq);
 			clk_id = TAS2552_PLL_CLKIN_BCLK;
 			freq = 0;
 		}
@@ -427,7 +431,7 @@ static int tas2552_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 		tas2552->pdm_clk = freq;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clk id: %d\n", clk_id);
+		dev_err(dev, "Invalid clk id: %d\n", clk_id);
 		return -EINVAL;
 	}
 
@@ -440,19 +444,20 @@ static int tas2552_set_dai_tdm_slot(struct snd_soc_dai *dai,
 				    unsigned int tx_mask, unsigned int rx_mask,
 				    int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2552_data *tas2552 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2552_data *tas2552 = dev_get_drvdata(dev);
 	unsigned int lsb;
 
 	if (unlikely(!tx_mask)) {
-		dev_err(component->dev, "tx masks need to be non 0\n");
+		dev_err(dev, "tx masks need to be non 0\n");
 		return -EINVAL;
 	}
 
 	/* TDM based on DSP mode requires slots to be adjacent */
 	lsb = __ffs(tx_mask);
 	if ((lsb + 1) != __fls(tx_mask)) {
-		dev_err(component->dev, "Invalid mask, slots must be adjacent\n");
+		dev_err(dev, "Invalid mask, slots must be adjacent\n");
 		return -EINVAL;
 	}
 
@@ -468,7 +473,7 @@ static int tas2552_set_dai_tdm_slot(struct snd_soc_dai *dai,
 static int tas2552_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
 	u8 cfg1_reg = 0;
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (mute)
 		cfg1_reg |= TAS2552_MUTE;
@@ -591,7 +596,8 @@ static const struct snd_kcontrol_new tas2552_snd_controls[] = {
 
 static int tas2552_component_probe(struct snd_soc_component *component)
 {
-	struct tas2552_data *tas2552 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2552_data *tas2552 = dev_get_drvdata(dev);
 	int ret;
 
 	tas2552->component = component;
@@ -600,17 +606,15 @@ static int tas2552_component_probe(struct snd_soc_component *component)
 				    tas2552->supplies);
 
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to enable supplies: %d\n",
-			ret);
+		dev_err(dev, "Failed to enable supplies: %d\n", ret);
 		return ret;
 	}
 
 	gpiod_set_value_cansleep(tas2552->enable_gpio, 1);
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0) {
-		dev_err(component->dev, "Enabling device failed: %d\n",
-			ret);
+		dev_err(dev, "Enabling device failed: %d\n", ret);
 		goto probe_fail;
 	}
 
@@ -629,7 +633,7 @@ static int tas2552_component_probe(struct snd_soc_component *component)
 	return 0;
 
 probe_fail:
-	pm_runtime_put_noidle(component->dev);
+	pm_runtime_put_noidle(dev);
 	gpiod_set_value_cansleep(tas2552->enable_gpio, 0);
 
 	regulator_bulk_disable(ARRAY_SIZE(tas2552->supplies),
@@ -639,9 +643,10 @@ probe_fail:
 
 static void tas2552_component_remove(struct snd_soc_component *component)
 {
-	struct tas2552_data *tas2552 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2552_data *tas2552 = dev_get_drvdata(dev);
 
-	pm_runtime_put(component->dev);
+	pm_runtime_put(dev);
 
 	gpiod_set_value_cansleep(tas2552->enable_gpio, 0);
 };
@@ -649,29 +654,29 @@ static void tas2552_component_remove(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int tas2552_suspend(struct snd_soc_component *component)
 {
-	struct tas2552_data *tas2552 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2552_data *tas2552 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = regulator_bulk_disable(ARRAY_SIZE(tas2552->supplies),
 					tas2552->supplies);
 
 	if (ret != 0)
-		dev_err(component->dev, "Failed to disable supplies: %d\n",
-			ret);
+		dev_err(dev, "Failed to disable supplies: %d\n", ret);
 	return ret;
 }
 
 static int tas2552_resume(struct snd_soc_component *component)
 {
-	struct tas2552_data *tas2552 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2552_data *tas2552 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(tas2552->supplies),
 				    tas2552->supplies);
 
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to enable supplies: %d\n",
-			ret);
+		dev_err(dev, "Failed to enable supplies: %d\n", ret);
 	}
 
 	return ret;
@@ -750,7 +755,7 @@ static int tas2552_probe(struct i2c_client *client)
 
 	dev_set_drvdata(&client->dev, data);
 
-	ret = devm_snd_soc_register_component(&client->dev,
+	ret = devm_snd_soc_component_register(&client->dev,
 				      &soc_component_dev_tas2552,
 				      tas2552_dai, ARRAY_SIZE(tas2552_dai));
 	if (ret < 0) {

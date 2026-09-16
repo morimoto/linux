@@ -347,11 +347,12 @@ static int rtq9128_dac_power_event(struct snd_soc_dapm_widget *w, struct snd_kco
 				   int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct rtq9128_data *data = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct rtq9128_data *data = dev_get_drvdata(dev);
 	unsigned int shift, mask;
 	int ret;
 
-	dev_dbg(comp->dev, "%s: %s event %d\n", __func__, w->name, event);
+	dev_dbg(dev, "%s: %s event %d\n", __func__, w->name, event);
 
 	if (snd_soc_dapm_widget_name_cmp(w, "DAC1") == 0)
 		shift = 6;
@@ -452,15 +453,16 @@ static const struct rtq9128_init_reg rtq9128_dl_tables[] = {
 
 static int rtq9128_component_probe(struct snd_soc_component *comp)
 {
-	struct rtq9128_data *data = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct rtq9128_data *data = dev_get_drvdata(dev);
 	const struct rtq9128_init_reg *table, *curr;
 	size_t table_size;
 	unsigned int val;
 	int i, ret;
 
-	ret = pm_runtime_resume_and_get(comp->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0) {
-		dev_err(comp->dev, "Failed to resume device (%d)\n", ret);
+		dev_err(dev, "Failed to resume device (%d)\n", ret);
 		return ret;
 	}
 
@@ -495,8 +497,8 @@ static int rtq9128_component_probe(struct snd_soc_component *comp)
 			return ret;
 	}
 
-	pm_runtime_mark_last_busy(comp->dev);
-	pm_runtime_put(comp->dev);
+	pm_runtime_mark_last_busy(dev);
+	pm_runtime_put(dev);
 
 	return 0;
 }
@@ -527,8 +529,9 @@ static const struct snd_soc_component_driver rtq9154_comp_driver = {
 
 static int rtq9128_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct rtq9128_data *data = snd_soc_dai_get_drvdata(dai);
-	struct device *dev = dai->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rtq9128_data *data = dev_get_drvdata(dev);
 
 	dev_dbg(dev, "%s: fmt 0x%8x\n", __func__, fmt);
 
@@ -547,9 +550,9 @@ static int rtq9128_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rtq9128_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 				    unsigned int rx_mask, int slots, int slot_width)
 {
-	struct rtq9128_data *data = snd_soc_dai_get_drvdata(dai);
-	struct snd_soc_component *comp = dai->component;
-	struct device *dev = dai->dev;
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct rtq9128_data *data = dev_get_drvdata(dev);
 	unsigned int mask, start_loc, srcin_select;
 	int i, frame_length, ret;
 
@@ -613,10 +616,10 @@ static int rtq9128_dai_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mas
 static int rtq9128_dai_hw_params(struct snd_pcm_substream *stream, struct snd_pcm_hw_params *param,
 				 struct snd_soc_dai *dai)
 {
-	struct rtq9128_data *data = snd_soc_dai_get_drvdata(dai);
 	unsigned int width, slot_width, bitrate, audbit, dolen;
-	struct snd_soc_component *comp = dai->component;
-	struct device *dev = dai->dev;
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct rtq9128_data *data = dev_get_drvdata(dev);
 	unsigned int fmtval, audfmt;
 	int ret;
 
@@ -716,8 +719,8 @@ static int rtq9128_dai_hw_params(struct snd_pcm_substream *stream, struct snd_pc
 
 static int rtq9128_dai_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *comp = dai->component;
-	struct device *dev = dai->dev;
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
 	int ret;
 
 	dev_dbg(dev, "%s: mute (%d), stream (%d)\n", __func__, mute, stream);
@@ -834,7 +837,7 @@ static int rtq9128_probe(struct i2c_client *i2c)
 	if (ret)
 		return dev_err_probe(dev, ret, "Failed to enable pm runtime\n");
 
-	return devm_snd_soc_register_component(dev, comp_drv, &rtq9128_dai, 1);
+	return devm_snd_soc_component_register(dev, comp_drv, &rtq9128_dai, 1);
 }
 
 static int rtq9128_pm_runtime_suspend(struct device *dev)

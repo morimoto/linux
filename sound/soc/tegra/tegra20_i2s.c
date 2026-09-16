@@ -84,7 +84,9 @@ disable_clocks:
 static int tegra20_i2s_set_fmt(struct snd_soc_dai *dai,
 				unsigned int fmt)
 {
-	struct tegra20_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra20_i2s *i2s = dev_get_drvdata(dev);
 	unsigned int mask = 0, val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
@@ -141,8 +143,9 @@ static int tegra20_i2s_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct device *dev = dai->dev;
-	struct tegra20_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra20_i2s *i2s = dev_get_drvdata(dev);
 	unsigned int mask, val;
 	int ret, sample_size, srate, i2sclock, bitcnt;
 
@@ -226,7 +229,9 @@ static void tegra20_i2s_stop_capture(struct tegra20_i2s *i2s)
 static int tegra20_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 			       struct snd_soc_dai *dai)
 {
-	struct tegra20_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra20_i2s *i2s = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -254,10 +259,12 @@ static int tegra20_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int tegra20_i2s_probe(struct snd_soc_dai *dai)
 {
-	struct tegra20_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra20_i2s *i2s = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai,	&i2s->playback_dma_data,
-					&i2s->capture_dma_data);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &i2s->playback_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &i2s->capture_dma_data);
 
 	return 0;
 }
@@ -271,13 +278,15 @@ static int tegra20_i2s_filter_rates(struct snd_pcm_hw_params *params,
 {
 	struct snd_interval *r = hw_param_interval(params, rule->var);
 	struct snd_soc_dai *dai = rule->private;
-	struct tegra20_i2s *i2s = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra20_i2s *i2s = dev_get_drvdata(dev);
 	struct clk *parent = clk_get_parent(i2s->clk_i2s);
 	unsigned long i, parent_rate, valid_rates = 0;
 
 	parent_rate = clk_get_rate(parent);
 	if (!parent_rate) {
-		dev_err(dai->dev, "Can't get parent clock rate\n");
+		dev_err(dev, "Can't get parent clock rate\n");
 		return -EINVAL;
 	}
 
@@ -300,7 +309,10 @@ static int tegra20_i2s_filter_rates(struct snd_pcm_hw_params *params,
 static int tegra20_i2s_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	if (!device_property_read_bool(dai->dev, "nvidia,fixed-parent-rate"))
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	if (!device_property_read_bool(dev, "nvidia,fixed-parent-rate"))
 		return 0;
 
 	return snd_pcm_hw_rule_add(substream->runtime, 0,
@@ -460,7 +472,7 @@ static int tegra20_i2s_platform_probe(struct platform_device *pdev)
 
 	pm_runtime_enable(&pdev->dev);
 
-	ret = snd_soc_register_component(&pdev->dev, &tegra20_i2s_component,
+	ret = snd_soc_component_register(&pdev->dev, &tegra20_i2s_component,
 					 &i2s->dai, 1);
 	if (ret) {
 		dev_err(&pdev->dev, "Could not register DAI: %d\n", ret);
@@ -477,7 +489,7 @@ static int tegra20_i2s_platform_probe(struct platform_device *pdev)
 	return 0;
 
 err_unregister_component:
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_component_unregister(&pdev->dev);
 err_pm_disable:
 	pm_runtime_disable(&pdev->dev);
 err:
@@ -487,7 +499,7 @@ err:
 static void tegra20_i2s_platform_remove(struct platform_device *pdev)
 {
 	tegra_pcm_platform_unregister(&pdev->dev);
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_component_unregister(&pdev->dev);
 	pm_runtime_disable(&pdev->dev);
 }
 

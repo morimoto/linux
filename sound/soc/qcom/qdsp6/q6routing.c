@@ -501,7 +501,8 @@ static int msm_routing_get_audio_mixer(struct snd_kcontrol *kcontrol,
 	    (struct soc_mixer_control *)kcontrol->private_value;
 	int session_id = mc->shift;
 	struct snd_soc_component *c = snd_soc_dapm_to_component(dapm);
-	struct msm_routing_data *priv = dev_get_drvdata(c->dev);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct msm_routing_data *priv = dev_get_drvdata(dev);
 	struct session_data *session = &priv->sessions[session_id];
 
 	if (session->port_id == mc->reg)
@@ -517,7 +518,8 @@ static int msm_routing_put_audio_mixer(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *c = snd_soc_dapm_to_component(dapm);
-	struct msm_routing_data *data = dev_get_drvdata(c->dev);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct msm_routing_data *data = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 		    (struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_dapm_update *update = NULL;
@@ -1131,8 +1133,9 @@ static int routing_hw_params(struct snd_soc_component *component,
 			     struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct msm_routing_data *data = dev_get_drvdata(component->dev);
-	unsigned int be_id = snd_soc_rtd_to_cpu(rtd, 0)->id;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct msm_routing_data *data = dev_get_drvdata(dev);
+	unsigned int be_id = snd_soc_dai_id(snd_soc_rtd_to_cpu(rtd, 0));
 	struct session_data *session;
 	int path_type;
 
@@ -1218,7 +1221,7 @@ static int q6pcm_routing_probe(struct platform_device *pdev)
 	mutex_init(&routing_data->lock);
 	dev_set_drvdata(dev, routing_data);
 
-	return devm_snd_soc_register_component(dev, &msm_soc_routing_component,
+	return devm_snd_soc_component_register(dev, &msm_soc_routing_component,
 					  NULL, 0);
 }
 

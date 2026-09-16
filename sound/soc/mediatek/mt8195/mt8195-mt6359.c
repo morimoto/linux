@@ -156,8 +156,9 @@ static int mt8195_mt6359_mtkaif_calibration(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_component *cmpnt_afe =
 		snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
 	struct snd_soc_component *cmpnt_codec =
-		snd_soc_rtd_to_codec(rtd, 0)->component;
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt_afe);
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
+	struct device *afe_dev = snd_soc_component_to_dev(cmpnt_afe);
+	struct mtk_base_afe *afe = dev_get_drvdata(afe_dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtkaif_param *param = &afe_priv->mtkaif_params;
 	int chosen_phase_1, chosen_phase_2, chosen_phase_3;
@@ -317,7 +318,7 @@ static int mt8195_mt6359_mtkaif_calibration(struct snd_soc_pcm_runtime *rtd)
 static int mt8195_mt6359_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_component *cmpnt_codec =
-		snd_soc_rtd_to_codec(rtd, 0)->component;
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	/* set mtkaif protocol */
 	mt6359_set_mtkaif_protocol(cmpnt_codec,
@@ -354,10 +355,10 @@ static const struct snd_soc_ops mt8195_dptx_ops = {
 
 static int mt8195_dptx_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(rtd->card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_jack *jack = &soc_card_data->card_data->jacks[MT8195_JACK_DP];
 	struct snd_soc_component *cmpnt_codec =
-		snd_soc_rtd_to_codec(rtd, 0)->component;
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	int ret;
 
 	ret = snd_soc_card_jack_new(rtd->card, "DP Jack", SND_JACK_AVOUT, jack);
@@ -369,10 +370,10 @@ static int mt8195_dptx_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 static int mt8195_hdmi_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(rtd->card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_jack *jack = &soc_card_data->card_data->jacks[MT8195_JACK_HDMI];
 	struct snd_soc_component *cmpnt_codec =
-		snd_soc_rtd_to_codec(rtd, 0)->component;
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	int ret;
 
 	ret = snd_soc_card_jack_new(rtd->card, "HDMI Jack", SND_JACK_AVOUT, jack);
@@ -401,33 +402,34 @@ static int mt8195_rt5682_etdm_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	unsigned int rate = params_rate(params);
 	int bitwidth;
 	int ret;
 
 	bitwidth = snd_pcm_format_width(params_format(params));
 	if (bitwidth < 0) {
-		dev_err(card->dev, "invalid bit width: %d\n", bitwidth);
+		dev_err(dev, "invalid bit width: %d\n", bitwidth);
 		return bitwidth;
 	}
 
 	ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x00, 0x0, 0x2, bitwidth);
 	if (ret) {
-		dev_err(card->dev, "failed to set tdm slot\n");
+		dev_err(dev, "failed to set tdm slot\n");
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, RT5682_PLL1, RT5682_PLL1_S_MCLK,
 				  rate * 256, rate * 512);
 	if (ret) {
-		dev_err(card->dev, "failed to set pll\n");
+		dev_err(dev, "failed to set pll\n");
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5682_SCLK_S_PLL1,
 				     rate * 512, SND_SOC_CLOCK_IN);
 	if (ret) {
-		dev_err(card->dev, "failed to set sysclk\n");
+		dev_err(dev, "failed to set sysclk\n");
 		return ret;
 	}
 
@@ -442,13 +444,14 @@ static const struct snd_soc_ops mt8195_rt5682_etdm_ops = {
 static int mt8195_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_component *cmpnt_codec =
-		snd_soc_rtd_to_codec(rtd, 0)->component;
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(rtd->card);
+		snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(rtd->card);
 	struct mt8195_mt6359_priv *priv = soc_card_data->mach_priv;
 	struct snd_soc_jack *jack = &soc_card_data->card_data->jacks[MT8195_JACK_HEADSET];
 	struct snd_soc_component *cmpnt_afe =
 		snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt_afe);
+	struct device *afe_dev = snd_soc_component_to_dev(cmpnt_afe);
+	struct mtk_base_afe *afe = dev_get_drvdata(afe_dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
@@ -492,6 +495,7 @@ static int mt8195_rt1011_etdm_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai;
 	struct snd_soc_card *card = rtd->card;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int srate, i, ret;
 
 	srate = params_rate(params);
@@ -500,7 +504,7 @@ static int mt8195_rt1011_etdm_hw_params(struct snd_pcm_substream *substream,
 		ret = snd_soc_dai_set_pll(codec_dai, 0, RT1011_PLL1_S_BCLK,
 					  64 * srate, 256 * srate);
 		if (ret < 0) {
-			dev_err(card->dev, "codec_dai clock not set\n");
+			dev_err(dev, "codec_dai clock not set\n");
 			return ret;
 		}
 
@@ -508,7 +512,7 @@ static int mt8195_rt1011_etdm_hw_params(struct snd_pcm_substream *substream,
 					     RT1011_FS_SYS_PRE_S_PLL1,
 					     256 * srate, SND_SOC_CLOCK_IN);
 		if (ret < 0) {
-			dev_err(card->dev, "codec_dai clock not set\n");
+			dev_err(dev, "codec_dai clock not set\n");
 			return ret;
 		}
 	}
@@ -533,7 +537,7 @@ static int mt8195_sof_be_hw_params(struct snd_pcm_substream *substream,
 			break;
 	}
 
-	if (cmpnt_afe && !pm_runtime_active(cmpnt_afe->dev)) {
+	if (cmpnt_afe && !pm_runtime_active(snd_soc_component_to_dev(cmpnt_afe))) {
 		dev_err(rtd->dev, "afe pm runtime is not active!!\n");
 		return -EINVAL;
 	}
@@ -559,7 +563,7 @@ static int mt8195_rt1011_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, mt8195_dual_speaker_controls,
+	ret = snd_soc_card_add_controls(card, mt8195_dual_speaker_controls,
 					ARRAY_SIZE(mt8195_dual_speaker_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
@@ -588,7 +592,7 @@ static int mt8195_dumb_amp_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, mt8195_speaker_controls,
+	ret = snd_soc_card_add_controls(card, mt8195_speaker_controls,
 					ARRAY_SIZE(mt8195_speaker_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
@@ -630,7 +634,7 @@ static int mt8195_max98390_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, mt8195_dual_speaker_controls,
+	ret = snd_soc_card_add_controls(card, mt8195_dual_speaker_controls,
 					ARRAY_SIZE(mt8195_dual_speaker_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
@@ -661,8 +665,10 @@ static int mt8195_set_bias_level_post(struct snd_soc_card *card,
 	struct snd_soc_dapm_context *dapm, enum snd_soc_bias_level level)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(card);
 	struct mt8195_mt6359_priv *priv = soc_card_data->mach_priv;
+	struct device *card_dev = snd_soc_card_to_dev(card);
+	const char *component_name;
 	int ret;
 
 	/*
@@ -670,9 +676,12 @@ static int mt8195_set_bias_level_post(struct snd_soc_card *card,
 	 * function for rt5682 and rt5682s codec, or the unexpected pop happens
 	 * at the end of playback.
 	 */
-	if (!component ||
-	    (strcmp(component->name, RT5682_DEV0_NAME) &&
-	    strcmp(component->name, RT5682S_DEV0_NAME)))
+	if (!component)
+		return 0;
+
+	component_name = snd_soc_component_name(component);
+	if (strcmp(component_name, RT5682_DEV0_NAME) &&
+	    strcmp(component_name, RT5682S_DEV0_NAME))
 		return 0;
 
 	switch (level) {
@@ -681,15 +690,15 @@ static int mt8195_set_bias_level_post(struct snd_soc_card *card,
 			return 0;
 
 		clk_disable_unprepare(priv->i2so1_mclk);
-		dev_dbg(card->dev, "Disable i2so1 mclk\n");
+		dev_dbg(card_dev, "Disable i2so1 mclk\n");
 		break;
 	case SND_SOC_BIAS_ON:
 		ret = clk_prepare_enable(priv->i2so1_mclk);
 		if (ret) {
-			dev_err(card->dev, "Can't enable i2so1 mclk: %d\n", ret);
+			dev_err(card_dev, "Can't enable i2so1 mclk: %d\n", ret);
 			return ret;
 		}
-		dev_dbg(card->dev, "Enable i2so1 mclk\n");
+		dev_dbg(card_dev, "Enable i2so1 mclk\n");
 		break;
 	default:
 		break;
@@ -1279,11 +1288,11 @@ static int mt8195_mt6359_legacy_probe(struct mtk_soc_card_data *soc_card_data)
 	struct snd_soc_card_driver *card_driver = card_data->card_driver;
 	struct device_node *codec_node, *dp_node, *hdmi_node;
 	struct snd_soc_dai_link *dai_link;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	bool is5682s, init6359 = false;
 	int i;
 
-	if (strstr(card->name, "_5682s")) {
+	if (strstr(snd_soc_card_name(card), "_5682s")) {
 		codec_node = of_find_compatible_node(NULL, NULL, "realtek,rt5682s");
 		is5682s = true;
 	} else {
@@ -1380,10 +1389,11 @@ static int mt8195_mt6359_soc_card_probe(struct mtk_soc_card_data *soc_card_data,
 	struct snd_soc_card_driver *card_driver = card_data->card_driver;
 	struct mt8195_mt6359_priv *mach_priv;
 	struct snd_soc_dai_link *dai_link;
+	struct device *dev = snd_soc_card_to_dev(card);
 	u8 codec_init = 0;
 	int i;
 
-	mach_priv = devm_kzalloc(card->dev, sizeof(*mach_priv), GFP_KERNEL);
+	mach_priv = devm_kzalloc(dev, sizeof(*mach_priv), GFP_KERNEL);
 	if (!mach_priv)
 		return -ENOMEM;
 

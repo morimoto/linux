@@ -41,7 +41,8 @@ static int max9768_get_gpio(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct max9768 *max9768 = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct max9768 *max9768 = dev_get_drvdata(dev);
 	int val = gpiod_get_value_cansleep(max9768->mute);
 
 	ucontrol->value.integer.value[0] = !val;
@@ -53,7 +54,8 @@ static int max9768_set_gpio(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct max9768 *max9768 = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct max9768 *max9768 = dev_get_drvdata(dev);
 	bool val = !ucontrol->value.integer.value[0];
 	int ret;
 
@@ -135,7 +137,8 @@ static const struct snd_soc_dapm_route max9768_dapm_routes[] = {
 
 static int max9768_probe(struct snd_soc_component *component)
 {
-	struct max9768 *max9768 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max9768 *max9768 = dev_get_drvdata(dev);
 	int ret;
 
 	if (max9768->flags & MAX9768_FLAG_CLASSIC_PWM) {
@@ -146,7 +149,7 @@ static int max9768_probe(struct snd_soc_component *component)
 	}
 
 	if (max9768->mute) {
-		ret = snd_soc_add_component_controls(component, max9768_mute,
+		ret = snd_soc_component_add_controls(component, max9768_mute,
 				ARRAY_SIZE(max9768_mute));
 		if (ret)
 			return ret;
@@ -208,7 +211,7 @@ static int max9768_i2c_probe(struct i2c_client *client)
 	if (IS_ERR(max9768->regmap))
 		return PTR_ERR(max9768->regmap);
 
-	return devm_snd_soc_register_component(&client->dev,
+	return devm_snd_soc_component_register(&client->dev,
 		&max9768_component_driver, NULL, 0);
 }
 

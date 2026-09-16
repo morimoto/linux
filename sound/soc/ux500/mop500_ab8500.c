@@ -129,8 +129,7 @@ static int mclk_input_control_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_card *card = snd_kcontrol_chip(kcontrol);
-	struct mop500_ab8500_drvdata *drvdata =
-				snd_soc_card_get_drvdata(card);
+	struct mop500_ab8500_drvdata *drvdata = snd_soc_card_to_priv(card);
 
 	ucontrol->value.enumerated.item[0] = drvdata->mclk_sel;
 
@@ -141,8 +140,7 @@ static int mclk_input_control_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_card *card = snd_kcontrol_chip(kcontrol);
-	struct mop500_ab8500_drvdata *drvdata =
-				snd_soc_card_get_drvdata(card);
+	struct mop500_ab8500_drvdata *drvdata = snd_soc_card_to_priv(card);
 	unsigned int val = ucontrol->value.enumerated.item[0];
 
 	if (val > (unsigned int)MCLK_ULPCLK)
@@ -189,16 +187,16 @@ static struct snd_kcontrol_new mop500_ab8500_ctrls[] = {
 static int mop500_ab8500_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 
 	/* Set audio-clock source */
-	return mop500_ab8500_set_mclk(rtd->card->dev,
-				snd_soc_card_get_drvdata(rtd->card));
+	return mop500_ab8500_set_mclk(dev, snd_soc_card_to_priv(rtd->card));
 }
 
 static void mop500_ab8500_shutdown(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct device *dev = rtd->card->dev;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 
 	dev_dbg(dev, "%s: Enter\n", __func__);
 
@@ -215,7 +213,7 @@ static int mop500_ab8500_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct device *dev = rtd->card->dev;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	unsigned int fmt;
 	int channels, ret = 0, driver_mode, slots;
 	unsigned int sw_codec, sw_cpu;
@@ -244,7 +242,7 @@ static int mop500_ab8500_hw_params(struct snd_pcm_substream *substream,
 			mop500_ab8500_rate = params_rate(params);
 			mop500_ab8500_channels = params_channels(params);
 		}
-		__set_bit(cpu_dai->id, &mop500_ab8500_usage);
+		__set_bit(snd_soc_dai_id(cpu_dai), &mop500_ab8500_usage);
 	}
 
 	channels = params_channels(params);
@@ -339,7 +337,7 @@ static int mop500_ab8500_hw_free(struct snd_pcm_substream *substream)
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
 	guard(mutex)(&mop500_ab8500_params_lock);
-	__clear_bit(cpu_dai->id, &mop500_ab8500_usage);
+	__clear_bit(snd_soc_dai_id(cpu_dai), &mop500_ab8500_usage);
 
 	return 0;
 }
@@ -356,7 +354,7 @@ const struct snd_soc_ops mop500_ab8500_ops[] = {
 int mop500_ab8500_machine_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(rtd->card);
-	struct device *dev = rtd->card->dev;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	struct mop500_ab8500_drvdata *drvdata;
 	int ret;
 
@@ -369,7 +367,7 @@ int mop500_ab8500_machine_init(struct snd_soc_pcm_runtime *rtd)
 	if (!drvdata)
 		return -ENOMEM;
 
-	snd_soc_card_set_drvdata(rtd->card, drvdata);
+	snd_soc_card_set_priv(rtd->card, drvdata);
 
 	/* Setup clocks */
 
@@ -396,7 +394,7 @@ int mop500_ab8500_machine_init(struct snd_soc_pcm_runtime *rtd)
 	drvdata->mclk_sel = MCLK_ULPCLK;
 
 	/* Add controls */
-	ret = snd_soc_add_card_controls(rtd->card, mop500_ab8500_ctrls,
+	ret = snd_soc_card_add_controls(rtd->card, mop500_ab8500_ctrls,
 			ARRAY_SIZE(mop500_ab8500_ctrls));
 	if (ret < 0) {
 		pr_err("%s: Failed to add machine-controls (%d)!\n",
@@ -427,11 +425,11 @@ int mop500_ab8500_machine_init(struct snd_soc_pcm_runtime *rtd)
 
 void mop500_ab8500_remove(struct snd_soc_card *card)
 {
-	struct mop500_ab8500_drvdata *drvdata = snd_soc_card_get_drvdata(card);
+	struct mop500_ab8500_drvdata *drvdata = snd_soc_card_to_priv(card);
 
 	clk_put(drvdata->clk_ptr_sysclk);
 	clk_put(drvdata->clk_ptr_ulpclk);
 	clk_put(drvdata->clk_ptr_intclk);
 
-	snd_soc_card_set_drvdata(card, NULL);
+	snd_soc_card_set_priv(card, NULL);
 }

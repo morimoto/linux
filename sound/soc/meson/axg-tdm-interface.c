@@ -39,9 +39,12 @@ int axg_tdm_set_tdm_slots(struct snd_soc_dai *dai, u32 *tx_mask,
 			  u32 *rx_mask, unsigned int slots,
 			  unsigned int slot_width)
 {
-	struct axg_tdm_iface *iface = snd_soc_dai_get_drvdata(dai);
-	struct axg_tdm_stream *tx = snd_soc_dai_dma_data_get_playback(dai);
-	struct axg_tdm_stream *rx = snd_soc_dai_dma_data_get_capture(dai);
+	struct axg_tdm_stream *tx = snd_soc_dai_stream_dma_data_get_playback(dai);
+	struct axg_tdm_stream *rx = snd_soc_dai_stream_dma_data_get_capture(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_tdm_iface *iface = dev_get_drvdata(dev);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	unsigned int tx_slots, rx_slots;
 	unsigned int fmt = 0;
 
@@ -50,7 +53,7 @@ int axg_tdm_set_tdm_slots(struct snd_soc_dai *dai, u32 *tx_mask,
 
 	/* We should at least have a slot for a valid interface */
 	if (!tx_slots && !rx_slots) {
-		dev_err(dai->dev, "interface has no slot\n");
+		dev_err(dev, "interface has no slot\n");
 		return -EINVAL;
 	}
 
@@ -74,7 +77,7 @@ int axg_tdm_set_tdm_slots(struct snd_soc_dai *dai, u32 *tx_mask,
 		fmt |= SNDRV_PCM_FMTBIT_S8;
 		break;
 	default:
-		dev_err(dai->dev, "unsupported slot width: %d\n", slot_width);
+		dev_err(dev, "unsupported slot width: %d\n", slot_width);
 		return -EINVAL;
 	}
 
@@ -83,14 +86,14 @@ int axg_tdm_set_tdm_slots(struct snd_soc_dai *dai, u32 *tx_mask,
 	/* Amend the dai driver and let dpcm merge do its job */
 	if (tx) {
 		tx->mask = tx_mask;
-		dai->driver->playback.channels_max = tx_slots;
-		dai->driver->playback.formats = fmt;
+		dai_driver->playback.channels_max = tx_slots;
+		dai_driver->playback.formats = fmt;
 	}
 
 	if (rx) {
 		rx->mask = rx_mask;
-		dai->driver->capture.channels_max = rx_slots;
-		dai->driver->capture.formats = fmt;
+		dai_driver->capture.channels_max = rx_slots;
+		dai_driver->capture.formats = fmt;
 	}
 
 	return 0;
@@ -100,12 +103,14 @@ EXPORT_SYMBOL_GPL(axg_tdm_set_tdm_slots);
 static int axg_tdm_iface_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 				    unsigned int freq, int dir)
 {
-	struct axg_tdm_iface *iface = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_tdm_iface *iface = dev_get_drvdata(dev);
 	int ret = -ENOTSUPP;
 
 	if (dir == SND_SOC_CLOCK_OUT && clk_id == 0) {
 		if (!iface->mclk) {
-			dev_warn(dai->dev, "master clock not provided\n");
+			dev_warn(dev, "master clock not provided\n");
 		} else {
 			ret = clk_set_rate(iface->mclk, freq);
 			if (!ret)
@@ -118,12 +123,14 @@ static int axg_tdm_iface_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 static int axg_tdm_iface_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct axg_tdm_iface *iface = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_tdm_iface *iface = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_BP_FP:
 		if (!iface->mclk) {
-			dev_err(dai->dev, "cpu clock master: mclk missing\n");
+			dev_err(dev, "cpu clock master: mclk missing\n");
 			return -ENODEV;
 		}
 		break;
@@ -133,7 +140,7 @@ static int axg_tdm_iface_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 	case SND_SOC_DAIFMT_BP_FC:
 	case SND_SOC_DAIFMT_BC_FP:
-		dev_err(dai->dev, "only BP_FP and BC_FC are supported\n");
+		dev_err(dev, "only BP_FP and BC_FC are supported\n");
 		fallthrough;
 	default:
 		return -EINVAL;
@@ -146,17 +153,19 @@ static int axg_tdm_iface_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int axg_tdm_iface_startup(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
-	struct axg_tdm_iface *iface = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_tdm_iface *iface = dev_get_drvdata(dev);
 	struct axg_tdm_stream *ts =
-		snd_soc_dai_get_dma_data(dai, substream);
+		snd_soc_dai_stream_dma_data_get(dai, substream);
 	int ret;
 
 	if (!axg_tdm_slots_total(ts->mask)) {
-		dev_err(dai->dev, "interface has not slots\n");
+		dev_err(dev, "interface has not slots\n");
 		return -EINVAL;
 	}
 
-	if (snd_soc_component_active(dai->component)) {
+	if (snd_soc_component_active(component)) {
 		/* Apply component wide rate symmetry */
 		ret = snd_pcm_hw_constraint_single(substream->runtime,
 						   SNDRV_PCM_HW_PARAM_RATE,
@@ -172,7 +181,7 @@ static int axg_tdm_iface_startup(struct snd_pcm_substream *substream,
 	}
 
 	if (ret < 0)
-		dev_err(dai->dev, "can't set iface rate constraint\n");
+		dev_err(dev, "can't set iface rate constraint\n");
 	else
 		ret = 0;
 
@@ -183,8 +192,10 @@ static int axg_tdm_iface_set_stream(struct snd_pcm_substream *substream,
 				    struct snd_pcm_hw_params *params,
 				    struct snd_soc_dai *dai)
 {
-	struct axg_tdm_iface *iface = snd_soc_dai_get_drvdata(dai);
-	struct axg_tdm_stream *ts = snd_soc_dai_get_dma_data(dai, substream);
+	struct axg_tdm_stream *ts = snd_soc_dai_stream_dma_data_get(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_tdm_iface *iface = dev_get_drvdata(dev);
 	unsigned int channels = params_channels(params);
 	unsigned int width = params_width(params);
 
@@ -193,12 +204,12 @@ static int axg_tdm_iface_set_stream(struct snd_pcm_substream *substream,
 
 	/* Make sure this interface can cope with the stream */
 	if (axg_tdm_slots_total(ts->mask) < channels) {
-		dev_err(dai->dev, "not enough slots for channels\n");
+		dev_err(dev, "not enough slots for channels\n");
 		return -EINVAL;
 	}
 
 	if (iface->slot_width < width) {
-		dev_err(dai->dev, "incompatible slots width for stream\n");
+		dev_err(dev, "incompatible slots width for stream\n");
 		return -EINVAL;
 	}
 
@@ -213,13 +224,15 @@ static int axg_tdm_iface_set_stream(struct snd_pcm_substream *substream,
 static int axg_tdm_iface_set_lrclk(struct snd_soc_dai *dai,
 				   struct snd_pcm_hw_params *params)
 {
-	struct axg_tdm_iface *iface = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_tdm_iface *iface = dev_get_drvdata(dev);
 	unsigned int ratio_num;
 	int ret;
 
 	ret = clk_set_rate(iface->lrclk, params_rate(params));
 	if (ret) {
-		dev_err(dai->dev, "setting sample clock failed: %d\n", ret);
+		dev_err(dev, "setting sample clock failed: %d\n", ret);
 		return ret;
 	}
 
@@ -248,7 +261,7 @@ static int axg_tdm_iface_set_lrclk(struct snd_soc_dai *dai,
 
 	ret = clk_set_duty_cycle(iface->lrclk, ratio_num, 2);
 	if (ret) {
-		dev_err(dai->dev,
+		dev_err(dev,
 			"setting sample clock duty cycle failed: %d\n", ret);
 		return ret;
 	}
@@ -257,7 +270,7 @@ static int axg_tdm_iface_set_lrclk(struct snd_soc_dai *dai,
 	ret = clk_set_phase(iface->lrclk,
 			    axg_tdm_lrclk_invert(iface->fmt) ? 180 : 0);
 	if (ret) {
-		dev_err(dai->dev,
+		dev_err(dev,
 			"setting sample clock phase failed: %d\n", ret);
 		return ret;
 	}
@@ -268,7 +281,9 @@ static int axg_tdm_iface_set_lrclk(struct snd_soc_dai *dai,
 static int axg_tdm_iface_set_sclk(struct snd_soc_dai *dai,
 				  struct snd_pcm_hw_params *params)
 {
-	struct axg_tdm_iface *iface = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_tdm_iface *iface = dev_get_drvdata(dev);
 	unsigned long srate;
 	int ret;
 
@@ -280,7 +295,7 @@ static int axg_tdm_iface_set_sclk(struct snd_soc_dai *dai,
 	} else {
 		/* Check if we can actually get the bit clock from mclk */
 		if (iface->mclk_rate % srate) {
-			dev_err(dai->dev,
+			dev_err(dev,
 				"can't derive sclk %lu from mclk %lu\n",
 				srate, iface->mclk_rate);
 			return -EINVAL;
@@ -289,7 +304,7 @@ static int axg_tdm_iface_set_sclk(struct snd_soc_dai *dai,
 
 	ret = clk_set_rate(iface->sclk, srate);
 	if (ret) {
-		dev_err(dai->dev, "setting bit clock failed: %d\n", ret);
+		dev_err(dev, "setting bit clock failed: %d\n", ret);
 		return ret;
 	}
 
@@ -297,7 +312,7 @@ static int axg_tdm_iface_set_sclk(struct snd_soc_dai *dai,
 	ret = clk_set_phase(iface->sclk,
 			    axg_tdm_sclk_invert(iface->fmt) ? 0 : 180);
 	if (ret) {
-		dev_err(dai->dev, "setting bit clock phase failed: %d\n", ret);
+		dev_err(dev, "setting bit clock phase failed: %d\n", ret);
 		return ret;
 	}
 
@@ -308,8 +323,10 @@ static int axg_tdm_iface_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params,
 				   struct snd_soc_dai *dai)
 {
-	struct axg_tdm_iface *iface = snd_soc_dai_get_drvdata(dai);
-	struct axg_tdm_stream *ts = snd_soc_dai_get_dma_data(dai, substream);
+	struct axg_tdm_stream *ts = snd_soc_dai_stream_dma_data_get(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_tdm_iface *iface = dev_get_drvdata(dev);
 	int ret;
 
 	switch (iface->fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
@@ -317,7 +334,7 @@ static int axg_tdm_iface_hw_params(struct snd_pcm_substream *substream,
 	case SND_SOC_DAIFMT_LEFT_J:
 	case SND_SOC_DAIFMT_RIGHT_J:
 		if (iface->slots > 2) {
-			dev_err(dai->dev, "bad slot number for format: %d\n",
+			dev_err(dev, "bad slot number for format: %d\n",
 				iface->slots);
 			return -EINVAL;
 		}
@@ -328,7 +345,7 @@ static int axg_tdm_iface_hw_params(struct snd_pcm_substream *substream,
 		break;
 
 	default:
-		dev_err(dai->dev, "unsupported dai format\n");
+		dev_err(dev, "unsupported dai format\n");
 		return -EINVAL;
 	}
 
@@ -349,7 +366,7 @@ static int axg_tdm_iface_hw_params(struct snd_pcm_substream *substream,
 
 	ret = axg_tdm_stream_set_cont_clocks(ts, iface->fmt);
 	if (ret)
-		dev_err(dai->dev, "failed to apply continuous clock setting\n");
+		dev_err(dev, "failed to apply continuous clock setting\n");
 
 	return ret;
 }
@@ -357,7 +374,7 @@ static int axg_tdm_iface_hw_params(struct snd_pcm_substream *substream,
 static int axg_tdm_iface_hw_free(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
-	struct axg_tdm_stream *ts = snd_soc_dai_get_dma_data(dai, substream);
+	struct axg_tdm_stream *ts = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	return axg_tdm_stream_set_cont_clocks(ts, 0);
 }
@@ -367,7 +384,7 @@ static int axg_tdm_iface_trigger(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
 	struct axg_tdm_stream *ts =
-		snd_soc_dai_get_dma_data(dai, substream);
+		snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -392,7 +409,7 @@ static int axg_tdm_iface_remove_dai(struct snd_soc_dai *dai)
 	int stream;
 
 	for_each_pcm_streams(stream) {
-		struct axg_tdm_stream *ts = snd_soc_dai_dma_data_get(dai, stream);
+		struct axg_tdm_stream *ts = snd_soc_dai_stream_dma_data_get(dai, stream);
 
 		if (ts)
 			axg_tdm_stream_free(ts);
@@ -403,13 +420,15 @@ static int axg_tdm_iface_remove_dai(struct snd_soc_dai *dai)
 
 static int axg_tdm_iface_probe_dai(struct snd_soc_dai *dai)
 {
-	struct axg_tdm_iface *iface = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_tdm_iface *iface = dev_get_drvdata(dev);
 	int stream;
 
 	for_each_pcm_streams(stream) {
 		struct axg_tdm_stream *ts;
 
-		if (!snd_soc_dai_get_widget(dai, stream))
+		if (!snd_soc_dai_stream_widget_get(dai, stream))
 			continue;
 
 		ts = axg_tdm_stream_alloc(iface);
@@ -417,7 +436,7 @@ static int axg_tdm_iface_probe_dai(struct snd_soc_dai *dai)
 			axg_tdm_iface_remove_dai(dai);
 			return -ENOMEM;
 		}
-		snd_soc_dai_dma_data_set(dai, stream, ts);
+		snd_soc_dai_stream_dma_data_set(dai, stream, ts);
 	}
 
 	return 0;
@@ -478,7 +497,8 @@ static const struct snd_soc_dai_driver axg_tdm_iface_dai_drv[] = {
 static int axg_tdm_iface_set_bias_level(struct snd_soc_component *component,
 					enum snd_soc_bias_level level)
 {
-	struct axg_tdm_iface *iface = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_tdm_iface *iface = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	enum snd_soc_bias_level now = snd_soc_dapm_get_bias_level(dapm);
 	int ret = 0;
@@ -565,7 +585,7 @@ static int axg_tdm_iface_probe(struct platform_device *pdev)
 	if (IS_ERR(iface->mclk))
 		return dev_err_probe(dev, PTR_ERR(iface->mclk), "failed to get mclk\n");
 
-	return devm_snd_soc_register_component(dev,
+	return devm_snd_soc_component_register(dev,
 					&axg_tdm_iface_component_drv, dai_drv,
 					ARRAY_SIZE(axg_tdm_iface_dai_drv));
 }

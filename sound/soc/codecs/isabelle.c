@@ -862,7 +862,9 @@ static const struct snd_soc_dapm_route isabelle_intercon[] = {
 
 static int isabelle_hs_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	snd_soc_component_update_bits(dai->component, ISABELLE_DAC1_SOFTRAMP_REG,
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	snd_soc_component_update_bits(component, ISABELLE_DAC1_SOFTRAMP_REG,
 			BIT(4), (mute ? BIT(4) : 0));
 
 	return 0;
@@ -870,7 +872,9 @@ static int isabelle_hs_mute(struct snd_soc_dai *dai, int mute, int direction)
 
 static int isabelle_hf_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	snd_soc_component_update_bits(dai->component, ISABELLE_DAC2_SOFTRAMP_REG,
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	snd_soc_component_update_bits(component, ISABELLE_DAC2_SOFTRAMP_REG,
 			BIT(4), (mute ? BIT(4) : 0));
 
 	return 0;
@@ -878,7 +882,9 @@ static int isabelle_hf_mute(struct snd_soc_dai *dai, int mute, int direction)
 
 static int isabelle_line_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	snd_soc_component_update_bits(dai->component, ISABELLE_DAC3_SOFTRAMP_REG,
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	snd_soc_component_update_bits(component, ISABELLE_DAC3_SOFTRAMP_REG,
 			BIT(4), (mute ? BIT(4) : 0));
 
 	return 0;
@@ -911,7 +917,7 @@ static int isabelle_hw_params(struct snd_pcm_substream *substream,
 			      struct snd_pcm_hw_params *params,
 			      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 aif = 0;
 	unsigned int fs_val = 0;
 
@@ -970,7 +976,7 @@ static int isabelle_hw_params(struct snd_pcm_substream *substream,
 
 static int isabelle_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	unsigned int aif_val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -1134,7 +1140,7 @@ static int isabelle_i2c_probe(struct i2c_client *i2c)
 	}
 	i2c_set_clientdata(i2c, isabelle_regmap);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 				&soc_component_dev_isabelle, isabelle_dai,
 				ARRAY_SIZE(isabelle_dai));
 	if (ret < 0) {

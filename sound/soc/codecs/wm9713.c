@@ -227,7 +227,8 @@ static int wm9713_hp_mixer_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct wm9713_priv *wm9713 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9713_priv *wm9713 = dev_get_drvdata(dev);
 	unsigned int val = ucontrol->value.integer.value[0];
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
@@ -269,7 +270,8 @@ static int wm9713_hp_mixer_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct wm9713_priv *wm9713 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9713_priv *wm9713 = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	unsigned int mixer, shift;
@@ -747,6 +749,7 @@ struct _pll_div {
 static void pll_factors(struct snd_soc_component *component,
 	struct _pll_div *pll_div, unsigned int source)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	u64 Kpart;
 	unsigned int K, Ndiv, Nmod, target;
 
@@ -780,9 +783,7 @@ static void pll_factors(struct snd_soc_component *component,
 
 	Ndiv = target / source;
 	if ((Ndiv < 5) || (Ndiv > 12))
-		dev_warn(component->dev,
-			"WM9713 PLL N value %u out of recommended range!\n",
-			Ndiv);
+		dev_warn(dev, "WM9713 PLL N value %u out of recommended range!\n", Ndiv);
 
 	pll_div->n = Ndiv;
 	Nmod = target % source;
@@ -809,7 +810,8 @@ static void pll_factors(struct snd_soc_component *component,
 static int wm9713_set_pll(struct snd_soc_component *component,
 	int pll_id, unsigned int freq_in, unsigned int freq_out)
 {
-	struct wm9713_priv *wm9713 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9713_priv *wm9713 = dev_get_drvdata(dev);
 	u16 reg, reg2;
 	struct _pll_div pll_div;
 
@@ -870,7 +872,8 @@ static int wm9713_set_pll(struct snd_soc_component *component,
 static int wm9713_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 		int source, unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+
 	return wm9713_set_pll(component, pll_id, freq_in, freq_out);
 }
 
@@ -881,7 +884,7 @@ static int wm9713_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 static int wm9713_set_dai_tristate(struct snd_soc_dai *codec_dai,
 	int tristate)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
 	if (tristate)
 		snd_soc_component_update_bits(component, AC97_CENTER_LFE_MASTER,
@@ -897,7 +900,7 @@ static int wm9713_set_dai_tristate(struct snd_soc_dai *codec_dai,
 static int wm9713_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 		int div_id, int div)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
 	switch (div_id) {
 	case WM9713_PCMCLK_DIV:
@@ -933,7 +936,7 @@ static int wm9713_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 static int wm9713_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 gpio = snd_soc_component_read(component, AC97_GPIO_CFG) & 0xffc5;
 	u16 reg = 0x8000;
 
@@ -996,7 +999,7 @@ static int wm9713_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	/* enable PCM interface in master mode */
 	switch (params_width(params)) {
@@ -1021,7 +1024,7 @@ static int wm9713_pcm_hw_params(struct snd_pcm_substream *substream,
 static int ac97_hifi_prepare(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	int reg;
 
@@ -1038,7 +1041,7 @@ static int ac97_hifi_prepare(struct snd_pcm_substream *substream,
 static int ac97_aux_prepare(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 
 	snd_soc_component_update_bits(component, AC97_EXTENDED_STATUS, 0x0001, 0x0001);
@@ -1187,7 +1190,8 @@ static int wm9713_soc_suspend(struct snd_soc_component *component)
 
 static int wm9713_soc_resume(struct snd_soc_component *component)
 {
-	struct wm9713_priv *wm9713 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9713_priv *wm9713 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -1204,8 +1208,8 @@ static int wm9713_soc_resume(struct snd_soc_component *component)
 
 	/* only synchronise the codec if warm reset failed */
 	if (ret == 0) {
-		regcache_mark_dirty(component->regmap);
-		snd_soc_component_cache_sync(component);
+		snd_soc_component_regcache_mark_dirty(component);
+		snd_soc_component_regcache_sync(component);
 	}
 
 	return ret;
@@ -1213,7 +1217,8 @@ static int wm9713_soc_resume(struct snd_soc_component *component)
 
 static int wm9713_soc_probe(struct snd_soc_component *component)
 {
-	struct wm9713_priv *wm9713 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9713_priv *wm9713 = dev_get_drvdata(dev);
 	struct regmap *regmap = NULL;
 
 	if (wm9713->mfd_pdata) {
@@ -1233,7 +1238,7 @@ static int wm9713_soc_probe(struct snd_soc_component *component)
 		return -ENXIO;
 	}
 
-	snd_soc_component_init_regmap(component, regmap);
+	snd_soc_component_regmap_init(component, regmap);
 
 	/* unmute the adc - move to kcontrol */
 	snd_soc_component_update_bits(component, AC97_CD, 0x7fff, 0x0000);
@@ -1243,10 +1248,11 @@ static int wm9713_soc_probe(struct snd_soc_component *component)
 
 static void wm9713_soc_remove(struct snd_soc_component *component)
 {
-	struct wm9713_priv *wm9713 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9713_priv *wm9713 = dev_get_drvdata(dev);
 
 	if (IS_ENABLED(CONFIG_SND_SOC_AC97_BUS) && !wm9713->mfd_pdata) {
-		snd_soc_component_exit_regmap(component);
+		snd_soc_component_regmap_exit(component);
 		snd_soc_free_ac97_component(wm9713->ac97);
 	}
 }
@@ -1281,7 +1287,7 @@ static int wm9713_probe(struct platform_device *pdev)
 	wm9713->mfd_pdata = dev_get_platdata(&pdev->dev);
 	platform_set_drvdata(pdev, wm9713);
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&soc_component_dev_wm9713, wm9713_dai, ARRAY_SIZE(wm9713_dai));
 }
 

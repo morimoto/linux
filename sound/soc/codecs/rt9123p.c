@@ -27,8 +27,9 @@ struct rt9123p_priv {
 static int rt9123p_daiops_trigger(struct snd_pcm_substream *substream, int cmd,
 				  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *comp = dai->component;
-	struct rt9123p_priv *rt9123p = snd_soc_component_get_drvdata(comp);
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct rt9123p_priv *rt9123p = dev_get_drvdata(dev);
 
 	if (!rt9123p->enable)
 		return 0;
@@ -40,14 +41,14 @@ static int rt9123p_daiops_trigger(struct snd_pcm_substream *substream, int cmd,
 		mdelay(rt9123p->enable_delay);
 		if (rt9123p->enable_switch) {
 			gpiod_set_value(rt9123p->enable, 1);
-			dev_dbg(comp->dev, "set enable to 1");
+			dev_dbg(dev, "set enable to 1");
 		}
 		break;
 	case SNDRV_PCM_TRIGGER_STOP:
 	case SNDRV_PCM_TRIGGER_SUSPEND:
 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
 		gpiod_set_value(rt9123p->enable, 0);
-		dev_dbg(comp->dev, "set enable to 0");
+		dev_dbg(dev, "set enable to 0");
 		break;
 	default:
 		break;
@@ -60,7 +61,8 @@ static int rt9123p_enable_event(struct snd_soc_dapm_widget *w, struct snd_kcontr
 				int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct rt9123p_priv *rt9123p = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct rt9123p_priv *rt9123p = dev_get_drvdata(dev);
 
 	if (event & SND_SOC_DAPM_POST_PMU)
 		rt9123p->enable_switch = 1;
@@ -136,7 +138,7 @@ static int rt9123p_platform_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, rt9123p);
 
-	return devm_snd_soc_register_component(dev, &rt9123p_comp_driver, &rt9123p_dai_driver, 1);
+	return devm_snd_soc_component_register(dev, &rt9123p_comp_driver, &rt9123p_dai_driver, 1);
 }
 
 #ifdef CONFIG_OF

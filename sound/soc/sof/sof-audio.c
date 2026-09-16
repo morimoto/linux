@@ -909,7 +909,8 @@ bool snd_sof_stream_suspend_ignored(struct snd_sof_dev *sdev)
 struct snd_sof_pcm *snd_sof_find_spcm_name(struct snd_soc_component *scomp,
 					   const char *name)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct snd_sof_pcm *spcm;
 
 	list_for_each_entry(spcm, &sdev->pcm_list, list) {
@@ -935,7 +936,8 @@ struct snd_sof_pcm *snd_sof_find_spcm_comp(struct snd_soc_component *scomp,
 					   unsigned int comp_id,
 					   int *direction)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct snd_sof_pcm *spcm;
 	int dir;
 
@@ -954,7 +956,8 @@ struct snd_sof_pcm *snd_sof_find_spcm_comp(struct snd_soc_component *scomp,
 struct snd_sof_widget *snd_sof_find_swidget(struct snd_soc_component *scomp,
 					    const char *name)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct snd_sof_widget *swidget;
 
 	list_for_each_entry(swidget, &sdev->widget_list, list) {
@@ -970,7 +973,8 @@ struct snd_sof_widget *
 snd_sof_find_swidget_sname(struct snd_soc_component *scomp,
 			   const char *pcm_name, int dir)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct snd_sof_widget *swidget;
 	enum snd_soc_dapm_type type;
 
@@ -991,7 +995,8 @@ snd_sof_find_swidget_sname(struct snd_soc_component *scomp,
 struct snd_sof_dai *snd_sof_find_dai(struct snd_soc_component *scomp,
 				     const char *name)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct snd_sof_dai *dai;
 
 	list_for_each_entry(dai, &sdev->dai_list, list) {
@@ -1008,7 +1013,8 @@ static int sof_dai_get_param(struct snd_soc_pcm_runtime *rtd, int param_type)
 		snd_soc_rtdcom_lookup(rtd, SOF_AUDIO_PCM_DRV_NAME);
 	struct snd_sof_dai *dai =
 		snd_sof_find_dai(component, (char *)rtd->dai_link->name);
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	const struct sof_ipc_tplg_ops *tplg_ops = sof_ipc_get_ops(sdev, tplg);
 
 	/* use the tplg configured mclk if existed */

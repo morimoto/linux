@@ -419,7 +419,8 @@ static int rt1017_sdca_pde23_event(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt1017_sdca_priv *rt1017 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1017_sdca_priv *rt1017 = dev_get_drvdata(dev);
 	unsigned char ps0 = 0x0, ps3 = 0x3;
 
 	switch (event) {
@@ -445,7 +446,8 @@ static int rt1017_sdca_classd_event(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt1017_sdca_priv *rt1017 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1017_sdca_priv *rt1017 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -464,7 +466,8 @@ static int rt1017_sdca_feedback_event(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt1017_sdca_priv *rt1017 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1017_sdca_priv *rt1017 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -525,9 +528,10 @@ static const struct sdw_slave_ops rt1017_sdca_slave_ops = {
 
 static int rt1017_sdca_component_probe(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -536,7 +540,8 @@ static int rt1017_sdca_component_probe(struct snd_soc_component *component)
 
 static void rt1017_sdca_component_remove(struct snd_soc_component *component)
 {
-	struct rt1017_sdca_priv *rt1017 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1017_sdca_priv *rt1017 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt1017->regmap, true);
 }
@@ -556,7 +561,7 @@ static const struct snd_soc_component_driver soc_sdca_component_rt1017 = {
 static int rt1017_sdca_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 				int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -564,15 +569,16 @@ static int rt1017_sdca_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 static void rt1017_sdca_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static int rt1017_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1017_sdca_priv *rt1017 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1017_sdca_priv *rt1017 = dev_get_drvdata(dev);
 	struct sdw_stream_config stream_config;
 	struct sdw_port_config port_config;
 	enum sdw_data_direction direction;
@@ -580,8 +586,8 @@ static int rt1017_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 	int retval, port, num_channels, ch_mask;
 	unsigned int sampling_rate;
 
-	dev_dbg(dai->dev, "%s %s", __func__, dai->name);
-	sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	dev_dbg(dev, "%s %s", __func__, snd_soc_dai_name(dai));
+	sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!sdw_stream)
 		return -EINVAL;
@@ -610,14 +616,14 @@ static int rt1017_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 	port_config.ch_mask = ch_mask;
 	port_config.num = port;
 
-	dev_dbg(dai->dev, "frame_rate %d, ch_count %d, bps %d, direction %d, ch_mask %d, port: %d\n",
+	dev_dbg(dev, "frame_rate %d, ch_count %d, bps %d, direction %d, ch_mask %d, port: %d\n",
 		params_rate(params), num_channels, snd_pcm_format_width(params_format(params)),
 		direction, ch_mask, port);
 
 	retval = sdw_stream_add_slave(rt1017->sdw_slave, &stream_config,
 				&port_config, 1, sdw_stream);
 	if (retval) {
-		dev_err(dai->dev, "Unable to configure port\n");
+		dev_err(dev, "Unable to configure port\n");
 		return retval;
 	}
 
@@ -636,8 +642,7 @@ static int rt1017_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 		sampling_rate = RT1017_SDCA_RATE_192000HZ;
 		break;
 	default:
-		dev_err(component->dev, "Rate %d is not supported\n",
-			params_rate(params));
+		dev_err(dev, "Rate %d is not supported\n", params_rate(params));
 		return -EINVAL;
 	}
 
@@ -653,10 +658,11 @@ static int rt1017_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 static int rt1017_sdca_pcm_hw_free(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1017_sdca_priv *rt1017 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1017_sdca_priv *rt1017 = dev_get_drvdata(dev);
 	struct sdw_stream_runtime *sdw_stream =
-		snd_soc_dai_get_dma_data(dai, substream);
+		snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!rt1017->sdw_slave)
 		return -EINVAL;
@@ -719,7 +725,7 @@ static int rt1017_sdca_init(struct device *dev, struct regmap *regmap,
 	rt1017->hw_init = false;
 	rt1017->first_hw_init = false;
 
-	ret =  devm_snd_soc_register_component(dev,
+	ret =  devm_snd_soc_component_register(dev,
 				&soc_sdca_component_rt1017,
 				rt1017_sdca_dai,
 				ARRAY_SIZE(rt1017_sdca_dai));

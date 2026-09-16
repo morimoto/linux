@@ -149,11 +149,11 @@
 	dev_dbg(_fll->madera->dev, "FLL%d: " fmt, _fll->id, ##__VA_ARGS__)
 
 #define madera_aif_err(_dai, fmt, ...) \
-	dev_err(_dai->dev, "AIF%d: " fmt, _dai->id, ##__VA_ARGS__)
+	dev_err(snd_soc_component_to_dev(snd_soc_dai_to_component(_dai)), "AIF%d: " fmt, snd_soc_dai_id(_dai), ##__VA_ARGS__)
 #define madera_aif_warn(_dai, fmt, ...) \
-	dev_warn(_dai->dev, "AIF%d: " fmt, _dai->id, ##__VA_ARGS__)
+	dev_warn(snd_soc_component_to_dev(snd_soc_dai_to_component(_dai)), "AIF%d: " fmt, snd_soc_dai_id(_dai), ##__VA_ARGS__)
 #define madera_aif_dbg(_dai, fmt, ...) \
-	dev_dbg(_dai->dev, "AIF%d: " fmt, _dai->id, ##__VA_ARGS__)
+	dev_dbg(snd_soc_component_to_dev(snd_soc_dai_to_component(_dai)), "AIF%d: " fmt, snd_soc_dai_id(_dai), ##__VA_ARGS__)
 
 static const int madera_dsp_bus_error_irqs[MADERA_MAX_ADSP] = {
 	MADERA_IRQ_DSP1_BUS_ERR,
@@ -169,7 +169,8 @@ int madera_clk_ev(struct snd_soc_dapm_widget *w,
 		  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 	unsigned int val;
 	int clk_idx;
@@ -235,7 +236,8 @@ int madera_sysclk_ev(struct snd_soc_dapm_widget *w,
 		     struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -273,7 +275,8 @@ int madera_spk_ev(struct snd_soc_dapm_widget *w,
 		  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 	bool warn, shutdown;
 	int ret;
@@ -502,7 +505,8 @@ int madera_domain_clk_ev(struct snd_soc_dapm_widget *w,
 			 int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	int dom_grp = w->shift;
 
 	if (dom_grp >= ARRAY_SIZE(priv->domain_group_ref)) {
@@ -542,7 +546,8 @@ int madera_out1_demux_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int ep_sel, mux, change;
@@ -646,7 +651,8 @@ static int madera_inmux_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 	struct regmap *regmap = madera->regmap;
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
@@ -868,7 +874,8 @@ static int madera_adsp_rate_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int cached_rate;
 	const int adsp_num = e->shift_l;
@@ -887,7 +894,8 @@ static int madera_adsp_rate_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	const int adsp_num = e->shift_l;
 	const unsigned int item = ucontrol->value.enumerated.item[0];
@@ -1043,7 +1051,8 @@ int madera_rate_put(struct snd_kcontrol *kcontrol,
 		    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int item = ucontrol->value.enumerated.item[0];
 	unsigned int val;
@@ -1175,7 +1184,8 @@ static void madera_configure_input_mode(struct madera *madera)
 
 int madera_init_inputs(struct snd_soc_component *component)
 {
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 
 	madera_configure_input_mode(madera);
@@ -1198,7 +1208,8 @@ int madera_init_outputs(struct snd_soc_component *component,
 			int n_mono_routes, int n_real)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 	const struct madera_codec_pdata *pdata = &madera->pdata.codec;
 	unsigned int val;
@@ -2147,6 +2158,7 @@ int madera_dfc_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int reg = e->reg;
 	unsigned int val;
@@ -2159,7 +2171,7 @@ int madera_dfc_put(struct snd_kcontrol *kcontrol,
 	val = snd_soc_component_read(component, reg);
 	if (val & MADERA_DFC1_ENA) {
 		ret = -EBUSY;
-		dev_err(component->dev, "Can't change mode on an active DFC\n");
+		dev_err(dev, "Can't change mode on an active DFC\n");
 		goto exit;
 	}
 
@@ -2178,6 +2190,7 @@ int madera_lp_mode_put(struct snd_kcontrol *kcontrol,
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int val, mask;
 	int ret;
 
@@ -2190,8 +2203,7 @@ int madera_lp_mode_put(struct snd_kcontrol *kcontrol,
 
 	if (val & (1 << mask)) {
 		ret = -EBUSY;
-		dev_err(component->dev,
-			"Can't change lp mode on an active input\n");
+		dev_err(dev, "Can't change lp mode on an active input\n");
 		goto exit;
 	}
 
@@ -2245,7 +2257,8 @@ int madera_in_ev(struct snd_soc_dapm_widget *w, struct snd_kcontrol *kcontrol,
 		 int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	unsigned int reg, val;
 
 	if (w->shift % 2)
@@ -2291,7 +2304,8 @@ int madera_out_ev(struct snd_soc_dapm_widget *w,
 		  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 	int out_up_delay;
 
@@ -2391,7 +2405,8 @@ int madera_hp_ev(struct snd_soc_dapm_widget *w,
 		 struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 	unsigned int mask = 1 << w->shift;
 	unsigned int out_num = w->shift / 2;
@@ -2479,7 +2494,8 @@ static const unsigned int madera_opclk_ref_44k1_rates[] = {
 static int madera_set_opclk(struct snd_soc_component *component,
 			    unsigned int clk, unsigned int freq)
 {
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	unsigned int mask = MADERA_OPCLK_DIV_MASK | MADERA_OPCLK_SEL_MASK;
 	unsigned int reg, val;
 	const unsigned int *rates;
@@ -2513,8 +2529,7 @@ static int madera_set_opclk(struct snd_soc_component *component,
 		div = 2;
 		while ((rates[ref] / div >= freq) && (div <= 30)) {
 			if (rates[ref] / div == freq) {
-				dev_dbg(component->dev, "Configured %dHz OPCLK\n",
-					freq);
+				dev_dbg(dev, "Configured %dHz OPCLK\n", freq);
 
 				val = (div << MADERA_OPCLK_DIV_SHIFT) | ref;
 
@@ -2526,7 +2541,7 @@ static int madera_set_opclk(struct snd_soc_component *component,
 		}
 	}
 
-	dev_err(component->dev, "Unable to generate %dHz OPCLK\n", freq);
+	dev_err(dev, "Unable to generate %dHz OPCLK\n", freq);
 
 	return -EINVAL;
 }
@@ -2605,16 +2620,17 @@ static int madera_get_dspclk_setting(struct madera *madera,
 static int madera_set_outclk(struct snd_soc_component *component,
 			     unsigned int source, unsigned int freq)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int div, div_inc, rate;
 
 	switch (source) {
 	case MADERA_OUTCLK_SYSCLK:
-		dev_dbg(component->dev, "Configured OUTCLK to SYSCLK\n");
+		dev_dbg(dev, "Configured OUTCLK to SYSCLK\n");
 		snd_soc_component_update_bits(component, MADERA_OUTPUT_RATE_1,
 					      MADERA_OUT_CLK_SRC_MASK, source);
 		return 0;
 	case MADERA_OUTCLK_ASYNCCLK:
-		dev_dbg(component->dev, "Configured OUTCLK to ASYNCCLK\n");
+		dev_dbg(dev, "Configured OUTCLK to ASYNCCLK\n");
 		snd_soc_component_update_bits(component, MADERA_OUTPUT_RATE_1,
 					      MADERA_OUT_CLK_SRC_MASK, source);
 		return 0;
@@ -2635,7 +2651,7 @@ static int madera_set_outclk(struct snd_soc_component *component,
 	div_inc = 0;
 	while (div <= 8) {
 		if (freq / div == rate && !(freq % div)) {
-			dev_dbg(component->dev, "Configured %dHz OUTCLK\n", rate);
+			dev_dbg(dev, "Configured %dHz OUTCLK\n", rate);
 			snd_soc_component_update_bits(component,
 				MADERA_OUTPUT_RATE_1,
 				MADERA_OUT_EXT_CLK_DIV_MASK |
@@ -2648,16 +2664,15 @@ static int madera_set_outclk(struct snd_soc_component *component,
 		div *= 2;
 	}
 
-	dev_err(component->dev,
-		"Unable to generate %dHz OUTCLK from %dHz MCLK\n",
-		rate, freq);
+	dev_err(dev, "Unable to generate %dHz OUTCLK from %dHz MCLK\n", rate, freq);
 	return -EINVAL;
 }
 
 int madera_set_sysclk(struct snd_soc_component *component, int clk_id,
 		      int source, unsigned int freq, int dir)
 {
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 	char *name;
 	unsigned int reg, clock_2_val = 0;
@@ -2738,12 +2753,14 @@ EXPORT_SYMBOL_GPL(madera_set_sysclk);
 
 static int madera_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 	int lrclk, bclk, mode, base;
 
-	base = dai->driver->base;
+	base = dai_driver->base;
 
 	lrclk = 0;
 	bclk = 0;
@@ -2918,9 +2935,11 @@ static const struct snd_pcm_hw_constraint_list madera_constraint = {
 static int madera_startup(struct snd_pcm_substream *substream,
 			  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
-	struct madera_dai_priv *dai_priv = &priv->dai[dai->id - 1];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
+	struct madera_dai_priv *dai_priv = &priv->dai[dai_id - 1];
 	struct madera *madera = priv->madera;
 	unsigned int base_rate;
 
@@ -2971,10 +2990,13 @@ static int madera_hw_params_rate(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
-	struct madera_dai_priv *dai_priv = &priv->dai[dai->id - 1];
-	int base = dai->driver->base;
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
+	struct madera_dai_priv *dai_priv = &priv->dai[dai_id - 1];
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	int base = dai_driver->base;
 	int i, sr_val;
 	unsigned int reg, cur, tar;
 	int ret;
@@ -3073,19 +3095,22 @@ static int madera_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
-	int base = dai->driver->base;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	int base = dai_driver->base;
 	const int *rates;
 	int i, ret;
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int val;
 	unsigned int channels = params_channels(params);
 	unsigned int rate = params_rate(params);
 	unsigned int chan_limit =
-			madera->pdata.codec.max_channels_clocked[dai->id - 1];
-	int tdm_width = priv->tdm_width[dai->id - 1];
-	int tdm_slots = priv->tdm_slots[dai->id - 1];
+			madera->pdata.codec.max_channels_clocked[dai_id - 1];
+	int tdm_width = priv->tdm_width[dai_id - 1];
+	int tdm_slots = priv->tdm_slots[dai_id - 1];
 	int bclk, lrclk, wl, frame, bclk_target, num_rates;
 	int reconfig;
 	unsigned int aif_tx_state = 0, aif_rx_state = 0;
@@ -3214,16 +3239,19 @@ static int madera_is_syncclk(int clk_id)
 static int madera_dai_set_sysclk(struct snd_soc_dai *dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
-	struct madera_dai_priv *dai_priv = &priv->dai[dai->id - 1];
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
+	struct madera_dai_priv *dai_priv = &priv->dai[dai_id - 1];
 	struct snd_soc_dapm_route routes[2];
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	int is_sync;
 
 	is_sync = madera_is_syncclk(clk_id);
 	if (is_sync < 0) {
-		dev_err(component->dev, "Illegal DAI clock id %d\n", clk_id);
+		dev_err(dev, "Illegal DAI clock id %d\n", clk_id);
 		return is_sync;
 	}
 
@@ -3231,21 +3259,19 @@ static int madera_dai_set_sysclk(struct snd_soc_dai *dai,
 		return 0;
 
 	if (snd_soc_dai_active(dai)) {
-		dev_err(component->dev, "Can't change clock on active DAI %d\n",
-			dai->id);
+		dev_err(dev, "Can't change clock on active DAI %d\n", dai_id);
 		return -EBUSY;
 	}
 
-	dev_dbg(component->dev, "Setting AIF%d to %s\n", dai->id,
-		is_sync ? "SYSCLK" : "ASYNCCLK");
+	dev_dbg(dev, "Setting AIF%d to %s\n", dai_id, is_sync ? "SYSCLK" : "ASYNCCLK");
 
 	/*
 	 * A connection to SYSCLK is always required, we only add and remove
 	 * a connection to ASYNCCLK
 	 */
 	memset(&routes, 0, sizeof(routes));
-	routes[0].sink = dai->driver->capture.stream_name;
-	routes[1].sink = dai->driver->playback.stream_name;
+	routes[0].sink = dai_driver->capture.stream_name;
+	routes[1].sink = dai_driver->playback.stream_name;
 	routes[0].source = "ASYNCCLK";
 	routes[1].source = "ASYNCCLK";
 
@@ -3261,8 +3287,9 @@ static int madera_dai_set_sysclk(struct snd_soc_dai *dai,
 
 static int madera_set_tristate(struct snd_soc_dai *dai, int tristate)
 {
-	struct snd_soc_component *component = dai->component;
-	int base = dai->driver->base;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	int base = dai_driver->base;
 	unsigned int reg;
 	int ret;
 
@@ -3284,8 +3311,9 @@ static void madera_set_channels_to_mask(struct snd_soc_dai *dai,
 					unsigned int base,
 					int channels, unsigned int mask)
 {
-	struct snd_soc_component *component = dai->component;
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 	int slot, i;
 
@@ -3306,14 +3334,17 @@ static void madera_set_channels_to_mask(struct snd_soc_dai *dai,
 static int madera_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			       unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
-	int base = dai->driver->base;
-	int rx_max_chan = dai->driver->playback.channels_max;
-	int tx_max_chan = dai->driver->capture.channels_max;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	int base = dai_driver->base;
+	int rx_max_chan = dai_driver->playback.channels_max;
+	int tx_max_chan = dai_driver->capture.channels_max;
 
 	/* Only support TDM for the physical AIFs */
-	if (dai->id > MADERA_MAX_AIF)
+	if (dai_id > MADERA_MAX_AIF)
 		return -ENOTSUPP;
 
 	if (slots == 0) {
@@ -3326,8 +3357,8 @@ static int madera_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	madera_set_channels_to_mask(dai, base + MADERA_AIF_FRAME_CTRL_11,
 				    rx_max_chan, rx_mask);
 
-	priv->tdm_width[dai->id - 1] = slot_width;
-	priv->tdm_slots[dai->id - 1] = slots;
+	priv->tdm_width[dai_id - 1] = slot_width;
+	priv->tdm_slots[dai_id - 1] = slots;
 
 	return 0;
 }
@@ -4728,7 +4759,8 @@ int madera_eq_coeff_put(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 	struct soc_bytes *params = (void *)kcontrol->private_value;
 	unsigned int val;
@@ -4774,7 +4806,8 @@ int madera_lhpf_coeff_put(struct snd_kcontrol *kcontrol,
 			  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 	__be16 *data = (__be16 *)ucontrol->value.bytes.data;
 	s16 val = be16_to_cpu(*data);

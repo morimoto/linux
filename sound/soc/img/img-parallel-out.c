@@ -91,7 +91,9 @@ static void img_prl_out_reset(struct img_prl_out *prl)
 static int img_prl_out_trigger(struct snd_pcm_substream *substream, int cmd,
 			struct snd_soc_dai *dai)
 {
-	struct img_prl_out *prl = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_prl_out *prl = dev_get_drvdata(dev);
 	u32 reg;
 
 	switch (cmd) {
@@ -117,7 +119,9 @@ static int img_prl_out_trigger(struct snd_pcm_substream *substream, int cmd,
 static int img_prl_out_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct img_prl_out *prl = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_prl_out *prl = dev_get_drvdata(dev);
 	unsigned int rate, channels;
 	u32 reg, control_set = 0;
 
@@ -148,7 +152,9 @@ static int img_prl_out_hw_params(struct snd_pcm_substream *substream,
 
 static int img_prl_out_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct img_prl_out *prl = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_prl_out *prl = dev_get_drvdata(dev);
 	u32 reg, control_set = 0;
 	int ret;
 
@@ -176,9 +182,11 @@ static int img_prl_out_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 static int img_prl_out_dai_probe(struct snd_soc_dai *dai)
 {
-	struct img_prl_out *prl = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_prl_out *prl = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, &prl->dma_data, NULL);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &prl->dma_data);
 
 	return 0;
 }
@@ -266,7 +274,7 @@ static int img_prl_out_probe(struct platform_device *pdev)
 	prl->dma_data.addr_width = 4;
 	prl->dma_data.maxburst = 4;
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 			&img_prl_out_component,
 			&img_prl_out_dai, 1);
 	if (ret)

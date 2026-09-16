@@ -195,8 +195,9 @@ static int ak4118_set_dai_fmt_consumer(struct ak4118_priv *ak4118,
 static int ak4118_set_dai_fmt(struct snd_soc_dai *dai,
 			      unsigned int format)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4118_priv *ak4118 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4118_priv *ak4118 = dev_get_drvdata(dev);
 	int dif;
 	int ret = 0;
 
@@ -286,7 +287,8 @@ static irqreturn_t ak4118_irq_handler(int irq, void *data)
 
 static int ak4118_probe(struct snd_soc_component *component)
 {
-	struct ak4118_priv *ak4118 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4118_priv *ak4118 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	ak4118->component = component;
@@ -297,8 +299,7 @@ static int ak4118_probe(struct snd_soc_component *component)
 	/* unmask all int1 sources */
 	ret = regmap_write(ak4118->regmap, AK4118_REG_INT1_MASK, 0x00);
 	if (ret < 0) {
-		dev_err(component->dev,
-			"failed to write regmap 0x%x 0x%x: %d\n",
+		dev_err(dev, "failed to write regmap 0x%x 0x%x: %d\n",
 			AK4118_REG_INT1_MASK, 0x00, ret);
 		return ret;
 	}
@@ -306,17 +307,15 @@ static int ak4118_probe(struct snd_soc_component *component)
 	/* rx detect enable on all channels */
 	ret = regmap_write(ak4118->regmap, AK4118_REG_RX_DETECT, 0xff);
 	if (ret < 0) {
-		dev_err(component->dev,
-			"failed to write regmap 0x%x 0x%x: %d\n",
+		dev_err(dev, "failed to write regmap 0x%x 0x%x: %d\n",
 			AK4118_REG_RX_DETECT, 0xff, ret);
 		return ret;
 	}
 
-	ret = snd_soc_add_component_controls(component, ak4118_iec958_controls,
+	ret = snd_soc_component_add_controls(component, ak4118_iec958_controls,
 					 ARRAY_SIZE(ak4118_iec958_controls));
 	if (ret) {
-		dev_err(component->dev,
-			"failed to add component kcontrols: %d\n", ret);
+		dev_err(dev, "failed to add component kcontrols: %d\n", ret);
 		return ret;
 	}
 
@@ -325,7 +324,8 @@ static int ak4118_probe(struct snd_soc_component *component)
 
 static void ak4118_remove(struct snd_soc_component *component)
 {
-	struct ak4118_priv *ak4118 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4118_priv *ak4118 = dev_get_drvdata(dev);
 
 	/* hold reset */
 	gpiod_set_value(ak4118->reset, 1);
@@ -389,7 +389,7 @@ static int ak4118_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 				&soc_component_drv_ak4118, &ak4118_dai, 1);
 }
 

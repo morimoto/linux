@@ -1522,11 +1522,12 @@ static struct snd_kcontrol_new ab8500_ctrls[] = {
 
 static int ab8500_audio_init_audioblock(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int status;
 	u8 mask = AB8500_STW4500CTRL3_CLK32KOUT2DIS |
 		  AB8500_STW4500CTRL3_RESETAUDN;
 
-	dev_dbg(component->dev, "%s: Enter.\n", __func__);
+	dev_dbg(dev, "%s: Enter.\n", __func__);
 
 	/* Reset the audio registers and disable the unused 32 kHz output. */
 	status = ab8500_sysctrl_write(AB8500_STW4500CTRL3, mask,
@@ -1540,7 +1541,7 @@ static int ab8500_audio_init_audioblock(struct snd_soc_component *component)
 static int ab8500_audio_setup_mics(struct snd_soc_component *component,
 			struct amic_settings *amics)
 {
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct ab8500 *ab8500 = dev_get_drvdata(dev->parent);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	u8 value8;
@@ -1548,7 +1549,7 @@ static int ab8500_audio_setup_mics(struct snd_soc_component *component,
 	int status;
 	const struct snd_soc_dapm_route *route;
 
-	dev_dbg(component->dev, "%s: Enter.\n", __func__);
+	dev_dbg(dev, "%s: Enter.\n", __func__);
 
 	/* Set DMic-clocks to outputs; these GPIOs do not exist on AB8505. */
 	if (!is_ab8505(ab8500)) {
@@ -1567,32 +1568,32 @@ static int ab8500_audio_setup_mics(struct snd_soc_component *component,
 	}
 
 	/* Attach regulators to AMic DAPM-paths */
-	dev_dbg(component->dev, "%s: Mic 1a regulator: %s\n", __func__,
+	dev_dbg(dev, "%s: Mic 1a regulator: %s\n", __func__,
 		amic_micbias_str(amics->mic1a_micbias));
 	route = &ab8500_dapm_routes_mic1a_vamicx[amics->mic1a_micbias];
 	status = snd_soc_dapm_add_routes(dapm, route, 1);
-	dev_dbg(component->dev, "%s: Mic 1b regulator: %s\n", __func__,
+	dev_dbg(dev, "%s: Mic 1b regulator: %s\n", __func__,
 		amic_micbias_str(amics->mic1b_micbias));
 	route = &ab8500_dapm_routes_mic1b_vamicx[amics->mic1b_micbias];
 	status |= snd_soc_dapm_add_routes(dapm, route, 1);
-	dev_dbg(component->dev, "%s: Mic 2 regulator: %s\n", __func__,
+	dev_dbg(dev, "%s: Mic 2 regulator: %s\n", __func__,
 		amic_micbias_str(amics->mic2_micbias));
 	route = &ab8500_dapm_routes_mic2_vamicx[amics->mic2_micbias];
 	status |= snd_soc_dapm_add_routes(dapm, route, 1);
 	if (status < 0) {
-		dev_err(component->dev,
+		dev_err(dev,
 			"%s: Failed to add AMic-regulator DAPM-routes (%d).\n",
 			__func__, status);
 		return status;
 	}
 
 	/* Set AMic-configuration */
-	dev_dbg(component->dev, "%s: Mic 1 mic-type: %s\n", __func__,
+	dev_dbg(dev, "%s: Mic 1 mic-type: %s\n", __func__,
 		amic_type_str(amics->mic1_type));
 	snd_soc_component_update_bits(component, AB8500_ANAGAIN1, AB8500_ANAGAINX_ENSEMICX,
 			amics->mic1_type == AMIC_TYPE_DIFFERENTIAL ?
 				0 : AB8500_ANAGAINX_ENSEMICX);
-	dev_dbg(component->dev, "%s: Mic 2 mic-type: %s\n", __func__,
+	dev_dbg(dev, "%s: Mic 2 mic-type: %s\n", __func__,
 		amic_type_str(amics->mic2_type));
 	snd_soc_component_update_bits(component, AB8500_ANAGAIN2, AB8500_ANAGAINX_ENSEMICX,
 			amics->mic2_type == AMIC_TYPE_DIFFERENTIAL ?
@@ -1604,6 +1605,7 @@ static int ab8500_audio_setup_mics(struct snd_soc_component *component,
 static int ab8500_audio_set_ear_cmv(struct snd_soc_component *component,
 				enum ear_cm_voltage ear_cmv)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	char *cmv_str;
 
 	switch (ear_cmv) {
@@ -1620,13 +1622,12 @@ static int ab8500_audio_set_ear_cmv(struct snd_soc_component *component,
 		cmv_str = "1.58V";
 		break;
 	default:
-		dev_err(component->dev,
+		dev_err(dev,
 			"%s: Unknown earpiece CM-voltage (%d)!\n",
 			__func__, (int)ear_cmv);
 		return -EINVAL;
 	}
-	dev_dbg(component->dev, "%s: Earpiece CM-voltage: %s\n", __func__,
-		cmv_str);
+	dev_dbg(dev, "%s: Earpiece CM-voltage: %s\n", __func__, cmv_str);
 	snd_soc_component_update_bits(component, AB8500_ANACONF1, AB8500_ANACONF1_EARSELCM,
 			ear_cmv);
 
@@ -1635,14 +1636,15 @@ static int ab8500_audio_set_ear_cmv(struct snd_soc_component *component,
 
 static int ab8500_codec_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int conf1_mask, conf1_val = 0;
 	unsigned int conf2_mask, conf2_val = 0;
 	unsigned int conf3_mask, conf3_val = 0;
 	bool provider = false;
 	int ret;
 
-	dev_dbg(component->dev, "%s: Enter (fmt = 0x%x)\n", __func__, fmt);
+	dev_dbg(dev, "%s: Enter (fmt = 0x%x)\n", __func__, fmt);
 
 	conf3_mask = BIT(AB8500_DIGIFCONF3_IF1DATOIF0AD) |
 			BIT(AB8500_DIGIFCONF3_IF1CLKTOIF0CLK) |
@@ -1651,24 +1653,20 @@ static int ab8500_codec_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
-		dev_dbg(component->dev,
-			"%s: IF0 Master-mode: AB8500 provider.\n", __func__);
+		dev_dbg(dev, "%s: IF0 Master-mode: AB8500 provider.\n", __func__);
 		conf3_val |= BIT(AB8500_DIGIFCONF3_IF0MASTER);
 		provider = true;
 		break;
 	case SND_SOC_DAIFMT_CBC_CFC:
-		dev_dbg(component->dev,
-			"%s: IF0 Master-mode: AB8500 consumer.\n", __func__);
+		dev_dbg(dev, "%s: IF0 Master-mode: AB8500 consumer.\n", __func__);
 		break;
 	case SND_SOC_DAIFMT_CBC_CFP:
 	case SND_SOC_DAIFMT_CBP_CFC:
-		dev_err(component->dev,
-			"%s: ERROR: The device is either a provider or a consumer.\n",
+		dev_err(dev, "%s: ERROR: The device is either a provider or a consumer.\n",
 			__func__);
 		fallthrough;
 	default:
-		dev_err(component->dev,
-			"%s: ERROR: Unsupported clocking mask 0x%x\n",
+		dev_err(dev, "%s: ERROR: Unsupported clocking mask 0x%x\n",
 			__func__, fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK);
 		return -EINVAL;
 	}
@@ -1685,7 +1683,7 @@ static int ab8500_codec_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 			conf1_val = BIT(AB8500_DIGIFCONF1_ENMASTGEN);
 		break;
 	default:
-		dev_err(component->dev, "%s: Unsupported clock mask 0x%x\n",
+		dev_err(dev, "%s: Unsupported clock mask 0x%x\n",
 			__func__, fmt & SND_SOC_DAIFMT_CLOCK_MASK);
 		return -EINVAL;
 	}
@@ -1698,59 +1696,51 @@ static int ab8500_codec_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S: /* I2S mode */
-		dev_dbg(component->dev, "%s: IF0 Protocol: I2S\n", __func__);
+		dev_dbg(dev, "%s: IF0 Protocol: I2S\n", __func__);
 		conf2_val |= BIT(AB8500_DIGIFCONF2_IF0FORMAT1) |
 			     BIT(AB8500_DIGIFCONF2_IF0DEL);
 		break;
 
 	case SND_SOC_DAIFMT_DSP_A: /* L data MSB after FRM LRC */
-		dev_dbg(component->dev,
-			"%s: IF0 Protocol: DSP A (TDM)\n", __func__);
+		dev_dbg(dev, "%s: IF0 Protocol: DSP A (TDM)\n", __func__);
 		conf2_val |= BIT(AB8500_DIGIFCONF2_IF0FORMAT0) |
 			     BIT(AB8500_DIGIFCONF2_IF0DEL);
 		break;
 
 	case SND_SOC_DAIFMT_DSP_B: /* L data MSB during FRM LRC */
-		dev_dbg(component->dev,
-			"%s: IF0 Protocol: DSP B (TDM)\n", __func__);
+		dev_dbg(dev, "%s: IF0 Protocol: DSP B (TDM)\n", __func__);
 		conf2_val |= BIT(AB8500_DIGIFCONF2_IF0FORMAT0);
 		break;
 
 	default:
-		dev_err(component->dev,
-			"%s: ERROR: Unsupported format (0x%x)!\n",
+		dev_err(dev, "%s: ERROR: Unsupported format (0x%x)!\n",
 			__func__, fmt & SND_SOC_DAIFMT_FORMAT_MASK);
 		return -EINVAL;
 	}
 
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
 	case SND_SOC_DAIFMT_NB_NF: /* normal bit clock + frame */
-		dev_dbg(component->dev,
-			"%s: IF0: Normal bit clock, normal frame\n",
+		dev_dbg(dev, "%s: IF0: Normal bit clock, normal frame\n",
 			__func__);
 		break;
 	case SND_SOC_DAIFMT_NB_IF: /* normal BCLK + inv FRM */
-		dev_dbg(component->dev,
-			"%s: IF0: Normal bit clock, inverted frame\n",
+		dev_dbg(dev, "%s: IF0: Normal bit clock, inverted frame\n",
 			__func__);
 		conf2_val |= BIT(AB8500_DIGIFCONF2_FSYNC0P);
 		break;
 	case SND_SOC_DAIFMT_IB_NF: /* invert BCLK + nor FRM */
-		dev_dbg(component->dev,
-			"%s: IF0: Inverted bit clock, normal frame\n",
+		dev_dbg(dev, "%s: IF0: Inverted bit clock, normal frame\n",
 			__func__);
 		conf2_val |= BIT(AB8500_DIGIFCONF2_BITCLK0P);
 		break;
 	case SND_SOC_DAIFMT_IB_IF: /* invert BCLK + FRM */
-		dev_dbg(component->dev,
-			"%s: IF0: Inverted bit clock, inverted frame\n",
+		dev_dbg(dev, "%s: IF0: Inverted bit clock, inverted frame\n",
 			__func__);
 		conf2_val |= BIT(AB8500_DIGIFCONF2_FSYNC0P) |
 			     BIT(AB8500_DIGIFCONF2_BITCLK0P);
 		break;
 	default:
-		dev_err(component->dev,
-			"%s: ERROR: Unsupported INV mask 0x%x\n",
+		dev_err(dev, "%s: ERROR: Unsupported INV mask 0x%x\n",
 			__func__, fmt & SND_SOC_DAIFMT_INV_MASK);
 		return -EINVAL;
 	}
@@ -1775,7 +1765,8 @@ static int ab8500_codec_set_dai_tdm_slot(struct snd_soc_dai *dai,
 		unsigned int tx_mask, unsigned int rx_mask,
 		int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int active_mask, clock_ratio, slot, value, ad_out, reg;
 	unsigned int tx_active, rx_active;
 	unsigned int conf1_val, conf2_val;
@@ -1800,7 +1791,7 @@ static int ab8500_codec_set_dai_tdm_slot(struct snd_soc_dai *dai,
 			BIT(AB8500_DIGIFCONF2_IF0WL0);
 		break;
 	default:
-		dev_err(dai->component->dev, "%s: Unsupported slot-width 0x%x\n",
+		dev_err(dev, "%s: Unsupported slot-width 0x%x\n",
 			__func__, slot_width);
 		return -EINVAL;
 	}
@@ -1812,9 +1803,7 @@ static int ab8500_codec_set_dai_tdm_slot(struct snd_soc_dai *dai,
 	case 16:
 		break;
 	default:
-		dev_err(dai->component->dev,
-			"%s: ERROR: Unsupported number of slots (%d)!\n",
-			__func__, slots);
+		dev_err(dev, "%s: ERROR: Unsupported number of slots (%d)!\n", __func__, slots);
 		return -EINVAL;
 	}
 
@@ -1834,15 +1823,14 @@ static int ab8500_codec_set_dai_tdm_slot(struct snd_soc_dai *dai,
 			    BIT(AB8500_DIGIFCONF1_IF0BITCLKOS1);
 		break;
 	default:
-		dev_err(component->dev, "%s: Unsupported BCLK ratio (%u)!\n",
+		dev_err(dev, "%s: Unsupported BCLK ratio (%u)!\n",
 			__func__, clock_ratio);
 		return -EINVAL;
 	}
 
 	active_mask = GENMASK(min(slots, 8) - 1, 0);
 	if ((tx_mask | rx_mask) & ~active_mask) {
-		dev_err(component->dev, "%s: Slot mask exceeds slot count\n",
-			__func__);
+		dev_err(dev, "%s: Slot mask exceeds slot count\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1850,19 +1838,18 @@ static int ab8500_codec_set_dai_tdm_slot(struct snd_soc_dai *dai,
 	rx_active = hweight32(rx_mask);
 	if (tx_active != 0 && tx_active != 1 && tx_active != 2 &&
 	    tx_active != 8) {
-		dev_err(component->dev, "%s: Unsupported active TX slots (%u)!\n",
+		dev_err(dev, "%s: Unsupported active TX slots (%u)!\n",
 			__func__, tx_active);
 		return -EINVAL;
 	}
 	if (rx_active != 0 && rx_active != 1 && rx_active != 2 &&
 	    rx_active != 8) {
-		dev_err(component->dev, "%s: Unsupported active RX slots (%u)!\n",
+		dev_err(dev, "%s: Unsupported active RX slots (%u)!\n",
 			__func__, rx_active);
 		return -EINVAL;
 	}
 
-	dev_dbg(component->dev,
-		"%s: %d slots of %d bits, TX active: %u, RX active: %u\n",
+	dev_dbg(dev, "%s: %d slots of %d bits, TX active: %u, RX active: %u\n",
 		__func__, slots, slot_width, tx_active, rx_active);
 
 	ret = snd_soc_component_update_bits(component, AB8500_DIGIFCONF2,
@@ -2054,7 +2041,7 @@ static void ab8500_codec_of_probe(struct device *dev, struct device_node *np,
 
 static int ab8500_codec_probe(struct snd_soc_component *component)
 {
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct device_node *np = dev->of_node;
 	struct ab8500_codec_platform_data codec_pdata;
 	int status;
@@ -2128,7 +2115,7 @@ static int ab8500_codec_driver_probe(struct platform_device *pdev)
 	}
 
 	dev_dbg(&pdev->dev, "%s: Register codec.\n", __func__);
-	status = devm_snd_soc_register_component(&pdev->dev,
+	status = devm_snd_soc_component_register(&pdev->dev,
 				&ab8500_component_driver,
 				ab8500_codec_dai,
 				ARRAY_SIZE(ab8500_codec_dai));

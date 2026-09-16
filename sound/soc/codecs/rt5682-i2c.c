@@ -290,7 +290,7 @@ static int rt5682_i2c_probe(struct i2c_client *i2c)
 	rt5682->lrck[RT5682_AIF1] = 48000;
 #endif
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 					       &rt5682_soc_component_dev,
 					       rt5682_dai, ARRAY_SIZE(rt5682_dai));
 }

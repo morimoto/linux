@@ -27,9 +27,9 @@ struct max98357a_priv {
 static int max98357a_daiops_trigger(struct snd_pcm_substream *substream,
 		int cmd, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct max98357a_priv *max98357a =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98357a_priv *max98357a = dev_get_drvdata(dev);
 
 	if (!max98357a->sdmode)
 		return 0;
@@ -41,14 +41,14 @@ static int max98357a_daiops_trigger(struct snd_pcm_substream *substream,
 		mdelay(max98357a->sdmode_delay);
 		if (max98357a->sdmode_switch) {
 			gpiod_set_value(max98357a->sdmode, 1);
-			dev_dbg(component->dev, "set sdmode to 1");
+			dev_dbg(dev, "set sdmode to 1");
 		}
 		break;
 	case SNDRV_PCM_TRIGGER_STOP:
 	case SNDRV_PCM_TRIGGER_SUSPEND:
 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
 		gpiod_set_value(max98357a->sdmode, 0);
-		dev_dbg(component->dev, "set sdmode to 0");
+		dev_dbg(dev, "set sdmode to 0");
 		break;
 	}
 
@@ -58,10 +58,9 @@ static int max98357a_daiops_trigger(struct snd_pcm_substream *substream,
 static int max98357a_sdmode_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct max98357a_priv *max98357a =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct max98357a_priv *max98357a = dev_get_drvdata(dev);
 
 	if (event & SND_SOC_DAPM_POST_PMU)
 		max98357a->sdmode_switch = 1;
@@ -144,7 +143,7 @@ static int max98357a_platform_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, max98357a);
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&max98357a_component_driver,
 			&max98357a_dai_driver, 1);
 }

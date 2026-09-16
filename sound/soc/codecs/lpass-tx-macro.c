@@ -739,7 +739,8 @@ static int tx_macro_mclk_event(struct snd_soc_dapm_widget *w,
 			       struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tx_macro *tx = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -805,7 +806,8 @@ static int tx_macro_put_dec_enum(struct snd_kcontrol *kcontrol,
 	struct snd_soc_dapm_widget *widget = snd_soc_dapm_kcontrol_to_widget(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(widget->dapm);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
-	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tx_macro *tx = dev_get_drvdata(dev);
 	unsigned int val;
 	u16 mic_sel_reg;
 
@@ -839,7 +841,7 @@ static int tx_macro_put_dec_enum(struct snd_kcontrol *kcontrol,
 		mic_sel_reg = CDC_TX7_TX_PATH_CFG0;
 		break;
 	default:
-		dev_err(component->dev, "Error in configuration!!\n");
+		dev_err(dev, "Error in configuration!!\n");
 		return -EINVAL;
 	}
 
@@ -866,7 +868,8 @@ static int tx_macro_tx_mixer_get(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc = (struct soc_mixer_control *)kcontrol->private_value;
 	u32 dai_id = widget->shift;
 	u32 dec_id = mc->shift;
-	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tx_macro *tx = dev_get_drvdata(dev);
 
 	if (test_bit(dec_id, &tx->active_ch_mask[dai_id]))
 		ucontrol->value.integer.value[0] = 1;
@@ -886,7 +889,8 @@ static int tx_macro_tx_mixer_put(struct snd_kcontrol *kcontrol,
 	u32 dai_id = widget->shift;
 	u32 dec_id = mc->shift;
 	u32 enable = ucontrol->value.integer.value[0];
-	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tx_macro *tx = dev_get_drvdata(dev);
 
 	if (enable) {
 		if (tx->active_decimator[dai_id] == dec_id)
@@ -919,7 +923,8 @@ static int tx_macro_enable_dec(struct snd_soc_dapm_widget *w,
 	int unmute_delay = TX_MACRO_DMIC_UNMUTE_DELAY_MS;
 	u16 adc_mux_reg, adc_reg, adc_n, dmic;
 	u16 dmic_clk_reg;
-	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tx_macro *tx = dev_get_drvdata(dev);
 
 	decimator = w->shift;
 	tx_vol_ctl_reg = CDC_TXn_TX_PATH_CTL(decimator);
@@ -1073,7 +1078,8 @@ static int tx_macro_dec_mode_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tx_macro *tx = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	int path = e->shift_l;
 
@@ -1089,7 +1095,8 @@ static int tx_macro_dec_mode_put(struct snd_kcontrol *kcontrol,
 	int value = ucontrol->value.enumerated.item[0];
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	int path = e->shift_l;
-	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tx_macro *tx = dev_get_drvdata(dev);
 
 	if (tx->dec_mode[path] == value)
 		return 0;
@@ -1103,7 +1110,8 @@ static int tx_macro_get_bcs(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tx_macro *tx = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = tx->bcs_enable;
 
@@ -1115,7 +1123,8 @@ static int tx_macro_set_bcs(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	int value = ucontrol->value.integer.value[0];
-	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tx_macro *tx = dev_get_drvdata(dev);
 
 	tx->bcs_enable = value;
 
@@ -1126,11 +1135,13 @@ static int tx_macro_hw_params(struct snd_pcm_substream *substream,
 			      struct snd_pcm_hw_params *params,
 			      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	int dai_id = snd_soc_dai_id(dai);
 	u32 sample_rate;
 	u8 decimator;
 	int tx_fs_rate;
-	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tx_macro *tx = dev_get_drvdata(dev);
 
 	sample_rate = params_rate(params);
 	switch (sample_rate) {
@@ -1156,12 +1167,12 @@ static int tx_macro_hw_params(struct snd_pcm_substream *substream,
 		tx_fs_rate = 7;
 		break;
 	default:
-		dev_err(component->dev, "%s: Invalid TX sample rate: %d\n",
+		dev_err(dev, "%s: Invalid TX sample rate: %d\n",
 			__func__, params_rate(params));
 		return -EINVAL;
 	}
 
-	for_each_set_bit(decimator, &tx->active_ch_mask[dai->id], TX_MACRO_DEC_MAX)
+	for_each_set_bit(decimator, &tx->active_ch_mask[dai_id], TX_MACRO_DEC_MAX)
 		snd_soc_component_update_bits(component, CDC_TXn_TX_PATH_CTL(decimator),
 					      CDC_TXn_PCM_RATE_MASK,
 					      tx_fs_rate);
@@ -1172,15 +1183,17 @@ static int tx_macro_get_channel_map(const struct snd_soc_dai *dai,
 				    unsigned int *tx_num, unsigned int *tx_slot,
 				    unsigned int *rx_num, unsigned int *rx_slot)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tx_macro *tx = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case TX_MACRO_AIF1_CAP:
 	case TX_MACRO_AIF2_CAP:
 	case TX_MACRO_AIF3_CAP:
-		*tx_slot = tx->active_ch_mask[dai->id];
-		*tx_num = tx->active_ch_cnt[dai->id];
+		*tx_slot = tx->active_ch_mask[dai_id];
+		*tx_num = tx->active_ch_cnt[dai_id];
 		break;
 	default:
 		break;
@@ -1190,15 +1203,17 @@ static int tx_macro_get_channel_map(const struct snd_soc_dai *dai,
 
 static int tx_macro_digital_mute(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tx_macro *tx = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tx_macro *tx = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	u8 decimator;
 
 	/* active decimator not set yet */
-	if (tx->active_decimator[dai->id] == -1)
+	if (tx->active_decimator[dai_id] == -1)
 		return 0;
 
-	decimator = tx->active_decimator[dai->id];
+	decimator = tx->active_decimator[dai_id];
 
 	if (mute)
 		snd_soc_component_write_field(component,
@@ -2084,7 +2099,8 @@ static const struct snd_kcontrol_new tx_macro_snd_controls[] = {
 static int tx_macro_component_extend(struct snd_soc_component *comp)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(comp);
-	struct tx_macro *tx = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct tx_macro *tx = dev_get_drvdata(dev);
 	int ret;
 
 	if (tx->data->extra_widgets_num) {
@@ -2110,14 +2126,15 @@ static int tx_macro_component_extend(struct snd_soc_component *comp)
 
 static int tx_macro_component_probe(struct snd_soc_component *comp)
 {
-	struct tx_macro *tx = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct tx_macro *tx = dev_get_drvdata(dev);
 	int i, ret;
 
 	ret = tx_macro_component_extend(comp);
 	if (ret)
 		return ret;
 
-	snd_soc_component_init_regmap(comp, tx->regmap);
+	snd_soc_component_regmap_init(comp, tx->regmap);
 
 	for (i = 0; i < NUM_DECIMATORS; i++) {
 		tx->tx_hpf_work[i].tx = tx;
@@ -2360,7 +2377,7 @@ static int tx_macro_probe(struct platform_device *pdev)
 		regmap_update_bits(tx->regmap, CDC_TX_CLK_RST_CTRL_SWR_CONTROL,
 				   CDC_TX_SWR_RESET_MASK, 0x0);
 
-	ret = devm_snd_soc_register_component(dev, &tx_macro_component_drv,
+	ret = devm_snd_soc_component_register(dev, &tx_macro_component_drv,
 					      tx_macro_dai,
 					      ARRAY_SIZE(tx_macro_dai));
 	if (ret)

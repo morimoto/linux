@@ -380,7 +380,8 @@ static int adau1761_dejitter_fixup(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct adau *adau = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau *adau = dev_get_drvdata(dev);
 
 	/* After any power changes have been made the dejitter circuit
 	 * has to be reinitialized. */
@@ -620,7 +621,8 @@ exit:
 static int adau1761_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct adau *adau = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau *adau = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -649,7 +651,8 @@ static int adau1761_set_bias_level(struct snd_soc_component *component,
 static enum adau1761_output_mode adau1761_get_lineout_mode(
 	struct snd_soc_component *component)
 {
-	struct adau1761_platform_data *pdata = component->dev->platform_data;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1761_platform_data *pdata = dev->platform_data;
 
 	if (pdata)
 		return pdata->lineout_mode;
@@ -660,8 +663,9 @@ static enum adau1761_output_mode adau1761_get_lineout_mode(
 static int adau1761_setup_digmic_jackdetect(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct adau1761_platform_data *pdata = component->dev->platform_data;
-	struct adau *adau = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1761_platform_data *pdata = dev->platform_data;
+	struct adau *adau = dev_get_drvdata(dev);
 	enum adau1761_digmic_jackdet_pin_mode mode;
 	unsigned int val = 0;
 	int ret;
@@ -686,7 +690,7 @@ static int adau1761_setup_digmic_jackdetect(struct snd_soc_component *component)
 		if (pdata->jackdetect_active_low)
 			val |= ADAU1761_DIGMIC_JACKDETECT_ACTIVE_LOW;
 
-		ret = snd_soc_add_component_controls(component,
+		ret = snd_soc_component_add_controls(component,
 			adau1761_jack_detect_controls,
 			ARRAY_SIZE(adau1761_jack_detect_controls));
 		if (ret)
@@ -723,8 +727,9 @@ static int adau1761_setup_digmic_jackdetect(struct snd_soc_component *component)
 static int adau1761_setup_headphone_mode(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct adau *adau = snd_soc_component_get_drvdata(component);
-	struct adau1761_platform_data *pdata = component->dev->platform_data;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau *adau = dev_get_drvdata(dev);
+	struct adau1761_platform_data *pdata = dev->platform_data;
 	enum adau1761_output_mode mode;
 	int ret;
 
@@ -762,7 +767,7 @@ static int adau1761_setup_headphone_mode(struct snd_soc_component *component)
 			adau1761_capless_dapm_routes,
 			ARRAY_SIZE(adau1761_capless_dapm_routes));
 	} else {
-		ret = snd_soc_add_component_controls(component, adau1761_mono_controls,
+		ret = snd_soc_component_add_controls(component, adau1761_mono_controls,
 			ARRAY_SIZE(adau1761_mono_controls));
 		if (ret)
 			return ret;
@@ -821,8 +826,9 @@ static bool adau1761_readable_register(struct device *dev, unsigned int reg)
 static int adau1761_component_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct adau1761_platform_data *pdata = component->dev->platform_data;
-	struct adau *adau = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1761_platform_data *pdata = dev->platform_data;
+	struct adau *adau = dev_get_drvdata(dev);
 	int ret;
 
 	ret = adau17x1_add_widgets(component);
@@ -836,13 +842,13 @@ static int adau1761_component_probe(struct snd_soc_component *component)
 		regmap_update_bits(adau->regmap, ADAU1761_RIGHT_DIFF_INPUT_VOL,
 			ADAU1761_DIFF_INPUT_VOL_LDEN,
 			ADAU1761_DIFF_INPUT_VOL_LDEN);
-		ret = snd_soc_add_component_controls(component,
+		ret = snd_soc_component_add_controls(component,
 			adau1761_differential_mode_controls,
 			ARRAY_SIZE(adau1761_differential_mode_controls));
 		if (ret)
 			return ret;
 	} else {
-		ret = snd_soc_add_component_controls(component,
+		ret = snd_soc_component_add_controls(component,
 			adau1761_single_mode_controls,
 			ARRAY_SIZE(adau1761_single_mode_controls));
 		if (ret)
@@ -1001,7 +1007,7 @@ int adau1761_probe(struct device *dev, struct regmap *regmap,
 	 * reaches standby and the core clock is enabled */
 	regcache_cache_only(regmap, true);
 
-	return devm_snd_soc_register_component(dev, &adau1761_component_driver,
+	return devm_snd_soc_component_register(dev, &adau1761_component_driver,
 					       dai_drv, 1);
 }
 EXPORT_SYMBOL_GPL(adau1761_probe);

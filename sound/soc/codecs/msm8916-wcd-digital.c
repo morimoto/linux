@@ -662,18 +662,19 @@ static int msm8916_wcd_digital_enable_dmic(struct snd_soc_dapm_widget *w,
 					   int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int dmic;
 	int ret;
 	/* get dmic number out of widget name */
 	char *dmic_num = strpbrk(w->name, "12");
 
 	if (dmic_num == NULL) {
-		dev_err(component->dev, "Invalid DMIC\n");
+		dev_err(dev, "Invalid DMIC\n");
 		return -EINVAL;
 	}
 	ret = kstrtouint(dmic_num, 10, &dmic);
 	if (ret < 0 || dmic > 2) {
-		dev_err(component->dev, "Invalid DMIC line on the component\n");
+		dev_err(dev, "Invalid DMIC line on the component\n");
 		return -EINVAL;
 	}
 
@@ -841,9 +842,10 @@ static int msm8916_wcd_digital_get_clks(struct platform_device *pdev,
 
 static int msm8916_wcd_digital_component_probe(struct snd_soc_component *component)
 {
-	struct msm8916_wcd_digital_priv *priv = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct msm8916_wcd_digital_priv *priv = dev_get_drvdata(dev);
 
-	snd_soc_component_set_drvdata(component, priv);
+	dev_set_drvdata(dev, priv);
 
 	return 0;
 }
@@ -852,7 +854,8 @@ static int msm8916_wcd_digital_component_set_sysclk(struct snd_soc_component *co
 						int clk_id, int source,
 						unsigned int freq, int dir)
 {
-	struct msm8916_wcd_digital_priv *p = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct msm8916_wcd_digital_priv *p = dev_get_drvdata(dev);
 
 	return clk_set_rate(p->mclk, freq);
 }
@@ -861,6 +864,8 @@ static int msm8916_wcd_digital_hw_params(struct snd_pcm_substream *substream,
 					 struct snd_pcm_hw_params *params,
 					 struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u8 tx_fs_rate;
 	u8 rx_fs_rate;
 
@@ -882,18 +887,18 @@ static int msm8916_wcd_digital_hw_params(struct snd_pcm_substream *substream,
 		rx_fs_rate = RX_I2S_CTL_RX_I2S_FS_RATE_F_48_KHZ;
 		break;
 	default:
-		dev_err(dai->component->dev, "Invalid sampling rate %d\n",
+		dev_err(dev, "Invalid sampling rate %d\n",
 			params_rate(params));
 		return -EINVAL;
 	}
 
 	switch (substream->stream) {
 	case SNDRV_PCM_STREAM_CAPTURE:
-		snd_soc_component_update_bits(dai->component, LPASS_CDC_CLK_TX_I2S_CTL,
+		snd_soc_component_update_bits(component, LPASS_CDC_CLK_TX_I2S_CTL,
 				    TX_I2S_CTL_TX_I2S_FS_RATE_MASK, tx_fs_rate);
 		break;
 	case SNDRV_PCM_STREAM_PLAYBACK:
-		snd_soc_component_update_bits(dai->component, LPASS_CDC_CLK_RX_I2S_CTL,
+		snd_soc_component_update_bits(component, LPASS_CDC_CLK_RX_I2S_CTL,
 				    RX_I2S_CTL_RX_I2S_FS_RATE_MASK, rx_fs_rate);
 		break;
 	default:
@@ -902,24 +907,24 @@ static int msm8916_wcd_digital_hw_params(struct snd_pcm_substream *substream,
 
 	switch (params_format(params)) {
 	case SNDRV_PCM_FORMAT_S16_LE:
-		snd_soc_component_update_bits(dai->component, LPASS_CDC_CLK_TX_I2S_CTL,
+		snd_soc_component_update_bits(component, LPASS_CDC_CLK_TX_I2S_CTL,
 				    TX_I2S_CTL_TX_I2S_MODE_MASK,
 				    TX_I2S_CTL_TX_I2S_MODE_16);
-		snd_soc_component_update_bits(dai->component, LPASS_CDC_CLK_RX_I2S_CTL,
+		snd_soc_component_update_bits(component, LPASS_CDC_CLK_RX_I2S_CTL,
 				    RX_I2S_CTL_RX_I2S_MODE_MASK,
 				    RX_I2S_CTL_RX_I2S_MODE_16);
 		break;
 
 	case SNDRV_PCM_FORMAT_S32_LE:
-		snd_soc_component_update_bits(dai->component, LPASS_CDC_CLK_TX_I2S_CTL,
+		snd_soc_component_update_bits(component, LPASS_CDC_CLK_TX_I2S_CTL,
 				    TX_I2S_CTL_TX_I2S_MODE_MASK,
 				    TX_I2S_CTL_TX_I2S_MODE_32);
-		snd_soc_component_update_bits(dai->component, LPASS_CDC_CLK_RX_I2S_CTL,
+		snd_soc_component_update_bits(component, LPASS_CDC_CLK_RX_I2S_CTL,
 				    RX_I2S_CTL_RX_I2S_MODE_MASK,
 				    RX_I2S_CTL_RX_I2S_MODE_32);
 		break;
 	default:
-		dev_err(dai->dev, "%s: wrong format selected\n", __func__);
+		dev_err(dev, "%s: wrong format selected\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1070,11 +1075,11 @@ static const struct snd_soc_dapm_route msm8916_wcd_digital_audio_map[] = {
 static int msm8916_wcd_digital_startup(struct snd_pcm_substream *substream,
 				       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct msm8916_wcd_digital_priv *msm8916_wcd;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct msm8916_wcd_digital_priv *msm8916_wcd = dev_get_drvdata(dev);
 	unsigned long mclk_rate;
 
-	msm8916_wcd = snd_soc_component_get_drvdata(component);
 	snd_soc_component_update_bits(component, LPASS_CDC_CLK_MCLK_CTL,
 			    MCLK_CTL_MCLK_EN_MASK,
 			    MCLK_CTL_MCLK_EN_ENABLE);
@@ -1095,7 +1100,7 @@ static int msm8916_wcd_digital_startup(struct snd_pcm_substream *substream,
 				    TOP_CTL_DIG_MCLK_FREQ_F_9_6MHZ);
 		break;
 	default:
-		dev_err(component->dev, "Invalid mclk rate %ld\n", mclk_rate);
+		dev_err(dev, "Invalid mclk rate %ld\n", mclk_rate);
 		break;
 	}
 	return 0;
@@ -1104,7 +1109,9 @@ static int msm8916_wcd_digital_startup(struct snd_pcm_substream *substream,
 static void msm8916_wcd_digital_shutdown(struct snd_pcm_substream *substream,
 					 struct snd_soc_dai *dai)
 {
-	snd_soc_component_update_bits(dai->component, LPASS_CDC_CLK_PDM_CTL,
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	snd_soc_component_update_bits(component, LPASS_CDC_CLK_PDM_CTL,
 			    LPASS_CDC_CLK_PDM_CTL_PDM_CLK_SEL_MASK, 0);
 }
 
@@ -1203,7 +1210,7 @@ static int msm8916_wcd_digital_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(dev, priv);
 
-	ret = devm_snd_soc_register_component(dev, &msm8916_wcd_digital,
+	ret = devm_snd_soc_component_register(dev, &msm8916_wcd_digital,
 				      msm8916_wcd_digital_dai,
 				      ARRAY_SIZE(msm8916_wcd_digital_dai));
 	if (ret)

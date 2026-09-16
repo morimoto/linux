@@ -42,7 +42,9 @@ static int fsl_rpmsg_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *dai)
 {
-	struct fsl_rpmsg *rpmsg = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_rpmsg *rpmsg = dev_get_drvdata(dai_dev);
 	struct clk *p = rpmsg->mclk, *pll = NULL, *npll = NULL;
 	u64 rate = params_rate(params);
 	int ret = 0;
@@ -65,7 +67,7 @@ static int fsl_rpmsg_hw_params(struct snd_pcm_substream *substream,
 		if (!clk_is_match(pll, npll)) {
 			ret = clk_set_parent(p, npll);
 			if (ret < 0)
-				dev_warn(dai->dev, "failed to set parent %s: %d\n",
+				dev_warn(dai_dev, "failed to set parent %s: %d\n",
 					 __clk_get_name(npll), ret);
 		}
 	}
@@ -73,7 +75,7 @@ static int fsl_rpmsg_hw_params(struct snd_pcm_substream *substream,
 	if (!(rpmsg->mclk_streams & BIT(substream->stream))) {
 		ret = clk_prepare_enable(rpmsg->mclk);
 		if (ret) {
-			dev_err(dai->dev, "failed to enable mclk: %d\n", ret);
+			dev_err(dai_dev, "failed to enable mclk: %d\n", ret);
 			return ret;
 		}
 
@@ -86,7 +88,9 @@ static int fsl_rpmsg_hw_params(struct snd_pcm_substream *substream,
 static int fsl_rpmsg_hw_free(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct fsl_rpmsg *rpmsg = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_rpmsg *rpmsg = dev_get_drvdata(dev);
 
 	if (rpmsg->mclk_streams & BIT(substream->stream)) {
 		clk_disable_unprepare(rpmsg->mclk);
@@ -274,7 +278,7 @@ static int fsl_rpmsg_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, rpmsg);
 	pm_runtime_enable(&pdev->dev);
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &fsl_component,
 					      dai_drv, 1);
 	if (ret)
 		goto err_pm_disable;
