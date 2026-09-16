@@ -1107,7 +1107,7 @@ static int lm49453_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 clk_div = 0;
 
 	/* Setting DAC clock dividers based on substream sample rate. */
@@ -1139,8 +1139,7 @@ static int lm49453_hw_params(struct snd_pcm_substream *substream,
 
 static int lm49453_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 aif_val;
 	int mode = 0;
 	int clk_phase = 0;
@@ -1194,7 +1193,7 @@ static int lm49453_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 static int lm49453_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 				  unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 pll_clk = 0;
 
 	switch (freq) {
@@ -1218,35 +1217,45 @@ static int lm49453_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 static int lm49453_hp_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	snd_soc_component_update_bits(dai->component, LM49453_P0_DAC_DSP_REG, BIT(1)|BIT(0),
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	snd_soc_component_update_bits(component, LM49453_P0_DAC_DSP_REG, BIT(1)|BIT(0),
 			    (mute ? (BIT(1)|BIT(0)) : 0));
 	return 0;
 }
 
 static int lm49453_lo_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	snd_soc_component_update_bits(dai->component, LM49453_P0_DAC_DSP_REG, BIT(3)|BIT(2),
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	snd_soc_component_update_bits(component, LM49453_P0_DAC_DSP_REG, BIT(3)|BIT(2),
 			    (mute ? (BIT(3)|BIT(2)) : 0));
 	return 0;
 }
 
 static int lm49453_ls_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	snd_soc_component_update_bits(dai->component, LM49453_P0_DAC_DSP_REG, BIT(5)|BIT(4),
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	snd_soc_component_update_bits(component, LM49453_P0_DAC_DSP_REG, BIT(5)|BIT(4),
 			    (mute ? (BIT(5)|BIT(4)) : 0));
 	return 0;
 }
 
 static int lm49453_ep_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	snd_soc_component_update_bits(dai->component, LM49453_P0_DAC_DSP_REG, BIT(4),
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	snd_soc_component_update_bits(component, LM49453_P0_DAC_DSP_REG, BIT(4),
 			    (mute ? BIT(4) : 0));
 	return 0;
 }
 
 static int lm49453_ha_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	snd_soc_component_update_bits(dai->component, LM49453_P0_DAC_DSP_REG, BIT(7)|BIT(6),
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+
+	snd_soc_component_update_bits(component, LM49453_P0_DAC_DSP_REG, BIT(7)|BIT(6),
 			    (mute ? (BIT(7)|BIT(6)) : 0));
 	return 0;
 }
@@ -1254,7 +1263,8 @@ static int lm49453_ha_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int lm49453_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
-	struct lm49453_priv *lm49453 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lm49453_priv *lm49453 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -1448,7 +1458,7 @@ static int lm49453_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	ret =  devm_snd_soc_register_component(&i2c->dev,
+	ret =  devm_snd_soc_component_register(&i2c->dev,
 				      &soc_component_dev_lm49453,
 				      lm49453_dai, ARRAY_SIZE(lm49453_dai));
 	if (ret < 0)

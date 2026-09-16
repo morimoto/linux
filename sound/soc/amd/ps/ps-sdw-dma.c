@@ -308,16 +308,21 @@ static int acp63_configure_sdw_ringbuffer(void __iomem *acp_base, u32 stream_id,
 static int acp63_sdw_dma_open(struct snd_soc_component *component,
 			      struct snd_pcm_substream *substream)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_pcm_runtime *runtime;
 	struct acp_sdw_dma_stream *stream;
 	struct snd_soc_dai *cpu_dai;
+	struct snd_soc_component *cpu_component;
+	struct device *cpu_dev;
 	struct amd_sdw_manager *amd_manager;
 	struct snd_soc_pcm_runtime *prtd = snd_soc_substream_to_rtd(substream);
 	int ret;
 
 	runtime = substream->runtime;
 	cpu_dai = snd_soc_rtd_to_cpu(prtd, 0);
-	amd_manager = snd_soc_dai_get_drvdata(cpu_dai);
+	cpu_component = snd_soc_dai_to_component(cpu_dai);
+	cpu_dev = snd_soc_component_to_dev(cpu_component);
+	amd_manager = dev_get_drvdata(cpu_dev);
 	stream = kzalloc_obj(*stream);
 	if (!stream)
 		return -ENOMEM;
@@ -329,12 +334,12 @@ static int acp63_sdw_dma_open(struct snd_soc_component *component,
 	ret = snd_pcm_hw_constraint_integer(runtime,
 					    SNDRV_PCM_HW_PARAM_PERIODS);
 	if (ret < 0) {
-		dev_err(component->dev, "set integer constraint failed\n");
+		dev_err(dev, "set integer constraint failed\n");
 		kfree(stream);
 		return ret;
 	}
 
-	stream->stream_id = cpu_dai->id;
+	stream->stream_id = snd_soc_dai_id(cpu_dai);
 	stream->instance = amd_manager->instance;
 	runtime->private_data = stream;
 	return ret;
@@ -344,6 +349,7 @@ static int acp63_sdw_dma_hw_params(struct snd_soc_component *component,
 				   struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_sdw_dma_stream *stream;
 	struct sdw_dma_dev_data *sdw_data;
 	u32 period_bytes;
@@ -354,7 +360,7 @@ static int acp63_sdw_dma_hw_params(struct snd_soc_component *component,
 	u32 acp_ext_intr_cntl_reg;
 	int ret;
 
-	sdw_data = dev_get_drvdata(component->dev);
+	sdw_data = dev_get_drvdata(dev);
 	stream = substream->runtime->private_data;
 	if (!stream)
 		return -EINVAL;
@@ -419,7 +425,7 @@ static int acp63_sdw_dma_hw_params(struct snd_soc_component *component,
 	ret = acp63_configure_sdw_ringbuffer(sdw_data->acp_base, stream_id, size,
 					     stream->instance, sdw_data->acp_rev);
 	if (ret) {
-		dev_err(component->dev, "Invalid DMA channel\n");
+		dev_err(dev, "Invalid DMA channel\n");
 		return -EINVAL;
 	}
 	ext_intr_ctrl = readl(sdw_data->acp_base + acp_ext_intr_cntl_reg);
@@ -478,15 +484,16 @@ POINTER_RETURN_BYTES:
 	return byte_count.bytescount;
 }
 
-static snd_pcm_uframes_t acp63_sdw_dma_pointer(struct snd_soc_component *comp,
+static snd_pcm_uframes_t acp63_sdw_dma_pointer(struct snd_soc_component *component,
 					       struct snd_pcm_substream *substream)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct sdw_dma_dev_data *sdw_data;
 	struct acp_sdw_dma_stream *stream;
 	u32 pos, buffersize;
 	u64 bytescount;
 
-	sdw_data = dev_get_drvdata(comp->dev);
+	sdw_data = dev_get_drvdata(dev);
 	stream = substream->runtime->private_data;
 	buffersize = frames_to_bytes(substream->runtime,
 				     substream->runtime->buffer_size);
@@ -500,7 +507,8 @@ static snd_pcm_uframes_t acp63_sdw_dma_pointer(struct snd_soc_component *comp,
 static int acp63_sdw_dma_new(struct snd_soc_component *component,
 			     struct snd_soc_pcm_runtime *rtd)
 {
-	struct device *parent = component->dev->parent;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct device *parent = dev->parent;
 
 	snd_pcm_set_managed_buffer_all(rtd->pcm, SNDRV_DMA_TYPE_DEV,
 				       parent, SDW_MIN_BUFFER, SDW_MAX_BUFFER);
@@ -510,10 +518,11 @@ static int acp63_sdw_dma_new(struct snd_soc_component *component,
 static int acp63_sdw_dma_close(struct snd_soc_component *component,
 			       struct snd_pcm_substream *substream)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct sdw_dma_dev_data *sdw_data;
 	struct acp_sdw_dma_stream *stream;
 
-	sdw_data = dev_get_drvdata(component->dev);
+	sdw_data = dev_get_drvdata(dev);
 	stream = substream->runtime->private_data;
 	if (!stream)
 		return -EINVAL;
@@ -600,14 +609,15 @@ static int acp63_sdw_dma_enable(struct snd_pcm_substream *substream,
 				  (sdw_dma_stat == dma_enable), ACP_DELAY_US, ACP_COUNTER);
 }
 
-static int acp63_sdw_dma_trigger(struct snd_soc_component *comp,
+static int acp63_sdw_dma_trigger(struct snd_soc_component *component,
 				 struct snd_pcm_substream *substream,
 				 int cmd)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct sdw_dma_dev_data *sdw_data;
 	int ret;
 
-	sdw_data = dev_get_drvdata(comp->dev);
+	sdw_data = dev_get_drvdata(dev);
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
@@ -623,7 +633,7 @@ static int acp63_sdw_dma_trigger(struct snd_soc_component *comp,
 		ret = -EINVAL;
 	}
 	if (ret)
-		dev_err(comp->dev, "trigger %d failed: %d", cmd, ret);
+		dev_err(dev, "trigger %d failed: %d", cmd, ret);
 	return ret;
 }
 
@@ -666,7 +676,7 @@ static int acp63_sdw_platform_probe(struct platform_device *pdev)
 	sdw_data->acp_lock = &acp_data->acp_lock;
 	sdw_data->acp_rev = acp_data->acp_rev;
 	dev_set_drvdata(&pdev->dev, sdw_data);
-	status = devm_snd_soc_register_component(&pdev->dev,
+	status = devm_snd_soc_component_register(&pdev->dev,
 						 &acp63_sdw_component,
 						 NULL, 0);
 	if (status) {

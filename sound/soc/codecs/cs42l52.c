@@ -490,15 +490,16 @@ static const struct snd_kcontrol_new cs42l52_micb_controls[] = {
 
 static int cs42l52_add_mic_controls(struct snd_soc_component *component)
 {
-	struct cs42l52_private *cs42l52 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l52_private *cs42l52 = dev_get_drvdata(dev);
 	struct cs42l52_platform_data *pdata = &cs42l52->pdata;
 
 	if (!pdata->mica_diff_cfg)
-		snd_soc_add_component_controls(component, cs42l52_mica_controls,
+		snd_soc_component_add_controls(component, cs42l52_mica_controls,
 				     ARRAY_SIZE(cs42l52_mica_controls));
 
 	if (!pdata->micb_diff_cfg)
-		snd_soc_add_component_controls(component, cs42l52_micb_controls,
+		snd_soc_component_add_controls(component, cs42l52_micb_controls,
 				     ARRAY_SIZE(cs42l52_micb_controls));
 
 	return 0;
@@ -731,13 +732,14 @@ static int cs42l52_get_clk(int mclk, int rate)
 static int cs42l52_set_sysclk(struct snd_soc_dai *codec_dai,
 			int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs42l52_private *cs42l52 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l52_private *cs42l52 = dev_get_drvdata(dev);
 
 	if ((freq >= CS42L52_MIN_CLK) && (freq <= CS42L52_MAX_CLK)) {
 		cs42l52->sysclk = freq;
 	} else {
-		dev_err(component->dev, "Invalid freq parameter\n");
+		dev_err(dev, "Invalid freq parameter\n");
 		return -EINVAL;
 	}
 	return 0;
@@ -745,8 +747,9 @@ static int cs42l52_set_sysclk(struct snd_soc_dai *codec_dai,
 
 static int cs42l52_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct cs42l52_private *cs42l52 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l52_private *cs42l52 = dev_get_drvdata(dev);
 	u8 iface = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -805,7 +808,7 @@ static int cs42l52_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 
 static int cs42l52_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (mute)
 		snd_soc_component_update_bits(component, CS42L52_PB_CTL1,
@@ -823,8 +826,9 @@ static int cs42l52_pcm_hw_params(struct snd_pcm_substream *substream,
 				     struct snd_pcm_hw_params *params,
 				     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cs42l52_private *cs42l52 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l52_private *cs42l52 = dev_get_drvdata(dev);
 	u32 clk = 0;
 	int index;
 
@@ -840,7 +844,7 @@ static int cs42l52_pcm_hw_params(struct snd_pcm_substream *substream,
 
 		snd_soc_component_write(component, CS42L52_CLK_CTL, clk);
 	} else {
-		dev_err(component->dev, "can't get correct mclk\n");
+		dev_err(dev, "can't get correct mclk\n");
 		return -EINVAL;
 	}
 
@@ -850,7 +854,8 @@ static int cs42l52_pcm_hw_params(struct snd_pcm_substream *substream,
 static int cs42l52_set_bias_level(struct snd_soc_component *component,
 					enum snd_soc_bias_level level)
 {
-	struct cs42l52_private *cs42l52 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l52_private *cs42l52 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -934,6 +939,7 @@ static void cs42l52_beep_work(struct work_struct *work)
 		container_of(work, struct cs42l52_private, beep_work);
 	struct snd_soc_component *component = cs42l52->component;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int i;
 	int val = 0;
 	int best = 0;
@@ -945,14 +951,14 @@ static void cs42l52_beep_work(struct work_struct *work)
 				best = i;
 		}
 
-		dev_dbg(component->dev, "Set beep rate %dHz for requested %dHz\n",
+		dev_dbg(dev, "Set beep rate %dHz for requested %dHz\n",
 			beep_rates[best], cs42l52->beep_rate);
 
 		val = (best << CS42L52_BEEP_RATE_SHIFT);
 
 		snd_soc_dapm_enable_pin(dapm, "Beep");
 	} else {
-		dev_dbg(component->dev, "Disabling beep\n");
+		dev_dbg(dev, "Disabling beep\n");
 		snd_soc_dapm_disable_pin(dapm, "Beep");
 	}
 
@@ -965,13 +971,14 @@ static void cs42l52_beep_work(struct work_struct *work)
 /* For usability define a way of injecting beep events for the device -
  * many systems will not have a keyboard.
  */
-static int cs42l52_beep_event(struct input_dev *dev, unsigned int type,
+static int cs42l52_beep_event(struct input_dev *idev, unsigned int type,
 			     unsigned int code, int hz)
 {
-	struct snd_soc_component *component = input_get_drvdata(dev);
-	struct cs42l52_private *cs42l52 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = input_get_drvdata(idev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l52_private *cs42l52 = dev_get_drvdata(dev);
 
-	dev_dbg(component->dev, "Beep event %x %x\n", code, hz);
+	dev_dbg(dev, "Beep event %x %x\n", code, hz);
 
 	switch (code) {
 	case SND_BELL:
@@ -1010,12 +1017,13 @@ static DEVICE_ATTR_WO(beep);
 
 static void cs42l52_init_beep(struct snd_soc_component *component)
 {
-	struct cs42l52_private *cs42l52 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l52_private *cs42l52 = dev_get_drvdata(dev);
 	int ret;
 
-	cs42l52->beep = devm_input_allocate_device(component->dev);
+	cs42l52->beep = devm_input_allocate_device(dev);
 	if (!cs42l52->beep) {
-		dev_err(component->dev, "Failed to allocate beep device\n");
+		dev_err(dev, "Failed to allocate beep device\n");
 		return;
 	}
 
@@ -1023,33 +1031,33 @@ static void cs42l52_init_beep(struct snd_soc_component *component)
 	cs42l52->beep_rate = 0;
 
 	cs42l52->beep->name = "CS42L52 Beep Generator";
-	cs42l52->beep->phys = dev_name(component->dev);
+	cs42l52->beep->phys = dev_name(dev);
 	cs42l52->beep->id.bustype = BUS_I2C;
 
 	cs42l52->beep->evbit[0] = BIT_MASK(EV_SND);
 	cs42l52->beep->sndbit[0] = BIT_MASK(SND_BELL) | BIT_MASK(SND_TONE);
 	cs42l52->beep->event = cs42l52_beep_event;
-	cs42l52->beep->dev.parent = component->dev;
+	cs42l52->beep->dev.parent = dev;
 	input_set_drvdata(cs42l52->beep, component);
 
 	ret = input_register_device(cs42l52->beep);
 	if (ret != 0) {
 		cs42l52->beep = NULL;
-		dev_err(component->dev, "Failed to register beep device\n");
+		dev_err(dev, "Failed to register beep device\n");
 	}
 
-	ret = device_create_file(component->dev, &dev_attr_beep);
+	ret = device_create_file(dev, &dev_attr_beep);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to create keyclick file: %d\n",
-			ret);
+		dev_err(dev, "Failed to create keyclick file: %d\n", ret);
 	}
 }
 
 static void cs42l52_free_beep(struct snd_soc_component *component)
 {
-	struct cs42l52_private *cs42l52 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l52_private *cs42l52 = dev_get_drvdata(dev);
 
-	device_remove_file(component->dev, &dev_attr_beep);
+	device_remove_file(dev, &dev_attr_beep);
 	cancel_work_sync(&cs42l52->beep_work);
 	cs42l52->beep = NULL;
 
@@ -1059,7 +1067,8 @@ static void cs42l52_free_beep(struct snd_soc_component *component)
 
 static int cs42l52_probe(struct snd_soc_component *component)
 {
-	struct cs42l52_private *cs42l52 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l52_private *cs42l52 = dev_get_drvdata(dev);
 
 	regcache_cache_only(cs42l52->regmap, true);
 
@@ -1227,7 +1236,7 @@ static int cs42l52_i2c_probe(struct i2c_client *i2c_client)
 				   CS42L52_IFACE_CTL2_BIAS_LVL,
 				cs42l52->pdata.micbias_lvl);
 
-	return devm_snd_soc_register_component(&i2c_client->dev,
+	return devm_snd_soc_component_register(&i2c_client->dev,
 			&soc_component_dev_cs42l52, &cs42l52_dai, 1);
 }
 

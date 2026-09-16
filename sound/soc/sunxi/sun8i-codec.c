@@ -341,7 +341,10 @@ static int sun8i_codec_update_sample_rate(struct sun8i_codec *scodec)
 
 static int sun8i_codec_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct sun8i_codec *scodec = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun8i_codec *scodec = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	u32 dsp_format, format, invert, value;
 
 	/* clock masters */
@@ -356,17 +359,17 @@ static int sun8i_codec_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
-	if (dai->id == SUN8I_CODEC_AIF3) {
+	if (dai_id == SUN8I_CODEC_AIF3) {
 		/* AIF3 only supports master mode. */
 		if (value)
 			return -EINVAL;
 
 		/* Use the AIF2 BCLK and LRCK for AIF3. */
-		regmap_update_bits(scodec->regmap, SUN8I_AIF_CLK_CTRL(dai->id),
+		regmap_update_bits(scodec->regmap, SUN8I_AIF_CLK_CTRL(dai_id),
 				   SUN8I_AIF3_CLK_CTRL_AIF3_CLK_SRC_MASK,
 				   SUN8I_AIF3_CLK_CTRL_AIF3_CLK_SRC_AIF2);
 	} else {
-		regmap_update_bits(scodec->regmap, SUN8I_AIF_CLK_CTRL(dai->id),
+		regmap_update_bits(scodec->regmap, SUN8I_AIF_CLK_CTRL(dai_id),
 				   BIT(SUN8I_AIF_CLK_CTRL_MSTR_MOD),
 				   value << SUN8I_AIF_CLK_CTRL_MSTR_MOD);
 	}
@@ -394,12 +397,12 @@ static int sun8i_codec_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
-	if (dai->id == SUN8I_CODEC_AIF3) {
+	if (dai_id == SUN8I_CODEC_AIF3) {
 		/* AIF3 only supports DSP mode. */
 		if (format != 3)
 			return -EINVAL;
 	} else {
-		regmap_update_bits(scodec->regmap, SUN8I_AIF_CLK_CTRL(dai->id),
+		regmap_update_bits(scodec->regmap, SUN8I_AIF_CLK_CTRL(dai_id),
 				   SUN8I_AIF_CLK_CTRL_DATA_FMT_MASK,
 				   format << SUN8I_AIF_CLK_CTRL_DATA_FMT);
 	}
@@ -443,7 +446,7 @@ static int sun8i_codec_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		invert ^= scodec->quirks->lrck_inversion;
 	}
 
-	regmap_update_bits(scodec->regmap, SUN8I_AIF_CLK_CTRL(dai->id),
+	regmap_update_bits(scodec->regmap, SUN8I_AIF_CLK_CTRL(dai_id),
 			   SUN8I_AIF_CLK_CTRL_CLK_INV_MASK,
 			   invert << SUN8I_AIF_CLK_CTRL_CLK_INV);
 
@@ -454,8 +457,11 @@ static int sun8i_codec_set_tdm_slot(struct snd_soc_dai *dai,
 				    unsigned int tx_mask, unsigned int rx_mask,
 				    int slots, int slot_width)
 {
-	struct sun8i_codec *scodec = snd_soc_dai_get_drvdata(dai);
-	struct sun8i_codec_aif *aif = &scodec->aifs[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun8i_codec *scodec = dev_get_drvdata(dev);
+	struct sun8i_codec_aif *aif = &scodec->aifs[dai_id];
 
 	if (slot_width && !is_power_of_2(slot_width))
 		return -EINVAL;
@@ -491,11 +497,14 @@ static const struct snd_pcm_hw_constraint_list sun8i_codec_24M_rates = {
 static int sun8i_codec_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct sun8i_codec *scodec = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun8i_codec *scodec = dev_get_drvdata(dev);
 	const struct snd_pcm_hw_constraint_list *list;
+	int dai_id = snd_soc_dai_id(dai);
 
 	/* hw_constraints is not relevant for codec2codec DAIs. */
-	if (dai->id != SUN8I_CODEC_AIF1)
+	if (dai_id != SUN8I_CODEC_AIF1)
 		return 0;
 
 	if (!scodec->sysclk_refcnt)
@@ -570,12 +579,16 @@ static int sun8i_codec_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct sun8i_codec *scodec = snd_soc_dai_get_drvdata(dai);
-	struct sun8i_codec_aif *aif = &scodec->aifs[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int sample_rate = params_rate(params);
+	unsigned int sysclk_rate = sun8i_codec_get_sysclk_rate(sample_rate);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun8i_codec *scodec = dev_get_drvdata(dev);
+	struct sun8i_codec_aif *aif = &scodec->aifs[dai_id];
 	unsigned int slots = aif->slots ?: params_channels(params);
 	unsigned int slot_width = aif->slot_width ?: params_width(params);
-	unsigned int sysclk_rate = sun8i_codec_get_sysclk_rate(sample_rate);
+	const char *dai_name = snd_soc_dai_name(dai);
 	int bclk_div, lrck_div_order, ret, word_size;
 	u32 clk_reg;
 
@@ -597,7 +610,7 @@ static int sun8i_codec_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	regmap_update_bits(scodec->regmap, SUN8I_AIF_CLK_CTRL(dai->id),
+	regmap_update_bits(scodec->regmap, SUN8I_AIF_CLK_CTRL(dai_id),
 			   SUN8I_AIF_CLK_CTRL_WORD_SIZ_MASK,
 			   word_size << SUN8I_AIF_CLK_CTRL_WORD_SIZ);
 
@@ -606,24 +619,24 @@ static int sun8i_codec_hw_params(struct snd_pcm_substream *substream,
 	if (lrck_div_order < 0)
 		return lrck_div_order;
 
-	if (dai->id == SUN8I_CODEC_AIF2 || dai->id == SUN8I_CODEC_AIF3) {
+	if (dai_id == SUN8I_CODEC_AIF2 || dai_id == SUN8I_CODEC_AIF3) {
 		/* AIF2 and AIF3 share AIF2's BCLK and LRCK generation circuitry. */
-		int partner = (SUN8I_CODEC_AIF2 + SUN8I_CODEC_AIF3) - dai->id;
+		int partner = (SUN8I_CODEC_AIF2 + SUN8I_CODEC_AIF3) - dai_id;
 		const struct sun8i_codec_aif *partner_aif = &scodec->aifs[partner];
 		const char *partner_name = sun8i_codec_dais[partner].name;
 
 		if (partner_aif->open_streams &&
 		    (lrck_div_order != partner_aif->lrck_div_order ||
 		     sample_rate != partner_aif->sample_rate)) {
-			dev_err(dai->dev,
+			dev_err(dev,
 				"%s sample and bit rates must match %s when both are used\n",
-				dai->name, partner_name);
+				dai_name, partner_name);
 			return -EBUSY;
 		}
 
 		clk_reg = SUN8I_AIF_CLK_CTRL(SUN8I_CODEC_AIF2);
 	} else {
-		clk_reg = SUN8I_AIF_CLK_CTRL(dai->id);
+		clk_reg = SUN8I_AIF_CLK_CTRL(dai_id);
 	}
 
 	regmap_update_bits(scodec->regmap, clk_reg,
@@ -651,9 +664,9 @@ static int sun8i_codec_hw_params(struct snd_pcm_substream *substream,
 	ret = (aif->open_streams ? clk_set_rate : clk_set_rate_exclusive)(scodec->clk_module,
 									  sysclk_rate);
 	if (ret == -EBUSY)
-		dev_err(dai->dev,
+		dev_err(dev,
 			"%s sample rate (%u Hz) conflicts with other audio streams\n",
-			dai->name, sample_rate);
+			dai_name, sample_rate);
 	if (ret < 0)
 		return ret;
 
@@ -671,8 +684,11 @@ static int sun8i_codec_hw_params(struct snd_pcm_substream *substream,
 static int sun8i_codec_hw_free(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct sun8i_codec *scodec = snd_soc_dai_get_drvdata(dai);
-	struct sun8i_codec_aif *aif = &scodec->aifs[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun8i_codec *scodec = dev_get_drvdata(dev);
+	struct sun8i_codec_aif *aif = &scodec->aifs[dai_id];
 
 	/* Drop references when the last substream for the AIF is freed. */
 	if (aif->open_streams != BIT(substream->stream))
@@ -826,7 +842,8 @@ static int sun8i_codec_aif_event(struct snd_soc_dapm_widget *w,
 				 struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct sun8i_codec *scodec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun8i_codec *scodec = dev_get_drvdata(dev);
 	struct sun8i_codec_aif *aif = &scodec->aifs[w->sname[3] - '1'];
 	int stream = w->id == snd_soc_dapm_aif_out;
 
@@ -1301,7 +1318,8 @@ static const struct snd_soc_dapm_route sun8i_codec_legacy_routes[] = {
 static int sun8i_codec_component_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct sun8i_codec *scodec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun8i_codec *scodec = dev_get_drvdata(dev);
 	int ret;
 
 	scodec->component = component;
@@ -1344,7 +1362,8 @@ static int sun8i_codec_component_probe(struct snd_soc_component *component)
 
 static void sun8i_codec_set_hmic_bias(struct sun8i_codec *scodec, bool enable)
 {
-	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(scodec->component->card);
+	struct snd_soc_card *card = snd_soc_component_to_card(scodec->component);
+	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	int irq_mask = BIT(SUN8I_HMIC_CTRL1_HMIC_DATA_IRQ_EN);
 
 	if (enable)
@@ -1512,8 +1531,9 @@ static irqreturn_t sun8i_codec_jack_irq(int irq, void *dev_id)
 static int sun8i_codec_enable_jack_detect(struct snd_soc_component *component,
 					  struct snd_soc_jack *jack, void *data)
 {
-	struct sun8i_codec *scodec = snd_soc_component_get_drvdata(component);
-	struct platform_device *pdev = to_platform_device(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun8i_codec *scodec = dev_get_drvdata(dev);
+	struct platform_device *pdev = to_platform_device(dev);
 	int ret;
 
 	if (!scodec->quirks->jack_detection)
@@ -1556,12 +1576,13 @@ static int sun8i_codec_enable_jack_detect(struct snd_soc_component *component,
 
 static void sun8i_codec_disable_jack_detect(struct snd_soc_component *component)
 {
-	struct sun8i_codec *scodec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sun8i_codec *scodec = dev_get_drvdata(dev);
 
 	if (!scodec->quirks->jack_detection)
 		return;
 
-	devm_free_irq(component->dev, scodec->jack_irq, scodec);
+	devm_free_irq(dev, scodec->jack_irq, scodec);
 
 	cancel_delayed_work_sync(&scodec->jack_work);
 
@@ -1666,7 +1687,7 @@ static int sun8i_codec_probe(struct platform_device *pdev)
 			goto err_pm_disable;
 	}
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &sun8i_soc_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &sun8i_soc_component,
 					      sun8i_codec_dais,
 					      ARRAY_SIZE(sun8i_codec_dais));
 	if (ret) {

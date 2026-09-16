@@ -39,7 +39,7 @@ static int imx_rpmsg_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	snd_pcm_format_t format = params_format(params);
-	struct device *dev = rtd->card->dev;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	unsigned int fmt = rtd->dai_link->dai_fmt;
 	bool format_is_dsd = false;
 	int ret;
@@ -81,14 +81,14 @@ static const struct snd_soc_ops imx_rpmsg_ops = {
 
 static int imx_rpmsg_late_probe(struct snd_soc_card *card)
 {
-	struct imx_rpmsg *data = snd_soc_card_get_drvdata(card);
-	struct snd_soc_pcm_runtime *rtd = list_first_entry(&card->rtd_list_head,
+	struct imx_rpmsg *data = snd_soc_card_to_priv(card);
+	struct snd_soc_pcm_runtime *rtd = list_first_entry(snd_soc_card_to_rtd_list_head(card),
 							   struct snd_soc_pcm_runtime, rtd_list);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
-	if (of_property_present(card->dev->of_node, "hp-det-gpios")) {
+	if (of_property_present(dev->of_node, "hp-det-gpios")) {
 		ret = simple_util_init_jack(card, &data->hp_jack,
 					    1, NULL, "Headphone Jack");
 		if (ret) {
@@ -148,11 +148,13 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
 {
 	struct snd_soc_dai_link_component *dlc;
 	struct snd_soc_dai *cpu_dai;
+	struct snd_soc_component *component;
 	struct device_node *np = NULL;
 	struct of_phandle_args args;
 	const char *platform_name;
 	struct imx_rpmsg *data;
 	struct snd_soc_card *card;
+	struct device *dai_dev;
 	int ret = 0;
 
 	card = snd_soc_card_alloc(&pdev->dev);
@@ -194,7 +196,9 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
 		ret = -EPROBE_DEFER;
 		goto fail;
 	}
-	np = cpu_dai->dev->of_node;
+	component = snd_soc_dai_to_component(cpu_dai);
+	dai_dev = snd_soc_component_to_dev(component);
+	np = dai_dev->of_node;
 	if (!np) {
 		dev_err(&pdev->dev, "failed to parse CPU DAI device node\n");
 		ret = -ENODEV;

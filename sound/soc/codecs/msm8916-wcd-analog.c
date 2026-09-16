@@ -358,7 +358,8 @@ static const struct snd_kcontrol_new pm8916_wcd_analog_snd_controls[] = {
 
 static void pm8916_wcd_analog_micbias_enable(struct snd_soc_component *component)
 {
-	struct pm8916_wcd_analog_priv *wcd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm8916_wcd_analog_priv *wcd = dev_get_drvdata(dev);
 
 	snd_soc_component_update_bits(component, CDC_A_MICB_1_CTL,
 			    MICB_1_CTL_EXT_PRECHARG_EN_MASK |
@@ -420,7 +421,8 @@ static int pm8916_wcd_analog_enable_micbias1(struct snd_soc_dapm_widget *w,
 					     int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct pm8916_wcd_analog_priv *wcd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm8916_wcd_analog_priv *wcd = dev_get_drvdata(dev);
 
 	return pm8916_wcd_analog_enable_micbias(component, event,
 						wcd->micbias1_cap_mode);
@@ -431,7 +433,8 @@ static int pm8916_wcd_analog_enable_micbias2(struct snd_soc_dapm_widget *w,
 					     int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct pm8916_wcd_analog_priv *wcd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm8916_wcd_analog_priv *wcd = dev_get_drvdata(dev);
 
 	return pm8916_wcd_analog_enable_micbias(component, event,
 						wcd->micbias2_cap_mode);
@@ -541,7 +544,8 @@ static int pm8916_wcd_analog_enable_micbias_int2(struct
 						  *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct pm8916_wcd_analog_priv *wcd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm8916_wcd_analog_priv *wcd = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -712,7 +716,8 @@ static int pm8916_wcd_analog_enable_hphl_pa(struct snd_soc_dapm_widget *w,
 					    int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct pm8916_wcd_analog_priv *priv = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm8916_wcd_analog_priv *priv = dev_get_drvdata(dev);
 
 	/* This quirk is not required for revisions prior to CAJON_2_0 */
 	if (priv->codec_version < 4)
@@ -739,7 +744,8 @@ static int pm8916_wcd_analog_enable_hphr_pa(struct snd_soc_dapm_widget *w,
 					    int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct pm8916_wcd_analog_priv *priv = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm8916_wcd_analog_priv *priv = dev_get_drvdata(dev);
 
 	/* This quirk is not required for revisions prior to CAJON_2_0 */
 	if (priv->codec_version < 4)
@@ -840,29 +846,29 @@ static const struct wcd_reg_seq pm8953_data = {
 
 static int pm8916_wcd_analog_probe(struct snd_soc_component *component)
 {
-	struct pm8916_wcd_analog_priv *priv = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm8916_wcd_analog_priv *priv = dev_get_drvdata(dev);
 	const struct wcd_reg_seq *wcd_reg_init_data;
 	int err, reg;
 
 	err = regulator_bulk_enable(ARRAY_SIZE(priv->supplies), priv->supplies);
 	if (err != 0) {
-		dev_err(component->dev, "failed to enable regulators (%d)\n", err);
+		dev_err(dev, "failed to enable regulators (%d)\n", err);
 		return err;
 	}
 
-	snd_soc_component_init_regmap(component,
-				  dev_get_regmap(component->dev->parent, NULL));
-	snd_soc_component_set_drvdata(component, priv);
+	snd_soc_component_regmap_init(component, dev_get_regmap(dev->parent, NULL));
+	dev_set_drvdata(dev, priv);
 	priv->pmic_rev = snd_soc_component_read(component, CDC_D_REVISION1);
 	priv->codec_version = snd_soc_component_read(component, CDC_D_PERPH_SUBTYPE);
 
-	dev_info(component->dev, "PMIC REV: %d\t CODEC Version: %d\n",
+	dev_info(dev, "PMIC REV: %d\t CODEC Version: %d\n",
 		 priv->pmic_rev, priv->codec_version);
 
 	snd_soc_component_write(component, CDC_D_PERPH_RESET_CTL4, 0x01);
 	snd_soc_component_write(component, CDC_A_PERPH_RESET_CTL4, 0x01);
 
-	wcd_reg_init_data = of_device_get_match_data(component->dev);
+	wcd_reg_init_data = of_device_get_match_data(dev);
 
 	for (reg = 0; reg < wcd_reg_init_data->seq_size; reg++)
 		snd_soc_component_write(component, wcd_reg_init_data->seq[reg].reg,
@@ -881,7 +887,8 @@ static int pm8916_wcd_analog_probe(struct snd_soc_component *component)
 
 static void pm8916_wcd_analog_remove(struct snd_soc_component *component)
 {
-	struct pm8916_wcd_analog_priv *priv = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm8916_wcd_analog_priv *priv = dev_get_drvdata(dev);
 
 	snd_soc_component_update_bits(component, CDC_D_CDC_RST_CTL,
 			    RST_CTL_DIG_SW_RST_N_MASK, 0);
@@ -1107,7 +1114,8 @@ static int pm8916_wcd_analog_set_jack(struct snd_soc_component *component,
 				      struct snd_soc_jack *jack,
 				      void *data)
 {
-	struct pm8916_wcd_analog_priv *wcd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pm8916_wcd_analog_priv *wcd = dev_get_drvdata(dev);
 
 	wcd->jack = jack;
 
@@ -1137,6 +1145,7 @@ static irqreturn_t mbhc_btn_press_irq_handler(int irq, void *arg)
 {
 	struct pm8916_wcd_analog_priv *priv = arg;
 	struct snd_soc_component *component = priv->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	u32 btn_result;
 
 	btn_result = snd_soc_component_read(component, CDC_A_MBHC_RESULT_1) &
@@ -1162,8 +1171,7 @@ static irqreturn_t mbhc_btn_press_irq_handler(int irq, void *arg)
 					    SND_JACK_BTN_0, btn_mask);
 		break;
 	default:
-		dev_err(component->dev,
-			"Unexpected button press result (%x)", btn_result);
+		dev_err(dev, "Unexpected button press result (%x)", btn_result);
 		break;
 	}
 
@@ -1383,7 +1391,7 @@ static int pm8916_wcd_analog_spmi_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(dev, priv);
 
-	return devm_snd_soc_register_component(dev, &pm8916_wcd_analog,
+	return devm_snd_soc_component_register(dev, &pm8916_wcd_analog,
 				      pm8916_wcd_analog_dai,
 				      ARRAY_SIZE(pm8916_wcd_analog_dai));
 }

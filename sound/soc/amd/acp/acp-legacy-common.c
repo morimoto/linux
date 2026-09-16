@@ -147,7 +147,8 @@ static void set_acp_pdm_ring_buffer(struct snd_pcm_substream *substream,
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct acp_stream *stream = runtime->private_data;
-	struct device *dev = dai->component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_chip_info *chip = dev_get_platdata(dev);
 
 	u32 physical_addr, pdm_size, period_bytes;
@@ -166,7 +167,8 @@ static void set_acp_pdm_ring_buffer(struct snd_pcm_substream *substream,
 static void set_acp_pdm_clk(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *dai)
 {
-	struct device *dev = dai->component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_chip_info *chip = dev_get_platdata(dev);
 	unsigned int pdm_ctrl;
 
@@ -203,15 +205,17 @@ EXPORT_SYMBOL_NS_GPL(restore_acp_pdm_params, "SND_SOC_ACP_COMMON");
 static int set_acp_i2s_dma_fifo(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct device *dev = dai->component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_chip_info *chip = dev_get_platdata(dev);
 	struct acp_resource *rsrc = chip->rsrc;
 	struct acp_stream *stream = substream->runtime->private_data;
 	u32 reg_dma_size, reg_fifo_size, reg_fifo_addr;
 	u32 phy_addr, acp_fifo_addr, ext_int_ctrl;
 	unsigned int dir = substream->stream;
+	int driver_id = snd_soc_dai_to_driver(dai)->id;
 
-	switch (dai->driver->id) {
+	switch (driver_id) {
 	case I2S_SP_INSTANCE:
 		if (dir == SNDRV_PCM_STREAM_PLAYBACK) {
 			reg_dma_size = ACP_I2S_TX_DMA_SIZE(chip);
@@ -288,7 +292,7 @@ static int set_acp_i2s_dma_fifo(struct snd_pcm_substream *substream,
 		}
 		break;
 	default:
-		dev_err(dev, "Invalid dai id %x\n", dai->driver->id);
+		dev_err(dev, "Invalid dai id %x\n", driver_id);
 		return -EINVAL;
 	}
 

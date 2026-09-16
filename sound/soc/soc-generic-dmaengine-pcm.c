@@ -61,7 +61,7 @@ int snd_dmaengine_pcm_prepare_slave_config(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	dma_data = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	dma_data = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 
 	ret = snd_hwparams_to_dma_slave_config(substream, params, slave_config);
 	if (ret)
@@ -116,7 +116,7 @@ dmaengine_pcm_set_runtime_hwparams(struct snd_soc_component *component,
 		return snd_soc_set_runtime_hwparams(substream,
 				pcm->config->pcm_hardware);
 
-	dma_data = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	dma_data = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 
 	memset(&hw, 0, sizeof(hw));
 	hw.info = SNDRV_PCM_INFO_MMAP | SNDRV_PCM_INFO_MMAP_VALID |
@@ -186,7 +186,7 @@ static struct dma_chan *dmaengine_pcm_compat_request_channel(
 		return NULL;
 	}
 
-	dma_data = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	dma_data = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 
 	if ((pcm->flags & SND_DMAENGINE_PCM_FLAG_HALF_DUPLEX) && pcm->chan[0])
 		return pcm->chan[0];
@@ -222,7 +222,7 @@ static int dmaengine_pcm_new(struct snd_soc_component *component,
 {
 	struct dmaengine_pcm *pcm = snd_soc_component_to_priv(component);
 	const struct snd_dmaengine_pcm_config *config = pcm->config;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	size_t prealloc_buffer_size;
 	size_t max_buffer_size;
 	unsigned int i;
@@ -252,8 +252,7 @@ static int dmaengine_pcm_new(struct snd_soc_component *component,
 		}
 
 		if (!pcm->chan[i]) {
-			dev_err(component->dev,
-				"Missing dma channel for stream: %d\n", i);
+			dev_err(dev, "Missing dma channel for stream: %d\n", i);
 			return -EINVAL;
 		}
 
@@ -478,7 +477,7 @@ int snd_dmaengine_pcm_register(struct device *dev,
 	else
 		driver = &dmaengine_pcm_component;
 
-	ret = snd_soc_register_component(component, driver, NULL, 0);
+	ret = snd_soc_component_register(component, driver, NULL, 0);
 	if (ret)
 		goto err_free_dma;
 
@@ -503,13 +502,13 @@ void snd_dmaengine_pcm_unregister(struct device *dev)
 	struct snd_soc_component *component;
 	struct dmaengine_pcm *pcm;
 
-	component = snd_soc_lookup_component(dev, SND_DMAENGINE_PCM_DRV_NAME);
+	component = snd_soc_component_lookup(dev, SND_DMAENGINE_PCM_DRV_NAME);
 	if (!component)
 		return;
 
 	pcm = snd_soc_component_to_priv(component);
 
-	snd_soc_unregister_component_by_driver(dev, component->driver);
+	snd_soc_component_unregister_by_driver(dev, snd_soc_component_to_driver(component));
 	dmaengine_pcm_release_chan(pcm);
 	kfree(pcm);
 }

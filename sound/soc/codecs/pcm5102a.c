@@ -32,7 +32,7 @@ static const struct snd_soc_component_driver soc_component_dev_pcm5102a = {
 
 static int pcm5102a_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev, &soc_component_dev_pcm5102a,
+	return devm_snd_soc_component_register(&pdev->dev, &soc_component_dev_pcm5102a,
 			&pcm5102a_dai, 1);
 }
 

@@ -77,7 +77,9 @@ static int xlnx_spdif_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
 	u32 val;
-	struct spdif_dev_data *ctx = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_dev_data *ctx = dev_get_drvdata(dev);
 
 	val = readl(ctx->base + XSPDIF_CONTROL_REG);
 	val |= XSPDIF_FIFO_FLUSH_MASK;
@@ -96,7 +98,9 @@ static int xlnx_spdif_startup(struct snd_pcm_substream *substream,
 static void xlnx_spdif_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct spdif_dev_data *ctx = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_dev_data *ctx = dev_get_drvdata(dev);
 
 	writel(XSPDIF_SOFT_RESET_VALUE, ctx->base + XSPDIF_SOFT_RESET_REG);
 }
@@ -106,7 +110,9 @@ static int xlnx_spdif_hw_params(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
 	u32 val, clk_div, clk_cfg;
-	struct spdif_dev_data *ctx = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_dev_data *ctx = dev_get_drvdata(dev);
 
 	clk_div = DIV_ROUND_CLOSEST(ctx->aclk, MAX_CHANNELS * AES_SAMPLE_WIDTH *
 				    params_rate(params));
@@ -148,7 +154,9 @@ static int xlnx_spdif_hw_params(struct snd_pcm_substream *substream,
 static int rx_stream_detect(struct snd_soc_dai *dai)
 {
 	int err;
-	struct spdif_dev_data *ctx = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_dev_data *ctx = dev_get_drvdata(dev);
 	unsigned long jiffies = msecs_to_jiffies(CH_STATUS_UPDATE_TIMEOUT);
 
 	/* start capture only if stream is detected within 40ms timeout */
@@ -156,7 +164,7 @@ static int rx_stream_detect(struct snd_soc_dai *dai)
 					       ctx->rx_chsts_updated,
 					       jiffies);
 	if (!err) {
-		dev_err(dai->dev, "No streaming audio detected!\n");
+		dev_err(dev, "No streaming audio detected!\n");
 		return -EINVAL;
 	}
 	ctx->rx_chsts_updated = false;
@@ -169,7 +177,9 @@ static int xlnx_spdif_trigger(struct snd_pcm_substream *substream, int cmd,
 {
 	u32 val;
 	int ret = 0;
-	struct spdif_dev_data *ctx = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_dev_data *ctx = dev_get_drvdata(dev);
 
 	val = readl(ctx->base + XSPDIF_CONTROL_REG);
 	switch (cmd) {
@@ -282,7 +292,7 @@ static int xlnx_spdif_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(dev, ctx);
 
-	ret = devm_snd_soc_register_component(dev, &xlnx_spdif_component,
+	ret = devm_snd_soc_component_register(dev, &xlnx_spdif_component,
 					      dai_drv, 1);
 	if (ret)
 		return ret;

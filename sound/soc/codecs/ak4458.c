@@ -188,7 +188,8 @@ static int get_digfil(struct snd_kcontrol *kcontrol,
 		      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct ak4458_priv *ak4458 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4458_priv *ak4458 = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = ak4458->digfil;
 
@@ -199,7 +200,8 @@ static int set_digfil(struct snd_kcontrol *kcontrol,
 		      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct ak4458_priv *ak4458 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4458_priv *ak4458 = dev_get_drvdata(dev);
 	int num;
 
 	num = ucontrol->value.enumerated.item[0];
@@ -344,8 +346,10 @@ static int ak4458_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4458_priv *ak4458 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4458_priv *ak4458 = dev_get_drvdata(dev);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	int pcm_width = max(params_physical_width(params), ak4458->slot_width);
 	u8 format, dsdsel0, dsdsel1, dchn;
 	int nfs1, dsd_bclk, ret, channels, channels_max;
@@ -355,7 +359,7 @@ static int ak4458_hw_params(struct snd_pcm_substream *substream,
 
 	/* calculate bit clock */
 	channels = params_channels(params);
-	channels_max = dai->driver->playback.channels_max;
+	channels_max = dai_driver->playback.channels_max;
 
 	switch (params_format(params)) {
 	case SNDRV_PCM_FORMAT_DSD_U8:
@@ -382,12 +386,12 @@ static int ak4458_hw_params(struct snd_pcm_substream *substream,
 				dsdsel0 = 1;
 				dsdsel1 = 1;
 			} else {
-				dev_err(dai->dev, "DSD512 not supported.\n");
+				dev_err(dev, "DSD512 not supported.\n");
 				return -EINVAL;
 			}
 			break;
 		default:
-			dev_err(dai->dev, "Unsupported dsd bclk.\n");
+			dev_err(dev, "Unsupported dsd bclk.\n");
 			return -EINVAL;
 		}
 
@@ -467,8 +471,9 @@ static int ak4458_hw_params(struct snd_pcm_substream *substream,
 
 static int ak4458_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4458_priv *ak4458 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4458_priv *ak4458 = dev_get_drvdata(dev);
 	int ret;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -478,7 +483,7 @@ static int ak4458_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	case SND_SOC_DAIFMT_CBC_CFP:
 	case SND_SOC_DAIFMT_CBP_CFC:
 	default:
-		dev_err(component->dev, "Clock provider mode unsupported\n");
+		dev_err(dev, "Clock provider mode unsupported\n");
 		return -EINVAL;
 	}
 
@@ -491,7 +496,7 @@ static int ak4458_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		ak4458->fmt = fmt & SND_SOC_DAIFMT_FORMAT_MASK;
 		break;
 	default:
-		dev_err(component->dev, "Audio format 0x%02X unsupported\n",
+		dev_err(dev, "Audio format 0x%02X unsupported\n",
 			fmt & SND_SOC_DAIFMT_FORMAT_MASK);
 		return -EINVAL;
 	}
@@ -517,8 +522,9 @@ static const int att_speed[] = { 4080, 2040, 510, 255 };
 
 static int ak4458_set_dai_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4458_priv *ak4458 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4458_priv *ak4458 = dev_get_drvdata(dev);
 	int nfs, ndt, reg;
 	int ats;
 
@@ -547,8 +553,9 @@ static int ak4458_set_dai_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int ak4458_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			       unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4458_priv *ak4458 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4458_priv *ak4458 = dev_get_drvdata(dev);
 	int mode;
 
 	ak4458->slots = slots;
@@ -782,7 +789,7 @@ static int ak4458_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(ak4458->dev,
+	ret = devm_snd_soc_component_register(ak4458->dev,
 					      ak4458->drvdata->comp_drv,
 					      ak4458->drvdata->dai_drv, 1);
 	if (ret < 0) {

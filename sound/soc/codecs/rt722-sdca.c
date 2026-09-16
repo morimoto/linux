@@ -187,12 +187,13 @@ static void rt722_sdca_jack_detect_handler(struct work_struct *work)
 {
 	struct rt722_sdca_priv *rt722 =
 		container_of(work, struct rt722_sdca_priv, jack_detect_work.work);
+	struct snd_soc_card *card = snd_soc_component_to_card(rt722->component);
 	int btn_type = 0, ret;
 
 	if (!rt722->hs_jack)
 		return;
 
-	if (!rt722->component->card || !rt722->component->card->instantiated)
+	if (!snd_soc_card_is_instantiated(card))
 		return;
 
 	/* SDW_SCP_SDCA_INT_SDCA_0 is used for jack detection */
@@ -323,25 +324,26 @@ static void rt722_sdca_jack_init(struct rt722_sdca_priv *rt722)
 static int rt722_sdca_set_jack_detect(struct snd_soc_component *component,
 	struct snd_soc_jack *hs_jack, void *data)
 {
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	int ret;
 
 	rt722->hs_jack = hs_jack;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0) {
 		if (ret != -EACCES) {
-			dev_err(component->dev, "%s: failed to resume %d\n", __func__, ret);
+			dev_err(dev, "%s: failed to resume %d\n", __func__, ret);
 			return ret;
 		}
 		/* pm_runtime not enabled yet */
-		dev_dbg(component->dev,	"%s: skipping jack init for now\n", __func__);
+		dev_dbg(dev,	"%s: skipping jack init for now\n", __func__);
 		return 0;
 	}
 
 	rt722_sdca_jack_init(rt722);
 
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return 0;
 }
@@ -571,14 +573,15 @@ static int rt722_cae_update_put(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret, changed = 0;
 
 	if (!rt722->hw_init)
 		return 0;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -586,7 +589,7 @@ static int rt722_cae_update_put(struct snd_kcontrol *kcontrol,
 		if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF) {
 			ret = rt722_cae_load(rt722);
 			if (ret) {
-				dev_err(component->dev, "CAE load failed: %d\n", ret);
+				dev_err(dev, "CAE load failed: %d\n", ret);
 				goto out;
 			} else
 				changed = 1;
@@ -599,8 +602,8 @@ static int rt722_cae_update_put(struct snd_kcontrol *kcontrol,
 	}
 
 out:
-	pm_runtime_mark_last_busy(component->dev);
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_mark_last_busy(dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return ret < 0 ? ret : changed;
 }
@@ -609,7 +612,8 @@ static int rt722_cae_update_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rt722->cae_update_done;
 
@@ -624,7 +628,8 @@ static int rt722_sdca_set_gain_put(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	unsigned int read_l, read_r, gain_l_val, gain_r_val;
 	unsigned int adc_vol_flag = 0, changed = 0;
 	unsigned int lvalue, rvalue;
@@ -693,7 +698,8 @@ static int rt722_sdca_set_gain_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	unsigned int read_l, read_r, ctl_l = 0, ctl_r = 0;
@@ -757,7 +763,8 @@ static int rt722_sdca_fu1e_capture_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	struct rt722_sdca_dmic_kctrl_priv *p =
 		(struct rt722_sdca_dmic_kctrl_priv *)kcontrol->private_value;
 	unsigned int i;
@@ -772,7 +779,8 @@ static int rt722_sdca_fu1e_capture_put(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	struct rt722_sdca_dmic_kctrl_priv *p =
 		(struct rt722_sdca_dmic_kctrl_priv *)kcontrol->private_value;
 	int err, changed = 0, i;
@@ -817,7 +825,8 @@ static int rt722_sdca_fu06_playback_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = !rt722->fu06_mixer_l_mute;
 	ucontrol->value.integer.value[1] = !rt722->fu06_mixer_r_mute;
@@ -828,7 +837,8 @@ static int rt722_sdca_fu06_playback_put(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	int err, changed = 0;
 
 	if (rt722->fu06_mixer_l_mute != !ucontrol->value.integer.value[0] ||
@@ -872,7 +882,8 @@ static int rt722_sdca_fu0f_capture_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = !rt722->fu0f_mixer_l_mute;
 	ucontrol->value.integer.value[1] = !rt722->fu0f_mixer_r_mute;
@@ -883,7 +894,8 @@ static int rt722_sdca_fu0f_capture_put(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	int err, changed = 0;
 
 	if (rt722->fu0f_mixer_l_mute != !ucontrol->value.integer.value[0] ||
@@ -919,7 +931,8 @@ static int rt722_sdca_dmic_set_gain_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	struct rt722_sdca_dmic_kctrl_priv *p =
 		(struct rt722_sdca_dmic_kctrl_priv *)kcontrol->private_value;
 	unsigned int boost_step = 0x0a00;
@@ -952,7 +965,8 @@ static int rt722_sdca_dmic_set_gain_put(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct rt722_sdca_dmic_kctrl_priv *p =
 		(struct rt722_sdca_dmic_kctrl_priv *)kcontrol->private_value;
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	unsigned int boost_step = 0x0a00;
 	unsigned int vol_max = 0x1e00;
 	unsigned int gain_val[4];
@@ -1108,9 +1122,9 @@ static const struct snd_kcontrol_new rt722_sdca_adc25_mux =
 static int rt722_sdca_fu42_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	unsigned char unmute = 0x0, mute = 0x1;
 
 	switch (event) {
@@ -1137,9 +1151,9 @@ static int rt722_sdca_fu42_event(struct snd_soc_dapm_widget *w,
 static int rt722_sdca_fu21_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -1156,9 +1170,9 @@ static int rt722_sdca_fu21_event(struct snd_soc_dapm_widget *w,
 static int rt722_sdca_fu113_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -1177,9 +1191,9 @@ static int rt722_sdca_fu113_event(struct snd_soc_dapm_widget *w,
 static int rt722_sdca_fu36_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -1219,9 +1233,9 @@ static void rt722_pde_transition_delay(struct rt722_sdca_priv *rt722, unsigned c
 static int rt722_sdca_pde47_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	unsigned char ps0 = 0x0, ps3 = 0x3;
 
 	switch (event) {
@@ -1244,9 +1258,9 @@ static int rt722_sdca_pde47_event(struct snd_soc_dapm_widget *w,
 static int rt722_sdca_pde23_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	unsigned char ps0 = 0x0, ps3 = 0x3;
 
 	switch (event) {
@@ -1269,9 +1283,9 @@ static int rt722_sdca_pde23_event(struct snd_soc_dapm_widget *w,
 static int rt722_sdca_pde11_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	unsigned char ps0 = 0x0, ps3 = 0x3;
 
 	switch (event) {
@@ -1294,9 +1308,9 @@ static int rt722_sdca_pde11_event(struct snd_soc_dapm_widget *w,
 static int rt722_sdca_pde12_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	unsigned char ps0 = 0x0, ps3 = 0x3;
 
 	switch (event) {
@@ -1397,13 +1411,14 @@ static int rt722_sdca_parse_dt(struct rt722_sdca_priv *rt722, struct device *dev
 
 static int rt722_sdca_probe(struct snd_soc_component *component)
 {
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	int ret;
 
 	rt722_sdca_parse_dt(rt722, &rt722->slave->dev);
 	rt722->component = component;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -1425,7 +1440,7 @@ static const struct snd_soc_component_driver soc_sdca_dev_rt722 = {
 static int rt722_sdca_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 				int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -1433,24 +1448,26 @@ static int rt722_sdca_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 static void rt722_sdca_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static int rt722_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	struct sdw_stream_config stream_config;
 	struct sdw_port_config port_config;
 	enum sdw_data_direction direction;
 	struct sdw_stream_runtime *sdw_stream;
+	int dai_id = snd_soc_dai_id(dai);
 	int retval, port, num_channels;
 	unsigned int sampling_rate;
 
-	dev_dbg(dai->dev, "%s %s", __func__, dai->name);
-	sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	dev_dbg(dev, "%s %s", __func__, snd_soc_dai_name(dai));
+	sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!sdw_stream)
 		return -EINVAL;
@@ -1466,17 +1483,17 @@ static int rt722_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 	 */
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		direction = SDW_DATA_DIR_RX;
-		if (dai->id == RT722_AIF1)
+		if (dai_id == RT722_AIF1)
 			port = 1;
-		else if (dai->id == RT722_AIF2)
+		else if (dai_id == RT722_AIF2)
 			port = 3;
 		else
 			return -EINVAL;
 	} else {
 		direction = SDW_DATA_DIR_TX;
-		if (dai->id == RT722_AIF1)
+		if (dai_id == RT722_AIF1)
 			port = 2;
-		else if (dai->id == RT722_AIF3)
+		else if (dai_id == RT722_AIF3)
 			port = 6;
 		else
 			return -EINVAL;
@@ -1493,12 +1510,12 @@ static int rt722_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 	retval = sdw_stream_add_slave(rt722->slave, &stream_config,
 					&port_config, 1, sdw_stream);
 	if (retval) {
-		dev_err(dai->dev, "%s: Unable to configure port\n", __func__);
+		dev_err(dev, "%s: Unable to configure port\n", __func__);
 		return retval;
 	}
 
 	if (params_channels(params) > 16) {
-		dev_err(component->dev, "%s: Unsupported channels %d\n",
+		dev_err(dev, "%s: Unsupported channels %d\n",
 			__func__, params_channels(params));
 		return -EINVAL;
 	}
@@ -1518,13 +1535,13 @@ static int rt722_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 		sampling_rate = RT722_SDCA_RATE_192000HZ;
 		break;
 	default:
-		dev_err(component->dev, "%s: Rate %d is not supported\n",
+		dev_err(dev, "%s: Rate %d is not supported\n",
 			__func__, params_rate(params));
 		return -EINVAL;
 	}
 
 	/* set sampling frequency */
-	if (dai->id == RT722_AIF1) {
+	if (dai_id == RT722_AIF1) {
 		regmap_write(rt722->regmap,
 			SDW_SDCA_CTL(FUNC_NUM_JACK_CODEC, RT722_SDCA_ENT_CS01,
 				RT722_SDCA_CTL_SAMPLE_FREQ_INDEX, 0), sampling_rate);
@@ -1533,12 +1550,12 @@ static int rt722_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 				RT722_SDCA_CTL_SAMPLE_FREQ_INDEX, 0), sampling_rate);
 	}
 
-	if (dai->id == RT722_AIF2)
+	if (dai_id == RT722_AIF2)
 		regmap_write(rt722->regmap,
 			SDW_SDCA_CTL(FUNC_NUM_AMP, RT722_SDCA_ENT_CS31,
 				RT722_SDCA_CTL_SAMPLE_FREQ_INDEX, 0), sampling_rate);
 
-	if (dai->id == RT722_AIF3)
+	if (dai_id == RT722_AIF3)
 		regmap_write(rt722->regmap,
 			SDW_SDCA_CTL(FUNC_NUM_MIC_ARRAY, RT722_SDCA_ENT_CS1F,
 				RT722_SDCA_CTL_SAMPLE_FREQ_INDEX, 0), sampling_rate);
@@ -1549,10 +1566,11 @@ static int rt722_sdca_pcm_hw_params(struct snd_pcm_substream *substream,
 static int rt722_sdca_pcm_hw_free(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt722_sdca_priv *rt722 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt722_sdca_priv *rt722 = dev_get_drvdata(dev);
 	struct sdw_stream_runtime *sdw_stream =
-		snd_soc_dai_get_dma_data(dai, substream);
+		snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!rt722->slave)
 		return -EINVAL;
@@ -1654,7 +1672,7 @@ int rt722_sdca_init(struct device *dev, struct regmap *regmap, struct sdw_slave 
 		rt722->fu1e_mixer_mute[2] = rt722->fu1e_mixer_mute[3] = true;
 	rt722->cae_update_done = 0;
 
-	return devm_snd_soc_register_component(dev,
+	return devm_snd_soc_component_register(dev,
 			&soc_sdca_dev_rt722, rt722_sdca_dai, ARRAY_SIZE(rt722_sdca_dai));
 }
 

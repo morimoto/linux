@@ -117,7 +117,8 @@ static int cs40l50_clk_en(struct snd_soc_dapm_widget *w,
 			  int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct cs40l50_codec *codec = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct cs40l50_codec *codec = dev_get_drvdata(dev);
 	int ret;
 
 	switch (event) {
@@ -165,7 +166,9 @@ static const struct snd_soc_dapm_route cs40l50_dapm_routes[] = {
 
 static int cs40l50_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct cs40l50_codec *codec = snd_soc_component_get_drvdata(codec_dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs40l50_codec *codec = dev_get_drvdata(dev);
 
 	if ((fmt & SND_SOC_DAIFMT_MASTER_MASK) != SND_SOC_DAIFMT_CBC_CFC)
 		return -EINVAL;
@@ -204,7 +207,9 @@ static int cs40l50_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct cs40l50_codec *codec = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs40l50_codec *codec = dev_get_drvdata(dev);
 	unsigned int asp_rx_wl = params_width(params);
 	int ret;
 
@@ -226,7 +231,9 @@ static int cs40l50_hw_params(struct snd_pcm_substream *substream,
 
 static int cs40l50_set_dai_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 {
-	struct cs40l50_codec *codec = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs40l50_codec *codec = dev_get_drvdata(dev);
 
 	codec->bclk_ratio = ratio;
 
@@ -265,7 +272,8 @@ static struct snd_soc_dai_driver cs40l50_dai[] = {
 
 static int cs40l50_codec_probe(struct snd_soc_component *component)
 {
-	struct cs40l50_codec *codec = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs40l50_codec *codec = dev_get_drvdata(dev);
 
 	codec->bclk_ratio = CS40L50_BCLK_RATIO_DEFAULT;
 
@@ -292,7 +300,7 @@ static int cs40l50_codec_driver_probe(struct platform_device *pdev)
 	codec->regmap = cs40l50->regmap;
 	codec->dev = &pdev->dev;
 
-	return devm_snd_soc_register_component(&pdev->dev, &soc_codec_dev_cs40l50,
+	return devm_snd_soc_component_register(&pdev->dev, &soc_codec_dev_cs40l50,
 					       cs40l50_dai, ARRAY_SIZE(cs40l50_dai));
 }
 

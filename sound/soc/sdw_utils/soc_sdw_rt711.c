@@ -20,7 +20,7 @@
 #include <sound/soc_sdw_utils.h>
 
 /*
- * Note this MUST be called before snd_soc_register_card(), so that the props
+ * Note this MUST be called before snd_soc_card_register(), so that the props
  * are in place before the codec component driver's probe function parses them.
  */
 static int rt711_add_codec_device_props(struct device *sdw_dev, unsigned long quirk)
@@ -65,23 +65,23 @@ int asoc_sdw_rt711_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_dai 
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
-	struct snd_soc_component *component;
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_soc_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
-	component = dai->component;
-	card->components = devm_kasprintf(card->dev, GFP_KERNEL,
+	snd_soc_card_set_components(card, devm_kasprintf(dev, GFP_KERNEL,
 					  "%s hs:rt711",
-					  card->components);
-	if (!card->components)
+					  snd_soc_card_components(card)));
+	if (!snd_soc_card_components(card))
 		return -ENOMEM;
 
 	ret = snd_soc_dapm_add_routes(dapm, rt711_map,
 				      ARRAY_SIZE(rt711_map));
 
 	if (ret) {
-		dev_err(card->dev, "rt711 map addition failed: %d\n", ret);
+		dev_err(dev, "rt711 map addition failed: %d\n", ret);
 		return ret;
 	}
 
@@ -93,8 +93,7 @@ int asoc_sdw_rt711_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_dai 
 					 rt711_jack_pins,
 					 ARRAY_SIZE(rt711_jack_pins));
 	if (ret) {
-		dev_err(rtd->card->dev, "Headset Jack creation failed: %d\n",
-			ret);
+		dev_err(dev, "Headset Jack creation failed: %d\n", ret);
 		return ret;
 	}
 
@@ -108,8 +107,7 @@ int asoc_sdw_rt711_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_dai 
 	ret = snd_soc_component_set_jack(component, jack, NULL);
 
 	if (ret)
-		dev_err(rtd->card->dev, "Headset Jack call-back failed: %d\n",
-			ret);
+		dev_err(dev, "Headset Jack call-back failed: %d\n", ret);
 
 	return ret;
 }
@@ -117,7 +115,7 @@ EXPORT_SYMBOL_NS(asoc_sdw_rt711_rtd_init, "SND_SOC_SDW_UTILS");
 
 int asoc_sdw_rt711_exit(struct snd_soc_card *card, struct snd_soc_dai_link *dai_link)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 
 	if (!ctx->headset_codec_dev)
 		return 0;
@@ -134,7 +132,7 @@ int asoc_sdw_rt711_init(struct snd_soc_card *card,
 			struct asoc_sdw_codec_info *info,
 			bool playback)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct device *sdw_dev;
 	int ret;
 

@@ -216,7 +216,7 @@ static int da7213_volsw_locked_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct da7213_priv *da7213 = snd_soc_component_to_priv(component);
 
 	guard(mutex)(&da7213->ctrl_lock);
 
@@ -227,7 +227,8 @@ static int da7213_volsw_locked_put(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 
 	guard(mutex)(&da7213->ctrl_lock);
 
@@ -238,7 +239,8 @@ static int da7213_enum_locked_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 
 	guard(mutex)(&da7213->ctrl_lock);
 
@@ -249,7 +251,8 @@ static int da7213_enum_locked_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 
 	guard(mutex)(&da7213->ctrl_lock);
 
@@ -319,6 +322,7 @@ static void da7213_alc_calib_man(struct snd_soc_component *component)
 
 static void da7213_alc_calib_auto(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	u8 alc_ctrl1;
 
 	/* Begin auto calibration and wait for completion */
@@ -330,8 +334,7 @@ static void da7213_alc_calib_auto(struct snd_soc_component *component)
 
 	/* If auto calibration fails, fall back to digital gain only mode */
 	if (alc_ctrl1 & DA7213_ALC_CALIB_OVERFLOW) {
-		dev_warn(component->dev,
-			 "ALC auto calibration failed with overflow\n");
+		dev_warn(dev, "ALC auto calibration failed with overflow\n");
 		snd_soc_component_update_bits(component, DA7213_ALC_CTRL1,
 				    DA7213_ALC_OFFSET_EN | DA7213_ALC_SYNC_MODE,
 				    0);
@@ -346,7 +349,8 @@ static void da7213_alc_calib_auto(struct snd_soc_component *component)
 
 static void da7213_alc_calib(struct snd_soc_component *component)
 {
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 	u8 adc_l_ctrl, adc_r_ctrl;
 	u8 mixin_l_sel, mixin_r_sel;
 	u8 mic_1_ctrl, mic_2_ctrl;
@@ -410,7 +414,8 @@ static int da7213_put_mixin_gain(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = snd_soc_put_volsw_2r(kcontrol, ucontrol);
@@ -426,7 +431,8 @@ static int da7213_put_alc_sw(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 
 	/* Force ALC offset calibration if enabling ALC */
 	if (ucontrol->value.integer.value[0] ||
@@ -447,7 +453,8 @@ static int da7213_tonegen_freq_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 	struct soc_mixer_control *mixer_ctrl =
 		(struct soc_mixer_control *) kcontrol->private_value;
 	unsigned int reg = mixer_ctrl->reg;
@@ -473,7 +480,8 @@ static int da7213_tonegen_freq_put(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 	struct soc_mixer_control *mixer_ctrl =
 		(struct soc_mixer_control *) kcontrol->private_value;
 	unsigned int reg = mixer_ctrl->reg;
@@ -886,7 +894,8 @@ static int da7213_dai_event(struct snd_soc_dapm_widget *w,
 			    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 	u8 pll_ctrl, pll_status;
 	int i = 0;
 	bool srm_lock = false;
@@ -927,7 +936,7 @@ static int da7213_dai_event(struct snd_soc_dapm_widget *w,
 		} while ((i < DA7213_SRM_CHECK_RETRIES) && (!srm_lock));
 
 		if (!srm_lock)
-			dev_warn(component->dev, "SRM failed to lock\n");
+			dev_warn(dev, "SRM failed to lock\n");
 
 		return 0;
 	case SND_SOC_DAPM_POST_PMD:
@@ -1308,8 +1317,9 @@ static int da7213_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 	u8 dai_clk_mode = DA7213_DAI_BCLKS_PER_WCLK_64;
 	u8 dai_ctrl = 0;
 	u8 fs;
@@ -1318,7 +1328,7 @@ static int da7213_hw_params(struct snd_pcm_substream *substream,
 	switch (params_channels(params)) {
 	case 1:
 		if (da7213->fmt != DA7213_DAI_FORMAT_DSP) {
-			dev_err(component->dev, "Mono supported only in DSP mode\n");
+			dev_err(dev, "Mono supported only in DSP mode\n");
 			return -EINVAL;
 		}
 		dai_ctrl |= DA7213_DAI_MONO_MODE_EN;
@@ -1407,8 +1417,9 @@ static int da7213_hw_params(struct snd_pcm_substream *substream,
 
 static int da7213_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 	u8 dai_clk_mode = 0, dai_ctrl = 0;
 	u8 dai_offset = 0;
 
@@ -1513,7 +1524,7 @@ static int da7213_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 
 static int da7213_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (mute) {
 		snd_soc_component_update_bits(component, DA7213_DAC_L_CTRL,
@@ -1537,7 +1548,8 @@ static int da7213_set_component_sysclk(struct snd_soc_component *component,
 				       int clk_id, int source,
 				       unsigned int freq, int dir)
 {
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	if ((da7213->clk_src == clk_id) && (da7213->mclk_rate == freq))
@@ -1548,8 +1560,7 @@ static int da7213_set_component_sysclk(struct snd_soc_component *component,
 		return 0;
 
 	if (((freq < da7213->fin_min_rate) && (freq != 32768)) || (freq > 54000000)) {
-		dev_err(component->dev, "Unsupported MCLK value %d\n",
-			freq);
+		dev_err(dev, "Unsupported MCLK value %d\n", freq);
 		return -EINVAL;
 	}
 
@@ -1564,7 +1575,7 @@ static int da7213_set_component_sysclk(struct snd_soc_component *component,
 				    DA7213_PLL_MCLK_SQR_EN);
 		break;
 	default:
-		dev_err(component->dev, "Unknown clock source %d\n", clk_id);
+		dev_err(dev, "Unknown clock source %d\n", clk_id);
 		return -EINVAL;
 	}
 
@@ -1574,8 +1585,7 @@ static int da7213_set_component_sysclk(struct snd_soc_component *component,
 		freq = clk_round_rate(da7213->mclk, freq);
 		ret = clk_set_rate(da7213->mclk, freq);
 		if (ret) {
-			dev_err(component->dev, "Failed to set clock rate %d\n",
-				freq);
+			dev_err(dev, "Failed to set clock rate %d\n", freq);
 			return ret;
 		}
 	}
@@ -1590,7 +1600,8 @@ static int _da7213_set_component_pll(struct snd_soc_component *component,
 				     int pll_id, int source,
 				     unsigned int fref, unsigned int fout)
 {
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 
 	u8 pll_ctrl, indiv_bits, indiv;
 	u8 pll_frac_top, pll_frac_bot, pll_integer;
@@ -1600,8 +1611,7 @@ static int _da7213_set_component_pll(struct snd_soc_component *component,
 	/* Workout input divider based on MCLK rate */
 	if (da7213->mclk_rate == 32768) {
 		if (!da7213->master) {
-			dev_err(component->dev,
-				"32KHz only valid if codec is clock master\n");
+			dev_err(dev, "32KHz only valid if codec is clock master\n");
 			return -EINVAL;
 		}
 
@@ -1613,9 +1623,7 @@ static int _da7213_set_component_pll(struct snd_soc_component *component,
 
 	} else {
 		if (da7213->mclk_rate < 5000000) {
-			dev_err(component->dev,
-				"PLL input clock %d below valid range\n",
-				da7213->mclk_rate);
+			dev_err(dev, "PLL input clock %d below valid range\n", da7213->mclk_rate);
 			return -EINVAL;
 		} else if (da7213->mclk_rate <= 9000000) {
 			indiv_bits = DA7213_PLL_INDIV_5_TO_9_MHZ;
@@ -1630,9 +1638,7 @@ static int _da7213_set_component_pll(struct snd_soc_component *component,
 			indiv_bits = DA7213_PLL_INDIV_36_TO_54_MHZ;
 			indiv = DA7213_PLL_INDIV_36_TO_54_MHZ_VAL;
 		} else {
-			dev_err(component->dev,
-				"PLL input clock %d above valid range\n",
-				da7213->mclk_rate);
+			dev_err(dev, "PLL input clock %d above valid range\n", da7213->mclk_rate);
 			return -EINVAL;
 		}
 		freq_ref = (da7213->mclk_rate / indiv);
@@ -1655,8 +1661,7 @@ static int _da7213_set_component_pll(struct snd_soc_component *component,
 		break;
 	case DA7213_SYSCLK_PLL_32KHZ:
 		if (da7213->mclk_rate != 32768) {
-			dev_err(component->dev,
-				"32KHz mode only valid with 32KHz MCLK\n");
+			dev_err(dev, "32KHz mode only valid with 32KHz MCLK\n");
 			return -EINVAL;
 		}
 
@@ -1664,7 +1669,7 @@ static int _da7213_set_component_pll(struct snd_soc_component *component,
 		fout = DA7213_PLL_FREQ_OUT_94310400;
 		break;
 	default:
-		dev_err(component->dev, "Invalid PLL config\n");
+		dev_err(dev, "Invalid PLL config\n");
 		return -EINVAL;
 	}
 
@@ -1701,7 +1706,8 @@ static int da7213_set_component_pll(struct snd_soc_component *component,
 				    int pll_id, int source,
 				    unsigned int fref, unsigned int fout)
 {
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 	da7213->fixed_clk_auto_pll = false;
 
 	return _da7213_set_component_pll(component, pll_id, source, fref, fout);
@@ -1752,7 +1758,8 @@ static struct snd_soc_dai_driver da7213_dai = {
 
 static int da7213_set_auto_pll(struct snd_soc_component *component, bool enable)
 {
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 	int mode;
 
 	if (!da7213->fixed_clk_auto_pll)
@@ -1797,7 +1804,8 @@ static int da7213_set_auto_pll(struct snd_soc_component *component, bool enable)
 static int da7213_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -1810,8 +1818,7 @@ static int da7213_set_bias_level(struct snd_soc_component *component,
 			if (da7213->mclk) {
 				ret = clk_prepare_enable(da7213->mclk);
 				if (ret) {
-					dev_err(component->dev,
-						"Failed to enable mclk\n");
+					dev_err(dev, "Failed to enable mclk\n");
 					return ret;
 				}
 
@@ -1867,6 +1874,8 @@ MODULE_DEVICE_TABLE(acpi, da7213_acpi_match);
 static enum da7213_micbias_voltage
 	da7213_of_micbias_lvl(struct snd_soc_component *component, u32 val)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	switch (val) {
 	case 1600:
 		return DA7213_MICBIAS_1_6V;
@@ -1877,7 +1886,7 @@ static enum da7213_micbias_voltage
 	case 3000:
 		return DA7213_MICBIAS_3_0V;
 	default:
-		dev_warn(component->dev, "Invalid micbias level\n");
+		dev_warn(dev, "Invalid micbias level\n");
 		return DA7213_MICBIAS_2_2V;
 	}
 }
@@ -1885,12 +1894,14 @@ static enum da7213_micbias_voltage
 static enum da7213_dmic_data_sel
 	da7213_of_dmic_data_sel(struct snd_soc_component *component, const char *str)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	if (!strcmp(str, "lrise_rfall")) {
 		return DA7213_DMIC_DATA_LRISE_RFALL;
 	} else if (!strcmp(str, "lfall_rrise")) {
 		return DA7213_DMIC_DATA_LFALL_RRISE;
 	} else {
-		dev_warn(component->dev, "Invalid DMIC data select type\n");
+		dev_warn(dev, "Invalid DMIC data select type\n");
 		return DA7213_DMIC_DATA_LRISE_RFALL;
 	}
 }
@@ -1898,12 +1909,14 @@ static enum da7213_dmic_data_sel
 static enum da7213_dmic_samplephase
 	da7213_of_dmic_samplephase(struct snd_soc_component *component, const char *str)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	if (!strcmp(str, "on_clkedge")) {
 		return DA7213_DMIC_SAMPLE_ON_CLKEDGE;
 	} else if (!strcmp(str, "between_clkedge")) {
 		return DA7213_DMIC_SAMPLE_BETWEEN_CLKEDGE;
 	} else {
-		dev_warn(component->dev, "Invalid DMIC sample phase\n");
+		dev_warn(dev, "Invalid DMIC sample phase\n");
 		return DA7213_DMIC_SAMPLE_ON_CLKEDGE;
 	}
 }
@@ -1911,13 +1924,15 @@ static enum da7213_dmic_samplephase
 static enum da7213_dmic_clk_rate
 	da7213_of_dmic_clkrate(struct snd_soc_component *component, u32 val)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	switch (val) {
 	case 1500000:
 		return DA7213_DMIC_CLK_1_5MHZ;
 	case 3000000:
 		return DA7213_DMIC_CLK_3_0MHZ;
 	default:
-		dev_warn(component->dev, "Invalid DMIC clock rate\n");
+		dev_warn(dev, "Invalid DMIC clock rate\n");
 		return DA7213_DMIC_CLK_1_5MHZ;
 	}
 }
@@ -1925,12 +1940,12 @@ static enum da7213_dmic_clk_rate
 static struct da7213_platform_data
 	*da7213_fw_to_pdata(struct snd_soc_component *component)
 {
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct da7213_platform_data *pdata;
 	const char *fw_str;
 	u32 fw_val32;
 
-	pdata = devm_kzalloc(component->dev, sizeof(*pdata), GFP_KERNEL);
+	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
 	if (!pdata)
 		return NULL;
 
@@ -1965,9 +1980,10 @@ static struct da7213_platform_data
 
 static int da7213_probe(struct snd_soc_component *component)
 {
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7213_priv *da7213 = dev_get_drvdata(dev);
 
-	pm_runtime_get_sync(component->dev);
+	pm_runtime_get_sync(dev);
 
 	/* Default to using ALC auto offset calibration mode. */
 	snd_soc_component_update_bits(component, DA7213_ALC_CTRL1,
@@ -2029,7 +2045,7 @@ static int da7213_probe(struct snd_soc_component *component)
 			    DA7213_LINE_AMP_OE, DA7213_LINE_AMP_OE);
 
 	/* Handle DT/Platform data */
-	da7213->pdata = dev_get_platdata(component->dev);
+	da7213->pdata = dev_get_platdata(dev);
 	if (!da7213->pdata)
 		da7213->pdata = da7213_fw_to_pdata(component);
 
@@ -2089,10 +2105,10 @@ static int da7213_probe(struct snd_soc_component *component)
 				    DA7213_DMIC_CLK_RATE_MASK, dmic_cfg);
 	}
 
-	pm_runtime_put_sync(component->dev);
+	pm_runtime_put_sync(dev);
 
 	/* Check if MCLK provided */
-	da7213->mclk = devm_clk_get_optional(component->dev, "mclk");
+	da7213->mclk = devm_clk_get_optional(dev, "mclk");
 	if (IS_ERR(da7213->mclk))
 		return PTR_ERR(da7213->mclk);
 	if (da7213->mclk)
@@ -2132,16 +2148,16 @@ static int da7213_runtime_resume(struct device *dev)
 
 static int da7213_suspend(struct snd_soc_component *component)
 {
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	return da7213_runtime_suspend(da7213->dev);
+	return da7213_runtime_suspend(dev);
 }
 
 static int da7213_resume(struct snd_soc_component *component)
 {
-	struct da7213_priv *da7213 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	return da7213_runtime_resume(da7213->dev);
+	return da7213_runtime_resume(dev);
 }
 
 static const struct snd_soc_component_driver soc_component_dev_da7213 = {
@@ -2234,7 +2250,7 @@ static int da7213_i2c_probe(struct i2c_client *i2c)
 	pm_runtime_set_active(&i2c->dev);
 	pm_runtime_enable(&i2c->dev);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_da7213, &da7213_dai, 1);
 	if (ret < 0) {
 		dev_err(&i2c->dev, "Failed to register da7213 component: %d\n",

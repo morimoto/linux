@@ -404,7 +404,8 @@ static int idt821034_kctrl_gain_get(struct snd_kcontrol *kcontrol,
 {
 	struct soc_mixer_control *mc = (struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct idt821034 *idt821034 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct idt821034 *idt821034 = dev_get_drvdata(dev);
 	int min = mc->min;
 	int max = mc->max;
 	unsigned int mask = (1 << fls(max)) - 1;
@@ -435,7 +436,8 @@ static int idt821034_kctrl_gain_put(struct snd_kcontrol *kcontrol,
 {
 	struct soc_mixer_control *mc = (struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct idt821034 *idt821034 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct idt821034 *idt821034 = dev_get_drvdata(dev);
 	struct idt821034_amp *amp;
 	int min = mc->min;
 	int max = mc->max;
@@ -485,7 +487,8 @@ static int idt821034_kctrl_mute_get(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct idt821034 *idt821034 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct idt821034 *idt821034 = dev_get_drvdata(dev);
 	int id = kcontrol->private_value;
 	bool is_muted;
 	u8 ch;
@@ -507,7 +510,8 @@ static int idt821034_kctrl_mute_put(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct idt821034 *idt821034 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct idt821034 *idt821034 = dev_get_drvdata(dev);
 	int id = kcontrol->private_value;
 	struct idt821034_amp *amp;
 	bool is_mute;
@@ -613,7 +617,8 @@ static int idt821034_power_event(struct snd_soc_dapm_widget *w,
 				 struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct idt821034 *idt821034 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct idt821034 *idt821034 = dev_get_drvdata(dev);
 	unsigned int id = w->shift;
 	u8 power, mask;
 	u8 ch;
@@ -686,7 +691,9 @@ static int idt821034_dai_set_tdm_slot(struct snd_soc_dai *dai,
 				      unsigned int tx_mask, unsigned int rx_mask,
 				      int slots, int width)
 {
-	struct idt821034 *idt821034 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct idt821034 *idt821034 = dev_get_drvdata(dai_dev);
 	unsigned int mask;
 	u8 slot;
 	int ret;
@@ -697,7 +704,7 @@ static int idt821034_dai_set_tdm_slot(struct snd_soc_dai *dai,
 	case 8:
 		break;
 	default:
-		dev_err(dai->dev, "tdm slot width %d not supported\n", width);
+		dev_err(dai_dev, "tdm slot width %d not supported\n", width);
 		return -EINVAL;
 	}
 
@@ -710,7 +717,7 @@ static int idt821034_dai_set_tdm_slot(struct snd_soc_dai *dai,
 				ret = idt821034_set_channel_ts(idt821034, ch,
 							       IDT821034_CH_RX, slot);
 			if (ret) {
-				dev_err(dai->dev, "ch%u set tx tdm slot failed (%d)\n",
+				dev_err(dai_dev, "ch%u set tx tdm slot failed (%d)\n",
 					ch, ret);
 				return ret;
 			}
@@ -720,7 +727,7 @@ static int idt821034_dai_set_tdm_slot(struct snd_soc_dai *dai,
 		slot++;
 	}
 	if (mask) {
-		dev_err(dai->dev, "too much tx slots defined (mask = 0x%x) support max %d\n",
+		dev_err(dai_dev, "too much tx slots defined (mask = 0x%x) support max %d\n",
 			tx_mask, IDT821034_NB_CHANNEL);
 		return -EINVAL;
 	}
@@ -735,7 +742,7 @@ static int idt821034_dai_set_tdm_slot(struct snd_soc_dai *dai,
 				ret = idt821034_set_channel_ts(idt821034, ch,
 							       IDT821034_CH_TX, slot);
 			if (ret) {
-				dev_err(dai->dev, "ch%u set rx tdm slot failed (%d)\n",
+				dev_err(dai_dev, "ch%u set rx tdm slot failed (%d)\n",
 					ch, ret);
 				return ret;
 			}
@@ -745,7 +752,7 @@ static int idt821034_dai_set_tdm_slot(struct snd_soc_dai *dai,
 		slot++;
 	}
 	if (mask) {
-		dev_err(dai->dev, "too much rx slots defined (mask = 0x%x) support max %d\n",
+		dev_err(dai_dev, "too much rx slots defined (mask = 0x%x) support max %d\n",
 			rx_mask, IDT821034_NB_CHANNEL);
 		return -EINVAL;
 	}
@@ -756,7 +763,9 @@ static int idt821034_dai_set_tdm_slot(struct snd_soc_dai *dai,
 
 static int idt821034_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct idt821034 *idt821034 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct idt821034 *idt821034 = dev_get_drvdata(dai_dev);
 	u8 conf;
 
 	guard(mutex)(&idt821034->mutex);
@@ -771,7 +780,7 @@ static int idt821034_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		conf &= ~IDT821034_CONF_DELAY_MODE;
 		break;
 	default:
-		dev_err(dai->dev, "Unsupported DAI format 0x%x\n",
+		dev_err(dai_dev, "Unsupported DAI format 0x%x\n",
 			fmt & SND_SOC_DAIFMT_FORMAT_MASK);
 		return -EINVAL;
 	}
@@ -783,7 +792,9 @@ static int idt821034_dai_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params,
 				   struct snd_soc_dai *dai)
 {
-	struct idt821034 *idt821034 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct idt821034 *idt821034 = dev_get_drvdata(dai_dev);
 	u8 conf;
 
 	guard(mutex)(&idt821034->mutex);
@@ -798,7 +809,7 @@ static int idt821034_dai_hw_params(struct snd_pcm_substream *substream,
 		conf &= ~IDT821034_CONF_ALAW_MODE;
 		break;
 	default:
-		dev_err(dai->dev, "Unsupported PCM format 0x%x\n",
+		dev_err(dai_dev, "Unsupported PCM format 0x%x\n",
 			params_format(params));
 		return -EINVAL;
 	}
@@ -816,7 +827,9 @@ static struct snd_pcm_hw_constraint_list idt821034_sample_bits_constr = {
 static int idt821034_dai_startup(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
-	struct idt821034 *idt821034 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct idt821034 *idt821034 = dev_get_drvdata(dev);
 	unsigned int max_ch = 0;
 	int ret;
 
@@ -909,7 +922,8 @@ static int idt821034_reset_audio(struct idt821034 *idt821034)
 
 static int idt821034_component_probe(struct snd_soc_component *component)
 {
-	struct idt821034 *idt821034 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct idt821034 *idt821034 = dev_get_drvdata(dev);
 	int ret;
 
 	/* reset idt821034 audio part*/
@@ -1113,7 +1127,7 @@ static int idt821034_spi_probe(struct spi_device *spi)
 
 	spi_set_drvdata(spi, idt821034);
 
-	ret = devm_snd_soc_register_component(&spi->dev, &idt821034_component_driver,
+	ret = devm_snd_soc_component_register(&spi->dev, &idt821034_component_driver,
 					      &idt821034_dai_driver, 1);
 	if (ret)
 		return ret;

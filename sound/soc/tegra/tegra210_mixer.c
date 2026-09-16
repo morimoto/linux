@@ -130,11 +130,12 @@ static int tegra210_mixer_write_ram(struct tegra210_mixer *mixer,
 static int tegra210_mixer_configure_gain(struct snd_soc_component *cmpnt,
 					 unsigned int id, bool instant_gain)
 {
-	struct tegra210_mixer *mixer = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mixer *mixer = dev_get_drvdata(dev);
 	unsigned int reg = MIXER_GAIN_CFG_RAM_ADDR(id);
 	int err, i;
 
-	pm_runtime_get_sync(cmpnt->dev);
+	pm_runtime_get_sync(dev);
 
 	/* Write default gain poly coefficients */
 	for (i = 0; i < NUM_GAIN_POLY_COEFFS; i++) {
@@ -179,7 +180,7 @@ static int tegra210_mixer_configure_gain(struct snd_soc_component *cmpnt,
 				       VAL_CFG_DONE_TRIGGER);
 
 rpm_put:
-	pm_runtime_put(cmpnt->dev);
+	pm_runtime_put(dev);
 
 	return err;
 }
@@ -201,7 +202,8 @@ static int tegra210_mixer_get_fade_duration(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mixer *mixer = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mixer *mixer = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = mixer->duration[mc->reg];
 
@@ -214,7 +216,8 @@ static int tegra210_mixer_put_fade_duration(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mixer *mixer = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mixer *mixer = dev_get_drvdata(dev);
 	unsigned int id = mc->reg;
 	long duration = ucontrol->value.integer.value[0];
 
@@ -237,7 +240,8 @@ static int tegra210_mixer_get_fade_gain(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mixer *mixer = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mixer *mixer = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = mixer->fade_gain[mc->reg];
 
@@ -250,7 +254,8 @@ static int tegra210_mixer_put_fade_gain(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mixer *mixer = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mixer *mixer = dev_get_drvdata(dev);
 	unsigned int id = mc->reg;
 
 	if (ucontrol->value.integer.value[0] < 0 ||
@@ -278,10 +283,11 @@ static int tegra210_mixer_put_fade_switch(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mixer *mixer = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mixer *mixer = dev_get_drvdata(dev);
 	int id, err, changed = 0;
 
-	err = pm_runtime_resume_and_get(cmpnt->dev);
+	err = pm_runtime_resume_and_get(dev);
 	if (err < 0)
 		return err;
 
@@ -300,7 +306,7 @@ static int tegra210_mixer_put_fade_switch(struct snd_kcontrol *kcontrol,
 			changed = 1;
 		}
 
-		pm_runtime_put(cmpnt->dev);
+		pm_runtime_put(dev);
 		return changed;
 	}
 
@@ -321,9 +327,8 @@ static int tegra210_mixer_put_fade_switch(struct snd_kcontrol *kcontrol,
 		mixer->gain_value[id] = mixer->fade_gain[id];
 		err = tegra210_mixer_configure_gain(cmpnt, id, false);
 		if (err) {
-			dev_err(cmpnt->dev,
-				"Failed to configure fade for RX%d\n", id + 1);
-			pm_runtime_put(cmpnt->dev);
+			dev_err(dev, "Failed to configure fade for RX%d\n", id + 1);
+			pm_runtime_put(dev);
 			return err;
 		}
 
@@ -331,7 +336,7 @@ static int tegra210_mixer_put_fade_switch(struct snd_kcontrol *kcontrol,
 	}
 
 	if (!changed) {
-		pm_runtime_put(cmpnt->dev);
+		pm_runtime_put(dev);
 		return 0;
 	}
 
@@ -345,10 +350,9 @@ static int tegra210_mixer_put_fade_switch(struct snd_kcontrol *kcontrol,
 					 TEGRA210_MIXER_SAMPLE_COUNT_ENABLE,
 					 TEGRA210_MIXER_SAMPLE_COUNT_ENABLE);
 		if (err) {
-			dev_err(cmpnt->dev,
-				"Failed to enable sample count for RX%d\n",
+			dev_err(dev, "Failed to enable sample count for RX%d\n",
 				id + 1);
-			pm_runtime_put(cmpnt->dev);
+			pm_runtime_put(dev);
 			return err;
 		}
 
@@ -356,7 +360,7 @@ static int tegra210_mixer_put_fade_switch(struct snd_kcontrol *kcontrol,
 		mixer->fade_pending[id] = false;
 	}
 
-	pm_runtime_put(cmpnt->dev);
+	pm_runtime_put(dev);
 
 	return 1;
 }
@@ -365,11 +369,12 @@ static int tegra210_mixer_get_fade_status(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mixer *mixer = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mixer *mixer = dev_get_drvdata(dev);
 	u32 count;
 	int id, err;
 
-	err = pm_runtime_resume_and_get(cmpnt->dev);
+	err = pm_runtime_resume_and_get(dev);
 	if (err < 0)
 		return err;
 
@@ -389,7 +394,7 @@ static int tegra210_mixer_get_fade_status(struct snd_kcontrol *kcontrol,
 			ucontrol->value.integer.value[id] = TEGRA210_MIXER_FADE_ACTIVE;
 	}
 
-	pm_runtime_put(cmpnt->dev);
+	pm_runtime_put(dev);
 
 	return 0;
 }
@@ -400,7 +405,8 @@ static int tegra210_mixer_get_gain(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mixer *mixer = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mixer *mixer = dev_get_drvdata(dev);
 	unsigned int reg = mc->reg;
 	unsigned int i;
 
@@ -419,7 +425,8 @@ static int tegra210_mixer_apply_gain(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct tegra210_mixer *mixer = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct tegra210_mixer *mixer = dev_get_drvdata(dev);
 	unsigned int reg = mc->reg, id;
 	int err;
 
@@ -434,7 +441,7 @@ static int tegra210_mixer_apply_gain(struct snd_kcontrol *kcontrol,
 
 	err = tegra210_mixer_configure_gain(cmpnt, id, instant_gain);
 	if (err) {
-		dev_err(cmpnt->dev, "Failed to apply gain\n");
+		dev_err(dev, "Failed to apply gain\n");
 		return err;
 	}
 
@@ -493,27 +500,33 @@ static int tegra210_mixer_in_hw_params(struct snd_pcm_substream *substream,
 				       struct snd_pcm_hw_params *params,
 				       struct snd_soc_dai *dai)
 {
-	struct tegra210_mixer *mixer = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_mixer *mixer = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int err;
 
 	err = tegra210_mixer_set_audio_cif(mixer, params,
 					   TEGRA210_MIXER_RX1_CIF_CTRL,
-					   dai->id);
+					   dai_id);
 	if (err < 0)
 		return err;
 
-	return tegra210_mixer_configure_gain(dai->component, dai->id, false);
+	return tegra210_mixer_configure_gain(component, dai_id, false);
 }
 
 static int tegra210_mixer_out_hw_params(struct snd_pcm_substream *substream,
 					struct snd_pcm_hw_params *params,
 					struct snd_soc_dai *dai)
 {
-	struct tegra210_mixer *mixer = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra210_mixer *mixer = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
 	return tegra210_mixer_set_audio_cif(mixer, params,
 					    TEGRA210_MIXER_TX1_CIF_CTRL,
-					    dai->id - TEGRA210_MIXER_RX_MAX);
+					    dai_id - TEGRA210_MIXER_RX_MAX);
 }
 
 static const struct snd_soc_dai_ops tegra210_mixer_out_dai_ops = {
@@ -924,7 +937,7 @@ static int tegra210_mixer_platform_probe(struct platform_device *pdev)
 
 	regcache_cache_only(mixer->regmap, true);
 
-	err = devm_snd_soc_register_component(dev, &tegra210_mixer_cmpnt,
+	err = devm_snd_soc_component_register(dev, &tegra210_mixer_cmpnt,
 					      tegra210_mixer_dais,
 					      ARRAY_SIZE(tegra210_mixer_dais));
 	if (err)

@@ -182,13 +182,14 @@ static void acp63_config_dma(struct pdm_stream_instance *rtd, int direction)
 static int acp63_pdm_dma_open(struct snd_soc_component *component,
 			      struct snd_pcm_substream *substream)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_pcm_runtime *runtime;
 	struct pdm_dev_data *adata;
 	struct pdm_stream_instance *pdm_data;
 	int ret;
 
 	runtime = substream->runtime;
-	adata = dev_get_drvdata(component->dev);
+	adata = dev_get_drvdata(dev);
 	pdm_data = kzalloc_obj(*pdm_data);
 	if (!pdm_data)
 		return -EINVAL;
@@ -199,7 +200,7 @@ static int acp63_pdm_dma_open(struct snd_soc_component *component,
 	ret = snd_pcm_hw_constraint_integer(runtime,
 					    SNDRV_PCM_HW_PARAM_PERIODS);
 	if (ret < 0) {
-		dev_err(component->dev, "set integer constraint failed\n");
+		dev_err(dev, "set integer constraint failed\n");
 		kfree(pdm_data);
 		return ret;
 	}
@@ -267,7 +268,8 @@ static snd_pcm_uframes_t acp63_pdm_dma_pointer(struct snd_soc_component *comp,
 static int acp63_pdm_dma_new(struct snd_soc_component *component,
 			     struct snd_soc_pcm_runtime *rtd)
 {
-	struct device *parent = component->dev->parent;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct device *parent = dev->parent;
 
 	snd_pcm_set_managed_buffer_all(rtd->pcm, SNDRV_DMA_TYPE_DEV,
 				       parent, MIN_BUFFER, MAX_BUFFER);
@@ -277,7 +279,8 @@ static int acp63_pdm_dma_new(struct snd_soc_component *component,
 static int acp63_pdm_dma_close(struct snd_soc_component *component,
 			       struct snd_pcm_substream *substream)
 {
-	struct pdm_dev_data *adata = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pdm_dev_data *adata = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 
 	acp63_disable_pdm_interrupts(adata);
@@ -382,7 +385,7 @@ static int acp63_pdm_audio_probe(struct platform_device *pdev)
 	adata->capture_stream = NULL;
 	adata->acp_lock = &acp_data->acp_lock;
 	dev_set_drvdata(&pdev->dev, adata);
-	status = devm_snd_soc_register_component(&pdev->dev,
+	status = devm_snd_soc_component_register(&pdev->dev,
 						 &acp63_pdm_component,
 						 &acp63_pdm_dai_driver, 1);
 	if (status) {

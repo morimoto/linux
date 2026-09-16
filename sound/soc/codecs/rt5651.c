@@ -377,14 +377,15 @@ static int set_dmic_clk(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 	int idx, rate;
 
 	rate = rt5651->sysclk / rl6231_get_pre_div(rt5651->regmap,
 		RT5651_ADDA_CLK1, RT5651_I2S_PD1_SFT);
 	idx = rl6231_calc_dmic_clk(rate);
 	if (idx < 0)
-		dev_err(component->dev, "Failed to set DMIC clock\n");
+		dev_err(dev, "Failed to set DMIC clock\n");
 	else
 		snd_soc_component_update_bits(component, RT5651_DMIC, RT5651_DMIC_CLK_MASK,
 					idx << RT5651_DMIC_CLK_SFT);
@@ -682,7 +683,8 @@ static int rt5651_amp_power_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -720,7 +722,8 @@ static int rt5651_hp_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -765,7 +768,8 @@ static int rt5651_hp_post_event(struct snd_soc_dapm_widget *w,
 {
 
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -1281,30 +1285,32 @@ static const struct snd_soc_dapm_route rt5651_dapm_routes[] = {
 static int rt5651_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int val_len = 0, val_clk, mask_clk;
 	int pre_div, bclk_ms, frame_size;
 
-	rt5651->lrck[dai->id] = params_rate(params);
-	pre_div = rl6231_get_clk_info(rt5651->sysclk, rt5651->lrck[dai->id]);
+	rt5651->lrck[dai_id] = params_rate(params);
+	pre_div = rl6231_get_clk_info(rt5651->sysclk, rt5651->lrck[dai_id]);
 
 	if (pre_div < 0) {
-		dev_err(component->dev, "Unsupported clock setting\n");
+		dev_err(dev, "Unsupported clock setting\n");
 		return -EINVAL;
 	}
 	frame_size = snd_soc_params_to_frame_size(params);
 	if (frame_size < 0) {
-		dev_err(component->dev, "Unsupported frame size: %d\n", frame_size);
+		dev_err(dev, "Unsupported frame size: %d\n", frame_size);
 		return -EINVAL;
 	}
 	bclk_ms = frame_size > 32 ? 1 : 0;
-	rt5651->bclk[dai->id] = rt5651->lrck[dai->id] * (32 << bclk_ms);
+	rt5651->bclk[dai_id] = rt5651->lrck[dai_id] * (32 << bclk_ms);
 
-	dev_dbg(dai->dev, "bclk is %dHz and lrck is %dHz\n",
-		rt5651->bclk[dai->id], rt5651->lrck[dai->id]);
-	dev_dbg(dai->dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
-				bclk_ms, pre_div, dai->id);
+	dev_dbg(dev, "bclk is %dHz and lrck is %dHz\n",
+		rt5651->bclk[dai_id], rt5651->lrck[dai_id]);
+	dev_dbg(dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
+				bclk_ms, pre_div, dai_id);
 
 	switch (params_width(params)) {
 	case 16:
@@ -1322,7 +1328,7 @@ static int rt5651_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT5651_AIF1:
 		mask_clk = RT5651_I2S_PD1_MASK;
 		val_clk = pre_div << RT5651_I2S_PD1_SFT;
@@ -1338,7 +1344,7 @@ static int rt5651_hw_params(struct snd_pcm_substream *substream,
 		snd_soc_component_update_bits(component, RT5651_ADDA_CLK1, mask_clk, val_clk);
 		break;
 	default:
-		dev_err(component->dev, "Wrong dai->id: %d\n", dai->id);
+		dev_err(dev, "Wrong dai_id: %d\n", dai_id);
 		return -EINVAL;
 	}
 
@@ -1347,17 +1353,19 @@ static int rt5651_hw_params(struct snd_pcm_substream *substream,
 
 static int rt5651_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int reg_val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
-		rt5651->master[dai->id] = 1;
+		rt5651->master[dai_id] = 1;
 		break;
 	case SND_SOC_DAIFMT_CBC_CFC:
 		reg_val |= RT5651_I2S_MS_S;
-		rt5651->master[dai->id] = 0;
+		rt5651->master[dai_id] = 0;
 		break;
 	default:
 		return -EINVAL;
@@ -1389,7 +1397,7 @@ static int rt5651_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT5651_AIF1:
 		snd_soc_component_update_bits(component, RT5651_I2S1_SDP,
 			RT5651_I2S_MS_MASK | RT5651_I2S_BP_MASK |
@@ -1401,7 +1409,7 @@ static int rt5651_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 			RT5651_I2S_DF_MASK, reg_val);
 		break;
 	default:
-		dev_err(component->dev, "Wrong dai->id: %d\n", dai->id);
+		dev_err(dev, "Wrong dai_id: %d\n", dai_id);
 		return -EINVAL;
 	}
 	return 0;
@@ -1410,8 +1418,9 @@ static int rt5651_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt5651_set_dai_sysclk(struct snd_soc_dai *dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0;
 	unsigned int pll_bit = 0;
 
@@ -1430,7 +1439,7 @@ static int rt5651_set_dai_sysclk(struct snd_soc_dai *dai,
 		reg_val |= RT5651_SCLK_SRC_RCCLK;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clock id (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock id (%d)\n", clk_id);
 		return -EINVAL;
 	}
 	snd_soc_component_update_bits(component, RT5651_PWR_ANLG2,
@@ -1440,7 +1449,7 @@ static int rt5651_set_dai_sysclk(struct snd_soc_dai *dai,
 	rt5651->sysclk = freq;
 	rt5651->sysclk_src = clk_id;
 
-	dev_dbg(dai->dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
+	dev_dbg(dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
 
 	return 0;
 }
@@ -1448,8 +1457,9 @@ static int rt5651_set_dai_sysclk(struct snd_soc_dai *dai,
 static int rt5651_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 	struct rl6231_pll_code pll_code;
 	int ret;
 
@@ -1458,7 +1468,7 @@ static int rt5651_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 		return 0;
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 
 		rt5651->pll_in = 0;
 		rt5651->pll_out = 0;
@@ -1481,17 +1491,17 @@ static int rt5651_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 				RT5651_PLL1_SRC_MASK, RT5651_PLL1_SRC_BCLK2);
 		break;
 	default:
-		dev_err(component->dev, "Unknown PLL source %d\n", source);
+		dev_err(dev, "Unknown PLL source %d\n", source);
 		return -EINVAL;
 	}
 
 	ret = rl6231_pll_calc(freq_in, freq_out, &pll_code);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupported input clock %d\n", freq_in);
+		dev_err(dev, "Unsupported input clock %d\n", freq_in);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "bypass=%d m=%d n=%d k=%d\n",
+	dev_dbg(dev, "bypass=%d m=%d n=%d k=%d\n",
 		pll_code.m_bp, (pll_code.m_bp ? 0 : pll_code.m_code),
 		pll_code.n_code, pll_code.k_code);
 
@@ -1584,7 +1594,8 @@ static void rt5651_disable_micbias1_for_ovcd(struct snd_soc_component *component
 
 static void rt5651_enable_micbias1_ovcd_irq(struct snd_soc_component *component)
 {
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 
 	snd_soc_component_update_bits(component, RT5651_IRQ_CTRL2,
 		RT5651_IRQ_MB1_OC_MASK, RT5651_IRQ_MB1_OC_NOR);
@@ -1593,7 +1604,8 @@ static void rt5651_enable_micbias1_ovcd_irq(struct snd_soc_component *component)
 
 static void rt5651_disable_micbias1_ovcd_irq(struct snd_soc_component *component)
 {
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 
 	snd_soc_component_update_bits(component, RT5651_IRQ_CTRL2,
 		RT5651_IRQ_MB1_OC_MASK, RT5651_IRQ_MB1_OC_BP);
@@ -1608,27 +1620,29 @@ static void rt5651_clear_micbias1_ovcd(struct snd_soc_component *component)
 
 static bool rt5651_micbias1_ovcd(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int val;
 
 	val = snd_soc_component_read(component, RT5651_IRQ_CTRL2);
-	dev_dbg(component->dev, "irq ctrl2 %#04x\n", val);
+	dev_dbg(dev, "irq ctrl2 %#04x\n", val);
 
 	return (val & RT5651_MB1_OC_CLR);
 }
 
 static bool rt5651_jack_inserted(struct snd_soc_component *component)
 {
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 	int val;
 
 	if (rt5651->gpiod_hp_det) {
 		val = gpiod_get_value_cansleep(rt5651->gpiod_hp_det);
-		dev_dbg(component->dev, "jack-detect gpio %d\n", val);
+		dev_dbg(dev, "jack-detect gpio %d\n", val);
 		return val;
 	}
 
 	val = snd_soc_component_read(component, RT5651_INT_IRQ_ST);
-	dev_dbg(component->dev, "irq status %#04x\n", val);
+	dev_dbg(dev, "irq status %#04x\n", val);
 
 	switch (rt5651->jd_src) {
 	case RT5651_JD1_1:
@@ -1661,7 +1675,8 @@ static bool rt5651_jack_inserted(struct snd_soc_component *component)
 
 static void rt5651_start_button_press_work(struct snd_soc_component *component)
 {
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 
 	rt5651->poll_count = 0;
 	rt5651->press_count = 0;
@@ -1677,6 +1692,7 @@ static void rt5651_button_press_work(struct work_struct *work)
 	struct rt5651_priv *rt5651 =
 		container_of(work, struct rt5651_priv, bp_work.work);
 	struct snd_soc_component *component = rt5651->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	/* Check the jack was not removed underneath us */
 	if (!rt5651_jack_inserted(component))
@@ -1706,7 +1722,7 @@ static void rt5651_button_press_work(struct work_struct *work)
 	}
 
 	if (rt5651->pressed && !rt5651->press_reported) {
-		dev_dbg(component->dev, "headset button press\n");
+		dev_dbg(dev, "headset button press\n");
 		snd_soc_jack_report(rt5651->hp_jack, SND_JACK_BTN_0,
 				    SND_JACK_BTN_0);
 		rt5651->press_reported = true;
@@ -1714,7 +1730,7 @@ static void rt5651_button_press_work(struct work_struct *work)
 
 	if (rt5651->release_count >= BP_THRESHOLD) {
 		if (rt5651->press_reported) {
-			dev_dbg(component->dev, "headset button release\n");
+			dev_dbg(dev, "headset button release\n");
 			snd_soc_jack_report(rt5651->hp_jack, 0, SND_JACK_BTN_0);
 		}
 		/* Re-enable OVCD IRQ to detect next press */
@@ -1727,6 +1743,7 @@ static void rt5651_button_press_work(struct work_struct *work)
 
 static int rt5651_detect_headset(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int i, headset_count = 0, headphone_count = 0;
 
 	/*
@@ -1752,13 +1769,13 @@ static int rt5651_detect_headset(struct snd_soc_component *component)
 			 * 2nd ring contact and the ground, so a TRS connector
 			 * without a mic contact and thus plain headphones.
 			 */
-			dev_dbg(component->dev, "mic-gnd shorted\n");
+			dev_dbg(dev, "mic-gnd shorted\n");
 			headset_count = 0;
 			headphone_count++;
 			if (headphone_count == JACK_DETECT_COUNT)
 				return SND_JACK_HEADPHONE;
 		} else {
-			dev_dbg(component->dev, "mic-gnd open\n");
+			dev_dbg(dev, "mic-gnd open\n");
 			headphone_count = 0;
 			headset_count++;
 			if (headset_count == JACK_DETECT_COUNT)
@@ -1766,7 +1783,7 @@ static int rt5651_detect_headset(struct snd_soc_component *component)
 		}
 	}
 
-	dev_err(component->dev, "Error detecting headset vs headphones, bad contact?, assuming headphones\n");
+	dev_err(dev, "Error detecting headset vs headphones, bad contact?, assuming headphones\n");
 	return SND_JACK_HEADPHONE;
 }
 
@@ -1785,6 +1802,7 @@ static void rt5651_jack_detect_work(struct work_struct *work)
 	struct rt5651_priv *rt5651 =
 		container_of(work, struct rt5651_priv, jack_detect_work);
 	struct snd_soc_component *component = rt5651->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int report;
 
 	if (!rt5651_jack_inserted(component)) {
@@ -1797,14 +1815,14 @@ static void rt5651_jack_detect_work(struct work_struct *work)
 			}
 			snd_soc_jack_report(rt5651->hp_jack, 0,
 					    SND_JACK_HEADSET | SND_JACK_BTN_0);
-			dev_dbg(component->dev, "jack unplugged\n");
+			dev_dbg(dev, "jack unplugged\n");
 		}
 	} else if (!(rt5651->hp_jack->status & SND_JACK_HEADPHONE)) {
 		/* Jack inserted */
 		WARN_ON(rt5651->ovcd_irq_enabled);
 		rt5651_enable_micbias1_for_ovcd(component);
 		report = rt5651_detect_headset(component);
-		dev_dbg(component->dev, "detect report %#02x\n", report);
+		dev_dbg(dev, "detect report %#02x\n", report);
 		snd_soc_jack_report(rt5651->hp_jack, report, SND_JACK_HEADSET);
 		if (rt5651_support_button_press(rt5651)) {
 			/* Enable ovcd IRQ for button press detect. */
@@ -1814,7 +1832,7 @@ static void rt5651_jack_detect_work(struct work_struct *work)
 			rt5651_disable_micbias1_for_ovcd(component);
 		}
 	} else if (rt5651->ovcd_irq_enabled && rt5651_micbias1_ovcd(component)) {
-		dev_dbg(component->dev, "OVCD IRQ\n");
+		dev_dbg(dev, "OVCD IRQ\n");
 
 		/*
 		 * The ovcd IRQ keeps firing while the button is pressed, so
@@ -1859,7 +1877,8 @@ static void rt5651_enable_jack_detect(struct snd_soc_component *component,
 				      struct snd_soc_jack *hp_jack,
 				      struct gpio_desc *gpiod_hp_det)
 {
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 	bool using_internal_jack_detect = true;
 
 	/* Select jack detect source */
@@ -1916,7 +1935,7 @@ static void rt5651_enable_jack_detect(struct snd_soc_component *component,
 				RT5651_JD2_IRQ_EN);
 		break;
 	default:
-		dev_err(component->dev, "Currently only JD1_1 / JD1_2 / JD2 are supported\n");
+		dev_err(dev, "Currently only JD1_1 / JD1_2 / JD2 are supported\n");
 		return;
 	}
 
@@ -1969,7 +1988,8 @@ static void rt5651_enable_jack_detect(struct snd_soc_component *component,
 
 static void rt5651_disable_jack_detect(struct snd_soc_component *component)
 {
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 
 	disable_irq(rt5651->irq);
 	rt5651_cancel_work(rt5651);
@@ -1999,26 +2019,26 @@ static int rt5651_set_jack(struct snd_soc_component *component,
  * rather then relying only on properties set by the firmware. Therefor the
  * property parsing MUST be done from the component driver's probe function,
  * rather then from the i2c driver's probe function, so that the platform-code
- * can attach extra properties before calling snd_soc_register_card().
+ * can attach extra properties before calling snd_soc_card_register().
  */
 static void rt5651_apply_properties(struct snd_soc_component *component)
 {
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 	u32 val;
 
-	if (device_property_read_bool(component->dev, "realtek,in2-differential"))
+	if (device_property_read_bool(dev, "realtek,in2-differential"))
 		snd_soc_component_update_bits(component, RT5651_IN1_IN2,
 				RT5651_IN_DF2, RT5651_IN_DF2);
 
-	if (device_property_read_bool(component->dev, "realtek,dmic-en"))
+	if (device_property_read_bool(dev, "realtek,dmic-en"))
 		snd_soc_component_update_bits(component, RT5651_GPIO_CTRL1,
 				RT5651_GP2_PIN_MASK, RT5651_GP2_PIN_DMIC1_SCL);
 
-	if (device_property_read_u32(component->dev,
-				     "realtek,jack-detect-source", &val) == 0)
+	if (device_property_read_u32(dev, "realtek,jack-detect-source", &val) == 0)
 		rt5651->jd_src = val;
 
-	if (device_property_read_bool(component->dev, "realtek,jack-detect-not-inverted"))
+	if (device_property_read_bool(dev, "realtek,jack-detect-not-inverted"))
 		rt5651->jd_active_high = true;
 
 	/*
@@ -2029,8 +2049,7 @@ static void rt5651_apply_properties(struct snd_soc_component *component)
 	rt5651->ovcd_th = RT5651_MIC1_OVTH_2000UA;
 	rt5651->ovcd_sf = RT5651_MIC_OVCD_SF_0P75;
 
-	if (device_property_read_u32(component->dev,
-			"realtek,over-current-threshold-microamp", &val) == 0) {
+	if (device_property_read_u32(dev, "realtek,over-current-threshold-microamp", &val) == 0) {
 		switch (val) {
 		case 600:
 			rt5651->ovcd_th = RT5651_MIC1_OVTH_600UA;
@@ -2042,24 +2061,24 @@ static void rt5651_apply_properties(struct snd_soc_component *component)
 			rt5651->ovcd_th = RT5651_MIC1_OVTH_2000UA;
 			break;
 		default:
-			dev_warn(component->dev, "Warning: Invalid over-current-threshold-microamp value: %d, defaulting to 2000uA\n",
+			dev_warn(dev, "Warning: Invalid over-current-threshold-microamp value: %d, defaulting to 2000uA\n",
 				 val);
 		}
 	}
 
-	if (device_property_read_u32(component->dev,
-			"realtek,over-current-scale-factor", &val) == 0) {
+	if (device_property_read_u32(dev, "realtek,over-current-scale-factor", &val) == 0) {
 		if (val <= RT5651_OVCD_SF_1P5)
 			rt5651->ovcd_sf = val << RT5651_MIC_OVCD_SF_SFT;
 		else
-			dev_warn(component->dev, "Warning: Invalid over-current-scale-factor value: %d, defaulting to 0.75\n",
+			dev_warn(dev, "Warning: Invalid over-current-scale-factor value: %d, defaulting to 0.75\n",
 				 val);
 	}
 }
 
 static int rt5651_probe(struct snd_soc_component *component)
 {
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	rt5651->component = component;
@@ -2077,7 +2096,8 @@ static int rt5651_probe(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int rt5651_suspend(struct snd_soc_component *component)
 {
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt5651->regmap, true);
 	regcache_mark_dirty(rt5651->regmap);
@@ -2086,10 +2106,11 @@ static int rt5651_suspend(struct snd_soc_component *component)
 
 static int rt5651_resume(struct snd_soc_component *component)
 {
-	struct rt5651_priv *rt5651 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5651_priv *rt5651 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt5651->regmap, false);
-	snd_soc_component_cache_sync(component);
+	snd_soc_component_regcache_sync(component);
 
 	return 0;
 }
@@ -2279,7 +2300,7 @@ static int rt5651_i2c_probe(struct i2c_client *i2c)
 		rt5651->irq = -ENXIO;
 	}
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 				&soc_component_dev_rt5651,
 				rt5651_dai, ARRAY_SIZE(rt5651_dai));
 

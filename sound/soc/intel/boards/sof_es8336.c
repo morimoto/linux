@@ -128,7 +128,7 @@ static int sof_8336_trigger(struct snd_pcm_substream *substream, int cmd)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct sof_es8336_private *priv = snd_soc_card_get_drvdata(card);
+	struct sof_es8336_private *priv = snd_soc_card_to_priv(card);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -156,7 +156,7 @@ static int sof_es8316_speaker_power_event(struct snd_soc_dapm_widget *w,
 					  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct sof_es8336_private *priv = snd_soc_card_get_drvdata(card);
+	struct sof_es8336_private *priv = snd_soc_card_to_priv(card);
 
 	if (priv->speaker_en == !SND_SOC_DAPM_EVENT_ON(event))
 		return 0;
@@ -232,30 +232,33 @@ static int dmic_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_card *card = runtime->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	ret = snd_soc_dapm_new_controls(dapm, dmic_widgets,
 					ARRAY_SIZE(dmic_widgets));
 	if (ret) {
-		dev_err(card->dev, "DMic widget addition failed: %d\n", ret);
+		dev_err(dev, "DMic widget addition failed: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dapm_add_routes(dapm, dmic_map,
 				      ARRAY_SIZE(dmic_map));
 	if (ret)
-		dev_err(card->dev, "DMic map addition failed: %d\n", ret);
+		dev_err(dev, "DMic map addition failed: %d\n", ret);
 
 	return ret;
 }
 
 static int sof_hdmi_init(struct snd_soc_pcm_runtime *runtime)
 {
-	struct sof_es8336_private *priv = snd_soc_card_get_drvdata(runtime->card);
+	struct sof_es8336_private *priv = snd_soc_card_to_priv(runtime->card);
 	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(runtime, 0);
 	struct sof_hdmi_pcm *pcm;
+	struct snd_soc_card *card = runtime->card;
+	struct device *dev = snd_soc_card_to_dev(card);
 
-	pcm = devm_kzalloc(runtime->card->dev, sizeof(*pcm), GFP_KERNEL);
+	pcm = devm_kzalloc(dev, sizeof(*pcm), GFP_KERNEL);
 	if (!pcm)
 		return -ENOMEM;
 
@@ -270,10 +273,11 @@ static int sof_hdmi_init(struct snd_soc_pcm_runtime *runtime)
 
 static int sof_es8316_init(struct snd_soc_pcm_runtime *runtime)
 {
-	struct snd_soc_component *codec = snd_soc_rtd_to_codec(runtime, 0)->component;
+	struct snd_soc_component *codec = snd_soc_dai_to_component(snd_soc_rtd_to_codec(runtime, 0));
 	struct snd_soc_card *card = runtime->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct sof_es8336_private *priv = snd_soc_card_get_drvdata(card);
+	struct sof_es8336_private *priv = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	const struct snd_soc_dapm_route *custom_map;
 	int num_routes;
 	int ret;
@@ -297,7 +301,7 @@ static int sof_es8316_init(struct snd_soc_pcm_runtime *runtime)
 					 &priv->jack, sof_es8316_jack_pins,
 					 ARRAY_SIZE(sof_es8316_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "jack creation failed %d\n", ret);
+		dev_err(dev, "jack creation failed %d\n", ret);
 		return ret;
 	}
 
@@ -310,7 +314,7 @@ static int sof_es8316_init(struct snd_soc_pcm_runtime *runtime)
 
 static void sof_es8316_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	snd_soc_component_set_jack(component, NULL, NULL);
 }
@@ -406,7 +410,7 @@ static struct snd_soc_dai_link_component dmic_component[] = {
 
 static int sof_es8336_late_probe(struct snd_soc_card *card)
 {
-	struct sof_es8336_private *priv = snd_soc_card_get_drvdata(card);
+	struct sof_es8336_private *priv = snd_soc_card_to_priv(card);
 	struct sof_hdmi_pcm *pcm;
 
 	if (list_empty(&priv->hdmi_pcm_list))
@@ -414,7 +418,7 @@ static int sof_es8336_late_probe(struct snd_soc_card *card)
 
 	pcm = list_first_entry(&priv->hdmi_pcm_list, struct sof_hdmi_pcm, head);
 
-	return hda_dsp_hdmi_build_controls(card, pcm->codec_dai->component);
+	return hda_dsp_hdmi_build_controls(card, snd_soc_dai_to_component(pcm->codec_dai));
 }
 
 /* SoC card */
@@ -761,7 +765,7 @@ static int sof_es8336_probe(struct platform_device *pdev)
 	INIT_LIST_HEAD(&priv->hdmi_pcm_list);
 	INIT_DELAYED_WORK(&priv->pcm_pop_work,
 				pcm_pop_work_events);
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 
 	if (mach->mach_params.dmic_num > 0) {
 		snprintf(soc_components, sizeof(soc_components),
@@ -787,7 +791,7 @@ err_put_codec:
 static void sof_es8336_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
-	struct sof_es8336_private *priv = snd_soc_card_get_drvdata(card);
+	struct sof_es8336_private *priv = snd_soc_card_to_priv(card);
 
 	cancel_delayed_work_sync(&priv->pcm_pop_work);
 	gpiod_put(priv->gpio_speakers);

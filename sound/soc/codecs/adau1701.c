@@ -299,7 +299,8 @@ static const struct sigmadsp_ops adau1701_sigmadsp_ops = {
 static int adau1701_reset(struct snd_soc_component *component, unsigned int clkdiv,
 	unsigned int rate)
 {
-	struct adau1701 *adau1701 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1701 *adau1701 = dev_get_drvdata(dev);
 	int ret;
 
 	DECLARE_BITMAP(values, 2);
@@ -346,7 +347,7 @@ static int adau1701_reset(struct snd_soc_component *component, unsigned int clkd
 	if (clkdiv != ADAU1707_CLKDIV_UNSET) {
 		ret = sigmadsp_setup(adau1701->sigmadsp, rate);
 		if (ret) {
-			dev_warn(component->dev, "Failed to load firmware\n");
+			dev_warn(dev, "Failed to load firmware\n");
 			return ret;
 		}
 	}
@@ -363,7 +364,8 @@ static int adau1701_reset(struct snd_soc_component *component, unsigned int clkd
 static int adau1701_set_capture_pcm_format(struct snd_soc_component *component,
 					   struct snd_pcm_hw_params *params)
 {
-	struct adau1701 *adau1701 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1701 *adau1701 = dev_get_drvdata(dev);
 	unsigned int mask = ADAU1701_SEROCTL_WORD_LEN_MASK;
 	unsigned int val;
 
@@ -404,7 +406,8 @@ static int adau1701_set_capture_pcm_format(struct snd_soc_component *component,
 static int adau1701_set_playback_pcm_format(struct snd_soc_component *component,
 					    struct snd_pcm_hw_params *params)
 {
-	struct adau1701 *adau1701 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1701 *adau1701 = dev_get_drvdata(dev);
 	unsigned int val;
 
 	if (adau1701->dai_fmt != SND_SOC_DAIFMT_RIGHT_J)
@@ -433,8 +436,9 @@ static int adau1701_set_playback_pcm_format(struct snd_soc_component *component,
 static int adau1701_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct adau1701 *adau1701 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1701 *adau1701 = dev_get_drvdata(dev);
 	unsigned int clkdiv = adau1701->sysclk / params_rate(params);
 	unsigned int val;
 	int ret;
@@ -476,8 +480,9 @@ static int adau1701_hw_params(struct snd_pcm_substream *substream,
 static int adau1701_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct adau1701 *adau1701 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1701 *adau1701 = dev_get_drvdata(dev);
 	unsigned int serictl = 0x00, seroctl = 0x00;
 	bool invert_lrclk;
 
@@ -550,7 +555,8 @@ static int adau1701_set_bias_level(struct snd_soc_component *component,
 		enum snd_soc_bias_level level)
 {
 	unsigned int mask = ADAU1701_AUXNPOW_VBPD | ADAU1701_AUXNPOW_VRPD;
-	struct adau1701 *adau1701 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1701 *adau1701 = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
@@ -574,9 +580,10 @@ static int adau1701_set_bias_level(struct snd_soc_component *component,
 
 static int adau1701_mute_stream(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int mask = ADAU1701_DSPCTRL_DAM;
-	struct adau1701 *adau1701 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1701 *adau1701 = dev_get_drvdata(dev);
 	unsigned int val;
 
 	if (mute)
@@ -593,7 +600,8 @@ static int adau1701_set_sysclk(struct snd_soc_component *component, int clk_id,
 	int source, unsigned int freq, int dir)
 {
 	unsigned int val;
-	struct adau1701 *adau1701 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1701 *adau1701 = dev_get_drvdata(dev);
 
 	switch (clk_id) {
 	case ADAU1701_CLK_SRC_OSC:
@@ -616,7 +624,9 @@ static int adau1701_set_sysclk(struct snd_soc_component *component, int clk_id,
 static int adau1701_startup(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct adau1701 *adau1701 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1701 *adau1701 = dev_get_drvdata(dev);
 
 	return sigmadsp_restrict_params(adau1701->sigmadsp, substream);
 }
@@ -678,7 +688,8 @@ static int adau1701_probe(struct snd_soc_component *component)
 {
 	int i, ret;
 	unsigned int val;
-	struct adau1701 *adau1701 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1701 *adau1701 = dev_get_drvdata(dev);
 
 	ret = sigmadsp_attach(adau1701->sigmadsp, component);
 	if (ret)
@@ -687,7 +698,7 @@ static int adau1701_probe(struct snd_soc_component *component)
 	ret = regulator_bulk_enable(ARRAY_SIZE(adau1701->supplies),
 				    adau1701->supplies);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to enable regulators: %d\n", ret);
+		dev_err(dev, "Failed to enable regulators: %d\n", ret);
 		return ret;
 	}
 
@@ -727,7 +738,8 @@ exit_regulators_disable:
 
 static void adau1701_remove(struct snd_soc_component *component)
 {
-	struct adau1701 *adau1701 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1701 *adau1701 = dev_get_drvdata(dev);
 
 	if (adau1701->gpio_nreset)
 		gpiod_set_value_cansleep(adau1701->gpio_nreset, 0);
@@ -738,7 +750,8 @@ static void adau1701_remove(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int adau1701_suspend(struct snd_soc_component *component)
 {
-	struct adau1701 *adau1701 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1701 *adau1701 = dev_get_drvdata(dev);
 
 	regulator_bulk_disable(ARRAY_SIZE(adau1701->supplies),
 			       adau1701->supplies);
@@ -748,13 +761,14 @@ static int adau1701_suspend(struct snd_soc_component *component)
 
 static int adau1701_resume(struct snd_soc_component *component)
 {
-	struct adau1701 *adau1701 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct adau1701 *adau1701 = dev_get_drvdata(dev);
 	int ret;
 
         ret = regulator_bulk_enable(ARRAY_SIZE(adau1701->supplies),
 				    adau1701->supplies);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to enable regulators: %d\n", ret);
+		dev_err(dev, "Failed to enable regulators: %d\n", ret);
 		return ret;
 	}
 
@@ -860,7 +874,7 @@ static int adau1701_i2c_probe(struct i2c_client *client)
 		goto exit_regulators_disable;
 	}
 
-	ret = devm_snd_soc_register_component(&client->dev,
+	ret = devm_snd_soc_component_register(&client->dev,
 			&adau1701_component_drv,
 			&adau1701_dai, 1);
 

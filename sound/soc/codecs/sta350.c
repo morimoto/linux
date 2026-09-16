@@ -303,7 +303,8 @@ static int sta350_coefficient_get(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sta350_priv *sta350 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta350_priv *sta350 = dev_get_drvdata(dev);
 	int numcoef = kcontrol->private_value >> 16;
 	int index = kcontrol->private_value & 0xffff;
 	unsigned int cfud, val;
@@ -340,7 +341,8 @@ static int sta350_coefficient_put(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct sta350_priv *sta350 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta350_priv *sta350 = dev_get_drvdata(dev);
 	int numcoef = kcontrol->private_value >> 16;
 	int index = kcontrol->private_value & 0xffff;
 	unsigned int cfud;
@@ -376,7 +378,8 @@ static int sta350_coefficient_put(struct snd_kcontrol *kcontrol,
 
 static int sta350_sync_coef_shadow(struct snd_soc_component *component)
 {
-	struct sta350_priv *sta350 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta350_priv *sta350 = dev_get_drvdata(dev);
 	unsigned int cfud;
 	int i;
 
@@ -404,7 +407,8 @@ static int sta350_sync_coef_shadow(struct snd_soc_component *component)
 
 static int sta350_cache_sync(struct snd_soc_component *component)
 {
-	struct sta350_priv *sta350 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta350_priv *sta350 = dev_get_drvdata(dev);
 	unsigned int mute;
 	int rc;
 
@@ -601,10 +605,11 @@ static int mcs_ratio_table[3][6] = {
 static int sta350_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct sta350_priv *sta350 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta350_priv *sta350 = dev_get_drvdata(dev);
 
-	dev_dbg(component->dev, "mclk=%u\n", freq);
+	dev_dbg(dev, "mclk=%u\n", freq);
 	sta350->mclk = freq;
 
 	return 0;
@@ -621,8 +626,9 @@ static int sta350_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int sta350_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			      unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct sta350_priv *sta350 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta350_priv *sta350 = dev_get_drvdata(dev);
 	unsigned int confb = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -670,22 +676,22 @@ static int sta350_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sta350_priv *sta350 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta350_priv *sta350 = dev_get_drvdata(dev);
 	int i, mcs = -EINVAL, ir = -EINVAL;
 	unsigned int confa, confb;
 	unsigned int rate, ratio;
 	int ret;
 
 	if (!sta350->mclk) {
-		dev_err(component->dev,
-			"sta350->mclk is unset. Unable to determine ratio\n");
+		dev_err(dev, "sta350->mclk is unset. Unable to determine ratio\n");
 		return -EIO;
 	}
 
 	rate = params_rate(params);
 	ratio = sta350->mclk / rate;
-	dev_dbg(component->dev, "rate: %u, ratio: %u\n", rate, ratio);
+	dev_dbg(dev, "rate: %u, ratio: %u\n", rate, ratio);
 
 	for (i = 0; i < ARRAY_SIZE(interpolation_ratios); i++) {
 		if (interpolation_ratios[i].fs == rate) {
@@ -695,7 +701,7 @@ static int sta350_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (ir < 0) {
-		dev_err(component->dev, "Unsupported samplerate: %u\n", rate);
+		dev_err(dev, "Unsupported samplerate: %u\n", rate);
 		return -EINVAL;
 	}
 
@@ -707,7 +713,7 @@ static int sta350_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (mcs < 0) {
-		dev_err(component->dev, "Unresolvable ratio: %u\n", ratio);
+		dev_err(dev, "Unresolvable ratio: %u\n", ratio);
 		return -EINVAL;
 	}
 
@@ -717,10 +723,10 @@ static int sta350_hw_params(struct snd_pcm_substream *substream,
 
 	switch (params_width(params)) {
 	case 24:
-		dev_dbg(component->dev, "24bit\n");
+		dev_dbg(dev, "24bit\n");
 		fallthrough;
 	case 32:
-		dev_dbg(component->dev, "24bit or 32bit\n");
+		dev_dbg(dev, "24bit or 32bit\n");
 		switch (sta350->format) {
 		case SND_SOC_DAIFMT_I2S:
 			confb |= 0x0;
@@ -735,7 +741,7 @@ static int sta350_hw_params(struct snd_pcm_substream *substream,
 
 		break;
 	case 20:
-		dev_dbg(component->dev, "20bit\n");
+		dev_dbg(dev, "20bit\n");
 		switch (sta350->format) {
 		case SND_SOC_DAIFMT_I2S:
 			confb |= 0x4;
@@ -750,7 +756,7 @@ static int sta350_hw_params(struct snd_pcm_substream *substream,
 
 		break;
 	case 18:
-		dev_dbg(component->dev, "18bit\n");
+		dev_dbg(dev, "18bit\n");
 		switch (sta350->format) {
 		case SND_SOC_DAIFMT_I2S:
 			confb |= 0x8;
@@ -765,7 +771,7 @@ static int sta350_hw_params(struct snd_pcm_substream *substream,
 
 		break;
 	case 16:
-		dev_dbg(component->dev, "16bit\n");
+		dev_dbg(dev, "16bit\n");
 		switch (sta350->format) {
 		case SND_SOC_DAIFMT_I2S:
 			confb |= 0x0;
@@ -825,11 +831,12 @@ static int sta350_startup_sequence(struct sta350_priv *sta350)
 static int sta350_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct sta350_priv *sta350 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta350_priv *sta350 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
-	dev_dbg(component->dev, "level = %d\n", level);
+	dev_dbg(dev, "level = %d\n", level);
 	switch (level) {
 	case SND_SOC_BIAS_ON:
 		break;
@@ -847,9 +854,7 @@ static int sta350_set_bias_level(struct snd_soc_component *component,
 				ARRAY_SIZE(sta350->supplies),
 				sta350->supplies);
 			if (ret < 0) {
-				dev_err(component->dev,
-					"Failed to enable supplies: %d\n",
-					ret);
+				dev_err(dev, "Failed to enable supplies: %d\n", ret);
 				return ret;
 			}
 			sta350_startup_sequence(sta350);
@@ -912,20 +917,21 @@ static struct snd_soc_dai_driver sta350_dai = {
 static int sta350_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct sta350_priv *sta350 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta350_priv *sta350 = dev_get_drvdata(dev);
 	struct sta350_platform_data *pdata = sta350->pdata;
 	int i, ret = 0, thermal = 0;
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(sta350->supplies),
 				    sta350->supplies);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to enable supplies: %d\n", ret);
+		dev_err(dev, "Failed to enable supplies: %d\n", ret);
 		return ret;
 	}
 
 	ret = sta350_startup_sequence(sta350);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to startup device\n");
+		dev_err(dev, "Failed to startup device\n");
 		return ret;
 	}
 
@@ -1044,7 +1050,8 @@ static int sta350_probe(struct snd_soc_component *component)
 
 static void sta350_remove(struct snd_soc_component *component)
 {
-	struct sta350_priv *sta350 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sta350_priv *sta350 = dev_get_drvdata(dev);
 
 	regulator_bulk_disable(ARRAY_SIZE(sta350->supplies), sta350->supplies);
 }
@@ -1234,7 +1241,7 @@ static int sta350_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, sta350);
 
-	ret = devm_snd_soc_register_component(dev, &sta350_component, &sta350_dai, 1);
+	ret = devm_snd_soc_component_register(dev, &sta350_component, &sta350_dai, 1);
 	if (ret < 0)
 		dev_err(dev, "Failed to register component (%d)\n", ret);
 

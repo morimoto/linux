@@ -20,6 +20,7 @@
 int asoc_sdw_ti_amp_initial_settings(struct snd_soc_card *card,
 				     const char *name_prefix)
 {
+	struct device *dev = snd_soc_card_to_dev(card);
 	char *volume_ctl_name;
 	int ret;
 
@@ -31,7 +32,7 @@ int asoc_sdw_ti_amp_initial_settings(struct snd_soc_card *card,
 	ret = snd_soc_limit_volume(card, volume_ctl_name,
 				   TIAMP_SPK_VOLUME_0DB);
 	if (ret)
-		dev_err(card->dev,
+		dev_err(dev,
 			"%s update failed %d\n",
 			volume_ctl_name, ret);
 
@@ -45,18 +46,21 @@ int asoc_sdw_ti_spk_rtd_init(struct snd_soc_pcm_runtime *rtd,
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	char widget_name[16];
 	char speaker[16];
 	struct snd_soc_dapm_route route = {speaker, NULL, widget_name};
 	struct snd_soc_dai *codec_dai;
-	const char *prefix;
 	int i, ret = 0;
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-		if (!strstr(codec_dai->name, "tas2783"))
+		struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+		const char *dai_name = snd_soc_dai_name(codec_dai);
+		const char *prefix = snd_soc_component_name_prefix(component);
+
+		if (!strstr(dai_name, "tas2783"))
 			continue;
 
-		prefix = codec_dai->component->name_prefix;
 		if (!strncmp(prefix, "tas2783-1", strlen("tas2783-1"))) {
 			strscpy(speaker, "Left Spk", sizeof(speaker));
 		} else if (!strncmp(prefix, "tas2783-2", strlen("tas2783-2"))) {
@@ -67,7 +71,7 @@ int asoc_sdw_ti_spk_rtd_init(struct snd_soc_pcm_runtime *rtd,
 			strscpy(speaker, "Right Spk2", sizeof(speaker));
 		} else {
 			ret = -EINVAL;
-			dev_err(card->dev, "unhandled prefix %s", prefix);
+			dev_err(dev, "unhandled prefix %s", prefix);
 			break;
 		}
 
@@ -123,31 +127,36 @@ int asoc_sdw_ti_tac5xx2_spk_rtd_init(struct snd_soc_pcm_runtime *rtd,
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret, i;
 	struct snd_soc_dai *codec_dai;
 	const char *prefix;
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-		if (!strstr(codec_dai->name, "tac5") &&
-		    !strstr(codec_dai->name, "tas2883"))
+		const char *codec_name = snd_soc_dai_name(codec_dai);
+		struct snd_soc_component *component;
+
+		if (!strstr(codec_name, "tac5") &&
+		    !strstr(codec_name, "tas2883"))
 			continue;
 
-		prefix = codec_dai->component->name_prefix;
+		component = snd_soc_dai_to_component(codec_dai);
+
+		prefix = snd_soc_component_name_prefix(component);
 		if (!prefix) {
-			dev_warn(card->dev,
-				 "No name prefix found for codec DAI: %s\n",
-				codec_dai->name);
+			dev_warn(dev, "No name prefix found for codec DAI: %s\n",
+				codec_name);
 			continue;
 		}
 		ret = asoc_sdw_ti_add_tac5xx2_routes(dapm, prefix);
 		if (ret) {
-			dev_err(card->dev, "Failed to add routes for %s: %d\n",
+			dev_err(dev, "Failed to add routes for %s: %d\n",
 				prefix, ret);
 			return ret;
 		}
 	}
 
-	dev_dbg(card->dev, "Added TAC5XX2 speaker routes\n");
+	dev_dbg(dev, "Added TAC5XX2 speaker routes\n");
 
 	return 0;
 }
@@ -156,17 +165,17 @@ EXPORT_SYMBOL_NS(asoc_sdw_ti_tac5xx2_spk_rtd_init, "SND_SOC_SDW_UTILS");
 int asoc_sdw_ti_dmic_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_dai *dai)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_card_to_dev(card);
 
-	component = dai->component;
-
-	card->components = devm_kasprintf(card->dev, GFP_KERNEL,
-					  "%s mic:%s", card->components,
-					  component->name_prefix);
-	if (!card->components)
+	snd_soc_card_set_components(card, devm_kasprintf(dev, GFP_KERNEL,
+						"%s mic:%s",
+						snd_soc_card_components(card),
+						snd_soc_component_name_prefix(component)));
+	if (!snd_soc_card_components(card))
 		return -ENOMEM;
 
-	dev_dbg(card->dev, "card->components: %s\n", card->components);
+	dev_dbg(dev, "card->components: %s\n", snd_soc_card_components(card));
 
 	return 0;
 }
@@ -186,17 +195,17 @@ static struct snd_soc_jack_pin ti_sdca_jack_pins[] = {
 int asoc_sdw_ti_sdca_jack_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_dai *dai)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
-	struct snd_soc_component *component;
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_soc_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
-	component = dai->component;
-
-	card->components = devm_kasprintf(card->dev, GFP_KERNEL,
-					  "%s hs:%s", card->components,
-					  component->name_prefix);
-	if (!card->components)
+	snd_soc_card_set_components(card, devm_kasprintf(dev, GFP_KERNEL,
+					  "%s hs:%s",
+					  snd_soc_card_components(card),
+					  snd_soc_component_name_prefix(component)));
+	if (!snd_soc_card_components(card))
 		return -ENOMEM;
 
 	ret = snd_soc_card_jack_new_pins(rtd->card, "Headset Jack",
@@ -207,7 +216,7 @@ int asoc_sdw_ti_sdca_jack_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_s
 					ti_sdca_jack_pins,
 					ARRAY_SIZE(ti_sdca_jack_pins));
 	if (ret) {
-		dev_err(rtd->card->dev, "Jack create failed%d\n", ret);
+		dev_err(dev, "Jack create failed%d\n", ret);
 		return ret;
 	}
 
@@ -221,8 +230,7 @@ int asoc_sdw_ti_sdca_jack_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_s
 
 	ret = snd_soc_component_set_jack(component, jack, NULL);
 	if (ret)
-		dev_err(rtd->card->dev, "Headset Jack call-back failed: %d\n",
-			ret);
+		dev_err(dev, "Headset Jack call-back failed: %d\n", ret);
 
 	return ret;
 }

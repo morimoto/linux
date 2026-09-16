@@ -39,8 +39,10 @@ MODULE_PARM_DESC(enable, "Enable SOF probes support");
 static int sof_probes_compr_startup(struct snd_compr_stream *cstream,
 				    struct snd_soc_dai *dai)
 {
-	struct snd_soc_card *card = snd_soc_component_get_drvdata(dai->component);
-	struct sof_client_dev *cdev = snd_soc_card_get_drvdata(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = dev_get_drvdata(dev);
+	struct sof_client_dev *cdev = snd_soc_card_to_priv(card);
 	struct sof_probes_priv *priv = cdev->data;
 	const struct sof_probes_host_ops *ops = priv->host_ops;
 	int ret;
@@ -54,7 +56,7 @@ static int sof_probes_compr_startup(struct snd_compr_stream *cstream,
 
 	ret = ops->startup(cdev, cstream, dai, &priv->extractor_stream_tag);
 	if (ret) {
-		dev_err(dai->dev, "Failed to startup probe stream: %d\n", ret);
+		dev_err(dev, "Failed to startup probe stream: %d\n", ret);
 		priv->extractor_stream_tag = SOF_PROBES_INVALID_NODE_ID;
 		sof_client_core_module_put(cdev);
 	}
@@ -65,8 +67,10 @@ static int sof_probes_compr_startup(struct snd_compr_stream *cstream,
 static int sof_probes_compr_shutdown(struct snd_compr_stream *cstream,
 				     struct snd_soc_dai *dai)
 {
-	struct snd_soc_card *card = snd_soc_component_get_drvdata(dai->component);
-	struct sof_client_dev *cdev = snd_soc_card_get_drvdata(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = dev_get_drvdata(dev);
+	struct sof_client_dev *cdev = snd_soc_card_to_priv(card);
 	struct sof_probes_priv *priv = cdev->data;
 	const struct sof_probes_host_ops *ops = priv->host_ops;
 	const struct sof_probes_ipc_ops *ipc = priv->ipc_ops;
@@ -78,7 +82,7 @@ static int sof_probes_compr_shutdown(struct snd_compr_stream *cstream,
 	ret = ipc->points_info(cdev, &desc, &num_desc,
 			       PROBES_INFO_ACTIVE_PROBES);
 	if (ret < 0) {
-		dev_err(dai->dev, "Failed to get probe points: %d\n", ret);
+		dev_err(dev, "Failed to get probe points: %d\n", ret);
 		goto exit;
 	}
 
@@ -89,7 +93,7 @@ static int sof_probes_compr_shutdown(struct snd_compr_stream *cstream,
 exit:
 	ret = ipc->deinit(cdev);
 	if (ret < 0)
-		dev_err(dai->dev, "Failed to deinit probe: %d\n", ret);
+		dev_err(dev, "Failed to deinit probe: %d\n", ret);
 
 	priv->extractor_stream_tag = SOF_PROBES_INVALID_NODE_ID;
 	snd_compr_free_pages(cstream);
@@ -105,8 +109,10 @@ static int sof_probes_compr_set_params(struct snd_compr_stream *cstream,
 				       struct snd_compr_params *params,
 				       struct snd_soc_dai *dai)
 {
-	struct snd_soc_card *card = snd_soc_component_get_drvdata(dai->component);
-	struct sof_client_dev *cdev = snd_soc_card_get_drvdata(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = dev_get_drvdata(dev);
+	struct sof_client_dev *cdev = snd_soc_card_to_priv(card);
 	struct snd_compr_runtime *rtd = cstream->runtime;
 	struct sof_probes_priv *priv = cdev->data;
 	const struct sof_probes_host_ops *ops = priv->host_ops;
@@ -129,7 +135,7 @@ static int sof_probes_compr_set_params(struct snd_compr_stream *cstream,
 
 	ret = ipc->init(cdev, priv->extractor_stream_tag, rtd->dma_bytes);
 	if (ret < 0) {
-		dev_err(dai->dev, "Failed to init probe: %d\n", ret);
+		dev_err(dev, "Failed to init probe: %d\n", ret);
 		return ret;
 	}
 
@@ -139,8 +145,10 @@ static int sof_probes_compr_set_params(struct snd_compr_stream *cstream,
 static int sof_probes_compr_trigger(struct snd_compr_stream *cstream, int cmd,
 				    struct snd_soc_dai *dai)
 {
-	struct snd_soc_card *card = snd_soc_component_get_drvdata(dai->component);
-	struct sof_client_dev *cdev = snd_soc_card_get_drvdata(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = dev_get_drvdata(dev);
+	struct sof_client_dev *cdev = snd_soc_card_to_priv(card);
 	struct sof_probes_priv *priv = cdev->data;
 	const struct sof_probes_host_ops *ops = priv->host_ops;
 
@@ -151,8 +159,10 @@ static int sof_probes_compr_pointer(struct snd_compr_stream *cstream,
 				    struct snd_compr_tstamp64 *tstamp,
 				    struct snd_soc_dai *dai)
 {
-	struct snd_soc_card *card = snd_soc_component_get_drvdata(dai->component);
-	struct sof_client_dev *cdev = snd_soc_card_get_drvdata(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = dev_get_drvdata(dev);
+	struct sof_client_dev *cdev = snd_soc_card_to_priv(card);
 	struct sof_probes_priv *priv = cdev->data;
 	const struct sof_probes_host_ops *ops = priv->host_ops;
 
@@ -488,7 +498,7 @@ static int sof_probes_client_probe(struct auxiliary_device *auxdev,
 	cdev->data = priv;
 
 	/* register probes component driver and dai */
-	ret = devm_snd_soc_register_component(dev, &sof_probes_component,
+	ret = devm_snd_soc_component_register(dev, &sof_probes_component,
 					      sof_probes_dai_drv,
 					      ARRAY_SIZE(sof_probes_dai_drv));
 	if (ret < 0) {
@@ -550,7 +560,7 @@ static int sof_probes_client_probe(struct auxiliary_device *auxdev,
 
 	/*
 	 * set idle_bias_off to prevent the core from resuming the card->dev
-	 * call it after snd_soc_register_card()
+	 * call it after snd_soc_card_register()
 	 */
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 

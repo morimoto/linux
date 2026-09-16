@@ -206,7 +206,8 @@ static int micfil_range_set(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct fsl_micfil *micfil = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	unsigned int shift = mc->shift;
@@ -218,14 +219,14 @@ static int micfil_range_set(struct snd_kcontrol *kcontrol,
 	if (new_range > max_range)
 		dev_warn(&micfil->pdev->dev, "range makes channel %d data unreliable\n", shift / 4);
 
-	ret = pm_runtime_resume_and_get(cmpnt->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret)
 		return ret;
 
 	ret = snd_soc_component_update_bits(cmpnt, REG_MICFIL_OUT_CTRL, 0xF << shift,
 					    new_range << shift);
 
-	pm_runtime_put_autosuspend(cmpnt->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return ret;
 }
@@ -278,7 +279,8 @@ static int micfil_quality_get(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct fsl_micfil *micfil = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = micfil->quality;
 
@@ -289,7 +291,8 @@ static int micfil_quality_set(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct fsl_micfil *micfil = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 	int val = ucontrol->value.integer.value[0];
 	bool change = false;
 	int old_val;
@@ -299,7 +302,7 @@ static int micfil_quality_set(struct snd_kcontrol *kcontrol,
 		return -EINVAL;
 
 	if (micfil->quality != val) {
-		ret = pm_runtime_resume_and_get(cmpnt->dev);
+		ret = pm_runtime_resume_and_get(dev);
 		if (ret)
 			return ret;
 
@@ -307,7 +310,7 @@ static int micfil_quality_set(struct snd_kcontrol *kcontrol,
 		micfil->quality = val;
 		ret = micfil_set_quality(micfil);
 
-		pm_runtime_put_autosuspend(cmpnt->dev);
+		pm_runtime_put_autosuspend(dev);
 
 		if (ret) {
 			micfil->quality = old_val;
@@ -375,7 +378,8 @@ static int micfil_put_dc_remover_state(struct snd_kcontrol *kcontrol,
 {
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct fsl_micfil *micfil = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 	unsigned int *item = ucontrol->value.enumerated.item;
 	int val = snd_soc_enum_item_to_val(e, item[0]);
 	int i = 0, ret = 0;
@@ -384,7 +388,7 @@ static int micfil_put_dc_remover_state(struct snd_kcontrol *kcontrol,
 	if (val < 0 || val > 3)
 		return -EINVAL;
 
-	ret = pm_runtime_resume_and_get(comp->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret)
 		return ret;
 
@@ -398,7 +402,7 @@ static int micfil_put_dc_remover_state(struct snd_kcontrol *kcontrol,
 	ret = snd_soc_component_update_bits(comp, REG_MICFIL_DC_CTRL,
 					    MICFIL_DC_CTRL_CONFIG, reg_val);
 
-	pm_runtime_put_autosuspend(comp->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return ret;
 }
@@ -407,7 +411,8 @@ static int micfil_get_dc_remover_state(struct snd_kcontrol *kcontrol,
 				       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct fsl_micfil *micfil = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = micfil->dc_remover;
 
@@ -419,7 +424,8 @@ static int micfil_put_dc_out_remover_state(struct snd_kcontrol *kcontrol,
 {
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct fsl_micfil *micfil = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 	unsigned int *item = ucontrol->value.enumerated.item;
 	int val = snd_soc_enum_item_to_val(e, item[0]);
 	int i = 0, ret = 0;
@@ -428,7 +434,7 @@ static int micfil_put_dc_out_remover_state(struct snd_kcontrol *kcontrol,
 	if (val < 0 || val > 3)
 		return -EINVAL;
 
-	ret = pm_runtime_resume_and_get(comp->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret)
 		return ret;
 
@@ -442,7 +448,7 @@ static int micfil_put_dc_out_remover_state(struct snd_kcontrol *kcontrol,
 	ret = snd_soc_component_update_bits(comp, REG_MICFIL_DC_OUT_CTRL,
 					    MICFIL_DC_CTRL_CONFIG, reg_val);
 
-	pm_runtime_put_autosuspend(comp->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return ret;
 }
@@ -451,7 +457,8 @@ static int micfil_get_dc_out_remover_state(struct snd_kcontrol *kcontrol,
 					   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct fsl_micfil *micfil = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = micfil->dc_out_remover;
 
@@ -464,7 +471,8 @@ static int hwvad_put_enable(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int *item = ucontrol->value.enumerated.item;
-	struct fsl_micfil *micfil = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 	int val = snd_soc_enum_item_to_val(e, item[0]);
 	bool change = false;
 
@@ -481,7 +489,8 @@ static int hwvad_get_enable(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct fsl_micfil *micfil = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = micfil->vad_enabled;
 
@@ -494,7 +503,8 @@ static int hwvad_put_init_mode(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int *item = ucontrol->value.enumerated.item;
-	struct fsl_micfil *micfil = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 	int val = snd_soc_enum_item_to_val(e, item[0]);
 	bool change = false;
 
@@ -514,7 +524,8 @@ static int hwvad_get_init_mode(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct fsl_micfil *micfil = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = micfil->vad_init_mode;
 
@@ -525,7 +536,8 @@ static int hwvad_detected(struct snd_kcontrol *kcontrol,
 			  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct fsl_micfil *micfil = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = micfil->vad_detected;
 
@@ -704,10 +716,15 @@ static int fsl_micfil_reset(struct device *dev)
 static int fsl_micfil_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct fsl_micfil *micfil = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 
 	if (!micfil) {
-		dev_err(dai->dev, "micfil dai priv_data not set\n");
+		struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+		struct device *dai_dev = snd_soc_component_to_dev(component);
+
+		dev_err(dai_dev, "micfil dai priv_data not set\n");
 		return -EINVAL;
 	}
 
@@ -883,8 +900,9 @@ static int fsl_micfil_hwvad_disable(struct fsl_micfil *micfil)
 static int fsl_micfil_trigger(struct snd_pcm_substream *substream, int cmd,
 			      struct snd_soc_dai *dai)
 {
-	struct fsl_micfil *micfil = snd_soc_dai_get_drvdata(dai);
-	struct device *dev = &micfil->pdev->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 	int ret;
 
 	switch (cmd) {
@@ -967,7 +985,9 @@ static int fsl_micfil_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct fsl_micfil *micfil = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 	unsigned int channels = params_channels(params);
 	snd_pcm_format_t format = params_format(params);
 	unsigned int rate = params_rate(params);
@@ -1066,7 +1086,9 @@ static int fsl_micfil_hw_params(struct snd_pcm_substream *substream,
 static int fsl_micfil_hw_free(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct fsl_micfil *micfil = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(micfil->mclk);
 	micfil->mclk_flag = false;
@@ -1076,13 +1098,15 @@ static int fsl_micfil_hw_free(struct snd_pcm_substream *substream,
 
 static int fsl_micfil_dai_probe(struct snd_soc_dai *cpu_dai)
 {
-	struct fsl_micfil *micfil = dev_get_drvdata(cpu_dai->dev);
-	struct device *dev = cpu_dai->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 	unsigned int val = 0;
 	int ret, i, max_range;
 
 	micfil->quality = micfil->soc->default_quality;
-	micfil->card = cpu_dai->component->card;
+	micfil->card = card;
 
 	/* set default gain to 2 */
 	if (micfil->soc->volume_sx) {
@@ -1118,8 +1142,7 @@ static int fsl_micfil_dai_probe(struct snd_soc_dai *cpu_dai)
 		micfil->dc_out_remover = MICFIL_DC_BYPASS;
 	}
 
-	snd_soc_dai_init_dma_data(cpu_dai, NULL,
-				  &micfil->dma_params_rx);
+	snd_soc_dai_stream_dma_data_set_capture(cpu_dai, &micfil->dma_params_rx);
 
 	/* FIFO Watermark Control - FIFOWMK*/
 	ret = regmap_update_bits(micfil->regmap, REG_MICFIL_FIFO_CTRL,
@@ -1133,17 +1156,18 @@ static int fsl_micfil_dai_probe(struct snd_soc_dai *cpu_dai)
 
 static int fsl_micfil_component_probe(struct snd_soc_component *component)
 {
-	struct fsl_micfil *micfil = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_micfil *micfil = dev_get_drvdata(dev);
 
 	if (micfil->soc->volume_sx)
-		snd_soc_add_component_controls(component, fsl_micfil_volume_sx_controls,
+		snd_soc_component_add_controls(component, fsl_micfil_volume_sx_controls,
 					       ARRAY_SIZE(fsl_micfil_volume_sx_controls));
 	else
-		snd_soc_add_component_controls(component, fsl_micfil_range_controls,
+		snd_soc_component_add_controls(component, fsl_micfil_range_controls,
 					       ARRAY_SIZE(fsl_micfil_range_controls));
 
 	if (micfil->soc->use_verid)
-		snd_soc_add_component_controls(component, fsl_micfil_dc_out_controls,
+		snd_soc_component_add_controls(component, fsl_micfil_dc_out_controls,
 					       ARRAY_SIZE(fsl_micfil_dc_out_controls));
 
 	return 0;
@@ -1442,7 +1466,7 @@ static irqreturn_t voice_detected_fn(int irq, void *devid)
 		return IRQ_HANDLED;
 
 	if (micfil->vad_detected)
-		snd_ctl_notify(micfil->card->snd_card,
+		snd_ctl_notify(snd_soc_card_to_snd_card(micfil->card),
 			       SNDRV_CTL_EVENT_MASK_VALUE,
 			       &kctl->id);
 
@@ -1667,7 +1691,7 @@ static int fsl_micfil_probe(struct platform_device *pdev)
 
 	fsl_micfil_dai.capture.formats = micfil->soc->formats;
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_micfil_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &fsl_micfil_component,
 					      &fsl_micfil_dai, 1);
 	if (ret) {
 		dev_err(&pdev->dev, "failed to register component %s\n",

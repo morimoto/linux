@@ -95,7 +95,8 @@ avs_card_hdmi_pcm_at(struct snd_soc_card *card, int hdmi_idx)
 
 static int avs_card_late_probe(struct snd_soc_card *card)
 {
-	struct snd_soc_acpi_mach *mach = dev_get_platdata(card->dev);
+	struct device *dev = snd_soc_card_to_dev(card);
+	struct snd_soc_acpi_mach *mach = dev_get_platdata(dev);
 	struct avs_mach_pdata *pdata = mach->pdata;
 	struct hda_codec *codec = pdata->codec;
 	struct hda_pcm *hpcm;
@@ -109,12 +110,12 @@ static int avs_card_late_probe(struct snd_soc_card *card)
 		if (spcm) {
 			hpcm->pcm = spcm;
 			hpcm->device = spcm->device;
-			dev_info(card->dev, "%s: mapping HDMI converter %d to PCM %d (%p)\n",
+			dev_info(dev, "%s: mapping HDMI converter %d to PCM %d (%p)\n",
 				 __func__, i, hpcm->device, spcm);
 		} else {
 			hpcm->pcm = NULL;
 			hpcm->device = SNDRV_PCM_INVALID_DEVICE;
-			dev_warn(card->dev, "%s: no PCM in topology for HDMI converter %d\n",
+			dev_warn(dev, "%s: no PCM in topology for HDMI converter %d\n",
 				 __func__, i);
 		}
 		i++;
@@ -131,9 +132,10 @@ static int avs_probing_link_init(struct snd_soc_pcm_runtime *rtm)
 	struct snd_soc_card *card = rtm->card;
 	struct hda_codec *codec;
 	struct hda_pcm *pcm;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret, pcm_count = 0;
 
-	mach = dev_get_platdata(card->dev);
+	mach = dev_get_platdata(dev);
 	pdata = mach->pdata;
 	codec = pdata->codec;
 
@@ -142,15 +144,15 @@ static int avs_probing_link_init(struct snd_soc_pcm_runtime *rtm)
 	list_for_each_entry(pcm, &codec->pcm_list_head, list)
 		pcm_count++;
 
-	ret = avs_create_dai_links(card->dev, codec, pcm_count, &links);
+	ret = avs_create_dai_links(dev, codec, pcm_count, &links);
 	if (ret < 0) {
-		dev_err(card->dev, "create links failed: %d\n", ret);
+		dev_err(dev, "create links failed: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_add_pcm_runtimes(card, links, pcm_count);
 	if (ret < 0) {
-		dev_err(card->dev, "add links failed: %d\n", ret);
+		dev_err(dev, "add links failed: %d\n", ret);
 		return ret;
 	}
 

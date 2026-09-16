@@ -680,10 +680,11 @@ static int wsa885x_codec_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params,
 				   struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct wsa885x_priv *wsa885x;
 	u8 pcm_rate, cs21_sample_rate_idx, cs24_sample_rate_idx;
 
-	wsa885x = snd_soc_component_get_drvdata(dai->component);
+	wsa885x = snd_soc_component_to_priv(component);
 
 	switch (params_rate(params)) {
 	case 8000:
@@ -759,6 +760,7 @@ static int wsa885x_codec_set_tdm_slot(struct snd_soc_dai *dai,
 				      unsigned int rx_slot_mask, int slots,
 				      int slot_width)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	static const struct wsa885x_reg_update stereo_updates[] = {
 		{ WSA885X_DIG_CTRL1_I2S_CFG0_TDM_TX, WSA885X_I2S_CFG0_TDM_TX_SLOT0_MASK,
 		  WSA885X_I2S_CFG0_TDM_TX_SLOT0(WSA885X_I2S_TX_SLOT_ISENSE0) },
@@ -786,7 +788,7 @@ static int wsa885x_codec_set_tdm_slot(struct snd_soc_dai *dai,
 	u32 mask;
 	int ret;
 
-	wsa885x = snd_soc_component_get_drvdata(dai->component);
+	wsa885x = snd_soc_component_to_priv(component);
 
 	ret = wsa885x_tdm_ctl0_slot_num_val(slots, &slot_num_val);
 	if (ret) {
@@ -856,6 +858,7 @@ exit_unlock:
 static int wsa885x_codec_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 				    unsigned int freq, int dir)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	static const struct reg_sequence pll_prep[] = {
 		{ WSA885X_ANA_TOP_BG_TVP_OVRD_CTL, 0x03 },
 		{ WSA885X_DIG_CTRL0_SYS_CLK_SEL, 0x04 },
@@ -872,7 +875,7 @@ static int wsa885x_codec_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 	u32 pll_div;
 	int ret = 0;
 
-	wsa885x = snd_soc_component_get_drvdata(dai->component);
+	wsa885x = snd_soc_component_to_priv(component);
 
 	if (!freq)
 		return -EINVAL;
@@ -903,6 +906,7 @@ static int wsa885x_codec_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 static int wsa885x_codec_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	static const struct reg_sequence mute_regs[] = {
 		{ WSA885X_DIG_CTRL0_PA_FSM_CTL, 0x00 },
 		{ WSA885X_SMP_AMP_CTRL_STEREO_PDE23_REQ_PS, 0x03 },
@@ -935,7 +939,7 @@ static int wsa885x_codec_mute_stream(struct snd_soc_dai *dai, int mute, int stre
 	struct wsa885x_priv *wsa885x;
 	int ret = 0, ps0 = 0, ps3 = 3;
 
-	wsa885x = snd_soc_component_get_drvdata(dai->component);
+	wsa885x = snd_soc_component_to_priv(component);
 
 	if (stream != SNDRV_PCM_STREAM_PLAYBACK)
 		return 0;
@@ -1005,12 +1009,13 @@ exit_unlock:
 static int wsa885x_codec_hw_free(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	static const struct reg_sequence regs[] = {
 		{ WSA885X_DIG_CTRL0_PA_FSM_CTL, 0x00 },
 	};
 	struct wsa885x_priv *wsa885x;
 
-	wsa885x = snd_soc_component_get_drvdata(dai->component);
+	wsa885x = snd_soc_component_to_priv(component);
 
 	if (substream->stream != SNDRV_PCM_STREAM_PLAYBACK)
 		return 0;
@@ -1146,12 +1151,11 @@ static const struct regmap_config wsa885x_regmap_cfg = {
 
 static int wsa885x_component_probe(struct snd_soc_component *component)
 {
-	struct wsa885x_priv *wsa885x =
-		snd_soc_component_get_drvdata(component);
+	struct wsa885x_priv *wsa885x = snd_soc_component_to_priv(component);
 	int ret;
 
 	wsa885x->component = component;
-	snd_soc_component_init_regmap(component, wsa885x->regmap);
+	snd_soc_component_regmap_init(component, wsa885x->regmap);
 
 	ret = wsa885x_hw_init(wsa885x);
 	if (ret)
@@ -1164,7 +1168,7 @@ static int wsa885x_stereo_gain_offset_get(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa885x_priv *wsa885x = snd_soc_component_get_drvdata(component);
+	struct wsa885x_priv *wsa885x = snd_soc_component_to_priv(component);
 	int val;
 
 	mutex_lock(&wsa885x->state_lock);
@@ -1181,14 +1185,15 @@ static int wsa885x_stereo_gain_offset_put(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa885x_priv *wsa885x = snd_soc_component_get_drvdata(component);
+	struct wsa885x_priv *wsa885x = snd_soc_component_to_priv(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	long val;
 	int stereo_vol_db;
 
 	val = ucontrol->value.integer.value[0];
 
 	if (val < 0 || val > WSA885X_FU21_VOL_STEPS) {
-		dev_err(component->dev, "%s: Invalid range, Val: %ld\n", __func__, val);
+		dev_err(dev, "%s: Invalid range, Val: %ld\n", __func__, val);
 		return -EINVAL;
 	}
 
@@ -1211,7 +1216,7 @@ static int wsa885x_usage_modes_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa885x_priv *wsa885x = snd_soc_component_get_drvdata(component);
+	struct wsa885x_priv *wsa885x = snd_soc_component_to_priv(component);
 
 	mutex_lock(&wsa885x->state_lock);
 	if (wsa885x->usage_mode > WSA885X_USAGE_MODE_MAX) {
@@ -1229,7 +1234,7 @@ static int wsa885x_usage_modes_put(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa885x_priv *wsa885x = snd_soc_component_get_drvdata(component);
+	struct wsa885x_priv *wsa885x = snd_soc_component_to_priv(component);
 	u32 val = ucontrol->value.integer.value[0];
 
 	if (val > WSA885X_USAGE_MODE_MAX)
@@ -1251,7 +1256,7 @@ static int wsa885x_rx_slot_mask_get(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa885x_priv *wsa885x = snd_soc_component_get_drvdata(component);
+	struct wsa885x_priv *wsa885x = snd_soc_component_to_priv(component);
 	u32 mask;
 
 	mutex_lock(&wsa885x->state_lock);
@@ -1269,7 +1274,7 @@ static int wsa885x_rx_slot_mask_put(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wsa885x_priv *wsa885x = snd_soc_component_get_drvdata(component);
+	struct wsa885x_priv *wsa885x = snd_soc_component_to_priv(component);
 	u32 mask = ucontrol->value.integer.value[0];
 
 	if (!wsa885x_is_valid_rx_slot_mask(mask))
@@ -1492,7 +1497,7 @@ static int wsa885x_probe(struct i2c_client *client)
 	if (ret)
 		return dev_err_probe(dev, ret, "wsa885x irq registration failed\n");
 
-	ret = devm_snd_soc_register_component(dev, component_driver,
+	ret = devm_snd_soc_component_register(dev, component_driver,
 					      wsa885x_dai,
 					      ARRAY_SIZE(wsa885x_dai));
 	if (ret)

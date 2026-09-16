@@ -110,8 +110,8 @@ static int dmic_get_gain(struct snd_kcontrol *kcontrol,
 			 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cros_ec_codec_priv *priv =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 	struct ec_param_ec_codec_dmic p;
 	struct ec_response_ec_codec_dmic_get_gain_idx r;
 	int ret;
@@ -141,8 +141,8 @@ static int dmic_put_gain(struct snd_kcontrol *kcontrol,
 			 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cros_ec_codec_priv *priv =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 	struct soc_mixer_control *control =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	int max_dmic_gain = control->max;
@@ -154,7 +154,7 @@ static int dmic_put_gain(struct snd_kcontrol *kcontrol,
 	if (left > max_dmic_gain || right > max_dmic_gain)
 		return -EINVAL;
 
-	dev_dbg(component->dev, "set mic gain to %u, %u\n", left, right);
+	dev_dbg(dev, "set mic gain to %u, %u\n", left, right);
 
 	p.cmd = EC_CODEC_DMIC_SET_GAIN_IDX;
 	p.set_gain_idx_param.channel = EC_CODEC_DMIC_CHANNEL_0;
@@ -186,9 +186,8 @@ static struct snd_kcontrol_new dmic_controls[] = {
 
 static int dmic_probe(struct snd_soc_component *component)
 {
-	struct cros_ec_codec_priv *priv =
-		snd_soc_component_get_drvdata(component);
-	struct device *dev = priv->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 	struct soc_mixer_control *control;
 	struct ec_param_ec_codec_dmic p;
 	struct ec_response_ec_codec_dmic_get_max_gain r;
@@ -214,7 +213,7 @@ static int dmic_probe(struct snd_soc_component *component)
 	control->max = r.max_gain;
 	control->platform_max = r.max_gain;
 
-	return snd_soc_add_component_controls(component,
+	return snd_soc_component_add_controls(component,
 			&dmic_controls[DMIC_CTL_GAIN], 1);
 }
 
@@ -222,9 +221,9 @@ static int i2s_rx_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cros_ec_codec_priv *priv =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 	struct ec_param_ec_codec_i2s_rx p;
 	enum ec_codec_i2s_rx_sample_depth depth;
 	uint32_t bclk;
@@ -244,7 +243,7 @@ static int i2s_rx_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	dev_dbg(component->dev, "set depth to %u\n", depth);
+	dev_dbg(dev, "set depth to %u\n", depth);
 
 	p.cmd = EC_CODEC_I2S_RX_SET_SAMPLE_DEPTH;
 	p.set_sample_depth_param.depth = depth;
@@ -258,7 +257,7 @@ static int i2s_rx_hw_params(struct snd_pcm_substream *substream,
 	else
 		bclk = snd_soc_params_to_bclk(params);
 
-	dev_dbg(component->dev, "set bclk to %u\n", bclk);
+	dev_dbg(dev, "set bclk to %u\n", bclk);
 
 	p.cmd = EC_CODEC_I2S_RX_SET_BCLK;
 	p.set_bclk_param.bclk = bclk;
@@ -268,9 +267,9 @@ static int i2s_rx_hw_params(struct snd_pcm_substream *substream,
 
 static int i2s_rx_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cros_ec_codec_priv *priv =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 
 	priv->i2s_rx_bclk_ratio = ratio;
 	return 0;
@@ -278,9 +277,9 @@ static int i2s_rx_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 
 static int i2s_rx_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct cros_ec_codec_priv *priv =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 	struct ec_param_ec_codec_i2s_rx p;
 	enum ec_codec_i2s_rx_daifmt daifmt;
 
@@ -312,7 +311,7 @@ static int i2s_rx_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
-	dev_dbg(component->dev, "set format to %u\n", daifmt);
+	dev_dbg(dev, "set format to %u\n", daifmt);
 
 	p.cmd = EC_CODEC_I2S_RX_SET_DAIFMT;
 	p.set_daifmt_param.daifmt = daifmt;
@@ -337,19 +336,18 @@ static const struct snd_soc_dai_ops i2s_rx_dai_ops = {
 static int i2s_rx_event(struct snd_soc_dapm_widget *w,
 			struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct cros_ec_codec_priv *priv =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 	struct ec_param_ec_codec_i2s_rx p = {};
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
-		dev_dbg(component->dev, "enable I2S RX\n");
+		dev_dbg(dev, "enable I2S RX\n");
 		p.cmd = EC_CODEC_I2S_RX_ENABLE;
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
-		dev_dbg(component->dev, "disable I2S RX\n");
+		dev_dbg(dev, "disable I2S RX\n");
 		p.cmd = EC_CODEC_I2S_RX_DISABLE;
 		break;
 	default:
@@ -639,7 +637,8 @@ static int wov_enable_get(struct snd_kcontrol *kcontrol,
 			  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct cros_ec_codec_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = priv->wov_enabled;
 	return 0;
@@ -649,7 +648,8 @@ static int wov_enable_put(struct snd_kcontrol *kcontrol,
 			  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct cros_ec_codec_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 	int enabled = ucontrol->value.integer.value[0];
 	struct ec_param_ec_codec_wov p;
 	int ret;
@@ -750,8 +750,8 @@ static int wov_hotword_model_put(struct snd_kcontrol *kcontrol,
 				 unsigned int size)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cros_ec_codec_priv *priv =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 	struct ec_param_ec_codec_wov p;
 	struct ec_response_ec_codec_wov_get_lang r;
 	uint8_t digest[SHA256_DIGEST_SIZE];
@@ -831,8 +831,8 @@ static int wov_host_event(struct notifier_block *nb,
 
 static int wov_probe(struct snd_soc_component *component)
 {
-	struct cros_ec_codec_priv *priv =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 	int ret;
 
 	mutex_init(&priv->wov_dma_lock);
@@ -867,8 +867,8 @@ static int wov_probe(struct snd_soc_component *component)
 
 static void wov_remove(struct snd_soc_component *component)
 {
-	struct cros_ec_codec_priv *priv =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 
 	blocking_notifier_chain_unregister(
 			&priv->ec_device->event_notifier, &priv->wov_notifier);
@@ -899,8 +899,8 @@ static int wov_pcm_hw_params(struct snd_soc_component *component,
 			     struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *hw_params)
 {
-	struct cros_ec_codec_priv *priv =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 
 	guard(mutex)(&priv->wov_dma_lock);
 	priv->wov_substream = substream;
@@ -914,8 +914,8 @@ static int wov_pcm_hw_params(struct snd_soc_component *component,
 static int wov_pcm_hw_free(struct snd_soc_component *component,
 			   struct snd_pcm_substream *substream)
 {
-	struct cros_ec_codec_priv *priv =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 
 	scoped_guard(mutex, &priv->wov_dma_lock) {
 		wov_queue_dequeue(priv, wov_queue_size(priv));
@@ -931,8 +931,8 @@ static snd_pcm_uframes_t wov_pcm_pointer(struct snd_soc_component *component,
 					 struct snd_pcm_substream *substream)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	struct cros_ec_codec_priv *priv =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cros_ec_codec_priv *priv = dev_get_drvdata(dev);
 
 	return bytes_to_frames(runtime, priv->wov_dma_offset);
 }
@@ -1028,12 +1028,12 @@ static int cros_ec_codec_platform_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, priv);
 
-	ret = devm_snd_soc_register_component(dev, &i2s_rx_component_driver,
+	ret = devm_snd_soc_component_register(dev, &i2s_rx_component_driver,
 					      &i2s_rx_dai_driver, 1);
 	if (ret)
 		return ret;
 
-	return devm_snd_soc_register_component(dev, &wov_component_driver,
+	return devm_snd_soc_component_register(dev, &wov_component_driver,
 					       &wov_dai_driver, 1);
 }
 

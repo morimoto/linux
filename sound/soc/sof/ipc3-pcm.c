@@ -16,7 +16,8 @@
 static int sof_ipc3_pcm_hw_free(struct snd_soc_component *component,
 				struct snd_pcm_substream *substream)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct sof_ipc_stream stream;
 	struct snd_sof_pcm *spcm;
@@ -41,7 +42,8 @@ static int sof_ipc3_pcm_hw_params(struct snd_soc_component *component,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_sof_platform_stream_params *platform_params)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct sof_ipc_fw_version *v = &sdev->fw_ready.version;
 	struct snd_pcm_runtime *runtime = substream->runtime;
@@ -144,7 +146,8 @@ static int sof_ipc3_pcm_trigger(struct snd_soc_component *component,
 				struct snd_pcm_substream *substream, int cmd)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_ipc_stream stream;
 	struct snd_sof_pcm *spcm;
 
@@ -215,19 +218,20 @@ static int sof_ipc3_pcm_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 	struct snd_sof_dai *dai = snd_sof_find_dai(component, (char *)rtd->dai_link->name);
 	struct snd_interval *rate = hw_param_interval(params, SNDRV_PCM_HW_PARAM_RATE);
 	struct snd_mask *fmt = hw_param_mask(params, SNDRV_PCM_HW_PARAM_FORMAT);
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_dai_private_data *private;
 	struct snd_soc_dpcm *dpcm;
 
 	if (!dai) {
-		dev_err(component->dev, "%s: No DAI found with name %s\n", __func__,
+		dev_err(dev, "%s: No DAI found with name %s\n", __func__,
 			rtd->dai_link->name);
 		return -EINVAL;
 	}
 
 	private = dai->private;
 	if (!private) {
-		dev_err(component->dev, "%s: No private data found for DAI %s\n", __func__,
+		dev_err(dev, "%s: No private data found for DAI %s\n", __func__,
 			rtd->dai_link->name);
 		return -EINVAL;
 	}
@@ -246,7 +250,7 @@ static int sof_ipc3_pcm_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 		snd_mask_set_format(fmt, SNDRV_PCM_FORMAT_S32_LE);
 		break;
 	default:
-		dev_err(component->dev, "No available DAI format!\n");
+		dev_err(dev, "No available DAI format!\n");
 		return -EINVAL;
 	}
 
@@ -261,15 +265,15 @@ static int sof_ipc3_pcm_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 		channels->min = private->dai_config[dai->current_config].ssp.tdm_slots;
 		channels->max = private->dai_config[dai->current_config].ssp.tdm_slots;
 
-		dev_dbg(component->dev, "rate_min: %d rate_max: %d\n", rate->min, rate->max);
-		dev_dbg(component->dev, "channels_min: %d channels_max: %d\n",
+		dev_dbg(dev, "rate_min: %d rate_max: %d\n", rate->min, rate->max);
+		dev_dbg(dev, "channels_min: %d channels_max: %d\n",
 			channels->min, channels->max);
 
 		break;
 	case SOF_DAI_INTEL_DMIC:
 		/* DMIC only supports 16 or 32 bit formats */
 		if (private->comp_dai->config.frame_fmt == SOF_IPC_FRAME_S24_4LE) {
-			dev_err(component->dev, "Invalid fmt %d for DAI type %d\n",
+			dev_err(dev, "Invalid fmt %d for DAI type %d\n",
 				private->comp_dai->config.frame_fmt,
 				private->dai_config->type);
 		}
@@ -300,9 +304,8 @@ static int sof_ipc3_pcm_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 		channels->min = private->dai_config->esai.tdm_slots;
 		channels->max = private->dai_config->esai.tdm_slots;
 
-		dev_dbg(component->dev, "rate_min: %d rate_max: %d\n", rate->min, rate->max);
-		dev_dbg(component->dev, "channels_min: %d channels_max: %d\n",
-			channels->min, channels->max);
+		dev_dbg(dev, "rate_min: %d rate_max: %d\n", rate->min, rate->max);
+		dev_dbg(dev, "channels_min: %d channels_max: %d\n", channels->min, channels->max);
 		break;
 	case SOF_DAI_MEDIATEK_AFE:
 		rate->min = private->dai_config->afe.rate;
@@ -323,13 +326,12 @@ static int sof_ipc3_pcm_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 			snd_mask_set_format(fmt, SNDRV_PCM_FORMAT_S32_LE);
 			break;
 		default:
-			dev_err(component->dev, "Not available format!\n");
+			dev_err(dev, "Not available format!\n");
 			return -EINVAL;
 		}
 
-		dev_dbg(component->dev, "rate_min: %d rate_max: %d\n", rate->min, rate->max);
-		dev_dbg(component->dev, "channels_min: %d channels_max: %d\n",
-			channels->min, channels->max);
+		dev_dbg(dev, "rate_min: %d rate_max: %d\n", rate->min, rate->max);
+		dev_dbg(dev, "channels_min: %d channels_max: %d\n", channels->min, channels->max);
 		break;
 	case SOF_DAI_IMX_SAI:
 		rate->min = private->dai_config->sai.fsync_rate;
@@ -337,9 +339,8 @@ static int sof_ipc3_pcm_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 		channels->min = private->dai_config->sai.tdm_slots;
 		channels->max = private->dai_config->sai.tdm_slots;
 
-		dev_dbg(component->dev, "rate_min: %d rate_max: %d\n", rate->min, rate->max);
-		dev_dbg(component->dev, "channels_min: %d channels_max: %d\n",
-			channels->min, channels->max);
+		dev_dbg(dev, "rate_min: %d rate_max: %d\n", rate->min, rate->max);
+		dev_dbg(dev, "channels_min: %d channels_max: %d\n", channels->min, channels->max);
 		break;
 	case SOF_DAI_AMD_BT:
 		rate->min = private->dai_config->acpbt.fsync_rate;
@@ -347,10 +348,8 @@ static int sof_ipc3_pcm_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 		channels->min = private->dai_config->acpbt.tdm_slots;
 		channels->max = private->dai_config->acpbt.tdm_slots;
 
-		dev_dbg(component->dev,
-			"AMD_BT rate_min: %d rate_max: %d\n", rate->min, rate->max);
-		dev_dbg(component->dev, "AMD_BT channels_min: %d channels_max: %d\n",
-			channels->min, channels->max);
+		dev_dbg(dev, "AMD_BT rate_min: %d rate_max: %d\n", rate->min, rate->max);
+		dev_dbg(dev, "AMD_BT channels_min: %d channels_max: %d\n", channels->min, channels->max);
 		break;
 	case SOF_DAI_AMD_SP:
 	case SOF_DAI_AMD_SP_VIRTUAL:
@@ -359,10 +358,8 @@ static int sof_ipc3_pcm_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 		channels->min = private->dai_config->acpsp.tdm_slots;
 		channels->max = private->dai_config->acpsp.tdm_slots;
 
-		dev_dbg(component->dev,
-			"AMD_SP rate_min: %d rate_max: %d\n", rate->min, rate->max);
-		dev_dbg(component->dev, "AMD_SP channels_min: %d channels_max: %d\n",
-			channels->min, channels->max);
+		dev_dbg(dev, "AMD_SP rate_min: %d rate_max: %d\n", rate->min, rate->max);
+		dev_dbg(dev, "AMD_SP channels_min: %d channels_max: %d\n", channels->min, channels->max);
 		break;
 	case SOF_DAI_AMD_HS:
 	case SOF_DAI_AMD_HS_VIRTUAL:
@@ -371,8 +368,7 @@ static int sof_ipc3_pcm_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 		channels->min = private->dai_config->acphs.tdm_slots;
 		channels->max = private->dai_config->acphs.tdm_slots;
 
-		dev_dbg(component->dev,
-			"AMD_HS channel_max: %d rate_max: %d\n", channels->max, rate->max);
+		dev_dbg(dev, "AMD_HS channel_max: %d rate_max: %d\n", channels->max, rate->max);
 		break;
 	case SOF_DAI_AMD_DMIC:
 		rate->min = private->dai_config->acpdmic.pdm_rate;
@@ -380,10 +376,8 @@ static int sof_ipc3_pcm_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 		channels->min = private->dai_config->acpdmic.pdm_ch;
 		channels->max = private->dai_config->acpdmic.pdm_ch;
 
-		dev_dbg(component->dev,
-			"AMD_DMIC rate_min: %d rate_max: %d\n", rate->min, rate->max);
-		dev_dbg(component->dev, "AMD_DMIC channels_min: %d channels_max: %d\n",
-			channels->min, channels->max);
+		dev_dbg(dev, "AMD_DMIC rate_min: %d rate_max: %d\n", rate->min, rate->max);
+		dev_dbg(dev, "AMD_DMIC channels_min: %d channels_max: %d\n", channels->min, channels->max);
 		break;
 	case SOF_DAI_IMX_MICFIL:
 		rate->min = private->dai_config->micfil.pdm_rate;
@@ -391,10 +385,8 @@ static int sof_ipc3_pcm_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 		channels->min = private->dai_config->micfil.pdm_ch;
 		channels->max = private->dai_config->micfil.pdm_ch;
 
-		dev_dbg(component->dev,
-			"MICFIL PDM rate_min: %d rate_max: %d\n", rate->min, rate->max);
-		dev_dbg(component->dev, "MICFIL PDM channels_min: %d channels_max: %d\n",
-			channels->min, channels->max);
+		dev_dbg(dev, "MICFIL PDM rate_min: %d rate_max: %d\n", rate->min, rate->max);
+		dev_dbg(dev, "MICFIL PDM channels_min: %d channels_max: %d\n", channels->min, channels->max);
 		break;
 	case SOF_DAI_AMD_SDW:
 		/* change the default trigger sequence as per HW implementation */
@@ -416,10 +408,8 @@ static int sof_ipc3_pcm_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 		channels->min = private->dai_config->acp_sdw.channels;
 		channels->max = private->dai_config->acp_sdw.channels;
 
-		dev_dbg(component->dev,
-			"AMD_SDW rate_min: %d rate_max: %d\n", rate->min, rate->max);
-		dev_dbg(component->dev, "AMD_SDW channels_min: %d channels_max: %d\n",
-			channels->min, channels->max);
+		dev_dbg(dev, "AMD_SDW rate_min: %d rate_max: %d\n", rate->min, rate->max);
+		dev_dbg(dev, "AMD_SDW channels_min: %d channels_max: %d\n", channels->min, channels->max);
 		break;
 	case SOF_DAI_AMD_I2S:
 		rate->min = private->dai_config->acp_i2s.fsync_rate;
@@ -428,7 +418,7 @@ static int sof_ipc3_pcm_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 		channels->max = private->dai_config->acp_i2s.tdm_slots;
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI type %d\n", private->dai_config->type);
+		dev_err(dev, "Invalid DAI type %d\n", private->dai_config->type);
 		break;
 	}
 

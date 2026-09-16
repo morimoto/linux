@@ -1617,12 +1617,14 @@ static int wcd9335_set_mix_interpolator_rate(struct snd_soc_dai *dai,
 					     int rate_val,
 					     u32 rate)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wcd9335_codec *wcd = dev_get_drvdata(component->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	struct wcd9335_slim_ch *ch;
+	int dai_id = snd_soc_dai_id(dai);
 	int val, j;
 
-	list_for_each_entry(ch, &wcd->dai[dai->id].slim_ch_list, list) {
+	list_for_each_entry(ch, &wcd->dai[dai_id].slim_ch_list, list) {
 		for (j = 0; j < WCD9335_NUM_INTERPOLATORS; j++) {
 			val = snd_soc_component_read(component,
 					WCD9335_CDC_RX_INP_MUX_RX_INT_CFG1(j)) &
@@ -1643,13 +1645,15 @@ static int wcd9335_set_prim_interpolator_rate(struct snd_soc_dai *dai,
 					      u8 rate_val,
 					      u32 rate)
 {
-	struct snd_soc_component *comp = dai->component;
-	struct wcd9335_codec *wcd = dev_get_drvdata(comp->dev);
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	struct wcd9335_slim_ch *ch;
+	int dai_id = snd_soc_dai_id(dai);
 	u8 cfg0, cfg1, inp0_sel, inp1_sel, inp2_sel;
 	int inp, j;
 
-	list_for_each_entry(ch, &wcd->dai[dai->id].slim_ch_list, list) {
+	list_for_each_entry(ch, &wcd->dai[dai_id].slim_ch_list, list) {
 		inp = ch->shift + INTn_1_MIX_INP_SEL_RX0;
 		/*
 		 * Loop through all interpolator MUX inputs and find out
@@ -1794,18 +1798,20 @@ err:
 static int wcd9335_set_decimator_rate(struct snd_soc_dai *dai,
 				      u8 rate_val, u32 rate)
 {
-	struct snd_soc_component *comp = dai->component;
-	struct wcd9335_codec *wcd = snd_soc_component_get_drvdata(comp);
+	struct snd_soc_component *comp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	u8 shift = 0, shift_val = 0, tx_mux_sel;
 	struct wcd9335_slim_ch *ch;
+	int dai_id = snd_soc_dai_id(dai);
 	int tx_port, tx_port_reg;
 	int decimator = -1;
 
-	list_for_each_entry(ch, &wcd->dai[dai->id].slim_ch_list, list) {
+	list_for_each_entry(ch, &wcd->dai[dai_id].slim_ch_list, list) {
 		tx_port = ch->port;
 		if ((tx_port == 12) || (tx_port >= 14)) {
 			dev_err(wcd->dev, "Invalid SLIM TX%u port DAI ID:%d\n",
-				tx_port, dai->id);
+				tx_port, dai_id);
 			return -EINVAL;
 		}
 		/* Find the SB TX MUX input - which decimator is connected */
@@ -1872,10 +1878,11 @@ static int wcd9335_hw_params(struct snd_pcm_substream *substream,
 			   struct snd_pcm_hw_params *params,
 			   struct snd_soc_dai *dai)
 {
-	struct wcd9335_codec *wcd;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int ret, tx_fs_rate = 0;
-
-	wcd = snd_soc_component_get_drvdata(dai->component);
 
 	switch (substream->stream) {
 	case SNDRV_PCM_STREAM_PLAYBACK:
@@ -1887,7 +1894,7 @@ static int wcd9335_hw_params(struct snd_pcm_substream *substream,
 		}
 		switch (params_width(params)) {
 		case 16 ... 24:
-			wcd->dai[dai->id].sconfig.bps = params_width(params);
+			wcd->dai[dai_id].sconfig.bps = params_width(params);
 			break;
 		default:
 			dev_err(wcd->dev, "%s: Invalid format 0x%x\n",
@@ -1934,7 +1941,7 @@ static int wcd9335_hw_params(struct snd_pcm_substream *substream,
 		}
 		switch (params_width(params)) {
 		case 16 ... 32:
-			wcd->dai[dai->id].sconfig.bps = params_width(params);
+			wcd->dai[dai_id].sconfig.bps = params_width(params);
 			break;
 		default:
 			dev_err(wcd->dev, "%s: Invalid format 0x%x\n",
@@ -1948,8 +1955,8 @@ static int wcd9335_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	wcd->dai[dai->id].sconfig.rate = params_rate(params);
-	wcd9335_slim_set_hw_params(wcd, &wcd->dai[dai->id], substream->stream);
+	wcd->dai[dai_id].sconfig.rate = params_rate(params);
+	wcd9335_slim_set_hw_params(wcd, &wcd->dai[dai_id], substream->stream);
 
 	return 0;
 }
@@ -1957,13 +1964,14 @@ static int wcd9335_hw_params(struct snd_pcm_substream *substream,
 static int wcd9335_trigger(struct snd_pcm_substream *substream, int cmd,
 			   struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct wcd_slim_codec_dai_data *dai_data;
-	struct wcd9335_codec *wcd;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	struct slim_stream_config *cfg;
+	int dai_id = snd_soc_dai_id(dai);
 
-	wcd = snd_soc_component_get_drvdata(dai->component);
-
-	dai_data = &wcd->dai[dai->id];
+	dai_data = &wcd->dai[dai_id];
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -1992,10 +2000,10 @@ static int wcd9335_set_channel_map(struct snd_soc_dai *dai,
 				   unsigned int rx_num,
 				   const unsigned int *rx_slot)
 {
-	struct wcd9335_codec *wcd;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	int i;
-
-	wcd = snd_soc_component_get_drvdata(dai->component);
 
 	if (!tx_slot || !rx_slot) {
 		dev_err(wcd->dev, "Invalid tx_slot=%p, rx_slot=%p\n",
@@ -2022,13 +2030,14 @@ static int wcd9335_get_channel_map(const struct snd_soc_dai *dai,
 				   unsigned int *tx_num, unsigned int *tx_slot,
 				   unsigned int *rx_num, unsigned int *rx_slot)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct wcd9335_slim_ch *ch;
-	struct wcd9335_codec *wcd;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int i = 0;
 
-	wcd = snd_soc_component_get_drvdata(dai->component);
-
-	switch (dai->id) {
+	switch (dai_id) {
 	case AIF1_PB:
 	case AIF2_PB:
 	case AIF3_PB:
@@ -2039,7 +2048,7 @@ static int wcd9335_get_channel_map(const struct snd_soc_dai *dai,
 			return -EINVAL;
 		}
 
-		list_for_each_entry(ch, &wcd->dai[dai->id].slim_ch_list, list)
+		list_for_each_entry(ch, &wcd->dai[dai_id].slim_ch_list, list)
 			rx_slot[i++] = ch->ch_num;
 
 		*rx_num = i;
@@ -2052,13 +2061,13 @@ static int wcd9335_get_channel_map(const struct snd_soc_dai *dai,
 				tx_slot, tx_num);
 			return -EINVAL;
 		}
-		list_for_each_entry(ch, &wcd->dai[dai->id].slim_ch_list, list)
+		list_for_each_entry(ch, &wcd->dai[dai_id].slim_ch_list, list)
 			tx_slot[i++] = ch->ch_num;
 
 		*tx_num = i;
 		break;
 	default:
-		dev_err(wcd->dev, "Invalid DAI ID %x\n", dai->id);
+		dev_err(wcd->dev, "Invalid DAI ID %x\n", dai_id);
 		break;
 	}
 
@@ -2182,8 +2191,9 @@ static int wcd9335_get_compander(struct snd_kcontrol *kc,
 {
 
 	struct snd_soc_component *component = snd_kcontrol_chip(kc);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int comp = ((struct soc_mixer_control *)kc->private_value)->shift;
-	struct wcd9335_codec *wcd = dev_get_drvdata(component->dev);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wcd->comp_enabled[comp];
 	return 0;
@@ -2193,7 +2203,8 @@ static int wcd9335_set_compander(struct snd_kcontrol *kc,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kc);
-	struct wcd9335_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	int comp = ((struct soc_mixer_control *) kc->private_value)->shift;
 	int value = ucontrol->value.integer.value[0];
 	int sel;
@@ -2232,7 +2243,8 @@ static int wcd9335_rx_hph_mode_get(struct snd_kcontrol *kc,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kc);
-	struct wcd9335_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 
 	ucontrol->value.enumerated.item[0] = wcd->hph_mode;
 
@@ -2243,7 +2255,8 @@ static int wcd9335_rx_hph_mode_put(struct snd_kcontrol *kc,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kc);
-	struct wcd9335_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	u32 mode_val;
 
 	mode_val = ucontrol->value.enumerated.item[0];
@@ -2501,7 +2514,8 @@ static const struct snd_soc_dapm_route wcd9335_audio_map[] = {
 static int wcd9335_micbias_control(struct snd_soc_component *component,
 				   int micb_num, int req, bool is_dapm)
 {
-	struct wcd9335_codec *wcd = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	int micb_index = micb_num - 1;
 	u16 micb_reg;
 
@@ -2525,8 +2539,7 @@ static int wcd9335_micbias_control(struct snd_soc_component *component,
 		micb_reg = WCD9335_ANA_MICB4;
 		break;
 	default:
-		dev_err(component->dev, "%s: Invalid micbias number: %d\n",
-			__func__, micb_num);
+		dev_err(dev, "%s: Invalid micbias number: %d\n", __func__, micb_num);
 		return -EINVAL;
 	}
 
@@ -2615,6 +2628,7 @@ static int wcd9335_codec_enable_micbias(struct snd_soc_dapm_widget *w,
 static void wcd9335_codec_set_tx_hold(struct snd_soc_component *comp,
 				      u16 amic_reg, bool set)
 {
+	struct device *dev = snd_soc_component_to_dev(comp);
 	u8 mask = 0x20;
 	u8 val;
 
@@ -2641,8 +2655,7 @@ static void wcd9335_codec_set_tx_hold(struct snd_soc_component *comp,
 						val);
 		break;
 	default:
-		dev_err(comp->dev, "%s: invalid amic: %d\n",
-			__func__, amic_reg);
+		dev_err(dev, "%s: invalid amic: %d\n", __func__, amic_reg);
 		break;
 	}
 }
@@ -2692,6 +2705,7 @@ static int wcd9335_codec_find_amic_input(struct snd_soc_component *comp,
 static u16 wcd9335_codec_get_amic_pwlvl_reg(struct snd_soc_component *comp,
 					    int amic)
 {
+	struct device *dev = snd_soc_component_to_dev(comp);
 	u16 pwr_level_reg = 0;
 
 	switch (amic) {
@@ -2710,7 +2724,7 @@ static u16 wcd9335_codec_get_amic_pwlvl_reg(struct snd_soc_component *comp,
 		pwr_level_reg = WCD9335_ANA_AMIC5;
 		break;
 	default:
-		dev_err(comp->dev, "invalid amic: %d\n", amic);
+		dev_err(dev, "invalid amic: %d\n", amic);
 		break;
 	}
 
@@ -2721,6 +2735,7 @@ static int wcd9335_codec_enable_dec(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kc, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(comp);
 	unsigned int decimator;
 	char *dec_adc_mux_name = NULL;
 	char *widget_name;
@@ -2737,23 +2752,20 @@ static int wcd9335_codec_enable_dec(struct snd_soc_dapm_widget *w,
 	widget_name = wname;
 	dec_adc_mux_name = strsep(&widget_name, " ");
 	if (!dec_adc_mux_name) {
-		dev_err(comp->dev, "%s: Invalid decimator = %s\n",
-			__func__, w->name);
+		dev_err(dev, "%s: Invalid decimator = %s\n", __func__, w->name);
 		return -EINVAL;
 	}
 	dec_adc_mux_name = widget_name;
 
 	dec = strpbrk(dec_adc_mux_name, "012345678");
 	if (!dec) {
-		dev_err(comp->dev, "%s: decimator index not found\n",
-			__func__);
+		dev_err(dev, "%s: decimator index not found\n", __func__);
 		return  -EINVAL;
 	}
 
 	ret = kstrtouint(dec, 10, &decimator);
 	if (ret < 0) {
-		dev_err(comp->dev, "%s: Invalid decimator = %s\n",
-			__func__, wname);
+		dev_err(dev, "%s: Invalid decimator = %s\n", __func__, wname);
 		return -EINVAL;
 	}
 
@@ -2862,7 +2874,8 @@ static int wcd9335_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kc, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd9335_codec *wcd = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	u8  dmic_clk_en = 0x01;
 	u16 dmic_clk_reg;
 	s32 *dmic_clk_cnt;
@@ -2873,14 +2886,13 @@ static int wcd9335_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 
 	wname = strpbrk(w->name, "012345");
 	if (!wname) {
-		dev_err(comp->dev, "%s: widget not found\n", __func__);
+		dev_err(dev, "%s: widget not found\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = kstrtouint(wname, 10, &dmic);
 	if (ret < 0) {
-		dev_err(comp->dev, "%s: Invalid DMIC line on the codec\n",
-			__func__);
+		dev_err(dev, "%s: Invalid DMIC line on the codec\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2901,8 +2913,7 @@ static int wcd9335_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 		dmic_clk_reg = WCD9335_CPE_SS_DMIC2_CTL;
 		break;
 	default:
-		dev_err(comp->dev, "%s: Invalid DMIC Selection\n",
-			__func__);
+		dev_err(dev, "%s: Invalid DMIC Selection\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2941,7 +2952,8 @@ static void wcd9335_codec_enable_int_port(struct wcd_slim_codec_dai_data *dai,
 	int port_num = 0;
 	unsigned short reg = 0;
 	unsigned int val = 0;
-	struct wcd9335_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	struct wcd9335_slim_ch *ch;
 
 	list_for_each_entry(ch, &dai->slim_ch_list, list) {
@@ -2965,7 +2977,8 @@ static int wcd9335_codec_enable_slim(struct snd_soc_dapm_widget *w,
 				       int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd9335_codec *wcd = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	struct wcd_slim_codec_dai_data *dai = &wcd->dai[w->shift];
 
 	switch (event) {
@@ -2985,6 +2998,7 @@ static int wcd9335_codec_enable_mix_path(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kc, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(comp);
 	u16 gain_reg;
 	int val = 0;
 
@@ -3017,8 +3031,7 @@ static int wcd9335_codec_enable_mix_path(struct snd_soc_dapm_widget *w,
 		gain_reg = WCD9335_CDC_RX8_RX_VOL_MIX_CTL;
 		break;
 	default:
-		dev_err(comp->dev, "%s: No gain register avail for %s\n",
-			__func__, w->name);
+		dev_err(dev, "%s: No gain register avail for %s\n", __func__, w->name);
 		return 0;
 	}
 
@@ -3133,7 +3146,8 @@ static int wcd9335_codec_enable_prim_interpolator(
 						struct snd_soc_component *comp,
 						u16 reg, int event)
 {
-	struct wcd9335_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	u16 ind = 0;
 	int prim_int_reg = wcd9335_interp_get_primary_reg(reg, &ind);
 
@@ -3180,7 +3194,8 @@ static int wcd9335_codec_enable_prim_interpolator(
 static int wcd9335_config_compander(struct snd_soc_component *component,
 				    int interp_n, int event)
 {
-	struct wcd9335_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	int comp;
 	u16 comp_ctl0_reg, rx_path_cfg0_reg;
 
@@ -3242,6 +3257,7 @@ static int wcd9335_codec_enable_interpolator(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kc, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(comp);
 	u16 gain_reg;
 	u16 reg;
 	int val;
@@ -3274,8 +3290,7 @@ static int wcd9335_codec_enable_interpolator(struct snd_soc_dapm_widget *w,
 		reg = WCD9335_CDC_RX8_RX_PATH_CTL;
 		gain_reg = WCD9335_CDC_RX8_RX_VOL_CTL;
 	} else {
-		dev_err(comp->dev, "%s: Interpolator reg not found\n",
-			__func__);
+		dev_err(dev, "%s: Interpolator reg not found\n", __func__);
 		return -EINVAL;
 	}
 
@@ -3301,7 +3316,8 @@ static int wcd9335_codec_enable_interpolator(struct snd_soc_dapm_widget *w,
 static void wcd9335_codec_hph_mode_gain_opt(struct snd_soc_component *component,
 					    u8 gain)
 {
-	struct wcd9335_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	u8 hph_l_en, hph_r_en;
 	u8 l_val, r_val;
 	u8 hph_pa_status;
@@ -3476,7 +3492,8 @@ static int wcd9335_codec_hphl_dac_event(struct snd_soc_dapm_widget *w,
 					int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd9335_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	int hph_mode = wcd->hph_mode;
 	u8 dem_inp;
 
@@ -3487,7 +3504,7 @@ static int wcd9335_codec_hphl_dac_event(struct snd_soc_dapm_widget *w,
 				WCD9335_CDC_RX1_RX_PATH_SEC0) & 0x03;
 		if (((hph_mode == CLS_H_HIFI) || (hph_mode == CLS_H_LOHIFI) ||
 				(hph_mode == CLS_H_LP)) && (dem_inp != 0x01)) {
-			dev_err(comp->dev, "Incorrect DEM Input\n");
+			dev_err(dev, "Incorrect DEM Input\n");
 			return -EINVAL;
 		}
 		wcd_clsh_ctrl_set_state(wcd->clsh_ctrl, WCD_CLSH_EVENT_PRE_DAC,
@@ -3525,7 +3542,8 @@ static int wcd9335_codec_lineout_dac_event(struct snd_soc_dapm_widget *w,
 					   struct snd_kcontrol *kc, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd9335_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -3545,7 +3563,8 @@ static int wcd9335_codec_ear_dac_event(struct snd_soc_dapm_widget *w,
 				       struct snd_kcontrol *kc, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd9335_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -3627,7 +3646,8 @@ static int wcd9335_codec_hphr_dac_event(struct snd_soc_dapm_widget *w,
 				      int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd9335_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	int hph_mode = wcd->hph_mode;
 	u8 dem_inp;
 
@@ -3640,8 +3660,7 @@ static int wcd9335_codec_hphr_dac_event(struct snd_soc_dapm_widget *w,
 				WCD9335_CDC_RX_PATH_DEM_INP_SEL_MASK;
 		if (((hph_mode == CLS_H_HIFI) || (hph_mode == CLS_H_LOHIFI) ||
 		     (hph_mode == CLS_H_LP)) && (dem_inp != 0x01)) {
-			dev_err(comp->dev, "DEM Input not set correctly, hph_mode: %d\n",
-				hph_mode);
+			dev_err(dev, "DEM Input not set correctly, hph_mode: %d\n", hph_mode);
 			return -EINVAL;
 		}
 
@@ -3676,7 +3695,8 @@ static int wcd9335_codec_enable_hphl_pa(struct snd_soc_dapm_widget *w,
 				      int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd9335_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	int hph_mode = wcd->hph_mode;
 
 	switch (event) {
@@ -3724,6 +3744,7 @@ static int wcd9335_codec_enable_lineout_pa(struct snd_soc_dapm_widget *w,
 					 int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(comp);
 	int vol_reg = 0, mix_vol_reg = 0;
 
 	if (w->reg == WCD9335_ANA_LO_1_2) {
@@ -3743,7 +3764,7 @@ static int wcd9335_codec_enable_lineout_pa(struct snd_soc_dapm_widget *w,
 			mix_vol_reg = WCD9335_CDC_RX6_RX_PATH_MIX_CTL;
 		}
 	} else {
-		dev_err(comp->dev, "Error enabling lineout PA\n");
+		dev_err(dev, "Error enabling lineout PA\n");
 		return -EINVAL;
 	}
 
@@ -3795,7 +3816,8 @@ static int wcd9335_codec_enable_rx_bias(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kc, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd9335_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -3825,7 +3847,8 @@ static int wcd9335_codec_enable_hphr_pa(struct snd_soc_dapm_widget *w,
 					struct snd_kcontrol *kc, int event)
 {
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(w->dapm);
-	struct wcd9335_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	int hph_mode = wcd->hph_mode;
 
 	switch (event) {
@@ -4237,7 +4260,8 @@ err:
 static int _wcd9335_codec_enable_mclk(struct snd_soc_component *component,
 				      int enable)
 {
-	struct wcd9335_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	int ret;
 
 	if (enable) {
@@ -4769,7 +4793,8 @@ static int wcd9335_enable_efuse_sensing(struct snd_soc_component *comp)
 
 static void wcd9335_codec_init(struct snd_soc_component *component)
 {
-	struct wcd9335_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	int i;
 
 	/* ungate MCLK and set clk rate */
@@ -4791,11 +4816,12 @@ static void wcd9335_codec_init(struct snd_soc_component *component)
 
 static int wcd9335_codec_probe(struct snd_soc_component *component)
 {
-	struct wcd9335_codec *wcd = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 	int ret;
 	int i;
 
-	snd_soc_component_init_regmap(component, wcd->regmap);
+	snd_soc_component_regmap_init(component, wcd->regmap);
 	/* Class-H Init*/
 	wcd->clsh_ctrl = wcd_clsh_ctrl_alloc(component, WCD9335);
 	if (IS_ERR(wcd->clsh_ctrl))
@@ -4823,7 +4849,8 @@ free_clsh_ctrl:
 
 static void wcd9335_codec_remove(struct snd_soc_component *comp)
 {
-	struct wcd9335_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 
 	wcd_clsh_ctrl_free(wcd->clsh_ctrl);
 	wcd9335_teardown_irqs(wcd);
@@ -4833,7 +4860,8 @@ static int wcd9335_codec_set_sysclk(struct snd_soc_component *comp,
 				    int clk_id, int source,
 				    unsigned int freq, int dir)
 {
-	struct wcd9335_codec *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd9335_codec *wcd = dev_get_drvdata(dev);
 
 	wcd->mclk_rate = freq;
 
@@ -4873,7 +4901,7 @@ static int wcd9335_probe(struct wcd9335_codec *wcd)
 
 	wcd->sido_voltage = SIDO_VOLTAGE_NOMINAL_MV;
 
-	return devm_snd_soc_register_component(dev, &wcd9335_component_drv,
+	return devm_snd_soc_component_register(dev, &wcd9335_component_drv,
 					       wcd9335_slim_dais,
 					       ARRAY_SIZE(wcd9335_slim_dais));
 }

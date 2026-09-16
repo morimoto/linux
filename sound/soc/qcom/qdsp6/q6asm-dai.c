@@ -208,10 +208,10 @@ static int q6asm_dai_prepare(struct snd_soc_component *component,
 	struct snd_soc_pcm_runtime *soc_prtd = snd_soc_substream_to_rtd(substream);
 	struct q6asm_dai_rtd *prtd = runtime->private_data;
 	struct q6asm_dai_data *pdata;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret, i;
 
-	pdata = snd_soc_component_get_drvdata(component);
+	pdata = dev_get_drvdata(dev);
 	if (!pdata)
 		return -EINVAL;
 
@@ -311,6 +311,7 @@ open_err:
 
 static int q6asm_dai_ack(struct snd_soc_component *component, struct snd_pcm_substream *substream)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct q6asm_dai_rtd *prtd = runtime->private_data;
 	int i, ret = 0, avail_periods;
@@ -322,7 +323,7 @@ static int q6asm_dai_ack(struct snd_soc_component *component, struct snd_pcm_sub
 					   prtd->pcm_count, 0, 0, 0);
 
 			if (ret < 0) {
-				dev_err(component->dev, "Error queuing playback buffer %d\n", ret);
+				dev_err(dev, "Error queuing playback buffer %d\n", ret);
 				return ret;
 			}
 			prtd->queue_ptr += runtime->period_size;
@@ -369,15 +370,16 @@ static int q6asm_dai_open(struct snd_soc_component *component,
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *soc_prtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_prtd, 0);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	struct q6asm_dai_rtd *prtd;
 	struct q6asm_dai_data *pdata;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 	int stream_id;
 
-	stream_id = cpu_dai->driver->id;
+	stream_id = dai_driver->id;
 
-	pdata = snd_soc_component_get_drvdata(component);
+	pdata = dev_get_drvdata(dev);
 	if (!pdata) {
 		dev_err(dev, "Drv data not found ..\n");
 		return -EINVAL;
@@ -612,13 +614,14 @@ static int q6asm_dai_compr_open(struct snd_soc_component *component,
 	struct snd_soc_pcm_runtime *rtd = stream->private_data;
 	struct snd_compr_runtime *runtime = stream->runtime;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	struct q6asm_dai_data *pdata;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct q6asm_dai_rtd *prtd;
 	int stream_id, size, ret;
 
-	stream_id = cpu_dai->driver->id;
-	pdata = snd_soc_component_get_drvdata(component);
+	stream_id = dai_driver->id;
+	pdata = dev_get_drvdata(dev);
 	if (!pdata) {
 		dev_err(dev, "Drv data not found ..\n");
 		return -EINVAL;
@@ -711,7 +714,7 @@ static int __q6asm_dai_compr_set_codec_params(struct snd_soc_component *componen
 	struct q6asm_alac_cfg alac_cfg;
 	struct q6asm_ape_cfg ape_cfg;
 	unsigned int wma_v9 = 0;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 	union snd_codec_options *codec_options;
 	struct snd_dec_flac *flac;
@@ -886,10 +889,10 @@ static int q6asm_dai_compr_set_params(struct snd_soc_component *component,
 	struct snd_soc_pcm_runtime *rtd = stream->private_data;
 	int dir = stream->direction;
 	struct q6asm_dai_data *pdata;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
-	pdata = snd_soc_component_get_drvdata(component);
+	pdata = dev_get_drvdata(dev);
 	if (!pdata)
 		return -EINVAL;
 
@@ -957,6 +960,7 @@ static int q6asm_dai_compr_set_metadata(struct snd_soc_component *component,
 					struct snd_compr_stream *stream,
 					struct snd_compr_metadata *metadata)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_compr_runtime *runtime = stream->runtime;
 	struct q6asm_dai_rtd *prtd = runtime->private_data;
 	int ret = 0;
@@ -975,14 +979,14 @@ static int q6asm_dai_compr_set_metadata(struct snd_soc_component *component,
 					       prtd->bits_per_sample,
 				       true);
 			if (ret < 0) {
-				dev_err(component->dev, "q6asm_open_write failed\n");
+				dev_err(dev, "q6asm_open_write failed\n");
 				return ret;
 			}
 			ret = __q6asm_dai_compr_set_codec_params(component, stream,
 								 &prtd->codec,
 								 prtd->next_track_stream_id);
 			if (ret < 0) {
-				dev_err(component->dev, "q6asm_open_write failed\n");
+				dev_err(dev, "q6asm_open_write failed\n");
 				return ret;
 			}
 
@@ -1134,7 +1138,7 @@ static int q6asm_dai_compr_mmap(struct snd_soc_component *component,
 {
 	struct snd_compr_runtime *runtime = stream->runtime;
 	struct q6asm_dai_rtd *prtd = runtime->private_data;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	return dma_mmap_coherent(dev, vma,
 			prtd->dma_buffer.area, prtd->dma_buffer.addr,
@@ -1191,11 +1195,11 @@ static const struct snd_compress_ops q6asm_dai_compress_ops = {
 static int q6asm_dai_pcm_new(struct snd_soc_component *component,
 			     struct snd_soc_pcm_runtime *rtd)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_pcm *pcm = rtd->pcm;
 	size_t size = q6asm_dai_hardware_playback.buffer_bytes_max;
 
-	return snd_pcm_set_fixed_buffer_all(pcm, SNDRV_DMA_TYPE_DEV,
-					    component->dev, size);
+	return snd_pcm_set_fixed_buffer_all(pcm, SNDRV_DMA_TYPE_DEV, dev, size);
 }
 
 static const struct snd_soc_dapm_widget q6asm_dapm_widgets[] = {
@@ -1320,7 +1324,7 @@ static int q6asm_dai_probe(struct platform_device *pdev)
 	if (rc)
 		return rc;
 
-	return devm_snd_soc_register_component(dev, &q6asm_fe_dai_component,
+	return devm_snd_soc_component_register(dev, &q6asm_fe_dai_component,
 					       pdata->dais, pdata->num_dais);
 }
 

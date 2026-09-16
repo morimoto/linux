@@ -50,7 +50,7 @@ static int tas2563_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, tas2563_spk_kcontrols,
+	ret = snd_soc_card_add_controls(card, tas2563_spk_kcontrols,
 					ARRAY_SIZE(tas2563_spk_kcontrols));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add controls, ret %d\n", ret);

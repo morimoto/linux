@@ -66,7 +66,7 @@ int lpc3xxx_pcm_register(struct platform_device *pdev)
 		return ret;
 	}
 
-	return devm_snd_soc_register_component(&pdev->dev, &lpc3xxx_soc_platform_driver,
+	return devm_snd_soc_component_register(&pdev->dev, &lpc3xxx_soc_platform_driver,
 					       NULL, 0);
 }
 EXPORT_SYMBOL(lpc3xxx_pcm_register);

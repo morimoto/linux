@@ -136,16 +136,17 @@ EXPORT_SYMBOL_GPL(snd_soc_jack_get_type);
 int snd_soc_jack_add_pins(struct snd_soc_jack *jack, int count,
 			  struct snd_soc_jack_pin *pins)
 {
+	struct snd_soc_card *card = jack->card;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int i;
 
 	for (i = 0; i < count; i++) {
 		if (!pins[i].pin) {
-			dev_err(jack->card->dev, "ASoC: No name for pin %d\n",
-				i);
+			dev_err(dev, "ASoC: No name for pin %d\n", i);
 			return -EINVAL;
 		}
 		if (!pins[i].mask) {
-			dev_err(jack->card->dev, "ASoC: No mask for pin %d"
+			dev_err(dev, "ASoC: No mask for pin %d"
 				" (%s)\n", i, pins[i].pin);
 			return -EINVAL;
 		}
@@ -232,7 +233,7 @@ static void snd_soc_jack_gpio_detect(struct snd_soc_jack_gpio *gpio)
 static irqreturn_t gpio_handler(int irq, void *data)
 {
 	struct snd_soc_jack_gpio *gpio = data;
-	struct device *dev = gpio->jack->card->dev;
+	struct device *dev = snd_soc_card_to_dev(gpio->jack->card);
 
 	trace_snd_soc_jack_irq(gpio->name);
 
@@ -312,6 +313,7 @@ int snd_soc_jack_add_gpios(struct snd_soc_jack *jack, int count,
 {
 	int i, ret;
 	struct jack_gpio_tbl *tbl;
+	struct device *dev = snd_soc_card_to_dev(gpios->jack->card);
 
 	tbl = devres_alloc(jack_devres_free_gpios, sizeof(*tbl), GFP_KERNEL);
 	if (!tbl)
@@ -322,8 +324,7 @@ int snd_soc_jack_add_gpios(struct snd_soc_jack *jack, int count,
 
 	for (i = 0; i < count; i++) {
 		if (!gpios[i].name) {
-			dev_err(jack->card->dev,
-				"ASoC: No name for gpio at index %d\n", i);
+			dev_err(dev, "ASoC: No name for gpio at index %d\n", i);
 			ret = -EINVAL;
 			goto undo;
 		}
@@ -344,7 +345,7 @@ int snd_soc_jack_add_gpios(struct snd_soc_jack *jack, int count,
 				goto undo;
 			}
 		} else {
-			dev_err(jack->card->dev, "ASoC: Invalid gpio at index %d\n", i);
+			dev_err(dev, "ASoC: Invalid gpio at index %d\n", i);
 		        ret = -EINVAL;
 		        goto undo;
 		}
@@ -365,7 +366,7 @@ got_gpio:
 		if (gpios[i].wake) {
 			ret = irq_set_irq_wake(gpiod_to_irq(gpios[i].desc), 1);
 			if (ret != 0)
-				dev_err(jack->card->dev,
+				dev_err(dev,
 					"ASoC: Failed to mark GPIO at index %d as wake source: %d\n",
 					i, ret);
 		}
@@ -385,7 +386,7 @@ got_gpio:
 				      msecs_to_jiffies(gpios[i].debounce_time));
 	}
 
-	devres_add(jack->card->dev, tbl);
+	devres_add(dev, tbl);
 	return 0;
 
 undo:
@@ -432,8 +433,10 @@ EXPORT_SYMBOL_GPL(snd_soc_jack_add_gpiods);
 void snd_soc_jack_free_gpios(struct snd_soc_jack *jack, int count,
 			struct snd_soc_jack_gpio *gpios)
 {
+	struct device *dev = snd_soc_card_to_dev(jack->card);
+
 	jack_free_gpios(jack, count, gpios);
-	devres_destroy(jack->card->dev, jack_devres_free_gpios, NULL, NULL);
+	devres_destroy(dev, jack_devres_free_gpios, NULL, NULL);
 }
 EXPORT_SYMBOL_GPL(snd_soc_jack_free_gpios);
 #endif	/* CONFIG_GPIOLIB */

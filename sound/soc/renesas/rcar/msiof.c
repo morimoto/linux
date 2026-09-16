@@ -168,7 +168,8 @@ static void msiof_update_and_wait(struct msiof_priv *priv, u32 reg, u32 mask, u3
 static int msiof_hw_start(struct snd_soc_component *component,
 			  struct snd_pcm_substream *substream, int cmd)
 {
-	struct msiof_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct msiof_priv *priv = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	int is_play = msiof_is_play(substream);
 	int width = snd_pcm_format_width(runtime->format);
@@ -272,8 +273,8 @@ static int msiof_hw_start(struct snd_soc_component *component,
 static int msiof_hw_stop(struct snd_soc_component *component,
 			 struct snd_pcm_substream *substream, int cmd)
 {
-	struct msiof_priv *priv = snd_soc_component_get_drvdata(component);
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct msiof_priv *priv = dev_get_drvdata(dev);
 	int is_play = msiof_is_play(substream);
 	u32 val;
 
@@ -323,7 +324,9 @@ static int msiof_hw_stop(struct snd_soc_component *component,
 
 static int msiof_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct msiof_priv *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct msiof_priv *priv = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	/*
@@ -408,7 +411,7 @@ static struct snd_pcm_hardware msiof_pcm_hardware = {
 static int msiof_open(struct snd_soc_component *component,
 		      struct snd_pcm_substream *substream)
 {
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct dma_chan *chan;
 	static const char * const dma_names[] = {"rx", "tx"};
 	int is_play = msiof_is_play(substream);
@@ -451,7 +454,7 @@ static int msiof_new(struct snd_soc_component *component,
 		     struct snd_soc_pcm_runtime *rtd)
 {
 	snd_pcm_set_managed_buffer_all(rtd->pcm, SNDRV_DMA_TYPE_DEV,
-				       rtd->card->snd_card->dev,
+				       snd_soc_card_to_dev(rtd->card),
 				       PREALLOC_BUFFER, PREALLOC_BUFFER_MAX);
 	return 0;
 }
@@ -459,7 +462,7 @@ static int msiof_new(struct snd_soc_component *component,
 static int msiof_trigger(struct snd_soc_component *component,
 			 struct snd_pcm_substream *substream, int cmd)
 {
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct msiof_priv *priv = dev_get_drvdata(dev);
 	int ret = -EINVAL;
 
@@ -487,7 +490,8 @@ static int msiof_hw_params(struct snd_soc_component *component,
 			   struct snd_pcm_substream *substream,
 			   struct snd_pcm_hw_params *params)
 {
-	struct msiof_priv *priv = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct msiof_priv *priv = dev_get_drvdata(dev);
 	struct dma_chan *chan = snd_dmaengine_pcm_get_chan(substream);
 	struct dma_slave_config cfg = {};
 	int ret;
@@ -598,7 +602,7 @@ static int msiof_probe(struct platform_device *pdev)
 
 	devm_pm_runtime_enable(dev);
 
-	ret = devm_snd_soc_register_component(dev, &msiof_component_driver,
+	ret = devm_snd_soc_component_register(dev, &msiof_component_driver,
 					      &msiof_dai_driver, 1);
 
 	return ret;

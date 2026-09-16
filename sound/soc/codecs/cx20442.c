@@ -88,7 +88,8 @@ static const struct snd_soc_dapm_route cx20442_audio_map[] = {
 static unsigned int cx20442_read_reg_cache(struct snd_soc_component *component,
 					   unsigned int reg)
 {
-	struct cx20442_priv *cx20442 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cx20442_priv *cx20442 = dev_get_drvdata(dev);
 
 	if (reg >= 1)
 		return -EINVAL;
@@ -152,7 +153,8 @@ static int cx20442_pm_to_v253_vsp(u8 value)
 static int cx20442_write(struct snd_soc_component *component, unsigned int reg,
 							unsigned int value)
 {
-	struct cx20442_priv *cx20442 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cx20442_priv *cx20442 = dev_get_drvdata(dev);
 	int vls, vsp, old, len;
 	char buf[18];
 
@@ -189,7 +191,7 @@ static int cx20442_write(struct snd_soc_component *component, unsigned int reg,
 	if (unlikely(len > (ARRAY_SIZE(buf) - 1)))
 		return -ENOMEM;
 
-	dev_dbg(component->dev, "%s: %s\n", __func__, buf);
+	dev_dbg(dev, "%s: %s\n", __func__, buf);
 	if (cx20442->tty->ops->write(cx20442->tty, buf, len) != len)
 		return -EIO;
 
@@ -238,6 +240,7 @@ static void v253_close(struct tty_struct *tty)
 {
 	struct cx20442_codec *codec = tty->disc_data;
 	struct snd_soc_component *component = codec->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct cx20442_priv *cx20442;
 
 	tty->disc_data = NULL;
@@ -245,7 +248,7 @@ static void v253_close(struct tty_struct *tty)
 	if (!component)
 		return;
 
-	cx20442 = snd_soc_component_get_drvdata(component);
+	cx20442 = dev_get_drvdata(dev);
 
 	/* Prevent the codec driver from further accessing the modem */
 	cx20442->tty = NULL;
@@ -264,12 +267,14 @@ static void v253_receive(struct tty_struct *tty, const u8 *cp, const u8 *fp,
 {
 	struct cx20442_codec *codec = tty->disc_data;
 	struct snd_soc_component *component = codec->component;
+	struct device *dev;
 	struct cx20442_priv *cx20442;
 
 	if (!component)
 		return;
 
-	cx20442 = snd_soc_component_get_drvdata(component);
+	dev = snd_soc_component_to_dev(component);
+	cx20442 = dev_get_drvdata(dev);
 
 	if (!cx20442->tty) {
 		/* First modem response, complete setup procedure */
@@ -316,7 +321,8 @@ static struct snd_soc_dai_driver cx20442_dai = {
 static int cx20442_set_bias_level(struct snd_soc_component *component,
 		enum snd_soc_bias_level level)
 {
-	struct cx20442_priv *cx20442 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cx20442_priv *cx20442 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int err = 0;
 
@@ -347,16 +353,17 @@ static int cx20442_set_bias_level(struct snd_soc_component *component,
 static int cx20442_component_probe(struct snd_soc_component *component)
 {
 	struct cx20442_priv *cx20442;
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	cx20442 = kzalloc_obj(struct cx20442_priv);
 	if (cx20442 == NULL)
 		return -ENOMEM;
 
-	cx20442->por = regulator_get(component->dev, "POR");
+	cx20442->por = regulator_get(dev, "POR");
 	if (IS_ERR(cx20442->por)) {
 		int err = PTR_ERR(cx20442->por);
 
-		dev_warn(component->dev, "failed to get POR supply (%d)", err);
+		dev_warn(dev, "failed to get POR supply (%d)", err);
 		/*
 		 * When running on a non-dt platform and requested regulator
 		 * is not available, regulator_get() never returns
@@ -376,7 +383,7 @@ static int cx20442_component_probe(struct snd_soc_component *component)
 
 	cx20442->tty = NULL;
 
-	snd_soc_component_set_drvdata(component, cx20442);
+	dev_set_drvdata(dev, cx20442);
 
 	return 0;
 }
@@ -384,7 +391,8 @@ static int cx20442_component_probe(struct snd_soc_component *component)
 /* power down chip */
 static void cx20442_component_remove(struct snd_soc_component *component)
 {
-	struct cx20442_priv *cx20442 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cx20442_priv *cx20442 = dev_get_drvdata(dev);
 
 	if (cx20442->tty) {
 		struct tty_struct *tty = cx20442->tty;
@@ -396,7 +404,7 @@ static void cx20442_component_remove(struct snd_soc_component *component)
 		regulator_put(cx20442->por);
 	}
 
-	snd_soc_component_set_drvdata(component, NULL);
+	dev_set_drvdata(dev, NULL);
 	kfree(cx20442);
 }
 
@@ -417,7 +425,7 @@ static const struct snd_soc_component_driver cx20442_component_dev = {
 
 static int cx20442_platform_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&cx20442_component_dev, &cx20442_dai, 1);
 }
 

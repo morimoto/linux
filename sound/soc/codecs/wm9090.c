@@ -132,21 +132,22 @@ static bool wm9090_readable(struct device *dev, unsigned int reg)
 
 static void wait_for_dc_servo(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int reg;
 	int count = 0;
 
-	dev_dbg(component->dev, "Waiting for DC servo...\n");
+	dev_dbg(dev, "Waiting for DC servo...\n");
 	do {
 		count++;
 		msleep(1);
 		reg = snd_soc_component_read(component, WM9090_DC_SERVO_READBACK_0);
-		dev_dbg(component->dev, "DC servo status: %x\n", reg);
+		dev_dbg(dev, "DC servo status: %x\n", reg);
 	} while ((reg & WM9090_DCS_CAL_COMPLETE_MASK)
 		 != WM9090_DCS_CAL_COMPLETE_MASK && count < 1000);
 
 	if ((reg & WM9090_DCS_CAL_COMPLETE_MASK)
 	    != WM9090_DCS_CAL_COMPLETE_MASK)
-		dev_err(component->dev, "Timed out waiting for DC Servo\n");
+		dev_err(dev, "Timed out waiting for DC Servo\n");
 }
 
 static const DECLARE_TLV_DB_RANGE(in_tlv,
@@ -408,7 +409,8 @@ static const struct snd_soc_dapm_route audio_map_in2_diff[] = {
 
 static int wm9090_add_controls(struct snd_soc_component *component)
 {
-	struct wm9090_priv *wm9090 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9090_priv *wm9090 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int i;
 
@@ -417,7 +419,7 @@ static int wm9090_add_controls(struct snd_soc_component *component)
 
 	snd_soc_dapm_add_routes(dapm, audio_map, ARRAY_SIZE(audio_map));
 
-	snd_soc_add_component_controls(component, wm9090_controls,
+	snd_soc_component_add_controls(component, wm9090_controls,
 			     ARRAY_SIZE(wm9090_controls));
 
 	if (wm9090->pdata.lin1_diff) {
@@ -426,7 +428,7 @@ static int wm9090_add_controls(struct snd_soc_component *component)
 	} else {
 		snd_soc_dapm_add_routes(dapm, audio_map_in1_se,
 					ARRAY_SIZE(audio_map_in1_se));
-		snd_soc_add_component_controls(component, wm9090_in1_se_controls,
+		snd_soc_component_add_controls(component, wm9090_in1_se_controls,
 				     ARRAY_SIZE(wm9090_in1_se_controls));
 	}
 
@@ -436,7 +438,7 @@ static int wm9090_add_controls(struct snd_soc_component *component)
 	} else {
 		snd_soc_dapm_add_routes(dapm, audio_map_in2_se,
 					ARRAY_SIZE(audio_map_in2_se));
-		snd_soc_add_component_controls(component, wm9090_in2_se_controls,
+		snd_soc_component_add_controls(component, wm9090_in2_se_controls,
 				     ARRAY_SIZE(wm9090_in2_se_controls));
 	}
 
@@ -462,7 +464,8 @@ static int wm9090_add_controls(struct snd_soc_component *component)
 static int wm9090_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm9090_priv *wm9090 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9090_priv *wm9090 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -596,7 +599,7 @@ static int wm9090_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, wm9090);
 
-	ret =  devm_snd_soc_register_component(&i2c->dev,
+	ret =  devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm9090,  NULL, 0);
 	if (ret != 0) {
 		dev_err(&i2c->dev, "Failed to register CODEC: %d\n", ret);

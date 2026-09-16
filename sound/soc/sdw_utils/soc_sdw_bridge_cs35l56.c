@@ -34,6 +34,7 @@ static int asoc_sdw_bridge_cs35l56_asp_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int i, ret;
 	unsigned int rx_mask = 3; // ASP RX1, RX2
 	unsigned int tx_mask = 3; // ASP TX1, TX2
@@ -43,19 +44,22 @@ static int asoc_sdw_bridge_cs35l56_asp_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_dapm_new_controls(dapm, bridge_widgets,
 					ARRAY_SIZE(bridge_widgets));
 	if (ret) {
-		dev_err(card->dev, "widgets addition failed: %d\n", ret);
+		dev_err(dev, "widgets addition failed: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dapm_add_routes(dapm, bridge_map, ARRAY_SIZE(bridge_map));
 	if (ret) {
-		dev_err(card->dev, "map addition failed: %d\n", ret);
+		dev_err(dev, "map addition failed: %d\n", ret);
 		return ret;
 	}
 
 	/* 4 x 16-bit sample slots and FSYNC=48000, BCLK=3.072 MHz */
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-		ret = asoc_sdw_cs35l56_volume_limit(card, codec_dai->component->name_prefix);
+		struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+		const char *name_prefix = snd_soc_component_name_prefix(component);
+
+		ret = asoc_sdw_cs35l56_volume_limit(card, name_prefix);
 		if (ret)
 			return ret;
 
@@ -115,7 +119,7 @@ int asoc_sdw_bridge_cs35l56_add_sidecar(struct snd_soc_card *card,
 					struct snd_soc_dai_link **dai_links,
 					struct snd_soc_codec_conf **codec_conf)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 
 	if (ctx->mc_quirk & SOC_SDW_SIDECAR_AMPS) {
 		**dai_links = bridge_dai_template;
@@ -138,7 +142,7 @@ int asoc_sdw_bridge_cs35l56_spk_init(struct snd_soc_card *card,
 				     struct asoc_sdw_codec_info *info,
 				     bool playback)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 
 	if (ctx->mc_quirk & SOC_SDW_SIDECAR_AMPS)
 		info->amp_num += ARRAY_SIZE(bridge_cs35l56_name_prefixes);

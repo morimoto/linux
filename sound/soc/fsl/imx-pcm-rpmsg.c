@@ -130,7 +130,8 @@ static int imx_rpmsg_pcm_hw_params(struct snd_soc_component *component,
 				   struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params)
 {
-	struct rpmsg_info *info = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rpmsg_info *info = dev_get_drvdata(dev);
 	struct rpmsg_msg *msg;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
@@ -181,7 +182,8 @@ static int imx_rpmsg_pcm_hw_params(struct snd_soc_component *component,
 static snd_pcm_uframes_t imx_rpmsg_pcm_pointer(struct snd_soc_component *component,
 					       struct snd_pcm_substream *substream)
 {
-	struct rpmsg_info *info = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rpmsg_info *info = dev_get_drvdata(dev);
 	struct rpmsg_msg *msg;
 	unsigned int pos = 0;
 	int buffer_tail = 0;
@@ -219,10 +221,13 @@ static void imx_rpmsg_timer_callback(struct timer_list *t)
 static int imx_rpmsg_pcm_open(struct snd_soc_component *component,
 			      struct snd_pcm_substream *substream)
 {
-	struct rpmsg_info *info = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rpmsg_info *info = dev_get_drvdata(dev);
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct fsl_rpmsg *rpmsg = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(cpu_component);
+	struct fsl_rpmsg *rpmsg = dev_get_drvdata(dai_dev);
 	struct snd_pcm_hardware pcm_hardware;
 	struct rpmsg_msg *msg;
 	int ret = 0;
@@ -275,8 +280,9 @@ static int imx_rpmsg_pcm_open(struct snd_soc_component *component,
 static int imx_rpmsg_pcm_close(struct snd_soc_component *component,
 			       struct snd_pcm_substream *substream)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct rpmsg_info *info = dev_get_drvdata(component->dev);
+	struct rpmsg_info *info = dev_get_drvdata(dev);
 	struct rpmsg_msg *msg;
 
 	/* Flush work in workqueue to make TX_CLOSE is the last message */
@@ -309,7 +315,9 @@ static int imx_rpmsg_pcm_prepare(struct snd_soc_component *component,
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct fsl_rpmsg *rpmsg = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(cpu_component);
+	struct fsl_rpmsg *rpmsg = dev_get_drvdata(dai_dev);
 
 	/*
 	 * NON-MMAP mode, NONBLOCK, Version 2, enable lpa in dts
@@ -341,7 +349,8 @@ static void imx_rpmsg_pcm_dma_complete(void *arg)
 static int imx_rpmsg_prepare_and_submit(struct snd_soc_component *component,
 					struct snd_pcm_substream *substream)
 {
-	struct rpmsg_info *info = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rpmsg_info *info = dev_get_drvdata(dev);
 	struct rpmsg_msg *msg;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
@@ -370,7 +379,8 @@ static int imx_rpmsg_prepare_and_submit(struct snd_soc_component *component,
 static int imx_rpmsg_async_issue_pending(struct snd_soc_component *component,
 					 struct snd_pcm_substream *substream)
 {
-	struct rpmsg_info *info = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rpmsg_info *info = dev_get_drvdata(dev);
 	struct rpmsg_msg *msg;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
@@ -387,7 +397,8 @@ static int imx_rpmsg_async_issue_pending(struct snd_soc_component *component,
 static int imx_rpmsg_restart(struct snd_soc_component *component,
 			     struct snd_pcm_substream *substream)
 {
-	struct rpmsg_info *info = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rpmsg_info *info = dev_get_drvdata(dev);
 	struct rpmsg_msg *msg;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
@@ -404,7 +415,8 @@ static int imx_rpmsg_restart(struct snd_soc_component *component,
 static int imx_rpmsg_pause(struct snd_soc_component *component,
 			   struct snd_pcm_substream *substream)
 {
-	struct rpmsg_info *info = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rpmsg_info *info = dev_get_drvdata(dev);
 	struct rpmsg_msg *msg;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
@@ -421,7 +433,8 @@ static int imx_rpmsg_pause(struct snd_soc_component *component,
 static int imx_rpmsg_terminate_all(struct snd_soc_component *component,
 				   struct snd_pcm_substream *substream)
 {
-	struct rpmsg_info *info = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rpmsg_info *info = dev_get_drvdata(dev);
 	struct rpmsg_msg *msg;
 	int cmd;
 
@@ -454,7 +467,9 @@ static int imx_rpmsg_pcm_trigger(struct snd_soc_component *component,
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct fsl_rpmsg *rpmsg = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(cpu_component);
+	struct fsl_rpmsg *rpmsg = dev_get_drvdata(dai_dev);
 	int ret = 0;
 
 	switch (cmd) {
@@ -508,8 +523,11 @@ static int imx_rpmsg_pcm_ack(struct snd_soc_component *component,
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct fsl_rpmsg *rpmsg = dev_get_drvdata(cpu_dai->dev);
-	struct rpmsg_info *info = dev_get_drvdata(component->dev);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(cpu_component);
+	struct device *component_dev = snd_soc_component_to_dev(component);
+	struct fsl_rpmsg *rpmsg = dev_get_drvdata(dai_dev);
+	struct rpmsg_info *info = dev_get_drvdata(component_dev);
 	snd_pcm_uframes_t period_size = runtime->period_size;
 	snd_pcm_sframes_t avail;
 	struct timer_list *timer;
@@ -583,14 +601,16 @@ static int imx_rpmsg_pcm_ack(struct snd_soc_component *component,
 static int imx_rpmsg_pcm_new(struct snd_soc_component *component,
 			     struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_card *card = rtd->card->snd_card;
 	struct snd_pcm *pcm = rtd->pcm;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct fsl_rpmsg *rpmsg = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(cpu_component);
+	struct fsl_rpmsg *rpmsg = dev_get_drvdata(dai_dev);
 	struct snd_pcm_substream *substream;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	int ret;
 
-	ret = dma_coerce_mask_and_coherent(card->dev, DMA_BIT_MASK(32));
+	ret = dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
 	if (ret)
 		return ret;
 
@@ -726,7 +746,7 @@ static int imx_rpmsg_pcm_probe(struct platform_device *pdev)
 	spin_lock_init(&info->lock[RX]);
 	spin_lock_init(&info->wq_lock);
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &imx_rpmsg_soc_component,
 					      NULL, 0);
 	if (ret)
@@ -747,6 +767,8 @@ static void imx_rpmsg_pcm_remove(struct platform_device *pdev)
 
 	if (info->rpmsg_wq)
 		destroy_workqueue(info->rpmsg_wq);
+
+	snd_soc_component_unregister_by_driver(&pdev->dev, &imx_rpmsg_soc_component);
 }
 
 static int imx_rpmsg_pcm_runtime_resume(struct device *dev)

@@ -47,8 +47,9 @@ static const struct reg_default uda1342_reg_defaults[] = {
 
 static int uda1342_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct uda1342_priv *uda1342 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1342_priv *uda1342 = dev_get_drvdata(dev);
 	unsigned int mask;
 	unsigned int val = 0;
 
@@ -63,8 +64,9 @@ static int uda1342_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int uda1342_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct uda1342_priv *uda1342 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1342_priv *uda1342 = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *provider_runtime;
 
 	if (uda1342->provider_substream) {
@@ -87,8 +89,9 @@ static int uda1342_startup(struct snd_pcm_substream *substream,
 static void uda1342_shutdown(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct uda1342_priv *uda1342 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1342_priv *uda1342 = dev_get_drvdata(dev);
 
 	if (uda1342->provider_substream == substream)
 		uda1342->provider_substream = uda1342->consumer_substream;
@@ -99,9 +102,9 @@ static void uda1342_shutdown(struct snd_pcm_substream *substream,
 static int uda1342_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct uda1342_priv *uda1342 = snd_soc_component_get_drvdata(component);
-	struct device *dev = &uda1342->i2c->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1342_priv *uda1342 = dev_get_drvdata(dev);
 	unsigned int hw_params = 0;
 
 	if (substream == uda1342->consumer_substream)
@@ -157,9 +160,9 @@ static int uda1342_hw_params(struct snd_pcm_substream *substream,
 static int uda1342_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct uda1342_priv *uda1342 = snd_soc_component_get_drvdata(component);
-	struct device *dev = &uda1342->i2c->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1342_priv *uda1342 = dev_get_drvdata(dev);
 
 	/*
 	 * Anything between 256fs*8Khz and 512fs*48Khz should be acceptable
@@ -179,12 +182,13 @@ static int uda1342_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 
 static int uda1342_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct uda1342_priv *uda1342 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1342_priv *uda1342 = dev_get_drvdata(dev);
 
 	/* codec supports only full consumer mode */
 	if ((fmt & SND_SOC_DAIFMT_MASTER_MASK) != SND_SOC_DAIFMT_BC_FC) {
-		dev_err(&uda1342->i2c->dev, "unsupported consumer mode.\n");
+		dev_err(dev, "unsupported consumer mode.\n");
 		return -EINVAL;
 	}
 
@@ -298,7 +302,7 @@ static int uda1342_i2c_probe(struct i2c_client *i2c)
 	i2c_set_clientdata(i2c, uda1342);
 	uda1342->i2c = i2c;
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 					       &soc_component_dev_uda1342,
 					       &uda1342_dai, 1);
 }

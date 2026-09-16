@@ -126,7 +126,9 @@ static int psc_ac97_hw_analog_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *cpu_dai)
 {
-	struct psc_dma *psc_dma = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct psc_dma *psc_dma = dev_get_drvdata(dev);
 	struct psc_dma_stream *s = to_psc_dma_stream(substream, psc_dma);
 
 	dev_dbg(psc_dma->dev, "%s(substream=%p) p_size=%i p_bytes=%i"
@@ -149,7 +151,9 @@ static int psc_ac97_hw_digital_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *cpu_dai)
 {
-	struct psc_dma *psc_dma = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct psc_dma *psc_dma = dev_get_drvdata(dev);
 
 	dev_dbg(psc_dma->dev, "%s(substream=%p)\n", __func__, substream);
 
@@ -164,7 +168,9 @@ static int psc_ac97_hw_digital_params(struct snd_pcm_substream *substream,
 static int psc_ac97_trigger(struct snd_pcm_substream *substream, int cmd,
 							struct snd_soc_dai *dai)
 {
-	struct psc_dma *psc_dma = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct psc_dma *psc_dma = dev_get_drvdata(dev);
 	struct psc_dma_stream *s = to_psc_dma_stream(substream, psc_dma);
 
 	switch (cmd) {
@@ -191,7 +197,9 @@ static int psc_ac97_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int psc_ac97_probe(struct snd_soc_dai *cpu_dai)
 {
-	struct psc_dma *psc_dma = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct psc_dma *psc_dma = dev_get_drvdata(dev);
 	struct mpc52xx_psc __iomem *regs = psc_dma->psc_regs;
 
 	/* Go */
@@ -276,7 +284,7 @@ static int psc_ac97_of_probe(struct platform_device *op)
 		return rc;
 	}
 
-	rc = devm_snd_soc_register_component(&op->dev, &psc_ac97_component,
+	rc = devm_snd_soc_component_register(&op->dev, &psc_ac97_component,
 					psc_ac97_dai, ARRAY_SIZE(psc_ac97_dai));
 	if (rc != 0) {
 		dev_err(&op->dev, "Failed to register DAI\n");
