@@ -6,12 +6,8 @@
 //          Amadeusz Slawinski <amadeuszx.slawinski@linux.intel.com>
 //
 
-#include <linux/module.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dapm.h>
 #include "../utils.h"
 
 static int avs_create_dai_link(struct device *dev, int ssp_port, int tdm_slot,

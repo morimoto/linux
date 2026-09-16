@@ -3,16 +3,11 @@
 // Copyright (c) 2020 Intel Corporation
 // Copyright (c) 2024 Advanced Micro Devices, Inc.
 
-#include <linux/device.h>
-#include <linux/errno.h>
 #include <linux/input.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_type.h>
-#include <sound/control.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dapm.h>
-#include <sound/jack.h>
 #include <sound/soc_sdw_utils.h>
 
 /*

@@ -6,9 +6,6 @@
 #ifndef _AN7581_AFE_COMMON_H_
 #define _AN7581_AFE_COMMON_H_
 
-#include <linux/atomic.h>
-#include <linux/list.h>
-#include <linux/regmap.h>
 #include <sound/soc.h>
 
 #include "../../mediatek/common/mtk-base-afe.h"

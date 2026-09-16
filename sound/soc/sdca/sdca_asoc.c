@@ -7,30 +7,13 @@
  * https://www.mipi.org/mipi-sdca-v1-0-download
  */
 
-#include <linux/bits.h>
-#include <linux/bitmap.h>
 #include <linux/build_bug.h>
-#include <linux/delay.h>
-#include <linux/dev_printk.h>
-#include <linux/device.h>
-#include <linux/minmax.h>
-#include <linux/module.h>
-#include <linux/overflow.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/soundwire/sdw_registers.h>
-#include <linux/string_helpers.h>
-#include <linux/types.h>
-#include <sound/control.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/sdca.h>
 #include <sound/sdca_asoc.h>
 #include <sound/sdca_function.h>
 #include <sound/soc.h>
-#include <sound/soc-component.h>
-#include <sound/soc-dai.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
 
 static bool exported_control(struct sdca_entity *entity, struct sdca_control *control)

@@ -6,15 +6,8 @@
 //                         Cirrus Logic International Semiconductor Ltd.
 //
 
-#include <linux/cleanup.h>
-#include <linux/delay.h>
 #include <linux/gcd.h>
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
-#include <linux/slab.h>
-#include <linux/string_choices.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/tlv.h>
 
 #include <linux/irqchip/irq-madera.h>

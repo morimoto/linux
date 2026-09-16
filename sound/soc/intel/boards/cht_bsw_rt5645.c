@@ -12,16 +12,10 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include <linux/module.h>
-#include <linux/platform_device.h>
 #include <linux/acpi.h>
 #include <linux/clk.h>
 #include <linux/dmi.h>
-#include <linux/slab.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/jack.h>
 #include <sound/soc-acpi.h>
 #include "../../codecs/rt5645.h"
 #include "../atom/sst-atom-controls.h"

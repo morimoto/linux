@@ -3,14 +3,8 @@
 // Copyright (c) 2020 BayLibre, SAS.
 // Author: Jerome Brunet <jbrunet@baylibre.com>
 
-#include <linux/bitfield.h>
-#include <linux/clk.h>
-#include <linux/module.h>
-#include <linux/of_platform.h>
-#include <linux/regmap.h>
 #include <linux/reset.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
 
 #include <dt-bindings/sound/meson-aiu.h>
 #include "aiu.h"

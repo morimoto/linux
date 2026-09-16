@@ -10,13 +10,6 @@
 #ifndef _WM_HUBS_H
 #define _WM_HUBS_H
 
-#include <linux/completion.h>
-#include <linux/interrupt.h>
-#include <linux/list.h>
-#include <sound/control.h>
-
-struct snd_soc_component;
-
 extern const unsigned int wm_hubs_spkmix_tlv[];
 
 /* This *must* be the first element of the codec->private_data struct */

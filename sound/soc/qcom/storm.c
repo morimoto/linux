@@ -5,12 +5,6 @@
  * storm.c -- ALSA SoC machine driver for QTi ipq806x-based Storm board
  */
 
-#include <linux/device.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #define STORM_SYSCLK_MULT			4

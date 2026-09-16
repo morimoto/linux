@@ -2,15 +2,10 @@
 // This file incorporates work covered by the following copyright notice:
 // Copyright (c) 2024 Intel Corporation.
 
-#include <linux/device.h>
-#include <linux/errno.h>
-#include <linux/string.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_type.h>
-#include <sound/control.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dapm.h>
 #include <sound/soc_sdw_utils.h>
 
 /* dapm routes for SPK will be registered dynamically */

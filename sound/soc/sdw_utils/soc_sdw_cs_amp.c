@@ -7,11 +7,7 @@
  *  soc_sdw_cs_amp - Helpers to handle CS35L56 from generic machine driver
  */
 
-#include <linux/device.h>
-#include <linux/errno.h>
 #include <sound/soc.h>
-#include <sound/soc-acpi.h>
-#include <sound/soc-dai.h>
 #include <sound/soc_sdw_utils.h>
 
 #define CS35L56_SPK_VOLUME_0DB 400 /* 0dB Max */

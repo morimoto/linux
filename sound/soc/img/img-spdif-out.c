@@ -8,19 +8,9 @@
  */
 
 #include <linux/clk.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
 #include <linux/reset.h>
-
-#include <sound/core.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/initval.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #define IMG_SPDIF_OUT_TX_FIFO		0x0

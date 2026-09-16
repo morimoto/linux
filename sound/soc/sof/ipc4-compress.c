@@ -5,7 +5,6 @@
 #include <sound/soc.h>
 #include <sound/sof.h>
 #include <sound/compress_driver.h>
-#include <sound/pcm_params.h>
 #include "sof-audio.h"
 #include "sof-priv.h"
 #include "sof-utils.h"

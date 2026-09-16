@@ -9,26 +9,12 @@
 //
 
 #include <linux/acpi.h>
-#include <linux/cleanup.h>
 #include <linux/clk.h>
-#include <linux/delay.h>
 #include <linux/gpio/consumer.h>
-#include <linux/init.h>
 #include <linux/i2c.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <linux/pm.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
-#include <sound/core.h>
-#include <sound/initval.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/tlv.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include "cx2072x.h"
 
 #define PLL_OUT_HZ_48	(1024 * 3 * 48000)

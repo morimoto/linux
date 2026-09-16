@@ -7,27 +7,19 @@
 //
 // Author: Niranjan H Y <niranjan.hy@ti.com>
 
-#include <linux/err.h>
 #include <linux/firmware.h>
-#include <linux/init.h>
-#include <linux/module.h>
 #include <linux/pci.h>
-#include <linux/pm.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_registers.h>
 #include <linux/soundwire/sdw_type.h>
-#include <linux/time.h>
 #include <linux/unaligned.h>
-#include <sound/pcm_params.h>
 #include <sound/sdw.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 #include <sound/sdca_asoc.h>
 #include <sound/sdca_function.h>
 #include <sound/sdca_regmap.h>
-#include <sound/jack.h>
 
 #include "tac5xx2.h"
 

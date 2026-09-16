@@ -4,17 +4,7 @@
  */
 
 #include <linux/clk.h>
-#include <linux/export.h>
 #include <linux/gpio/consumer.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
-
-#include <sound/core.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #include "tegra_asoc_machine.h"

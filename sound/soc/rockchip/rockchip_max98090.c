@@ -5,14 +5,6 @@
  * Copyright (c) 2014, ROCKCHIP CORPORATION.  All rights reserved.
  */
 
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
-#include <sound/core.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #include "rockchip_i2s.h"

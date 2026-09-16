@@ -7,20 +7,9 @@
  */
 
 #include <linux/clk.h>
-#include <linux/device.h>
-#include <linux/delay.h>
-#include <linux/init.h>
-#include <linux/io.h>
 #include <linux/mfd/syscon.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
-#include <linux/regmap.h>
 #include <linux/reset.h>
 #include <linux/util_macros.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 

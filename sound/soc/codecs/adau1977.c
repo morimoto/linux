@@ -6,20 +6,9 @@
  *  Author: Lars-Peter Clausen <lars@metafoo.de>
  */
 
-#include <linux/delay.h>
-#include <linux/device.h>
 #include <linux/gpio/consumer.h>
 #include <linux/i2c.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
-#include <linux/slab.h>
-
-#include <sound/core.h>
-#include <sound/initval.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 

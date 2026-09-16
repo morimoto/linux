@@ -6,13 +6,6 @@
  */
 
 #include <linux/dma-mapping.h>
-#include <linux/export.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
-#include <linux/regmap.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include "qaif-reg.h"
 #include "qaif.h"

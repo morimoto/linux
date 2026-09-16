@@ -7,17 +7,10 @@
  *         for ST-Ericsson.
  */
 
-#include <linux/module.h>
-#include <linux/slab.h>
-#include <linux/bitops.h>
-#include <linux/platform_device.h>
 #include <linux/clk.h>
-#include <linux/of.h>
 #include <linux/regulator/consumer.h>
 #include <linux/reset.h>
-
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
 #include <sound/dmaengine_pcm.h>
 
 #include "ux500_msp_i2s.h"

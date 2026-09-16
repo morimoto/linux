@@ -23,21 +23,9 @@
  *	Copyright 2007-2010 Freescale Semiconductor, Inc.
  */
 
-#include <linux/bitops.h>
 #include <linux/clk.h>
-#include <linux/delay.h>
-#include <linux/device.h>
-#include <linux/init.h>
-#include <linux/io.h>
-#include <linux/module.h>
 #include <linux/of_address.h>
-#include <linux/slab.h>
-
-#include <sound/core.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/initval.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 /* I2S registers */

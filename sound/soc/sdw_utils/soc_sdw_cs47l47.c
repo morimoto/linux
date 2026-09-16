@@ -7,13 +7,7 @@
 /*
  *  soc_sdw_cs47l47 - Helpers to handle CS47L47 from generic machine driver
  */
-#include <linux/device.h>
-#include <linux/errno.h>
-#include <sound/jack.h>
 #include <sound/soc.h>
-#include <sound/soc-card.h>
-#include <sound/soc-component.h>
-#include <sound/soc-dai.h>
 #include <sound/soc_sdw_utils.h>
 
 static struct snd_soc_jack_pin soc_jack_pins[] = {

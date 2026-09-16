@@ -6,22 +6,10 @@
 //
 // Author: Codrin Ciubotariu <codrin.ciubotariu@microchip.com>
 
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/device.h>
-#include <linux/slab.h>
-
-#include <linux/delay.h>
 #include <linux/io.h>
 #include <linux/clk.h>
 #include <linux/mfd/syscon.h>
 #include <linux/lcm.h>
-#include <linux/of.h>
-
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/initval.h>
 #include <sound/soc.h>
 #include <sound/dmaengine_pcm.h>
 

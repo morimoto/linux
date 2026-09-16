@@ -9,21 +9,11 @@
  */
 
 #include <linux/clk.h>
-#include <linux/delay.h>
-#include <linux/device.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/regmap.h>
-#include <linux/of.h>
 #include <linux/ioport.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
 #include <linux/reset.h>
-#include <linux/spinlock.h>
 #include <sound/asoundef.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #define	SUN4I_SPDIF_CTL		(0x00)

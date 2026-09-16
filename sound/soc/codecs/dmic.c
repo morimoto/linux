@@ -5,16 +5,9 @@
  * Author: Liam Girdwood <lrg@slimlogic.co.uk>
  */
 
-#include <linux/delay.h>
 #include <linux/gpio/consumer.h>
-#include <linux/platform_device.h>
 #include <linux/regulator/consumer.h>
-#include <linux/slab.h>
-#include <linux/module.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 
 #define MAX_MODESWITCH_DELAY 70
 static int modeswitch_delay;

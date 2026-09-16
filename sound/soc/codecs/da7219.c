@@ -8,24 +8,9 @@
  */
 
 #include <linux/acpi.h>
-#include <linux/cleanup.h>
 #include <linux/clk.h>
-#include <linux/clkdev.h>
-#include <linux/clk-provider.h>
 #include <linux/i2c.h>
-#include <linux/of.h>
-#include <linux/property.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
-#include <linux/pm.h>
-#include <linux/module.h>
-#include <linux/delay.h>
-#include <linux/regulator/consumer.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/initval.h>
 #include <sound/tlv.h>
 #include <asm/div64.h>
 

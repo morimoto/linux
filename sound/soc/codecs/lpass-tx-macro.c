@@ -1,18 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-only
 // Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
 
-#include <linux/module.h>
-#include <linux/init.h>
 #include <linux/clk.h>
-#include <linux/io.h>
-#include <linux/platform_device.h>
 #include <linux/pm_clock.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
-#include <linux/of_clk.h>
 #include <linux/clk-provider.h>
 
 #include "lpass-macro-common.h"

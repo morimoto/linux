@@ -15,18 +15,9 @@
  */
 
 #include <linux/clk.h>
-#include <linux/device.h>
 #include <linux/io.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/reset.h>
-#include <linux/slab.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/dmaengine_pcm.h>
 

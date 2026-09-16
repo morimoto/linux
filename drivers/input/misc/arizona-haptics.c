@@ -7,13 +7,8 @@
  * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
  */
 
-#include <linux/module.h>
-#include <linux/platform_device.h>
 #include <linux/input.h>
-#include <linux/slab.h>
-
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 
 #include <linux/mfd/arizona/core.h>
 #include <linux/mfd/arizona/pdata.h>

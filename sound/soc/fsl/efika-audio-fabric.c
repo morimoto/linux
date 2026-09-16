@@ -7,21 +7,8 @@
  * Author: Jon Smirl <jonsmirl@gmail.com>
  */
 
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/interrupt.h>
-#include <linux/device.h>
-#include <linux/delay.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
 #include <linux/dma-mapping.h>
-
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/initval.h>
 #include <sound/soc.h>
-#include <sound/soc-card.h>
 
 #define DRV_NAME "efika-audio-fabric"
 

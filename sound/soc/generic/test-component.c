@@ -5,14 +5,8 @@
 // Copyright (C) 2020 Renesas Electronics Corporation
 // Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 
-#include <linux/slab.h>
-#include <linux/of.h>
 #include <linux/of_graph.h>
-#include <linux/module.h>
-#include <linux/workqueue.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
 
 #define TEST_NAME_LEN 32
 struct test_dai_name {

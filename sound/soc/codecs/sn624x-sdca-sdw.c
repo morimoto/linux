@@ -4,31 +4,16 @@
 //
 // Copyright(c) 2025 Senary Semiconductor Corp.
 //
-
-#include <linux/bitops.h>
-#include <linux/delay.h>
-#include <linux/find.h>
-#include <linux/device.h>
-#include <linux/errno.h>
-#include <linux/jiffies.h>
-#include <linux/module.h>
-#include <linux/pm.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_registers.h>
 #include <linux/soundwire/sdw_type.h>
-
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/sdca.h>
 #include <sound/sdca_asoc.h>
 #include <sound/sdca_function.h>
 #include <sound/sdca_regmap.h>
 #include <sound/sdw.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 
 #include "sn624x-sdca.h"
 

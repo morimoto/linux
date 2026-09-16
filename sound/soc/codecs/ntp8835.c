@@ -7,20 +7,9 @@
  * Author: Igor Prusov <ivprusov@salutedevices.com>
  */
 
-#include <linux/kernel.h>
 #include <linux/clk.h>
-#include <linux/bits.h>
 #include <linux/reset.h>
-#include <linux/init.h>
-#include <linux/i2c.h>
-#include <linux/regmap.h>
-
-#include <sound/initval.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-component.h>
 #include <sound/tlv.h>
 
 #include "ntpfw.h"

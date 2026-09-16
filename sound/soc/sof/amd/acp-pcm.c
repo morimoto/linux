@@ -10,8 +10,6 @@
 /*
  * PCM interface for generic AMD audio ACP DSP block
  */
-#include <sound/pcm_params.h>
-
 #include "../ops.h"
 #include "acp.h"
 #include "acp-dsp-offset.h"

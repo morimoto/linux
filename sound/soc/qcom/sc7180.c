@@ -7,12 +7,6 @@
 #include <dt-bindings/sound/sc7180-lpass.h>
 #include <dt-bindings/sound/qcom,q6afe.h>
 #include <linux/gpio/consumer.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
-#include <sound/core.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
 #include <uapi/linux/input-event-codes.h>
 

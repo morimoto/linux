@@ -5,17 +5,8 @@
 // Copyright (C) 2012 Renesas Solutions Corp.
 // Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 
-#include <linux/cleanup.h>
-#include <linux/clk.h>
-#include <linux/device.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/of_platform.h>
-#include <linux/platform_device.h>
-#include <linux/string.h>
 #include <sound/simple_card_utils.h>
-#include <sound/soc.h>
-#include <sound/soc-dai.h>
 
 #define DPCM_SELECTABLE 1
 

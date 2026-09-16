@@ -7,13 +7,8 @@
  */
 
 #include <linux/input.h>
-#include <linux/module.h>
-#include <linux/of_device.h>
 #include <linux/pm_runtime.h>
-
 #include <sound/soc.h>
-#include <sound/jack.h>
-#include <sound/pcm_params.h>
 
 #include "mt8196-afe-common.h"
 

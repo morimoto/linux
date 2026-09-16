@@ -5,20 +5,12 @@
  * Copyright 2022 Advanced Micro Devices, Inc.
  */
 
-#include <sound/core.h>
 #include <sound/soc.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/soc-dapm.h>
-#include <sound/jack.h>
-#include <linux/device.h>
 #include <linux/dmi.h>
 #include <linux/gpio/consumer.h>
 #include <linux/gpio/machine.h>
 #include <linux/i2c.h>
 #include <linux/input.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
 #include <linux/acpi.h>
 
 #include "acp.h"

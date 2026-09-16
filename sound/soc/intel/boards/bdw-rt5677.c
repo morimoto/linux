@@ -6,15 +6,8 @@
  */
 
 #include <linux/acpi.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
 #include <linux/gpio/consumer.h>
-#include <linux/delay.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
-#include <sound/pcm_params.h>
-#include <sound/jack.h>
 #include <sound/soc-acpi.h>
 
 #include "../../codecs/rt5677.h"

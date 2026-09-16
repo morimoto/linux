@@ -9,18 +9,12 @@
  */
 
 #include <linux/arm-smccc.h>
-#include <linux/delay.h>
 #include <linux/dma-mapping.h>
-#include <linux/module.h>
 #include <linux/mfd/syscon.h>
-#include <linux/of.h>
-#include <linux/of_address.h>
-#include <linux/of_platform.h>
 #include <linux/of_reserved_mem.h>
 #include <linux/pm_runtime.h>
 #include <linux/soc/mediatek/infracfg.h>
 #include <linux/reset.h>
-#include <sound/pcm_params.h>
 #include "mt8188-afe-common.h"
 #include "mt8188-afe-clk.h"
 #include "mt8188-reg.h"

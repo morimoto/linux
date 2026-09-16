@@ -14,16 +14,9 @@
  */
 
 #include <linux/clk.h>
-#include <linux/module.h>
-#include <linux/slab.h>
-#include <sound/core.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
-#include <sound/initval.h>
-#include <sound/pcm_params.h>
-#include <sound/pcm.h>
 #include <linux/gpio/consumer.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
 
 #include "cs42l51.h"

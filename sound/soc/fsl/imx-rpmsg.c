@@ -1,17 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0+
 // Copyright 2017-2020 NXP
 
-#include <linux/module.h>
 #include <linux/of_platform.h>
 #include <linux/of_reserved_mem.h>
 #include <linux/i2c.h>
-#include <linux/slab.h>
 #include <linux/clk.h>
 #include <sound/soc.h>
-#include <sound/jack.h>
-#include <sound/control.h>
-#include <sound/pcm_params.h>
-#include <sound/soc-dapm.h>
 #include <sound/simple_card_utils.h>
 #include "imx-pcm-rpmsg.h"
 

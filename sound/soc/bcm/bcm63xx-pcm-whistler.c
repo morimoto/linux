@@ -5,11 +5,7 @@
 // Author: Kevin-Ke Li <kevin-ke.li@broadcom.com>
 
 #include <linux/dma-mapping.h>
-#include <linux/io.h>
 #include <linux/irq.h>
-#include <linux/module.h>
-#include <sound/pcm_params.h>
-#include <linux/regmap.h>
 #include <linux/of_device.h>
 #include <sound/soc.h>
 #include "bcm63xx-i2s.h"

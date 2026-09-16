@@ -9,10 +9,6 @@
 
 #include <linux/clk.h>
 #include <linux/io.h>
-#include <linux/module.h>
-#include <linux/property.h>
-#include <linux/platform_device.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #define XLNX_SPDIF_RATES \

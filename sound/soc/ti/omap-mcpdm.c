@@ -10,19 +10,8 @@
  *          Peter Ujfalusi <peter.ujfalusi@ti.com>
  */
 
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <linux/interrupt.h>
-#include <linux/err.h>
 #include <linux/io.h>
-#include <linux/irq.h>
-#include <linux/slab.h>
 #include <linux/pm_runtime.h>
-
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/dmaengine_pcm.h>
 

@@ -3,22 +3,9 @@
 // Copyright (c) 2025, Linaro Ltd
 
 #include <linux/component.h>
-#include <linux/delay.h>
-#include <linux/device.h>
-#include <linux/irqdomain.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
-#include <linux/slab.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
 
 #include "pm4125.h"

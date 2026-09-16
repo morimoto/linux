@@ -6,33 +6,16 @@
 //               Cirrus Logic International Semiconductor Ltd.
 
 #include <dt-bindings/sound/cs48l32.h>
-#include <linux/array_size.h>
 #include <linux/build_bug.h>
-#include <linux/cleanup.h>
 #include <linux/clk.h>
-#include <linux/container_of.h>
-#include <linux/delay.h>
-#include <linux/err.h>
 #include <linux/gcd.h>
-#include <linux/gpio/consumer.h>
-#include <linux/minmax.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/pm_runtime.h>
-#include <linux/property.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
-#include <linux/slab.h>
 #include <linux/spi/spi.h>
 #include <linux/string_choices.h>
 #include <sound/cs48l32.h>
 #include <sound/cs48l32_registers.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-component.h>
-#include <sound/soc-dai.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
 
 #include "cs48l32.h"

@@ -14,10 +14,6 @@
 #ifndef _SSM2602_H
 #define _SSM2602_H
 
-#include <linux/regmap.h>
-
-struct device;
-
 enum ssm2602_type {
 	SSM2602,
 	SSM2604,

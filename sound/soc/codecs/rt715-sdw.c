@@ -7,15 +7,10 @@
  * ALC715 ASoC Codec Driver based Intel Dummy SdW codec driver
  *
  */
-#include <linux/delay.h>
-#include <linux/device.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_type.h>
 #include <linux/soundwire/sdw_registers.h>
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
-#include <linux/of.h>
-#include <linux/regmap.h>
 #include <sound/soc.h>
 #include "rt715.h"
 #include "rt715-sdw.h"

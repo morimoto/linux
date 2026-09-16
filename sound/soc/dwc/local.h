@@ -7,10 +7,7 @@
 #define __DESIGNWARE_LOCAL_H
 
 #include <linux/clk.h>
-#include <linux/device.h>
-#include <linux/types.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm.h>
 #include <sound/designware_i2s.h>
 
 /* common register for all channel */

@@ -6,16 +6,9 @@
 //          Amadeusz Slawinski <amadeuszx.slawinski@linux.intel.com>
 //
 
-#include <linux/device.h>
 #include <linux/gpio/consumer.h>
 #include <linux/input.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
 #include <linux/processor.h>
-#include <linux/slab.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
 #include <asm/cpu_device_id.h>

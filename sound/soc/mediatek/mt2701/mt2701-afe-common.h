@@ -11,7 +11,6 @@
 
 #include <sound/soc.h>
 #include <linux/clk.h>
-#include <linux/regmap.h>
 #include "mt2701-reg.h"
 #include "../common/mtk-base-afe.h"
 

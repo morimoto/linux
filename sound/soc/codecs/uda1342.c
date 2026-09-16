@@ -10,11 +10,7 @@
 // Further cleanup and restructuring by:
 //         Binbin Zhou <zhoubinbin@loongson.cn>
 
-#include <linux/module.h>
 #include <linux/i2c.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <linux/pm_runtime.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>

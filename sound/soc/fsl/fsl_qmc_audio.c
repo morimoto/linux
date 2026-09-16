@@ -8,13 +8,7 @@
  */
 
 #include <linux/dma-mapping.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/of_platform.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
 #include <soc/fsl/qe/qmc.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 struct qmc_dai {

@@ -5,12 +5,6 @@
 //Copyright 2020 Advanced Micro Devices, Inc.
 
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <linux/module.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <linux/io.h>
-
 #include "rn_acp3x.h"
 
 #define DRV_NAME "acp_pdm_mach"

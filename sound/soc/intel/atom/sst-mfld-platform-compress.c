@@ -10,12 +10,6 @@
  */
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/slab.h>
-#include <linux/io.h>
-#include <linux/module.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/compress_driver.h>
 #include <asm/div64.h>

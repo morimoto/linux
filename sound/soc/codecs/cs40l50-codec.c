@@ -9,7 +9,6 @@
 
 #include <linux/bitfield.h>
 #include <linux/mfd/cs40l50.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #define CS40L50_REFCLK_INPUT		0x2C04
