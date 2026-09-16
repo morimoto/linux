@@ -264,7 +264,7 @@ static int g12a_tohdmitx_probe(struct platform_device *pdev)
 		return PTR_ERR(map);
 	}
 
-	return devm_snd_soc_register_component(dev,
+	return devm_snd_soc_component_register(dev,
 			&g12a_tohdmitx_component_drv, g12a_tohdmitx_dai_drv,
 			ARRAY_SIZE(g12a_tohdmitx_dai_drv));
 }

@@ -68,8 +68,9 @@ struct pcm179x_private {
 static int pcm179x_set_dai_fmt(struct snd_soc_dai *codec_dai,
                              unsigned int format)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct pcm179x_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm179x_private *priv = dev_get_drvdata(dev);
 
 	priv->format = format;
 
@@ -78,8 +79,9 @@ static int pcm179x_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 static int pcm179x_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm179x_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm179x_private *priv = dev_get_drvdata(dev);
 	int ret;
 
 	ret = regmap_update_bits(priv->regmap, PCM179X_SOFT_MUTE,
@@ -94,8 +96,9 @@ static int pcm179x_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm179x_private *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm179x_private *priv = dev_get_drvdata(dev);
 	int val = 0, ret;
 
 	priv->rate = params_rate(params);
@@ -128,7 +131,7 @@ static int pcm179x_hw_params(struct snd_pcm_substream *substream,
 		}
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI format\n");
+		dev_err(dev, "Invalid DAI format\n");
 		return -EINVAL;
 	}
 
@@ -227,7 +230,7 @@ int pcm179x_common_init(struct device *dev, struct regmap *regmap)
 	pcm179x->regmap = regmap;
 	dev_set_drvdata(dev, pcm179x);
 
-	return devm_snd_soc_register_component(dev,
+	return devm_snd_soc_component_register(dev,
 			&soc_component_dev_pcm179x, &pcm179x_dai, 1);
 }
 EXPORT_SYMBOL_GPL(pcm179x_common_init);

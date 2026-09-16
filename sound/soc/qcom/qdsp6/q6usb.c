@@ -53,9 +53,13 @@ static int q6usb_hw_params(struct snd_pcm_substream *substream,
 			   struct snd_pcm_hw_params *params,
 			   struct snd_soc_dai *dai)
 {
-	struct q6usb_port_data *data = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *dai_component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(dai_component);
+	struct q6usb_port_data *data = dev_get_drvdata(dai_dev);
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
 	int direction = substream->stream;
 	struct q6afe_port *q6usb_afe;
 	struct snd_soc_usb_device *sdev;
@@ -73,7 +77,7 @@ static int q6usb_hw_params(struct snd_pcm_substream *substream,
 	if (ret < 0)
 		goto out;
 
-	q6usb_afe = q6afe_port_get_from_id(cpu_dai->dev, USB_RX);
+	q6usb_afe = q6afe_port_get_from_id(cpu_dev, USB_RX);
 	if (IS_ERR(q6usb_afe)) {
 		ret = PTR_ERR(q6usb_afe);
 		goto out;
@@ -148,7 +152,7 @@ static int q6usb_get_pcm_id_from_widget(struct snd_soc_dapm_widget *w)
 		 * Only look for playback widget. RTD number carries the assigned
 		 * PCM index.
 		 */
-		if (dai->stream[0].widget == w)
+		if (snd_soc_dai_stream_widget_get(dai, 0) == w)
 			return rtd->id;
 	}
 
@@ -169,6 +173,7 @@ static int q6usb_usb_mixer_enabled(struct snd_soc_dapm_widget *w)
 
 static int q6usb_get_pcm_id(struct snd_soc_component *component)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
 	struct snd_soc_dapm_widget *w;
 	struct snd_soc_dapm_path *p;
 	int pidx;
@@ -178,7 +183,7 @@ static int q6usb_get_pcm_id(struct snd_soc_component *component)
 	 * built like the following:
 	 *    MultiMedia* <-> MM_DL* <-> USB Mixer*
 	 */
-	for_each_card_widgets(component->card, w) {
+	for_each_card_widgets(card, w) {
 		if (!strncmp(w->name, "MultiMedia", 10)) {
 			/*
 			 * Look up all paths associated with the FE widget to see if
@@ -201,7 +206,10 @@ static int q6usb_update_offload_route(struct snd_soc_component *component, int c
 				      int pcm, int direction, enum snd_soc_usb_kctl path,
 				      long *route)
 {
-	struct q6usb_port_data *data = dev_get_drvdata(component->dev);
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(component);
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(soc_card);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6usb_port_data *data = dev_get_drvdata(dev);
 	struct snd_soc_usb_device *sdev;
 	int ret = 0;
 	int idx = -1;
@@ -223,7 +231,7 @@ static int q6usb_update_offload_route(struct snd_soc_component *component, int c
 	if (card == sdev->card_idx &&
 	    pcm == sdev->ppcm_idx[sdev->num_playback - 1]) {
 		idx = path == SND_SOC_USB_KCTL_CARD_ROUTE ?
-				component->card->snd_card->number :
+				snd_card->number :
 				q6usb_get_pcm_id(component);
 	}
 
@@ -237,12 +245,14 @@ out:
 static int q6usb_alsa_connection_cb(struct snd_soc_usb *usb,
 				    struct snd_soc_usb_device *sdev, bool connected)
 {
+	struct device *dev;
 	struct q6usb_port_data *data;
 
 	if (!usb->component)
 		return -ENODEV;
 
-	data = dev_get_drvdata(usb->component->dev);
+	dev = snd_soc_component_to_dev(usb->component);
+	data = dev_get_drvdata(dev);
 
 	mutex_lock(&data->mutex);
 	if (connected) {
@@ -282,7 +292,8 @@ static void q6usb_component_enable_jack(struct q6usb_port_data *data,
 static int q6usb_component_set_jack(struct snd_soc_component *component,
 				    struct snd_soc_jack *jack, void *priv)
 {
-	struct q6usb_port_data *data = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6usb_port_data *data = dev_get_drvdata(dev);
 
 	mutex_lock(&data->mutex);
 	if (jack)
@@ -318,7 +329,8 @@ static int q6usb_dai_add_aux_device(struct q6usb_port_data *data,
 
 static int q6usb_component_probe(struct snd_soc_component *component)
 {
-	struct q6usb_port_data *data = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6usb_port_data *data = dev_get_drvdata(dev);
 	struct snd_soc_usb *usb;
 	int ret;
 
@@ -342,7 +354,8 @@ static int q6usb_component_probe(struct snd_soc_component *component)
 
 static void q6usb_component_remove(struct snd_soc_component *component)
 {
-	struct q6usb_port_data *data = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6usb_port_data *data = dev_get_drvdata(dev);
 
 	snd_soc_usb_remove_port(data->usb);
 	auxiliary_device_delete(&data->uauxdev);
@@ -395,7 +408,7 @@ static int q6usb_dai_dev_probe(struct platform_device *pdev)
 	INIT_LIST_HEAD(&data->devices);
 	dev_set_drvdata(dev, data);
 
-	return devm_snd_soc_register_component(dev, &q6usb_dai_component,
+	return devm_snd_soc_component_register(dev, &q6usb_dai_component,
 					q6usb_be_dais, ARRAY_SIZE(q6usb_be_dais));
 }
 

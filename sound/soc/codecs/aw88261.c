@@ -656,8 +656,9 @@ static void aw88261_start(struct aw88261 *aw88261)
 
 static int aw88261_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aw88261 *aw88261 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aw88261 *aw88261 = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
 	case SND_SOC_DAIFMT_NB_NF:
@@ -697,8 +698,9 @@ static int aw88261_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params,
 	struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aw88261 *aw88261 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aw88261 *aw88261 = dev_get_drvdata(dev);
 
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE)
 		return 0;
@@ -788,8 +790,9 @@ static int aw88261_hw_params(struct snd_pcm_substream *substream,
 static int aw88261_set_tdm_slot(struct snd_soc_dai *dai,
 	unsigned int tx_mask, unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aw88261 *aw88261 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aw88261 *aw88261 = dev_get_drvdata(dev);
 	int chan;
 
 	switch (slots) {
@@ -911,7 +914,8 @@ static int aw88261_profile_info(struct snd_kcontrol *kcontrol,
 			 struct snd_ctl_elem_info *uinfo)
 {
 	struct snd_soc_component *codec = snd_kcontrol_chip(kcontrol);
-	struct aw88261 *aw88261 = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct aw88261 *aw88261 = dev_get_drvdata(dev);
 	char *prof_name;
 	int count, ret;
 
@@ -946,7 +950,8 @@ static int aw88261_profile_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *codec = snd_kcontrol_chip(kcontrol);
-	struct aw88261 *aw88261 = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct aw88261 *aw88261 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = aw88261->aw_pa->prof_index;
 
@@ -957,14 +962,15 @@ static int aw88261_profile_set(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *codec = snd_kcontrol_chip(kcontrol);
-	struct aw88261 *aw88261 = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct aw88261 *aw88261 = dev_get_drvdata(dev);
 	int ret;
 
 	/* pa stop or stopping just set profile */
 	guard(mutex)(&aw88261->lock);
 	ret = aw88261_dev_set_profile_index(aw88261->aw_pa, ucontrol->value.integer.value[0]);
 	if (ret) {
-		dev_dbg(codec->dev, "profile index does not change");
+		dev_dbg(dev, "profile index does not change");
 		return 0;
 	}
 
@@ -980,7 +986,8 @@ static int aw88261_volume_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *codec = snd_kcontrol_chip(kcontrol);
-	struct aw88261 *aw88261 = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct aw88261 *aw88261 = dev_get_drvdata(dev);
 	struct aw_volume_desc *vol_desc = &aw88261->aw_pa->volume_desc;
 
 	ucontrol->value.integer.value[0] =
@@ -993,7 +1000,8 @@ static int aw88261_volume_set(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *codec = snd_kcontrol_chip(kcontrol);
-	struct aw88261 *aw88261 = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct aw88261 *aw88261 = dev_get_drvdata(dev);
 	struct aw_volume_desc *vol_desc = &aw88261->aw_pa->volume_desc;
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
@@ -1034,7 +1042,8 @@ static int aw88261_playback_event(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *k, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct aw88261 *aw88261 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aw88261 *aw88261 = dev_get_drvdata(dev);
 
 	guard(mutex)(&aw88261->lock);
 	switch (event) {
@@ -1196,7 +1205,8 @@ static int aw88261_request_firmware_file(struct aw88261 *aw88261)
 static int aw88261_codec_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct aw88261 *aw88261 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aw88261 *aw88261 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = aw88261_request_firmware_file(aw88261);
@@ -1216,7 +1226,7 @@ static int aw88261_codec_probe(struct snd_soc_component *component)
 	if (ret)
 		return ret;
 
-	ret = snd_soc_add_component_controls(component, aw88261_controls,
+	ret = snd_soc_component_add_controls(component, aw88261_controls,
 							ARRAY_SIZE(aw88261_controls));
 
 	return ret;
@@ -1321,7 +1331,7 @@ static int aw88261_i2c_probe(struct i2c_client *i2c)
 	if (ret)
 		return ret;
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_codec_dev_aw88261,
 			aw88261_dai, ARRAY_SIZE(aw88261_dai));
 	if (ret)

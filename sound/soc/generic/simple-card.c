@@ -650,7 +650,7 @@ static int simple_get_dais_count(struct simple_util_priv *priv,
 
 static int simple_soc_probe(struct snd_soc_card *card)
 {
-	struct simple_util_priv *priv = snd_soc_card_get_drvdata(card);
+	struct simple_util_priv *priv = snd_soc_card_to_priv(card);
 	int ret;
 
 	ret = simple_util_init_hp(card, &priv->hp_jack, PREFIX);
@@ -668,7 +668,7 @@ end:
 
 static int simple_soc_remove(struct snd_soc_card *card)
 {
-	struct simple_util_priv *priv = snd_soc_card_get_drvdata(card);
+	struct simple_util_priv *priv = snd_soc_card_to_priv(card);
 
 	simple_util_remove_jack(&priv->hp_jack);
 	simple_util_remove_jack(&priv->mic_jack);

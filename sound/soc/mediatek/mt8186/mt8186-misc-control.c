@@ -75,7 +75,8 @@ static int mt8186_sgen_get(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 
 	ucontrol->value.integer.value[0] = afe_priv->sgen_mode;
@@ -87,7 +88,8 @@ static int mt8186_sgen_set(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	int mode;
@@ -129,7 +131,8 @@ static int mt8186_sgen_rate_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 
 	ucontrol->value.integer.value[0] = afe_priv->sgen_rate;
@@ -141,7 +144,8 @@ static int mt8186_sgen_rate_set(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	int rate;
@@ -173,7 +177,8 @@ static int mt8186_sgen_amplitude_get(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 
 	ucontrol->value.integer.value[0] = afe_priv->sgen_amplitude;
@@ -184,7 +189,8 @@ static int mt8186_sgen_amplitude_set(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	int amplitude;
@@ -244,7 +250,7 @@ static const struct snd_kcontrol_new mt8186_afe_sgen_controls[] = {
 
 int mt8186_add_misc_control(struct snd_soc_component *component)
 {
-	snd_soc_add_component_controls(component,
+	snd_soc_component_add_controls(component,
 				       mt8186_afe_sgen_controls,
 				       ARRAY_SIZE(mt8186_afe_sgen_controls));
 

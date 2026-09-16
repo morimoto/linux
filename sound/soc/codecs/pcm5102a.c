@@ -52,7 +52,7 @@ static int pcm5102a_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, pcm5102a);
 
-	return devm_snd_soc_register_component(dev, &soc_component_dev_pcm5102a,
+	return devm_snd_soc_component_register(dev, &soc_component_dev_pcm5102a,
 			&pcm5102a_dai, 1);
 }
 

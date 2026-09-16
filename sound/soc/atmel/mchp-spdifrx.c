@@ -394,7 +394,9 @@ static irqreturn_t mchp_spdif_interrupt(int irq, void *dev_id)
 static int mchp_spdifrx_trigger(struct snd_pcm_substream *substream, int cmd,
 				struct snd_soc_dai *dai)
 {
-	struct mchp_spdifrx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdifrx_dev *dev = dev_get_drvdata(dai_dev);
 	int ret = 0;
 
 	switch (cmd) {
@@ -435,7 +437,9 @@ static int mchp_spdifrx_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct mchp_spdifrx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdifrx_dev *dev = dev_get_drvdata(dai_dev);
 	u32 mr = 0;
 	int ret;
 
@@ -594,7 +598,9 @@ static int mchp_spdifrx_cs1_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct mchp_spdifrx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdifrx_dev *dev = dev_get_drvdata(dai_dev);
 
 	return mchp_spdifrx_cs_get(dev, 0, uvalue);
 }
@@ -603,7 +609,9 @@ static int mchp_spdifrx_cs2_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct mchp_spdifrx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdifrx_dev *dev = dev_get_drvdata(dai_dev);
 
 	return mchp_spdifrx_cs_get(dev, 1, uvalue);
 }
@@ -676,7 +684,9 @@ static int mchp_spdifrx_subcode_ch1_get(struct snd_kcontrol *kcontrol,
 					struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct mchp_spdifrx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdifrx_dev *dev = dev_get_drvdata(dai_dev);
 
 	return mchp_spdifrx_subcode_ch_get(dev, 0, uvalue);
 }
@@ -685,7 +695,9 @@ static int mchp_spdifrx_subcode_ch2_get(struct snd_kcontrol *kcontrol,
 					struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct mchp_spdifrx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdifrx_dev *dev = dev_get_drvdata(dai_dev);
 
 	return mchp_spdifrx_subcode_ch_get(dev, 1, uvalue);
 }
@@ -705,7 +717,9 @@ static int mchp_spdifrx_ulock_get(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct mchp_spdifrx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdifrx_dev *dev = dev_get_drvdata(dai_dev);
 	struct mchp_spdifrx_mixer_control *ctrl = &dev->control;
 	u32 val;
 	int ret;
@@ -742,7 +756,9 @@ static int mchp_spdifrx_badf_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct mchp_spdifrx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdifrx_dev *dev = dev_get_drvdata(dai_dev);
 	struct mchp_spdifrx_mixer_control *ctrl = &dev->control;
 	u32 val;
 	int ret;
@@ -779,7 +795,9 @@ static int mchp_spdifrx_signal_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *uvalue)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct mchp_spdifrx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdifrx_dev *dev = dev_get_drvdata(dai_dev);
 	struct mchp_spdifrx_mixer_control *ctrl = &dev->control;
 	u32 val = ~0U, loops = 10;
 	int ret;
@@ -843,7 +861,9 @@ static int mchp_spdifrx_rate_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
-	struct mchp_spdifrx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdifrx_dev *dev = dev_get_drvdata(dai_dev);
 	unsigned long rate;
 	u32 val;
 	int ret;
@@ -967,11 +987,13 @@ static struct snd_kcontrol_new mchp_spdifrx_ctrls[] = {
 
 static int mchp_spdifrx_dai_probe(struct snd_soc_dai *dai)
 {
-	struct mchp_spdifrx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdifrx_dev *dev = dev_get_drvdata(dai_dev);
 	struct mchp_spdifrx_mixer_control *ctrl = &dev->control;
 	int ch;
 
-	snd_soc_dai_init_dma_data(dai, NULL, &dev->capture);
+	snd_soc_dai_stream_dma_data_set_capture(dai, &dev->capture);
 
 	/* Software reset the IP */
 	regmap_write(dev->regmap, SPDIFRX_CR, SPDIFRX_CR_SWRST);
@@ -989,7 +1011,7 @@ static int mchp_spdifrx_dai_probe(struct snd_soc_dai *dai)
 	}
 
 	/* Add controls */
-	snd_soc_add_dai_controls(dai, mchp_spdifrx_ctrls,
+	snd_soc_dai_add_controls(dai, mchp_spdifrx_ctrls,
 				 ARRAY_SIZE(mchp_spdifrx_ctrls));
 
 	return 0;
@@ -997,7 +1019,9 @@ static int mchp_spdifrx_dai_probe(struct snd_soc_dai *dai)
 
 static int mchp_spdifrx_dai_remove(struct snd_soc_dai *dai)
 {
-	struct mchp_spdifrx_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct mchp_spdifrx_dev *dev = dev_get_drvdata(dai_dev);
 
 	/* Disable interrupts */
 	regmap_write(dev->regmap, SPDIFRX_IDR, GENMASK(14, 0));
@@ -1163,7 +1187,7 @@ static int mchp_spdifrx_probe(struct platform_device *pdev)
 		goto pm_runtime_suspend;
 	}
 
-	err = devm_snd_soc_register_component(&pdev->dev,
+	err = devm_snd_soc_component_register(&pdev->dev,
 					      &mchp_spdifrx_component,
 					      &mchp_spdifrx_dai, 1);
 	if (err) {

@@ -80,12 +80,14 @@ int tegra_pcm_open(struct snd_soc_component *component,
 	struct snd_dmaengine_dai_dma_data *dmap;
 	struct dma_chan *chan;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
 	int ret;
 
 	if (rtd->dai_link->no_pcm)
 		return 0;
 
-	dmap = snd_soc_dai_get_dma_data(cpu_dai, substream);
+	dmap = snd_soc_dai_stream_dma_data_get(cpu_dai, substream);
 
 	/* Set HW params now that initialization is complete */
 	snd_soc_set_runtime_hwparams(substream, &tegra_pcm_hardware);
@@ -98,9 +100,9 @@ int tegra_pcm_open(struct snd_soc_component *component,
 		return ret;
 	}
 
-	chan = dma_request_chan(cpu_dai->dev, dmap->chan_name);
+	chan = dma_request_chan(cpu_dev, dmap->chan_name);
 	if (IS_ERR(chan)) {
-		dev_err(cpu_dai->dev,
+		dev_err(cpu_dev,
 			"dmaengine request slave channel failed! (%s)\n",
 			dmap->chan_name);
 		return -ENODEV;
@@ -151,7 +153,7 @@ int tegra_pcm_hw_params(struct snd_soc_component *component,
 	if (rtd->dai_link->no_pcm)
 		return 0;
 
-	dmap = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	dmap = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 	if (!dmap)
 		return 0;
 
@@ -207,14 +209,14 @@ static int tegra_pcm_dma_allocate(struct device *dev, struct snd_soc_pcm_runtime
 int tegra_pcm_new(struct snd_soc_component *component,
 		  struct snd_soc_pcm_runtime *rtd)
 {
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	/*
 	 * Fallback for backwards-compatibility with older device trees that
 	 * have the iommus property in the virtual, top-level "sound" node.
 	 */
 	if (!of_property_present(dev->of_node, "iommus"))
-		dev = rtd->card->snd_card->dev;
+		dev = snd_soc_card_to_snd_card(rtd->card)->dev;
 
 	return tegra_pcm_dma_allocate(dev, rtd, tegra_pcm_hardware.buffer_bytes_max);
 }

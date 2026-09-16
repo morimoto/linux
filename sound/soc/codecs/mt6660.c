@@ -92,19 +92,18 @@ static int mt6660_codec_dac_event(struct snd_soc_dapm_widget *w,
 static int mt6660_codec_classd_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
-		dev_dbg(component->dev,
-			"%s: before classd turn on\n", __func__);
+		dev_dbg(dev, "%s: before classd turn on\n", __func__);
 		/* config to adaptive mode */
 		ret = snd_soc_component_update_bits(component,
 			MT6660_REG_BST_CTRL, 0x03, 0x03);
 		if (ret < 0) {
-			dev_err(component->dev, "config mode adaptive fail\n");
+			dev_err(dev, "config mode adaptive fail\n");
 			return ret;
 		}
 		break;
@@ -113,47 +112,42 @@ static int mt6660_codec_classd_event(struct snd_soc_dapm_widget *w,
 		ret = snd_soc_component_update_bits(component,
 			MT6660_REG_RESV7, 0x04, 0x04);
 		if (ret < 0) {
-			dev_err(component->dev,
-				"enable voltage sensing fail\n");
+			dev_err(dev, "enable voltage sensing fail\n");
 			return ret;
 		}
-		dev_dbg(component->dev, "Amp on\n");
+		dev_dbg(dev, "Amp on\n");
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
-		dev_dbg(component->dev, "Amp off\n");
+		dev_dbg(dev, "Amp off\n");
 		/* voltage sensing disable */
 		ret = snd_soc_component_update_bits(component,
 			MT6660_REG_RESV7, 0x04, 0x00);
 		if (ret < 0) {
-			dev_err(component->dev,
-				"disable voltage sensing fail\n");
+			dev_err(dev, "disable voltage sensing fail\n");
 			return ret;
 		}
 		/* pop-noise improvement 1 */
 		ret = snd_soc_component_update_bits(component,
 			MT6660_REG_RESV10, 0x10, 0x10);
 		if (ret < 0) {
-			dev_err(component->dev,
-				"pop-noise improvement 1 fail\n");
+			dev_err(dev, "pop-noise improvement 1 fail\n");
 			return ret;
 		}
 		break;
 	case SND_SOC_DAPM_POST_PMD:
-		dev_dbg(component->dev,
-			"%s: after classd turn off\n", __func__);
+		dev_dbg(dev, "%s: after classd turn off\n", __func__);
 		/* pop-noise improvement 2 */
 		ret = snd_soc_component_update_bits(component,
 			MT6660_REG_RESV10, 0x10, 0x00);
 		if (ret < 0) {
-			dev_err(component->dev,
-				"pop-noise improvement 2 fail\n");
+			dev_err(dev, "pop-noise improvement 2 fail\n");
 			return ret;
 		}
 		/* config to off mode */
 		ret = snd_soc_component_update_bits(component,
 			MT6660_REG_BST_CTRL, 0x03, 0x00);
 		if (ret < 0) {
-			dev_err(component->dev, "config mode off fail\n");
+			dev_err(dev, "config mode off fail\n");
 			return ret;
 		}
 		break;
@@ -188,8 +182,8 @@ static int mt6660_component_get_volsw(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct mt6660_chip *chip = (struct mt6660_chip *)
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mt6660_chip *chip = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = chip->chip_rev & 0x0f;
 	return 0;
@@ -258,13 +252,14 @@ static const struct reg_table mt6660_setting_table[] = {
 
 static int mt6660_component_setting(struct snd_soc_component *component)
 {
-	struct mt6660_chip *chip = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mt6660_chip *chip = dev_get_drvdata(dev);
 	int ret = 0;
 	size_t i = 0;
 
 	ret = _mt6660_chip_power_on(chip, 1);
 	if (ret < 0) {
-		dev_err(component->dev, "%s chip power on failed\n", __func__);
+		dev_err(dev, "%s chip power on failed\n", __func__);
 		return ret;
 	}
 
@@ -274,7 +269,7 @@ static int mt6660_component_setting(struct snd_soc_component *component)
 				mt6660_setting_table[i].mask,
 				mt6660_setting_table[i].val);
 		if (ret < 0) {
-			dev_err(component->dev, "%s update 0x%02x failed\n",
+			dev_err(dev, "%s update 0x%02x failed\n",
 				__func__, mt6660_setting_table[i].addr);
 			return ret;
 		}
@@ -282,7 +277,7 @@ static int mt6660_component_setting(struct snd_soc_component *component)
 
 	ret = _mt6660_chip_power_on(chip, 0);
 	if (ret < 0) {
-		dev_err(component->dev, "%s chip power off failed\n", __func__);
+		dev_err(dev, "%s chip power off failed\n", __func__);
 		return ret;
 	}
 
@@ -291,11 +286,12 @@ static int mt6660_component_setting(struct snd_soc_component *component)
 
 static int mt6660_component_probe(struct snd_soc_component *component)
 {
-	struct mt6660_chip *chip = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mt6660_chip *chip = dev_get_drvdata(dev);
 	int ret;
 
-	dev_dbg(component->dev, "%s\n", __func__);
-	snd_soc_component_init_regmap(component, chip->regmap);
+	dev_dbg(dev, "%s\n", __func__);
+	snd_soc_component_regmap_init(component, chip->regmap);
 
 	ret = mt6660_component_setting(component);
 	if (ret < 0)
@@ -306,8 +302,10 @@ static int mt6660_component_probe(struct snd_soc_component *component)
 
 static void mt6660_component_remove(struct snd_soc_component *component)
 {
-	dev_dbg(component->dev, "%s\n", __func__);
-	snd_soc_component_exit_regmap(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	dev_dbg(dev, "%s\n", __func__);
+	snd_soc_component_regmap_exit(component);
 }
 
 static const struct snd_soc_component_driver mt6660_component_driver = {
@@ -328,17 +326,19 @@ static const struct snd_soc_component_driver mt6660_component_driver = {
 static int mt6660_component_aif_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *hw_params, struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
 	int word_len = params_physical_width(hw_params);
 	int aud_bit = params_width(hw_params);
 	u16 reg_data = 0;
 	int ret;
 
-	dev_dbg(dai->dev, "%s: ++\n", __func__);
-	dev_dbg(dai->dev, "format: 0x%08x\n", params_format(hw_params));
-	dev_dbg(dai->dev, "rate: 0x%08x\n", params_rate(hw_params));
-	dev_dbg(dai->dev, "word_len: %d, aud_bit: %d\n", word_len, aud_bit);
+	dev_dbg(dai_dev, "%s: ++\n", __func__);
+	dev_dbg(dai_dev, "format: 0x%08x\n", params_format(hw_params));
+	dev_dbg(dai_dev, "rate: 0x%08x\n", params_rate(hw_params));
+	dev_dbg(dai_dev, "word_len: %d, aud_bit: %d\n", word_len, aud_bit);
 	if (word_len > 32 || word_len < 16) {
-		dev_err(dai->dev, "not supported word length\n");
+		dev_err(dai_dev, "not supported word length\n");
 		return -ENOTSUPP;
 	}
 	switch (aud_bit) {
@@ -358,19 +358,19 @@ static int mt6660_component_aif_hw_params(struct snd_pcm_substream *substream,
 	default:
 		return -ENOTSUPP;
 	}
-	ret = snd_soc_component_update_bits(dai->component,
+	ret = snd_soc_component_update_bits(component,
 		MT6660_REG_SERIAL_CFG1, 0xc0, (reg_data << 6));
 	if (ret < 0) {
-		dev_err(dai->dev, "config aud bit fail\n");
+		dev_err(dai_dev, "config aud bit fail\n");
 		return ret;
 	}
-	ret = snd_soc_component_update_bits(dai->component,
+	ret = snd_soc_component_update_bits(component,
 		MT6660_REG_TDM_CFG3, 0x3f0, word_len << 4);
 	if (ret < 0) {
-		dev_err(dai->dev, "config word len fail\n");
+		dev_err(dai_dev, "config word len fail\n");
 		return ret;
 	}
-	dev_dbg(dai->dev, "%s: --\n", __func__);
+	dev_dbg(dai_dev, "%s: --\n", __func__);
 	return 0;
 }
 
@@ -505,7 +505,7 @@ static int mt6660_i2c_probe(struct i2c_client *client)
 	pm_runtime_set_active(chip->dev);
 	pm_runtime_enable(chip->dev);
 
-	ret = devm_snd_soc_register_component(chip->dev,
+	ret = devm_snd_soc_component_register(chip->dev,
 					       &mt6660_component_driver,
 					       &mt6660_codec_dai, 1);
 	if (ret)

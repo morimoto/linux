@@ -66,7 +66,8 @@ static unsigned long uda1380_cache_dirty;
 static inline unsigned int uda1380_read_reg_cache(struct snd_soc_component *component,
 	unsigned int reg)
 {
-	struct uda1380_priv *uda1380 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1380_priv *uda1380 = dev_get_drvdata(dev);
 	u16 *cache = uda1380->reg_cache;
 
 	if (reg == UDA1380_RESET)
@@ -82,7 +83,8 @@ static inline unsigned int uda1380_read_reg_cache(struct snd_soc_component *comp
 static inline void uda1380_write_reg_cache(struct snd_soc_component *component,
 	u16 reg, unsigned int value)
 {
-	struct uda1380_priv *uda1380 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1380_priv *uda1380 = dev_get_drvdata(dev);
 	u16 *cache = uda1380->reg_cache;
 
 	if (reg >= UDA1380_CACHEREGNUM)
@@ -98,7 +100,8 @@ static inline void uda1380_write_reg_cache(struct snd_soc_component *component,
 static int uda1380_write(struct snd_soc_component *component, unsigned int reg,
 	unsigned int value)
 {
-	struct uda1380_priv *uda1380 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1380_priv *uda1380 = dev_get_drvdata(dev);
 	u8 data[3];
 	unsigned int val;
 	int ret;
@@ -124,27 +127,27 @@ static int uda1380_write(struct snd_soc_component *component, unsigned int reg,
 	ret = i2c_master_send(uda1380->i2c, data, 3);
 	if (ret != 3) {
 		int err = ret < 0 ? ret : -EIO;
-		dev_err(component->dev, "write failed: %pe\n", ERR_PTR(err));
+		dev_err(dev, "write failed: %pe\n", ERR_PTR(err));
 		return err;
 	}
 
 	ret = i2c_master_send(uda1380->i2c, data, 1);
 	if (ret != 1) {
 		int err = ret < 0 ? ret : -EIO;
-		dev_err(component->dev, "send address failed: %pe\n", ERR_PTR(err));
+		dev_err(dev, "send address failed: %pe\n", ERR_PTR(err));
 		return err;
 }
 
 	ret = i2c_master_recv(uda1380->i2c, data, 2);
 	if (ret != 2) {
 		int err = ret < 0 ? ret : -EIO;
-		dev_err(component->dev, "read failed: %pe\n", ERR_PTR(err));
+		dev_err(dev, "read failed: %pe\n", ERR_PTR(err));
 		return err;
 	}
 
 	val = (data[0] << 8) | data[1];
 	if (val != value) {
-		dev_err(component->dev, "read back val %x (expected %x)\n", val, value);
+		dev_err(dev, "read back val %x (expected %x)\n", val, value);
 		return -EIO;
 	}
 
@@ -156,7 +159,8 @@ static int uda1380_write(struct snd_soc_component *component, unsigned int reg,
 
 static void uda1380_sync_cache(struct snd_soc_component *component)
 {
-	struct uda1380_priv *uda1380 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1380_priv *uda1380 = dev_get_drvdata(dev);
 	int reg;
 	u8 data[3];
 	u16 *cache = uda1380->reg_cache;
@@ -167,14 +171,15 @@ static void uda1380_sync_cache(struct snd_soc_component *component)
 		data[1] = (cache[reg] & 0xff00) >> 8;
 		data[2] = cache[reg] & 0x00ff;
 		if (i2c_master_send(uda1380->i2c, data, 3) != 3)
-			dev_err(component->dev, "%s: write to reg 0x%x failed\n",
+			dev_err(dev, "%s: write to reg 0x%x failed\n",
 				__func__, reg);
 	}
 }
 
 static int uda1380_reset(struct snd_soc_component *component)
 {
-	struct uda1380_priv *uda1380 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1380_priv *uda1380 = dev_get_drvdata(dev);
 
 	if (uda1380->reset) {
 		gpiod_set_value(uda1380->reset, 1);
@@ -188,7 +193,7 @@ static int uda1380_reset(struct snd_soc_component *component)
 		data[2] = 0;
 
 		if (i2c_master_send(uda1380->i2c, data, 3) != 3) {
-			dev_err(component->dev, "%s: failed\n", __func__);
+			dev_err(dev, "%s: failed\n", __func__);
 			return -EIO;
 		}
 	}
@@ -440,7 +445,7 @@ static const struct snd_soc_dapm_route uda1380_dapm_routes[] = {
 static int uda1380_set_dai_fmt_both(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	int iface;
 
 	/* set up DAI based upon fmt */
@@ -470,7 +475,7 @@ static int uda1380_set_dai_fmt_both(struct snd_soc_dai *codec_dai,
 static int uda1380_set_dai_fmt_playback(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	int iface;
 
 	/* set up DAI based upon fmt */
@@ -500,7 +505,7 @@ static int uda1380_set_dai_fmt_playback(struct snd_soc_dai *codec_dai,
 static int uda1380_set_dai_fmt_capture(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	int iface;
 
 	/* set up DAI based upon fmt */
@@ -529,8 +534,9 @@ static int uda1380_set_dai_fmt_capture(struct snd_soc_dai *codec_dai,
 static int uda1380_trigger(struct snd_pcm_substream *substream, int cmd,
 		struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct uda1380_priv *uda1380 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1380_priv *uda1380 = dev_get_drvdata(dev);
 	int mixer = uda1380_read_reg_cache(component, UDA1380_MIXER);
 
 	switch (cmd) {
@@ -554,7 +560,7 @@ static int uda1380_pcm_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 clk = uda1380_read_reg_cache(component, UDA1380_CLK);
 
 	/* set WSPLL power and divider if running from this clock */
@@ -591,7 +597,7 @@ static int uda1380_pcm_hw_params(struct snd_pcm_substream *substream,
 static void uda1380_pcm_shutdown(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 clk = uda1380_read_reg_cache(component, UDA1380_CLK);
 
 	/* shut down WSPLL power if running from this clock */
@@ -612,7 +618,8 @@ static int uda1380_set_bias_level(struct snd_soc_component *component,
 	enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct uda1380_priv *uda1380 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1380_priv *uda1380 = dev_get_drvdata(dev);
 	int pm = uda1380_read_reg_cache(component, UDA1380_PM);
 	int reg;
 
@@ -728,7 +735,8 @@ static struct snd_soc_dai_driver uda1380_dai[] = {
 
 static int uda1380_probe(struct snd_soc_component *component)
 {
-	struct uda1380_priv *uda1380 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct uda1380_priv *uda1380 = dev_get_drvdata(dev);
 	int ret;
 
 	uda1380->component = component;
@@ -807,7 +815,7 @@ static int uda1380_i2c_probe(struct i2c_client *i2c)
 	i2c_set_clientdata(i2c, uda1380);
 	uda1380->i2c = i2c;
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_uda1380, uda1380_dai, ARRAY_SIZE(uda1380_dai));
 	return ret;
 }

@@ -22,13 +22,13 @@ static int snd_proto_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 
 	/* Set proto sysclk */
 	int ret = snd_soc_dai_set_sysclk(codec_dai, WM8731_SYSCLK_XTAL,
 					 XTAL_RATE, SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(card->dev, "Failed to set WM8731 SYSCLK: %d\n",
-			ret);
+		dev_err(dev, "Failed to set WM8731 SYSCLK: %d\n", ret);
 		return ret;
 	}
 

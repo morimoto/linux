@@ -678,7 +678,7 @@ static int alc5632_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 		int source, unsigned int freq_in, unsigned int freq_out)
 {
 	int i;
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	int gbl_clk = 0, pll_div = 0;
 	u16 reg;
 
@@ -774,7 +774,8 @@ static const struct _coeff_div coeff_div[] = {
 
 static int get_coeff(struct snd_soc_component *component, int rate)
 {
-	struct alc5632_priv *alc5632 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct alc5632_priv *alc5632 = dev_get_drvdata(dev);
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(coeff_div); i++) {
@@ -790,8 +791,9 @@ static int get_coeff(struct snd_soc_component *component, int rate)
 static int alc5632_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct alc5632_priv *alc5632 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct alc5632_priv *alc5632 = dev_get_drvdata(dev);
 
 	switch (freq) {
 	case  4096000:
@@ -812,7 +814,7 @@ static int alc5632_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int alc5632_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 iface = 0;
 
 	/* set audio interface clocking */
@@ -867,7 +869,7 @@ static int alc5632_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int alc5632_pcm_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int coeff, rate;
 	u16 iface;
 
@@ -904,7 +906,7 @@ static int alc5632_pcm_hw_params(struct snd_pcm_substream *substream,
 
 static int alc5632_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 hp_mute = ALC5632_MISC_HP_DEPOP_MUTE_L
 						|ALC5632_MISC_HP_DEPOP_MUTE_R;
 	u16 mute_reg = snd_soc_component_read(component, ALC5632_MISC_CTRL) & ~hp_mute;
@@ -1051,7 +1053,8 @@ static struct snd_soc_dai_driver alc5632_dai = {
 #ifdef CONFIG_PM
 static int alc5632_resume(struct snd_soc_component *component)
 {
-	struct alc5632_priv *alc5632 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct alc5632_priv *alc5632 = dev_get_drvdata(dev);
 
 	regcache_sync(alc5632->regmap);
 
@@ -1063,11 +1066,12 @@ static int alc5632_resume(struct snd_soc_component *component)
 
 static int alc5632_probe(struct snd_soc_component *component)
 {
-	struct alc5632_priv *alc5632 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct alc5632_priv *alc5632 = dev_get_drvdata(dev);
 
 	switch (alc5632->id) {
 	case 0x5c:
-		snd_soc_add_component_controls(component, alc5632_vol_snd_controls,
+		snd_soc_component_add_controls(component, alc5632_vol_snd_controls,
 			ARRAY_SIZE(alc5632_vol_snd_controls));
 		break;
 	default:
@@ -1170,7 +1174,7 @@ static int alc5632_i2c_probe(struct i2c_client *client)
 		return -EINVAL;
 	}
 
-	ret = devm_snd_soc_register_component(&client->dev,
+	ret = devm_snd_soc_component_register(&client->dev,
 		&soc_component_device_alc5632, &alc5632_dai, 1);
 
 	if (ret < 0) {

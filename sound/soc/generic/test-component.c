@@ -12,6 +12,7 @@
 #include <linux/workqueue.h>
 #include <sound/pcm.h>
 #include <sound/soc.h>
+#include <sound/soc-dai.h>
 
 #define TEST_NAME_LEN 32
 struct test_dai_name {
@@ -35,13 +36,18 @@ struct test_adata {
 	u32 dai_v:1;
 };
 
-#define mile_stone(d)		dev_info((d)->dev, "%s() : %s", __func__, (d)->driver->name)
+#define mile_stone_c(c)		dev_info(snd_soc_component_to_dev(c),\
+					 "%s() : %s", __func__, \
+					 snd_soc_component_to_driver(c)->name)
+#define mile_stone_d(d)		dev_info(snd_soc_component_to_dev(snd_soc_dai_to_component(d)),\
+					 "%s() : %s", __func__,		\
+					 snd_soc_dai_to_driver(d)->name)
 #define mile_stone_x(dev)	dev_info(dev, "%s()", __func__)
 
 static int test_dai_set_sysclk(struct snd_soc_dai *dai,
 			       int clk_id, unsigned int freq, int dir)
 {
-	mile_stone(dai);
+	mile_stone_d(dai);
 
 	return 0;
 }
@@ -49,14 +55,14 @@ static int test_dai_set_sysclk(struct snd_soc_dai *dai,
 static int test_dai_set_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			    unsigned int freq_in, unsigned int freq_out)
 {
-	mile_stone(dai);
+	mile_stone_d(dai);
 
 	return 0;
 }
 
 static int test_dai_set_clkdiv(struct snd_soc_dai *dai, int div_id, int div)
 {
-	mile_stone(dai);
+	mile_stone_d(dai);
 
 	return 0;
 }
@@ -67,9 +73,11 @@ static int test_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	unsigned int clock  = fmt & SND_SOC_DAIFMT_CLOCK_MASK;
 	unsigned int inv    = fmt & SND_SOC_DAIFMT_INV_MASK;
 	unsigned int master = fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	char *str;
 
-	dev_info(dai->dev, "name   : %s", dai->name);
+	dev_info(dev, "name   : %s", snd_soc_dai_name(dai));
 
 	str = "unknown";
 	switch (format) {
@@ -95,13 +103,13 @@ static int test_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		str = "pdm";
 		break;
 	}
-	dev_info(dai->dev, "format : %s", str);
+	dev_info(dev, "format : %s", str);
 
 	if (clock == SND_SOC_DAIFMT_CONT)
 		str = "continuous";
 	else
 		str = "gated";
-	dev_info(dai->dev, "clock  : %s", str);
+	dev_info(dev, "clock  : %s", str);
 
 	str = "unknown";
 	switch (master) {
@@ -118,7 +126,7 @@ static int test_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		str = "clk consumer, frame consumer";
 		break;
 	}
-	dev_info(dai->dev, "clock  : codec is %s", str);
+	dev_info(dev, "clock  : codec is %s", str);
 
 	str = "unknown";
 	switch (inv) {
@@ -135,7 +143,7 @@ static int test_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		str = "invert bit, invert frame";
 		break;
 	}
-	dev_info(dai->dev, "signal : %s", str);
+	dev_info(dev, "signal : %s", str);
 
 	return 0;
 }
@@ -144,48 +152,51 @@ static int test_dai_set_tdm_slot(struct snd_soc_dai *dai,
 				 unsigned int tx_mask, unsigned int rx_mask,
 				 int slots, int slot_width)
 {
-	dev_info(dai->dev, "set tdm slot: tx_mask=0x%08X, rx_mask=0x%08X, slots=%d, slot_width=%d\n",
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	dev_info(dev, "set tdm slot: tx_mask=0x%08X, rx_mask=0x%08X, slots=%d, slot_width=%d\n",
 		 tx_mask, rx_mask, slots, slot_width);
 	return 0;
 }
 
 static int test_dai_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	mile_stone(dai);
+	mile_stone_d(dai);
 
 	return 0;
 }
 
 static int test_dai_startup(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	mile_stone(dai);
+	mile_stone_d(dai);
 
 	return 0;
 }
 
 static void test_dai_shutdown(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	mile_stone(dai);
+	mile_stone_d(dai);
 }
 
 static int test_dai_hw_params(struct snd_pcm_substream *substream,
 			      struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	mile_stone(dai);
+	mile_stone_d(dai);
 
 	return 0;
 }
 
 static int test_dai_hw_free(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	mile_stone(dai);
+	mile_stone_d(dai);
 
 	return 0;
 }
 
 static int test_dai_trigger(struct snd_pcm_substream *substream, int cmd, struct snd_soc_dai *dai)
 {
-	mile_stone(dai);
+	mile_stone_d(dai);
 
 	return 0;
 }
@@ -241,26 +252,26 @@ static const struct snd_soc_dai_ops test_verbose_ops = {
 
 static int test_component_probe(struct snd_soc_component *component)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
 
 static void test_component_remove(struct snd_soc_component *component)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 }
 
 static int test_component_suspend(struct snd_soc_component *component)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
 
 static int test_component_resume(struct snd_soc_component *component)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
@@ -269,12 +280,12 @@ static int test_component_resume(struct snd_soc_component *component)
 static int test_component_pcm_new(struct snd_soc_component *component,
 				  struct snd_soc_pcm_runtime *rtd)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	snd_pcm_set_managed_buffer_all(
 		rtd->pcm,
 		SNDRV_DMA_TYPE_DEV,
-		rtd->card->snd_card->dev,
+		snd_soc_card_to_dev(rtd->card),
 		PREALLOC_BUFFER, PREALLOC_BUFFER);
 
 	return 0;
@@ -283,13 +294,13 @@ static int test_component_pcm_new(struct snd_soc_component *component,
 static void test_component_pcm_free(struct snd_soc_component *component,
 				    struct snd_pcm *pcm)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 }
 
 static int test_component_set_sysclk(struct snd_soc_component *component,
 				     int clk_id, int source, unsigned int freq, int dir)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
@@ -297,7 +308,7 @@ static int test_component_set_sysclk(struct snd_soc_component *component,
 static int test_component_set_pll(struct snd_soc_component *component, int pll_id,
 				  int source, unsigned int freq_in, unsigned int freq_out)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
@@ -305,7 +316,7 @@ static int test_component_set_pll(struct snd_soc_component *component, int pll_i
 static int test_component_set_jack(struct snd_soc_component *component,
 				   struct snd_soc_jack *jack,  void *data)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
@@ -313,12 +324,12 @@ static int test_component_set_jack(struct snd_soc_component *component,
 static void test_component_seq_notifier(struct snd_soc_component *component,
 					enum snd_soc_dapm_type type, int subseq)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 }
 
 static int test_component_stream_event(struct snd_soc_component *component, int event)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
@@ -326,7 +337,7 @@ static int test_component_stream_event(struct snd_soc_component *component, int 
 static int test_component_set_bias_level(struct snd_soc_component *component,
 					 enum snd_soc_bias_level level)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
@@ -349,7 +360,7 @@ static int test_component_open(struct snd_soc_component *component,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 
-	mile_stone(component);
+	mile_stone_c(component);
 
 	/* BE's dont need dummy params */
 	if (!rtd->dai_link->no_pcm)
@@ -361,7 +372,7 @@ static int test_component_open(struct snd_soc_component *component,
 static int test_component_close(struct snd_soc_component *component,
 				struct snd_pcm_substream *substream)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
@@ -370,7 +381,7 @@ static int test_component_ioctl(struct snd_soc_component *component,
 				struct snd_pcm_substream *substream,
 				unsigned int cmd, void *arg)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
@@ -379,7 +390,7 @@ static int test_component_hw_params(struct snd_soc_component *component,
 				    struct snd_pcm_substream *substream,
 				    struct snd_pcm_hw_params *params)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
@@ -387,7 +398,7 @@ static int test_component_hw_params(struct snd_soc_component *component,
 static int test_component_hw_free(struct snd_soc_component *component,
 				  struct snd_pcm_substream *substream)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
@@ -395,7 +406,7 @@ static int test_component_hw_free(struct snd_soc_component *component,
 static int test_component_prepare(struct snd_soc_component *component,
 				  struct snd_pcm_substream *substream)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
@@ -423,9 +434,10 @@ static void test_component_dwork(struct work_struct *work)
 static int test_component_trigger(struct snd_soc_component *component,
 				  struct snd_pcm_substream *substream, int cmd)
 {
-	struct test_priv *priv = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct test_priv *priv = dev_get_drvdata(dev);
 
-	mile_stone(component);
+	mile_stone_c(component);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -443,7 +455,7 @@ static int test_component_trigger(struct snd_soc_component *component,
 static int test_component_sync_stop(struct snd_soc_component *component,
 				    struct snd_pcm_substream *substream)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
@@ -473,7 +485,7 @@ static int test_component_get_time_info(struct snd_soc_component *component,
 					struct snd_pcm_audio_tstamp_config *audio_tstamp_config,
 					struct snd_pcm_audio_tstamp_report *audio_tstamp_report)
 {
-	mile_stone(component);
+	mile_stone_c(component);
 
 	return 0;
 }
@@ -620,7 +632,7 @@ static int test_driver_probe(struct platform_device *pdev)
 		i++;
 	}
 
-	ret = devm_snd_soc_register_component(dev, cdriv, ddriv, num);
+	ret = devm_snd_soc_component_register(dev, cdriv, ddriv, num);
 	if (ret < 0)
 		return ret;
 

@@ -422,7 +422,7 @@ static int ak4671_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params,
 		struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u8 fs;
 
 	fs = snd_soc_component_read(component, AK4671_PLL_MODE_SELECT0);
@@ -468,7 +468,7 @@ static int ak4671_hw_params(struct snd_pcm_substream *substream,
 static int ak4671_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 		unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u8 pll;
 
 	pll = snd_soc_component_read(component, AK4671_PLL_MODE_SELECT0);
@@ -513,7 +513,7 @@ static int ak4671_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 static int ak4671_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u8 mode;
 	u8 format;
 
@@ -647,7 +647,7 @@ static int ak4671_i2c_probe(struct i2c_client *client)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&client->dev,
+	ret = devm_snd_soc_component_register(&client->dev,
 			&soc_component_dev_ak4671, &ak4671_dai, 1);
 	return ret;
 }

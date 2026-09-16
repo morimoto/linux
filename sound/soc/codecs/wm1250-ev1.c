@@ -25,7 +25,8 @@ struct wm1250_priv {
 static int wm1250_ev1_set_bias_level(struct snd_soc_component *component,
 				     enum snd_soc_bias_level level)
 {
-	struct wm1250_priv *wm1250 = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm1250_priv *wm1250 = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
@@ -63,7 +64,9 @@ static int wm1250_ev1_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct wm1250_priv *wm1250 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm1250_priv *wm1250 = dev_get_drvdata(dev);
 
 	switch (params_rate(params)) {
 	case 8000:
@@ -193,7 +196,7 @@ static int wm1250_ev1_probe(struct i2c_client *i2c)
 	if (ret != 0)
 		return ret;
 
-	ret = devm_snd_soc_register_component(&i2c->dev, &soc_component_dev_wm1250_ev1,
+	ret = devm_snd_soc_component_register(&i2c->dev, &soc_component_dev_wm1250_ev1,
 				     &wm1250_ev1_dai, 1);
 	if (ret != 0) {
 		dev_err(&i2c->dev, "Failed to register CODEC: %d\n", ret);

@@ -90,7 +90,8 @@ static int cs35l45_global_en_ev(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l45_private *cs35l45 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 
 	dev_dbg(cs35l45->dev, "%s event : %x\n", __func__, event);
 
@@ -117,7 +118,8 @@ static int cs35l45_dsp_preload_ev(struct snd_soc_dapm_widget *w,
 				  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l45_private *cs35l45 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 	int ret;
 
 	switch (event) {
@@ -154,7 +156,8 @@ static int cs35l45_dsp_audio_ev(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l45_private *cs35l45 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -173,14 +176,16 @@ static int cs35l45_dsp_audio_ev(struct snd_soc_dapm_widget *w,
 static int cs35l45_activate_ctl(struct snd_soc_component *component,
 				const char *ctl_name, bool active)
 {
-	struct snd_card *card = component->card->snd_card;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(component);
+	struct snd_card *card = snd_soc_card_to_snd_card(soc_card);
 	struct snd_kcontrol *kcontrol;
 	struct snd_kcontrol_volatile *vd;
 	unsigned int index_offset;
 
 	kcontrol = snd_soc_component_get_kcontrol(component, ctl_name);
 	if (!kcontrol) {
-		dev_err(component->dev, "Can't find kcontrol %s\n", ctl_name);
+		dev_err(dev, "Can't find kcontrol %s\n", ctl_name);
 		return -EINVAL;
 	}
 
@@ -200,8 +205,8 @@ static int cs35l45_sync_en_get(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l45_private *cs35l45 =
-			snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = cs35l45->sync_en;
 
@@ -212,8 +217,8 @@ static int cs35l45_sync_en_put(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l45_private *cs35l45 =
-			snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm =
 			snd_soc_component_to_dapm(component);
 
@@ -240,8 +245,8 @@ static int cs35l45_amplifier_mode_get(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l45_private *cs35l45 =
-			snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = cs35l45->amplifier_mode;
 
@@ -252,8 +257,8 @@ static int cs35l45_amplifier_mode_put(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs35l45_private *cs35l45 =
-			snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm =
 			snd_soc_component_to_dapm(component);
 	unsigned int amp_state;
@@ -691,7 +696,9 @@ static int cs35l45_set_pll(struct cs35l45_private *cs35l45, unsigned int freq)
 
 static int cs35l45_asp_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct cs35l45_private *cs35l45 = snd_soc_component_get_drvdata(codec_dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 	unsigned int asp_fmt, fsync_inv, bclk_inv;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -751,7 +758,9 @@ static int cs35l45_asp_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct cs35l45_private *cs35l45 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 	unsigned int asp_width, asp_wl, global_fs, slot_multiple, asp_fmt;
 	int bclk;
 
@@ -824,7 +833,9 @@ static int cs35l45_asp_set_tdm_slot(struct snd_soc_dai *dai,
 				    unsigned int tx_mask, unsigned int rx_mask,
 				    int slots, int slot_width)
 {
-	struct cs35l45_private *cs35l45 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 
 	if (slot_width && ((slot_width < 16) || (slot_width > 128)))
 		return -EINVAL;
@@ -838,7 +849,9 @@ static int cs35l45_asp_set_tdm_slot(struct snd_soc_dai *dai,
 static int cs35l45_asp_set_sysclk(struct snd_soc_dai *dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct cs35l45_private *cs35l45 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 	int ret;
 
 	if (clk_id != 0) {
@@ -861,7 +874,9 @@ static int cs35l45_asp_set_sysclk(struct snd_soc_dai *dai,
 
 static int cs35l45_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct cs35l45_private *cs35l45 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 	unsigned int global_fs, val, hpf_tune;
 
 	if (mute)
@@ -942,16 +957,17 @@ static struct snd_soc_dai_driver cs35l45_dai[] = {
 
 static int cs35l45_component_probe(struct snd_soc_component *component)
 {
-	struct cs35l45_private *cs35l45 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 	int ret;
 
-	ret = snd_soc_add_component_controls(component, cs35l45_controls,
+	ret = snd_soc_component_add_controls(component, cs35l45_controls,
 					     ARRAY_SIZE(cs35l45_controls));
 	if (ret < 0)
 		return ret;
 
 	if (cs35l45->sync_pin_set) {
-		ret = snd_soc_add_component_controls(component, cs35l45_sync_controls,
+		ret = snd_soc_component_add_controls(component, cs35l45_sync_controls,
 						     ARRAY_SIZE(cs35l45_sync_controls));
 		if (ret < 0)
 			return ret;
@@ -962,7 +978,8 @@ static int cs35l45_component_probe(struct snd_soc_component *component)
 
 static void cs35l45_component_remove(struct snd_soc_component *component)
 {
-	struct cs35l45_private *cs35l45 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l45_private *cs35l45 = dev_get_drvdata(dev);
 
 	wm_adsp2_component_remove(&cs35l45->dsp, component);
 }
@@ -1554,7 +1571,7 @@ int cs35l45_probe(struct cs35l45_private *cs35l45)
 		}
 	}
 
-	ret = devm_snd_soc_register_component(dev, &cs35l45_component,
+	ret = devm_snd_soc_component_register(dev, &cs35l45_component,
 					      cs35l45_dai,
 					      ARRAY_SIZE(cs35l45_dai));
 	if (ret < 0)

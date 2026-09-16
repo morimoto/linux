@@ -280,20 +280,21 @@ static int avs_parse_tokens(struct snd_soc_component *comp, void *object,
 			    const struct avs_tplg_token_parser *parsers, size_t count,
 			    struct snd_soc_tplg_vendor_array *tuples, int priv_size)
 {
+	struct device *dev = snd_soc_component_to_dev(comp);
 	int array_size, ret;
 
 	while (priv_size > 0) {
 		array_size = le32_to_cpu(tuples->size);
 
 		if (array_size <= 0) {
-			dev_err(comp->dev, "invalid array size 0x%x\n", array_size);
+			dev_err(dev, "invalid array size 0x%x\n", array_size);
 			return -EINVAL;
 		}
 
 		/* Make sure there is enough data before parsing. */
 		priv_size -= array_size;
 		if (priv_size < 0) {
-			dev_err(comp->dev, "invalid array size 0x%x\n", array_size);
+			dev_err(dev, "invalid array size 0x%x\n", array_size);
 			return -EINVAL;
 		}
 
@@ -311,12 +312,12 @@ static int avs_parse_tokens(struct snd_soc_component *comp, void *object,
 			ret = avs_parse_word_tokens(comp, object, parsers, count, tuples);
 			break;
 		default:
-			dev_err(comp->dev, "unknown token type %d\n", tuples->type);
+			dev_err(dev, "unknown token type %d\n", tuples->type);
 			ret = -EINVAL;
 		}
 
 		if (ret) {
-			dev_err(comp->dev, "parsing %zu tokens of %d type failed: %d\n",
+			dev_err(dev, "parsing %zu tokens of %d type failed: %d\n",
 				count, tuples->type, ret);
 			return ret;
 		}
@@ -400,7 +401,9 @@ static int parse_link_formatted_string(struct snd_soc_component *comp, void *ele
 				       void *object, u32 offset)
 {
 	struct snd_soc_tplg_vendor_string_elem *tuple = elem;
-	struct snd_soc_acpi_mach *mach = dev_get_platdata(comp->card->dev);
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
+	struct snd_soc_acpi_mach *mach = dev_get_platdata(card_dev);
 	char *val = (char *)((u8 *)object + offset);
 	int ssp_port, tdm_slot;
 
@@ -425,12 +428,14 @@ static int parse_link_formatted_string(struct snd_soc_component *comp, void *ele
 static int avs_parse_nhlt_config_size(struct snd_soc_component *comp, void *elem, void *object,
 				      u32 offset)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	struct snd_soc_tplg_vendor_value_elem *tuple = elem;
 	struct acpi_nhlt_config **blob = (struct acpi_nhlt_config **)((u8 *)object + offset);
 	u32 size;
 
 	size = le32_to_cpu(tuple->value);
-	*blob = devm_kzalloc(comp->card->dev, struct_size(*blob, capabilities, size), GFP_KERNEL);
+	*blob = devm_kzalloc(card_dev, struct_size(*blob, capabilities, size), GFP_KERNEL);
 	if (!*blob)
 		return -ENOMEM;
 
@@ -444,18 +449,20 @@ parse_dictionary_header(struct snd_soc_component *comp,
 			void **dict, u32 *num_entries, size_t entry_size,
 			u32 num_entries_token)
 {
+	struct device *component_dev = snd_soc_component_to_dev(comp);
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	struct snd_soc_tplg_vendor_value_elem *tuple;
 
 	/* Dictionary header consists of single tuple - entry count. */
 	tuple = tuples->value;
 	if (le32_to_cpu(tuple->token) != num_entries_token) {
-		dev_err(comp->dev, "invalid dictionary header, expected: %d\n",
-			num_entries_token);
+		dev_err(component_dev, "invalid dictionary header, expected: %d\n", num_entries_token);
 		return -EINVAL;
 	}
 
 	*num_entries = le32_to_cpu(tuple->value);
-	*dict = devm_kcalloc(comp->card->dev, *num_entries, entry_size, GFP_KERNEL);
+	*dict = devm_kcalloc(card_dev, *num_entries, entry_size, GFP_KERNEL);
 	if (!*dict)
 		return -ENOMEM;
 
@@ -469,6 +476,7 @@ parse_dictionary_entries(struct snd_soc_component *comp,
 			 u32 entry_id_token,
 			 const struct avs_tplg_token_parser *parsers, size_t num_parsers)
 {
+	struct device *dev = snd_soc_component_to_dev(comp);
 	void *pos = dict;
 	int i;
 
@@ -483,7 +491,7 @@ parse_dictionary_entries(struct snd_soc_component *comp,
 
 		ret = avs_parse_tokens(comp, pos, parsers, num_parsers, tuples, esize);
 		if (ret < 0) {
-			dev_err(comp->dev, "parse entry: %d of type: %d failed: %d\n",
+			dev_err(dev, "parse entry: %d of type: %d failed: %d\n",
 				i, entry_id_token, ret);
 			return ret;
 		}
@@ -919,6 +927,8 @@ static const struct avs_tplg_token_parser pin_format_parsers[] = {
 static void
 assign_copier_gtw_instance(struct snd_soc_component *comp, struct avs_tplg_modcfg_ext *cfg)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	struct snd_soc_acpi_mach *mach;
 	int ssp_port, tdm_slot;
 
@@ -938,7 +948,7 @@ assign_copier_gtw_instance(struct snd_soc_component *comp, struct avs_tplg_modcf
 	if (cfg->copier.vindex.val)
 		return;
 
-	mach = dev_get_platdata(comp->card->dev);
+	mach = dev_get_platdata(card_dev);
 
 	if (!avs_mach_singular_ssp(mach))
 		return;
@@ -957,6 +967,8 @@ static int avs_tplg_parse_modcfg_ext(struct snd_soc_component *comp,
 				     struct snd_soc_tplg_vendor_array *tuples,
 				     u32 block_size)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	u32 esize;
 	int ret;
 
@@ -984,7 +996,7 @@ static int avs_tplg_parse_modcfg_ext(struct snd_soc_component *comp,
 		if (!num_pins)
 			return -EINVAL;
 
-		pins = devm_kcalloc(comp->card->dev, num_pins, sizeof(*pins), GFP_KERNEL);
+		pins = devm_kcalloc(card_dev, num_pins, sizeof(*pins), GFP_KERNEL);
 		if (!pins)
 			return -ENOMEM;
 
@@ -1223,13 +1235,15 @@ static int avs_tplg_module_init_configs(struct snd_soc_component *comp,
 					struct avs_tplg_module *module,
 					struct snd_soc_tplg_vendor_array *tuples, u32 block_size)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	struct avs_tplg_init_config **cfgs;
 	int ret;
 
 	if (!module->num_init_configs)
 		return -EINVAL;
 
-	cfgs = devm_kcalloc(comp->card->dev, module->num_init_configs, sizeof(*cfgs), GFP_KERNEL);
+	cfgs = devm_kcalloc(card_dev, module->num_init_configs, sizeof(*cfgs), GFP_KERNEL);
 	if (!cfgs)
 		return -ENOMEM;
 
@@ -1245,6 +1259,8 @@ static struct avs_tplg_module *
 avs_tplg_module_create(struct snd_soc_component *comp, struct avs_tplg_pipeline *owner,
 		       struct snd_soc_tplg_vendor_array *tuples, u32 block_size)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	struct avs_tplg_module *module;
 	u32 esize;
 	int ret;
@@ -1255,7 +1271,7 @@ avs_tplg_module_create(struct snd_soc_component *comp, struct avs_tplg_pipeline 
 	if (ret)
 		return ERR_PTR(ret);
 
-	module = devm_kzalloc(comp->card->dev, sizeof(*module), GFP_KERNEL);
+	module = devm_kzalloc(card_dev, sizeof(*module), GFP_KERNEL);
 	if (!module)
 		return ERR_PTR(-ENOMEM);
 
@@ -1314,11 +1330,14 @@ static struct avs_tplg_pipeline *
 avs_tplg_pipeline_create(struct snd_soc_component *comp, struct avs_tplg_path *owner,
 			 struct snd_soc_tplg_vendor_array *tuples, u32 block_size)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
+	struct device *component_dev = snd_soc_component_to_dev(comp);
 	struct avs_tplg_pipeline *pipeline;
 	u32 modblk_size, offset;
 	int ret;
 
-	pipeline = devm_kzalloc(comp->card->dev, sizeof(*pipeline), GFP_KERNEL);
+	pipeline = devm_kzalloc(card_dev, sizeof(*pipeline), GFP_KERNEL);
 	if (!pipeline)
 		return ERR_PTR(-ENOMEM);
 
@@ -1355,7 +1374,7 @@ avs_tplg_pipeline_create(struct snd_soc_component *comp, struct avs_tplg_path *o
 
 		modblk_size = block_size;
 	} else {
-		pipeline->bindings = devm_kcalloc(comp->card->dev, pipeline->num_bindings,
+		pipeline->bindings = devm_kcalloc(card_dev, pipeline->num_bindings,
 						  sizeof(*pipeline->bindings), GFP_KERNEL);
 		if (!pipeline->bindings)
 			return ERR_PTR(-ENOMEM);
@@ -1375,8 +1394,7 @@ avs_tplg_pipeline_create(struct snd_soc_component *comp, struct avs_tplg_path *o
 
 		module = avs_tplg_module_create(comp, pipeline, tuples, esize);
 		if (IS_ERR(module)) {
-			dev_err(comp->dev, "parse module failed: %ld\n",
-				PTR_ERR(module));
+			dev_err(component_dev, "parse module failed: %ld\n", PTR_ERR(module));
 			return ERR_CAST(module);
 		}
 
@@ -1443,12 +1461,15 @@ avs_tplg_path_create(struct snd_soc_component *comp, struct avs_tplg_path_templa
 		     struct snd_soc_tplg_vendor_array *tuples, u32 block_size,
 		     const struct avs_tplg_token_parser *parsers, u32 num_parsers)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
+	struct device *component_dev = snd_soc_component_to_dev(comp);
 	struct avs_tplg_pipeline *pipeline;
 	struct avs_tplg_path *path;
 	u32 offset;
 	int ret;
 
-	path = devm_kzalloc(comp->card->dev, sizeof(*path), GFP_KERNEL);
+	path = devm_kzalloc(card_dev, sizeof(*path), GFP_KERNEL);
 	if (!path)
 		return ERR_PTR(-ENOMEM);
 
@@ -1483,8 +1504,7 @@ avs_tplg_path_create(struct snd_soc_component *comp, struct avs_tplg_path_templa
 
 		pipeline = avs_tplg_pipeline_create(comp, path, tuples, esize);
 		if (IS_ERR(pipeline)) {
-			dev_err(comp->dev, "parse pipeline failed: %ld\n",
-				PTR_ERR(pipeline));
+			dev_err(component_dev, "parse pipeline failed: %ld\n", PTR_ERR(pipeline));
 			return ERR_CAST(pipeline);
 		}
 
@@ -1544,6 +1564,7 @@ static int parse_path_template(struct snd_soc_component *comp,
 			       const struct avs_tplg_token_parser *tmpl_tokens, u32 num_tmpl_tokens,
 			       const struct avs_tplg_token_parser *path_tokens, u32 num_path_tokens)
 {
+	struct device *dev = snd_soc_component_to_dev(comp);
 	struct avs_tplg_path *path;
 	u32 offset;
 	int ret;
@@ -1572,7 +1593,7 @@ static int parse_path_template(struct snd_soc_component *comp,
 		path = avs_tplg_path_create(comp, template, tuples, esize, path_tokens,
 					    num_path_tokens);
 		if (IS_ERR(path)) {
-			dev_err(comp->dev, "parse path failed: %ld\n", PTR_ERR(path));
+			dev_err(dev, "parse path failed: %ld\n", PTR_ERR(path));
 			return PTR_ERR(path);
 		}
 
@@ -1588,10 +1609,12 @@ static struct avs_tplg_path_template *
 avs_tplg_path_template_create(struct snd_soc_component *comp, struct avs_tplg *owner,
 			      struct snd_soc_tplg_vendor_array *tuples, u32 block_size)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	struct avs_tplg_path_template *template;
 	int ret;
 
-	template = devm_kzalloc(comp->card->dev, sizeof(*template), GFP_KERNEL);
+	template = devm_kzalloc(card_dev, sizeof(*template), GFP_KERNEL);
 	if (!template)
 		return ERR_PTR(-ENOMEM);
 
@@ -1613,6 +1636,7 @@ static int avs_tplg_parse_condpath_templates(struct snd_soc_component *comp,
 					     u32 block_size)
 {
 	struct avs_soc_component *acomp = to_avs_soc_component(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
 	struct avs_tplg *tplg = acomp->tplg;
 	int ret, i;
 
@@ -1647,7 +1671,7 @@ static int avs_tplg_parse_condpath_templates(struct snd_soc_component *comp,
 					  condpath_parsers,
 					  ARRAY_SIZE(condpath_parsers));
 		if (ret < 0) {
-			dev_err(comp->dev, "parse condpath_tmpl: %d failed: %d\n", i, ret);
+			dev_err(dev, "parse condpath_tmpl: %d failed: %d\n", i, ret);
 			return ret;
 		}
 
@@ -1683,6 +1707,8 @@ static int avs_tplg_parse_initial_configs(struct snd_soc_component *comp,
 					   struct snd_soc_tplg_vendor_array *tuples,
 					   u32 block_size, u32 *offset)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	struct avs_soc_component *acomp = to_avs_soc_component(comp);
 	struct avs_tplg *tplg = acomp->tplg;
 	int ret, i;
@@ -1728,7 +1754,7 @@ static int avs_tplg_parse_initial_configs(struct snd_soc_component *comp,
 		esize = config->length;
 		*offset += esize;
 
-		config->data = devm_kmemdup(comp->card->dev, init_config_data, esize, GFP_KERNEL);
+		config->data = devm_kmemdup(card_dev, init_config_data, esize, GFP_KERNEL);
 		if (!config->data)
 			return -ENOMEM;
 
@@ -1806,7 +1832,9 @@ static int avs_tplg_parse_nhlt_configs(struct snd_soc_component *comp,
 static int avs_route_load(struct snd_soc_component *comp, int index,
 			  struct snd_soc_dapm_route *route)
 {
-	struct snd_soc_acpi_mach *mach = dev_get_platdata(comp->card->dev);
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
+	struct snd_soc_acpi_mach *mach = dev_get_platdata(card_dev);
 	size_t len = SNDRV_CTL_ELEM_ID_NAME_MAXLEN;
 	int ssp_port, tdm_slot;
 	char *buf;
@@ -1820,20 +1848,20 @@ static int avs_route_load(struct snd_soc_component *comp, int index,
 		return 0;
 	tdm_slot = avs_mach_ssp_tdm(mach, ssp_port);
 
-	buf = devm_kzalloc(comp->card->dev, len, GFP_KERNEL);
+	buf = devm_kzalloc(card_dev, len, GFP_KERNEL);
 	if (!buf)
 		return -ENOMEM;
 	avs_ssp_sprint(buf, len, route->source, ssp_port, tdm_slot);
 	route->source = buf;
 
-	buf = devm_kzalloc(comp->card->dev, len, GFP_KERNEL);
+	buf = devm_kzalloc(card_dev, len, GFP_KERNEL);
 	if (!buf)
 		return -ENOMEM;
 	avs_ssp_sprint(buf, len, route->sink, ssp_port, tdm_slot);
 	route->sink = buf;
 
 	if (route->control) {
-		buf = devm_kzalloc(comp->card->dev, len, GFP_KERNEL);
+		buf = devm_kzalloc(card_dev, len, GFP_KERNEL);
 		if (!buf)
 			return -ENOMEM;
 		avs_ssp_sprint(buf, len, route->control, ssp_port, tdm_slot);
@@ -1847,6 +1875,9 @@ static int avs_widget_load(struct snd_soc_component *comp, int index,
 			   struct snd_soc_dapm_widget *w,
 			   struct snd_soc_tplg_dapm_widget *dw)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
+	struct device *component_dev = snd_soc_component_to_dev(comp);
 	struct snd_soc_acpi_mach *mach;
 	struct avs_tplg_path_template *template;
 	struct avs_soc_component *acomp = to_avs_soc_component(comp);
@@ -1859,12 +1890,12 @@ static int avs_widget_load(struct snd_soc_component *comp, int index,
 	w->no_wname_in_kcontrol_name = true;
 
 	if (w->ignore_suspend && !AVS_S0IX_SUPPORTED) {
-		dev_info_once(comp->dev, "Device does not support S0IX, check BIOS settings\n");
+		dev_info_once(component_dev, "Device does not support S0IX, check BIOS settings\n");
 		w->ignore_suspend = false;
 	}
 
 	tplg = acomp->tplg;
-	mach = dev_get_platdata(comp->card->dev);
+	mach = dev_get_platdata(card_dev);
 	if (!avs_mach_singular_ssp(mach))
 		goto static_name;
 	ssp_port = avs_mach_ssp_port(mach);
@@ -1890,7 +1921,7 @@ static_name:
 	template = avs_tplg_path_template_create(comp, tplg, dw->priv.array,
 						 le32_to_cpu(dw->priv.size));
 	if (IS_ERR(template)) {
-		dev_err(comp->dev, "widget %s load failed: %ld\n", dw->name,
+		dev_err(component_dev, "widget %s load failed: %ld\n", dw->name,
 			PTR_ERR(template));
 		return PTR_ERR(template);
 	}
@@ -1930,8 +1961,10 @@ static int avs_dai_load(struct snd_soc_component *comp, int index,
 static int avs_link_load(struct snd_soc_component *comp, int index, struct snd_soc_dai_link *link,
 			 struct snd_soc_tplg_link_config *cfg)
 {
+	struct device *dev = snd_soc_component_to_dev(comp);
+
 	if (link->ignore_suspend && !AVS_S0IX_SUPPORTED) {
-		dev_info_once(comp->dev, "Device does not support S0IX, check BIOS settings\n");
+		dev_info_once(dev, "Device does not support S0IX, check BIOS settings\n");
 		link->ignore_suspend = false;
 	}
 
@@ -1968,6 +2001,7 @@ static const struct avs_tplg_token_parser manifest_parsers[] = {
 static int avs_manifest(struct snd_soc_component *comp, int index,
 			struct snd_soc_tplg_manifest *manifest)
 {
+	struct device *dev = snd_soc_component_to_dev(comp);
 	struct snd_soc_tplg_vendor_array *tuples = manifest->priv.array;
 	struct avs_soc_component *acomp = to_avs_soc_component(comp);
 	size_t remaining = le32_to_cpu(manifest->priv.size);
@@ -1981,7 +2015,7 @@ static int avs_manifest(struct snd_soc_component *comp, int index,
 	if (!ret && !offset)
 		ret = -EINVAL;
 	if (ret) {
-		dev_err(comp->dev, "incorrect manifest format: %d\n", ret);
+		dev_err(dev, "incorrect manifest format: %d\n", ret);
 		return ret;
 	}
 
@@ -1997,7 +2031,7 @@ static int avs_manifest(struct snd_soc_component *comp, int index,
 	ret = avs_tplg_vendor_array_lookup(tuples, remaining,
 					   AVS_TKN_MANIFEST_NUM_AFMTS_U32, &offset);
 	if (ret) {
-		dev_err(comp->dev, "audio formats lookup failed: %d\n", ret);
+		dev_err(dev, "audio formats lookup failed: %d\n", ret);
 		return ret;
 	}
 
@@ -2012,7 +2046,7 @@ static int avs_manifest(struct snd_soc_component *comp, int index,
 	ret = avs_tplg_vendor_array_lookup(tuples, remaining,
 					   AVS_TKN_MANIFEST_NUM_MODCFGS_BASE_U32, &offset);
 	if (ret) {
-		dev_err(comp->dev, "modcfgs_base lookup failed: %d\n", ret);
+		dev_err(dev, "modcfgs_base lookup failed: %d\n", ret);
 		return ret;
 	}
 
@@ -2027,7 +2061,7 @@ static int avs_manifest(struct snd_soc_component *comp, int index,
 	ret = avs_tplg_vendor_array_lookup(tuples, remaining,
 					   AVS_TKN_MANIFEST_NUM_MODCFGS_EXT_U32, &offset);
 	if (ret) {
-		dev_err(comp->dev, "modcfgs_ext lookup failed: %d\n", ret);
+		dev_err(dev, "modcfgs_ext lookup failed: %d\n", ret);
 		return ret;
 	}
 
@@ -2042,7 +2076,7 @@ static int avs_manifest(struct snd_soc_component *comp, int index,
 	ret = avs_tplg_vendor_array_lookup(tuples, remaining,
 					   AVS_TKN_MANIFEST_NUM_PPLCFGS_U32, &offset);
 	if (ret) {
-		dev_err(comp->dev, "pplcfgs lookup failed: %d\n", ret);
+		dev_err(dev, "pplcfgs lookup failed: %d\n", ret);
 		return ret;
 	}
 
@@ -2057,7 +2091,7 @@ static int avs_manifest(struct snd_soc_component *comp, int index,
 	ret = avs_tplg_vendor_array_lookup(tuples, remaining,
 					   AVS_TKN_MANIFEST_NUM_BINDINGS_U32, &offset);
 	if (ret) {
-		dev_err(comp->dev, "bindings lookup failed: %d\n", ret);
+		dev_err(dev, "bindings lookup failed: %d\n", ret);
 		return ret;
 	}
 
@@ -2072,7 +2106,7 @@ static int avs_manifest(struct snd_soc_component *comp, int index,
 	ret = avs_tplg_vendor_array_lookup(tuples, remaining,
 					   AVS_TKN_MANIFEST_NUM_CONDPATH_TMPLS_U32, &offset);
 	if (ret) {
-		dev_err(comp->dev, "condpath lookup failed: %d\n", ret);
+		dev_err(dev, "condpath lookup failed: %d\n", ret);
 		return ret;
 	}
 
@@ -2087,10 +2121,10 @@ static int avs_manifest(struct snd_soc_component *comp, int index,
 	ret = avs_tplg_vendor_array_lookup(tuples, remaining,
 					   AVS_TKN_MANIFEST_NUM_INIT_CONFIGS_U32, &offset);
 	if (ret == -ENOENT) {
-		dev_dbg(comp->dev, "init config lookup failed: %d\n", ret);
+		dev_dbg(dev, "init config lookup failed: %d\n", ret);
 		has_init_config = false;
 	} else if (ret) {
-		dev_err(comp->dev, "init config lookup failed: %d\n", ret);
+		dev_err(dev, "init config lookup failed: %d\n", ret);
 		return ret;
 	}
 
@@ -2119,7 +2153,7 @@ static int avs_manifest(struct snd_soc_component *comp, int index,
 	if (ret == -ENOENT)
 		return 0;
 	if (ret) {
-		dev_err(comp->dev, "NHLT config lookup failed: %d\n", ret);
+		dev_err(dev, "NHLT config lookup failed: %d\n", ret);
 		return ret;
 	}
 
@@ -2162,6 +2196,8 @@ static int
 avs_control_load(struct snd_soc_component *comp, int index, struct snd_kcontrol_new *ctmpl,
 		 struct snd_soc_tplg_ctl_hdr *hdr)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	struct snd_soc_tplg_vendor_array *tuples;
 	struct snd_soc_tplg_mixer_control *tmc;
 	struct avs_control_data *ctl_data;
@@ -2181,7 +2217,7 @@ avs_control_load(struct snd_soc_component *comp, int index, struct snd_kcontrol_
 	tuples = tmc->priv.array;
 	block_size = le32_to_cpu(tmc->priv.size);
 
-	ctl_data = devm_kzalloc(comp->card->dev, sizeof(*ctl_data), GFP_KERNEL);
+	ctl_data = devm_kzalloc(card_dev, sizeof(*ctl_data), GFP_KERNEL);
 	if (!ctl_data)
 		return -ENOMEM;
 
@@ -2215,9 +2251,11 @@ const struct snd_soc_tplg_ops avs_tplg_ops = {
 
 struct avs_tplg *avs_tplg_new(struct snd_soc_component *comp)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	struct avs_tplg *tplg;
 
-	tplg = devm_kzalloc(comp->card->dev, sizeof(*tplg), GFP_KERNEL);
+	tplg = devm_kzalloc(card_dev, sizeof(*tplg), GFP_KERNEL);
 	if (!tplg)
 		return NULL;
 

@@ -101,7 +101,7 @@ static int pxa2xx_ac97_hifi_startup(struct snd_pcm_substream *substream,
 	else
 		dma_data = &pxa2xx_ac97_pcm_stereo_in;
 
-	snd_soc_dai_set_dma_data(cpu_dai, substream, dma_data);
+	snd_soc_dai_stream_dma_data_set(cpu_dai, substream, dma_data);
 
 	return 0;
 }
@@ -116,7 +116,7 @@ static int pxa2xx_ac97_aux_startup(struct snd_pcm_substream *substream,
 	else
 		dma_data = &pxa2xx_ac97_pcm_aux_mono_in;
 
-	snd_soc_dai_set_dma_data(cpu_dai, substream, dma_data);
+	snd_soc_dai_stream_dma_data_set(cpu_dai, substream, dma_data);
 
 	return 0;
 }
@@ -126,7 +126,7 @@ static int pxa2xx_ac97_mic_startup(struct snd_pcm_substream *substream,
 {
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 		return -ENODEV;
-	snd_soc_dai_set_dma_data(cpu_dai, substream,
+	snd_soc_dai_stream_dma_data_set(cpu_dai, substream,
 				 &pxa2xx_ac97_pcm_mic_mono_in);
 
 	return 0;
@@ -256,7 +256,7 @@ static int pxa2xx_ac97_dev_probe(struct platform_device *pdev)
 	 * driver to do interesting things with the clocking to get us up
 	 * and running.
 	 */
-	return devm_snd_soc_register_component(&pdev->dev, &pxa_ac97_component,
+	return devm_snd_soc_component_register(&pdev->dev, &pxa_ac97_component,
 					  pxa_ac97_dai_driver, ARRAY_SIZE(pxa_ac97_dai_driver));
 }
 

@@ -387,11 +387,11 @@ struct cs48l32_codec {
 	dev_dbg(_fll->codec->core.dev, "FLL%d: " fmt, _fll->id, ##__VA_ARGS__)
 
 #define cs48l32_asp_err(_dai, fmt, ...) \
-	dev_err(_dai->component->dev, "ASP%d: " fmt, _dai->id, ##__VA_ARGS__)
+	dev_err(snd_soc_component_to_dev(snd_soc_dai_to_component(_dai)), "ASP%d: " fmt, snd_soc_dai_id(_dai), ##__VA_ARGS__)
 #define cs48l32_asp_warn(_dai, fmt, ...) \
-	dev_warn(_dai->component->dev, "ASP%d: " fmt, _dai->id, ##__VA_ARGS__)
+	dev_warn(snd_soc_component_to_dev(snd_soc_dai_to_component(_dai)), "ASP%d: " fmt, snd_soc_dai_id(_dai), ##__VA_ARGS__)
 #define cs48l32_asp_dbg(_dai, fmt, ...) \
-	dev_dbg(_dai->component->dev, "ASP%d: " fmt, _dai->id, ##__VA_ARGS__)
+	dev_dbg(snd_soc_component_to_dev(snd_soc_dai_to_component(_dai)), "ASP%d: " fmt, snd_soc_dai_id(_dai), ##__VA_ARGS__)
 
 int cs48l32_apply_patch(struct cs48l32 *cs48l32);
 int cs48l32_create_regmap(struct spi_device *spi, struct cs48l32 *cs48l32);

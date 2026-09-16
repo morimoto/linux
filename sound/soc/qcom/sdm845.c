@@ -146,8 +146,10 @@ static int sdm845_tdm_snd_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	for_each_rtd_codec_dais(rtd, j, codec_dai) {
+		struct snd_soc_component *codec = snd_soc_dai_to_component(codec_dai);
+		const char *codec_name_prefix = snd_soc_component_name_prefix(codec);
 
-		if (!strcmp(codec_dai->component->name_prefix, "Left")) {
+		if (!strcmp(codec_name_prefix, "Left")) {
 			ret = snd_soc_dai_set_tdm_slot(
 					codec_dai, LEFT_SPK_TDM_TX_MASK,
 					SPK_TDM_RX_MASK, NUM_TDM_SLOTS,
@@ -159,7 +161,7 @@ static int sdm845_tdm_snd_hw_params(struct snd_pcm_substream *substream,
 			}
 		}
 
-		if (!strcmp(codec_dai->component->name_prefix, "Right")) {
+		if (!strcmp(codec_name_prefix, "Right")) {
 			ret = snd_soc_dai_set_tdm_slot(
 					codec_dai, RIGHT_SPK_TDM_TX_MASK,
 					SPK_TDM_RX_MASK, NUM_TDM_SLOTS,
@@ -182,17 +184,21 @@ static int sdm845_snd_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *codec;
+	int cpu_id = snd_soc_dai_id(cpu_dai);
 	int ret = 0;
 
-	switch (cpu_dai->id) {
+	switch (cpu_id) {
 	case PRIMARY_MI2S_RX:
 	case PRIMARY_MI2S_TX:
+		codec = snd_soc_dai_to_component(codec_dai);
+
 		/*
 		 * Use ASRC for internal clocks, as PLL rate isn't multiple
 		 * of BCLK.
 		 */
 		rt5663_sel_asrc_clk_src(
-			codec_dai->component,
+			codec,
 			RT5663_DA_STEREO_FILTER | RT5663_AD_STEREO_FILTER,
 			RT5663_CLK_SEL_I2S1_ASRC);
 		ret = snd_soc_dai_set_sysclk(
@@ -213,7 +219,7 @@ static int sdm845_snd_hw_params(struct snd_pcm_substream *substream,
 	case SECONDARY_MI2S_RX:
 		break;
 	default:
-		pr_err("%s: invalid dai id 0x%x\n", __func__, cpu_dai->id);
+		pr_err("%s: invalid dai id 0x%x\n", __func__, cpu_id);
 		break;
 	}
 	return ret;
@@ -232,9 +238,11 @@ static int sdm845_dai_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct sdm845_snd_data *pdata = snd_soc_card_get_drvdata(card);
+	struct sdm845_snd_data *pdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai_link *link = rtd->dai_link;
 	struct snd_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
+
 	/*
 	 * Codec SLIMBUS configuration
 	 * RX1, RX2, RX3, RX4, RX5, RX6, RX7, RX8, RX9, RX10, RX11, RX12, RX13
@@ -260,7 +268,7 @@ static int sdm845_dai_init(struct snd_soc_pcm_runtime *rtd)
 						  ARRAY_SIZE(sdm845_jack_pins));
 
 		if (rval < 0) {
-			dev_err(card->dev, "Unable to add Headphone Jack\n");
+			dev_err(dev, "Unable to add Headphone Jack\n");
 			return rval;
 		}
 
@@ -273,17 +281,17 @@ static int sdm845_dai_init(struct snd_soc_pcm_runtime *rtd)
 		pdata->jack_setup = true;
 	}
 
-	switch (cpu_dai->id) {
+	switch (snd_soc_dai_id(cpu_dai)) {
 	case PRIMARY_MI2S_RX:
 		jack  = pdata->jack.jack;
-		component = codec_dai->component;
+		component = snd_soc_dai_to_component(codec_dai);
 
 		jack->private_data = component;
 		jack->private_free = sdm845_jack_free;
 		rval = snd_soc_component_set_jack(component,
 						  &pdata->jack, NULL);
 		if (rval != 0 && rval != -ENOTSUPP) {
-			dev_warn(card->dev, "Failed to set jack: %d\n", rval);
+			dev_warn(dev, "Failed to set jack: %d\n", rval);
 			return rval;
 		}
 		break;
@@ -305,10 +313,10 @@ static int sdm845_dai_init(struct snd_soc_pcm_runtime *rtd)
 					       WCD934X_DEFAULT_MCLK_RATE,
 					       SNDRV_PCM_STREAM_PLAYBACK);
 
-			rval = snd_soc_component_set_jack(codec_dai->component,
+			rval = snd_soc_component_set_jack(snd_soc_dai_to_component(codec_dai),
 							  &pdata->jack, NULL);
 			if (rval != 0 && rval != -ENOTSUPP) {
-				dev_warn(card->dev, "Failed to set jack: %d\n", rval);
+				dev_warn(dev, "Failed to set jack: %d\n", rval);
 				return rval;
 			}
 		}
@@ -330,13 +338,14 @@ static int sdm845_snd_startup(struct snd_pcm_substream *substream)
 	unsigned int codec_dai_fmt = SND_SOC_DAIFMT_BC_FC;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct sdm845_snd_data *data = snd_soc_card_get_drvdata(card);
+	struct sdm845_snd_data *data = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	int cpu_id = snd_soc_dai_id(cpu_dai);
 	int j;
 	int ret;
 
-	switch (cpu_dai->id) {
+	switch (cpu_id) {
 	case PRIMARY_MI2S_RX:
 	case PRIMARY_MI2S_TX:
 		codec_dai_fmt |= SND_SOC_DAIFMT_NB_NF;
@@ -383,8 +392,10 @@ static int sdm845_snd_startup(struct snd_pcm_substream *substream)
 		codec_dai_fmt |= SND_SOC_DAIFMT_IB_NF | SND_SOC_DAIFMT_DSP_B;
 
 		for_each_rtd_codec_dais(rtd, j, codec_dai) {
+			struct snd_soc_component *codec = snd_soc_dai_to_component(codec_dai);
+			const char* codec_name_prefix = snd_soc_component_name_prefix(codec);
 
-			if (!strcmp(codec_dai->component->name_prefix,
+			if (!strcmp(codec_name_prefix,
 				    "Left")) {
 				ret = snd_soc_dai_set_fmt(
 						codec_dai, codec_dai_fmt);
@@ -395,7 +406,7 @@ static int sdm845_snd_startup(struct snd_pcm_substream *substream)
 				}
 			}
 
-			if (!strcmp(codec_dai->component->name_prefix,
+			if (!strcmp(codec_name_prefix,
 				    "Right")) {
 				ret = snd_soc_dai_set_fmt(
 						codec_dai, codec_dai_fmt);
@@ -411,7 +422,7 @@ static int sdm845_snd_startup(struct snd_pcm_substream *substream)
 		break;
 
 	default:
-		pr_err("%s: invalid dai id 0x%x\n", __func__, cpu_dai->id);
+		pr_err("%s: invalid dai id 0x%x\n", __func__, cpu_id);
 		break;
 	}
 	return qcom_snd_sdw_startup(substream);
@@ -421,10 +432,11 @@ static void  sdm845_snd_shutdown(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct sdm845_snd_data *data = snd_soc_card_get_drvdata(card);
+	struct sdm845_snd_data *data = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	int dai_id = snd_soc_dai_id(cpu_dai);
 
-	switch (cpu_dai->id) {
+	switch (dai_id) {
 	case PRIMARY_MI2S_RX:
 	case PRIMARY_MI2S_TX:
 		if (--(data->pri_mi2s_clk_count) == 0) {
@@ -459,7 +471,7 @@ static void  sdm845_snd_shutdown(struct snd_pcm_substream *substream)
 		break;
 
 	default:
-		pr_err("%s: invalid dai id 0x%x\n", __func__, cpu_dai->id);
+		pr_err("%s: invalid dai id 0x%x\n", __func__, dai_id);
 		break;
 	}
 
@@ -469,19 +481,19 @@ static void  sdm845_snd_shutdown(struct snd_pcm_substream *substream)
 static int sdm845_snd_prepare(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sdm845_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct sdm845_snd_data *data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
-	return qcom_snd_sdw_prepare(substream, &data->stream_prepared[cpu_dai->id]);
+	return qcom_snd_sdw_prepare(substream, &data->stream_prepared[snd_soc_dai_id(cpu_dai)]);
 }
 
 static int sdm845_snd_hw_free(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sdm845_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct sdm845_snd_data *data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
-	return qcom_snd_sdw_hw_free(substream, &data->stream_prepared[cpu_dai->id]);
+	return qcom_snd_sdw_hw_free(substream, &data->stream_prepared[snd_soc_dai_id(cpu_dai)]);
 }
 
 static const struct snd_soc_ops sdm845_be_ops = {
@@ -563,7 +575,7 @@ static int sdm845_snd_platform_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	snd_soc_card_set_drvdata(card, data);
+	snd_soc_card_set_priv(card, data);
 
 	sdm845_add_ops(card_driver);
 	return devm_snd_soc_card_register(card, card_driver);

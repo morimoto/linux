@@ -213,7 +213,7 @@ static int snd_imx_close(struct snd_soc_component *component,
 
 static int imx_pcm_new(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(rtd->card);
 	struct snd_pcm *pcm = rtd->pcm;
 	int ret;
 
@@ -298,7 +298,7 @@ int imx_pcm_fiq_init(struct platform_device *pdev,
 	params->dma_params_tx->maxburst = 4;
 	params->dma_params_rx->maxburst = 6;
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &imx_soc_component_fiq,
+	ret = devm_snd_soc_component_register(&pdev->dev, &imx_soc_component_fiq,
 					      NULL, 0);
 	if (ret)
 		goto failed_register;

@@ -1547,7 +1547,8 @@ static const struct snd_soc_dapm_route wm2200_dapm_routes[] = {
 
 static int wm2200_probe(struct snd_soc_component *component)
 {
-	struct wm2200_priv *wm2200 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm2200_priv *wm2200 = dev_get_drvdata(dev);
 
 	wm2200->component = component;
 
@@ -1556,7 +1557,8 @@ static int wm2200_probe(struct snd_soc_component *component)
 
 static int wm2200_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int lrclk, bclk, fmt_val;
 
 	lrclk = 0;
@@ -1570,7 +1572,7 @@ static int wm2200_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		fmt_val = 2;
 		break;
 	default:
-		dev_err(component->dev, "Unsupported DAI format %d\n",
+		dev_err(dev, "Unsupported DAI format %d\n",
 			fmt & SND_SOC_DAIFMT_FORMAT_MASK);
 		return -EINVAL;
 	}
@@ -1589,7 +1591,7 @@ static int wm2200_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		bclk |= WM2200_AIF1_BCLK_MSTR;
 		break;
 	default:
-		dev_err(component->dev, "Unsupported master mode %d\n",
+		dev_err(dev, "Unsupported master mode %d\n",
 			fmt & SND_SOC_DAIFMT_MASTER_MASK);
 		return -EINVAL;
 	}
@@ -1688,8 +1690,9 @@ static int wm2200_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm2200_priv *wm2200 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm2200_priv *wm2200 = dev_get_drvdata(dev);
 	int i, bclk, lrclk, wl, fl, sr_code;
 	int *bclk_rates;
 
@@ -1701,7 +1704,7 @@ static int wm2200_hw_params(struct snd_pcm_substream *substream,
 	if (fl < 0)
 		return fl;
 
-	dev_dbg(component->dev, "Word length %d bits, frame length %d bits\n",
+	dev_dbg(dev, "Word length %d bits, frame length %d bits\n",
 		wl, fl);
 
 	/* Target BCLK rate */
@@ -1710,7 +1713,7 @@ static int wm2200_hw_params(struct snd_pcm_substream *substream,
 		return bclk;
 
 	if (!wm2200->sysclk) {
-		dev_err(component->dev, "SYSCLK has no rate set\n");
+		dev_err(dev, "SYSCLK has no rate set\n");
 		return -EINVAL;
 	}
 
@@ -1718,14 +1721,12 @@ static int wm2200_hw_params(struct snd_pcm_substream *substream,
 		if (wm2200_sr_code[i] == params_rate(params))
 			break;
 	if (i == ARRAY_SIZE(wm2200_sr_code)) {
-		dev_err(component->dev, "Unsupported sample rate: %dHz\n",
-			params_rate(params));
+		dev_err(dev, "Unsupported sample rate: %dHz\n", params_rate(params));
 		return -EINVAL;
 	}
 	sr_code = i;
 
-	dev_dbg(component->dev, "Target BCLK is %dHz, using %dHz SYSCLK\n",
-		bclk, wm2200->sysclk);
+	dev_dbg(dev, "Target BCLK is %dHz, using %dHz SYSCLK\n", bclk, wm2200->sysclk);
 
 	if (wm2200->sysclk % 4000)
 		bclk_rates = wm2200_bclk_rates_cd;
@@ -1736,19 +1737,18 @@ static int wm2200_hw_params(struct snd_pcm_substream *substream,
 		if (bclk_rates[i] >= bclk && (bclk_rates[i] % bclk == 0))
 			break;
 	if (i == WM2200_NUM_BCLK_RATES) {
-		dev_err(component->dev,
-			"No valid BCLK for %dHz found from %dHz SYSCLK\n",
+		dev_err(dev, "No valid BCLK for %dHz found from %dHz SYSCLK\n",
 			bclk, wm2200->sysclk);
 		return -EINVAL;
 	}
 
 	bclk = i;
-	dev_dbg(component->dev, "Setting %dHz BCLK\n", bclk_rates[bclk]);
+	dev_dbg(dev, "Setting %dHz BCLK\n", bclk_rates[bclk]);
 	snd_soc_component_update_bits(component, WM2200_AUDIO_IF_1_1,
 			    WM2200_AIF1_BCLK_DIV_MASK, bclk);
 
 	lrclk = bclk_rates[bclk] / params_rate(params);
-	dev_dbg(component->dev, "Setting %dHz LRCLK\n", bclk_rates[bclk] / lrclk);
+	dev_dbg(dev, "Setting %dHz LRCLK\n", bclk_rates[bclk] / lrclk);
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK ||
 	    wm2200->symmetric_rates)
 		snd_soc_component_update_bits(component, WM2200_AUDIO_IF_1_7,
@@ -1776,7 +1776,8 @@ static int wm2200_hw_params(struct snd_pcm_substream *substream,
 static int wm2200_set_sysclk(struct snd_soc_component *component, int clk_id,
 			     int source, unsigned int freq, int dir)
 {
-	struct wm2200_priv *wm2200 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm2200_priv *wm2200 = dev_get_drvdata(dev);
 	int fval;
 
 	switch (clk_id) {
@@ -1784,7 +1785,7 @@ static int wm2200_set_sysclk(struct snd_soc_component *component, int clk_id,
 		break;
 
 	default:
-		dev_err(component->dev, "Unknown clock %d\n", clk_id);
+		dev_err(dev, "Unknown clock %d\n", clk_id);
 		return -EINVAL;
 	}
 
@@ -1795,7 +1796,7 @@ static int wm2200_set_sysclk(struct snd_soc_component *component, int clk_id,
 	case WM2200_CLKSRC_BCLK1:
 		break;
 	default:
-		dev_err(component->dev, "Invalid source %d\n", source);
+		dev_err(dev, "Invalid source %d\n", source);
 		return -EINVAL;
 	}
 
@@ -1805,7 +1806,7 @@ static int wm2200_set_sysclk(struct snd_soc_component *component, int clk_id,
 		fval = 2;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clock rate: %d\n", freq);
+		dev_err(dev, "Invalid clock rate: %d\n", freq);
 		return -EINVAL;
 	}
 
@@ -1924,17 +1925,18 @@ static int fll_factors(struct _fll_div *fll_div, unsigned int Fref,
 static int wm2200_set_fll(struct snd_soc_component *component, int fll_id, int source,
 			  unsigned int Fref, unsigned int Fout)
 {
-	struct i2c_client *i2c = to_i2c_client(component->dev);
-	struct wm2200_priv *wm2200 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct i2c_client *i2c = to_i2c_client(dev);
+	struct wm2200_priv *wm2200 = dev_get_drvdata(dev);
 	struct _fll_div factors;
 	int ret, i, timeout;
 	unsigned long time_left;
 
 	if (!Fout) {
-		dev_dbg(component->dev, "FLL disabled");
+		dev_dbg(dev, "FLL disabled");
 
 		if (wm2200->fll_fout)
-			pm_runtime_put(component->dev);
+			pm_runtime_put(dev);
 
 		wm2200->fll_fout = 0;
 		snd_soc_component_update_bits(component, WM2200_FLL_CONTROL_1,
@@ -1948,7 +1950,7 @@ static int wm2200_set_fll(struct snd_soc_component *component, int fll_id, int s
 	case WM2200_FLL_SRC_BCLK:
 		break;
 	default:
-		dev_err(component->dev, "Invalid FLL source %d\n", source);
+		dev_err(dev, "Invalid FLL source %d\n", source);
 		return -EINVAL;
 	}
 
@@ -1992,7 +1994,7 @@ static int wm2200_set_fll(struct snd_soc_component *component, int fll_id, int s
 	/* Clear any pending completions */
 	try_wait_for_completion(&wm2200->fll_lock);
 
-	pm_runtime_get_sync(component->dev);
+	pm_runtime_get_sync(dev);
 
 	snd_soc_component_update_bits(component, WM2200_FLL_CONTROL_1,
 			    WM2200_FLL_ENA, WM2200_FLL_ENA);
@@ -2020,17 +2022,15 @@ static int wm2200_set_fll(struct snd_soc_component *component, int fll_id, int s
 		ret = snd_soc_component_read(component,
 				   WM2200_INTERRUPT_RAW_STATUS_2);
 		if (ret < 0) {
-			dev_err(component->dev,
-				"Failed to read FLL status: %d\n",
-				ret);
+			dev_err(dev, "Failed to read FLL status: %d\n", ret);
 			continue;
 		}
 		if (ret & WM2200_FLL_LOCK_STS)
 			break;
 	}
 	if (i == timeout) {
-		dev_err(component->dev, "FLL lock timed out\n");
-		pm_runtime_put(component->dev);
+		dev_err(dev, "FLL lock timed out\n");
+		pm_runtime_put(dev);
 		return -ETIMEDOUT;
 	}
 
@@ -2038,15 +2038,16 @@ static int wm2200_set_fll(struct snd_soc_component *component, int fll_id, int s
 	wm2200->fll_fref = Fref;
 	wm2200->fll_fout = Fout;
 
-	dev_dbg(component->dev, "FLL running %dHz->%dHz\n", Fref, Fout);
+	dev_dbg(dev, "FLL running %dHz->%dHz\n", Fref, Fout);
 
 	return 0;
 }
 
 static int wm2200_dai_probe(struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm2200_priv *wm2200 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm2200_priv *wm2200 = dev_get_drvdata(dev);
 	unsigned int val = 0;
 	int ret;
 
@@ -2057,7 +2058,7 @@ static int wm2200_dai_probe(struct snd_soc_dai *dai)
 			val = WM2200_AIF1TX_LRCLK_SRC;
 		}
 	} else {
-		dev_err(component->dev, "Failed to read GPIO 1 config: %d\n", ret);
+		dev_err(dev, "Failed to read GPIO 1 config: %d\n", ret);
 	}
 
 	snd_soc_component_update_bits(component, WM2200_AUDIO_IF_1_2,
@@ -2402,7 +2403,7 @@ static int wm2200_i2c_probe(struct i2c_client *i2c)
 	pm_runtime_enable(&i2c->dev);
 	pm_request_idle(&i2c->dev);
 
-	ret = devm_snd_soc_register_component(&i2c->dev, &soc_component_wm2200,
+	ret = devm_snd_soc_component_register(&i2c->dev, &soc_component_wm2200,
 				     &wm2200_dai, 1);
 	if (ret != 0) {
 		dev_err(&i2c->dev, "Failed to register CODEC: %d\n", ret);

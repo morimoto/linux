@@ -91,7 +91,7 @@ static int byt_cht_es8316_speaker_power_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct byt_cht_es8316_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_cht_es8316_private *priv = snd_soc_card_to_priv(card);
 
 	if (SND_SOC_DAPM_EVENT_ON(event))
 		priv->speaker_en = true;
@@ -182,11 +182,12 @@ static void byt_cht_es8316_disable_mclk(struct byt_cht_es8316_private *priv)
 
 static int byt_cht_es8316_init(struct snd_soc_pcm_runtime *runtime)
 {
-	struct snd_soc_component *codec = snd_soc_rtd_to_codec(runtime, 0)->component;
+	struct snd_soc_component *codec = snd_soc_dai_to_component(snd_soc_rtd_to_codec(runtime, 0));
 	struct snd_soc_card *card = runtime->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct byt_cht_es8316_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_cht_es8316_private *priv = snd_soc_card_to_priv(card);
 	const struct snd_soc_dapm_route *custom_map;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int num_routes;
 	int ret;
 
@@ -232,18 +233,18 @@ static int byt_cht_es8316_init(struct snd_soc_pcm_runtime *runtime)
 
 	ret = clk_set_rate(priv->mclk, 19200000);
 	if (ret)
-		dev_err(card->dev, "unable to set MCLK rate\n");
+		dev_err(dev, "unable to set MCLK rate\n");
 
 	ret = clk_prepare_enable(priv->mclk);
 	if (ret)
-		dev_err(card->dev, "unable to enable MCLK\n");
+		dev_err(dev, "unable to enable MCLK\n");
 	else
 		priv->mclk_enabled = true;
 
 	ret = snd_soc_dai_set_sysclk(snd_soc_rtd_to_codec(runtime, 0), 0, 19200000,
 				     SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(card->dev, "can't set codec clock %d\n", ret);
+		dev_err(dev, "can't set codec clock %d\n", ret);
 		goto err_disable_mclk;
 	}
 
@@ -252,7 +253,7 @@ static int byt_cht_es8316_init(struct snd_soc_pcm_runtime *runtime)
 					 &priv->jack, byt_cht_es8316_jack_pins,
 					 ARRAY_SIZE(byt_cht_es8316_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "jack creation failed %d\n", ret);
+		dev_err(dev, "jack creation failed %d\n", ret);
 		goto err_disable_mclk;
 	}
 
@@ -269,7 +270,7 @@ err_disable_mclk:
 static void byt_cht_es8316_exit(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_card *card = runtime->card;
-	struct byt_cht_es8316_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_cht_es8316_private *priv = snd_soc_card_to_priv(card);
 
 	byt_cht_es8316_disable_mclk(priv);
 }
@@ -395,8 +396,10 @@ static int byt_cht_es8316_suspend(struct snd_soc_card *card)
 	struct snd_soc_component *component;
 
 	for_each_card_components(card, component) {
-		if (!strcmp(component->name, codec_name)) {
-			dev_dbg(component->dev, "disabling jack detect before suspend\n");
+		struct device *dev = snd_soc_component_to_dev(component);
+
+		if (!strcmp(snd_soc_component_name(component), codec_name)) {
+			dev_dbg(dev, "disabling jack detect before suspend\n");
 			snd_soc_component_set_jack(component, NULL, NULL);
 			break;
 		}
@@ -407,12 +410,14 @@ static int byt_cht_es8316_suspend(struct snd_soc_card *card)
 
 static int byt_cht_es8316_resume(struct snd_soc_card *card)
 {
-	struct byt_cht_es8316_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_cht_es8316_private *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_component *component;
 
 	for_each_card_components(card, component) {
-		if (!strcmp(component->name, codec_name)) {
-			dev_dbg(component->dev, "re-enabling jack detect after resume\n");
+		struct device *dev = snd_soc_component_to_dev(component);
+
+		if (!strcmp(snd_soc_component_name(component), codec_name)) {
+			dev_dbg(dev, "re-enabling jack detect after resume\n");
 			snd_soc_component_set_jack(component, &priv->jack, NULL);
 			break;
 		}
@@ -735,7 +740,7 @@ err_put_codec:
 static void snd_byt_cht_es8316_mc_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
-	struct byt_cht_es8316_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_cht_es8316_private *priv = snd_soc_card_to_priv(card);
 
 	gpiod_put(priv->speaker_en_gpio);
 	device_remove_software_node(priv->codec_dev);

@@ -156,8 +156,9 @@ static const struct snd_soc_dapm_route rt1019_dapm_routes[] = {
 static int rt1019_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1019_priv *rt1019 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1019_priv *rt1019 = dev_get_drvdata(dev);
 	int pre_div, bclk_ms, frame_size;
 	unsigned int val_len = 0, sys_div_da_filter = 0;
 	unsigned int sys_dac_osr = 0, sys_fifo_clk = 0;
@@ -166,23 +167,23 @@ static int rt1019_hw_params(struct snd_pcm_substream *substream,
 	rt1019->lrck = params_rate(params);
 	pre_div = rl6231_get_clk_info(rt1019->sysclk, rt1019->lrck);
 	if (pre_div < 0) {
-		dev_err(component->dev, "Unsupported clock setting\n");
+		dev_err(dev, "Unsupported clock setting\n");
 		return -EINVAL;
 	}
 
 	frame_size = snd_soc_params_to_frame_size(params);
 	if (frame_size < 0) {
-		dev_err(component->dev, "Unsupported frame size: %d\n", frame_size);
+		dev_err(dev, "Unsupported frame size: %d\n", frame_size);
 		return -EINVAL;
 	}
 
 	bclk_ms = frame_size > 32;
 	rt1019->bclk = rt1019->lrck * (32 << bclk_ms);
 
-	dev_dbg(dai->dev, "bclk is %dHz and lrck is %dHz\n",
+	dev_dbg(dev, "bclk is %dHz and lrck is %dHz\n",
 		rt1019->bclk, rt1019->lrck);
-	dev_dbg(dai->dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
-				bclk_ms, pre_div, dai->id);
+	dev_dbg(dev, "bclk_ms is %d and pre_div is %d for iis %d\n",
+		bclk_ms, pre_div, snd_soc_dai_id(dai));
 
 	switch (pre_div) {
 	case 0:
@@ -245,7 +246,7 @@ static int rt1019_hw_params(struct snd_pcm_substream *substream,
 
 static int rt1019_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int reg_val = 0, reg_val2 = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
@@ -289,8 +290,9 @@ static int rt1019_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt1019_set_dai_sysclk(struct snd_soc_dai *dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1019_priv *rt1019 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1019_priv *rt1019 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0;
 
 	if (freq == rt1019->sysclk && clk_id == rt1019->sysclk_src)
@@ -306,14 +308,14 @@ static int rt1019_set_dai_sysclk(struct snd_soc_dai *dai,
 		break;
 
 	default:
-		dev_err(component->dev, "Invalid clock id (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock id (%d)\n", clk_id);
 		return -EINVAL;
 	}
 
 	rt1019->sysclk = freq;
 	rt1019->sysclk_src = clk_id;
 
-	dev_dbg(dai->dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
+	dev_dbg(dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
 
 	snd_soc_component_update_bits(component, RT1019_CLK_TREE_1,
 		RT1019_CLK_SYS_PRE_SEL_MASK, reg_val);
@@ -324,13 +326,14 @@ static int rt1019_set_dai_sysclk(struct snd_soc_dai *dai,
 static int rt1019_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt1019_priv *rt1019 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1019_priv *rt1019 = dev_get_drvdata(dev);
 	struct rl6231_pll_code pll_code;
 	int ret;
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 		rt1019->pll_in = 0;
 		rt1019->pll_out = 0;
 		return 0;
@@ -352,17 +355,17 @@ static int rt1019_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 		break;
 
 	default:
-		dev_err(component->dev, "Unknown PLL source %d\n", source);
+		dev_err(dev, "Unknown PLL source %d\n", source);
 		return -EINVAL;
 	}
 
 	ret = rl6231_pll_calc(freq_in, freq_out, &pll_code);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupported input clock %d\n", freq_in);
+		dev_err(dev, "Unsupported input clock %d\n", freq_in);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "bypass=%d m=%d n=%d k=%d\n",
+	dev_dbg(dev, "bypass=%d m=%d n=%d k=%d\n",
 		pll_code.m_bp, (pll_code.m_bp ? 0 : pll_code.m_code),
 		pll_code.n_code, pll_code.k_code);
 
@@ -389,7 +392,8 @@ static int rt1019_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 static int rt1019_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int cn = 0, cl = 0, rx_slotnum;
 	int ret = 0, first_bit;
 
@@ -432,7 +436,7 @@ static int rt1019_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	rx_slotnum = hweight_long(rx_mask);
 	if (rx_slotnum != 1) {
 		ret = -EINVAL;
-		dev_err(component->dev, "too many rx slots or zero slot\n");
+		dev_err(dev, "too many rx slots or zero slot\n");
 		goto _set_tdm_err_;
 	}
 	/* This is an assumption that the system sends stereo audio to the
@@ -480,7 +484,8 @@ _set_tdm_err_:
 
 static int rt1019_probe(struct snd_soc_component *component)
 {
-	struct rt1019_priv *rt1019 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt1019_priv *rt1019 = dev_get_drvdata(dev);
 
 	rt1019->component = component;
 	snd_soc_component_write(component, RT1019_SDB_CTRL, 0xa);
@@ -599,7 +604,7 @@ static int rt1019_i2c_probe(struct i2c_client *i2c)
 		return -ENODEV;
 	}
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 		&soc_component_dev_rt1019, rt1019_dai, ARRAY_SIZE(rt1019_dai));
 }
 

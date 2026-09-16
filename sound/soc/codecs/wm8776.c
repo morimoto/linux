@@ -162,10 +162,11 @@ static const struct snd_soc_dapm_route routes[] = {
 
 static int wm8776_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	int reg, iface, master;
 
-	switch (dai->driver->id) {
+	switch (dai_driver->id) {
 	case WM8776_DAI_DAC:
 		reg = WM8776_DACIFCTRL;
 		master = 0x80;
@@ -239,13 +240,15 @@ static int wm8776_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8776_priv *wm8776 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8776_priv *wm8776 = dev_get_drvdata(dev);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	int iface_reg, iface;
 	int ratio_shift, master;
 	int i;
 
-	switch (dai->driver->id) {
+	switch (dai_driver->id) {
 	case WM8776_DAI_DAC:
 		iface_reg = WM8776_DACIFCTRL;
 		master = 0x80;
@@ -275,32 +278,30 @@ static int wm8776_hw_params(struct snd_pcm_substream *substream,
 		iface = 0x30;
 		break;
 	default:
-		dev_err(component->dev, "Unsupported sample size: %i\n",
-			params_width(params));
+		dev_err(dev, "Unsupported sample size: %i\n", params_width(params));
 		return -EINVAL;
 	}
 
 	/* Only need to set MCLK/LRCLK ratio if we're master */
 	if (snd_soc_component_read(component, WM8776_MSTRCTRL) & master) {
 		for (i = 0; i < ARRAY_SIZE(mclk_ratios); i++) {
-			if (wm8776->sysclk[dai->driver->id] / params_rate(params)
+			if (wm8776->sysclk[dai_driver->id] / params_rate(params)
 			    == mclk_ratios[i])
 				break;
 		}
 
 		if (i == ARRAY_SIZE(mclk_ratios)) {
-			dev_err(component->dev,
-				"Unable to configure MCLK ratio %d/%d\n",
-				wm8776->sysclk[dai->driver->id], params_rate(params));
+			dev_err(dev, "Unable to configure MCLK ratio %d/%d\n",
+				wm8776->sysclk[dai_driver->id], params_rate(params));
 			return -EINVAL;
 		}
 
-		dev_dbg(component->dev, "MCLK is %dfs\n", mclk_ratios[i]);
+		dev_dbg(dev, "MCLK is %dfs\n", mclk_ratios[i]);
 
 		snd_soc_component_update_bits(component, WM8776_MSTRCTRL,
 				    0x7 << ratio_shift, i << ratio_shift);
 	} else {
-		dev_dbg(component->dev, "DAI in slave mode\n");
+		dev_dbg(dev, "DAI in slave mode\n");
 	}
 
 	snd_soc_component_update_bits(component, iface_reg, 0x30, iface);
@@ -310,7 +311,7 @@ static int wm8776_hw_params(struct snd_pcm_substream *substream,
 
 static int wm8776_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	return snd_soc_component_write(component, WM8776_DACMUTE, !!mute);
 }
@@ -318,13 +319,15 @@ static int wm8776_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int wm8776_set_sysclk(struct snd_soc_dai *dai,
 			     int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8776_priv *wm8776 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8776_priv *wm8776 = dev_get_drvdata(dev);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 
-	if (WARN_ON(dai->driver->id >= ARRAY_SIZE(wm8776->sysclk)))
+	if (WARN_ON(dai_driver->id >= ARRAY_SIZE(wm8776->sysclk)))
 		return -EINVAL;
 
-	wm8776->sysclk[dai->driver->id] = freq;
+	wm8776->sysclk[dai_driver->id] = freq;
 
 	return 0;
 }
@@ -332,7 +335,8 @@ static int wm8776_set_sysclk(struct snd_soc_dai *dai,
 static int wm8776_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm8776_priv *wm8776 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8776_priv *wm8776 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -420,11 +424,12 @@ static struct snd_soc_dai_driver wm8776_dai[] = {
 
 static int wm8776_probe(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
 	ret = wm8776_reset(component);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to issue reset: %d\n", ret);
+		dev_err(dev, "Failed to issue reset: %d\n", ret);
 		return ret;
 	}
 
@@ -486,7 +491,7 @@ static int wm8776_spi_probe(struct spi_device *spi)
 
 	spi_set_drvdata(spi, wm8776);
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 			&soc_component_dev_wm8776, wm8776_dai, ARRAY_SIZE(wm8776_dai));
 
 	return ret;
@@ -518,7 +523,7 @@ static int wm8776_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, wm8776);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8776, wm8776_dai, ARRAY_SIZE(wm8776_dai));
 
 	return ret;

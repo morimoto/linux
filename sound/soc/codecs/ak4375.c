@@ -250,8 +250,9 @@ static int ak4375_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4375_priv *ak4375 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4375_priv *ak4375 = dev_get_drvdata(dev);
 	unsigned int freq_in, freq_out;
 
 	ak4375->rate = params_rate(params);
@@ -274,8 +275,9 @@ static int ak4375_hw_params(struct snd_pcm_substream *substream,
 static int ak4375_dai_set_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			      unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4375_priv *ak4375 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4375_priv *ak4375 = dev_get_drvdata(dev);
 	unsigned int mclk, plm, mdiv, div;
 	u8 cms, fs, cm;
 
@@ -366,8 +368,9 @@ static int ak4375_dai_set_pll(struct snd_soc_dai *dai, int pll_id, int source,
 
 static int ak4375_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak4375_priv *ak4375 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak4375_priv *ak4375 = dev_get_drvdata(dev);
 	u8 val = snd_soc_component_read(component, AK4375_07_DAC_MONO_MIXING);
 
 	dev_dbg(ak4375->dev, "mute=%d val=%d\n", mute, val);
@@ -569,7 +572,7 @@ static int ak4375_i2c_probe(struct i2c_client *i2c)
 	pm_runtime_set_active(ak4375->dev);
 	pm_runtime_enable(ak4375->dev);
 
-	ret = devm_snd_soc_register_component(ak4375->dev, drvdata->comp_drv,
+	ret = devm_snd_soc_component_register(ak4375->dev, drvdata->comp_drv,
 					      drvdata->dai_drv, 1);
 	if (ret < 0) {
 		dev_err(ak4375->dev, "Failed to register CODEC: %d\n", ret);

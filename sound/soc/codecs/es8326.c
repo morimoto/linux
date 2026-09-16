@@ -51,7 +51,8 @@ static int es8326_crosstalk1_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 	unsigned int crosstalk_h, crosstalk_l;
 	unsigned int crosstalk;
 
@@ -69,7 +70,8 @@ static int es8326_crosstalk1_set(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 	unsigned int crosstalk_h, crosstalk_l;
 	unsigned int crosstalk;
 
@@ -89,7 +91,8 @@ static int es8326_crosstalk2_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 	unsigned int crosstalk_h, crosstalk_l;
 	unsigned int crosstalk;
 
@@ -107,7 +110,8 @@ static int es8326_crosstalk2_set(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 	unsigned int crosstalk_h, crosstalk_l;
 	unsigned int crosstalk;
 
@@ -127,7 +131,8 @@ static int es8326_hplvol_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = es8326->hpl_vol;
 
@@ -138,7 +143,8 @@ static int es8326_hplvol_set(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 	unsigned int hp_vol;
 
 	hp_vol = ucontrol->value.integer.value[0];
@@ -160,7 +166,8 @@ static int es8326_hprvol_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = es8326->hpr_vol;
 
@@ -171,7 +178,8 @@ static int es8326_hprvol_set(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 	unsigned int hp_vol;
 
 	hp_vol = ucontrol->value.integer.value[0];
@@ -500,8 +508,9 @@ static inline int get_coeff(int mclk, int rate, int array,
 static int es8326_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *codec = codec_dai->component;
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(codec);
+	struct snd_soc_component *codec = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 
 	es8326->sysclk = freq;
 
@@ -510,7 +519,8 @@ static int es8326_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 
 static int es8326_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u8 iface = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -529,7 +539,7 @@ static int es8326_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	case SND_SOC_DAIFMT_I2S:
 		break;
 	case SND_SOC_DAIFMT_RIGHT_J:
-		dev_err(component->dev, "Codec driver does not support right justified\n");
+		dev_err(dev, "Codec driver does not support right justified\n");
 		return -EINVAL;
 	case SND_SOC_DAIFMT_LEFT_J:
 		iface |= ES8326_DAIFMT_LEFT_J;
@@ -553,9 +563,10 @@ static int es8326_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	const struct _coeff_div *coeff_div;
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 	u8 srate = 0;
 	int coeff, array;
 
@@ -609,7 +620,7 @@ static int es8326_pcm_hw_params(struct snd_pcm_substream *substream,
 		regmap_write(es8326->regmap,  ES8326_CLK_DAC_OSR,
 			     coeff_div[coeff].regb);
 	} else {
-		dev_warn(component->dev, "Clock coefficients do not match");
+		dev_warn(dev, "Clock coefficients do not match");
 	}
 
 	return 0;
@@ -617,8 +628,9 @@ static int es8326_pcm_hw_params(struct snd_pcm_substream *substream,
 
 static int es8326_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 	unsigned int offset_l, offset_r;
 
 	if (mute) {
@@ -679,7 +691,8 @@ static int es8326_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int es8326_set_bias_level(struct snd_soc_component *codec,
 				 enum snd_soc_bias_level level)
 {
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 	int ret;
 
 	switch (level) {
@@ -874,11 +887,12 @@ static void es8326_jack_detect_handler(struct work_struct *work)
 	struct es8326_priv *es8326 =
 		container_of(work, struct es8326_priv, jack_detect_work.work);
 	struct snd_soc_component *comp = es8326->component;
+	struct device *dev = snd_soc_component_to_dev(comp);
 	unsigned int iface;
 
 	guard(mutex)(&es8326->lock);
 	iface = snd_soc_component_read(comp, ES8326_HPDET_STA);
-	dev_dbg(comp->dev, "gpio flag %#04x", iface);
+	dev_dbg(dev, "gpio flag %#04x", iface);
 
 	if ((es8326->jack_remove_retry == 1) && (es8326->version < ES8326_VERSION_B)) {
 		if (iface & ES8326_HPINSERT_FLAG)
@@ -886,7 +900,7 @@ static void es8326_jack_detect_handler(struct work_struct *work)
 		else
 			es8326->jack_remove_retry = 0;
 
-		dev_dbg(comp->dev, "remove event check, set HPJACK_POL normal, cnt = %d\n",
+		dev_dbg(dev, "remove event check, set HPJACK_POL normal, cnt = %d\n",
 				es8326->jack_remove_retry);
 		/*
 		 * Inverted HPJACK_POL bit to trigger one IRQ to double check HP Removal event
@@ -899,10 +913,10 @@ static void es8326_jack_detect_handler(struct work_struct *work)
 
 	if ((iface & ES8326_HPINSERT_FLAG) == 0) {
 		/* Jack unplugged or spurious IRQ */
-		dev_dbg(comp->dev, "No headset detected\n");
+		dev_dbg(dev, "No headset detected\n");
 		es8326_disable_micbias(es8326->component);
 		if (es8326->jack->status & SND_JACK_HEADPHONE) {
-			dev_dbg(comp->dev, "Report hp remove event\n");
+			dev_dbg(dev, "Report hp remove event\n");
 			snd_soc_jack_report(es8326->jack, 0,
 				    SND_JACK_BTN_0 | SND_JACK_BTN_1 | SND_JACK_BTN_2);
 			snd_soc_jack_report(es8326->jack, 0, SND_JACK_HEADSET);
@@ -920,7 +934,7 @@ static void es8326_jack_detect_handler(struct work_struct *work)
 		 */
 		if ((es8326->jack_remove_retry == 0) && (es8326->version < ES8326_VERSION_B)) {
 			es8326->jack_remove_retry = 1;
-			dev_dbg(comp->dev, "remove event check, invert HPJACK_POL, cnt = %d\n",
+			dev_dbg(dev, "remove event check, invert HPJACK_POL, cnt = %d\n",
 					es8326->jack_remove_retry);
 			regmap_update_bits(es8326->regmap, ES8326_HPDET_TYPE,
 					ES8326_HP_DET_JACK_POL, (es8326->jd_inverted ?
@@ -932,7 +946,7 @@ static void es8326_jack_detect_handler(struct work_struct *work)
 	} else if ((iface & ES8326_HPINSERT_FLAG) == ES8326_HPINSERT_FLAG) {
 		es8326->jack_remove_retry = 0;
 		if (es8326->hp == 0) {
-			dev_dbg(comp->dev, "First insert, start OMTP/CTIA type check\n");
+			dev_dbg(dev, "First insert, start OMTP/CTIA type check\n");
 			/*
 			 * set auto-check mode, then restart jack_detect_work after 400ms.
 			 * Don't report jack status.
@@ -955,7 +969,7 @@ static void es8326_jack_detect_handler(struct work_struct *work)
 		}
 		if (es8326->jack->status & SND_JACK_HEADSET) {
 			/* detect button */
-			dev_dbg(comp->dev, "button pressed\n");
+			dev_dbg(dev, "button pressed\n");
 			regmap_write(es8326->regmap, ES8326_INT_SOURCE,
 					(ES8326_INT_SRC_PIN9 | ES8326_INT_SRC_BUTTON));
 			es8326_enable_micbias(es8326->component);
@@ -963,11 +977,11 @@ static void es8326_jack_detect_handler(struct work_struct *work)
 			return;
 		}
 		if ((iface & ES8326_HPBUTTON_FLAG) == 0x01) {
-			dev_dbg(comp->dev, "Headphone detected\n");
+			dev_dbg(dev, "Headphone detected\n");
 			snd_soc_jack_report(es8326->jack,
 					SND_JACK_HEADPHONE, SND_JACK_HEADSET);
 		} else {
-			dev_dbg(comp->dev, "Headset detected\n");
+			dev_dbg(dev, "Headset detected\n");
 			snd_soc_jack_report(es8326->jack,
 					SND_JACK_HEADSET, SND_JACK_HEADSET);
 			regmap_update_bits(es8326->regmap, ES8326_PGA_PDN,
@@ -1001,7 +1015,8 @@ out:
 
 static int es8326_calibrate(struct snd_soc_component *component)
 {
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 	unsigned int reg;
 	unsigned int offset_l, offset_r;
 
@@ -1009,7 +1024,7 @@ static int es8326_calibrate(struct snd_soc_component *component)
 	es8326->version = reg;
 
 	if ((es8326->version >= ES8326_VERSION_B) && (es8326->calibrated == false)) {
-		dev_dbg(component->dev, "ES8326_VERSION_B, calibrating\n");
+		dev_dbg(dev, "ES8326_VERSION_B, calibrating\n");
 		regmap_write(es8326->regmap, ES8326_CLK_INV, 0xc0);
 		regmap_write(es8326->regmap, ES8326_CLK_DIV1, 0x03);
 		regmap_write(es8326->regmap, ES8326_CLK_DLL, 0x30);
@@ -1051,7 +1066,8 @@ static int es8326_calibrate(struct snd_soc_component *component)
 
 static void es8326_init(struct snd_soc_component *component)
 {
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 
 	regmap_write(es8326->regmap, ES8326_RESET, 0x1f);
 	regmap_write(es8326->regmap, ES8326_VMIDSEL, 0x3E);
@@ -1137,7 +1153,8 @@ static void es8326_init(struct snd_soc_component *component)
 
 static int es8326_resume(struct snd_soc_component *component)
 {
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 	unsigned int reg;
 	int ret;
 
@@ -1168,7 +1185,8 @@ static int es8326_resume(struct snd_soc_component *component)
 
 static int es8326_suspend(struct snd_soc_component *component)
 {
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 
 	cancel_delayed_work_sync(&es8326->jack_detect_work);
 	cancel_delayed_work_sync(&es8326->capture_pop_work);
@@ -1191,35 +1209,33 @@ static int es8326_suspend(struct snd_soc_component *component)
 
 static int es8326_probe(struct snd_soc_component *component)
 {
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 	int ret;
 
 	es8326->component = component;
-	es8326->jd_inverted = device_property_read_bool(component->dev,
-							"everest,jack-detect-inverted");
+	es8326->jd_inverted = device_property_read_bool(dev, "everest,jack-detect-inverted");
 
-	ret = device_property_read_u8(component->dev, "everest,jack-pol", &es8326->jack_pol);
+	ret = device_property_read_u8(dev, "everest,jack-pol", &es8326->jack_pol);
 	if (ret != 0) {
-		dev_dbg(component->dev, "jack-pol return %d", ret);
+		dev_dbg(dev, "jack-pol return %d", ret);
 		es8326->jack_pol = ES8326_HP_TYPE_AUTO;
 	}
-	dev_dbg(component->dev, "jack-pol %x", es8326->jack_pol);
+	dev_dbg(dev, "jack-pol %x", es8326->jack_pol);
 
-	ret = device_property_read_u8(component->dev, "everest,interrupt-src",
-				      &es8326->interrupt_src);
+	ret = device_property_read_u8(dev, "everest,interrupt-src", &es8326->interrupt_src);
 	if (ret != 0) {
-		dev_dbg(component->dev, "interrupt-src return %d", ret);
+		dev_dbg(dev, "interrupt-src return %d", ret);
 		es8326->interrupt_src = ES8326_HP_DET_SRC_PIN9;
 	}
-	dev_dbg(component->dev, "interrupt-src %x", es8326->interrupt_src);
+	dev_dbg(dev, "interrupt-src %x", es8326->interrupt_src);
 
-	ret = device_property_read_u8(component->dev, "everest,interrupt-clk",
-				      &es8326->interrupt_clk);
+	ret = device_property_read_u8(dev, "everest,interrupt-clk", &es8326->interrupt_clk);
 	if (ret != 0) {
-		dev_dbg(component->dev, "interrupt-clk return %d", ret);
+		dev_dbg(dev, "interrupt-clk return %d", ret);
 		es8326->interrupt_clk = 0x00;
 	}
-	dev_dbg(component->dev, "interrupt-clk %x", es8326->interrupt_clk);
+	dev_dbg(dev, "interrupt-clk %x", es8326->interrupt_clk);
 
 	es8326_init(component);
 	return 0;
@@ -1228,7 +1244,8 @@ static int es8326_probe(struct snd_soc_component *component)
 static void es8326_enable_jack_detect(struct snd_soc_component *component,
 				struct snd_soc_jack *jack)
 {
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 
 	scoped_guard(mutex, &es8326->lock) {
 		if (es8326->jd_inverted)
@@ -1241,9 +1258,10 @@ static void es8326_enable_jack_detect(struct snd_soc_component *component,
 
 static void es8326_disable_jack_detect(struct snd_soc_component *component)
 {
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 
-	dev_dbg(component->dev, "Enter into %s\n", __func__);
+	dev_dbg(dev, "Enter into %s\n", __func__);
 	if (!es8326->jack)
 		return; /* Already disabled (or never enabled) */
 	cancel_delayed_work_sync(&es8326->jack_detect_work);
@@ -1269,7 +1287,8 @@ static int es8326_set_jack(struct snd_soc_component *component,
 
 static void es8326_remove(struct snd_soc_component *component)
 {
-	struct es8326_priv *es8326 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es8326_priv *es8326 = dev_get_drvdata(dev);
 
 	es8326_disable_jack_detect(component);
 	es8326_set_bias_level(component, SND_SOC_BIAS_OFF);
@@ -1348,7 +1367,7 @@ static int es8326_i2c_probe(struct i2c_client *i2c)
 		dev_err(&i2c->dev, "unable to enable mclk\n");
 		return ret;
 	}
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 					&soc_component_dev_es8326,
 					&es8326_dai, 1);
 }
@@ -1356,12 +1375,11 @@ static int es8326_i2c_probe(struct i2c_client *i2c)
 
 static void es8326_i2c_shutdown(struct i2c_client *i2c)
 {
-	struct snd_soc_component *component;
-	struct es8326_priv *es8326;
+	struct es8326_priv *es8326 = i2c_get_clientdata(i2c);
+	struct snd_soc_component *component = es8326->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	es8326 = i2c_get_clientdata(i2c);
-	component = es8326->component;
-	dev_dbg(component->dev, "Enter into %s\n", __func__);
+	dev_dbg(dev, "Enter into %s\n", __func__);
 	cancel_delayed_work_sync(&es8326->jack_detect_work);
 	cancel_delayed_work_sync(&es8326->button_press_work);
 

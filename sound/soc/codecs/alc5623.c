@@ -521,7 +521,7 @@ static int alc5623_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 		int source, unsigned int freq_in, unsigned int freq_out)
 {
 	int i;
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	int gbl_clk = 0, pll_div = 0;
 	u16 reg;
 
@@ -601,7 +601,8 @@ static const struct _coeff_div coeff_div[] = {
 
 static int get_coeff(struct snd_soc_component *component, int rate)
 {
-	struct alc5623_priv *alc5623 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct alc5623_priv *alc5623 = dev_get_drvdata(dev);
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(coeff_div); i++) {
@@ -617,8 +618,9 @@ static int get_coeff(struct snd_soc_component *component, int rate)
 static int alc5623_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct alc5623_priv *alc5623 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct alc5623_priv *alc5623 = dev_get_drvdata(dev);
 
 	switch (freq) {
 	case  8192000:
@@ -638,7 +640,7 @@ static int alc5623_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int alc5623_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 iface = 0;
 
 	/* set audio interface clocking */
@@ -691,8 +693,9 @@ static int alc5623_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int alc5623_pcm_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct alc5623_priv *alc5623 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct alc5623_priv *alc5623 = dev_get_drvdata(dev);
 	int coeff, rate;
 	u16 iface;
 
@@ -725,7 +728,7 @@ static int alc5623_pcm_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 
 	coeff = coeff_div[coeff].regvalue;
-	dev_dbg(component->dev, "%s: sysclk=%d,rate=%d,coeff=0x%04x\n",
+	dev_dbg(dev, "%s: sysclk=%d,rate=%d,coeff=0x%04x\n",
 		__func__, alc5623->sysclk, rate, coeff);
 	snd_soc_component_write(component, ALC5623_STEREO_AD_DA_CLK_CTRL, coeff);
 
@@ -734,7 +737,7 @@ static int alc5623_pcm_hw_params(struct snd_pcm_substream *substream,
 
 static int alc5623_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 hp_mute = ALC5623_MISC_M_DAC_L_INPUT | ALC5623_MISC_M_DAC_R_INPUT;
 	u16 mute_reg = snd_soc_component_read(component, ALC5623_MISC_CTRL) & ~hp_mute;
 
@@ -761,7 +764,8 @@ static int alc5623_mute(struct snd_soc_dai *dai, int mute, int direction)
 
 static void enable_power_depop(struct snd_soc_component *component)
 {
-	struct alc5623_priv *alc5623 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct alc5623_priv *alc5623 = dev_get_drvdata(dev);
 
 	snd_soc_component_update_bits(component, ALC5623_PWR_MANAG_ADD1,
 				ALC5623_PWR_ADD1_SOFTGEN_EN,
@@ -866,7 +870,8 @@ static struct snd_soc_dai_driver alc5623_dai = {
 
 static int alc5623_suspend(struct snd_soc_component *component)
 {
-	struct alc5623_priv *alc5623 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct alc5623_priv *alc5623 = dev_get_drvdata(dev);
 
 	regcache_cache_only(alc5623->regmap, true);
 
@@ -875,15 +880,15 @@ static int alc5623_suspend(struct snd_soc_component *component)
 
 static int alc5623_resume(struct snd_soc_component *component)
 {
-	struct alc5623_priv *alc5623 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct alc5623_priv *alc5623 = dev_get_drvdata(dev);
 	int ret;
 
 	/* Sync reg_cache with the hardware */
 	regcache_cache_only(alc5623->regmap, false);
 	ret = regcache_sync(alc5623->regmap);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to sync register cache: %d\n",
-			ret);
+		dev_err(dev, "Failed to sync register cache: %d\n", ret);
 		regcache_cache_only(alc5623->regmap, true);
 		return ret;
 	}
@@ -893,7 +898,8 @@ static int alc5623_resume(struct snd_soc_component *component)
 
 static int alc5623_probe(struct snd_soc_component *component)
 {
-	struct alc5623_priv *alc5623 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct alc5623_priv *alc5623 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	alc5623_reset(component);
@@ -910,22 +916,22 @@ static int alc5623_probe(struct snd_soc_component *component)
 
 	switch (alc5623->id) {
 	case 0x21:
-		snd_soc_add_component_controls(component, alc5621_vol_snd_controls,
+		snd_soc_component_add_controls(component, alc5621_vol_snd_controls,
 			ARRAY_SIZE(alc5621_vol_snd_controls));
 		break;
 	case 0x22:
-		snd_soc_add_component_controls(component, alc5622_vol_snd_controls,
+		snd_soc_component_add_controls(component, alc5622_vol_snd_controls,
 			ARRAY_SIZE(alc5622_vol_snd_controls));
 		break;
 	case 0x23:
-		snd_soc_add_component_controls(component, alc5623_vol_snd_controls,
+		snd_soc_component_add_controls(component, alc5623_vol_snd_controls,
 			ARRAY_SIZE(alc5623_vol_snd_controls));
 		break;
 	default:
 		return -EINVAL;
 	}
 
-	snd_soc_add_component_controls(component, alc5623_snd_controls,
+	snd_soc_component_add_controls(component, alc5623_snd_controls,
 			ARRAY_SIZE(alc5623_snd_controls));
 
 	snd_soc_dapm_new_controls(dapm, alc5623_dapm_widgets,
@@ -1067,7 +1073,7 @@ static int alc5623_i2c_probe(struct i2c_client *client)
 
 	i2c_set_clientdata(client, alc5623);
 
-	ret =  devm_snd_soc_register_component(&client->dev,
+	ret =  devm_snd_soc_component_register(&client->dev,
 		&soc_component_device_alc5623, &alc5623_dai, 1);
 	if (ret != 0)
 		dev_err(&client->dev, "Failed to register codec: %d\n", ret);

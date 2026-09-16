@@ -90,7 +90,9 @@ static inline u32 hi6210_read_reg(struct hi6210_i2s *i2s, int reg)
 static int hi6210_i2s_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *cpu_dai)
 {
-	struct hi6210_i2s *i2s = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct hi6210_i2s *i2s = dev_get_drvdata(dai_dev);
 	int ret, n;
 	u32 val;
 
@@ -171,7 +173,9 @@ err_unprepare_clk:
 static void hi6210_i2s_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *cpu_dai)
 {
-	struct hi6210_i2s *i2s = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct hi6210_i2s *i2s = dev_get_drvdata(dai_dev);
 	int n;
 
 	for (n = 0; n < i2s->clocks; n++)
@@ -182,7 +186,9 @@ static void hi6210_i2s_shutdown(struct snd_pcm_substream *substream,
 
 static void hi6210_i2s_txctrl(struct snd_soc_dai *cpu_dai, int on)
 {
-	struct hi6210_i2s *i2s = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct hi6210_i2s *i2s = dev_get_drvdata(dai_dev);
 	u32 val;
 
 	guard(spinlock)(&i2s->lock);
@@ -201,7 +207,9 @@ static void hi6210_i2s_txctrl(struct snd_soc_dai *cpu_dai, int on)
 
 static void hi6210_i2s_rxctrl(struct snd_soc_dai *cpu_dai, int on)
 {
-	struct hi6210_i2s *i2s = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct hi6210_i2s *i2s = dev_get_drvdata(dai_dev);
 	u32 val;
 
 	guard(spinlock)(&i2s->lock);
@@ -218,7 +226,9 @@ static void hi6210_i2s_rxctrl(struct snd_soc_dai *cpu_dai, int on)
 
 static int hi6210_i2s_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 {
-	struct hi6210_i2s *i2s = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct hi6210_i2s *i2s = dev_get_drvdata(dai_dev);
 
 	/*
 	 * We don't actually set the hardware until the hw_params
@@ -252,7 +262,9 @@ static int hi6210_i2s_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *cpu_dai)
 {
-	struct hi6210_i2s *i2s = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct hi6210_i2s *i2s = dev_get_drvdata(dai_dev);
 	u32 bits = 0, rate = 0, signed_data = 0, fmt = 0;
 	u32 val;
 	struct snd_dmaengine_dai_dma_data *dma_data;
@@ -271,7 +283,7 @@ static int hi6210_i2s_hw_params(struct snd_pcm_substream *substream,
 		bits = HII2S_BITS_24;
 		break;
 	default:
-		dev_err(cpu_dai->dev, "Bad format\n");
+		dev_err(dai_dev, "Bad format\n");
 		return -EINVAL;
 	}
 
@@ -296,16 +308,16 @@ static int hi6210_i2s_hw_params(struct snd_pcm_substream *substream,
 		rate = HII2S_FS_RATE_192KHZ;
 		break;
 	default:
-		dev_err(cpu_dai->dev, "Bad rate: %d\n", params_rate(params));
+		dev_err(dai_dev, "Bad rate: %d\n", params_rate(params));
 		return -EINVAL;
 	}
 
 	if (!(params_channels(params))) {
-		dev_err(cpu_dai->dev, "Bad channels\n");
+		dev_err(dai_dev, "Bad channels\n");
 		return -EINVAL;
 	}
 
-	dma_data = snd_soc_dai_get_dma_data(cpu_dai, substream);
+	dma_data = snd_soc_dai_stream_dma_data_get(cpu_dai, substream);
 
 	switch (bits) {
 	case HII2S_BITS_24:
@@ -472,6 +484,9 @@ static int hi6210_i2s_hw_params(struct snd_pcm_substream *substream,
 static int hi6210_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 			  struct snd_soc_dai *cpu_dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+
 	pr_debug("%s\n", __func__);
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -489,7 +504,7 @@ static int hi6210_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 			hi6210_i2s_txctrl(cpu_dai, 0);
 		break;
 	default:
-		dev_err(cpu_dai->dev, "unknown cmd\n");
+		dev_err(dai_dev, "unknown cmd\n");
 		return -EINVAL;
 	}
 	return 0;
@@ -497,11 +512,12 @@ static int hi6210_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int hi6210_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct hi6210_i2s *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct hi6210_i2s *i2s = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai,
-				  &i2s->dma_data[SNDRV_PCM_STREAM_PLAYBACK],
-				  &i2s->dma_data[SNDRV_PCM_STREAM_CAPTURE]);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &i2s->dma_data[SNDRV_PCM_STREAM_PLAYBACK]);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &i2s->dma_data[SNDRV_PCM_STREAM_CAPTURE]);
 
 	return 0;
 }
@@ -589,7 +605,7 @@ static int hi6210_i2s_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	ret = devm_snd_soc_register_component(dev, &hi6210_i2s_i2s_comp,
+	ret = devm_snd_soc_component_register(dev, &hi6210_i2s_i2s_comp,
 					 &i2s->dai, 1);
 	return ret;
 }
