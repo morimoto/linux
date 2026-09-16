@@ -5,24 +5,17 @@
 
 #include <linux/bitops.h>
 #include <linux/cleanup.h>
-#include <linux/device.h>
 #include <linux/gpio/consumer.h>
 #include <linux/hwmon.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
 #include <linux/printk.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
 #include <linux/reset.h>
-#include <linux/slab.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_registers.h>
 #include <linux/soundwire/sdw_type.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/soc-dapm.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 
