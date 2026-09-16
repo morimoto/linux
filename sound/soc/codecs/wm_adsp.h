@@ -14,7 +14,6 @@
 #include <linux/firmware/cirrus/wmfw.h>
 
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <sound/compress_driver.h>
 
 /* Return values for wm_adsp_compr_handle_irq */

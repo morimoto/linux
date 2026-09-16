@@ -6,16 +6,7 @@
 // Copyright (C) 2019, Paul Cercueil <paul@crapouillou.net>
 
 #include <linux/clk.h>
-#include <linux/delay.h>
-#include <linux/iopoll.h>
-#include <linux/module.h>
-#include <linux/regmap.h>
-#include <linux/time64.h>
-
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
 
 #define ICDC_RGADW_OFFSET		0x00

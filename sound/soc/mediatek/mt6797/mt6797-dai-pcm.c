@@ -5,8 +5,6 @@
 // Copyright (c) 2018 MediaTek Inc.
 // Author: KaiChieh Chuang <kaichieh.chuang@mediatek.com>
 
-#include <linux/regmap.h>
-#include <sound/pcm_params.h>
 #include "mt6797-afe-common.h"
 #include "mt6797-interconnection.h"
 #include "mt6797-reg.h"

@@ -3,10 +3,7 @@
 // Copyright (c) 2011 Samsung Electronics Co., Ltd
 //		http://www.samsung.com
 
-#include <linux/module.h>
 #include <sound/soc.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 
 #include "../codecs/wm8994.h"
 #include "pcm.h"

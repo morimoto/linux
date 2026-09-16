@@ -6,7 +6,6 @@
 // Copyright(c) 2022 Intel Corporation
 //
 
-#include <sound/pcm_params.h>
 #include <sound/sof/ipc4/header.h>
 #include "sof-audio.h"
 #include "sof-priv.h"

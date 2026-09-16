@@ -5,16 +5,8 @@
 // Copyright (C) 2008 NXP Semiconductors
 // Copyright 2023 Timesys Corporation <piotr.wojtaszczyk@timesys.com>
 
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
 #include <linux/dma-mapping.h>
 #include <linux/amba/pl08x.h>
-
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/dmaengine_pcm.h>
 #include <sound/soc.h>
 

@@ -3,17 +3,10 @@
 
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
-#include <linux/delay.h>
 #include <linux/dmaengine.h>
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
-#include <linux/time.h>
 #include <linux/pm_qos.h>
-#include <sound/core.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 #include <linux/dma-mapping.h>
 
 #include "fsl_aud2htx.h"

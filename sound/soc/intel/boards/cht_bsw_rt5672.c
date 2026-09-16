@@ -10,15 +10,8 @@
 
 #include <linux/gpio/consumer.h>
 #include <linux/input.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
 #include <linux/clk.h>
-#include <linux/string.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/jack.h>
 #include <sound/soc-acpi.h>
 #include "../../codecs/rt5670.h"
 #include "../atom/sst-atom-controls.h"

@@ -9,8 +9,6 @@
 #ifndef _MT_8186_AFE_COMMON_H_
 #define _MT_8186_AFE_COMMON_H_
 #include <sound/soc.h>
-#include <linux/list.h>
-#include <linux/regmap.h>
 #include "mt8186-reg.h"
 #include "../common/mtk-base-afe.h"
 

@@ -8,20 +8,8 @@
  * Based on wm8974 and wm8990 by Liam Girdwood <lrg@slimlogic.co.uk>
  */
 
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/pm.h>
 #include <linux/i2c.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/initval.h>
 #include <sound/tlv.h>
 #include <asm/div64.h>
 

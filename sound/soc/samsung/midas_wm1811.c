@@ -10,11 +10,7 @@
 #include <linux/iio/consumer.h>
 #include <linux/mfd/wm8994/registers.h>
 #include <linux/input-event-codes.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <sound/jack.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 
 #include "i2s.h"
 #include "../codecs/wm8994.h"

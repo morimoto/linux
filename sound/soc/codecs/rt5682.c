@@ -6,25 +6,11 @@
 // Author: Bard Liao <bardliao@realtek.com>
 //
 
-#include <linux/cleanup.h>
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/pm.h>
 #include <linux/pm_runtime.h>
-#include <linux/platform_device.h>
 #include <linux/spi/spi.h>
 #include <linux/acpi.h>
 #include <linux/gpio/consumer.h>
-#include <linux/mutex.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/jack.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/initval.h>
 #include <sound/tlv.h>
 #include <sound/rt5682.h>
 

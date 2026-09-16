@@ -11,18 +11,10 @@
  */
 
 #include <linux/clk.h>
-#include <linux/device.h>
-#include <linux/init.h>
-#include <linux/interrupt.h>
 #include <linux/io.h>
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
 #include <linux/reset.h>
-#include <linux/slab.h>
-#include <linux/types.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #define JH7110_PWMDAC_WDATA				0x00

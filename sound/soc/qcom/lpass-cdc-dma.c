@@ -7,10 +7,7 @@
 
 #include <dt-bindings/sound/qcom,lpass.h>
 #include <linux/clk.h>
-#include <linux/module.h>
-#include <linux/export.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
 
 #include "lpass-lpaif-reg.h"
 #include "lpass.h"

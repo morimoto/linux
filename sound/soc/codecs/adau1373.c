@@ -6,18 +6,8 @@
  * Author: Lars-Peter Clausen <lars@metafoo.de>
  */
 
-#include <linux/module.h>
-#include <linux/init.h>
 #include <linux/gpio/consumer.h>
-#include <linux/delay.h>
-#include <linux/pm.h>
-#include <linux/property.h>
 #include <linux/i2c.h>
-#include <linux/slab.h>
-
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/tlv.h>
 #include <sound/soc.h>
 

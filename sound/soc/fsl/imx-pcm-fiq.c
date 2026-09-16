@@ -7,20 +7,8 @@
 // Liam Girdwood, Javier Martin and probably others.
 
 #include <linux/clk.h>
-#include <linux/delay.h>
-#include <linux/device.h>
 #include <linux/dma-mapping.h>
-#include <linux/init.h>
-#include <linux/interrupt.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
-
-#include <sound/core.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/initval.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #include <asm/fiq.h>

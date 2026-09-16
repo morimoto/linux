@@ -2,14 +2,7 @@
 //
 // Copyright(c) 2020 Intel Corporation
 
-#include <linux/device.h>
-#include <linux/kernel.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-acpi.h>
-#include <sound/soc-dai.h>
-#include <sound/soc-dapm.h>
 #include <sound/sof.h>
 #include <uapi/sound/asound.h>
 #include "../../codecs/rt1011.h"

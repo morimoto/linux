@@ -1,14 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
 //
 // Copyright(c) 2020 Intel Corporation
-#include <linux/module.h>
-#include <linux/string.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dai.h>
-#include <sound/soc-dapm.h>
 #include <sound/sof.h>
 #include <uapi/sound/asound.h>
 #include "../common/soc-intel-quirks.h"

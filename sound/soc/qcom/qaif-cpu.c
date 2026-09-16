@@ -6,17 +6,9 @@
  */
 
 #include <linux/clk.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/of_device.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
 #include "qaif-reg.h"
 #include "qaif.h"
 

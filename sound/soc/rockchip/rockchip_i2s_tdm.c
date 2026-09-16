@@ -7,16 +7,10 @@
 
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
-#include <linux/delay.h>
 #include <linux/mfd/syscon.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/reset.h>
-#include <linux/spinlock.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 
 #include "rockchip_i2s_tdm.h"
 

@@ -8,11 +8,7 @@
  */
 
 #include <linux/firmware.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/hdaudio_ext.h>
 #include <sound/hda_i915.h>

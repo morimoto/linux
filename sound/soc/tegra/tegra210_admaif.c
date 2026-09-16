@@ -5,14 +5,9 @@
 // tegra210_admaif.c - Tegra ADMAIF driver
 
 #include <linux/clk.h>
-#include <linux/device.h>
-#include <linux/module.h>
 #include <linux/of_platform.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include "tegra_isomgr_bw.h"
 #include "tegra210_admaif.h"

@@ -7,9 +7,6 @@
  *          Alexandre Mergnat <amergnat@baylibre.com>
  */
 
-#include <linux/bitops.h>
-#include <linux/regmap.h>
-#include <sound/pcm_params.h>
 #include "mt8365-afe-clk.h"
 #include "mt8365-afe-common.h"
 

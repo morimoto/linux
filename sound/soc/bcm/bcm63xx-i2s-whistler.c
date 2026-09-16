@@ -6,10 +6,6 @@
 
 #include <linux/clk.h>
 #include <linux/dma-mapping.h>
-#include <linux/io.h>
-#include <linux/module.h>
-#include <linux/regmap.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include "bcm63xx-i2s.h"
 

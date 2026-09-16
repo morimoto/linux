@@ -3,9 +3,7 @@
 // Copyright (c) 2026 BayLibre, SAS.
 // Author: Valerio Setti <vsetti@baylibre.com>
 
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
 
 #include "aiu.h"
 #include "gx-formatter.h"

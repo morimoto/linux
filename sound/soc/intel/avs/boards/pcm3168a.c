@@ -5,11 +5,6 @@
 // Author: Cezary Rojewski <cezary.rojewski@intel.com>
 //
 
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
 #include "../utils.h"

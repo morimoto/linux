@@ -5,36 +5,10 @@
 // Copyright (C) 2023 Cirrus Logic, Inc. and
 //                    Cirrus Logic International Semiconductor Ltd.
 
-#include <kunit/static_stub.h>
 #include <kunit/visibility.h>
 #include <linux/acpi.h>
-#include <linux/array_size.h>
-#include <linux/completion.h>
-#include <linux/debugfs.h>
-#include <linux/delay.h>
-#include <linux/device.h>
-#include <linux/err.h>
-#include <linux/gpio/consumer.h>
-#include <linux/interrupt.h>
-#include <linux/math.h>
-#include <linux/module.h>
-#include <linux/mutex.h>
-#include <linux/pm.h>
-#include <linux/pm_runtime.h>
-#include <linux/property.h>
-#include <linux/reboot.h>
-#include <linux/regmap.h>
-#include <linux/regulator/consumer.h>
-#include <linux/slab.h>
-#include <linux/soundwire/sdw.h>
-#include <linux/types.h>
-#include <linux/workqueue.h>
-#include <sound/cs-amp-lib.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/sdw.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
 
 #include "wm_adsp.h"

@@ -5,15 +5,10 @@
 #include <linux/clk.h>
 #include <linux/devm-helpers.h>
 #include <linux/firmware.h>
-#include <linux/interrupt.h>
-#include <linux/module.h>
-#include <linux/of_platform.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/reset.h>
 #include <sound/dmaengine_pcm.h>
 #include <sound/pcm_iec958.h>
-#include <sound/pcm_params.h>
 
 #include "fsl_xcvr.h"
 #include "fsl_utils.h"

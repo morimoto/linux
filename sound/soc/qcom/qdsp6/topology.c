@@ -1,18 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 // Copyright (c) 2020, Linaro Limited
 
-#include <linux/cleanup.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/pcm.h>
-#include <sound/control.h>
-#include <sound/asound.h>
 #include <linux/firmware.h>
 #include <sound/soc-topology.h>
-#include <sound/soc-dpcm.h>
 #include <uapi/sound/snd_ar_tokens.h>
-#include <linux/kernel.h>
-#include <linux/wait.h>
 #include "q6apm.h"
 #include "audioreach.h"
 

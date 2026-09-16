@@ -3,16 +3,10 @@
 
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
-#include <linux/delay.h>
 #include <linux/dmaengine.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/pm_runtime.h>
 #include <linux/rpmsg.h>
-#include <linux/slab.h>
-#include <sound/core.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 
 #include "fsl_rpmsg.h"
 #include "imx-pcm.h"

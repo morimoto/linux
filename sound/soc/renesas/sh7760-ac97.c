@@ -4,14 +4,7 @@
 //
 // (c) 2007 Manuel Lauss
 
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/platform_device.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
-#include <sound/soc-card.h>
-#include <asm/io.h>
 
 #define IPSEL 0xFE400034
 

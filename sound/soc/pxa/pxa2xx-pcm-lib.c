@@ -1,14 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#include <linux/slab.h>
-#include <linux/module.h>
 #include <linux/dma-mapping.h>
 #include <linux/dmaengine.h>
 #include <linux/dma/pxa-dma.h>
-
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/dmaengine_pcm.h>
 
 #include "pxa2xx-lib.h"

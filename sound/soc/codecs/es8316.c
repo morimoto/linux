@@ -7,21 +7,12 @@
  *          Daniel Drake <drake@endlessm.com>
  */
 
-#include <linux/module.h>
 #include <linux/acpi.h>
-#include <linux/cleanup.h>
 #include <linux/clk.h>
-#include <linux/delay.h>
 #include <linux/i2c.h>
-#include <linux/mutex.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
-#include <sound/jack.h>
 #include "es8316.h"
 
 /* In slave mode at single speed, the codec is documented as accepting 5

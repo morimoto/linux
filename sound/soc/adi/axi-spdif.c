@@ -4,20 +4,8 @@
  * Author: Lars-Peter Clausen <lars@metafoo.de>
  */
 
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
-#include <linux/of.h>
 #include <linux/clk.h>
-#include <linux/regmap.h>
-
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/initval.h>
 #include <sound/dmaengine_pcm.h>
 
 #define AXI_SPDIF_REG_CTRL	0x0

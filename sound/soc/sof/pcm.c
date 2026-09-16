@@ -11,7 +11,6 @@
 //
 
 #include <linux/pm_runtime.h>
-#include <sound/pcm_params.h>
 #include <sound/sof.h>
 #include <trace/events/sof.h>
 #include "sof-of-dev.h"

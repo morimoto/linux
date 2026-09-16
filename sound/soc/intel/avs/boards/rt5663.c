@@ -8,10 +8,6 @@
 
 #include <linux/clk.h>
 #include <linux/input.h>
-#include <linux/module.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
 #include "../../../codecs/rt5663.h"

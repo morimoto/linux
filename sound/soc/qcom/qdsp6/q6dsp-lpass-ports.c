@@ -3,7 +3,6 @@
 
 #include <sound/pcm.h>
 #include <sound/soc.h>
-#include <sound/pcm_params.h>
 #include <dt-bindings/sound/qcom,q6afe.h>
 #include "q6dsp-lpass-ports.h"
 

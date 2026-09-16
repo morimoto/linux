@@ -4,21 +4,7 @@
 
 #include <dt-bindings/sound/qcom,q6asm.h>
 #include <dt-bindings/sound/qcom,q6afe.h>
-#include <linux/init.h>
-#include <linux/err.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
-#include <linux/bitops.h>
-#include <linux/mutex.h>
-#include <linux/slab.h>
-#include <sound/core.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/pcm.h>
-#include <sound/control.h>
-#include <sound/asound.h>
-#include <sound/pcm_params.h>
 #include "q6afe.h"
 #include "q6asm.h"
 #include "q6adm.h"

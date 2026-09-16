@@ -4,12 +4,8 @@
 // tegra_audio_graph_card.c - Audio Graph based Tegra Machine Driver
 
 #include <linux/math64.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
 #include <sound/graph_card.h>
-#include <sound/pcm_params.h>
-#include <sound/soc-dai.h>
+#include <sound/soc.h>
 
 #define MAX_PLLA_OUT0_DIV 128
 

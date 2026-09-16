@@ -13,21 +13,9 @@
  *  - FLL source configuration, currently only MCLK is supported.
  */
 
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/pm.h>
 #include <linux/i2c.h>
-#include <linux/regmap.h>
 #include <linux/spi/spi.h>
-#include <linux/slab.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/initval.h>
 #include <sound/tlv.h>
 
 #include "wm8900.h"

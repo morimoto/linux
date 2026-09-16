@@ -8,12 +8,6 @@
 
 #include <linux/clk.h>
 #include <linux/framer/framer.h>
-#include <linux/module.h>
-#include <linux/notifier.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
-#include <sound/jack.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 

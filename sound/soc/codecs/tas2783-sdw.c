@@ -12,19 +12,11 @@
 // Author: Baojun Xu <baojun.xu@ti.com>
 // Author: Kevin Lu <kevin-lu@ti.com>
 
-#include <linux/cleanup.h>
 #include <linux/unaligned.h>
 #include <linux/crc32.h>
 #include <linux/efi.h>
-#include <linux/err.h>
 #include <linux/firmware.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <sound/pcm_params.h>
-#include <linux/pm.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
-#include <linux/wait.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_registers.h>
 #include <linux/soundwire/sdw_type.h>

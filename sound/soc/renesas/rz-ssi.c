@@ -7,15 +7,9 @@
 //
 
 #include <linux/clk.h>
-#include <linux/dmaengine.h>
-#include <linux/io.h>
-#include <linux/iopoll.h>
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
 #include <linux/reset.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 /* REGISTER OFFSET */

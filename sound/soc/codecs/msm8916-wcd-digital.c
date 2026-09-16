@@ -1,19 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0
 // Copyright (c) 2016, The Linux Foundation. All rights reserved.
 
-#include <linux/module.h>
-#include <linux/err.h>
-#include <linux/kernel.h>
-#include <linux/delay.h>
-#include <linux/types.h>
 #include <linux/clk.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
-#include <linux/regmap.h>
 #include <linux/mfd/syscon.h>
 #include <sound/soc.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/tlv.h>
 
 #define LPASS_CDC_CLK_RX_RESET_CTL		(0x000)

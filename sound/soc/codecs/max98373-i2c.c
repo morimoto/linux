@@ -2,16 +2,8 @@
 // Copyright (c) 2017, Maxim Integrated
 
 #include <linux/acpi.h>
-#include <linux/delay.h>
 #include <linux/i2c.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/pm.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
 #include <linux/cdev.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 #include "max98373.h"

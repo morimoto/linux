@@ -9,10 +9,7 @@
 
 #include <linux/acpi.h>
 #include <linux/gpio/consumer.h>
-#include <linux/module.h>
 #include <linux/pci.h>
-#include <sound/jack.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
 

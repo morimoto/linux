@@ -3,23 +3,14 @@
 // Machine driver for AMD ACP Audio engine using ES8336 codec.
 //
 // Copyright 2023 Marian Postevca <posteuca@mutex.one>
-#include <sound/core.h>
 #include <sound/soc.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/soc-dapm.h>
-#include <sound/jack.h>
 #include <sound/soc-acpi.h>
 #include <acpi/acpi_bus.h>
 #include <linux/clk.h>
 #include <linux/gpio/consumer.h>
-#include <linux/module.h>
 #include <linux/i2c.h>
-#include <linux/input.h>
-#include <linux/io.h>
 #include <linux/acpi.h>
 #include <linux/dmi.h>
-#include <linux/string_choices.h>
 #include "../acp-mach.h"
 #include "acp3x-es83xx.h"
 

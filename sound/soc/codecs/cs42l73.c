@@ -8,22 +8,9 @@
  *	    Brian Austin, Cirrus Logic Inc, <brian.austin@cirrus.com>
  */
 
-#include <linux/delay.h>
 #include <linux/gpio/consumer.h>
 #include <linux/i2c.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/pm.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
-#include <sound/core.h>
-#include <sound/initval.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
 #include "cirrus_legacy.h"
 #include "cs42l73.h"

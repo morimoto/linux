@@ -9,8 +9,6 @@
 #ifndef _MT_8189_AFE_COMMON_H_
 #define _MT_8189_AFE_COMMON_H_
 
-#include <linux/regmap.h>
-
 #include <sound/soc.h>
 
 #include "mt8189-reg.h"

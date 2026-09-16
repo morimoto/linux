@@ -12,16 +12,12 @@
 // Author: Shenghao Ding <shenghao-ding@ti.com>
 //
 
-#include <linux/cleanup.h>
 #include <linux/unaligned.h>
 #include <linux/firmware.h>
 #include <linux/gpio/consumer.h>
 #include <linux/i2c.h>
-#include <linux/module.h>
 #include <linux/of_irq.h>
 #include <linux/of_address.h>
-#include <linux/regmap.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 

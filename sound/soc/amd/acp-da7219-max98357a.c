@@ -4,17 +4,10 @@
 //
 //Copyright 2017-2021 Advanced Micro Devices, Inc.
 
-#include <sound/core.h>
 #include <sound/soc.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/soc-dapm.h>
-#include <sound/jack.h>
 #include <linux/clk.h>
-#include <linux/module.h>
 #include <linux/regulator/machine.h>
 #include <linux/regulator/driver.h>
-#include <linux/i2c.h>
 #include <linux/input.h>
 #include <linux/acpi.h>
 #include <linux/pci.h>

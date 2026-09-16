@@ -6,17 +6,12 @@
 //
 // Author: Herve Codina <herve.codina@bootlin.com>
 
-#include <linux/cleanup.h>
 #include <linux/unaligned.h>
 #include <linux/clk.h>
 #include <linux/firmware.h>
 #include <linux/gpio/consumer.h>
 #include <linux/gpio/driver.h>
-#include <linux/module.h>
-#include <linux/mutex.h>
-#include <linux/slab.h>
 #include <linux/spi/spi.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 

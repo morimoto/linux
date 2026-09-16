@@ -5,9 +5,6 @@
 // Copyright 2012 Wolfson Microelectronics
 
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/jack.h>
-#include <linux/module.h>
 
 #include "../codecs/wm5102.h"
 #include "../codecs/wm9081.h"

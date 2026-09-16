@@ -3,11 +3,8 @@
 // Copyright (c) 2024 Intel Corporation
 // Copyright (c) 2024 Advanced Micro Devices, Inc.
 
-#include <linux/device.h>
-#include <linux/errno.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dapm.h>
 #include <sound/soc_sdw_utils.h>
 
 /* Card pin "Dmic" → codec input (name_prefix + " DMIC") */

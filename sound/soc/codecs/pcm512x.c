@@ -6,18 +6,11 @@
  *		Copyright 2014 Linaro Ltd
  */
 
-#include <linux/cleanup.h>
-#include <linux/init.h>
-#include <linux/module.h>
 #include <linux/clk.h>
-#include <linux/kernel.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
 #include <linux/gcd.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/pcm_params.h>
 #include <sound/tlv.h>
 
 #include "pcm512x.h"

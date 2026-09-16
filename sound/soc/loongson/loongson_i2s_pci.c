@@ -6,9 +6,6 @@
 // Author: Yingkun Meng <mengyingkun@loongson.cn>
 //
 
-#include <linux/module.h>
-#include <linux/delay.h>
-#include <linux/pm_runtime.h>
 #include <linux/dma-mapping.h>
 #include <linux/acpi.h>
 #include <linux/pci.h>

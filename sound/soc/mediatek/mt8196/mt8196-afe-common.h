@@ -8,7 +8,6 @@
 
 #ifndef _MT_8196_AFE_COMMON_H_
 #define _MT_8196_AFE_COMMON_H_
-#include <sound/pcm.h>
 #include <sound/soc.h>
 
 #include "mt8196-reg.h"
