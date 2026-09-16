@@ -8,12 +8,9 @@
 
 #include <linux/clk.h>
 #include <linux/io.h>
-#include <linux/module.h>
-#include <linux/sizes.h>
 
 #include <sound/asoundef.h>
 #include <sound/soc.h>
-#include <sound/pcm_params.h>
 
 #define DRV_NAME "xlnx_formatter_pcm"
 

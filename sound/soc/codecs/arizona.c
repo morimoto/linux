@@ -7,14 +7,8 @@
  * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
  */
 
-#include <linux/cleanup.h>
-#include <linux/delay.h>
 #include <linux/gcd.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/pm_runtime.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/tlv.h>
 
 #include <linux/mfd/arizona/core.h>

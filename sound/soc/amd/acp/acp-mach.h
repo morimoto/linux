@@ -10,12 +10,7 @@
 #ifndef __ACP_MACH_H
 #define __ACP_MACH_H
 
-#include <sound/core.h>
-#include <sound/jack.h>
-#include <sound/pcm_params.h>
-#include <sound/soc-dapm.h>
 #include <linux/input.h>
-#include <linux/module.h>
 #include <sound/soc.h>
 
 #include "acp_common.h"

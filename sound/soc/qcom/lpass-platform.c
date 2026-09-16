@@ -7,12 +7,6 @@
 
 #include <dt-bindings/sound/qcom,lpass.h>
 #include <linux/dma-mapping.h>
-#include <linux/export.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <sound/pcm_params.h>
-#include <linux/regmap.h>
 #include <sound/soc.h>
 #include "lpass-lpaif-reg.h"
 #include "lpass.h"

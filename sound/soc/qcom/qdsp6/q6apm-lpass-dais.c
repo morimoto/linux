@@ -3,16 +3,7 @@
 
 #include <dt-bindings/sound/qcom,q6dsp-lpass-ports.h>
 #include <linux/clk.h>
-#include <linux/err.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/device.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
-#include <sound/pcm_params.h>
 #include "q6dsp-lpass-ports.h"
 #include "q6dsp-common.h"
 #include "audioreach.h"

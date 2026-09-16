@@ -5,20 +5,10 @@
  *
  * Copyright (C) 2011 Marvell International Ltd.
  */
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <linux/delay.h>
 #include <linux/clk.h>
-#include <linux/slab.h>
 #include <linux/io.h>
 #include <linux/dmaengine.h>
 #include <linux/pm_runtime.h>
-
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/initval.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/dmaengine_pcm.h>
 #include "pxa2xx-lib.h"

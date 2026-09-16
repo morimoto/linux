@@ -8,16 +8,8 @@
  * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
  */
 
-#include <linux/module.h>
-#include <linux/slab.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <linux/regmap.h>
 #include <sound/soc.h>
-#include <sound/initval.h>
-
 #include <linux/i2c.h>
-
 #include <linux/mfd/si476x-core.h>
 
 enum si476x_audio_registers {

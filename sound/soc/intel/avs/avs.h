@@ -10,12 +10,11 @@
 #define __SOUND_SOC_INTEL_AVS_H
 
 #include <linux/debugfs.h>
-#include <linux/device.h>
 #include <linux/firmware.h>
 #include <linux/kfifo.h>
 #include <sound/hda_codec.h>
 #include <sound/hda_register.h>
-#include <sound/soc-component.h>
+#include <sound/soc.h>
 #include "messages.h"
 #include "registers.h"
 

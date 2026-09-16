@@ -2,19 +2,9 @@
 // Copyright (c) 2020, Linaro Limited
 
 #include <dt-bindings/soc/qcom,gpr.h>
-#include <linux/delay.h>
-#include <linux/jiffies.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/of_platform.h>
-#include <linux/sched.h>
-#include <linux/slab.h>
 #include <linux/soc/qcom/apr.h>
-#include <linux/wait.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/pcm.h>
 #include "audioreach.h"
 #include "q6apm.h"
 

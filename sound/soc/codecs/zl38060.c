@@ -16,15 +16,8 @@
 
 #include <linux/gpio/consumer.h>
 #include <linux/gpio/driver.h>
-#include <linux/property.h>
 #include <linux/spi/spi.h>
-#include <linux/regmap.h>
-#include <linux/module.h>
 #include <linux/ihex.h>
-
-#include <sound/pcm_params.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
 
 #define DRV_NAME		"zl38060"

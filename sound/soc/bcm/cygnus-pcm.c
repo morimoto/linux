@@ -2,17 +2,7 @@
 // Copyright (C) 2014-2015 Broadcom Corporation
 #include <linux/debugfs.h>
 #include <linux/dma-mapping.h>
-#include <linux/init.h>
-#include <linux/io.h>
-#include <linux/module.h>
-#include <linux/slab.h>
-#include <linux/timer.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
-
 #include "cygnus-ssp.h"
 
 /* Register offset needed for ASoC PCM module */

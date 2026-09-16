@@ -6,25 +6,16 @@
  * topology on DT platforms where no ACPI/DisCo enumeration exists.
  */
 
-#include <linux/delay.h>
 #include <linux/gpio/consumer.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/pm_runtime.h>
-#include <linux/property.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_registers.h>
 #include <linux/soundwire/sdw_type.h>
-#include <linux/workqueue.h>
-#include <sound/pcm.h>
 #include <sound/sdca.h>
 #include <sound/sdca_class.h>
 #include <sound/sdca_function.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
 #include "wcd9378-sdca.h"
 
 struct wcd9378_priv {

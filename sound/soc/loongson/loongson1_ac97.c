@@ -7,14 +7,7 @@
 
 #include <linux/bitfield.h>
 #include <linux/dma-mapping.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <linux/regmap.h>
-
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 /* Loongson-1 AC97 Controller Registers */

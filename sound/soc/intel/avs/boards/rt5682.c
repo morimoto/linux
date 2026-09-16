@@ -10,12 +10,6 @@
 #include <linux/dmi.h>
 #include <linux/i2c.h>
 #include <linux/input.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <sound/core.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/rt5682.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>

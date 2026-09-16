@@ -7,13 +7,6 @@
  * Author: Lars-Peter Clausen <lars@metafoo.de>
  */
 
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
-
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 

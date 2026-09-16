@@ -6,15 +6,8 @@
 //          Amadeusz Slawinski <amadeuszx.slawinski@linux.intel.com>
 //
 
-#include <linux/cleanup.h>
-#include <linux/debugfs.h>
-#include <linux/device.h>
-#include <sound/hda_register.h>
 #include <sound/hdaudio_ext.h>
-#include <sound/pcm_params.h>
-#include <sound/soc-acpi.h>
-#include <sound/soc-acpi-intel-match.h>
-#include <sound/soc-component.h>
+#include <sound/soc.h>
 #include "avs.h"
 #include "path.h"
 #include "pcm.h"

@@ -12,7 +12,6 @@
 #ifndef _WM8731_H
 #define _WM8731_H
 
-#include <linux/mutex.h>
 #include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
 

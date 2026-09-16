@@ -6,25 +6,14 @@
  * Author: John Hsu <KCHSU0@nuvoton.com>
  */
 
-#include <linux/module.h>
-#include <linux/delay.h>
 #include <linux/dmi.h>
-#include <linux/init.h>
 #include <linux/i2c.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
 #include <linux/clk.h>
 #include <linux/acpi.h>
 #include <linux/math64.h>
 #include <linux/semaphore.h>
-
-#include <sound/initval.h>
 #include <sound/tlv.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/jack.h>
 
 #include "nau8824.h"
 

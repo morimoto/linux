@@ -14,7 +14,6 @@
 #include <linux/workqueue.h>
 
 #include <sound/soc.h>
-#include <sound/control.h>
 #include <sound/sof/stream.h> /* needs to be included before control.h */
 #include <sound/sof/control.h>
 #include <sound/sof/dai.h>

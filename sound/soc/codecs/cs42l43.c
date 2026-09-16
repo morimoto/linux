@@ -10,7 +10,6 @@
 #include <linux/build_bug.h>
 #include <linux/cleanup.h>
 #include <linux/clk.h>
-#include <linux/device.h>
 #include <linux/err.h>
 #include <linux/errno.h>
 #include <linux/bitmap.h>
@@ -20,19 +19,10 @@
 #include <linux/jiffies.h>
 #include <linux/mfd/cs42l43.h>
 #include <linux/mfd/cs42l43-regs.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/string.h>
 #include <linux/workqueue.h>
-#include <sound/control.h>
 #include <sound/cs42l43.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/soc-component.h>
-#include <sound/soc-dapm.h>
-#include <sound/soc-dai.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 
