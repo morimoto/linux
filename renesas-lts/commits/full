@@ -1,3 +1,41 @@
+# renesas-sdk-v4.39.0_hil
+e1e83b5711610 arm64: dts: renesas: r8j78070-perceptor: Enable RPMsg support
+9fd7508f2a71e arm64: dts: renesas: r8a78000: Add RPMsg over UCIe nodes
+2f4c20cb0215d virtio: ring: Use phys_to_dma() for the physical-address mapping
+7af812a3bc8b7 remoteproc: virtio: Set DMA offset for the vdev carveout
+78721b993adf3 remoteproc: rcar_gen5_rproc: Add polling mode support for devices without IPI
+b5ef0911736fb misc: pci_endpoint_test: Add support for Renesas AI-ACC (r8a78060)
+0b2e48a81dce2 misc: pci_endpoint_test: Support polling the status register
+4b860a3c4e502 arm64: defconfig: Build in the R-Car UCIe host controller
+8410a53208393 arm64: dts: renesas: r8j78070-perceptor: Enable UCIe host controllers
+3d3ae2cd5f443 arm64: dts: renesas: r8a78000: Add UCIe device nodes
+b978ba1c383eb PCI: dwc: ucie-rcar: Hardcode PLL9 clock programming as a workaround
+3358e056524b0 PCI: dwc: ucie-rcar: Add UCIe controller support for R-Car X5H
+f541d10fbb7d6 PCI: dwc: pcie6-designware: Add link_report callback to dw_pcie6_ops
+6f2003f00964b net: ethernet: renesas: rswitch3: Add runtime speed change handling
+5a779b5a47d08 net: renesas: rswitch3: Serialize MDIO accesses to shared MPSM
+dec6d6a973319 net: ethernet: renesas: rswitch3: Add fully reset the switch on resume from deepstop
+7bde26e71da0f net: ethernet: renesas: rtsn: Reattach TSNES during suspend/resume
+1815123f952c5 net: ethernet: renesas: rtsn: Add multi-descriptor frame support
+ceb9b0fd63b9b arm64: dts: renesas: r8a78000: Modify device tree node for RTSN
+2981d5da0220c arm64: dts: renesas: ironhide-common: Synchronize RTSN configuration with native DT
+ae481a27f4686 net: renesas: rswitch3: add RX checksum offload support
+ce2f704734886 drivers: usb: dwc3: renesas: Allow userspace role switch control
+9a45a56f4b003 arm64: dts: renesas: ironhide: Enable USB role switch
+a1f87be4dd3bb arm64: dts: renesas: r8a78000: Enable bypass mode for SMMU
+2bd76b3f660cd iommu/arm-smmu-v3: Add bypass mode for unmatched streams
+c8927bf134db0 drm: renesas: rcar-vcon: Use assigned reserved memory region
+f79532eaf8dc2 arm64: dts: renesas: ironhide-common: Assign CMA region for display
+39f8de648e50e arm64: dts: renesas: ironhide-uio: Disable SMMU for UIO
+6d32268368ebf arm64: dts: renesas: r8a78000: Enable SMMU for display
+1710b7154f4e2 drm: renesas: rcar-vcon: Fix header guard in rcar_dw_dp_fw_3.h
+f2612a4cc98c7 arm64: dts: renesas: r8a78000: Use SCMI clocks for PWM and TPU
+b7b139d6e49d7 arm64: dts: renesas: perceptor: Enable USB device nodes on Perceptor
+466cf3a08362d arm64: dts: renesas: r8a78000: Fix MSIOF clock source for MSIOF4-7
+1c361e8e31d3e arm64: dts: renesas: perceptor: Enable CRC, KCRC, WCRC device nodes on Perceptor
+612e157fae1bb arm64: dts: renesas: perceptor: Enable eMMC device nodes on Perceptor
+555ac1ec40694 PCI: dwc: rcar-gen5: Update to fix style issues from PCIe4 reported by checkpatch
+10926ce02b350 PCI: dwc: rcar-gen5: Update to fix style issues reported by checkpatch
 # renesas-sdk-v4.38.0_hil
 3338438a9bd3c arm64: dts: renesas: perceptor: Enable RPC, PCIe4, PCIe6, UFS device nodes on Perceptor
 855a8c3519458 drivers: usb: dwc3: renesas: Reset the controller before hardware initialization
