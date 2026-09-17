@@ -1,5 +1,11 @@
 # Empty line below is needed
 
+# upstream: a5c811aa0a1550c302855176b309e6ed46ce01fe # dt-bindings: i2c: rcar-i2c: Document R-Car X5H support
+# upstream: 87e713f2004811062e5283a5a4efb52c883bb355 # i2c: rcar: add R-Car Gen5 support
+# upstream: 7a79b02dd1b09c235c3cf6075bccca2160d1b826 # i2c: rcar: fix reset handling for Gen5
+# upstream: b88f4dd14bdd9b0c3fd9de865f1d381ee1d194f3 # dt-bindings: i2c: renesas,rcar-i2c: allow 6 DMA channels
+c050a71a66d21 i2c: rcar: add compatible string to support R-Car X5H of I2C module
+037e9778e28e1 dt-bindings: i2c: rcar-i2c: Document R-Car X5H support
 # upstream: 0f63ba15dde8748ed3818fa6553c81b5296318f1 dt-bindings: soc: renesas: Document MFIS IP core
 742f789dd8b63 dt-bindings: hwlock: rcar: Add binding documentation for R-Car hardware spinlock
 # upstream: 504e3ae911d1398c2941063fcbe979a2e6aa90cd soc: renesas: rcar-mfis: Add hwspinlock support
