@@ -1511,6 +1511,10 @@
 			reg = <0 0xc0600000 0 0x100>;
 			interrupts = <GIC_ESPI 18 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&cpg R8A78000_CPG_MSOCK_PERW_BUS>;
+			dmas = <&sys_dmac10 0x49>, <&sys_dmac10 0x48>,
+			       <&sys_dmac11 0x49>, <&sys_dmac11 0x48>,
+			       <&sys_dmac12 0x49>, <&sys_dmac12 0x48>;
+			dma-names = "tx", "rx", "tx", "rx", "tx", "rx";
 			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x4f>;
 			resets = <&mdlc_perw 0x4f>;
 			#address-cells = <1>;
@@ -1524,6 +1528,10 @@
 			reg = <0 0xc0608000 0 0x100>;
 			interrupts = <GIC_ESPI 19 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&cpg R8A78000_CPG_MSOCK_PERW_BUS>;
+			dmas = <&sys_dmac10 0x4b>, <&sys_dmac10 0x4a>,
+			       <&sys_dmac11 0x4b>, <&sys_dmac11 0x4a>,
+			       <&sys_dmac12 0x4b>, <&sys_dmac12 0x4a>;
+			dma-names = "tx", "rx", "tx", "rx", "tx", "rx";
 			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x50>;
 			resets = <&mdlc_perw 0x50>;
 			#address-cells = <1>;
@@ -1537,6 +1545,10 @@
 			reg = <0 0xc0610000 0 0x100>;
 			interrupts = <GIC_ESPI 20 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&cpg R8A78000_CPG_MSOCK_PERW_BUS>;
+			dmas = <&sys_dmac10 0x4d>, <&sys_dmac10 0x4c>,
+			       <&sys_dmac11 0x4d>, <&sys_dmac11 0x4c>,
+			       <&sys_dmac12 0x4d>, <&sys_dmac12 0x4c>;
+			dma-names = "tx", "rx", "tx", "rx", "tx", "rx";
 			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x51>;
 			resets = <&mdlc_perw 0x51>;
 			#address-cells = <1>;
@@ -1550,6 +1562,10 @@
 			reg = <0 0xc0618000 0 0x100>;
 			interrupts = <GIC_ESPI 21 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&cpg R8A78000_CPG_MSOCK_PERW_BUS>;
+			dmas = <&sys_dmac10 0x4f>, <&sys_dmac10 0x4e>,
+			       <&sys_dmac11 0x4f>, <&sys_dmac11 0x4e>,
+			       <&sys_dmac12 0x4f>, <&sys_dmac12 0x4e>;
+			dma-names = "tx", "rx", "tx", "rx", "tx", "rx";
 			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x52>;
 			resets = <&mdlc_perw 0x52>;
 			#address-cells = <1>;
