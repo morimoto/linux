@@ -219,6 +219,20 @@
 	status = "okay";
 };
 
+&msiof0 {
+	pinctrl-0 = <&msiof0_pins>;
+	pinctrl-names = "default";
+
+	status = "okay";
+};
+
+&msiof6 {
+	pinctrl-0 = <&msiof6_pins>;
+	pinctrl-names = "default";
+
+	status = "okay";	// Mutually-exclusive with MAX96726A U136
+};
+
 &pfc {
 	pinctrl-0 = <&scif_clk_pins>;
 	pinctrl-names = "default";
@@ -231,6 +245,20 @@
 	hscif1_pins: hscif1 {
 		groups = "hscif1_data", "hscif1_ctrl";
 		function = "hscif1";
+	};
+
+	// MSIOF0 PIN HEADER (CN71)
+	msiof0_pins: msiof0 {
+		groups = "msiof0_clk", "msiof0_sync", "msiof0_txd", "msiof0_rxd", "msiof0_ss1",
+			 "msiof0_ss2";
+		function = "msiof0";
+	};
+
+	// MSIOF6_A PIN HEADER (CN72)
+	msiof6_pins: msiof6 {
+		groups = "msiof6_clk_a", "msiof6_txd_a", "msiof6_rxd_a", "msiof6_ss1_a",
+			 "msiof6_ss2_a";
+		function = "msiof6";
 	};
 
 	scif_clk_pins: scif-clk {
