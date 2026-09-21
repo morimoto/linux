@@ -1076,6 +1076,10 @@
 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
 				 <&scif_clk>;
 			clock-names = "fck", "brg_int", "scif_clk";
+			dmas = <&sys_dmac10 0x51>, <&sys_dmac10 0x50>,
+			       <&sys_dmac11 0x51>, <&sys_dmac11 0x50>,
+			       <&sys_dmac12 0x51>, <&sys_dmac12 0x50>;
+			dma-names = "tx", "rx", "tx", "rx", "tx", "rx";
 			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x40>;
 			resets = <&mdlc_perw 0x40>;
 			status = "disabled";
@@ -1090,6 +1094,10 @@
 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
 				 <&scif_clk>;
 			clock-names = "fck", "brg_int", "scif_clk";
+			dmas = <&sys_dmac10 0x53>, <&sys_dmac10 0x52>,
+			       <&sys_dmac11 0x53>, <&sys_dmac11 0x52>,
+			       <&sys_dmac12 0x53>, <&sys_dmac12 0x52>;
+			dma-names = "tx", "rx", "tx", "rx", "tx", "rx";
 			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x41>;
 			resets = <&mdlc_perw 0x41>;
 			status = "disabled";
@@ -1104,6 +1112,10 @@
 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
 				 <&scif_clk>;
 			clock-names = "fck", "brg_int", "scif_clk";
+			dmas = <&sys_dmac10 0x57>, <&sys_dmac10 0x56>,
+			       <&sys_dmac11 0x57>, <&sys_dmac11 0x56>,
+			       <&sys_dmac12 0x57>, <&sys_dmac12 0x56>;
+			dma-names = "tx", "rx", "tx", "rx", "tx", "rx";
 			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x42>;
 			resets = <&mdlc_perw 0x42>;
 			status = "disabled";
@@ -1118,6 +1130,10 @@
 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
 				 <&scif_clk>;
 			clock-names = "fck", "brg_int", "scif_clk";
+			dmas = <&sys_dmac10 0x59>, <&sys_dmac10 0x58>,
+			       <&sys_dmac11 0x59>, <&sys_dmac11 0x58>,
+			       <&sys_dmac12 0x59>, <&sys_dmac12 0x58>;
+			dma-names = "tx", "rx", "tx", "rx", "tx", "rx";
 			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x43>;
 			resets = <&mdlc_perw 0x43>;
 			status = "disabled";
@@ -1132,6 +1148,10 @@
 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
 				 <&scif_clk>;
 			clock-names = "fck", "brg_int", "scif_clk";
+			dmas = <&sys_dmac10 0x31>, <&sys_dmac10 0x30>,
+			       <&sys_dmac11 0x31>, <&sys_dmac11 0x30>,
+			       <&sys_dmac12 0x31>, <&sys_dmac12 0x30>;
+			dma-names = "tx", "rx", "tx", "rx", "tx", "rx";
 			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x54>;
 			resets = <&mdlc_perw 0x54>;
 			status = "disabled";
@@ -1146,6 +1166,10 @@
 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
 				 <&scif_clk>;
 			clock-names = "fck", "brg_int", "scif_clk";
+			dmas = <&sys_dmac10 0x33>, <&sys_dmac10 0x32>,
+			       <&sys_dmac11 0x33>, <&sys_dmac11 0x32>,
+			       <&sys_dmac12 0x33>, <&sys_dmac12 0x32>;
+			dma-names = "tx", "rx", "tx", "rx", "tx", "rx";
 			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x55>;
 			resets = <&mdlc_perw 0x55>;
 			status = "disabled";
@@ -1160,6 +1184,10 @@
 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
 				 <&scif_clk>;
 			clock-names = "fck", "brg_int", "scif_clk";
+			dmas = <&sys_dmac10 0x35>, <&sys_dmac10 0x34>,
+			       <&sys_dmac11 0x35>, <&sys_dmac11 0x34>,
+			       <&sys_dmac12 0x35>, <&sys_dmac12 0x34>;
+			dma-names = "tx", "rx", "tx", "rx", "tx", "rx";
 			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x56>;
 			resets = <&mdlc_perw 0x56>;
 			status = "disabled";
@@ -1174,6 +1202,10 @@
 				 <&cpg R8A78000_CPG_SGASYNCD4_PERW_BUS>,
 				 <&scif_clk>;
 			clock-names = "fck", "brg_int", "scif_clk";
+			dmas = <&sys_dmac10 0x37>, <&sys_dmac10 0x36>,
+			       <&sys_dmac11 0x37>, <&sys_dmac11 0x36>,
+			       <&sys_dmac12 0x37>, <&sys_dmac12 0x36>;
+			dma-names = "tx", "rx", "tx", "rx", "tx", "rx";
 			power-domains = <&mdlc_perw R8A78000_MDLC_PD_APL 0x57>;
 			resets = <&mdlc_perw 0x57>;
 			status = "disabled";
