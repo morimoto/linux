@@ -1,3 +1,17 @@
+Local     / ASoC: ak4619: Add suspend and resume callbacks
+Local     / clk: renesas: r8a779g0: Add ZG clocks
+Local     / clk: renesas: rcar-gen4: Tidy up DEF_GEN4_Z()
+v6.19     / clk: renesas: r8a779a0: Add 3DGE module clock
+v6.19     / clk: renesas: r8a779a0: Add ZG Core clock
+v6.19     / dt-bindings: clock: r8a779a0: Add ZG core clock
+v6.19     / clk: renesas: rcar-gen4: Add support for clock dividers in FRQCRB
+v6.15     / clk: renesas: cpg-mssr: Remove obsolete nullify check
+v6.15     / clk: renesas: r8a779h0: Add VSPX clock
+v6.15     / clk: renesas: r8a779h0: Add FCPVX clock
+v6.15     / clk: renesas: r8a779h0: Add ISP core clocks
+v6.15     / clk: renesas: r8a779a0: Add ISP core clocks
+v6.15     / clk: renesas: r8a779a0: Add FCPVX clocks
+v6.13     / clk: renesas: Remove duplicate and trailing empty lines
 v7.2      / clk: renesas: r8a779g0: Add DSC clock
 Local     / media: rppx1: bls: read the raw pattern from the PRE2 acquisition module
 Local     / media: rppx1: describe the MAIN_POST white balance gains block
