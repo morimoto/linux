@@ -1,3 +1,10 @@
+Local     / ASoC: ak4619: Add suspend and resume callbacks
+Local     / clk: renesas: r8a779g0: Add ZG clocks
+Local     / clk: renesas: rcar-gen4: Tidy up DEF_GEN4_Z()
+v6.19     / clk: renesas: r8a779a0: Add 3DGE module clock
+v6.19     / clk: renesas: r8a779a0: Add ZG Core clock
+v6.19     / dt-bindings: clock: r8a779a0: Add ZG core clock
+v6.19     / clk: renesas: rcar-gen4: Add support for clock dividers in FRQCRB
 v7.2      / clk: renesas: r8a779g0: Add DSC clock
 Local     / media: rppx1: bls: read the raw pattern from the PRE2 acquisition module
 Local     / media: rppx1: describe the MAIN_POST white balance gains block
@@ -21,6 +28,7 @@ Local     / media: v4l2-isp: Rename v4l2_isp_params_buffer_size
 v6.19     / media: v4l2-isp: Rename block_info to block_type_info
 Local     / arm64: dts: renesas: sparrow-hawk: Always enable edge connector I2C busses
 v7.2      / media: rcar-vin: Drop min_queued_buffers
+Local     / PCI: rcar-gen4: Limit Max_Read_Request_Size and Max_Payload_Size to 256 Bytes
 Local     / arm64: dts: renesas: r8a78000: Add MDLC nodes
 Local     / arm64: dts: renesas: r8a78000: Add CPG node
 Local     / pmdomain: renesas: Add R-Car X5H MDLC driver
@@ -34,8 +42,6 @@ v6.19     / hwmon: (scmi) Enable sensors to assure they can be read
 v6.19     / dma: contiguous: Reserve default CMA heap
 v6.19     / dma: contiguous: Register reusable CMA regions at boot
 v6.19     / dma-buf: heaps: cma: Register list of CMA regions at boot
-v7.2      / mmc: renesas_sdhi: Add OF entry for RZ/G2E SoC
-v7.2      / mmc: renesas_sdhi: Add OF entry for RZ/G2N SoC
 v7.2      / mmc: renesas_sdhi: add R-Car M3Le compatibility string
 v6.19     / mmc: renesas_sdhi: Add suspend/resume hooks
 v6.19     / mmc: renesas_sdhi: Switch to SYSTEM_SLEEP_PM_OPS()/RUNTIME_PM_OPS() and pm_ptr()
