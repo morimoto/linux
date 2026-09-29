@@ -56,8 +56,8 @@ static struct snd_soc_dai_link an7581_wm8960_dai_links[] = {
 	},
 };
 
-static struct snd_soc_card an7581_wm8960_card = {
-	.name = "an7581-wm8960",
+static struct snd_soc_card_driver an7581_wm8960_card = {
+	.default_name = "an7581-wm8960",
 	.owner = THIS_MODULE,
 	.dai_link = an7581_wm8960_dai_links,
 	.num_links = ARRAY_SIZE(an7581_wm8960_dai_links),
@@ -66,12 +66,15 @@ static struct snd_soc_card an7581_wm8960_card = {
 static int an7581_wm8960_machine_probe(struct platform_device *pdev)
 {
 	struct device_node *platform_dai_node, *codec_dai_node;
-	struct snd_soc_card *card = &an7581_wm8960_card;
+	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver = &an7581_wm8960_card;
 	struct device_node *of_platform, *codec;
 	struct snd_soc_dai_link *dai_link;
 	int i, d, ret;
 
-	card->dev = &pdev->dev;
+	card = snd_soc_card_alloc(&pdev->dev);
+	if (!card)
+		return -ENOMEM;
 
 	of_platform = of_get_child_by_name(pdev->dev.of_node, "platform");
 
@@ -88,7 +91,7 @@ static int an7581_wm8960_machine_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		struct snd_soc_dai_link_component *platform;
 
 		dai_link->num_platforms = 2;
@@ -116,19 +119,20 @@ static int an7581_wm8960_machine_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		if (dai_link->codecs->name)
 			continue;
 		dai_link->codecs->of_node = codec_dai_node;
 	}
 
-	ret = snd_soc_of_parse_audio_routing(card, "audio-routing");
+	ret = snd_soc_card_driver_of_parse_audio_routing(&pdev->dev,
+							card_driver, "audio-routing");
 	if (ret) {
 		dev_err(&pdev->dev, "Failed to parse audio-routing: %d\n", ret);
 		goto err_of_node_put;
 	}
 
-	ret = devm_snd_soc_register_card(&pdev->dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret) {
 		dev_err_probe(&pdev->dev, ret, "%s snd_soc_register_card fail\n", __func__);
 		goto err_of_node_put;
