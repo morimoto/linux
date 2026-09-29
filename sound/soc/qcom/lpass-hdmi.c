@@ -19,7 +19,6 @@
 static int lpass_hdmi_daiops_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
 	snd_pcm_format_t format = params_format(params);
 	unsigned int rate = params_rate(params);
 	unsigned int channels = params_channels(params);
@@ -30,13 +29,16 @@ static int lpass_hdmi_daiops_hw_params(struct snd_pcm_substream *substream,
 	unsigned int data_format;
 	unsigned int sampling_freq;
 	unsigned int ch = 0;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct lpass_dp_metadata_ctl *meta_ctl = drvdata->meta_ctl;
 	struct lpass_sstream_ctl *sstream_ctl = drvdata->sstream_ctl;
 	int ret;
 
 	bitwidth = snd_pcm_format_width(format);
 	if (bitwidth < 0) {
-		dev_err(dai->dev, "%s invalid bit width given : %d\n",
+		dev_err(dev, "%s invalid bit width given : %d\n",
 					__func__, bitwidth);
 		return bitwidth;
 	}
@@ -49,7 +51,7 @@ static int lpass_hdmi_daiops_hw_params(struct snd_pcm_substream *substream,
 		word_length = LPASS_DP_AUDIO_BITWIDTH24;
 		break;
 	default:
-		dev_err(dai->dev, "%s invalid bit width given : %d\n",
+		dev_err(dev, "%s invalid bit width given : %d\n",
 					__func__, bitwidth);
 		return -EINVAL;
 	}
@@ -65,7 +67,7 @@ static int lpass_hdmi_daiops_hw_params(struct snd_pcm_substream *substream,
 		sampling_freq = LPASS_SAMPLING_FREQ48;
 		break;
 	default:
-		dev_err(dai->dev, "%s invalid bit width given : %d\n",
+		dev_err(dev, "%s invalid bit width given : %d\n",
 					__func__, bitwidth);
 		return -EINVAL;
 	}
@@ -191,7 +193,9 @@ static int lpass_hdmi_daiops_prepare(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
 	int ret;
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 
 	ret = regmap_field_write(drvdata->sstream_ctl->sstream_en, LPASS_SSTREAM_ENABLE);
 	if (ret)
@@ -205,7 +209,9 @@ static int lpass_hdmi_daiops_prepare(struct snd_pcm_substream *substream,
 static int lpass_hdmi_daiops_trigger(struct snd_pcm_substream *substream,
 		int cmd, struct snd_soc_dai *dai)
 {
-	struct lpass_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct lpass_data *drvdata = dev_get_drvdata(dev);
 	struct lpass_dp_metadata_ctl *meta_ctl = drvdata->meta_ctl;
 	struct lpass_sstream_ctl *sstream_ctl = drvdata->sstream_ctl;
 	int ret = -EINVAL;

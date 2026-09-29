@@ -75,7 +75,9 @@ static int tegra20_spdif_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params,
 				   struct snd_soc_dai *dai)
 {
-	struct tegra20_spdif *spdif = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra20_spdif *spdif = dev_get_drvdata(dev);
 	unsigned int mask = 0, val = 0;
 	int ret, spdifclock;
 	long rate;
@@ -129,13 +131,13 @@ static int tegra20_spdif_hw_params(struct snd_pcm_substream *substream,
 
 	ret = clk_set_rate(spdif->clk_spdif_out, spdifclock);
 	if (ret) {
-		dev_err(dai->dev, "Can't set SPDIF clock rate: %d\n", ret);
+		dev_err(dev, "Can't set SPDIF clock rate: %d\n", ret);
 		return ret;
 	}
 
 	rate = clk_get_rate(spdif->clk_spdif_out);
 	if (rate != spdifclock)
-		dev_warn_once(dai->dev,
+		dev_warn_once(dev,
 			      "SPDIF clock rate %d doesn't match requested rate %lu\n",
 			      spdifclock, rate);
 
@@ -158,7 +160,9 @@ static void tegra20_spdif_stop_playback(struct tegra20_spdif *spdif)
 static int tegra20_spdif_trigger(struct snd_pcm_substream *substream, int cmd,
 				 struct snd_soc_dai *dai)
 {
-	struct tegra20_spdif *spdif = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra20_spdif *spdif = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -183,14 +187,16 @@ static int tegra20_spdif_filter_rates(struct snd_pcm_hw_params *params,
 {
 	struct snd_interval *r = hw_param_interval(params, rule->var);
 	struct snd_soc_dai *dai = rule->private;
-	struct tegra20_spdif *spdif = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra20_spdif *spdif = dev_get_drvdata(dev);
 	struct clk *parent = clk_get_parent(spdif->clk_spdif_out);
 	static const unsigned int rates[] = { 32000, 44100, 48000 };
 	unsigned long i, parent_rate, valid_rates = 0;
 
 	parent_rate = clk_get_rate(parent);
 	if (!parent_rate) {
-		dev_err(dai->dev, "Can't get parent clock rate\n");
+		dev_err(dev, "Can't get parent clock rate\n");
 		return -EINVAL;
 	}
 
@@ -212,7 +218,10 @@ static int tegra20_spdif_filter_rates(struct snd_pcm_hw_params *params,
 static int tegra20_spdif_startup(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
-	if (!device_property_read_bool(dai->dev, "nvidia,fixed-parent-rate"))
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	if (!device_property_read_bool(dev, "nvidia,fixed-parent-rate"))
 		return 0;
 
 	/*
@@ -232,9 +241,11 @@ static int tegra20_spdif_startup(struct snd_pcm_substream *substream,
 
 static int tegra20_spdif_probe(struct snd_soc_dai *dai)
 {
-	struct tegra20_spdif *spdif = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra20_spdif *spdif = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, &spdif->playback_dma_data, NULL);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &spdif->playback_dma_data);
 
 	return 0;
 }
@@ -384,7 +395,7 @@ static int tegra20_spdif_platform_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &tegra20_spdif_component,
 					      &tegra20_spdif_dai, 1);
 	if (ret) {

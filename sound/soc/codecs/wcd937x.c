@@ -298,7 +298,8 @@ static void wcd937x_io_init(struct regmap *regmap)
 
 static int wcd937x_rx_clk_enable(struct snd_soc_component *component)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 
 	if (atomic_read(&wcd937x->rx_clk_cnt))
 		return 0;
@@ -318,10 +319,11 @@ static int wcd937x_rx_clk_enable(struct snd_soc_component *component)
 
 static int wcd937x_rx_clk_disable(struct snd_soc_component *component)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 
 	if (!atomic_read(&wcd937x->rx_clk_cnt)) {
-		dev_err(component->dev, "clk already disabled\n");
+		dev_err(dev, "clk already disabled\n");
 		return 0;
 	}
 
@@ -339,7 +341,8 @@ static int wcd937x_codec_hphl_dac_event(struct snd_soc_dapm_widget *w,
 					int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	int hph_mode = wcd937x->hph_mode;
 
 	switch (event) {
@@ -414,7 +417,8 @@ static int wcd937x_codec_hphr_dac_event(struct snd_soc_dapm_widget *w,
 					int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	int hph_mode = wcd937x->hph_mode;
 
 	switch (event) {
@@ -483,7 +487,8 @@ static int wcd937x_codec_ear_dac_event(struct snd_soc_dapm_widget *w,
 				       int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	int hph_mode = wcd937x->hph_mode;
 
 	switch (event) {
@@ -538,7 +543,8 @@ static int wcd937x_codec_aux_dac_event(struct snd_soc_dapm_widget *w,
 				       int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	int hph_mode = wcd937x->hph_mode;
 
 	switch (event) {
@@ -580,7 +586,8 @@ static int wcd937x_codec_enable_hphr_pa(struct snd_soc_dapm_widget *w,
 					int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	int hph_mode = wcd937x->hph_mode;
 
 	switch (event) {
@@ -649,7 +656,8 @@ static int wcd937x_codec_enable_hphl_pa(struct snd_soc_dapm_widget *w,
 					int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	int hph_mode = wcd937x->hph_mode;
 
 	switch (event) {
@@ -717,7 +725,8 @@ static int wcd937x_codec_enable_aux_pa(struct snd_soc_dapm_widget *w,
 				       int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	int hph_mode = wcd937x->hph_mode;
 	u8 val;
 
@@ -776,7 +785,8 @@ static int wcd937x_codec_enable_ear_pa(struct snd_soc_dapm_widget *w,
 				       int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	int hph_mode = wcd937x->hph_mode;
 
 	switch (event) {
@@ -896,7 +906,8 @@ static int wcd937x_tx_swr_ctrl(struct snd_soc_dapm_widget *w,
 			       struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	bool use_amic3 = snd_soc_component_read(component, WCD937X_TX_NEW_TX_CH2_SEL) & BIT(7);
 
 	/* Enable BCS for Headset mic */
@@ -911,7 +922,8 @@ static int wcd937x_codec_enable_adc(struct snd_soc_dapm_widget *w,
 				    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -939,7 +951,8 @@ static int wcd937x_enable_req(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -994,6 +1007,7 @@ static int wcd937x_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 				     int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u16 dmic_clk_reg;
 
 	switch (w->shift) {
@@ -1010,7 +1024,7 @@ static int wcd937x_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 		dmic_clk_reg = WCD937X_DIGITAL_CDC_DMIC3_CTL;
 		break;
 	default:
-		dev_err(component->dev, "Invalid DMIC Selection\n");
+		dev_err(dev, "Invalid DMIC Selection\n");
 		return -EINVAL;
 	}
 
@@ -1034,12 +1048,13 @@ static int wcd937x_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 static int wcd937x_micbias_control(struct snd_soc_component *component,
 				   int micb_num, int req, bool is_dapm)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	int micb_index = micb_num - 1;
 	u16 micb_reg;
 
 	if (micb_index < 0 || (micb_index > WCD937X_MAX_MICBIAS - 1)) {
-		dev_err(component->dev, "Invalid micbias index, micb_ind:%d\n", micb_index);
+		dev_err(dev, "Invalid micbias index, micb_ind:%d\n", micb_index);
 		return -EINVAL;
 	}
 	switch (micb_num) {
@@ -1053,7 +1068,7 @@ static int wcd937x_micbias_control(struct snd_soc_component *component,
 		micb_reg = WCD937X_ANA_MICB3;
 		break;
 	default:
-		dev_err(component->dev, "Invalid micbias number: %d\n", micb_num);
+		dev_err(dev, "Invalid micbias number: %d\n", micb_num);
 		return -EINVAL;
 	}
 
@@ -1228,7 +1243,8 @@ static int wcd937x_rx_hph_mode_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wcd937x->hph_mode;
 	return 0;
@@ -1238,7 +1254,8 @@ static int wcd937x_rx_hph_mode_put(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	u32 mode_val;
 
 	mode_val = ucontrol->value.enumerated.item[0];
@@ -1262,7 +1279,7 @@ static int wcd937x_rx_hph_mode_put(struct snd_kcontrol *kcontrol,
 		return 1;
 	}
 
-	dev_dbg(component->dev, "%s: Invalid HPH Mode\n", __func__);
+	dev_dbg(dev, "%s: Invalid HPH Mode\n", __func__);
 	return -EINVAL;
 }
 
@@ -1270,7 +1287,8 @@ static int wcd937x_get_compander(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc;
 	bool hphr;
 
@@ -1286,7 +1304,8 @@ static int wcd937x_set_compander(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	struct wcd937x_sdw_priv *wcd = wcd937x->sdw_priv[AIF1_PB];
 	int value = ucontrol->value.integer.value[0];
 	struct soc_mixer_control *mc;
@@ -1323,7 +1342,8 @@ static int wcd937x_get_swr_port(struct snd_kcontrol *kcontrol,
 {
 	struct soc_mixer_control *mixer = (struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	struct wcd937x_sdw_priv *wcd;
 	int dai_id = mixer->shift;
 	int ch_idx = mixer->reg;
@@ -1342,7 +1362,8 @@ static int wcd937x_set_swr_port(struct snd_kcontrol *kcontrol,
 {
 	struct soc_mixer_control *mixer = (struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *comp = snd_kcontrol_chip(kcontrol);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	struct wcd937x_sdw_priv *wcd;
 	int dai_id = mixer->shift;
 	int ch_idx = mixer->reg;
@@ -1393,11 +1414,11 @@ static void wcd937x_mbhc_program_btn_thr(struct snd_soc_component *component,
 					 int *btn_low, int *btn_high,
 					 int num_btn, bool is_micbias)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int i, vth;
 
 	if (num_btn > WCD_MBHC_DEF_BUTTONS) {
-		dev_err(component->dev, "%s: invalid number of buttons: %d\n",
-			__func__, num_btn);
+		dev_err(dev, "%s: invalid number of buttons: %d\n", __func__, num_btn);
 		return;
 	}
 
@@ -1459,7 +1480,8 @@ static void wcd937x_mbhc_micb_ramp_control(struct snd_soc_component *component,
 static int wcd937x_mbhc_micb_adjust_voltage(struct snd_soc_component *component,
 					    int req_volt, int micb_num)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	int cur_vout_ctl, req_vout_ctl, micb_reg, micb_en;
 
 	switch (micb_num) {
@@ -1489,7 +1511,7 @@ static int wcd937x_mbhc_micb_adjust_voltage(struct snd_soc_component *component,
 	cur_vout_ctl = snd_soc_component_read_field(component, micb_reg,
 						    WCD937X_MICB_VOUT_MASK);
 
-	req_vout_ctl = wcd_get_micb_vout_ctl_val(component->dev, req_volt);
+	req_vout_ctl = wcd_get_micb_vout_ctl_val(dev, req_volt);
 	if (req_vout_ctl < 0)
 		return -EINVAL;
 
@@ -1522,7 +1544,8 @@ static int wcd937x_mbhc_micb_adjust_voltage(struct snd_soc_component *component,
 static int wcd937x_mbhc_micb_ctrl_threshold_mic(struct snd_soc_component *component,
 						int micb_num, bool req_en)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	int micb_mv;
 
 	if (micb_num != MIC_BIAS_2)
@@ -1544,7 +1567,8 @@ static void wcd937x_mbhc_get_result_params(struct snd_soc_component *component,
 					   s16 *d1_a, u16 noff,
 					   int32_t *zdet)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	int i;
 	int val, val1;
 	s16 c1;
@@ -1571,8 +1595,7 @@ static void wcd937x_mbhc_get_result_params(struct snd_soc_component *component,
 		usleep_range(5000, 5050);
 
 	if (!c1 || !x1) {
-		dev_err(component->dev, "Impedance detect ramp error, c1=%d, x1=0x%x\n",
-			c1, x1);
+		dev_err(dev, "Impedance detect ramp error, c1=%d, x1=0x%x\n", c1, x1);
 		goto ramp_down;
 	}
 	d1 = d1_a[c1];
@@ -1582,7 +1605,7 @@ static void wcd937x_mbhc_get_result_params(struct snd_soc_component *component,
 	else if (x1 < minCode_param[noff])
 		*zdet = WCD937X_ZDET_FLOATING_IMPEDANCE;
 
-	dev_err(component->dev, "%s: d1=%d, c1=%d, x1=0x%x, z_val=%d (milliohm)\n",
+	dev_err(dev, "%s: d1=%d, c1=%d, x1=0x%x, z_val=%d (milliohm)\n",
 		__func__, d1, c1, x1, *zdet);
 ramp_down:
 	i = 0;
@@ -1604,7 +1627,8 @@ static void wcd937x_mbhc_zdet_ramp(struct snd_soc_component *component,
 				   struct wcd937x_mbhc_zdet_param *zdet_param,
 				   s32 *zl, s32 *zr, s16 *d1_a)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	s32 zdet = 0;
 
 	snd_soc_component_write_field(component, WCD937X_MBHC_NEW_ZDET_ANA_CTL,
@@ -1667,7 +1691,8 @@ static void wcd937x_wcd_mbhc_qfuse_cal(struct snd_soc_component *component,
 static void wcd937x_wcd_mbhc_calc_impedance(struct snd_soc_component *component,
 					    u32 *zl, u32 *zr)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	s16 reg0, reg1, reg2, reg3, reg4;
 	s32 z1l, z1r, z1ls;
 	int zMono, z_diff1, z_diff2;
@@ -1782,9 +1807,7 @@ right_ch_impedance:
 	/* Mono/stereo detection */
 	if ((*zl == WCD937X_ZDET_FLOATING_IMPEDANCE) &&
 	    (*zr == WCD937X_ZDET_FLOATING_IMPEDANCE)) {
-		dev_err(component->dev,
-			"%s: plug type is invalid or extension cable\n",
-			__func__);
+		dev_err(dev, "%s: plug type is invalid or extension cable\n", __func__);
 		goto zdet_complete;
 	}
 	if ((*zl == WCD937X_ZDET_FLOATING_IMPEDANCE) ||
@@ -1867,7 +1890,8 @@ static void wcd937x_mbhc_hph_pull_down_ctrl(struct snd_soc_component *component,
 
 static void wcd937x_mbhc_moisture_config(struct snd_soc_component *component)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 
 	if (wcd937x->mbhc_cfg.moist_rref == R_OFF) {
 		snd_soc_component_write_field(component, WCD937X_MBHC_NEW_CTL_2,
@@ -1877,8 +1901,7 @@ static void wcd937x_mbhc_moisture_config(struct snd_soc_component *component)
 
 	/* Do not enable moisture detection if jack type is NC */
 	if (!wcd937x->mbhc_cfg.hphl_swh) {
-		dev_err(component->dev, "%s: disable moisture detection for NC\n",
-			__func__);
+		dev_err(dev, "%s: disable moisture detection for NC\n", __func__);
 		snd_soc_component_write_field(component, WCD937X_MBHC_NEW_CTL_2,
 					      WCD937X_M_RTH_CTL_MASK, R_OFF);
 		return;
@@ -1890,7 +1913,8 @@ static void wcd937x_mbhc_moisture_config(struct snd_soc_component *component)
 
 static void wcd937x_mbhc_moisture_detect_en(struct snd_soc_component *component, bool enable)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 
 	if (enable)
 		snd_soc_component_write_field(component, WCD937X_MBHC_NEW_CTL_2,
@@ -1902,7 +1926,8 @@ static void wcd937x_mbhc_moisture_detect_en(struct snd_soc_component *component,
 
 static bool wcd937x_mbhc_get_moisture_status(struct snd_soc_component *component)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	bool ret = false;
 
 	if (wcd937x->mbhc_cfg.moist_rref == R_OFF) {
@@ -1913,8 +1938,7 @@ static bool wcd937x_mbhc_get_moisture_status(struct snd_soc_component *component
 
 	/* Do not enable moisture detection if jack type is NC */
 	if (!wcd937x->mbhc_cfg.hphl_swh) {
-		dev_err(component->dev, "%s: disable moisture detection for NC\n",
-			__func__);
+		dev_err(dev, "%s: disable moisture detection for NC\n", __func__);
 		snd_soc_component_write_field(component, WCD937X_MBHC_NEW_CTL_2,
 					      WCD937X_M_RTH_CTL_MASK, R_OFF);
 		goto done;
@@ -1965,7 +1989,8 @@ static int wcd937x_get_hph_type(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wcd_mbhc_get_hph_type(wcd937x->wcd_mbhc);
 
@@ -1979,7 +2004,8 @@ static int wcd937x_hph_impedance_get(struct snd_kcontrol *kcontrol,
 	bool hphr;
 	struct soc_mixer_control *mc;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 
 	mc = (struct soc_mixer_control *)(kcontrol->private_value);
 	hphr = mc->shift;
@@ -2003,7 +2029,8 @@ static const struct snd_kcontrol_new impedance_detect_controls[] = {
 
 static int wcd937x_mbhc_init(struct snd_soc_component *component)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	struct wcd_mbhc_intr *intr_ids = &wcd937x->intr_ids;
 
 	intr_ids->mbhc_sw_intr = regmap_irq_get_virq(wcd937x->irq_chip,
@@ -2025,9 +2052,9 @@ static int wcd937x_mbhc_init(struct snd_soc_component *component)
 	if (IS_ERR(wcd937x->wcd_mbhc))
 		return PTR_ERR(wcd937x->wcd_mbhc);
 
-	snd_soc_add_component_controls(component, impedance_detect_controls,
+	snd_soc_component_add_controls(component, impedance_detect_controls,
 				       ARRAY_SIZE(impedance_detect_controls));
-	snd_soc_add_component_controls(component, hph_type_detect_controls,
+	snd_soc_component_add_controls(component, hph_type_detect_controls,
 				       ARRAY_SIZE(hph_type_detect_controls));
 
 	return 0;
@@ -2035,7 +2062,8 @@ static int wcd937x_mbhc_init(struct snd_soc_component *component)
 
 static void wcd937x_mbhc_deinit(struct snd_soc_component *component)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 
 	wcd_mbhc_deinit(wcd937x->wcd_mbhc);
 }
@@ -2493,8 +2521,8 @@ static int wcd937x_irq_init(struct wcd937x_priv *wcd, struct device *dev)
 static int wcd937x_soc_codec_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 	int i, ret;
 	u32 chipid;
 
@@ -2502,7 +2530,7 @@ static int wcd937x_soc_codec_probe(struct snd_soc_component *component)
 	if (ret)
 		return ret;
 
-	snd_soc_component_init_regmap(component, wcd937x->regmap);
+	snd_soc_component_regmap_init(component, wcd937x->regmap);
 	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0)
 		return ret;
@@ -2563,7 +2591,7 @@ static int wcd937x_soc_codec_probe(struct snd_soc_component *component)
 		ret = snd_soc_dapm_new_controls(dapm, wcd9375_dapm_widgets,
 						ARRAY_SIZE(wcd9375_dapm_widgets));
 		if (ret < 0) {
-			dev_err(component->dev, "Failed to add snd_ctls\n");
+			dev_err(dev, "Failed to add snd_ctls\n");
 			wcd_clsh_ctrl_free(wcd937x->clsh_info);
 			return ret;
 		}
@@ -2571,7 +2599,7 @@ static int wcd937x_soc_codec_probe(struct snd_soc_component *component)
 		ret = snd_soc_dapm_add_routes(dapm, wcd9375_audio_map,
 					      ARRAY_SIZE(wcd9375_audio_map));
 		if (ret < 0) {
-			dev_err(component->dev, "Failed to add routes\n");
+			dev_err(dev, "Failed to add routes\n");
 			wcd_clsh_ctrl_free(wcd937x->clsh_info);
 			return ret;
 		}
@@ -2579,14 +2607,15 @@ static int wcd937x_soc_codec_probe(struct snd_soc_component *component)
 
 	ret = wcd937x_mbhc_init(component);
 	if (ret)
-		dev_err(component->dev, "mbhc initialization failed\n");
+		dev_err(dev, "mbhc initialization failed\n");
 
 	return ret;
 }
 
 static void wcd937x_soc_codec_remove(struct snd_soc_component *component)
 {
-	struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 
 	wcd937x_mbhc_deinit(component);
 	free_irq(wcd937x->aux_pdm_wd_int, wcd937x);
@@ -2599,7 +2628,8 @@ static void wcd937x_soc_codec_remove(struct snd_soc_component *component)
 static int wcd937x_codec_set_jack(struct snd_soc_component *comp,
 				  struct snd_soc_jack *jack, void *data)
 {
-	struct wcd937x_priv *wcd = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct wcd937x_priv *wcd = dev_get_drvdata(dev);
 	int ret = 0;
 
 	if (jack)
@@ -2627,9 +2657,8 @@ static const struct snd_soc_component_driver soc_codec_dev_wcd937x = {
 static bool wcd937x_swap_gnd_mic(struct snd_soc_component *component)
 {
 	int value;
-	struct wcd937x_priv *wcd937x;
-
-	wcd937x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 
 	value = gpiod_get_value(wcd937x->us_euro_gpio);
 	gpiod_set_value(wcd937x->us_euro_gpio, !value);
@@ -2641,8 +2670,11 @@ static int wcd937x_codec_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params,
 				   struct snd_soc_dai *dai)
 {
-	struct wcd937x_priv *wcd937x = dev_get_drvdata(dai->dev);
-	struct wcd937x_sdw_priv *wcd = wcd937x->sdw_priv[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
+	struct wcd937x_sdw_priv *wcd = wcd937x->sdw_priv[dai_id];
 
 	return wcd937x_sdw_hw_params(wcd, substream, params, dai);
 }
@@ -2650,8 +2682,11 @@ static int wcd937x_codec_hw_params(struct snd_pcm_substream *substream,
 static int wcd937x_codec_free(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct wcd937x_priv *wcd937x = dev_get_drvdata(dai->dev);
-	struct wcd937x_sdw_priv *wcd = wcd937x->sdw_priv[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
+	struct wcd937x_sdw_priv *wcd = wcd937x->sdw_priv[dai_id];
 
 	return sdw_stream_remove_slave(wcd->sdev, wcd->sruntime);
 }
@@ -2659,8 +2694,11 @@ static int wcd937x_codec_free(struct snd_pcm_substream *substream,
 static int wcd937x_codec_set_sdw_stream(struct snd_soc_dai *dai,
 					void *stream, int direction)
 {
-	struct wcd937x_priv *wcd937x = dev_get_drvdata(dai->dev);
-	struct wcd937x_sdw_priv *wcd = wcd937x->sdw_priv[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
+	struct wcd937x_sdw_priv *wcd = wcd937x->sdw_priv[dai_id];
 
 	wcd->sruntime = stream;
 
@@ -2671,14 +2709,17 @@ static int wcd937x_get_channel_map(const struct snd_soc_dai *dai,
 				   unsigned int *tx_num, unsigned int *tx_slot,
 				   unsigned int *rx_num, unsigned int *rx_slot)
 {
-	struct wcd937x_priv *wcd937x = dev_get_drvdata(dai->dev);
-	struct wcd937x_sdw_priv *wcd = wcd937x->sdw_priv[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
+	struct wcd937x_sdw_priv *wcd = wcd937x->sdw_priv[dai_id];
 	int i;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case AIF1_PB:
 		if (!rx_slot || !rx_num) {
-			dev_err(dai->dev, "Invalid rx_slot %p or rx_num %p\n",
+			dev_err(dev, "Invalid rx_slot %p or rx_num %p\n",
 				rx_slot, rx_num);
 			return -EINVAL;
 		}
@@ -2690,7 +2731,7 @@ static int wcd937x_get_channel_map(const struct snd_soc_dai *dai,
 		break;
 	case AIF1_CAP:
 		if (!tx_slot || !tx_num) {
-			dev_err(dai->dev, "Invalid tx_slot %p or tx_num %p\n",
+			dev_err(dev, "Invalid tx_slot %p or tx_num %p\n",
 				tx_slot, tx_num);
 			return -EINVAL;
 		}
@@ -2821,7 +2862,7 @@ static int wcd937x_bind(struct device *dev)
 
 	wcd937x_set_micbias_data(dev, wcd937x);
 
-	ret = snd_soc_register_component(dev, &soc_codec_dev_wcd937x,
+	ret = snd_soc_component_register(dev, &soc_codec_dev_wcd937x,
 					 wcd937x_dais, ARRAY_SIZE(wcd937x_dais));
 	if (ret) {
 		dev_err(dev, "Codec registration failed\n");
@@ -2849,7 +2890,7 @@ static void wcd937x_unbind(struct device *dev)
 {
 	struct wcd937x_priv *wcd937x = dev_get_drvdata(dev);
 
-	snd_soc_unregister_component(dev);
+	snd_soc_component_unregister(dev);
 	device_link_remove(dev, wcd937x->txdev);
 	device_link_remove(dev, wcd937x->rxdev);
 	device_link_remove(wcd937x->rxdev, wcd937x->txdev);

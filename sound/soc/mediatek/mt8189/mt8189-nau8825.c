@@ -190,19 +190,21 @@ static int mt8189_nau8825_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+	struct device *codec_dev = snd_soc_component_to_dev(codec_component);
 	unsigned int rate = params_rate(params);
 	unsigned int bit_width = params_width(params);
 	int clk_freq, ret;
 
 	clk_freq = rate * 2 * bit_width;
-	dev_dbg(codec_dai->dev, "clk_freq %d, rate: %d, bit_width: %d\n",
+	dev_dbg(codec_dev, "clk_freq %d, rate: %d, bit_width: %d\n",
 		clk_freq, rate, bit_width);
 
 	/* Configure clock for codec */
 	ret = snd_soc_dai_set_sysclk(codec_dai, NAU8825_CLK_FLL_BLK, 0,
 				     SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set BCLK clock %d\n", ret);
+		dev_err(codec_dev, "can't set BCLK clock %d\n", ret);
 		return ret;
 	}
 
@@ -210,7 +212,7 @@ static int mt8189_nau8825_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_pll(codec_dai, 0, 0, clk_freq,
 				  rate * 256);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set BCLK: %d\n", ret);
+		dev_err(codec_dev, "can't set BCLK: %d\n", ret);
 		return ret;
 	}
 
@@ -229,31 +231,32 @@ static int mt8189_rtxxxx_i2s_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	unsigned int rate = params_rate(params);
 	int bitwidth;
 	int ret;
 
 	bitwidth = snd_pcm_format_width(params_format(params));
 	if (bitwidth < 0) {
-		dev_err(card->dev, "invalid bit width: %d\n", bitwidth);
+		dev_err(dev, "invalid bit width: %d\n", bitwidth);
 		return bitwidth;
 	}
 
 	ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x00, 0x0, 0x2, bitwidth);
 	if (ret) {
-		dev_err(card->dev, "failed to set tdm slot\n");
+		dev_err(dev, "failed to set tdm slot\n");
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, 0, 1, rate * 32, rate * 512);
 	if (ret) {
-		dev_err(card->dev, "failed to set pll\n");
+		dev_err(dev, "failed to set pll\n");
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, 1, rate * 512, SND_SOC_CLOCK_IN);
 	if (ret) {
-		dev_err(card->dev, "failed to set sysclk\n");
+		dev_err(dev, "failed to set sysclk\n");
 		return ret;
 	}
 
@@ -279,28 +282,28 @@ static int mt8189_cs35l41_i2s_hw_params(struct snd_pcm_substream *substream,
 	int i, ret;
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-		ret = snd_soc_component_set_sysclk(codec_dai->component,
+		struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+		struct device *dev = snd_soc_component_to_dev(component);
+
+		ret = snd_soc_component_set_sysclk(component,
 						   CS35L41_CLKID_SCLK, 0,
 						   clk_freq, SND_SOC_CLOCK_IN);
 		if (ret < 0) {
-			dev_err(codec_dai->dev, "set component sysclk fail: %d\n",
-				ret);
+			dev_err(dev, "set component sysclk fail: %d\n", ret);
 			return ret;
 		}
 
 		ret = snd_soc_dai_set_sysclk(codec_dai, CS35L41_CLKID_SCLK,
 					     clk_freq, SND_SOC_CLOCK_IN);
 		if (ret < 0) {
-			dev_err(codec_dai->dev, "set sysclk fail: %d\n",
-				ret);
+			dev_err(dev, "set sysclk fail: %d\n", ret);
 			return ret;
 		}
 
 		ret = snd_soc_dai_set_channel_map(codec_dai, 0, NULL,
 						  1, &rx_slot[i]);
 		if (ret < 0) {
-			dev_err(codec_dai->dev, "set channel map fail: %d\n",
-				ret);
+			dev_err(dev, "set channel map fail: %d\n", ret);
 			return ret;
 		}
 	}
@@ -320,13 +323,15 @@ static int mt8189_es8326_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+	struct device *codec_dev = snd_soc_component_to_dev(codec_component);
 	unsigned int rate = params_rate(params);
 	int ret;
 
 	/* Configure MCLK for codec */
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, rate * 256, SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set MCLK %d\n", ret);
+		dev_err(codec_dev, "can't set MCLK %d\n", ret);
 		return ret;
 	}
 
@@ -352,7 +357,7 @@ static int mt8189_dumb_amp_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, mt8189_dumb_spk_controls,
+	ret = snd_soc_card_add_controls(card, mt8189_dumb_spk_controls,
 					ARRAY_SIZE(mt8189_dumb_spk_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add Dumb card controls, ret %d\n", ret);
@@ -364,9 +369,10 @@ static int mt8189_dumb_amp_init(struct snd_soc_pcm_runtime *rtd)
 
 static int mt8189_dptx_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(rtd->card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_jack *jack = &soc_card_data->card_data->jacks[MT8189_JACK_DP];
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_dai *dai_codec = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai_codec);
 	int ret;
 
 	ret = snd_soc_card_jack_new_pins(rtd->card, "DP Jack", SND_JACK_LINEOUT,
@@ -380,7 +386,7 @@ static int mt8189_dptx_codec_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_component_set_jack(component, jack, NULL);
 	if (ret) {
 		dev_err(rtd->dev, "%s, set jack failed on %s (ret=%d)\n",
-			__func__, component->name, ret);
+			__func__, snd_soc_component_name(component), ret);
 		return ret;
 	}
 
@@ -389,9 +395,10 @@ static int mt8189_dptx_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 static int mt8189_hdmi_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(rtd->card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_jack *jack = &soc_card_data->card_data->jacks[MT8189_JACK_HDMI];
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_dai *dai_codec = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai_codec);
 	int ret;
 
 	ret = snd_soc_card_jack_new_pins(rtd->card, "HDMI Jack", SND_JACK_LINEOUT,
@@ -405,7 +412,7 @@ static int mt8189_hdmi_codec_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_component_set_jack(component, jack, NULL);
 	if (ret) {
 		dev_err(rtd->dev, "%s, set jack failed on %s (ret=%d)\n",
-			__func__, component->name, ret);
+			__func__, snd_soc_component_name(component), ret);
 		return ret;
 	}
 
@@ -415,9 +422,10 @@ static int mt8189_hdmi_codec_init(struct snd_soc_pcm_runtime *rtd)
 static int mt8189_headset_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(card);
 	struct snd_soc_jack *jack = &soc_card_data->card_data->jacks[MT8189_JACK_HEADSET];
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_dai *dai_codec = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai_codec);
 	struct mtk_platform_card_data *card_data = soc_card_data->card_data;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	int ret;
@@ -430,7 +438,7 @@ static int mt8189_headset_codec_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, mt8189_headset_controls,
+	ret = snd_soc_card_add_controls(card, mt8189_headset_controls,
 					ARRAY_SIZE(mt8189_headset_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add nau8825 card controls, ret %d\n", ret);
@@ -473,7 +481,8 @@ static int mt8189_headset_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 static void mt8189_headset_codec_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_dai *dai_codec = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai_codec);
 
 	snd_soc_component_set_jack(component, NULL, NULL);
 }

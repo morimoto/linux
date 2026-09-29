@@ -20,7 +20,7 @@ static int senary_amp_add_device_props(struct device *sdw_dev)
 
 int asoc_sdw_senary_amp_exit(struct snd_soc_card *card, struct snd_soc_dai_link *dai_link)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 
 	if (ctx->amp_dev1) {
 		device_remove_software_node(ctx->amp_dev1);
@@ -41,7 +41,7 @@ int asoc_sdw_senary_amp_init(struct snd_soc_card *card,
 			     struct asoc_sdw_codec_info *info,
 			     bool playback)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct device *sdw_dev1, *sdw_dev2;
 	int ret;
 

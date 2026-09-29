@@ -338,7 +338,7 @@ static const struct snd_soc_dapm_route wm8940_dapm_routes[] = {
 static int wm8940_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			      unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 iface = snd_soc_component_read(component, WM8940_IFACE) & 0xFE67;
 	u16 clk = snd_soc_component_read(component, WM8940_CLOCK) & 0x1fe;
 
@@ -394,8 +394,9 @@ static int wm8940_i2s_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8940_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8940_priv *priv = dev_get_drvdata(dev);
 	u16 iface = snd_soc_component_read(component, WM8940_IFACE) & 0xFD9F;
 	u16 addcntrl = snd_soc_component_read(component, WM8940_ADDCNTRL) & 0xFFF1;
 	u16 companding =  snd_soc_component_read(component,
@@ -463,7 +464,7 @@ error_ret:
 
 static int wm8940_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 mute_reg = snd_soc_component_read(component, WM8940_DAC) & 0xffbf;
 
 	if (mute)
@@ -475,7 +476,8 @@ static int wm8940_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int wm8940_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm8940_priv *wm8940 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8940_priv *wm8940 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	u16 val;
 	u16 pwr_reg = snd_soc_component_read(component, WM8940_POWER1) & 0x1F0;
@@ -502,7 +504,7 @@ static int wm8940_set_bias_level(struct snd_soc_component *component,
 		if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF) {
 			ret = regcache_sync(wm8940->regmap);
 			if (ret < 0) {
-				dev_err(component->dev, "Failed to sync cache: %d\n", ret);
+				dev_err(dev, "Failed to sync cache: %d\n", ret);
 				return ret;
 			}
 		}
@@ -583,7 +585,7 @@ static void pll_factors(unsigned int target, unsigned int source)
 static int wm8940_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 		int source, unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 reg;
 
 	/* Turn off PLL */
@@ -624,7 +626,7 @@ static int wm8940_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 static int wm8940_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 				 int div_id, int div)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 reg;
 	int ret = 0;
 
@@ -679,8 +681,9 @@ static unsigned int wm8940_get_mclkdiv(unsigned int f_in, unsigned int f_out,
 
 static int wm8940_update_clocks(struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *codec = dai->component;
-	struct wm8940_priv *priv = snd_soc_component_get_drvdata(codec);
+	struct snd_soc_component *codec = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct wm8940_priv *priv = dev_get_drvdata(dev);
 	unsigned int fs256;
 	unsigned int fpll = 0;
 	unsigned int f;
@@ -711,8 +714,9 @@ static int wm8940_update_clocks(struct snd_soc_dai *dai)
 static int wm8940_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 				 unsigned int freq, int dir)
 {
-	struct snd_soc_component *codec = dai->component;
-	struct wm8940_priv *priv = snd_soc_component_get_drvdata(codec);
+	struct snd_soc_component *codec = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct wm8940_priv *priv = dev_get_drvdata(dev);
 
 	if (dir != SND_SOC_CLOCK_IN)
 		return -EINVAL;
@@ -776,7 +780,8 @@ static struct snd_soc_dai_driver wm8940_dai = {
 static int wm8940_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8940_setup_data *pdata = component->dev->platform_data;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8940_setup_data *pdata = dev->platform_data;
 	int ret;
 	u16 reg;
 
@@ -787,13 +792,13 @@ static int wm8940_probe(struct snd_soc_component *component)
 	 */
 	reg = snd_soc_component_read(component, WM8940_SOFTRESET);
 	if (reg != WM8940_CHIP_ID) {
-		dev_err(component->dev, "Wrong wm8940 chip ID: 0x%x\n", reg);
+		dev_err(dev, "Wrong wm8940 chip ID: 0x%x\n", reg);
 		return -ENODEV;
 	}
 
 	ret = wm8940_reset(component);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to issue reset\n");
+		dev_err(dev, "Failed to issue reset\n");
 		return ret;
 	}
 
@@ -857,7 +862,7 @@ static int wm8940_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, wm8940);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8940, &wm8940_dai, 1);
 
 	return ret;

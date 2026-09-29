@@ -120,8 +120,11 @@ static int max_98373_hw_params(struct snd_pcm_substream *substream,
 	int ret = 0;
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
+		struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+		struct device *dev = snd_soc_component_to_dev(codec_component);
+
 		if (i >= ARRAY_SIZE(max_98373_tdm_mask)) {
-			dev_err(codec_dai->dev, "only 2 amps are supported\n");
+			dev_err(dev, "only 2 amps are supported\n");
 			return -EINVAL;
 		}
 
@@ -137,12 +140,12 @@ static int max_98373_hw_params(struct snd_pcm_substream *substream,
 			}
 
 			/* get the tx mask from ACPI device properties */
-			tx_mask = max_98373_get_tx_mask(codec_dai->dev);
+			tx_mask = max_98373_get_tx_mask(dev);
 			if (!tx_mask)
 				return -EINVAL;
 
 			if (tx_mask & tx_mask_used) {
-				dev_err(codec_dai->dev, "invalid tx mask 0x%x, used 0x%x\n",
+				dev_err(dev, "invalid tx mask 0x%x, used 0x%x\n",
 					tx_mask, tx_mask_used);
 				return -EINVAL;
 			}
@@ -154,18 +157,18 @@ static int max_98373_hw_params(struct snd_pcm_substream *substream,
 			 * allocation
 			 */
 			if (fls(tx_mask) > tdm_slots) {
-				dev_err(codec_dai->dev, "slot mismatch, tx %d slots %d\n",
+				dev_err(dev, "slot mismatch, tx %d slots %d\n",
 					fls(tx_mask), tdm_slots);
 				return -EINVAL;
 			}
 
 			if (fls(max_98373_tdm_mask[i].rx) > tdm_slots) {
-				dev_err(codec_dai->dev, "slot mismatch, rx %d slots %d\n",
+				dev_err(dev, "slot mismatch, rx %d slots %d\n",
 					fls(max_98373_tdm_mask[i].rx), tdm_slots);
 				return -EINVAL;
 			}
 
-			dev_dbg(codec_dai->dev, "set tdm slot: tx 0x%x rx 0x%x slots %d width %d\n",
+			dev_dbg(dev, "set tdm slot: tx 0x%x rx 0x%x slots %d width %d\n",
 				tx_mask, max_98373_tdm_mask[i].rx,
 				tdm_slots, params_width(params));
 
@@ -174,13 +177,12 @@ static int max_98373_hw_params(struct snd_pcm_substream *substream,
 						       tdm_slots,
 						       params_width(params));
 			if (ret < 0) {
-				dev_err(codec_dai->dev, "fail to set tdm slot, ret %d\n",
-					ret);
+				dev_err(dev, "fail to set tdm slot, ret %d\n", ret);
 				return ret;
 			}
 			break;
 		default:
-			dev_dbg(codec_dai->dev, "codec is in I2S mode\n");
+			dev_dbg(dev, "codec is in I2S mode\n");
 			break;
 		}
 	}
@@ -201,11 +203,13 @@ static int max_98373_trigger(struct snd_pcm_substream *substream, int cmd)
 
 	cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	for_each_rtd_codec_dais(rtd, j, codec_dai) {
-		struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(cpu_dai->component);
+		struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+		struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(
+			snd_soc_dai_to_component(cpu_dai));
 		char pin_name[MAX_98373_PIN_NAME];
 
 		snprintf(pin_name, ARRAY_SIZE(pin_name), "%s Spk",
-			 codec_dai->component->name_prefix);
+			 snd_soc_component_name_prefix(codec_component));
 
 		switch (cmd) {
 		case SNDRV_PCM_TRIGGER_START:
@@ -252,7 +256,7 @@ static int max_98373_spk_codec_init(struct snd_soc_pcm_runtime *rtd)
 			return ret;
 		}
 
-		ret = snd_soc_add_card_controls(card, maxim_2spk_kcontrols,
+		ret = snd_soc_card_add_controls(card, maxim_2spk_kcontrols,
 						ARRAY_SIZE(maxim_2spk_kcontrols));
 		if (ret) {
 			dev_err(rtd->dev, "fail to add max98373 kcontrols, ret %d\n",
@@ -385,8 +389,11 @@ static int max_98390_hw_params(struct snd_pcm_substream *substream,
 	int i, ret;
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
+		struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+		struct device *dev = snd_soc_component_to_dev(codec_component);
+
 		if (i >= ARRAY_SIZE(max_98390_tdm_mask)) {
-			dev_err(codec_dai->dev, "invalid codec index %d\n", i);
+			dev_err(dev, "invalid codec index %d\n", i);
 			return -ENODEV;
 		}
 
@@ -400,13 +407,13 @@ static int max_98390_hw_params(struct snd_pcm_substream *substream,
 						       4,
 						       params_width(params));
 			if (ret < 0) {
-				dev_err(codec_dai->dev, "fail to set tdm slot, ret %d\n",
+				dev_err(dev, "fail to set tdm slot, ret %d\n",
 					ret);
 				return ret;
 			}
 			break;
 		default:
-			dev_dbg(codec_dai->dev, "codec is in I2S mode\n");
+			dev_dbg(dev, "codec is in I2S mode\n");
 			break;
 		}
 	}
@@ -432,7 +439,7 @@ static int max_98390_init(struct snd_soc_pcm_runtime *rtd)
 			return ret;
 		}
 
-		ret = snd_soc_add_card_controls(card, max_98390_tt_kcontrols,
+		ret = snd_soc_card_add_controls(card, max_98390_tt_kcontrols,
 						ARRAY_SIZE(max_98390_tt_kcontrols));
 		if (ret) {
 			dev_err(rtd->dev, "unable to add tweeter controls, ret %d\n",
@@ -459,7 +466,7 @@ static int max_98390_init(struct snd_soc_pcm_runtime *rtd)
 			return ret;
 		}
 
-		ret = snd_soc_add_card_controls(card, maxim_2spk_kcontrols,
+		ret = snd_soc_card_add_controls(card, maxim_2spk_kcontrols,
 						ARRAY_SIZE(maxim_2spk_kcontrols));
 		if (ret) {
 			dev_err(rtd->dev, "fail to add max98390 woofer kcontrols, ret %d\n",
@@ -576,7 +583,7 @@ static int max_98357a_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, max_98357a_kcontrols,
+	ret = snd_soc_card_add_controls(card, max_98357a_kcontrols,
 					ARRAY_SIZE(max_98357a_kcontrols));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);

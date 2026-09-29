@@ -20,12 +20,16 @@ static int littlemill_set_bias_level(struct snd_soc_card *card,
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *aif1_dai;
 	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct snd_soc_component *component;
+	struct device *dev;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[0]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[0]);
 	aif1_dai = snd_soc_rtd_to_codec(rtd, 0);
+	component = snd_soc_dai_to_component(aif1_dai);
+	dev = snd_soc_component_to_dev(component);
 
-	if (snd_soc_dapm_to_dev(dapm) != aif1_dai->dev)
+	if (snd_soc_dapm_to_dev(dapm) != dev)
 		return 0;
 
 	switch (level) {
@@ -68,12 +72,16 @@ static int littlemill_set_bias_level_post(struct snd_soc_card *card,
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *aif1_dai;
 	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct snd_soc_component *component;
+	struct device *dev;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[0]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[0]);
 	aif1_dai = snd_soc_rtd_to_codec(rtd, 0);
+	component = snd_soc_dai_to_component(aif1_dai);
+	dev = snd_soc_component_to_dev(component);
 
-	if (snd_soc_dapm_to_dev(dapm) != aif1_dai->dev)
+	if (snd_soc_dapm_to_dev(dapm) != dev)
 		return 0;
 
 	switch (level) {
@@ -181,7 +189,7 @@ static int bbclk_ev(struct snd_soc_dapm_widget *w,
 	struct snd_soc_dai *aif2_dai;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[1]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[1]);
 	aif2_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
 	switch (event) {
@@ -278,11 +286,11 @@ static int littlemill_late_probe(struct snd_soc_card *card)
 	struct snd_soc_dai *aif2_dai;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[0]);
-	component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[0]);
+	component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	aif1_dai = snd_soc_rtd_to_codec(rtd, 0);
 
-	rtd = snd_soc_get_pcm_runtime(card, &card_driver->dai_link[1]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[1]);
 	aif2_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
 	ret = snd_soc_dai_set_sysclk(aif1_dai, WM8994_SYSCLK_MCLK2,

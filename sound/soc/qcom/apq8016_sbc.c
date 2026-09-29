@@ -61,7 +61,8 @@ static int apq8016_dai_init(struct snd_soc_pcm_runtime *rtd, int mi2s)
 	struct snd_soc_dai *codec_dai;
 	struct snd_soc_component *component;
 	struct snd_soc_card *card = rtd->card;
-	struct apq8016_sbc_data *pdata = snd_soc_card_get_drvdata(card);
+	struct apq8016_sbc_data *pdata = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int i, rval;
 	u32 value;
 
@@ -94,7 +95,7 @@ static int apq8016_dai_init(struct snd_soc_pcm_runtime *rtd, int mi2s)
 		break;
 
 	default:
-		dev_err(card->dev, "unsupported cpu dai configuration\n");
+		dev_err(dev, "unsupported cpu dai configuration\n");
 		return -EINVAL;
 
 	}
@@ -113,7 +114,7 @@ static int apq8016_dai_init(struct snd_soc_pcm_runtime *rtd, int mi2s)
 						  ARRAY_SIZE(apq8016_sbc_jack_pins));
 
 		if (rval < 0) {
-			dev_err(card->dev, "Unable to add Headphone Jack\n");
+			dev_err(dev, "Unable to add Headphone Jack\n");
 			return rval;
 		}
 
@@ -128,17 +129,18 @@ static int apq8016_dai_init(struct snd_soc_pcm_runtime *rtd, int mi2s)
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
 
-		component = codec_dai->component;
+		component = snd_soc_dai_to_component(codec_dai);
+
 		/* Set default mclk for internal codec */
 		rval = snd_soc_component_set_sysclk(component, 0, 0, DEFAULT_MCLK_RATE,
 				       SND_SOC_CLOCK_IN);
 		if (rval != 0 && rval != -ENOTSUPP) {
-			dev_warn(card->dev, "Failed to set mclk: %d\n", rval);
+			dev_warn(dev, "Failed to set mclk: %d\n", rval);
 			return rval;
 		}
 		rval = snd_soc_component_set_jack(component, &pdata->jack, NULL);
 		if (rval != 0 && rval != -ENOTSUPP) {
-			dev_warn(card->dev, "Failed to set jack: %d\n", rval);
+			dev_warn(dev, "Failed to set jack: %d\n", rval);
 			return rval;
 		}
 	}
@@ -150,7 +152,7 @@ static int apq8016_sbc_dai_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
-	return apq8016_dai_init(rtd, cpu_dai->id);
+	return apq8016_dai_init(rtd, snd_soc_dai_id(cpu_dai));
 }
 
 static void apq8016_sbc_add_ops(struct snd_soc_card *card,
@@ -165,7 +167,7 @@ static void apq8016_sbc_add_ops(struct snd_soc_card *card,
 
 static int qdsp6_dai_get_lpass_id(struct snd_soc_dai *cpu_dai)
 {
-	switch (cpu_dai->id) {
+	switch (snd_soc_dai_id(cpu_dai)) {
 	case PRIMARY_MI2S_RX:
 	case PRIMARY_MI2S_TX:
 		return MI2S_PRIMARY;
@@ -195,8 +197,9 @@ static int msm8916_qdsp6_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct apq8016_sbc_data *data = snd_soc_card_get_drvdata(card);
+	struct apq8016_sbc_data *data = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int mi2s, ret;
 
 	mi2s = qdsp6_dai_get_lpass_id(cpu_dai);
@@ -208,7 +211,7 @@ static int msm8916_qdsp6_startup(struct snd_pcm_substream *substream)
 
 	ret = snd_soc_dai_set_sysclk(cpu_dai, LPAIF_BIT_CLK, MI2S_BCLK_RATE, 0);
 	if (ret)
-		dev_err(card->dev, "Failed to enable LPAIF bit clk: %d\n", ret);
+		dev_err(dev, "Failed to enable LPAIF bit clk: %d\n", ret);
 	return ret;
 }
 
@@ -216,8 +219,9 @@ static void msm8916_qdsp6_shutdown(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct apq8016_sbc_data *data = snd_soc_card_get_drvdata(card);
+	struct apq8016_sbc_data *data = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int mi2s, ret;
 
 	mi2s = qdsp6_dai_get_lpass_id(cpu_dai);
@@ -229,7 +233,7 @@ static void msm8916_qdsp6_shutdown(struct snd_pcm_substream *substream)
 
 	ret = snd_soc_dai_set_sysclk(cpu_dai, LPAIF_BIT_CLK, 0, 0);
 	if (ret)
-		dev_err(card->dev, "Failed to disable LPAIF bit clk: %d\n", ret);
+		dev_err(dev, "Failed to disable LPAIF bit clk: %d\n", ret);
 }
 
 static const struct snd_soc_ops msm8916_qdsp6_be_ops = {
@@ -323,7 +327,7 @@ static int apq8016_sbc_platform_probe(struct platform_device *pdev)
 	if (IS_ERR(data->spkr_iomux))
 		return PTR_ERR(data->spkr_iomux);
 
-	snd_soc_card_set_drvdata(card, data);
+	snd_soc_card_set_priv(card, data);
 
 	add_ops(card, card_driver);
 	return devm_snd_soc_card_register(card, card_driver);

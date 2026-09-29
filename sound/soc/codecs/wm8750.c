@@ -499,8 +499,9 @@ static inline int get_coeff(int mclk, int rate)
 static int wm8750_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8750_priv *wm8750 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8750_priv *wm8750 = dev_get_drvdata(dev);
 
 	switch (freq) {
 	case 11289600:
@@ -517,7 +518,7 @@ static int wm8750_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int wm8750_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 iface = 0;
 
 	/* set master/slave audio interface */
@@ -576,8 +577,9 @@ static int wm8750_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8750_priv *wm8750 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8750_priv *wm8750 = dev_get_drvdata(dev);
 	u16 iface = snd_soc_component_read(component, WM8750_IFACE) & 0x1f3;
 	u16 srate = snd_soc_component_read(component, WM8750_SRATE) & 0x1c0;
 	int coeff = get_coeff(wm8750->sysclk, params_rate(params));
@@ -608,7 +610,7 @@ static int wm8750_pcm_hw_params(struct snd_pcm_substream *substream,
 
 static int wm8750_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 mute_reg = snd_soc_component_read(component, WM8750_ADCDAC) & 0xfff7;
 
 	if (mute)
@@ -633,7 +635,7 @@ static int wm8750_set_bias_level(struct snd_soc_component *component,
 		break;
 	case SND_SOC_BIAS_STANDBY:
 		if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF) {
-			snd_soc_component_cache_sync(component);
+			snd_soc_component_regcache_sync(component);
 
 			/* Set VMID to 5k */
 			snd_soc_component_write(component, WM8750_PWR1, pwr_reg | 0x01c1);
@@ -770,7 +772,7 @@ static int wm8750_spi_probe(struct spi_device *spi)
 
 	spi_set_drvdata(spi, wm8750);
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 			&soc_component_dev_wm8750, &wm8750_dai, 1);
 	return ret;
 }
@@ -810,7 +812,7 @@ static int wm8750_i2c_probe(struct i2c_client *i2c)
 	if (IS_ERR(regmap))
 		return PTR_ERR(regmap);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8750, &wm8750_dai, 1);
 	return ret;
 }

@@ -18,8 +18,9 @@
 int tegra_isomgr_adma_setbw(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *dai, bool is_running)
 {
-	struct device *dev = dai->dev;
-	struct tegra_admaif *admaif = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra_admaif *admaif = dev_get_drvdata(dev);
 	struct tegra_adma_isomgr *adma_isomgr = admaif->adma_isomgr;
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_pcm *pcm = substream->pcm;

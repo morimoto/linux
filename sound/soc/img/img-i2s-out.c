@@ -185,7 +185,9 @@ static void img_i2s_out_reset(struct img_i2s_out *i2s)
 static int img_i2s_out_trigger(struct snd_pcm_substream *substream, int cmd,
 	struct snd_soc_dai *dai)
 {
-	struct img_i2s_out *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_i2s_out *i2s = dev_get_drvdata(dev);
 	u32 reg;
 
 	switch (cmd) {
@@ -213,7 +215,9 @@ static int img_i2s_out_trigger(struct snd_pcm_substream *substream, int cmd,
 static int img_i2s_out_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct img_i2s_out *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_i2s_out *i2s = dev_get_drvdata(dev);
 	unsigned int channels, i2s_channels;
 	long pre_div_a, pre_div_b, diff_a, diff_b, rate, clk_rate;
 	int i;
@@ -290,7 +294,9 @@ static int img_i2s_out_hw_params(struct snd_pcm_substream *substream,
 
 static int img_i2s_out_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct img_i2s_out *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_i2s_out *i2s = dev_get_drvdata(dev);
 	int i, ret;
 	bool force_clk_active;
 	u32 chan_control_mask, control_mask, chan_control_set = 0;
@@ -378,9 +384,11 @@ static int img_i2s_out_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 static int img_i2s_out_dai_probe(struct snd_soc_dai *dai)
 {
-	struct img_i2s_out *i2s = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct img_i2s_out *i2s = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, &i2s->dma_data, NULL);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &i2s->dma_data);
 
 	return 0;
 }
@@ -416,7 +424,7 @@ static int img_i2s_out_dma_prepare_slave_config(struct snd_pcm_substream *st,
 	struct snd_dmaengine_dai_dma_data *dma_data;
 	int ret;
 
-	dma_data = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), st);
+	dma_data = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), st);
 
 	ret = snd_hwparams_to_dma_slave_config(st, params, sc);
 	if (ret)
@@ -522,7 +530,7 @@ static int img_i2s_out_probe(struct platform_device *pdev)
 	i2s->dai_driver.playback.formats = SNDRV_PCM_FMTBIT_S32_LE;
 	i2s->dai_driver.ops = &img_i2s_out_dai_ops;
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 			&img_i2s_out_component, &i2s->dai_driver, 1);
 	if (ret)
 		goto err_suspend;

@@ -644,7 +644,9 @@ static struct dma_chan *fsl_asrc_get_dma_channel(struct fsl_asrc_pair *pair,
 static int fsl_asrc_dai_startup(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct fsl_asrc *asrc = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_asrc *asrc = dev_get_drvdata(dev);
 	struct fsl_asrc_priv *asrc_priv = asrc->private;
 
 	/* Odd channel number is not valid for older ASRC (channel_bits==3) */
@@ -699,7 +701,9 @@ static int fsl_asrc_dai_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct fsl_asrc *asrc = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_asrc *asrc = dev_get_drvdata(dev);
 	struct fsl_asrc_priv *asrc_priv = asrc->private;
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct fsl_asrc_pair *pair = runtime->private_data;
@@ -711,7 +715,7 @@ static int fsl_asrc_dai_hw_params(struct snd_pcm_substream *substream,
 
 	ret = fsl_asrc_request_pair(channels, pair);
 	if (ret) {
-		dev_err(dai->dev, "fail to request asrc pair\n");
+		dev_err(dev, "fail to request asrc pair\n");
 		return ret;
 	}
 
@@ -738,7 +742,7 @@ static int fsl_asrc_dai_hw_params(struct snd_pcm_substream *substream,
 
 	ret = fsl_asrc_config_pair(pair, false);
 	if (ret) {
-		dev_err(dai->dev, "fail to config asrc pair\n");
+		dev_err(dev, "fail to config asrc pair\n");
 		return ret;
 	}
 
@@ -783,10 +787,12 @@ static int fsl_asrc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int fsl_asrc_dai_probe(struct snd_soc_dai *dai)
 {
-	struct fsl_asrc *asrc = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_asrc *asrc = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, &asrc->dma_params_tx,
-				  &asrc->dma_params_rx);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &asrc->dma_params_tx);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &asrc->dma_params_rx);
 
 	return 0;
 }
@@ -1403,7 +1409,7 @@ static int fsl_asrc_probe(struct platform_device *pdev)
 	if (ret < 0 && ret != -ENOSYS)
 		goto err_pm_get_sync;
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_asrc_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &fsl_asrc_component,
 					      &fsl_asrc_dai, 1);
 	if (ret) {
 		dev_err(&pdev->dev, "failed to register ASoC DAI\n");
