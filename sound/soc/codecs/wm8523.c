@@ -120,15 +120,15 @@ static const struct {
 static int wm8523_startup(struct snd_pcm_substream *substream,
 			  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8523_priv *wm8523 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8523_priv *wm8523 = dev_get_drvdata(dev);
 
 	/* The set of sample rates that can be supported depends on the
 	 * MCLK supplied to the CODEC - enforce this.
 	 */
 	if (!wm8523->sysclk) {
-		dev_err(component->dev,
-			"No MCLK configured, call set_sysclk() on init\n");
+		dev_err(dev, "No MCLK configured, call set_sysclk() on init\n");
 		return -EINVAL;
 	}
 
@@ -143,8 +143,9 @@ static int wm8523_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8523_priv *wm8523 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8523_priv *wm8523 = dev_get_drvdata(dev);
 	int i;
 	u16 aifctrl1 = snd_soc_component_read(component, WM8523_AIF_CTRL1);
 	u16 aifctrl2 = snd_soc_component_read(component, WM8523_AIF_CTRL2);
@@ -158,7 +159,7 @@ static int wm8523_hw_params(struct snd_pcm_substream *substream,
 
 	/* Should never happen, should be handled by constraints */
 	if (i == ARRAY_SIZE(lrclk_ratios)) {
-		dev_err(component->dev, "MCLK/fs ratio %d unsupported\n",
+		dev_err(dev, "MCLK/fs ratio %d unsupported\n",
 			wm8523->sysclk / params_rate(params));
 		return -EINVAL;
 	}
@@ -173,8 +174,7 @@ static int wm8523_hw_params(struct snd_pcm_substream *substream,
 				break;
 
 		if (i == ARRAY_SIZE(bclk_ratios)) {
-			dev_err(component->dev,
-				"No matching BCLK/fs ratio for word length %d\n",
+			dev_err(dev, "No matching BCLK/fs ratio for word length %d\n",
 				params_width(params));
 			return -EINVAL;
 		}
@@ -207,8 +207,9 @@ static int wm8523_hw_params(struct snd_pcm_substream *substream,
 static int wm8523_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8523_priv *wm8523 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8523_priv *wm8523 = dev_get_drvdata(dev);
 	unsigned int val;
 	int i;
 
@@ -234,14 +235,12 @@ static int wm8523_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		case 96000:
 		case 176400:
 		case 192000:
-			dev_dbg(component->dev, "Supported sample rate: %dHz\n",
-				val);
+			dev_dbg(dev, "Supported sample rate: %dHz\n", val);
 			wm8523->rate_constraint_list[i] = val;
 			wm8523->rate_constraint.count++;
 			break;
 		default:
-			dev_dbg(component->dev, "Skipping sample rate: %dHz\n",
-				val);
+			dev_dbg(dev, "Skipping sample rate: %dHz\n", val);
 		}
 	}
 
@@ -256,7 +255,7 @@ static int wm8523_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int wm8523_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 aifctrl1 = snd_soc_component_read(component, WM8523_AIF_CTRL1);
 
 	aifctrl1 &= ~(WM8523_BCLK_INV_MASK | WM8523_LRCLK_INV_MASK |
@@ -315,7 +314,8 @@ static int wm8523_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int wm8523_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm8523_priv *wm8523 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8523_priv *wm8523 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -334,9 +334,7 @@ static int wm8523_set_bias_level(struct snd_soc_component *component,
 			ret = regulator_bulk_enable(ARRAY_SIZE(wm8523->supplies),
 						    wm8523->supplies);
 			if (ret != 0) {
-				dev_err(component->dev,
-					"Failed to enable supplies: %d\n",
-					ret);
+				dev_err(dev, "Failed to enable supplies: %d\n", ret);
 				return ret;
 			}
 
@@ -408,7 +406,8 @@ static struct snd_soc_dai_driver wm8523_dai = {
 
 static int wm8523_probe(struct snd_soc_component *component)
 {
-	struct wm8523_priv *wm8523 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8523_priv *wm8523 = dev_get_drvdata(dev);
 
 	wm8523->rate_constraint.list = &wm8523->rate_constraint_list[0];
 	wm8523->rate_constraint.count =
@@ -519,7 +518,7 @@ static int wm8523_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, wm8523);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8523, &wm8523_dai, 1);
 
 	return ret;

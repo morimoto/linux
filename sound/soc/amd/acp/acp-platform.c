@@ -191,7 +191,7 @@ EXPORT_SYMBOL_NS_GPL(config_acp_dma, "SND_SOC_ACP_COMMON");
 static int acp_dma_open(struct snd_soc_component *component, struct snd_pcm_substream *substream)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_chip_info *chip;
 	struct acp_stream *stream;
 	int ret;
@@ -222,21 +222,21 @@ static int acp_dma_open(struct snd_soc_component *component, struct snd_pcm_subs
 
 	ret = snd_pcm_hw_constraint_step(runtime, 0, SNDRV_PCM_HW_PARAM_PERIOD_BYTES, DMA_SIZE);
 	if (ret) {
-		dev_err(component->dev, "set hw constraint HW_PARAM_PERIOD_BYTES failed\n");
+		dev_err(dev, "set hw constraint HW_PARAM_PERIOD_BYTES failed\n");
 		kfree(stream);
 		return ret;
 	}
 
 	ret = snd_pcm_hw_constraint_step(runtime, 0, SNDRV_PCM_HW_PARAM_BUFFER_BYTES, DMA_SIZE);
 	if (ret) {
-		dev_err(component->dev, "set hw constraint HW_PARAM_BUFFER_BYTES failed\n");
+		dev_err(dev, "set hw constraint HW_PARAM_BUFFER_BYTES failed\n");
 		kfree(stream);
 		return ret;
 	}
 
 	ret = snd_pcm_hw_constraint_integer(runtime, SNDRV_PCM_HW_PARAM_PERIODS);
 	if (ret < 0) {
-		dev_err(component->dev, "set integer constraint failed\n");
+		dev_err(dev, "set integer constraint failed\n");
 		kfree(stream);
 		return ret;
 	}
@@ -255,7 +255,7 @@ static int acp_dma_hw_params(struct snd_soc_component *component,
 			     struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params)
 {
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_chip_info *chip = dev_get_drvdata(dev->parent);
 	struct acp_stream *stream = substream->runtime->private_data;
 	u64 size = params_buffer_bytes(params);
@@ -270,7 +270,7 @@ static int acp_dma_hw_params(struct snd_soc_component *component,
 static snd_pcm_uframes_t acp_dma_pointer(struct snd_soc_component *component,
 					 struct snd_pcm_substream *substream)
 {
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_chip_info *chip = dev_get_drvdata(dev->parent);
 	struct acp_stream *stream = substream->runtime->private_data;
 	u32 pos, buffersize;
@@ -292,7 +292,8 @@ static snd_pcm_uframes_t acp_dma_pointer(struct snd_soc_component *component,
 static int acp_dma_new(struct snd_soc_component *component,
 		       struct snd_soc_pcm_runtime *rtd)
 {
-	struct device *parent = component->dev->parent;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct device *parent = dev->parent;
 
 	snd_pcm_set_managed_buffer_all(rtd->pcm, SNDRV_DMA_TYPE_DEV,
 				       parent, MIN_BUFFER, MAX_BUFFER);
@@ -302,7 +303,7 @@ static int acp_dma_new(struct snd_soc_component *component,
 static int acp_dma_close(struct snd_soc_component *component,
 			 struct snd_pcm_substream *substream)
 {
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_chip_info *chip = dev_get_drvdata(dev->parent);
 	struct acp_stream *stream = substream->runtime->private_data;
 
@@ -337,7 +338,7 @@ int acp_platform_register(struct device *dev)
 		return -ENODEV;
 	}
 
-	status = devm_snd_soc_register_component(dev, &acp_pcm_component,
+	status = devm_snd_soc_component_register(dev, &acp_pcm_component,
 						 chip->dai_driver,
 						 chip->num_dai);
 	if (status) {

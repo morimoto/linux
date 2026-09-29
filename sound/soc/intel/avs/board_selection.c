@@ -671,5 +671,5 @@ int avs_register_all_boards(struct avs_dev *adev)
 
 void avs_unregister_all_boards(struct avs_dev *adev)
 {
-	snd_soc_unregister_component(adev->dev);
+	snd_soc_component_unregister(adev->dev);
 }

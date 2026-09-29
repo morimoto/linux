@@ -183,12 +183,14 @@ static void mca_modify(struct mca_cluster *cl, int regoffset, u32 mask, u32 val)
  */
 static struct mca_cluster *mca_dai_to_cluster(struct snd_soc_dai *dai)
 {
-	struct mca_data *mca = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mca_data *mca = dev_get_drvdata(dev);
 	/*
 	 * FE DAIs are         0 ... nclusters - 1
 	 * BE DAIs are nclusters ... 2*nclusters - 1
 	 */
-	int cluster_no = dai->id % mca->nclusters;
+	int cluster_no = snd_soc_dai_id(dai) % mca->nclusters;
 
 	return &mca->clusters[cluster_no];
 }
@@ -1082,6 +1084,7 @@ static int mca_pcm_new(struct snd_soc_component *component,
 		       struct snd_soc_pcm_runtime *rtd)
 {
 	struct mca_cluster *cl = mca_dai_to_cluster(snd_soc_rtd_to_cpu(rtd, 0));
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int i;
 
 	if (rtd->dai_link->no_pcm)
@@ -1103,7 +1106,7 @@ static int mca_pcm_new(struct snd_soc_component *component,
 			if (chan && PTR_ERR(chan) == -EPROBE_DEFER)
 				return PTR_ERR(chan);
 
-			dev_err(component->dev, "unable to obtain DMA channel (stream %d cluster %d): %pe\n",
+			dev_err(dev, "unable to obtain DMA channel (stream %d cluster %d): %pe\n",
 				i, cl->no, chan);
 
 			if (!chan)
@@ -1292,7 +1295,7 @@ static int apple_mca_probe(struct platform_device *pdev)
 		}
 	}
 
-	ret = snd_soc_register_component(&pdev->dev, &mca_component,
+	ret = snd_soc_component_register(&pdev->dev, &mca_component,
 					 dai_drivers, nclusters * 2);
 	if (ret) {
 		dev_err(&pdev->dev, "unable to register ASoC component: %d\n",
@@ -1311,7 +1314,7 @@ static void apple_mca_remove(struct platform_device *pdev)
 {
 	struct mca_data *mca = platform_get_drvdata(pdev);
 
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_component_unregister(&pdev->dev);
 	apple_mca_release(mca);
 }
 

@@ -164,7 +164,7 @@ static struct hdac_ext_stream *hda_get_hext_stream(struct snd_sof_dev *sdev,
 						   struct snd_soc_dai *cpu_dai,
 						   struct snd_pcm_substream *substream)
 {
-	return snd_soc_dai_get_dma_data(cpu_dai, substream);
+	return snd_soc_dai_stream_dma_data_get(cpu_dai, substream);
 }
 
 static struct hdac_ext_stream *hda_ipc4_get_hext_stream(struct snd_sof_dev *sdev,
@@ -176,7 +176,7 @@ static struct hdac_ext_stream *hda_ipc4_get_hext_stream(struct snd_sof_dev *sdev
 	struct snd_sof_widget *swidget;
 	struct snd_soc_dapm_widget *w;
 
-	w = snd_soc_dai_get_widget(cpu_dai, substream->stream);
+	w = snd_soc_dai_stream_widget_get(cpu_dai, substream->stream);
 	swidget = w->dobj.private;
 	pipe_widget = swidget->spipe->pipe_widget;
 	pipeline = pipe_widget->private;
@@ -184,7 +184,7 @@ static struct hdac_ext_stream *hda_ipc4_get_hext_stream(struct snd_sof_dev *sdev
 	/* mark pipeline so that it can be skipped during FE trigger */
 	pipeline->skip_during_fe_trigger = true;
 
-	return snd_soc_dai_get_dma_data(cpu_dai, substream);
+	return snd_soc_dai_stream_dma_data_get(cpu_dai, substream);
 }
 
 static struct hdac_ext_stream *hda_assign_hext_stream(struct snd_sof_dev *sdev,
@@ -199,7 +199,7 @@ static struct hdac_ext_stream *hda_assign_hext_stream(struct snd_sof_dev *sdev,
 	if (!hext_stream)
 		return NULL;
 
-	snd_soc_dai_set_dma_data(cpu_dai, substream, (void *)hext_stream);
+	snd_soc_dai_stream_dma_data_set(cpu_dai, substream, (void *)hext_stream);
 
 	return hext_stream;
 }
@@ -225,7 +225,7 @@ static void hda_release_hext_stream(struct snd_sof_dev *sdev, struct snd_soc_dai
 		sof_hda->link_dma_active_multi_mask[dir] &= ~BIT(stream_idx);
 	}
 
-	snd_soc_dai_set_dma_data(cpu_dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(cpu_dai, substream, NULL);
 	snd_hdac_ext_stream_release(hext_stream, HDAC_EXT_STREAM_TYPE_LINK);
 }
 
@@ -257,14 +257,15 @@ static unsigned int hda_calc_stream_format(struct snd_sof_dev *sdev,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(codec_dai);
 	unsigned int link_bps;
 	unsigned int format_val;
 	unsigned int bits;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
-		link_bps = codec_dai->driver->playback.sig_bits;
+		link_bps = dai_driver->playback.sig_bits;
 	else
-		link_bps = codec_dai->driver->capture.sig_bits;
+		link_bps = dai_driver->capture.sig_bits;
 
 	bits = snd_hdac_stream_format_bits(params_format(params), SNDRV_PCM_SUBFORMAT_STD,
 					   link_bps);
@@ -281,9 +282,10 @@ static struct hdac_ext_link *hda_get_hlink(struct snd_sof_dev *sdev,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct hdac_bus *bus = sof_to_bus(sdev);
 
-	return snd_hdac_ext_bus_get_hlink_by_name(bus, codec_dai->component->name);
+	return snd_hdac_ext_bus_get_hlink_by_name(bus, snd_soc_component_name(component));
 }
 
 static unsigned int generic_calc_stream_format(struct snd_sof_dev *sdev,
@@ -366,7 +368,7 @@ static int hda_ipc4_pre_trigger(struct snd_sof_dev *sdev, struct snd_soc_dai *cp
 	struct snd_soc_dapm_widget *w;
 	int ret = 0;
 
-	w = snd_soc_dai_get_widget(cpu_dai, substream->stream);
+	w = snd_soc_dai_stream_widget_get(cpu_dai, substream->stream);
 	swidget = w->dobj.private;
 	pipe_widget = swidget->spipe->pipe_widget;
 	pipeline = pipe_widget->private;
@@ -402,7 +404,7 @@ static int hda_ipc4_pre_trigger(struct snd_sof_dev *sdev, struct snd_soc_dai *cp
 static int hda_trigger(struct snd_sof_dev *sdev, struct snd_soc_dai *cpu_dai,
 		       struct snd_pcm_substream *substream, int cmd)
 {
-	struct hdac_ext_stream *hext_stream = snd_soc_dai_get_dma_data(cpu_dai, substream);
+	struct hdac_ext_stream *hext_stream = snd_soc_dai_stream_dma_data_get(cpu_dai, substream);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -443,7 +445,7 @@ static int hda_ipc4_post_trigger(struct snd_sof_dev *sdev, struct snd_soc_dai *c
 	struct snd_soc_dapm_widget *w;
 	int ret = 0;
 
-	w = snd_soc_dai_get_widget(cpu_dai, substream->stream);
+	w = snd_soc_dai_stream_widget_get(cpu_dai, substream->stream);
 	swidget = w->dobj.private;
 	pipe_widget = swidget->spipe->pipe_widget;
 	pipeline = pipe_widget->private;
@@ -578,7 +580,7 @@ static const struct hda_dai_widget_dma_ops sdw_ipc4_chain_dma_ops = {
 static int hda_ipc3_post_trigger(struct snd_sof_dev *sdev, struct snd_soc_dai *cpu_dai,
 				 struct snd_pcm_substream *substream, int cmd)
 {
-	struct snd_soc_dapm_widget *w = snd_soc_dai_get_widget(cpu_dai, substream->stream);
+	struct snd_soc_dapm_widget *w = snd_soc_dai_stream_widget_get(cpu_dai, substream->stream);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_SUSPEND:

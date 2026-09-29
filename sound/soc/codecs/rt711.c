@@ -237,13 +237,14 @@ static void rt711_jack_detect_handler(struct work_struct *work)
 {
 	struct rt711_priv *rt711 =
 		container_of(work, struct rt711_priv, jack_detect_work.work);
+	struct snd_soc_card *card = snd_soc_component_to_card(rt711->component);
 	int btn_type = 0, ret;
 	unsigned int jack_status = 0, reg;
 
 	if (!rt711->hs_jack)
 		return;
 
-	if (!snd_soc_card_is_instantiated(rt711->component->card))
+	if (!snd_soc_card_is_instantiated(card))
 		return;
 
 	if (pm_runtime_status_suspended(rt711->slave->dev.parent)) {
@@ -361,6 +362,7 @@ io_error:
 static void rt711_jack_init(struct rt711_priv *rt711)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(rt711->component);
+	struct device *dev = snd_soc_component_to_dev(rt711->component);
 
 	guard(mutex)(&rt711->calibrate_mutex);
 	/* power on */
@@ -427,7 +429,7 @@ static void rt711_jack_init(struct rt711_priv *rt711)
 				RT711_HP_JD_FINAL_RESULT_CTL_JD12);
 			break;
 		default:
-			dev_warn(rt711->component->dev, "%s: Wrong JD source\n", __func__);
+			dev_warn(dev, "%s: Wrong JD source\n", __func__);
 			break;
 		}
 
@@ -455,7 +457,8 @@ static void rt711_jack_init(struct rt711_priv *rt711)
 static int rt711_set_jack_detect(struct snd_soc_component *component,
 	struct snd_soc_jack *hs_jack, void *data)
 {
-	struct rt711_priv *rt711 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt711_priv *rt711 = dev_get_drvdata(dev);
 	int ret;
 
 	rt711->hs_jack = hs_jack;
@@ -464,21 +467,21 @@ static int rt711_set_jack_detect(struct snd_soc_component *component,
 	if (!rt711->first_hw_init)
 		return 0;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0) {
 		if (ret != -EACCES) {
-			dev_err(component->dev, "%s: failed to resume %d\n", __func__, ret);
+			dev_err(dev, "%s: failed to resume %d\n", __func__, ret);
 			return ret;
 		}
 
 		/* pm_runtime not enabled yet */
-		dev_dbg(component->dev,	"%s: skipping jack init for now\n", __func__);
+		dev_dbg(dev,	"%s: skipping jack init for now\n", __func__);
 		return 0;
 	}
 
 	rt711_jack_init(rt711);
 
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return 0;
 }
@@ -505,7 +508,8 @@ static int rt711_set_amp_gain_put(struct snd_kcontrol *kcontrol,
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
-	struct rt711_priv *rt711 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt711_priv *rt711 = dev_get_drvdata(dev);
 	unsigned int addr_h, addr_l, val_h, val_ll, val_lr;
 	unsigned int read_ll, read_rl;
 	int i;
@@ -605,7 +609,8 @@ static int rt711_set_amp_gain_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt711_priv *rt711 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt711_priv *rt711 = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	unsigned int addr_h, addr_l, val_h;
@@ -679,7 +684,8 @@ static int rt711_mux_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
-	struct rt711_priv *rt711 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt711_priv *rt711 = dev_get_drvdata(dev);
 	unsigned int reg, val = 0, nid;
 	int ret;
 
@@ -694,8 +700,7 @@ static int rt711_mux_get(struct snd_kcontrol *kcontrol,
 	reg = RT711_VERB_SET_CONNECT_SEL | nid;
 	ret = regmap_read(rt711->regmap, reg, &val);
 	if (ret < 0) {
-		dev_err(component->dev, "%s: sdw read failed: %d\n",
-			__func__, ret);
+		dev_err(dev, "%s: sdw read failed: %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -709,7 +714,8 @@ static int rt711_mux_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_soc_dapm_kcontrol_to_component(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
-	struct rt711_priv *rt711 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt711_priv *rt711 = dev_get_drvdata(dev);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int *item = ucontrol->value.enumerated.item;
 	unsigned int val, val2 = 0, change, reg, nid;
@@ -731,8 +737,7 @@ static int rt711_mux_put(struct snd_kcontrol *kcontrol,
 	reg = RT711_VERB_SET_CONNECT_SEL | nid;
 	ret = regmap_read(rt711->regmap, reg, &val2);
 	if (ret < 0) {
-		dev_err(component->dev, "%s: sdw read failed: %d\n",
-			__func__, ret);
+		dev_err(dev, "%s: sdw read failed: %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -776,9 +781,9 @@ static const struct snd_kcontrol_new rt711_adc23_mux =
 static int rt711_dac_surround_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt711_priv *rt711 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt711_priv *rt711 = dev_get_drvdata(dev);
 	unsigned int val_h = (1 << RT711_DIR_OUT_SFT) | (0x3 << 4);
 	unsigned int val_l;
 
@@ -807,9 +812,9 @@ static int rt711_dac_surround_event(struct snd_soc_dapm_widget *w,
 static int rt711_adc_09_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt711_priv *rt711 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt711_priv *rt711 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -827,9 +832,9 @@ static int rt711_adc_09_event(struct snd_soc_dapm_widget *w,
 static int rt711_adc_08_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt711_priv *rt711 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt711_priv *rt711 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -894,7 +899,8 @@ static int rt711_set_bias_level(struct snd_soc_component *component,
 				enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt711_priv *rt711 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt711_priv *rt711 = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_PREPARE:
@@ -930,7 +936,8 @@ static int rt711_parse_dt(struct rt711_priv *rt711, struct device *dev)
 
 static int rt711_probe(struct snd_soc_component *component)
 {
-	struct rt711_priv *rt711 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt711_priv *rt711 = dev_get_drvdata(dev);
 	int ret;
 
 	rt711_parse_dt(rt711, &rt711->slave->dev);
@@ -939,7 +946,7 @@ static int rt711_probe(struct snd_soc_component *component)
 	if (!rt711->first_hw_init)
 		return 0;
 
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -962,7 +969,7 @@ static const struct snd_soc_component_driver soc_codec_dev_rt711 = {
 static int rt711_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 				int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -970,23 +977,25 @@ static int rt711_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 static void rt711_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static int rt711_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt711_priv *rt711 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt711_priv *rt711 = dev_get_drvdata(dev);
 	struct sdw_stream_config stream_config = {0};
 	struct sdw_port_config port_config = {0};
 	struct sdw_stream_runtime *sdw_stream;
+	int dai_id = snd_soc_dai_id(dai);
 	int retval;
 	unsigned int val = 0;
 
-	dev_dbg(dai->dev, "%s %s", __func__, dai->name);
-	sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	dev_dbg(dev, "%s %s", __func__, snd_soc_dai_name(dai));
+	sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!sdw_stream)
 		return -EINVAL;
@@ -1000,9 +1009,9 @@ static int rt711_pcm_hw_params(struct snd_pcm_substream *substream,
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		port_config.num = 3;
 	} else {
-		if (dai->id == RT711_AIF1)
+		if (dai_id == RT711_AIF1)
 			port_config.num = 4;
-		else if (dai->id == RT711_AIF2)
+		else if (dai_id == RT711_AIF2)
 			port_config.num = 2;
 		else
 			return -EINVAL;
@@ -1011,7 +1020,7 @@ static int rt711_pcm_hw_params(struct snd_pcm_substream *substream,
 	retval = sdw_stream_add_slave(rt711->slave, &stream_config,
 					&port_config, 1, sdw_stream);
 	if (retval) {
-		dev_err(dai->dev, "%s: Unable to configure port\n", __func__);
+		dev_err(dev, "%s: Unable to configure port\n", __func__);
 		return retval;
 	}
 
@@ -1019,7 +1028,7 @@ static int rt711_pcm_hw_params(struct snd_pcm_substream *substream,
 		/* bit 3:0 Number of Channel */
 		val |= (params_channels(params) - 1);
 	} else {
-		dev_err(component->dev, "%s: Unsupported channels %d\n",
+		dev_err(dev, "%s: Unsupported channels %d\n",
 			__func__, params_channels(params));
 		return -EINVAL;
 	}
@@ -1055,10 +1064,11 @@ static int rt711_pcm_hw_params(struct snd_pcm_substream *substream,
 static int rt711_pcm_hw_free(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt711_priv *rt711 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt711_priv *rt711 = dev_get_drvdata(dev);
 	struct sdw_stream_runtime *sdw_stream =
-		snd_soc_dai_get_dma_data(dai, substream);
+		snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!rt711->slave)
 		return -EINVAL;
@@ -1200,7 +1210,7 @@ int rt711_init(struct device *dev, struct regmap *sdw_regmap,
 	/* JD source uses JD2 in default */
 	rt711->jd_src = RT711_JD2;
 
-	ret =  devm_snd_soc_register_component(dev,
+	ret =  devm_snd_soc_component_register(dev,
 				&soc_codec_dev_rt711,
 				rt711_dai,
 				ARRAY_SIZE(rt711_dai));

@@ -530,7 +530,8 @@ static int mt_aif_out_event(struct snd_soc_dapm_widget *w,
 			    int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6357_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6357_priv *priv = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -551,7 +552,8 @@ static int mt_adc_supply_event(struct snd_soc_dapm_widget *w,
 			       int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6357_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6357_priv *priv = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -596,7 +598,8 @@ static int mt_mic_type_event(struct snd_soc_dapm_widget *w,
 			     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6357_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6357_priv *priv = dev_get_drvdata(dev);
 	unsigned int mic_type = snd_soc_dapm_kcontrol_get_value(w->kcontrols[0]);
 
 	switch (event) {
@@ -644,7 +647,8 @@ static int mt_pga_left_event(struct snd_soc_dapm_widget *w,
 			     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6357_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6357_priv *priv = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -697,7 +701,8 @@ static int mt_pga_right_event(struct snd_soc_dapm_widget *w,
 			      int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6357_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6357_priv *priv = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -744,7 +749,8 @@ static int adc_enable_event(struct snd_soc_dapm_widget *w,
 			    int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6357_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6357_priv *priv = dev_get_drvdata(dev);
 	int lgain, rgain;
 
 	switch (event) {
@@ -909,7 +915,8 @@ static int mt_audio_in_event(struct snd_soc_dapm_widget *w,
 			     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6357_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6357_priv *priv = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -1008,7 +1015,8 @@ static int lo_mux_event(struct snd_soc_dapm_widget *w,
 			int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6357_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6357_priv *priv = dev_get_drvdata(dev);
 	int lgain, rgain;
 
 	/* Get current gain value */
@@ -1075,7 +1083,8 @@ static int hs_mux_event(struct snd_soc_dapm_widget *w,
 			int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6357_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6357_priv *priv = dev_get_drvdata(dev);
 	int gain; /* HS register has only one gain slot */
 
 	/* Get current gain value */
@@ -1133,7 +1142,8 @@ static int hp_main_mux_event(struct snd_soc_dapm_widget *w,
 			     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6357_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6357_priv *priv = dev_get_drvdata(dev);
 	int lgain, rgain;
 
 	/* Get current gain value */
@@ -1344,7 +1354,8 @@ static int right_dac_event(struct snd_soc_dapm_widget *w,
 			   int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6357_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6357_priv *priv = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -1383,7 +1394,8 @@ static int left_dac_event(struct snd_soc_dapm_widget *w,
 			  int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6357_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6357_priv *priv = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -1708,9 +1720,10 @@ static struct snd_soc_dai_driver mtk_6357_dai_codecs[] = {
 
 static int mt6357_codec_probe(struct snd_soc_component *codec)
 {
-	struct mt6357_priv *priv = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct mt6357_priv *priv = dev_get_drvdata(dev);
 
-	snd_soc_component_init_regmap(codec, priv->regmap);
+	snd_soc_component_regmap_init(codec, priv->regmap);
 
 	/* Enable audio part */
 	regmap_update_bits(priv->regmap, MT6357_DCXO_CW14,
@@ -1827,7 +1840,7 @@ static int mt6357_platform_driver_probe(struct platform_device *pdev)
 	if (!pdev->dev.dma_mask)
 		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 					       &mt6357_soc_component_driver,
 					       mtk_6357_dai_codecs,
 					       ARRAY_SIZE(mtk_6357_dai_codecs));

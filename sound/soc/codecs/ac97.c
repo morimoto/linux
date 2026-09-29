@@ -33,8 +33,9 @@ static const struct snd_soc_dapm_route ac97_routes[] = {
 static int ac97_prepare(struct snd_pcm_substream *substream,
 			struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct snd_ac97 *ac97 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_ac97 *ac97 = dev_get_drvdata(dev);
 
 	int reg = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) ?
 		  AC97_PCM_FRONT_DAC_RATE : AC97_PCM_LR_ADC_RATE;
@@ -64,13 +65,15 @@ static struct snd_soc_dai_driver ac97_dai = {
 
 static int ac97_soc_probe(struct snd_soc_component *component)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_ac97 *ac97;
 	struct snd_ac97_bus *ac97_bus;
 	struct snd_ac97_template ac97_template;
 	int ret;
 
 	/* add codec as bus device for standard ac97 */
-	ret = snd_ac97_bus(component->card->snd_card, 0, soc_ac97_ops,
+	ret = snd_ac97_bus(snd_soc_card_to_snd_card(card), 0, soc_ac97_ops,
 			   NULL, &ac97_bus);
 	if (ret < 0)
 		return ret;
@@ -80,7 +83,7 @@ static int ac97_soc_probe(struct snd_soc_component *component)
 	if (ret < 0)
 		return ret;
 
-	snd_soc_component_set_drvdata(component, ac97);
+	dev_set_drvdata(dev, ac97);
 
 	return 0;
 }
@@ -88,7 +91,8 @@ static int ac97_soc_probe(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int ac97_soc_suspend(struct snd_soc_component *component)
 {
-	struct snd_ac97 *ac97 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_ac97 *ac97 = dev_get_drvdata(dev);
 
 	snd_ac97_suspend(ac97);
 
@@ -98,7 +102,8 @@ static int ac97_soc_suspend(struct snd_soc_component *component)
 static int ac97_soc_resume(struct snd_soc_component *component)
 {
 
-	struct snd_ac97 *ac97 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_ac97 *ac97 = dev_get_drvdata(dev);
 
 	snd_ac97_resume(ac97);
 
@@ -124,7 +129,7 @@ static const struct snd_soc_component_driver soc_component_dev_ac97 = {
 
 static int ac97_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&soc_component_dev_ac97, &ac97_dai, 1);
 }
 

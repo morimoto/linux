@@ -310,7 +310,8 @@ static int coeff_ram_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct tscs454 *tscs454 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tscs454 *tscs454 = dev_get_drvdata(dev);
 	struct coeff_ram_ctl *ctl =
 		(struct coeff_ram_ctl *)kcontrol->private_value;
 	struct soc_bytes_ext *params = &ctl->bytes_ext;
@@ -343,7 +344,8 @@ static int write_coeff_ram(struct snd_soc_component *component, u8 *coeff_ram,
 		unsigned int r_stat, unsigned int r_addr, unsigned int r_wr,
 		unsigned int coeff_addr, unsigned int coeff_cnt)
 {
-	struct tscs454 *tscs454 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tscs454 *tscs454 = dev_get_drvdata(dev);
 	unsigned int val;
 	int cnt;
 	int trys;
@@ -359,15 +361,13 @@ static int write_coeff_ram(struct snd_soc_component *component, u8 *coeff_ram,
 
 		if (trys == DACCRSTAT_MAX_TRYS) {
 			ret = -EIO;
-			dev_err(component->dev,
-				"Coefficient write error (%d)\n", ret);
+			dev_err(dev, "Coefficient write error (%d)\n", ret);
 			return ret;
 		}
 
 		ret = regmap_write(tscs454->regmap, r_addr, coeff_addr);
 		if (ret < 0) {
-			dev_err(component->dev,
-				"Failed to write dac ram address (%d)\n", ret);
+			dev_err(dev, "Failed to write dac ram address (%d)\n", ret);
 			return ret;
 		}
 
@@ -375,8 +375,7 @@ static int write_coeff_ram(struct snd_soc_component *component, u8 *coeff_ram,
 			&coeff_ram[coeff_addr * COEFF_SIZE],
 			COEFF_SIZE);
 		if (ret < 0) {
-			dev_err(component->dev,
-				"Failed to write dac ram (%d)\n", ret);
+			dev_err(dev, "Failed to write dac ram (%d)\n", ret);
 			return ret;
 		}
 	}
@@ -388,7 +387,8 @@ static int coeff_ram_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct tscs454 *tscs454 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tscs454 *tscs454 = dev_get_drvdata(dev);
 	struct coeff_ram_ctl *ctl =
 		(struct coeff_ram_ctl *)kcontrol->private_value;
 	struct soc_bytes_ext *params = &ctl->bytes_ext;
@@ -443,7 +443,7 @@ static int coeff_ram_put(struct snd_kcontrol *kcontrol,
 			r_stat, r_addr, r_wr,
 			ctl->addr, coeff_cnt);
 		if (ret < 0) {
-			dev_err(component->dev,
+			dev_err(dev,
 				"Failed to flush coeff ram cache (%d)\n", ret);
 			return ret;
 		}
@@ -610,7 +610,8 @@ enum {
 
 static int set_sysclk(struct snd_soc_component *component)
 {
-	struct tscs454 *tscs454 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tscs454 *tscs454 = dev_get_drvdata(dev);
 	struct pll_ctl const *pll_ctl;
 	unsigned long freq;
 	int i;
@@ -623,8 +624,7 @@ static int set_sysclk(struct snd_soc_component *component)
 	pll_ctl = get_pll_ctl(freq);
 	if (!pll_ctl) {
 		ret = -EINVAL;
-		dev_err(component->dev,
-				"Invalid PLL input %lu (%d)\n", freq, ret);
+		dev_err(dev, "Invalid PLL input %lu (%d)\n", freq, ret);
 		return ret;
 	}
 
@@ -633,9 +633,7 @@ static int set_sysclk(struct snd_soc_component *component)
 				pll_ctl->settings[i].addr,
 				pll_ctl->settings[i].val);
 		if (ret < 0) {
-			dev_err(component->dev,
-					"Failed to set pll setting (%d)\n",
-					ret);
+			dev_err(dev, "Failed to set pll setting (%d)\n", ret);
 			return ret;
 		}
 	}
@@ -658,21 +656,19 @@ static inline void free_pll(struct pll *pll)
 static int pll_connected(struct snd_soc_dapm_widget *source,
 		struct snd_soc_dapm_widget *sink)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(source->dapm);
-	struct tscs454 *tscs454 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tscs454 *tscs454 = dev_get_drvdata(dev);
 	int users;
 
 	if (strstr(source->name, "PLL 1")) {
 		scoped_guard(mutex, &tscs454->pll1.lock)
 			users = tscs454->pll1.users;
-		dev_dbg(component->dev, "%s(): PLL 1 users = %d\n", __func__,
-				users);
+		dev_dbg(dev, "%s(): PLL 1 users = %d\n", __func__, users);
 	} else {
 		scoped_guard(mutex, &tscs454->pll2.lock)
 			users = tscs454->pll2.users;
-		dev_dbg(component->dev, "%s(): PLL 2 users = %d\n", __func__,
-				users);
+		dev_dbg(dev, "%s(): PLL 2 users = %d\n", __func__, users);
 	}
 
 	return users;
@@ -685,9 +681,9 @@ static int pll_connected(struct snd_soc_dapm_widget *source,
 static int pll_power_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct tscs454 *tscs454 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tscs454 *tscs454 = dev_get_drvdata(dev);
 	bool enable;
 	bool pll1;
 	unsigned int msk;
@@ -718,7 +714,7 @@ static int pll_power_event(struct snd_soc_dapm_widget *w,
 
 	ret = snd_soc_component_update_bits(component, R_PLLCTL, msk, val);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to %s PLL %d  (%d)\n",
+		dev_err(dev, "Failed to %s PLL %d  (%d)\n",
 			str_enable_disable(enable), pll1 ? 1 : 2, ret);
 		return ret;
 	}
@@ -727,8 +723,7 @@ static int pll_power_event(struct snd_soc_dapm_widget *w,
 		msleep(20); // Wait for lock
 		ret = coeff_ram_sync(component, tscs454);
 		if (ret < 0) {
-			dev_err(component->dev,
-					"Failed to sync coeff ram (%d)\n", ret);
+			dev_err(dev, "Failed to sync coeff ram (%d)\n", ret);
 			return ret;
 		}
 	}
@@ -739,6 +734,7 @@ static int pll_power_event(struct snd_soc_dapm_widget *w,
 static inline int aif_set_provider(struct snd_soc_component *component,
 		unsigned int aif_id, bool provider)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int reg;
 	unsigned int mask;
 	unsigned int val;
@@ -756,7 +752,7 @@ static inline int aif_set_provider(struct snd_soc_component *component,
 		break;
 	default:
 		ret = -ENODEV;
-		dev_err(component->dev, "Unknown DAI %d (%d)\n", aif_id, ret);
+		dev_err(dev, "Unknown DAI %d (%d)\n", aif_id, ret);
 		return ret;
 	}
 	mask = FM_I2SPCTL_PORTMS;
@@ -764,7 +760,7 @@ static inline int aif_set_provider(struct snd_soc_component *component,
 
 	ret = snd_soc_component_update_bits(component, reg, mask, val);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to set DAI %d to %s (%d)\n",
+		dev_err(dev, "Failed to set DAI %d to %s (%d)\n",
 			aif_id, provider ? "provider" : "consumer", ret);
 		return ret;
 	}
@@ -787,27 +783,28 @@ int aif_prepare(struct snd_soc_component *component, struct aif *aif)
 static inline int aif_free(struct snd_soc_component *component,
 		struct aif *aif, bool playback)
 {
-	struct tscs454 *tscs454 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tscs454 *tscs454 = dev_get_drvdata(dev);
 
 	guard(mutex)(&tscs454->aifs_status_lock);
 
-	dev_dbg(component->dev, "%s(): aif %d\n", __func__, aif->id);
+	dev_dbg(dev, "%s(): aif %d\n", __func__, aif->id);
 
 	set_aif_status_inactive(&tscs454->aifs_status, aif->id, playback);
 
-	dev_dbg(component->dev, "Set aif %d inactive. Streams status is 0x%x\n",
+	dev_dbg(dev, "Set aif %d inactive. Streams status is 0x%x\n",
 		aif->id, tscs454->aifs_status.streams);
 
 	if (!aif_active(&tscs454->aifs_status, aif->id)) {
 		/* Do config in slave mode */
 		aif_set_provider(component, aif->id, false);
-		dev_dbg(component->dev, "Freeing pll %d from aif %d\n",
+		dev_dbg(dev, "Freeing pll %d from aif %d\n",
 				aif->pll->id, aif->id);
 		free_pll(aif->pll);
 	}
 
 	if (!aifs_active(&tscs454->aifs_status)) {
-		dev_dbg(component->dev, "Freeing pll %d from ir\n",
+		dev_dbg(dev, "Freeing pll %d from ir\n",
 				tscs454->internal_rate.pll->id);
 		free_pll(tscs454->internal_rate.pll);
 	}
@@ -2611,17 +2608,19 @@ static struct snd_soc_dapm_route const tscs454_intercon[] = {
 static int tscs454_set_sysclk(struct snd_soc_dai *dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tscs454 *tscs454 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tscs454 *tscs454 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int val;
 	int bclk_dai;
 
-	dev_dbg(component->dev, "%s(): freq = %u\n", __func__, freq);
+	dev_dbg(dev, "%s(): freq = %u\n", __func__, freq);
 
 	val = snd_soc_component_read(component, R_PLLCTL);
 
 	bclk_dai = (val & FM_PLLCTL_BCLKSEL) >> FB_PLLCTL_BCLKSEL;
-	if (bclk_dai != dai->id)
+	if (bclk_dai != dai_id)
 		return 0;
 
 	tscs454->bclk_freq = freq;
@@ -2633,14 +2632,15 @@ static int tscs454_set_bclk_ratio(struct snd_soc_dai *dai,
 {
 	unsigned int mask;
 	int ret;
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int val;
 	int shift;
 
-	dev_dbg(component->dev, "set_bclk_ratio() id = %d ratio = %u\n",
-			dai->id, ratio);
+	dev_dbg(dev, "set_bclk_ratio() id = %d ratio = %u\n", dai_id, ratio);
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case TSCS454_DAI1_ID:
 		mask = FM_I2SCMC_BCMP1;
 		shift = FB_I2SCMC_BCMP1;
@@ -2655,7 +2655,7 @@ static int tscs454_set_bclk_ratio(struct snd_soc_dai *dai,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "Unknown audio interface (%d)\n", ret);
+		dev_err(dev, "Unknown audio interface (%d)\n", ret);
 		return ret;
 	}
 
@@ -2671,15 +2671,14 @@ static int tscs454_set_bclk_ratio(struct snd_soc_dai *dai,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "Unsupported bclk ratio (%d)\n", ret);
+		dev_err(dev, "Unsupported bclk ratio (%d)\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_component_update_bits(component,
 			R_I2SCMC, mask, val << shift);
 	if (ret < 0) {
-		dev_err(component->dev,
-				"Failed to set DAI BCLK ratio (%d)\n", ret);
+		dev_err(dev, "Failed to set DAI BCLK ratio (%d)\n", ret);
 		return ret;
 	}
 
@@ -2689,6 +2688,7 @@ static int tscs454_set_bclk_ratio(struct snd_soc_dai *dai,
 static inline int set_aif_provider_from_fmt(struct snd_soc_component *component,
 		struct aif *aif, unsigned int fmt)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -2700,7 +2700,7 @@ static inline int set_aif_provider_from_fmt(struct snd_soc_component *component,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "Unsupported format (%d)\n", ret);
+		dev_err(dev, "Unsupported format (%d)\n", ret);
 		return ret;
 	}
 
@@ -2710,6 +2710,7 @@ static inline int set_aif_provider_from_fmt(struct snd_soc_component *component,
 static inline int set_aif_tdm_delay(struct snd_soc_component *component,
 		unsigned int dai_id, bool delay)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int reg;
 	int ret;
 
@@ -2725,15 +2726,13 @@ static inline int set_aif_tdm_delay(struct snd_soc_component *component,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev,
-				"DAI %d unknown (%d)\n", dai_id + 1, ret);
+		dev_err(dev, "DAI %d unknown (%d)\n", dai_id + 1, ret);
 		return ret;
 	}
 	ret = snd_soc_component_update_bits(component,
 			reg, FM_TDMCTL0_BDELAY, delay);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to setup tdm format (%d)\n",
-				ret);
+		dev_err(dev, "Failed to setup tdm format (%d)\n", ret);
 		return ret;
 	}
 
@@ -2743,6 +2742,7 @@ static inline int set_aif_tdm_delay(struct snd_soc_component *component,
 static inline int set_aif_format_from_fmt(struct snd_soc_component *component,
 		unsigned int dai_id, unsigned int fmt)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int reg;
 	unsigned int val;
 	int ret;
@@ -2759,8 +2759,7 @@ static inline int set_aif_format_from_fmt(struct snd_soc_component *component,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev,
-				"DAI %d unknown (%d)\n", dai_id + 1, ret);
+		dev_err(dev, "DAI %d unknown (%d)\n", dai_id + 1, ret);
 		return ret;
 	}
 
@@ -2788,15 +2787,14 @@ static inline int set_aif_format_from_fmt(struct snd_soc_component *component,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "Format unsupported (%d)\n", ret);
+		dev_err(dev, "Format unsupported (%d)\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_component_update_bits(component,
 			reg, FM_I2SPCTL_FORMAT, val);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to set DAI %d format (%d)\n",
-				dai_id + 1, ret);
+		dev_err(dev, "Failed to set DAI %d format (%d)\n", dai_id + 1, ret);
 		return ret;
 	}
 
@@ -2807,6 +2805,7 @@ static inline int
 set_aif_clock_format_from_fmt(struct snd_soc_component *component,
 		unsigned int dai_id, unsigned int fmt)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int reg;
 	unsigned int val;
 	int ret;
@@ -2823,8 +2822,7 @@ set_aif_clock_format_from_fmt(struct snd_soc_component *component,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev,
-				"DAI %d unknown (%d)\n", dai_id + 1, ret);
+		dev_err(dev, "DAI %d unknown (%d)\n", dai_id + 1, ret);
 		return ret;
 	}
 
@@ -2843,16 +2841,14 @@ set_aif_clock_format_from_fmt(struct snd_soc_component *component,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "Format unknown (%d)\n", ret);
+		dev_err(dev, "Format unknown (%d)\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_component_update_bits(component, reg,
 			FM_I2SPCTL_BCLKP | FM_I2SPCTL_LRCLKP, val);
 	if (ret < 0) {
-		dev_err(component->dev,
-				"Failed to set clock polarity for DAI%d (%d)\n",
-				dai_id + 1, ret);
+		dev_err(dev, "Failed to set clock polarity for DAI%d (%d)\n", dai_id + 1, ret);
 		return ret;
 	}
 
@@ -2861,20 +2857,22 @@ set_aif_clock_format_from_fmt(struct snd_soc_component *component,
 
 static int tscs454_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tscs454 *tscs454 = snd_soc_component_get_drvdata(component);
-	struct aif *aif = &tscs454->aifs[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tscs454 *tscs454 = dev_get_drvdata(dev);
+	struct aif *aif = &tscs454->aifs[dai_id];
 	int ret;
 
 	ret = set_aif_provider_from_fmt(component, aif, fmt);
 	if (ret < 0)
 		return ret;
 
-	ret = set_aif_format_from_fmt(component, dai->id, fmt);
+	ret = set_aif_format_from_fmt(component, dai_id, fmt);
 	if (ret < 0)
 		return ret;
 
-	ret = set_aif_clock_format_from_fmt(component, dai->id, fmt);
+	ret = set_aif_clock_format_from_fmt(component, dai_id, fmt);
 	if (ret < 0)
 		return ret;
 
@@ -2885,7 +2883,8 @@ static int tscs454_dai1_set_tdm_slot(struct snd_soc_dai *dai,
 		unsigned int tx_mask, unsigned int rx_mask, int slots,
 		int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int val;
 	int ret;
 
@@ -2894,7 +2893,7 @@ static int tscs454_dai1_set_tdm_slot(struct snd_soc_dai *dai,
 
 	if (tx_mask >= (1 << slots) || rx_mask >= (1 << slots)) {
 		ret = -EINVAL;
-		dev_err(component->dev, "Invalid TDM slot mask (%d)\n", ret);
+		dev_err(dev, "Invalid TDM slot mask (%d)\n", ret);
 		return ret;
 	}
 
@@ -2910,7 +2909,7 @@ static int tscs454_dai1_set_tdm_slot(struct snd_soc_dai *dai,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "Invalid number of slots (%d)\n", ret);
+		dev_err(dev, "Invalid number of slots (%d)\n", ret);
 		return ret;
 	}
 
@@ -2926,12 +2925,12 @@ static int tscs454_dai1_set_tdm_slot(struct snd_soc_dai *dai,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "Invalid TDM slot width (%d)\n", ret);
+		dev_err(dev, "Invalid TDM slot width (%d)\n", ret);
 		return ret;
 	}
 	ret = snd_soc_component_write(component, R_TDMCTL1, val);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to set slots (%d)\n", ret);
+		dev_err(dev, "Failed to set slots (%d)\n", ret);
 		return ret;
 	}
 
@@ -2942,7 +2941,9 @@ static int tscs454_dai23_set_tdm_slot(struct snd_soc_dai *dai,
 		unsigned int tx_mask, unsigned int rx_mask, int slots,
 		int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int reg;
 	unsigned int val;
 	int ret;
@@ -2952,11 +2953,11 @@ static int tscs454_dai23_set_tdm_slot(struct snd_soc_dai *dai,
 
 	if (tx_mask >= (1 << slots) || rx_mask >= (1 << slots)) {
 		ret = -EINVAL;
-		dev_err(component->dev, "Invalid TDM slot mask (%d)\n", ret);
+		dev_err(dev, "Invalid TDM slot mask (%d)\n", ret);
 		return ret;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case TSCS454_DAI2_ID:
 		reg = R_PCMP2CTL1;
 		break;
@@ -2965,8 +2966,7 @@ static int tscs454_dai23_set_tdm_slot(struct snd_soc_dai *dai,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "Unrecognized interface %d (%d)\n",
-				dai->id, ret);
+		dev_err(dev, "Unrecognized interface %d (%d)\n", dai_id, ret);
 		return ret;
 	}
 
@@ -2979,7 +2979,7 @@ static int tscs454_dai23_set_tdm_slot(struct snd_soc_dai *dai,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "Invalid number of slots (%d)\n", ret);
+		dev_err(dev, "Invalid number of slots (%d)\n", ret);
 		return ret;
 	}
 
@@ -2995,12 +2995,12 @@ static int tscs454_dai23_set_tdm_slot(struct snd_soc_dai *dai,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "Invalid TDM slot width (%d)\n", ret);
+		dev_err(dev, "Invalid TDM slot width (%d)\n", ret);
 		return ret;
 	}
 	ret = snd_soc_component_write(component, reg, val);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to set slots (%d)\n", ret);
+		dev_err(dev, "Failed to set slots (%d)\n", ret);
 		return ret;
 	}
 
@@ -3011,6 +3011,7 @@ static int set_aif_fs(struct snd_soc_component *component,
 		unsigned int id,
 		unsigned int rate)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int reg;
 	unsigned int br;
 	unsigned int bm;
@@ -3059,7 +3060,7 @@ static int set_aif_fs(struct snd_soc_component *component,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "Unsupported sample rate (%d)\n", ret);
+		dev_err(dev, "Unsupported sample rate (%d)\n", ret);
 		return ret;
 	}
 
@@ -3075,15 +3076,14 @@ static int set_aif_fs(struct snd_soc_component *component,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "DAI ID not recognized (%d)\n", ret);
+		dev_err(dev, "DAI ID not recognized (%d)\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_component_update_bits(component, reg,
 			FM_I2SMRATE_I2SMBR | FM_I2SMRATE_I2SMBM, br|bm);
 	if (ret < 0) {
-		dev_err(component->dev,
-				"Failed to update register (%d)\n", ret);
+		dev_err(dev, "Failed to update register (%d)\n", ret);
 		return ret;
 	}
 
@@ -3094,6 +3094,7 @@ static int set_aif_sample_format(struct snd_soc_component *component,
 		snd_pcm_format_t format,
 		int aif_id)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int reg;
 	unsigned int width;
 	int ret;
@@ -3113,7 +3114,7 @@ static int set_aif_sample_format(struct snd_soc_component *component,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "Unsupported format width (%d)\n", ret);
+		dev_err(dev, "Unsupported format width (%d)\n", ret);
 		return ret;
 	}
 
@@ -3129,15 +3130,14 @@ static int set_aif_sample_format(struct snd_soc_component *component,
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "AIF ID not recognized (%d)\n", ret);
+		dev_err(dev, "AIF ID not recognized (%d)\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_component_update_bits(component,
 			reg, FM_I2SPCTL_WL, width);
 	if (ret < 0) {
-		dev_err(component->dev,
-				"Failed to set sample width (%d)\n", ret);
+		dev_err(dev, "Failed to set sample width (%d)\n", ret);
 		return ret;
 	}
 
@@ -3148,17 +3148,18 @@ static int tscs454_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params,
 		struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tscs454 *tscs454 = snd_soc_component_get_drvdata(component);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tscs454 *tscs454 = dev_get_drvdata(dev);
 	unsigned int fs = params_rate(params);
-	struct aif *aif = &tscs454->aifs[dai->id];
+	struct aif *aif = &tscs454->aifs[dai_id];
 	unsigned int val;
 	int ret;
 
 	guard(mutex)(&tscs454->aifs_status_lock);
 
-	dev_dbg(component->dev, "%s(): aif %d fs = %u\n", __func__,
-			aif->id, fs);
+	dev_dbg(dev, "%s(): aif %d fs = %u\n", __func__, aif->id, fs);
 
 	if (!aif_active(&tscs454->aifs_status, aif->id)) {
 		if (PLL_44_1K_RATE % fs)
@@ -3166,8 +3167,7 @@ static int tscs454_hw_params(struct snd_pcm_substream *substream,
 		else
 			aif->pll = &tscs454->pll2;
 
-		dev_dbg(component->dev, "Reserving pll %d for aif %d\n",
-				aif->pll->id, aif->id);
+		dev_dbg(dev, "Reserving pll %d for aif %d\n", aif->pll->id, aif->id);
 
 		reserve_pll(aif->pll);
 	}
@@ -3179,7 +3179,7 @@ static int tscs454_hw_params(struct snd_pcm_substream *substream,
 		else
 			tscs454->internal_rate.pll = &tscs454->pll2;
 
-		dev_dbg(component->dev, "Reserving pll %d for ir\n",
+		dev_dbg(dev, "Reserving pll %d for ir\n",
 				tscs454->internal_rate.pll->id);
 
 		reserve_pll(tscs454->internal_rate.pll);
@@ -3187,21 +3187,20 @@ static int tscs454_hw_params(struct snd_pcm_substream *substream,
 
 	ret = set_aif_fs(component, aif->id, fs);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to set aif fs (%d)\n", ret);
+		dev_err(dev, "Failed to set aif fs (%d)\n", ret);
 		return ret;
 	}
 
 	ret = set_aif_sample_format(component, params_format(params), aif->id);
 	if (ret < 0) {
-		dev_err(component->dev,
-				"Failed to set aif sample format (%d)\n", ret);
+		dev_err(dev, "Failed to set aif sample format (%d)\n", ret);
 		return ret;
 	}
 
 	set_aif_status_active(&tscs454->aifs_status, aif->id,
 			substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 
-	dev_dbg(component->dev, "Set aif %d active. Streams status is 0x%x\n",
+	dev_dbg(dev, "Set aif %d active. Streams status is 0x%x\n",
 		aif->id, tscs454->aifs_status.streams);
 
 	return 0;
@@ -3210,9 +3209,11 @@ static int tscs454_hw_params(struct snd_pcm_substream *substream,
 static int tscs454_hw_free(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tscs454 *tscs454 = snd_soc_component_get_drvdata(component);
-	struct aif *aif = &tscs454->aifs[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tscs454 *tscs454 = dev_get_drvdata(dev);
+	struct aif *aif = &tscs454->aifs[dai_id];
 
 	return aif_free(component, aif,
 			substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
@@ -3222,9 +3223,11 @@ static int tscs454_prepare(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
 	int ret;
-	struct snd_soc_component *component = dai->component;
-	struct tscs454 *tscs454 = snd_soc_component_get_drvdata(component);
-	struct aif *aif = &tscs454->aifs[dai->id];
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tscs454 *tscs454 = dev_get_drvdata(dev);
+	struct aif *aif = &tscs454->aifs[dai_id];
 
 	ret = aif_prepare(component, aif);
 	if (ret < 0)
@@ -3270,7 +3273,8 @@ static struct snd_soc_dai_ops const tscs454_dai23_ops = {
 
 static int tscs454_probe(struct snd_soc_component *component)
 {
-	struct tscs454 *tscs454 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tscs454 *tscs454 = dev_get_drvdata(dev);
 	unsigned int val;
 	int ret = 0;
 
@@ -3289,14 +3293,14 @@ static int tscs454_probe(struct snd_soc_component *component)
 		break;
 	default:
 		ret = -EINVAL;
-		dev_err(component->dev, "Invalid sysclk src id (%d)\n", ret);
+		dev_err(dev, "Invalid sysclk src id (%d)\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_component_update_bits(component, R_PLLCTL,
 			FM_PLLCTL_PLLISEL, val);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to set PLL input (%d)\n", ret);
+		dev_err(dev, "Failed to set PLL input (%d)\n", ret);
 		return ret;
 	}
 
@@ -3435,7 +3439,7 @@ static int tscs454_i2c_probe(struct i2c_client *i2c)
 	/* Sync pg sel reg with cache */
 	regmap_write(tscs454->regmap, R_PAGESEL, 0x00);
 
-	ret = devm_snd_soc_register_component(&i2c->dev, &soc_component_dev_tscs454,
+	ret = devm_snd_soc_component_register(&i2c->dev, &soc_component_dev_tscs454,
 			tscs454_dais, ARRAY_SIZE(tscs454_dais));
 	if (ret) {
 		dev_err(&i2c->dev, "Failed to register component (%d)\n", ret);

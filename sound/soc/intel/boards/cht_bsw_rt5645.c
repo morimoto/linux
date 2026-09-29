@@ -68,7 +68,8 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
 	struct snd_soc_dai *codec_dai;
-	struct cht_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct cht_mc_private *ctx = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	codec_dai = snd_soc_card_get_codec_dai(card, CHT_CODEC_DAI1);
@@ -76,15 +77,14 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 		codec_dai = snd_soc_card_get_codec_dai(card, CHT_CODEC_DAI2);
 
 	if (!codec_dai) {
-		dev_err(card->dev, "Codec dai not found; Unable to set platform clock\n");
+		dev_err(dev, "Codec dai not found; Unable to set platform clock\n");
 		return -EIO;
 	}
 
 	if (SND_SOC_DAPM_EVENT_ON(event)) {
 		ret = clk_prepare_enable(ctx->mclk);
 		if (ret < 0) {
-			dev_err(card->dev,
-				"could not configure MCLK state");
+			dev_err(dev, "could not configure MCLK state");
 			return ret;
 		}
 	} else {
@@ -96,7 +96,7 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 		ret = snd_soc_dai_set_sysclk(codec_dai, RT5645_SCLK_S_RCCLK,
 					48000 * 512, SND_SOC_CLOCK_IN);
 		if (ret < 0) {
-			dev_err(card->dev, "can't set codec sysclk: %d\n", ret);
+			dev_err(dev, "can't set codec sysclk: %d\n", ret);
 			return ret;
 		}
 
@@ -250,8 +250,8 @@ static int cht_codec_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_card *card = runtime->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct cht_mc_private *ctx = snd_soc_card_get_drvdata(runtime->card);
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(runtime, 0)->component;
+	struct cht_mc_private *ctx = snd_soc_card_to_priv(runtime->card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(runtime, 0));
 	int jack_type;
 	int ret;
 
@@ -680,7 +680,7 @@ static int snd_cht_mc_probe(struct platform_device *pdev)
 		return PTR_ERR(drv->mclk);
 	}
 
-	snd_soc_card_set_drvdata(card, drv);
+	snd_soc_card_set_priv(card, drv);
 
 	sof_parent = snd_soc_acpi_sof_parent(&pdev->dev);
 

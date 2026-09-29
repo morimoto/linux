@@ -77,9 +77,10 @@ catpt_get_stream_template(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(cpu_dai);
 	enum catpt_stream_type type;
 
-	type = cpu_dai->driver->id;
+	type = dai_driver->id;
 
 	/* account for capture in bidirectional dais */
 	switch (type) {
@@ -267,7 +268,9 @@ static int catpt_dai_startup(struct snd_pcm_substream *substream,
 {
 	struct catpt_stream_template *template;
 	struct catpt_stream_runtime *stream;
-	struct catpt_dev *cdev = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct catpt_dev *cdev = dev_get_drvdata(dev);
 	struct resource *res;
 	int ret;
 
@@ -294,7 +297,7 @@ static int catpt_dai_startup(struct snd_pcm_substream *substream,
 	stream->persistent = res;
 	stream->substream = substream;
 	INIT_LIST_HEAD(&stream->node);
-	snd_soc_dai_set_dma_data(dai, substream, stream);
+	snd_soc_dai_stream_dma_data_set(dai, substream, stream);
 
 	return 0;
 
@@ -309,9 +312,11 @@ static void catpt_dai_shutdown(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
 	struct catpt_stream_runtime *stream;
-	struct catpt_dev *cdev = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct catpt_dev *cdev = dev_get_drvdata(dev);
 
-	stream = snd_soc_dai_get_dma_data(dai, substream);
+	stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	release_resource(stream->persistent);
 	kfree(stream->persistent);
@@ -319,7 +324,7 @@ static void catpt_dai_shutdown(struct snd_pcm_substream *substream,
 
 	snd_dma_free_pages(&stream->pgtbl);
 	kfree(stream);
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static int catpt_set_dspvol(struct catpt_dev *cdev, u8 stream_id, long *ctlvol);
@@ -331,7 +336,9 @@ struct catpt_control_data {
 
 static int catpt_apply_volume(struct catpt_dev *cdev, struct snd_soc_card *card, const char *name)
 {
-	struct snd_kcontrol *kctl = snd_ctl_find_id_mixer(card->snd_card, name);
+	struct snd_kcontrol *kctl = snd_ctl_find_id_mixer(
+					snd_soc_card_to_snd_card(card),
+					name);
 	struct catpt_control_data *data;
 
 	if (!kctl)
@@ -343,7 +350,9 @@ static int catpt_apply_volume(struct catpt_dev *cdev, struct snd_soc_card *card,
 
 static int catpt_apply_mute(struct catpt_dev *cdev, struct snd_soc_card *card)
 {
-	struct snd_kcontrol *kctl = snd_ctl_find_id_mixer(card->snd_card, "Loopback Mute");
+	struct snd_kcontrol *kctl = snd_ctl_find_id_mixer(
+					snd_soc_card_to_snd_card(card),
+					"Loopback Mute");
 	bool mute;
 	int ret;
 
@@ -386,15 +395,17 @@ static int catpt_dai_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_dma_buffer *dmab;
 	struct catpt_stream_runtime *stream;
 	struct catpt_audio_format afmt;
 	struct catpt_ring_info rinfo;
-	struct catpt_dev *cdev = dev_get_drvdata(dai->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct catpt_dev *cdev = dev_get_drvdata(dev);
 	int ret;
 
-	stream = snd_soc_dai_get_dma_data(dai, substream);
+	stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 	if (stream->allocated)
 		return 0;
 
@@ -430,7 +441,7 @@ static int catpt_dai_hw_params(struct snd_pcm_substream *substream,
 
 	guard(mutex)(&cdev->stream_mutex);
 
-	ret = catpt_apply_controls(cdev, dai->component->card, stream);
+	ret = catpt_apply_controls(cdev, snd_soc_component_to_card(component), stream);
 	if (ret) {
 		catpt_ipc_free_stream(cdev, stream->info.stream_hw_id);
 		return ret;
@@ -445,9 +456,11 @@ static int catpt_dai_hw_free(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
 	struct catpt_stream_runtime *stream;
-	struct catpt_dev *cdev = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct catpt_dev *cdev = dev_get_drvdata(dev);
 
-	stream = snd_soc_dai_get_dma_data(dai, substream);
+	stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 	if (!stream->allocated)
 		return 0;
 
@@ -466,10 +479,12 @@ static int catpt_dai_prepare(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
 	struct catpt_stream_runtime *stream;
-	struct catpt_dev *cdev = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct catpt_dev *cdev = dev_get_drvdata(dev);
 	int ret;
 
-	stream = snd_soc_dai_get_dma_data(dai, substream);
+	stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 	if (stream->prepared)
 		return 0;
 
@@ -490,11 +505,13 @@ static int catpt_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct catpt_stream_runtime *stream;
-	struct catpt_dev *cdev = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct catpt_dev *cdev = dev_get_drvdata(dev);
 	snd_pcm_uframes_t pos;
 	int ret;
 
-	stream = snd_soc_dai_get_dma_data(dai, substream);
+	stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -602,7 +619,8 @@ static const struct snd_pcm_hardware catpt_pcm_hardware = {
 static int catpt_component_pcm_new(struct snd_soc_component *component,
 				   struct snd_soc_pcm_runtime *rtd)
 {
-	struct catpt_dev *cdev = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct catpt_dev *cdev = dev_get_drvdata(dev);
 
 	snd_pcm_set_managed_buffer_all(rtd->pcm, SNDRV_DMA_TYPE_DEV_SG,
 				       cdev->dev,
@@ -626,16 +644,17 @@ static snd_pcm_uframes_t
 catpt_component_pointer(struct snd_soc_component *component,
 			struct snd_pcm_substream *substream)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct catpt_stream_runtime *stream;
-	struct catpt_dev *cdev = dev_get_drvdata(component->dev);
+	struct catpt_dev *cdev = dev_get_drvdata(dev);
 	u32 pos;
 
 	if (rtd->dai_link->no_pcm)
 		return 0;
 
-	stream = snd_soc_dai_get_dma_data(cpu_dai, substream);
+	stream = snd_soc_dai_stream_dma_data_get(cpu_dai, substream);
 	catpt_stream_read_position(cdev, stream, &pos);
 
 	return bytes_to_frames(substream->runtime, pos);
@@ -655,11 +674,15 @@ static int catpt_dai_pcm_new(struct snd_soc_pcm_runtime *rtd,
 {
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct catpt_ssp_device_format devfmt;
-	struct catpt_dev *cdev = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct catpt_dev *cdev = dev_get_drvdata(dev);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	struct snd_soc_dai_driver *codec_dai_driver = snd_soc_dai_to_driver(codec_dai);
 	int ret;
 
-	devfmt.iface = dai->driver->id;
-	devfmt.channels = codec_dai->driver->capture.channels_max;
+	devfmt.iface = dai_driver->id;
+	devfmt.channels = codec_dai_driver->capture.channels_max;
 
 	switch (devfmt.iface) {
 	case CATPT_SSP_IFACE_0:
@@ -883,7 +906,8 @@ static int catpt_volume_info(struct snd_kcontrol *kctl, struct snd_ctl_elem_info
 static int catpt_volume_get(struct snd_kcontrol *kctl, struct snd_ctl_elem_value *uctl)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kctl);
-	struct catpt_dev *cdev = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct catpt_dev *cdev = dev_get_drvdata(dev);
 	struct catpt_control_data *data;
 	u32 dspvol, *regs;
 	long *uvolumes;
@@ -909,7 +933,8 @@ static int catpt_volume_get(struct snd_kcontrol *kctl, struct snd_ctl_elem_value
 static int catpt_volume_put(struct snd_kcontrol *kctl, struct snd_ctl_elem_value *uctl)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kctl);
-	struct catpt_dev *cdev = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct catpt_dev *cdev = dev_get_drvdata(dev);
 	struct catpt_control_data *data;
 	u8 stream_hw_id;
 	long *uvolumes;
@@ -943,7 +968,8 @@ static int catpt_loopback_mute_get(struct snd_kcontrol *kctl, struct snd_ctl_ele
 static int catpt_loopback_mute_put(struct snd_kcontrol *kctl, struct snd_ctl_elem_value *uctl)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kctl);
-	struct catpt_dev *cdev = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct catpt_dev *cdev = dev_get_drvdata(dev);
 	bool *kmute, cmute;
 	u8 stream_hw_id;
 	int ret;
@@ -1079,7 +1105,7 @@ int catpt_register_plat_component(struct catpt_dev *cdev)
 
 	snd_soc_component_set_name(component, catpt_comp_driver.name);
 
-	return snd_soc_register_component(component,
+	return snd_soc_component_register(component,
 					  &catpt_comp_driver,
 					  dai_drivers, ARRAY_SIZE(dai_drivers));
 }

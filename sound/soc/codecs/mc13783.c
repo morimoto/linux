@@ -94,7 +94,7 @@ static int mc13783_pcm_hw_params_dac(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int rate = params_rate(params);
 	int i;
 
@@ -113,7 +113,7 @@ static int mc13783_pcm_hw_params_codec(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int rate = params_rate(params);
 	unsigned int val;
 
@@ -147,7 +147,7 @@ static int mc13783_pcm_hw_params_sync(struct snd_pcm_substream *substream,
 static int mc13783_set_fmt(struct snd_soc_dai *dai, unsigned int fmt,
 			unsigned int reg)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int val = 0;
 	unsigned int mask = AUDIO_CFS(3) | AUDIO_BCL_INV | AUDIO_CFS_INV |
 				AUDIO_CSM | AUDIO_C_CLK_EN | AUDIO_C_RESET;
@@ -201,7 +201,9 @@ static int mc13783_set_fmt(struct snd_soc_dai *dai, unsigned int fmt,
 
 static int mc13783_set_fmt_async(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	if (dai->id == MC13783_ID_STEREO_DAC)
+	int dai_id = snd_soc_dai_id(dai);
+
+	if (dai_id == MC13783_ID_STEREO_DAC)
 		return mc13783_set_fmt(dai, fmt, MC13783_AUDIO_DAC);
 	else
 		return mc13783_set_fmt(dai, fmt, MC13783_AUDIO_CODEC);
@@ -241,7 +243,7 @@ static int mc13783_set_sysclk(struct snd_soc_dai *dai,
 				  int clk_id, unsigned int freq, int dir,
 				  unsigned int reg)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int clk;
 	unsigned int val = 0;
 	unsigned int mask = AUDIO_CLK(0x7) | AUDIO_CLK_SEL;
@@ -294,7 +296,7 @@ static int mc13783_set_tdm_slot_dac(struct snd_soc_dai *dai,
 	unsigned int tx_mask, unsigned int rx_mask, int slots,
 	int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int val = 0;
 	unsigned int mask = SSI_NETWORK_DAC_SLOT_MASK |
 				SSI_NETWORK_DAC_RXSLOT_MASK;
@@ -339,7 +341,7 @@ static int mc13783_set_tdm_slot_codec(struct snd_soc_dai *dai,
 	unsigned int tx_mask, unsigned int rx_mask, int slots,
 	int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int val = 0;
 	unsigned int mask = 0x3f;
 
@@ -594,10 +596,10 @@ static struct snd_kcontrol_new mc13783_control_list[] = {
 
 static int mc13783_probe(struct snd_soc_component *component)
 {
-	struct mc13783_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mc13783_priv *priv = dev_get_drvdata(dev);
 
-	snd_soc_component_init_regmap(component,
-				  dev_get_regmap(component->dev->parent, NULL));
+	snd_soc_component_regmap_init(component, dev_get_regmap(dev->parent, NULL));
 
 	/* these are the reset values */
 	mc13xxx_reg_write(priv->mc13xxx, MC13783_AUDIO_RX0, 0x25893);
@@ -626,7 +628,8 @@ static int mc13783_probe(struct snd_soc_component *component)
 
 static void mc13783_remove(struct snd_soc_component *component)
 {
-	struct mc13783_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mc13783_priv *priv = dev_get_drvdata(dev);
 
 	/* Make sure VAUDIOON is off */
 	mc13xxx_reg_rmw(priv->mc13xxx, MC13783_AUDIO_RX0, 0x3, 0);
@@ -779,10 +782,10 @@ static int __init mc13783_codec_probe(struct platform_device *pdev)
 	priv->mc13xxx = dev_get_drvdata(pdev->dev.parent);
 
 	if (priv->adc_ssi_port == priv->dac_ssi_port)
-		ret = devm_snd_soc_register_component(&pdev->dev, &soc_component_dev_mc13783,
+		ret = devm_snd_soc_component_register(&pdev->dev, &soc_component_dev_mc13783,
 			mc13783_dai_sync, ARRAY_SIZE(mc13783_dai_sync));
 	else
-		ret = devm_snd_soc_register_component(&pdev->dev, &soc_component_dev_mc13783,
+		ret = devm_snd_soc_component_register(&pdev->dev, &soc_component_dev_mc13783,
 			mc13783_dai_async, ARRAY_SIZE(mc13783_dai_async));
 
 	return ret;

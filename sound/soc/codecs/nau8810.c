@@ -165,7 +165,8 @@ static int nau8810_eq_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct nau8810 *nau8810 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8810 *nau8810 = dev_get_drvdata(dev);
 	struct soc_bytes_ext *params = (void *)kcontrol->private_value;
 	int i, reg, reg_val;
 	u16 *val;
@@ -197,7 +198,8 @@ static int nau8810_eq_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct nau8810 *nau8810 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8810 *nau8810 = dev_get_drvdata(dev);
 	struct soc_bytes_ext *params = (void *)kcontrol->private_value;
 	void *data;
 	u16 *val, value;
@@ -219,7 +221,7 @@ static int nau8810_eq_put(struct snd_kcontrol *kcontrol,
 		value = be16_to_cpup(tmp);
 		ret = regmap_write(nau8810->regmap, reg + i, value);
 		if (ret) {
-			dev_err(component->dev, "EQ configuration fail, register: %x ret: %d\n",
+			dev_err(dev, "EQ configuration fail, register: %x ret: %d\n",
 				reg + i, ret);
 			kfree(data);
 			return ret;
@@ -405,7 +407,8 @@ static int check_mclk_select_pll(struct snd_soc_dapm_widget *source,
 			 struct snd_soc_dapm_widget *sink)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
-	struct nau8810 *nau8810 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8810 *nau8810 = dev_get_drvdata(dev);
 	unsigned int value;
 
 	regmap_read(nau8810->regmap, NAU8810_REG_CLOCK, &value);
@@ -415,9 +418,9 @@ static int check_mclk_select_pll(struct snd_soc_dapm_widget *source,
 static int check_mic_enabled(struct snd_soc_dapm_widget *source,
 	struct snd_soc_dapm_widget *sink)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(source->dapm);
-	struct nau8810 *nau8810 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8810 *nau8810 = dev_get_drvdata(dev);
 	unsigned int value;
 
 	regmap_read(nau8810->regmap, NAU8810_REG_INPUT_SIGNAL, &value);
@@ -515,8 +518,9 @@ static const struct snd_soc_dapm_route nau8810_dapm_routes[] = {
 static int nau8810_set_sysclk(struct snd_soc_dai *dai,
 				 int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8810 *nau8810 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8810 *nau8810 = dev_get_drvdata(dev);
 
 	nau8810->clk_id = clk_id;
 	nau8810->sysclk = freq;
@@ -569,8 +573,9 @@ static int nau8810_calc_pll(unsigned int pll_in,
 static int nau8810_set_pll(struct snd_soc_dai *codec_dai, int pll_id,
 	int source, unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct nau8810 *nau8810 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8810 *nau8810 = dev_get_drvdata(dev);
 	struct regmap *map = nau8810->regmap;
 	struct nau8810_pll *pll_param = &nau8810->pll;
 	int ret, fs;
@@ -608,8 +613,9 @@ static int nau8810_set_pll(struct snd_soc_dai *codec_dai, int pll_id,
 static int nau8810_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct nau8810 *nau8810 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8810 *nau8810 = dev_get_drvdata(dev);
 	u16 ctrl1_val = 0, ctrl2_val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -698,8 +704,9 @@ static int nau8810_mclk_clkdiv(struct nau8810 *nau8810, int rate)
 static int nau8810_pcm_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8810 *nau8810 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8810 *nau8810 = dev_get_drvdata(dev);
 	int val_len = 0, val_rate = 0, ret = 0;
 	unsigned int ctrl_val, bclk_fs, bclk_div;
 
@@ -776,7 +783,8 @@ static int nau8810_set_bias_level(struct snd_soc_component *component,
 	enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct nau8810 *nau8810 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8810 *nau8810 = dev_get_drvdata(dev);
 	struct regmap *map = nau8810->regmap;
 
 	switch (level) {
@@ -903,7 +911,7 @@ static int nau8810_i2c_probe(struct i2c_client *i2c)
 
 	regmap_write(nau8810->regmap, NAU8810_REG_RESET, 0x00);
 
-	return devm_snd_soc_register_component(dev,
+	return devm_snd_soc_component_register(dev,
 		&nau8810_component_driver, &nau8810_dai, 1);
 }
 

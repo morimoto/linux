@@ -312,7 +312,7 @@ static void pll_factors(unsigned int target, unsigned int source)
 static int wm8510_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 		int source, unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 reg;
 
 	if (freq_in == 0 || freq_out == 0) {
@@ -348,7 +348,7 @@ static int wm8510_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 static int wm8510_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 		int div_id, int div)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 reg;
 
 	switch (div_id) {
@@ -382,7 +382,7 @@ static int wm8510_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
 static int wm8510_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 iface = 0;
 	u16 clk = snd_soc_component_read(component, WM8510_CLOCK) & 0x1fe;
 
@@ -440,7 +440,7 @@ static int wm8510_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 iface = snd_soc_component_read(component, WM8510_IFACE) & 0x19f;
 	u16 adn = snd_soc_component_read(component, WM8510_ADD) & 0x1f1;
 
@@ -488,7 +488,7 @@ static int wm8510_pcm_hw_params(struct snd_pcm_substream *substream,
 
 static int wm8510_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 mute_reg = snd_soc_component_read(component, WM8510_DAC) & 0xffbf;
 
 	if (mute)
@@ -502,7 +502,8 @@ static int wm8510_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int wm8510_set_bias_level(struct snd_soc_component *component,
 	enum snd_soc_bias_level level)
 {
-	struct wm8510_priv *wm8510 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8510_priv *wm8510 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	u16 power1 = snd_soc_component_read(component, WM8510_POWER1) & ~0x3;
 
@@ -641,7 +642,7 @@ static int wm8510_spi_probe(struct spi_device *spi)
 
 	spi_set_drvdata(spi, wm8510);
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 			&soc_component_dev_wm8510, &wm8510_dai, 1);
 
 	return ret;
@@ -673,7 +674,7 @@ static int wm8510_i2c_probe(struct i2c_client *i2c)
 
 	i2c_set_clientdata(i2c, wm8510);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8510, &wm8510_dai, 1);
 
 	return ret;

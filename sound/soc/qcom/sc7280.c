@@ -58,11 +58,12 @@ static struct snd_soc_jack_pin sc7280_jack_pins[] = {
 static int sc7280_headset_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct sc7280_snd_data *pdata = snd_soc_card_get_drvdata(card);
+	struct sc7280_snd_data *pdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct snd_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int rval, i;
 
 	if (!pdata->jack_setup) {
@@ -77,7 +78,7 @@ static int sc7280_headset_init(struct snd_soc_pcm_runtime *rtd)
 						  ARRAY_SIZE(sc7280_jack_pins));
 
 		if (rval < 0) {
-			dev_err(card->dev, "Unable to add Headset Jack\n");
+			dev_err(dev, "Unable to add Headset Jack\n");
 			return rval;
 		}
 
@@ -92,7 +93,7 @@ static int sc7280_headset_init(struct snd_soc_pcm_runtime *rtd)
 		jack->private_free = sc7280_jack_free;
 		pdata->jack_setup = true;
 	}
-	switch (cpu_dai->id) {
+	switch (snd_soc_dai_id(cpu_dai)) {
 	case MI2S_PRIMARY:
 	case LPASS_CDC_DMA_RX0:
 	case LPASS_CDC_DMA_TX3:
@@ -100,7 +101,7 @@ static int sc7280_headset_init(struct snd_soc_pcm_runtime *rtd)
 		for_each_rtd_codec_dais(rtd, i, codec_dai) {
 			rval = snd_soc_component_set_jack(component, &pdata->hs_jack, NULL);
 			if (rval != 0 && rval != -ENOTSUPP) {
-				dev_err(card->dev, "Failed to set jack: %d\n", rval);
+				dev_err(dev, "Failed to set jack: %d\n", rval);
 				return rval;
 			}
 		}
@@ -115,17 +116,18 @@ static int sc7280_headset_init(struct snd_soc_pcm_runtime *rtd)
 static int sc7280_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct sc7280_snd_data *pdata = snd_soc_card_get_drvdata(card);
+	struct sc7280_snd_data *pdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct snd_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int rval;
 
 	rval = snd_soc_card_jack_new(card, "HDMI Jack",	SND_JACK_LINEOUT,
 				     &pdata->hdmi_jack);
 
 	if (rval < 0) {
-		dev_err(card->dev, "Unable to add HDMI Jack\n");
+		dev_err(dev, "Unable to add HDMI Jack\n");
 		return rval;
 	}
 
@@ -141,7 +143,7 @@ static int sc7280_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_card *card = rtd->card;
-	struct sc7280_snd_data *data = snd_soc_card_get_drvdata(card);
+	struct sc7280_snd_data *data = snd_soc_card_to_priv(card);
 	int ret;
 
 	if (++data->pri_mi2s_clk_count == 1) {
@@ -178,8 +180,9 @@ static int sc7280_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 static int sc7280_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	int dai_id = snd_soc_dai_id(cpu_dai);
 
-	switch (cpu_dai->id) {
+	switch (dai_id) {
 	case MI2S_PRIMARY:
 	case LPASS_CDC_DMA_TX3:
 	case TX_CODEC_DMA_TX_3:
@@ -194,7 +197,7 @@ static int sc7280_init(struct snd_soc_pcm_runtime *rtd)
 	case LPASS_DP_RX:
 		return sc7280_hdmi_init(rtd);
 	default:
-		dev_err(rtd->dev, "%s: invalid dai id 0x%x\n", __func__, cpu_dai->id);
+		dev_err(rtd->dev, "%s: invalid dai id 0x%x\n", __func__, dai_id);
 	}
 
 	return -EINVAL;
@@ -218,9 +221,9 @@ static int sc7280_snd_swr_prepare(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	const struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct sc7280_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct sc7280_snd_data *data = snd_soc_card_to_priv(rtd->card);
 
-	return qcom_snd_sdw_prepare(substream, &data->stream_prepared[cpu_dai->id]);
+	return qcom_snd_sdw_prepare(substream, &data->stream_prepared[snd_soc_dai_id(cpu_dai)]);
 }
 
 static int sc7280_snd_prepare(struct snd_pcm_substream *substream)
@@ -228,7 +231,7 @@ static int sc7280_snd_prepare(struct snd_pcm_substream *substream)
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	const struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
-	switch (cpu_dai->id) {
+	switch (snd_soc_dai_id(cpu_dai)) {
 	case LPASS_CDC_DMA_RX0:
 	case LPASS_CDC_DMA_TX3:
 	case RX_CODEC_DMA_RX_0:
@@ -245,20 +248,20 @@ static int sc7280_snd_prepare(struct snd_pcm_substream *substream)
 static int sc7280_snd_hw_free(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sc7280_snd_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct sc7280_snd_data *data = snd_soc_card_to_priv(rtd->card);
 	const struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
-	return qcom_snd_sdw_hw_free(substream, &data->stream_prepared[cpu_dai->id]);
+	return qcom_snd_sdw_hw_free(substream, &data->stream_prepared[snd_soc_dai_id(cpu_dai)]);
 }
 
 static void sc7280_snd_shutdown(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct sc7280_snd_data *data = snd_soc_card_get_drvdata(card);
+	struct sc7280_snd_data *data = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
-	switch (cpu_dai->id) {
+	switch (snd_soc_dai_id(cpu_dai)) {
 	case MI2S_PRIMARY:
 		if (--data->pri_mi2s_clk_count == 0) {
 			snd_soc_dai_set_sysclk(cpu_dai,
@@ -287,7 +290,7 @@ static int sc7280_snd_startup(struct snd_pcm_substream *substream)
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	int ret = 0;
 
-	switch (cpu_dai->id) {
+	switch (snd_soc_dai_id(cpu_dai)) {
 	case MI2S_PRIMARY:
 		ret = sc7280_rt5682_init(rtd);
 		if (ret)
@@ -355,7 +358,7 @@ static int sc7280_snd_platform_probe(struct platform_device *pdev)
 	if (!card || !data)
 		return -ENOMEM;
 
-	snd_soc_card_set_drvdata(card, data);
+	snd_soc_card_set_priv(card, data);
 
 	card_driver = &data->card_driver;
 	card_driver->owner = THIS_MODULE;

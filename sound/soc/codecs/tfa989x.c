@@ -106,7 +106,8 @@ static const struct snd_soc_dapm_route tfa989x_dapm_routes[] = {
 static int tfa989x_put_mode(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct tfa989x *tfa989x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tfa989x *tfa989x = dev_get_drvdata(dev);
 
 	gpiod_set_value_cansleep(tfa989x->rcv_gpiod, ucontrol->value.enumerated.item[0]);
 
@@ -121,10 +122,11 @@ static const struct snd_kcontrol_new tfa989x_mode_controls[] = {
 
 static int tfa989x_probe(struct snd_soc_component *component)
 {
-	struct tfa989x *tfa989x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tfa989x *tfa989x = dev_get_drvdata(dev);
 
 	if (tfa989x->rev->rev == TFA9897_REVISION)
-		return snd_soc_add_component_controls(component, tfa989x_mode_controls,
+		return snd_soc_component_add_controls(component, tfa989x_mode_controls,
 						      ARRAY_SIZE(tfa989x_mode_controls));
 
 	return 0;
@@ -159,7 +161,7 @@ static int tfa989x_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int sr;
 
 	sr = tfa989x_find_sample_rate(params_rate(params));
@@ -399,7 +401,7 @@ static int tfa989x_i2c_probe(struct i2c_client *i2c)
 	}
 	regcache_cache_bypass(regmap, false);
 
-	return devm_snd_soc_register_component(dev, &tfa989x_component,
+	return devm_snd_soc_component_register(dev, &tfa989x_component,
 					       &tfa989x_dai, 1);
 }
 

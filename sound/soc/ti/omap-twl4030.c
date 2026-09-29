@@ -127,16 +127,16 @@ static struct snd_soc_jack_pin hs_jack_pins[] = {
 static int omap_twl4030_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-
-	struct omap_twl4030 *priv = snd_soc_card_get_drvdata(card);
+	struct omap_twl4030 *priv = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	/*
 	 * This is a bit of a hack, but the GPIO is optional so we
 	 * only want to add the jack detection if the GPIO is there.
 	 */
-	if (of_property_present(card->dev->of_node, "ti,jack-det-gpio")) {
-		ret = snd_soc_card_jack_new_pins(rtd->card, "Headset Jack",
+	if (of_property_present(dev->of_node, "ti,jack-det-gpio")) {
+		ret = snd_soc_card_jack_new_pins(card, "Headset Jack",
 						 SND_JACK_HEADSET,
 						 &priv->hs_jack, hs_jack_pins,
 						 ARRAY_SIZE(hs_jack_pins));
@@ -146,7 +146,7 @@ static int omap_twl4030_init(struct snd_soc_pcm_runtime *rtd)
 		priv->hs_jack_gpio.name = "ti,jack-det";
 		priv->hs_jack_gpio.report = SND_JACK_HEADSET;
 		priv->hs_jack_gpio.debounce_time = 200;
-		priv->hs_jack_gpio.gpiod_dev = card->dev;
+		priv->hs_jack_gpio.gpiod_dev = dev;
 		priv->hs_jack_gpio.idx = 0;
 
 		ret = snd_soc_jack_add_gpios(&priv->hs_jack, 1,
@@ -216,11 +216,11 @@ static int omap_twl4030_probe(struct platform_device *pdev)
 	if (!card || !priv)
 		return -ENOMEM;
 
-	ret = snd_soc_of_parse_card_name(card, "ti,model");
+	ret = snd_soc_card_of_parse_name(card, "ti,model");
 	if (ret)
 		return ret;
 
-	if (!card->name) {
+	if (!snd_soc_card_name(card)) {
 		dev_err(&pdev->dev, "Card name is not provided\n");
 		return -ENODEV;
 	}
@@ -259,7 +259,7 @@ static int omap_twl4030_probe(struct platform_device *pdev)
 		card_driver->fully_routed = 1;
 	}
 
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret,

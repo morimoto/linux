@@ -113,7 +113,10 @@ static int psc_dma_trigger(struct snd_soc_component *component,
 			   struct snd_pcm_substream *substream, int cmd)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct psc_dma *psc_dma = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct psc_dma *psc_dma = dev_get_drvdata(cpu_dev);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct psc_dma_stream *s = to_psc_dma_stream(substream, psc_dma);
 	struct mpc52xx_psc __iomem *regs = psc_dma->psc_regs;
@@ -213,7 +216,10 @@ static int psc_dma_open(struct snd_soc_component *component,
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct psc_dma *psc_dma = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct psc_dma *psc_dma = dev_get_drvdata(cpu_dev);
 	struct psc_dma_stream *s;
 	int rc;
 
@@ -241,7 +247,10 @@ static int psc_dma_close(struct snd_soc_component *component,
 			 struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct psc_dma *psc_dma = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct psc_dma *psc_dma = dev_get_drvdata(cpu_dev);
 	struct psc_dma_stream *s;
 
 	dev_dbg(psc_dma->dev, "psc_dma_close(substream=%p)\n", substream);
@@ -267,7 +276,10 @@ psc_dma_pointer(struct snd_soc_component *component,
 		struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct psc_dma *psc_dma = snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(rtd, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+	struct psc_dma *psc_dma = dev_get_drvdata(cpu_dev);
 	struct psc_dma_stream *s;
 	dma_addr_t count;
 
@@ -284,13 +296,14 @@ psc_dma_pointer(struct snd_soc_component *component,
 static int psc_dma_new(struct snd_soc_component *component,
 		       struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(rtd->card);
 	struct snd_soc_dai *dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_pcm *pcm = rtd->pcm;
+	struct device *dev = snd_soc_component_to_dev(component);
 	size_t size = psc_dma_hardware.buffer_bytes_max;
 	int rc;
 
-	dev_dbg(component->dev, "psc_dma_new(card=%p, dai=%p, pcm=%p)\n",
+	dev_dbg(dev, "psc_dma_new(card=%p, dai=%p, pcm=%p)\n",
 		card, dai, pcm);
 
 	rc = dma_coerce_mask_and_coherent(card->dev, DMA_BIT_MASK(32));
@@ -405,7 +418,7 @@ int mpc5200_audio_dma_create(struct platform_device *op)
 	dev_set_drvdata(&op->dev, psc_dma);
 
 	/* Tell the ASoC OF helpers about it */
-	return devm_snd_soc_register_component(&op->dev,
+	return devm_snd_soc_component_register(&op->dev,
 					&mpc5200_audio_dma_component, NULL, 0);
 }
 EXPORT_SYMBOL_GPL(mpc5200_audio_dma_create);

@@ -22,8 +22,9 @@ struct pcm1754_priv {
 static int pcm1754_set_dai_fmt(struct snd_soc_dai *codec_dai,
 				   unsigned int format)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct pcm1754_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm1754_priv *priv = dev_get_drvdata(dev);
 
 	priv->format = format;
 
@@ -34,8 +35,9 @@ static int pcm1754_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *codec_dai)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct pcm1754_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm1754_priv *priv = dev_get_drvdata(dev);
 	int format;
 
 	switch (priv->format & SND_SOC_DAIFMT_FORMAT_MASK) {
@@ -60,7 +62,7 @@ static int pcm1754_hw_params(struct snd_pcm_substream *substream,
 		}
 		break;
 	default:
-		dev_err(component->dev, "Invalid DAI format\n");
+		dev_err(dev, "Invalid DAI format\n");
 		return -EINVAL;
 	}
 
@@ -71,7 +73,9 @@ static int pcm1754_hw_params(struct snd_pcm_substream *substream,
 
 static int pcm1754_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct pcm1754_priv *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm1754_priv *priv = dev_get_drvdata(dev);
 
 	gpiod_set_value_cansleep(priv->gpiod_mute, mute);
 
@@ -159,7 +163,7 @@ static int pcm1754_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(dev, priv);
 
-	ret = devm_snd_soc_register_component(
+	ret = devm_snd_soc_component_register(
 		&pdev->dev, &soc_component_dev_pcm1754, dai_drv, 1);
 	if (ret)
 		return dev_err_probe(dev, ret, "failed to register");

@@ -27,8 +27,8 @@ DECLARE_EVENT_CLASS(snd_soc_dapm,
 	TP_ARGS(dapm, val),
 
 	TP_STRUCT__entry(
-		__string(	card_name,	snd_soc_dapm_to_card(dapm)->name)
-		__string(	comp_name,	snd_soc_dapm_to_component(dapm) ? snd_soc_dapm_to_component(dapm)->name : "(none)")
+		__string(	card_name,	snd_soc_card_name(snd_soc_dapm_to_card(dapm)))
+		__string(	comp_name,	snd_soc_dapm_to_component(dapm) ? snd_soc_component_name(snd_soc_dapm_to_component(dapm)) : "(none)")
 		__field(	int,		val)
 	),
 
@@ -65,7 +65,7 @@ DECLARE_EVENT_CLASS(snd_soc_dapm_basic,
 	TP_ARGS(card, event),
 
 	TP_STRUCT__entry(
-		__string(	name,	card->name	)
+		__string(	name,	snd_soc_card_name(card))
 		__field(	int,	event		)
 	),
 
@@ -144,7 +144,7 @@ TRACE_EVENT(snd_soc_dapm_walk_done,
 	TP_ARGS(card),
 
 	TP_STRUCT__entry(
-		__string(	name,	card->name		)
+		__string(	name,	snd_soc_card_name(card))
 		__field(	int,	power_checks		)
 		__field(	int,	path_checks		)
 		__field(	int,	neighbour_checks	)
@@ -152,9 +152,9 @@ TRACE_EVENT(snd_soc_dapm_walk_done,
 
 	TP_fast_assign(
 		__assign_str(name);
-		__entry->power_checks = card->dapm_stats.power_checks;
-		__entry->path_checks = card->dapm_stats.path_checks;
-		__entry->neighbour_checks = card->dapm_stats.neighbour_checks;
+		__entry->power_checks		= snd_soc_card_to_dapm_stats(card)->power_checks;
+		__entry->path_checks		= snd_soc_card_to_dapm_stats(card)->path_checks;
+		__entry->neighbour_checks	= snd_soc_card_to_dapm_stats(card)->neighbour_checks;
 	),
 
 	TP_printk("%s: checks %d power, %d path, %d neighbour",

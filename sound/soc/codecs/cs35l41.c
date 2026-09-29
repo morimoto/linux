@@ -185,7 +185,8 @@ static int cs35l41_dsp_preload_ev(struct snd_soc_dapm_widget *w,
 				  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l41_private *cs35l41 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l41_private *cs35l41 = dev_get_drvdata(dev);
 	int ret;
 
 	switch (event) {
@@ -214,7 +215,8 @@ static int cs35l41_dsp_audio_ev(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l41_private *cs35l41 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l41_private *cs35l41 = dev_get_drvdata(dev);
 	unsigned int fw_status;
 	int ret;
 
@@ -509,7 +511,8 @@ static int cs35l41_main_amp_event(struct snd_soc_dapm_widget *w,
 				  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct cs35l41_private *cs35l41 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l41_private *cs35l41 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (event) {
@@ -676,14 +679,18 @@ static int cs35l41_set_channel_map(struct snd_soc_dai *dai, unsigned int tx_n,
 				   const unsigned int *tx_slot,
 				   unsigned int rx_n, const unsigned int *rx_slot)
 {
-	struct cs35l41_private *cs35l41 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l41_private *cs35l41 = dev_get_drvdata(dev);
 
 	return cs35l41_set_channels(cs35l41->dev, cs35l41->regmap, tx_n, tx_slot, rx_n, rx_slot);
 }
 
 static int cs35l41_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct cs35l41_private *cs35l41 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l41_private *cs35l41 = dev_get_drvdata(dev);
 	unsigned int daifmt = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -756,7 +763,9 @@ static int cs35l41_pcm_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct cs35l41_private *cs35l41 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l41_private *cs35l41 = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 	u8 asp_wl;
 	int i;
@@ -812,7 +821,8 @@ static int cs35l41_component_set_sysclk(struct snd_soc_component *component,
 					int clk_id, int source,
 					unsigned int freq, int dir)
 {
-	struct cs35l41_private *cs35l41 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l41_private *cs35l41 = dev_get_drvdata(dev);
 	int extclk_cfg, clksrc;
 
 	switch (clk_id) {
@@ -862,7 +872,9 @@ static int cs35l41_component_set_sysclk(struct snd_soc_component *component,
 static int cs35l41_dai_set_sysclk(struct snd_soc_dai *dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct cs35l41_private *cs35l41 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l41_private *cs35l41 = dev_get_drvdata(dev);
 	unsigned int fs1_val;
 	unsigned int fs2_val;
 	unsigned int val;
@@ -927,7 +939,8 @@ static const struct snd_soc_dapm_widget cs35l41_ext_bst_widget[] = {
 
 static int cs35l41_component_probe(struct snd_soc_component *component)
 {
-	struct cs35l41_private *cs35l41 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l41_private *cs35l41 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 
@@ -948,7 +961,8 @@ static int cs35l41_component_probe(struct snd_soc_component *component)
 
 static void cs35l41_component_remove(struct snd_soc_component *component)
 {
-	struct cs35l41_private *cs35l41 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs35l41_private *cs35l41 = dev_get_drvdata(dev);
 
 	wm_adsp2_component_remove(&cs35l41->dsp, component);
 }
@@ -1353,7 +1367,7 @@ int cs35l41_probe(struct cs35l41_private *cs35l41, const struct cs35l41_hw_cfg *
 	pm_runtime_get_noresume(cs35l41->dev);
 	pm_runtime_enable(cs35l41->dev);
 
-	ret = devm_snd_soc_register_component(cs35l41->dev,
+	ret = devm_snd_soc_component_register(cs35l41->dev,
 					      &soc_component_dev_cs35l41,
 					      cs35l41_dai, ARRAY_SIZE(cs35l41_dai));
 	if (ret < 0) {
