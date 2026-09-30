@@ -20,10 +20,12 @@
 static int acp3x_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 					unsigned int fmt)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct i2s_dev_data *adata;
 	int mode;
 
-	adata = snd_soc_dai_get_drvdata(cpu_dai);
+	adata = dev_get_drvdata(dev);
 	mode = fmt & SND_SOC_DAIFMT_FORMAT_MASK;
 	switch (mode) {
 	case SND_SOC_DAIFMT_I2S:
@@ -41,11 +43,13 @@ static int acp3x_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 static int acp3x_i2s_set_tdm_slot(struct snd_soc_dai *cpu_dai,
 		u32 tx_mask, u32 rx_mask, int slots, int slot_width)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct i2s_dev_data *adata;
 	u32 frm_len;
 	u16 slot_len;
 
-	adata = snd_soc_dai_get_drvdata(cpu_dai);
+	adata = dev_get_drvdata(dev);
 
 	/* These values are as per Hardware Spec */
 	switch (slot_width) {
@@ -72,6 +76,8 @@ static int acp3x_i2s_set_tdm_slot(struct snd_soc_dai *cpu_dai,
 static int acp3x_i2s_hwparams(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct i2s_stream_instance *rtd;
 	struct snd_soc_pcm_runtime *prtd;
 	struct snd_soc_card *card;
@@ -83,8 +89,8 @@ static int acp3x_i2s_hwparams(struct snd_pcm_substream *substream,
 	prtd = snd_soc_substream_to_rtd(substream);
 	rtd = substream->runtime->private_data;
 	card = prtd->card;
-	adata = snd_soc_dai_get_drvdata(dai);
-	pinfo = snd_soc_card_get_drvdata(card);
+	adata = dev_get_drvdata(dev);
+	pinfo = snd_soc_card_to_priv(card);
 	if (pinfo) {
 		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 			rtd->i2s_instance = pinfo->play_i2s_instance;
@@ -313,7 +319,7 @@ static int acp3x_dai_probe(struct platform_device *pdev)
 
 	adata->i2s_irq = res->start;
 	dev_set_drvdata(&pdev->dev, adata);
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 			&acp3x_dai_component, &acp3x_i2s_dai, 1);
 	if (ret) {
 		dev_err(&pdev->dev, "Fail to register acp i2s dai\n");

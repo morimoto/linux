@@ -18,6 +18,7 @@
 
 int asoc_sdw_cs35l56_volume_limit(struct snd_soc_card *card, const char *name_prefix)
 {
+	struct device *dev = snd_soc_card_to_dev(card);
 	char *volume_ctl_name;
 	int ret;
 
@@ -27,7 +28,7 @@ int asoc_sdw_cs35l56_volume_limit(struct snd_soc_card *card, const char *name_pr
 
 	ret = snd_soc_limit_volume(card, volume_ctl_name, CS35L56_SPK_VOLUME_0DB);
 	if (ret)
-		dev_err(card->dev, "%s limit set failed: %d\n", volume_ctl_name, ret);
+		dev_err(dev, "%s limit set failed: %d\n", volume_ctl_name, ret);
 
 	kfree(volume_ctl_name);
 	return ret;
@@ -44,13 +45,16 @@ int asoc_sdw_cs_spk_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_dai
 	int i, ret;
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-		if (!strstr(codec_dai->name, "cs35l56"))
+		struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+		const char *name_prefix = snd_soc_component_name_prefix(component);
+		const char *codec_name = snd_soc_dai_name(codec_dai);
+
+		if (!strstr(codec_name, "cs35l56"))
 			continue;
 
-		snprintf(widget_name, sizeof(widget_name), "%s SPK",
-			 codec_dai->component->name_prefix);
+		snprintf(widget_name, sizeof(widget_name), "%s SPK", name_prefix);
 
-		ret = asoc_sdw_cs35l56_volume_limit(card, codec_dai->component->name_prefix);
+		ret = asoc_sdw_cs35l56_volume_limit(card, name_prefix);
 		if (ret)
 			return ret;
 

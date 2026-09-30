@@ -667,12 +667,19 @@ static struct snd_soc_dai_driver
 	return priv->daidrv + id;
 }
 
-#define rsnd_dai_to_priv(dai) snd_soc_dai_get_drvdata(dai)
+static inline struct rsnd_priv *rsnd_dai_to_priv(struct snd_soc_dai *dai)
+{
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	return dev_get_drvdata(dev);
+}
+
 static struct rsnd_dai *rsnd_dai_to_rdai(struct snd_soc_dai *dai)
 {
 	struct rsnd_priv *priv = rsnd_dai_to_priv(dai);
 
-	return rsnd_rdai_get(priv, dai->id);
+	return rsnd_rdai_get(priv, snd_soc_dai_id(dai));
 }
 
 static void rsnd_dai_stream_init(struct rsnd_dai_stream *io,
@@ -1928,7 +1935,7 @@ int rsnd_kctrl_new(struct rsnd_mod *mod,
 		   int size,
 		   u32 max)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(rtd->card);
 	struct snd_kcontrol *kctrl;
 	struct snd_kcontrol_new knew = {
 		.iface		= SNDRV_CTL_ELEM_IFACE_MIXER,
@@ -2098,7 +2105,7 @@ static int rsnd_probe(struct platform_device *pdev)
 	for (i = 0; i < RSND_MAX_COMPONENT && priv->component_dais[i] > 0; i++) {
 		int nr = priv->component_dais[i];
 
-		ret = devm_snd_soc_register_component(dev, &rsnd_soc_component,
+		ret = devm_snd_soc_component_register(dev, &rsnd_soc_component,
 						      priv->daidrv + ci, nr);
 		if (ret < 0) {
 			dev_err(dev, "cannot snd component register\n");

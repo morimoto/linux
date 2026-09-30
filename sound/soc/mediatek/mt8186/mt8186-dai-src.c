@@ -316,7 +316,8 @@ static int mtk_hw_src_event(struct snd_soc_dapm_widget *w,
 			    int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 	int id;
 	struct mtk_afe_src_priv *src_priv;
@@ -483,7 +484,8 @@ static int mtk_afe_src_en_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = source;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_afe_src_priv *src_priv;
 
@@ -548,9 +550,11 @@ static int mtk_dai_src_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
-	int id = dai->id;
+	int id = snd_soc_dai_id(dai);
 	struct mtk_afe_src_priv *src_priv = afe_priv->dai_priv[id];
 	unsigned int sft, mask;
 	unsigned int rate = params_rate(params);
@@ -588,9 +592,11 @@ static int mtk_dai_src_hw_params(struct snd_pcm_substream *substream,
 static int mtk_dai_src_hw_free(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
-	int id = dai->id;
+	int id = snd_soc_dai_id(dai);
 	struct mtk_afe_src_priv *src_priv = afe_priv->dai_priv[id];
 
 	dev_dbg(afe->dev, "%s(), id %d, stream %d\n",

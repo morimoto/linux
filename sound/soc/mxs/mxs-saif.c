@@ -118,7 +118,9 @@ static int __mxs_saif_get_mclk(struct mxs_saif *saif)
 static int mxs_saif_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
 			int clk_id, unsigned int freq, int dir)
 {
-	struct mxs_saif *saif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mxs_saif *saif = dev_get_drvdata(dev);
 	int ret;
 
 	switch (clk_id) {
@@ -347,11 +349,13 @@ static int mxs_saif_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 {
 	u32 scr, stat;
 	u32 scr0;
-	struct mxs_saif *saif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mxs_saif *saif = dev_get_drvdata(dev);
 
 	stat = __raw_readl(saif->base + SAIF_STAT);
 	if (stat & BM_SAIF_STAT_BUSY) {
-		dev_err(cpu_dai->dev, "error: busy\n");
+		dev_err(dev, "error: busy\n");
 		return -EBUSY;
 	}
 
@@ -433,7 +437,9 @@ static int mxs_saif_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 static int mxs_saif_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *cpu_dai)
 {
-	struct mxs_saif *saif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mxs_saif *saif = dev_get_drvdata(dev);
 	int ret;
 
 	/* clear error status to 0 for each re-open */
@@ -458,7 +464,9 @@ static int mxs_saif_startup(struct snd_pcm_substream *substream,
 static void mxs_saif_shutdown(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *cpu_dai)
 {
-	struct mxs_saif *saif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mxs_saif *saif = dev_get_drvdata(dev);
 
 	clk_unprepare(saif->clk);
 }
@@ -471,8 +479,10 @@ static int mxs_saif_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *cpu_dai)
 {
-	struct mxs_saif *saif = snd_soc_dai_get_drvdata(cpu_dai);
 	struct mxs_saif *master_saif;
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mxs_saif *saif = dev_get_drvdata(dev);
 	u32 scr, stat;
 	int ret;
 
@@ -482,13 +492,13 @@ static int mxs_saif_hw_params(struct snd_pcm_substream *substream,
 
 	/* mclk should already be set */
 	if (!saif->mclk && saif->mclk_in_use) {
-		dev_err(cpu_dai->dev, "set mclk first\n");
+		dev_err(dev, "set mclk first\n");
 		return -EINVAL;
 	}
 
 	stat = __raw_readl(saif->base + SAIF_STAT);
 	if (!saif->mclk_in_use && (stat & BM_SAIF_STAT_BUSY)) {
-		dev_err(cpu_dai->dev, "error: busy\n");
+		dev_err(dev, "error: busy\n");
 		return -EBUSY;
 	}
 
@@ -499,7 +509,7 @@ static int mxs_saif_hw_params(struct snd_pcm_substream *substream,
 	 */
 	ret = mxs_saif_set_clk(saif, saif->mclk, params_rate(params));
 	if (ret) {
-		dev_err(cpu_dai->dev, "unable to get proper clk\n");
+		dev_err(dev, "unable to get proper clk\n");
 		return ret;
 	}
 
@@ -561,7 +571,9 @@ static int mxs_saif_hw_params(struct snd_pcm_substream *substream,
 static int mxs_saif_prepare(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *cpu_dai)
 {
-	struct mxs_saif *saif = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mxs_saif *saif = dev_get_drvdata(dev);
 
 	/* enable FIFO error irqs */
 	__raw_writel(BM_SAIF_CTRL_FIFO_ERROR_IRQ_EN,
@@ -573,8 +585,10 @@ static int mxs_saif_prepare(struct snd_pcm_substream *substream,
 static int mxs_saif_trigger(struct snd_pcm_substream *substream, int cmd,
 				struct snd_soc_dai *cpu_dai)
 {
-	struct mxs_saif *saif = snd_soc_dai_get_drvdata(cpu_dai);
 	struct mxs_saif *master_saif;
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mxs_saif *saif = dev_get_drvdata(dev);
 	u32 delay;
 	int ret;
 
@@ -589,7 +603,7 @@ static int mxs_saif_trigger(struct snd_pcm_substream *substream, int cmd,
 		if (saif->state == MXS_SAIF_STATE_RUNNING)
 			return 0;
 
-		dev_dbg(cpu_dai->dev, "start\n");
+		dev_dbg(dev, "start\n");
 
 		ret = clk_enable(master_saif->clk);
 		if (ret) {
@@ -656,7 +670,7 @@ static int mxs_saif_trigger(struct snd_pcm_substream *substream, int cmd,
 		if (saif->state == MXS_SAIF_STATE_STOPPED)
 			return 0;
 
-		dev_dbg(cpu_dai->dev, "stop\n");
+		dev_dbg(dev, "stop\n");
 
 		/* wait a while for the current sample to complete */
 		delay = USEC_PER_SEC / master_saif->cur_rate;
@@ -863,7 +877,7 @@ static int mxs_saif_probe(struct platform_device *pdev)
 			dev_warn(&pdev->dev, "failed to init clocks\n");
 	}
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &mxs_saif_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &mxs_saif_component,
 					      &mxs_saif_dai, 1);
 	if (ret)
 		return ret;

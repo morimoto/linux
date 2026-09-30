@@ -167,7 +167,10 @@ err_hclk:
 
 static inline struct rk_i2s_tdm_dev *to_info(struct snd_soc_dai *dai)
 {
-	return snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	return dev_get_drvdata(dev);
 }
 
 /*
@@ -348,11 +351,13 @@ static int rockchip_i2s_tdm_set_fmt(struct snd_soc_dai *cpu_dai,
 				    unsigned int fmt)
 {
 	struct rk_i2s_tdm_dev *i2s_tdm = to_info(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int mask, val, tdm_val, txcr_val, rxcr_val;
 	int ret;
 	bool is_tdm = i2s_tdm->tdm_mode;
 
-	ret = pm_runtime_resume_and_get(cpu_dai->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -477,7 +482,7 @@ static int rockchip_i2s_tdm_set_fmt(struct snd_soc_dai *cpu_dai,
 	}
 
 err_pm_put:
-	pm_runtime_put(cpu_dai->dev);
+	pm_runtime_put(dev);
 
 	return ret;
 }
@@ -783,12 +788,12 @@ static int rockchip_i2s_tdm_trigger(struct snd_pcm_substream *substream,
 
 static int rockchip_i2s_tdm_dai_probe(struct snd_soc_dai *dai)
 {
-	struct rk_i2s_tdm_dev *i2s_tdm = snd_soc_dai_get_drvdata(dai);
+	struct rk_i2s_tdm_dev *i2s_tdm = to_info(dai);
 
 	if (i2s_tdm->has_capture)
-		snd_soc_dai_dma_data_set_capture(dai,  &i2s_tdm->capture_dma_data);
+		snd_soc_dai_stream_dma_data_set_capture(dai,  &i2s_tdm->capture_dma_data);
 	if (i2s_tdm->has_playback)
-		snd_soc_dai_dma_data_set_playback(dai, &i2s_tdm->playback_dma_data);
+		snd_soc_dai_stream_dma_data_set_playback(dai, &i2s_tdm->playback_dma_data);
 
 	return 0;
 }
@@ -797,7 +802,7 @@ static int rockchip_dai_tdm_slot(struct snd_soc_dai *dai,
 				 unsigned int tx_mask, unsigned int rx_mask,
 				 int slots, int slot_width)
 {
-	struct rk_i2s_tdm_dev *i2s_tdm = snd_soc_dai_get_drvdata(dai);
+	struct rk_i2s_tdm_dev *i2s_tdm = to_info(dai);
 	unsigned int mask, val;
 
 	i2s_tdm->tdm_mode = true;
@@ -816,7 +821,7 @@ static int rockchip_dai_tdm_slot(struct snd_soc_dai *dai,
 static int rockchip_i2s_tdm_set_bclk_ratio(struct snd_soc_dai *dai,
 					   unsigned int ratio)
 {
-	struct rk_i2s_tdm_dev *i2s_tdm = snd_soc_dai_get_drvdata(dai);
+	struct rk_i2s_tdm_dev *i2s_tdm = to_info(dai);
 
 	if (ratio < 32 || ratio > 512 || ratio % 2 == 1)
 		return -EINVAL;
@@ -1371,7 +1376,7 @@ static int rockchip_i2s_tdm_probe(struct platform_device *pdev)
 	if (i2s_tdm->soc_data && i2s_tdm->soc_data->init)
 		i2s_tdm->soc_data->init(&pdev->dev, res->start);
 
-	ret = devm_snd_soc_register_component(&pdev->dev,
+	ret = devm_snd_soc_component_register(&pdev->dev,
 					      &rockchip_i2s_tdm_component,
 					      i2s_tdm->dai, 1);
 	if (ret)

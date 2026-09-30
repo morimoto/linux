@@ -86,6 +86,7 @@ static int mic_bias_event(struct snd_soc_dapm_widget *w,
 			  struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -94,12 +95,12 @@ static int mic_bias_event(struct snd_soc_dapm_widget *w,
 					      AIC32x4_MICBIAS_MASK,
 					      AIC32X4_MICBIAS_LDOIN |
 							AIC32X4_MICBIAS_2075V);
-		dev_dbg(component->dev, "Mic Bias will be turned ON\n");
+		dev_dbg(dev, "Mic Bias will be turned ON\n");
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		snd_soc_component_update_bits(component, AIC32X4_MICBIAS,
 					      AIC32x4_MICBIAS_MASK, 0);
-		dev_dbg(component->dev, "Mic Bias will be turned OFF\n");
+		dev_dbg(dev, "Mic Bias will be turned OFF\n");
 		break;
 	}
 
@@ -123,13 +124,14 @@ static int aic32x4_set_mfp2_gpio(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u8 val;
 	u8 gpio_check;
 
 	val = snd_soc_component_read(component, AIC32X4_DOUTCTL);
 	gpio_check = (val & AIC32X4_MFP_GPIO_ENABLED);
 	if (gpio_check != AIC32X4_MFP_GPIO_ENABLED) {
-		dev_err(component->dev, "MFP2 is not configure as a GPIO output\n");
+		dev_err(dev, "MFP2 is not configure as a GPIO output\n");
 		return -EINVAL;
 	}
 
@@ -163,13 +165,14 @@ static int aic32x4_set_mfp4_gpio(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u8 val;
 	u8 gpio_check;
 
 	val = snd_soc_component_read(component, AIC32X4_MISOCTL);
 	gpio_check = (val & AIC32X4_MFP_GPIO_ENABLED);
 	if (gpio_check != AIC32X4_MFP_GPIO_ENABLED) {
-		dev_err(component->dev, "MFP4 is not configure as a GPIO output\n");
+		dev_err(dev, "MFP4 is not configure as a GPIO output\n");
 		return -EINVAL;
 	}
 
@@ -202,13 +205,14 @@ static int aic32x4_set_mfp5_gpio(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u8 val;
 	u8 gpio_check;
 
 	val = snd_soc_component_read(component, AIC32X4_GPIOCTL);
 	gpio_check = (val & AIC32X4_MFP5_GPIO_OUTPUT);
 	if (gpio_check != AIC32X4_MFP5_GPIO_OUTPUT) {
-		dev_err(component->dev, "MFP5 is not configure as a GPIO output\n");
+		dev_err(dev, "MFP5 is not configure as a GPIO output\n");
 		return -EINVAL;
 	}
 
@@ -600,8 +604,9 @@ EXPORT_SYMBOL_GPL(aic32x4_regmap_pages);
 static int aic32x4_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				  int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct aic32x4_priv *aic32x4 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic32x4_priv *aic32x4 = dev_get_drvdata(dev);
 	struct clk *mclk;
 
 	mclk = clk_get_parent(aic32x4->clocks[AIC32X4_CLK_PLL].clk);
@@ -611,8 +616,9 @@ static int aic32x4_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 
 static int aic32x4_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct aic32x4_priv *aic32x4 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic32x4_priv *aic32x4 = dev_get_drvdata(dev);
 	u8 iface_reg_1 = 0;
 	u8 iface_reg_2 = 0;
 	u8 iface_reg_3 = 0;
@@ -624,7 +630,7 @@ static int aic32x4_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	case SND_SOC_DAIFMT_CBC_CFC:
 		break;
 	default:
-		dev_err(component->dev, "invalid clock provider\n");
+		dev_err(dev, "invalid clock provider\n");
 		return -EINVAL;
 	}
 
@@ -651,7 +657,7 @@ static int aic32x4_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 				AIC32X4_IFACE1_DATATYPE_SHIFT);
 		break;
 	default:
-		dev_err(component->dev, "invalid DAI interface format\n");
+		dev_err(dev, "invalid DAI interface format\n");
 		return -EINVAL;
 	}
 
@@ -685,7 +691,8 @@ static int aic32x4_set_dosr(struct snd_soc_component *component, u16 dosr)
 static int aic32x4_set_processing_blocks(struct snd_soc_component *component,
 					 u8 r_block, u8 p_block)
 {
-	struct aic32x4_priv *aic32x4 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic32x4_priv *aic32x4 = dev_get_drvdata(dev);
 
 	if (aic32x4->type == AIC32X4_TYPE_TAS2505) {
 		if (r_block || p_block > 3)
@@ -707,7 +714,8 @@ static int aic32x4_configure_rate(struct snd_soc_component *component,
 				  unsigned int rate, u8 *aosr, u8 *adc_rc,
 				  u8 *dac_rc, u8 *dosr_inc)
 {
-	struct aic32x4_priv *aic32x4 = snd_soc_component_get_drvdata(component);
+	struct aic32x4_priv *aic32x4 = snd_soc_component_to_priv(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	u8 prb_rx, prb_tx;
 
 	if (rate <= 48000) {
@@ -732,7 +740,7 @@ static int aic32x4_configure_rate(struct snd_soc_component *component,
 		prb_rx = 13;
 		prb_tx = (aic32x4->type == AIC32X4_TYPE_TAS2505) ? 1 : 19;
 	} else {
-		dev_err(component->dev, "Sampling rate %u not supported\n", rate);
+		dev_err(dev, "Sampling rate %u not supported\n", rate);
 		return -EINVAL;
 	}
 
@@ -746,7 +754,8 @@ static int aic32x4_setup_clocks(struct snd_soc_component *component,
 				unsigned int sample_rate, unsigned int channels,
 				unsigned int bit_depth)
 {
-	struct aic32x4_priv *aic32x4 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic32x4_priv *aic32x4 = dev_get_drvdata(dev);
 	u8 aosr;
 	u16 dosr;
 	u8 adc_resource_class, dac_resource_class;
@@ -810,7 +819,7 @@ static int aic32x4_setup_clocks(struct snd_soc_component *component,
 		}
 	}
 
-	dev_err(component->dev, "Could not set clocks to support sample rate.\n");
+	dev_err(dev, "Could not set clocks to support sample rate.\n");
 	return -EINVAL;
 }
 
@@ -818,8 +827,9 @@ static int aic32x4_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aic32x4_priv *aic32x4 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic32x4_priv *aic32x4 = dev_get_drvdata(dev);
 	u8 iface1_reg = 0;
 	u8 dacsetup_reg = 0;
 
@@ -860,7 +870,7 @@ static int aic32x4_hw_params(struct snd_pcm_substream *substream,
 
 static int aic32x4_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	snd_soc_component_update_bits(component, AIC32X4_DACMUTE,
 				      AIC32X4_MUTEON, mute ? AIC32X4_MUTEON : 0);
@@ -872,7 +882,8 @@ static int aic32x4_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct aic32x4_priv *aic32x4 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic32x4_priv *aic32x4 = dev_get_drvdata(dev);
 	int ret;
 
 	struct clk_bulk_data clocks[] = {
@@ -885,7 +896,7 @@ static int aic32x4_set_bias_level(struct snd_soc_component *component,
 	case SND_SOC_BIAS_ON:
 		ret = clk_bulk_prepare_enable(ARRAY_SIZE(clocks), clocks);
 		if (ret) {
-			dev_err(component->dev, "Failed to enable clocks\n");
+			dev_err(dev, "Failed to enable clocks\n");
 			return ret;
 		}
 		break;
@@ -945,7 +956,8 @@ static struct snd_soc_dai_driver aic32x4_dai = {
 
 static void aic32x4_setup_gpios(struct snd_soc_component *component)
 {
-	struct aic32x4_priv *aic32x4 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic32x4_priv *aic32x4 = dev_get_drvdata(dev);
 
 	/* setup GPIO functions */
 	BUILD_BUG_ON(ARRAY_SIZE(aic32x4->gpio_func) != ARRAY_SIZE(aic32x4_mfp_cfg));
@@ -955,13 +967,14 @@ static void aic32x4_setup_gpios(struct snd_soc_component *component)
 
 		snd_soc_component_write(component, aic32x4_mfp_cfg[i].reg,
 					aic32x4->gpio_func[i]);
-		snd_soc_add_component_controls(component, &aic32x4_mfp_cfg[i].ctrl, 1);
+		snd_soc_component_add_controls(component, &aic32x4_mfp_cfg[i].ctrl, 1);
 	}
 }
 
 static int aic32x4_component_probe(struct snd_soc_component *component)
 {
-	struct aic32x4_priv *aic32x4 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic32x4_priv *aic32x4 = dev_get_drvdata(dev);
 	u32 tmp_reg;
 
 	struct clk *codec_clkin = aic32x4->clocks[AIC32X4_CLK_CODEC_CLKIN].clk;
@@ -1111,7 +1124,8 @@ static struct snd_soc_dai_driver aic32x4_tas2505_dai = {
 
 static int aic32x4_tas2505_component_probe(struct snd_soc_component *component)
 {
-	struct aic32x4_priv *aic32x4 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aic32x4_priv *aic32x4 = dev_get_drvdata(dev);
 	u32 tmp_reg;
 
 	struct clk *codec_clkin = aic32x4->clocks[AIC32X4_CLK_CODEC_CLKIN].clk;
@@ -1358,12 +1372,12 @@ int aic32x4_probe(struct device *dev, struct regmap *regmap,
 
 	switch (aic32x4->type) {
 	case AIC32X4_TYPE_TAS2505:
-		ret = devm_snd_soc_register_component(dev,
+		ret = devm_snd_soc_component_register(dev,
 						      &soc_component_dev_aic32x4_tas2505,
 						      &aic32x4_tas2505_dai, 1);
 		break;
 	default:
-		ret = devm_snd_soc_register_component(dev,
+		ret = devm_snd_soc_component_register(dev,
 						      &soc_component_dev_aic32x4,
 						      &aic32x4_dai, 1);
 	}

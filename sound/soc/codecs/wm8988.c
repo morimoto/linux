@@ -552,8 +552,9 @@ static const struct snd_pcm_hw_constraint_list constraints_12 = {
 static int wm8988_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct wm8988_priv *wm8988 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8988_priv *wm8988 = dev_get_drvdata(dev);
 
 	switch (freq) {
 	case 11289600:
@@ -584,7 +585,7 @@ static int wm8988_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int wm8988_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 iface = 0;
 
 	/* set master/slave audio interface */
@@ -642,15 +643,15 @@ static int wm8988_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int wm8988_pcm_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8988_priv *wm8988 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8988_priv *wm8988 = dev_get_drvdata(dev);
 
 	/* The set of sample rates that can be supported depends on the
 	 * MCLK supplied to the CODEC - enforce this.
 	 */
 	if (!wm8988->sysclk) {
-		dev_err(component->dev,
-			"No MCLK configured, call set_sysclk() on init\n");
+		dev_err(dev, "No MCLK configured, call set_sysclk() on init\n");
 		return -EINVAL;
 	}
 
@@ -665,8 +666,9 @@ static int wm8988_pcm_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8988_priv *wm8988 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8988_priv *wm8988 = dev_get_drvdata(dev);
 	u16 iface = snd_soc_component_read(component, WM8988_IFACE) & 0x1f3;
 	u16 srate = snd_soc_component_read(component, WM8988_SRATE) & 0x180;
 	int coeff;
@@ -677,7 +679,7 @@ static int wm8988_pcm_hw_params(struct snd_pcm_substream *substream,
 		srate |= 0x40;
 	}
 	if (coeff < 0) {
-		dev_err(component->dev,
+		dev_err(dev,
 			"Unable to configure sample rate %dHz with %dHz MCLK\n",
 			params_rate(params), wm8988->sysclk);
 		return coeff;
@@ -709,7 +711,7 @@ static int wm8988_pcm_hw_params(struct snd_pcm_substream *substream,
 
 static int wm8988_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 mute_reg = snd_soc_component_read(component, WM8988_ADCDAC) & 0xfff7;
 
 	if (mute)
@@ -722,7 +724,8 @@ static int wm8988_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int wm8988_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm8988_priv *wm8988 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8988_priv *wm8988 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	u16 pwr_reg = snd_soc_component_read(component, WM8988_PWR1) & ~0x1c1;
 
@@ -806,11 +809,12 @@ static struct snd_soc_dai_driver wm8988_dai = {
 
 static int wm8988_probe(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
 	ret = wm8988_reset(component);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to issue reset\n");
+		dev_err(dev, "Failed to issue reset\n");
 		return ret;
 	}
 
@@ -871,7 +875,7 @@ static int wm8988_spi_probe(struct spi_device *spi)
 
 	spi_set_drvdata(spi, wm8988);
 
-	ret = devm_snd_soc_register_component(&spi->dev,
+	ret = devm_snd_soc_component_register(&spi->dev,
 			&soc_component_dev_wm8988, &wm8988_dai, 1);
 	return ret;
 }
@@ -904,7 +908,7 @@ static int wm8988_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_wm8988, &wm8988_dai, 1);
 	return ret;
 }

@@ -354,7 +354,8 @@ static int es9039_s16_get(struct snd_kcontrol *kcontrol,
 			  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	struct es9039_s16_ctl *p = (void *)kcontrol->private_value;
 	u32 v;
 	int ret;
@@ -371,7 +372,8 @@ static int es9039_s16_put(struct snd_kcontrol *kcontrol,
 			  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	struct es9039_s16_ctl *p = (void *)kcontrol->private_value;
 	long v = ucontrol->value.integer.value[0];
 	u32 old;
@@ -431,7 +433,8 @@ static int es9039_wide_get(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	struct es9039_wide_ctl *p = (void *)kcontrol->private_value;
 	u32 v;
 	int ret;
@@ -448,7 +451,8 @@ static int es9039_wide_put(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	struct es9039_wide_ctl *p = (void *)kcontrol->private_value;
 	long v = ucontrol->value.integer.value[0];
 	u32 old;
@@ -585,7 +589,8 @@ static int es9039_fir_put(struct snd_kcontrol *kcontrol,
 			  const unsigned int __user *bytes, unsigned int size)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	struct soc_bytes_ext *be = (void *)kcontrol->private_value;
 	struct es9039_fir_ctl *p = container_of(be, struct es9039_fir_ctl, be);
 	unsigned int idx = p->stage_4x ? 1 : 0;
@@ -667,7 +672,8 @@ static int es9039_stat_get(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	struct es9039_stat_ctl *p = (void *)kcontrol->private_value;
 	unsigned int v;
 	int ret;
@@ -726,7 +732,8 @@ static int es9039_rate_get(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	unsigned int fsreg, sysreg, div, y, den;
 	int ret;
 
@@ -770,7 +777,8 @@ static int es9039_stream_get(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	unsigned int v;
 	int ret;
 
@@ -825,7 +833,8 @@ static int es9039_dop_get(struct snd_kcontrol *kcontrol,
 			  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = priv->dop_auto;
 	return 0;
@@ -877,7 +886,8 @@ static int es9039_mute_get(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 
 	guard(mutex)(&priv->lock);
 
@@ -891,7 +901,8 @@ static int es9039_mute_put(struct snd_kcontrol *kcontrol,
 			   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	unsigned int val = 0, old;
 	int ret;
 
@@ -927,7 +938,8 @@ static int es9039_dop_put(struct snd_kcontrol *kcontrol,
 			  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	bool on = !!ucontrol->value.integer.value[0], old;
 	int ret;
 
@@ -971,7 +983,8 @@ static int es9039_vol_put(struct snd_kcontrol *kcontrol,
 			  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	int ret;
 
 	/*
@@ -1201,7 +1214,9 @@ static unsigned int es9039_min_mclk(struct es9039q2m_priv *priv,
 static int es9039q2m_startup(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	unsigned int max_rate;
 
 	/*
@@ -1244,6 +1259,8 @@ static int es9039q2m_startup(struct snd_pcm_substream *substream,
 static int es9039_setup_clocking(struct es9039q2m_priv *priv,
 				 struct snd_soc_dai *dai, unsigned int rate)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int ratio, min_mclk, div, i, target = 0;
 	bool sixtyfour;
 	int ret;
@@ -1282,8 +1299,7 @@ static int es9039_setup_clocking(struct es9039q2m_priv *priv,
 		}
 
 		if (!target) {
-			dev_err(dai->dev,
-				"no mclk ratio for %u Hz within %u Hz\n",
+			dev_err(dev, "no mclk ratio for %u Hz within %u Hz\n",
 				rate, ES9039_MAX_MCLK);
 			return -EINVAL;
 		}
@@ -1297,7 +1313,7 @@ static int es9039_setup_clocking(struct es9039q2m_priv *priv,
 	}
 
 	if (priv->mclk_rate > ES9039_MAX_MCLK) {
-		dev_err(dai->dev, "mclk %u Hz is above the %u Hz maximum\n",
+		dev_err(dev, "mclk %u Hz is above the %u Hz maximum\n",
 			priv->mclk_rate, ES9039_MAX_MCLK);
 		return -EINVAL;
 	}
@@ -1306,8 +1322,7 @@ static int es9039_setup_clocking(struct es9039q2m_priv *priv,
 	min_mclk = es9039_min_mclk(priv, rate);
 
 	if (!sixtyfour && priv->mclk_rate < min_mclk) {
-		dev_err(dai->dev,
-			"mclk %u Hz is below the %u Hz %u Hz needs in this mode\n",
+		dev_err(dev, "mclk %u Hz is below the %u Hz %u Hz needs in this mode\n",
 			priv->mclk_rate, min_mclk, rate);
 		return -EINVAL;
 	}
@@ -1341,15 +1356,14 @@ static int es9039_setup_clocking(struct es9039q2m_priv *priv,
 	 * than emitting something close.
 	 */
 	if (priv->mclk_rate % (ratio * rate)) {
-		dev_err(dai->dev,
-			"mclk %u Hz cannot produce %u * %u Hz bit clock\n",
+		dev_err(dev, "mclk %u Hz cannot produce %u * %u Hz bit clock\n",
 			priv->mclk_rate, ratio, rate);
 		return -EINVAL;
 	}
 
 	div = priv->mclk_rate / (ratio * rate);
 	if (div < 1 || div > 256) {
-		dev_err(dai->dev, "master bck divider %u out of range\n", div);
+		dev_err(dev, "master bck divider %u out of range\n", div);
 		return -EINVAL;
 	}
 
@@ -1358,7 +1372,9 @@ static int es9039_setup_clocking(struct es9039q2m_priv *priv,
 
 static int es9039q2m_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	unsigned int cfg1 = 0, enc = 0;
 	int ret;
 
@@ -1439,7 +1455,9 @@ static int es9039q2m_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
  */
 static int es9039q2m_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 {
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 
 	priv->bclk_ratio = ratio;
 	return 0;
@@ -1449,7 +1467,9 @@ static int es9039q2m_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *dai)
 {
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	unsigned int input_sel, decode, width, slot_bits, isel;
 	bool auto_sel;
 	int ret;
@@ -1514,7 +1534,7 @@ static int es9039q2m_hw_params(struct snd_pcm_substream *substream,
 		width = ES9039_WIDTH_32;
 		break;
 	default:
-		dev_err(dai->dev, "unsupported slot width %u\n", slot_bits);
+		dev_err(dev, "unsupported slot width %u\n", slot_bits);
 		return -EINVAL;
 	}
 
@@ -1555,7 +1575,9 @@ static int es9039q2m_hw_params(struct snd_pcm_substream *substream,
 
 static int es9039q2m_mute_stream(struct snd_soc_dai *dai, int mute, int dir)
 {
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	bool old;
 	int ret;
 
@@ -1578,7 +1600,9 @@ static int es9039q2m_mute_stream(struct snd_soc_dai *dai, int mute, int dir)
 static void es9039q2m_shutdown(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 
 	guard(mutex)(&priv->lock);
 
@@ -1619,7 +1643,8 @@ static struct snd_soc_dai_driver es9039q2m_dai = {
 
 static int es9039q2m_component_probe(struct snd_soc_component *component)
 {
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	int ret;
 
 	/*
@@ -1746,7 +1771,8 @@ static int es9039q2m_component_probe(struct snd_soc_component *component)
  */
 static int es9039q2m_suspend(struct snd_soc_component *component)
 {
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	int ret;
 
 	guard(mutex)(&priv->lock);
@@ -1757,8 +1783,7 @@ static int es9039q2m_suspend(struct snd_soc_component *component)
 	regcache_cache_bypass(priv->regmap, false);
 
 	if (ret)
-		dev_warn(component->dev,
-			 "could not gate the DAC clock for suspend: %d\n", ret);
+		dev_warn(dev, "could not gate the DAC clock for suspend: %d\n", ret);
 
 	regcache_mark_dirty(priv->regmap);
 	regcache_cache_only(priv->regmap, true);
@@ -1768,7 +1793,8 @@ static int es9039q2m_suspend(struct snd_soc_component *component)
 
 static int es9039q2m_resume(struct snd_soc_component *component)
 {
-	struct es9039q2m_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es9039q2m_priv *priv = dev_get_drvdata(dev);
 	unsigned int i;
 	int ret;
 
@@ -1799,13 +1825,11 @@ static int es9039q2m_resume(struct snd_soc_component *component)
 	regcache_cache_bypass(priv->regmap, false);
 
 	if (ret)
-		dev_warn(component->dev,
-			 "could not mute before resync: %d\n", ret);
+		dev_warn(dev, "could not mute before resync: %d\n", ret);
 
 	ret = regcache_sync(priv->regmap);
 	if (ret)
-		dev_err(component->dev,
-			"failed to restore registers on resume: %d\n", ret);
+		dev_err(dev, "failed to restore registers on resume: %d\n", ret);
 
 	/*
 	 * Re-upload the programmable FIR RAM. regcache_sync() cannot restore
@@ -1826,8 +1850,7 @@ static int es9039q2m_resume(struct snd_soc_component *component)
 		err = es9039_fir_upload(priv, priv->fir_shadow[i],
 					priv->fir_taps[i], i == 1);
 		if (err)
-			dev_err(component->dev,
-				"failed to restore FIR stage %u on resume: %d\n",
+			dev_err(dev, "failed to restore FIR stage %u on resume: %d\n",
 				i, err);
 	}
 
@@ -1977,7 +2000,7 @@ static int es9039q2m_i2c_probe(struct i2c_client *i2c)
 	dev_info(dev, "ES9039Q2M at 0x%02x, mclk %u Hz\n",
 		 i2c->addr, priv->mclk_rate);
 
-	return devm_snd_soc_register_component(dev, &es9039q2m_component,
+	return devm_snd_soc_component_register(dev, &es9039q2m_component,
 					       &es9039q2m_dai, 1);
 }
 

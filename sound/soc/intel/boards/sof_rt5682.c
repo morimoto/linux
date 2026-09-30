@@ -145,8 +145,8 @@ static struct snd_soc_jack_pin jack_pins[] = {
 
 static int sof_rt5682_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(rtd->card);
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct sof_card_private *ctx = snd_soc_card_to_priv(rtd->card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	struct snd_soc_jack *jack = &ctx->headset_jack;
 	int extra_jack_data;
 	int ret, mclk_freq;
@@ -251,7 +251,7 @@ static int sof_rt5682_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 static void sof_rt5682_codec_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	snd_soc_component_set_jack(component, NULL, NULL);
 }
@@ -260,7 +260,7 @@ static int sof_rt5682_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(rtd->card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	int pll_id, pll_source, pll_in, pll_out, clk_id, ret;
 
@@ -408,7 +408,7 @@ static const struct snd_soc_ops sof_rt5682_ops = {
 
 static int sof_card_late_probe(struct snd_soc_card *card)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(card);
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	int err;
 
@@ -474,7 +474,7 @@ static int rt5650_spk_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, rt5650_spk_kcontrols,
+	ret = snd_soc_card_add_controls(card, rt5650_spk_kcontrols,
 					ARRAY_SIZE(rt5650_spk_kcontrols));
 	if (ret) {
 		dev_err(rtd->dev, "fail to add rt5650 spk kcontrols, ret %d\n",
