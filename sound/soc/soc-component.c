@@ -1589,19 +1589,13 @@ int snd_soc_component_probe(struct snd_soc_component *component, struct snd_soc_
 					component->driver->dapm_widgets,
 					component->driver->num_dapm_widgets);
 
-	if (ret != 0) {
-		dev_err(component->dev,
-			"Failed to create new controls %d\n", ret);
+	if (ret != 0)
 		goto err_probe;
-	}
 
 	for_each_component_dais(component, dai) {
 		ret = snd_soc_dapm_new_dai_widgets(dapm, dai);
-		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to create DAI widgets %d\n", ret);
+		if (ret != 0)
 			goto err_probe;
-		}
 	}
 
 	if (component->driver->probe) {
@@ -1832,11 +1826,8 @@ static int snd_soc_component_add(struct snd_soc_component *component,
 	}
 
 	ret = snd_soc_component_register_dais(component, dai_drv, num_dai);
-	if (ret < 0) {
-		dev_err(component->dev, "ASoC: Failed to register DAIs: %d\n",
-			ret);
+	if (ret < 0)
 		goto err_cleanup;
-	}
 
 	if (!component->driver->write && !component->driver->read) {
 		if (!component->regmap)
