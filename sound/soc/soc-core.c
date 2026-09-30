@@ -871,7 +871,7 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 				   struct snd_soc_dai_link *dai_link)
 {
 	struct snd_soc_pcm_runtime *rtd;
-	struct snd_soc_dai_link_component *codec, *platform, *cpu;
+	struct snd_soc_dai_link_component *dlc;
 	struct snd_soc_component *component;
 	struct device *dev = snd_soc_card_to_dev(card);
 	int i, id, ret;
@@ -898,26 +898,26 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 	if (!rtd)
 		return -ENOMEM;
 
-	for_each_link_cpus(dai_link, i, cpu) {
-		struct snd_soc_dai *cpu_dai = snd_soc_find_dai_nolock(cpu);
+	for_each_link_cpus(dai_link, i, dlc) {
+		struct snd_soc_dai *cpu_dai = snd_soc_find_dai_nolock(dlc);
 
 		snd_soc_rtd_to_cpu(rtd, i) = cpu_dai;
 		if (!cpu_dai) {
 			dev_info(dev, "ASoC: CPU DAI %s not registered\n",
-				 cpu->dai_name);
+				 dlc->dai_name);
 			goto _err_defer;
 		}
 		snd_soc_rtd_add_component(rtd, snd_soc_dai_to_component(cpu_dai));
 	}
 
 	/* Find CODEC from registered CODECs */
-	for_each_link_codecs(dai_link, i, codec) {
-		struct snd_soc_dai *codec_dai = snd_soc_find_dai_nolock(codec);
+	for_each_link_codecs(dai_link, i, dlc) {
+		struct snd_soc_dai *codec_dai = snd_soc_find_dai_nolock(dlc);
 
 		snd_soc_rtd_to_codec(rtd, i) = codec_dai;
 		if (!codec_dai) {
 			dev_info(dev, "ASoC: CODEC DAI %s not registered\n",
-				 codec->dai_name);
+				 dlc->dai_name);
 			goto _err_defer;
 		}
 
@@ -925,9 +925,9 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 	}
 
 	/* Find PLATFORM from registered PLATFORMs */
-	for_each_link_platforms(dai_link, i, platform) {
+	for_each_link_platforms(dai_link, i, dlc) {
 		for_each_component(component) {
-			if (!snd_soc_component_matches_dlc(component, platform))
+			if (!snd_soc_component_matches_dlc(component, dlc))
 				continue;
 
 			if (snd_soc_component_is_dummy(component) &&
@@ -1295,11 +1295,11 @@ int snd_soc_of_parse_tdm_slot(struct device_node *np,
 }
 EXPORT_SYMBOL_GPL(snd_soc_of_parse_tdm_slot);
 
-void snd_soc_dlc_use_cpu_as_platform(struct snd_soc_dai_link_component *platforms,
-				     struct snd_soc_dai_link_component *cpus)
+void snd_soc_dlc_use_cpu_as_platform(struct snd_soc_dai_link_component *dlc_platforms,
+				     struct snd_soc_dai_link_component *dlc_cpus)
 {
-	platforms->of_node	= cpus->of_node;
-	platforms->dai_args	= cpus->dai_args;
+	dlc_platforms->of_node	= dlc_cpus->of_node;
+	dlc_platforms->dai_args	= dlc_cpus->dai_args;
 }
 EXPORT_SYMBOL_GPL(snd_soc_dlc_use_cpu_as_platform);
 
@@ -1681,20 +1681,20 @@ struct snd_soc_dai *snd_soc_get_dai_via_args(const struct of_phandle_args *dai_a
 }
 EXPORT_SYMBOL_GPL(snd_soc_get_dai_via_args);
 
-static void __snd_soc_of_put_component(struct snd_soc_dai_link_component *component)
+static void snd_soc_of_put_dlc(struct snd_soc_dai_link_component *dlc)
 {
-	if (component->of_node) {
-		of_node_put(component->of_node);
-		component->of_node = NULL;
+	if (dlc->of_node) {
+		of_node_put(dlc->of_node);
+		dlc->of_node = NULL;
 	}
 }
 
 static int __snd_soc_of_get_dai_link_component_alloc(
 	struct device *dev, struct device_node *of_node,
-	struct snd_soc_dai_link_component **ret_component,
+	struct snd_soc_dai_link_component **ret_dlc,
 	int *ret_num)
 {
-	struct snd_soc_dai_link_component *component;
+	struct snd_soc_dai_link_component *dlc;
 	int num;
 
 	/* Count the number of CPUs/CODECs */
@@ -1706,11 +1706,11 @@ static int __snd_soc_of_get_dai_link_component_alloc(
 			dev_err(dev, "Bad phandle in 'sound-dai'\n");
 		return num;
 	}
-	component = devm_kcalloc(dev, num, sizeof(*component), GFP_KERNEL);
-	if (!component)
+	dlc = devm_kcalloc(dev, num, sizeof(*dlc), GFP_KERNEL);
+	if (!dlc)
 		return -ENOMEM;
 
-	*ret_component	= component;
+	*ret_dlc	= dlc;
 	*ret_num	= num;
 
 	return 0;
@@ -1724,11 +1724,11 @@ static int __snd_soc_of_get_dai_link_component_alloc(
  */
 void snd_soc_of_put_dai_link_codecs(struct snd_soc_dai_link *dai_link)
 {
-	struct snd_soc_dai_link_component *component;
+	struct snd_soc_dai_link_component *dlc;
 	int index;
 
-	for_each_link_codecs(dai_link, index, component)
-		__snd_soc_of_put_component(component);
+	for_each_link_codecs(dai_link, index, dlc)
+		snd_soc_of_put_dlc(dlc);
 }
 EXPORT_SYMBOL_GPL(snd_soc_of_put_dai_link_codecs);
 
@@ -1750,7 +1750,7 @@ int snd_soc_of_get_dai_link_codecs(struct device *dev,
 				   struct device_node *of_node,
 				   struct snd_soc_dai_link *dai_link)
 {
-	struct snd_soc_dai_link_component *component;
+	struct snd_soc_dai_link_component *dlc;
 	int index, ret;
 
 	ret = __snd_soc_of_get_dai_link_component_alloc(dev, of_node,
@@ -1759,8 +1759,8 @@ int snd_soc_of_get_dai_link_codecs(struct device *dev,
 		return ret;
 
 	/* Parse the list */
-	for_each_link_codecs(dai_link, index, component) {
-		ret = snd_soc_of_get_dlc(of_node, NULL, component, index);
+	for_each_link_codecs(dai_link, index, dlc) {
+		ret = snd_soc_of_get_dlc(of_node, NULL, dlc, index);
 		if (ret)
 			goto err;
 	}
@@ -1781,11 +1781,11 @@ EXPORT_SYMBOL_GPL(snd_soc_of_get_dai_link_codecs);
  */
 void snd_soc_of_put_dai_link_cpus(struct snd_soc_dai_link *dai_link)
 {
-	struct snd_soc_dai_link_component *component;
+	struct snd_soc_dai_link_component *dlc;
 	int index;
 
-	for_each_link_cpus(dai_link, index, component)
-		__snd_soc_of_put_component(component);
+	for_each_link_cpus(dai_link, index, dlc)
+		snd_soc_of_put_dlc(dlc);
 }
 EXPORT_SYMBOL_GPL(snd_soc_of_put_dai_link_cpus);
 
@@ -1804,7 +1804,7 @@ int snd_soc_of_get_dai_link_cpus(struct device *dev,
 				 struct device_node *of_node,
 				 struct snd_soc_dai_link *dai_link)
 {
-	struct snd_soc_dai_link_component *component;
+	struct snd_soc_dai_link_component *dlc;
 	int index, ret;
 
 	/* Count the number of CPUs */
@@ -1814,8 +1814,8 @@ int snd_soc_of_get_dai_link_cpus(struct device *dev,
 		return ret;
 
 	/* Parse the list */
-	for_each_link_cpus(dai_link, index, component) {
-		ret = snd_soc_of_get_dlc(of_node, NULL, component, index);
+	for_each_link_cpus(dai_link, index, dlc) {
+		ret = snd_soc_of_get_dlc(of_node, NULL, dlc, index);
 		if (ret)
 			goto err;
 	}
