@@ -231,7 +231,7 @@ static const struct snd_soc_dapm_route wm9705_audio_map[] = {
 static int ac97_prepare(struct snd_pcm_substream *substream,
 			struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int reg;
 
 	snd_soc_component_update_bits(component, AC97_EXTENDED_STATUS, 0x1, 0x1);
@@ -287,16 +287,17 @@ static struct snd_soc_dai_driver wm9705_dai[] = {
 #ifdef CONFIG_PM
 static int wm9705_soc_suspend(struct snd_soc_component *component)
 {
-	regcache_cache_bypass(component->regmap, true);
+	snd_soc_component_regcache_cache_bypass(component, true);
 	snd_soc_component_write(component, AC97_POWERDOWN, 0xffff);
-	regcache_cache_bypass(component->regmap, false);
+	snd_soc_component_regcache_cache_bypass(component, false);
 
 	return 0;
 }
 
 static int wm9705_soc_resume(struct snd_soc_component *component)
 {
-	struct wm9705_priv *wm9705 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9705_priv *wm9705 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = snd_ac97_reset(wm9705->ac97, true, WM9705_VENDOR_ID,
@@ -304,7 +305,7 @@ static int wm9705_soc_resume(struct snd_soc_component *component)
 	if (ret < 0)
 		return ret;
 
-	snd_soc_component_cache_sync(component);
+	snd_soc_component_regcache_sync(component);
 
 	return 0;
 }
@@ -315,7 +316,8 @@ static int wm9705_soc_resume(struct snd_soc_component *component)
 
 static int wm9705_soc_probe(struct snd_soc_component *component)
 {
-	struct wm9705_priv *wm9705 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9705_priv *wm9705 = dev_get_drvdata(dev);
 	struct regmap *regmap;
 
 	if (wm9705->mfd_pdata) {
@@ -325,7 +327,7 @@ static int wm9705_soc_probe(struct snd_soc_component *component)
 		wm9705->ac97 = snd_soc_new_ac97_component(component, WM9705_VENDOR_ID,
 						      WM9705_VENDOR_ID_MASK);
 		if (IS_ERR(wm9705->ac97)) {
-			dev_err(component->dev, "Failed to register AC97 codec\n");
+			dev_err(dev, "Failed to register AC97 codec\n");
 			return PTR_ERR(wm9705->ac97);
 		}
 
@@ -338,18 +340,19 @@ static int wm9705_soc_probe(struct snd_soc_component *component)
 		return -ENXIO;
 	}
 
-	snd_soc_component_set_drvdata(component, wm9705->ac97);
-	snd_soc_component_init_regmap(component, regmap);
+	dev_set_drvdata(dev, wm9705->ac97);
+	snd_soc_component_regmap_init(component, regmap);
 
 	return 0;
 }
 
 static void wm9705_soc_remove(struct snd_soc_component *component)
 {
-	struct wm9705_priv *wm9705 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm9705_priv *wm9705 = dev_get_drvdata(dev);
 
 	if (IS_ENABLED(CONFIG_SND_SOC_AC97_BUS) && !wm9705->mfd_pdata) {
-		snd_soc_component_exit_regmap(component);
+		snd_soc_component_regmap_exit(component);
 		snd_soc_free_ac97_component(wm9705->ac97);
 	}
 }
@@ -381,7 +384,7 @@ static int wm9705_probe(struct platform_device *pdev)
 	wm9705->mfd_pdata = dev_get_platdata(&pdev->dev);
 	platform_set_drvdata(pdev, wm9705);
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 			&soc_component_dev_wm9705, wm9705_dai, ARRAY_SIZE(wm9705_dai));
 }
 

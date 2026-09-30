@@ -327,8 +327,9 @@ static int ml26124_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *hw_params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ml26124_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ml26124_priv *priv = dev_get_drvdata(dev);
 	int i = get_coeff(priv->mclk, params_rate(hw_params));
 	int srate;
 
@@ -352,7 +353,7 @@ static int ml26124_hw_params(struct snd_pcm_substream *substream,
 					    BIT(0) | BIT(1), 3);
 			break;
 		default:
-			dev_err(component->dev, "Unsupported MCLKI\n");
+			dev_err(dev, "Unsupported MCLKI\n");
 			break;
 		}
 	} else {
@@ -376,8 +377,9 @@ static int ml26124_hw_params(struct snd_pcm_substream *substream,
 
 static int ml26124_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ml26124_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ml26124_priv *priv = dev_get_drvdata(dev);
 
 	switch (priv->substream->stream) {
 	case SNDRV_PCM_STREAM_CAPTURE:
@@ -402,7 +404,7 @@ static int ml26124_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
 	unsigned char mode;
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -438,8 +440,9 @@ static int ml26124_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int ml26124_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct ml26124_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ml26124_priv *priv = dev_get_drvdata(dev);
 
 	switch (clk_id) {
 	case ML26124_USE_PLLOUT:
@@ -460,7 +463,8 @@ static int ml26124_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int ml26124_set_bias_level(struct snd_soc_component *component,
 		enum snd_soc_bias_level level)
 {
-	struct ml26124_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ml26124_priv *priv = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -576,7 +580,7 @@ static int ml26124_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 
-	return devm_snd_soc_register_component(&i2c->dev,
+	return devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_ml26124, &ml26124_dai, 1);
 }
 

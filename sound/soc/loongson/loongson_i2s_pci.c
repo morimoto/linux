@@ -80,7 +80,7 @@ static int loongson_i2s_pci_probe(struct pci_dev *pdev,
 		udelay(200);
 	}
 
-	ret = devm_snd_soc_register_component(dev, &loongson_i2s_idma_component,
+	ret = devm_snd_soc_component_register(dev, &loongson_i2s_idma_component,
 					      &loongson_i2s_dai, 1);
 	if (ret)
 		return dev_err_probe(dev, ret, "register DAI failed\n");

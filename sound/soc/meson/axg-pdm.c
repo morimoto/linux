@@ -125,7 +125,9 @@ static void axg_pdm_filters_enable(struct regmap *map, bool enable)
 static int axg_pdm_trigger(struct snd_pcm_substream *substream, int cmd,
 			   struct snd_soc_dai *dai)
 {
-	struct axg_pdm *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_pdm *priv = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -224,7 +226,9 @@ static int axg_pdm_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct axg_pdm *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_pdm *priv = dev_get_drvdata(dev);
 	unsigned int os = axg_pdm_get_os(priv);
 	unsigned int rate = params_rate(params);
 	unsigned int val;
@@ -238,7 +242,7 @@ static int axg_pdm_hw_params(struct snd_pcm_substream *substream,
 		val = 0;
 		break;
 	default:
-		dev_err(dai->dev, "unsupported sample width\n");
+		dev_err(dev, "unsupported sample width\n");
 		return -EINVAL;
 	}
 
@@ -246,19 +250,19 @@ static int axg_pdm_hw_params(struct snd_pcm_substream *substream,
 
 	ret = axg_pdm_set_sysclk(priv, os, rate);
 	if (ret) {
-		dev_err(dai->dev, "failed to set system clock\n");
+		dev_err(dev, "failed to set system clock\n");
 		return ret;
 	}
 
 	ret = clk_set_rate(priv->dclk, rate * os);
 	if (ret) {
-		dev_err(dai->dev, "failed to set dclk\n");
+		dev_err(dev, "failed to set dclk\n");
 		return ret;
 	}
 
 	ret = axg_pdm_set_sample_pointer(priv);
 	if (ret) {
-		dev_err(dai->dev, "invalid clock setting\n");
+		dev_err(dev, "invalid clock setting\n");
 		return ret;
 	}
 
@@ -270,12 +274,14 @@ static int axg_pdm_hw_params(struct snd_pcm_substream *substream,
 static int axg_pdm_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct axg_pdm *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_pdm *priv = dev_get_drvdata(dev);
 	int ret;
 
 	ret = clk_prepare_enable(priv->dclk);
 	if (ret) {
-		dev_err(dai->dev, "enabling dclk failed\n");
+		dev_err(dev, "enabling dclk failed\n");
 		return ret;
 	}
 
@@ -288,7 +294,9 @@ static int axg_pdm_startup(struct snd_pcm_substream *substream,
 static void axg_pdm_shutdown(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct axg_pdm *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_pdm *priv = dev_get_drvdata(dev);
 
 	axg_pdm_filters_enable(priv->map, false);
 	clk_disable_unprepare(priv->dclk);
@@ -373,12 +381,14 @@ static int axg_pdm_set_lpf_filters(struct axg_pdm *priv)
 
 static int axg_pdm_dai_probe(struct snd_soc_dai *dai)
 {
-	struct axg_pdm *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_pdm *priv = dev_get_drvdata(dev);
 	int ret;
 
 	ret = clk_prepare_enable(priv->pclk);
 	if (ret) {
-		dev_err(dai->dev, "enabling pclk failed\n");
+		dev_err(dev, "enabling pclk failed\n");
 		return ret;
 	}
 
@@ -388,13 +398,13 @@ static int axg_pdm_dai_probe(struct snd_soc_dai *dai)
 	 */
 	ret = clk_set_rate(priv->sysclk, priv->cfg->sys_rate);
 	if (ret) {
-		dev_err(dai->dev, "setting sysclk failed\n");
+		dev_err(dev, "setting sysclk failed\n");
 		goto err_pclk;
 	}
 
 	ret = clk_prepare_enable(priv->sysclk);
 	if (ret) {
-		dev_err(dai->dev, "enabling sysclk failed\n");
+		dev_err(dev, "enabling sysclk failed\n");
 		goto err_pclk;
 	}
 
@@ -410,7 +420,7 @@ static int axg_pdm_dai_probe(struct snd_soc_dai *dai)
 
 	ret = axg_pdm_set_lpf_filters(priv);
 	if (ret) {
-		dev_err(dai->dev, "invalid filter configuration\n");
+		dev_err(dev, "invalid filter configuration\n");
 		goto err_sysclk;
 	}
 
@@ -425,7 +435,9 @@ err_pclk:
 
 static int axg_pdm_dai_remove(struct snd_soc_dai *dai)
 {
-	struct axg_pdm *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_pdm *priv = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(priv->sysclk);
 	clk_disable_unprepare(priv->pclk);
@@ -623,7 +635,7 @@ static int axg_pdm_probe(struct platform_device *pdev)
 	if (IS_ERR(priv->sysclk))
 		return dev_err_probe(dev, PTR_ERR(priv->sysclk), "failed to get dclk\n");
 
-	return devm_snd_soc_register_component(dev, &axg_pdm_component_drv,
+	return devm_snd_soc_component_register(dev, &axg_pdm_component_drv,
 					       &axg_pdm_dai_drv, 1);
 }
 

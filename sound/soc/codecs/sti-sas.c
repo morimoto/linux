@@ -99,6 +99,7 @@ static int sti_sas_write_reg(void *context, unsigned int reg,
 static int  sti_sas_init_sas_registers(struct snd_soc_component *component,
 				       struct sti_sas_data *data)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 	/*
 	 * DAC and SPDIF are activated by default
@@ -114,7 +115,7 @@ static int  sti_sas_init_sas_registers(struct snd_soc_component *component,
 		ret = snd_soc_component_update_bits(component, STIH407_AUDIO_GLUE_CTRL,
 					  SPDIF_BIPHASE_IDLE_MASK, 0);
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to update SPDIF registers\n");
+		dev_err(dev, "Failed to update SPDIF registers\n");
 		return ret;
 	}
 
@@ -134,7 +135,7 @@ static int  sti_sas_init_sas_registers(struct snd_soc_component *component,
 					  STIH407_DAC_SOFTMUTE_MASK);
 
 	if (ret < 0) {
-		dev_err(component->dev, "Failed to update DAC registers\n");
+		dev_err(dev, "Failed to update DAC registers\n");
 		return ret;
 	}
 
@@ -146,9 +147,12 @@ static int  sti_sas_init_sas_registers(struct snd_soc_component *component,
  */
 static int sti_sas_dac_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	/* Sanity check only */
 	if ((fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_CBC_CFC) {
-		dev_err(dai->component->dev,
+		dev_err(dev,
 			"%s: ERROR: Unsupported clocking 0x%x\n",
 			__func__, fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK);
 		return -EINVAL;
@@ -173,7 +177,7 @@ static const struct snd_soc_dapm_route stih407_sas_route[] = {
 
 static int stih407_sas_dac_mute(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	if (mute) {
 		return snd_soc_component_update_bits(component, STIH407_AUDIO_DAC_CTRL,
@@ -192,8 +196,11 @@ static int stih407_sas_dac_mute(struct snd_soc_dai *dai, int mute, int stream)
 static int sti_sas_spdif_set_fmt(struct snd_soc_dai *dai,
 				 unsigned int fmt)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	if ((fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_CBC_CFC) {
-		dev_err(dai->component->dev,
+		dev_err(dev,
 			"%s: ERROR: Unsupported clocking mask 0x%x\n",
 			__func__, fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK);
 		return -EINVAL;
@@ -211,7 +218,7 @@ static int sti_sas_spdif_set_fmt(struct snd_soc_dai *dai,
 static int sti_sas_spdif_trigger(struct snd_pcm_substream *substream, int cmd,
 				 struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -250,8 +257,10 @@ static bool sti_sas_volatile_register(struct device *dev, unsigned int reg)
 static int sti_sas_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 			      unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sti_sas_data *drvdata = dev_get_drvdata(component->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_sas_data *drvdata = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
 	if (dir == SND_SOC_CLOCK_OUT)
 		return 0;
@@ -259,7 +268,7 @@ static int sti_sas_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 	if (clk_id != 0)
 		return -EINVAL;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case STI_SAS_DAI_SPDIF_OUT:
 		drvdata->spdif.mclk = freq;
 		break;
@@ -275,20 +284,22 @@ static int sti_sas_set_sysclk(struct snd_soc_dai *dai, int clk_id,
 static int sti_sas_prepare(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct sti_sas_data *drvdata = dev_get_drvdata(component->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_sas_data *drvdata = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *runtime = substream->runtime;
+	int dai_id = snd_soc_dai_id(dai);
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case STI_SAS_DAI_SPDIF_OUT:
 		if ((drvdata->spdif.mclk / runtime->rate) != 128) {
-			dev_err(component->dev, "unexpected mclk-fs ratio\n");
+			dev_err(dev, "unexpected mclk-fs ratio\n");
 			return -EINVAL;
 		}
 		break;
 	case STI_SAS_DAI_ANALOG_OUT:
 		if ((drvdata->dac.mclk / runtime->rate) != 256) {
-			dev_err(component->dev, "unexpected mclk-fs ratio\n");
+			dev_err(dev, "unexpected mclk-fs ratio\n");
 			return -EINVAL;
 		}
 		break;
@@ -363,7 +374,8 @@ static struct snd_soc_dai_driver sti_sas_dai[] = {
 #ifdef CONFIG_PM_SLEEP
 static int sti_sas_resume(struct snd_soc_component *component)
 {
-	struct sti_sas_data *drvdata = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_sas_data *drvdata = dev_get_drvdata(dev);
 
 	return sti_sas_init_sas_registers(component, drvdata);
 }
@@ -373,7 +385,8 @@ static int sti_sas_resume(struct snd_soc_component *component)
 
 static int sti_sas_component_probe(struct snd_soc_component *component)
 {
-	struct sti_sas_data *drvdata = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_sas_data *drvdata = dev_get_drvdata(dev);
 
 	return sti_sas_init_sas_registers(component, drvdata);
 }
@@ -445,7 +458,7 @@ static int sti_sas_driver_probe(struct platform_device *pdev)
 	/* Store context */
 	dev_set_drvdata(&pdev->dev, drvdata);
 
-	return devm_snd_soc_register_component(&pdev->dev, &sti_sas_driver,
+	return devm_snd_soc_component_register(&pdev->dev, &sti_sas_driver,
 					sti_sas_dai,
 					ARRAY_SIZE(sti_sas_dai));
 }

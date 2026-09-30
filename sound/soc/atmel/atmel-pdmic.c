@@ -105,7 +105,7 @@ static int atmel_pdmic_cpu_dai_startup(struct snd_pcm_substream *substream,
 					struct snd_soc_dai *cpu_dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct atmel_pdmic *dd = snd_soc_card_get_drvdata(rtd->card);
+	struct atmel_pdmic *dd = snd_soc_card_to_priv(rtd->card);
 	int ret;
 
 	ret = clk_prepare_enable(dd->gclk);
@@ -133,7 +133,7 @@ static void atmel_pdmic_cpu_dai_shutdown(struct snd_pcm_substream *substream,
 					struct snd_soc_dai *cpu_dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct atmel_pdmic *dd = snd_soc_card_get_drvdata(rtd->card);
+	struct atmel_pdmic *dd = snd_soc_card_to_priv(rtd->card);
 
 	/* Disable the overrun error interrupt */
 	regmap_write(dd->regmap, PDMIC_IDR, PDMIC_IDR_OVRE);
@@ -146,8 +146,8 @@ static int atmel_pdmic_cpu_dai_prepare(struct snd_pcm_substream *substream,
 					struct snd_soc_dai *cpu_dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct atmel_pdmic *dd = snd_soc_card_get_drvdata(rtd->card);
-	struct snd_soc_component *component = cpu_dai->component;
+	struct atmel_pdmic *dd = snd_soc_card_to_priv(rtd->card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
 	u32 val;
 	int ret;
 
@@ -192,7 +192,7 @@ atmel_pdmic_platform_configure_dma(struct snd_pcm_substream *substream,
 				struct dma_slave_config *slave_config)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct atmel_pdmic *dd = snd_soc_card_get_drvdata(rtd->card);
+	struct atmel_pdmic *dd = snd_soc_card_to_priv(rtd->card);
 	int ret;
 
 	ret = snd_hwparams_to_dma_slave_config(substream, params,
@@ -340,8 +340,9 @@ SOC_SINGLE("SINCC Filter Switch", PDMIC_DSPR0, PDMIC_DSPR0_SINBYP_SHIFT, 1, 1),
 
 static int atmel_pdmic_component_probe(struct snd_soc_component *component)
 {
-	struct snd_soc_card *card = snd_soc_component_get_drvdata(component);
-	struct atmel_pdmic *dd = snd_soc_card_get_drvdata(card);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = dev_get_drvdata(dev);
+	struct atmel_pdmic *dd = snd_soc_card_to_priv(card);
 
 	snd_soc_component_update_bits(component, PDMIC_DSPR1, PDMIC_DSPR1_OFFSET_MASK,
 		     (u32)(dd->pdata->mic_offset << PDMIC_DSPR1_OFFSET_SHIFT));
@@ -357,8 +358,9 @@ atmel_pdmic_cpu_dai_hw_params(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *cpu_dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct atmel_pdmic *dd = snd_soc_card_get_drvdata(rtd->card);
-	struct snd_soc_component *component = cpu_dai->component;
+	struct atmel_pdmic *dd = snd_soc_card_to_priv(rtd->card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int rate_min = substream->runtime->hw.rate_min;
 	unsigned int rate_max = substream->runtime->hw.rate_max;
 	int fs = params_rate(params);
@@ -368,14 +370,12 @@ atmel_pdmic_cpu_dai_hw_params(struct snd_pcm_substream *substream,
 	u32 mr_val, dspr0_val, pclk_prescal, gclk_prescal;
 
 	if (params_channels(params) != 1) {
-		dev_err(component->dev,
-			"only supports one channel\n");
+		dev_err(dev, "only supports one channel\n");
 		return -EINVAL;
 	}
 
 	if ((fs < rate_min) || (fs > rate_max)) {
-		dev_err(component->dev,
-			"sample rate is %dHz, min rate is %dHz, max rate is %dHz\n",
+		dev_err(dev, "sample rate is %dHz, min rate is %dHz, max rate is %dHz\n",
 			fs, rate_min, rate_max);
 
 		return -EINVAL;
@@ -431,7 +431,7 @@ atmel_pdmic_cpu_dai_hw_params(struct snd_pcm_substream *substream,
 static int atmel_pdmic_cpu_dai_trigger(struct snd_pcm_substream *substream,
 				       int cmd, struct snd_soc_dai *cpu_dai)
 {
-	struct snd_soc_component *component = cpu_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
 	u32 val;
 
 	switch (cmd) {
@@ -489,7 +489,7 @@ static int atmel_pdmic_asoc_card_init(struct snd_soc_card *card,
 				      struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *dai_link;
-	struct atmel_pdmic *dd = snd_soc_card_get_drvdata(card);
+	struct atmel_pdmic *dd = snd_soc_card_to_priv(card);
 	struct snd_soc_dai_link_component *comp;
 	struct device *dev = snd_soc_card_to_dev(card);
 
@@ -644,7 +644,7 @@ static int atmel_pdmic_probe(struct platform_device *pdev)
 	/* register cpu dai */
 	atmel_pdmic_cpu_dai.capture.rate_min = rate_min;
 	atmel_pdmic_cpu_dai.capture.rate_max = rate_max;
-	ret = devm_snd_soc_register_component(dev,
+	ret = devm_snd_soc_component_register(dev,
 					      &atmel_pdmic_cpu_dai_component,
 					      &atmel_pdmic_cpu_dai, 1);
 	if (ret) {
@@ -669,7 +669,7 @@ static int atmel_pdmic_probe(struct platform_device *pdev)
 		goto unregister_codec;
 	}
 
-	snd_soc_card_set_drvdata(card, dd);
+	snd_soc_card_set_priv(card, dd);
 
 	ret = atmel_pdmic_asoc_card_init(card, card_driver);
 	if (ret) {

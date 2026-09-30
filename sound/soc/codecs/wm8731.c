@@ -68,7 +68,8 @@ static int wm8731_deemph[] = { 0, 32000, 44100, 48000 };
 
 static int wm8731_set_deemph(struct snd_soc_component *component)
 {
-	struct wm8731_priv *wm8731 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8731_priv *wm8731 = dev_get_drvdata(dev);
 	int val, i, best;
 
 	/* If we're using deemphasis select the nearest available sample
@@ -88,8 +89,7 @@ static int wm8731_set_deemph(struct snd_soc_component *component)
 		val = 0;
 	}
 
-	dev_dbg(component->dev, "Set deemphasis %d (%dHz)\n",
-		best, wm8731_deemph[best]);
+	dev_dbg(dev, "Set deemphasis %d (%dHz)\n", best, wm8731_deemph[best]);
 
 	return snd_soc_component_update_bits(component, WM8731_APDIGI, 0x6, val);
 }
@@ -98,7 +98,8 @@ static int wm8731_get_deemph(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8731_priv *wm8731 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8731_priv *wm8731 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = wm8731->deemph;
 
@@ -109,7 +110,8 @@ static int wm8731_put_deemph(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm8731_priv *wm8731 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8731_priv *wm8731 = dev_get_drvdata(dev);
 	unsigned int deemph = ucontrol->value.integer.value[0];
 
 	if (deemph > 1)
@@ -191,7 +193,8 @@ static int wm8731_check_osc(struct snd_soc_dapm_widget *source,
 			    struct snd_soc_dapm_widget *sink)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
-	struct wm8731_priv *wm8731 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8731_priv *wm8731 = dev_get_drvdata(dev);
 
 	return wm8731->sysclk_type == WM8731_SYSCLK_XTAL;
 }
@@ -313,8 +316,9 @@ static int wm8731_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct wm8731_priv *wm8731 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8731_priv *wm8731 = dev_get_drvdata(dev);
 	u16 iface = snd_soc_component_read(component, WM8731_IFACE) & 0xfff3;
 	int i = get_coeff(wm8731->sysclk, params_rate(params));
 	u16 srate = (coeff_div[i].sr << 2) |
@@ -347,7 +351,7 @@ static int wm8731_hw_params(struct snd_pcm_substream *substream,
 
 static int wm8731_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 mute_reg = snd_soc_component_read(component, WM8731_APDIGI) & 0xfff7;
 
 	if (mute)
@@ -360,9 +364,10 @@ static int wm8731_mute(struct snd_soc_dai *dai, int mute, int direction)
 static int wm8731_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 		int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct wm8731_priv *wm8731 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8731_priv *wm8731 = dev_get_drvdata(dev);
 
 	switch (clk_id) {
 	case WM8731_SYSCLK_XTAL:
@@ -405,7 +410,7 @@ static int wm8731_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int wm8731_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 iface = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
@@ -463,7 +468,8 @@ static int wm8731_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int wm8731_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm8731_priv *wm8731 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8731_priv *wm8731 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	int ret;
 	u16 reg;
@@ -504,7 +510,9 @@ static int wm8731_set_bias_level(struct snd_soc_component *component,
 static int wm8731_startup(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct wm8731_priv *wm8731 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8731_priv *wm8731 = dev_get_drvdata(dev);
 
 	if (wm8731->constraints)
 		snd_pcm_hw_constraint_list(substream->runtime, 0,
@@ -628,7 +636,7 @@ int wm8731_init(struct device *dev, struct wm8731_priv *wm8731)
 
 	regcache_mark_dirty(wm8731->regmap);
 
-	ret = devm_snd_soc_register_component(dev,
+	ret = devm_snd_soc_component_register(dev,
 			&soc_component_dev_wm8731, &wm8731_dai, 1);
 	if (ret != 0) {
 		dev_err(dev, "Failed to register CODEC: %d\n", ret);

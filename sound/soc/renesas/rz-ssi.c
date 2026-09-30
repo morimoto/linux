@@ -700,7 +700,9 @@ static int rz_ssi_trigger_resume(struct rz_ssi_priv *ssi, struct rz_ssi_stream *
 static int rz_ssi_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 			      struct snd_soc_dai *dai)
 {
-	struct rz_ssi_priv *ssi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rz_ssi_priv *ssi = dev_get_drvdata(dev);
 	struct rz_ssi_stream *strm = rz_ssi_stream_get(ssi, substream);
 	int ret = 0;
 
@@ -742,7 +744,9 @@ static int rz_ssi_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int rz_ssi_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct rz_ssi_priv *ssi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rz_ssi_priv *ssi = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_BP_FP:
@@ -794,7 +798,9 @@ static int rz_ssi_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rz_ssi_startup(struct snd_pcm_substream *substream,
 			  struct snd_soc_dai *dai)
 {
-	struct rz_ssi_priv *ssi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rz_ssi_priv *ssi = dev_get_drvdata(dev);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 		ssi->dup.tx_active = true;
@@ -807,7 +813,9 @@ static int rz_ssi_startup(struct snd_pcm_substream *substream,
 static void rz_ssi_shutdown(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *dai)
 {
-	struct rz_ssi_priv *ssi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rz_ssi_priv *ssi = dev_get_drvdata(dev);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 		ssi->dup.tx_active = false;
@@ -846,7 +854,9 @@ static int rz_ssi_dai_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct rz_ssi_priv *ssi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rz_ssi_priv *ssi = dev_get_drvdata(dev);
 	unsigned int sample_bits = hw_param_interval(params,
 					SNDRV_PCM_HW_PARAM_SAMPLE_BITS)->min;
 	unsigned int sample_width = params_width(params);
@@ -892,10 +902,12 @@ static int rz_ssi_dai_hw_params(struct snd_pcm_substream *substream,
 
 static int rz_ssi_dai_probe(struct snd_soc_dai *dai)
 {
-	struct rz_ssi_priv *ssi = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rz_ssi_priv *ssi = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, &ssi->dma_dais[SNDRV_PCM_STREAM_PLAYBACK],
-				  &ssi->dma_dais[SNDRV_PCM_STREAM_CAPTURE]);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &ssi->dma_dais[SNDRV_PCM_STREAM_PLAYBACK]);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &ssi->dma_dais[SNDRV_PCM_STREAM_CAPTURE]);
 
 	return 0;
 }
@@ -953,9 +965,8 @@ static int rz_ssi_pcm_open_dma(struct snd_soc_component *component,
 static snd_pcm_uframes_t rz_ssi_pcm_pointer(struct snd_soc_component *component,
 					    struct snd_pcm_substream *substream)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_soc_dai *dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct rz_ssi_priv *ssi = snd_soc_dai_get_drvdata(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rz_ssi_priv *ssi = dev_get_drvdata(dev);
 	struct rz_ssi_stream *strm = rz_ssi_stream_get(ssi, substream);
 
 	return strm->buffer_pos;
@@ -965,7 +976,7 @@ static int rz_ssi_pcm_new(struct snd_soc_component *component,
 			  struct snd_soc_pcm_runtime *rtd)
 {
 	snd_pcm_set_managed_buffer_all(rtd->pcm, SNDRV_DMA_TYPE_DEV,
-				       rtd->card->snd_card->dev,
+				       snd_soc_card_to_dev(rtd->card),
 				       rz_ssi_pcm_hardware.buffer_bytes_max,
 				       rz_ssi_pcm_hardware.buffer_bytes_max);
 	return 0;
@@ -1156,7 +1167,7 @@ static int rz_ssi_probe(struct platform_device *pdev)
 	if (ret < 0)
 		return dev_err_probe(dev, ret, "Failed to enable runtime PM!\n");
 
-	return devm_snd_soc_register_component(dev, component_driver,
+	return devm_snd_soc_component_register(dev, component_driver,
 					       rz_ssi_soc_dai,
 					       ARRAY_SIZE(rz_ssi_soc_dai));
 }

@@ -672,12 +672,14 @@ static bool stm32_i2s_writeable_reg(struct device *dev, unsigned int reg)
 
 static int stm32_i2s_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 {
-	struct stm32_i2s_data *i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_i2s_data *i2s = dev_get_drvdata(dev);
 	u32 cgfr;
 	u32 cgfr_mask =  I2S_CGFR_I2SSTD_MASK | I2S_CGFR_CKPOL |
 			 I2S_CGFR_WSINV | I2S_CGFR_I2SCFG_MASK;
 
-	dev_dbg(cpu_dai->dev, "fmt %x\n", fmt);
+	dev_dbg(dev, "fmt %x\n", fmt);
 
 	/*
 	 * winv = 0 : default behavior (high/low) for all standards
@@ -698,7 +700,7 @@ static int stm32_i2s_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 		break;
 	/* DSP_B not mapped on I2S PCM long format. 1 bit offset does not fit */
 	default:
-		dev_err(cpu_dai->dev, "Unsupported protocol %#x\n",
+		dev_err(dev, "Unsupported protocol %#x\n",
 			fmt & SND_SOC_DAIFMT_FORMAT_MASK);
 		return -EINVAL;
 	}
@@ -718,7 +720,7 @@ static int stm32_i2s_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 		cgfr |= I2S_CGFR_WSINV;
 		break;
 	default:
-		dev_err(cpu_dai->dev, "Unsupported strobing %#x\n",
+		dev_err(dev, "Unsupported strobing %#x\n",
 			fmt & SND_SOC_DAIFMT_INV_MASK);
 		return -EINVAL;
 	}
@@ -732,7 +734,7 @@ static int stm32_i2s_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 		i2s->ms_flg = I2S_MS_MASTER;
 		break;
 	default:
-		dev_err(cpu_dai->dev, "Unsupported mode %#x\n",
+		dev_err(dev, "Unsupported mode %#x\n",
 			fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK);
 		return -EINVAL;
 	}
@@ -745,17 +747,19 @@ static int stm32_i2s_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 static int stm32_i2s_set_sysclk(struct snd_soc_dai *cpu_dai,
 				int clk_id, unsigned int freq, int dir)
 {
-	struct stm32_i2s_data *i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_i2s_data *i2s = dev_get_drvdata(dev);
 	int ret = 0;
 
-	dev_dbg(cpu_dai->dev, "I2S MCLK frequency is %uHz. mode: %s, dir: %s\n",
+	dev_dbg(dev, "I2S MCLK frequency is %uHz. mode: %s, dir: %s\n",
 		freq, STM32_I2S_IS_MASTER(i2s) ? "master" : "slave",
 		dir ? "output" : "input");
 
 	/* MCLK generation is available only in master mode */
 	if (dir == SND_SOC_CLOCK_OUT && STM32_I2S_IS_MASTER(i2s)) {
 		if (!i2s->i2smclk) {
-			dev_dbg(cpu_dai->dev, "No MCLK registered\n");
+			dev_dbg(dev, "No MCLK registered\n");
 			return 0;
 		}
 
@@ -780,7 +784,7 @@ static int stm32_i2s_set_sysclk(struct snd_soc_dai *cpu_dai,
 			return ret;
 		ret = clk_set_rate_exclusive(i2s->i2smclk, freq);
 		if (ret) {
-			dev_err(cpu_dai->dev, "Could not set mclk rate\n");
+			dev_err(dev, "Could not set mclk rate\n");
 			return ret;
 		}
 		ret = regmap_update_bits(i2s->regmap, STM32_I2S_CGFR_REG,
@@ -795,7 +799,9 @@ static int stm32_i2s_set_sysclk(struct snd_soc_dai *cpu_dai,
 static int stm32_i2s_configure_clock(struct snd_soc_dai *cpu_dai,
 				     struct snd_pcm_hw_params *params)
 {
-	struct stm32_i2s_data *i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_i2s_data *i2s = dev_get_drvdata(dev);
 	unsigned long i2s_clock_rate;
 	unsigned int nb_bits, frame_len;
 	unsigned int rate = params_rate(params);
@@ -857,7 +863,9 @@ static int stm32_i2s_configure(struct snd_soc_dai *cpu_dai,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_pcm_substream *substream)
 {
-	struct stm32_i2s_data *i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_i2s_data *i2s = dev_get_drvdata(dev);
 	int format = params_width(params);
 	u32 cfgr, cfgr_mask, cfg1;
 	unsigned int fthlv;
@@ -874,7 +882,7 @@ static int stm32_i2s_configure(struct snd_soc_dai *cpu_dai,
 		cfgr_mask = I2S_CGFR_DATLEN_MASK | I2S_CGFR_CHLEN;
 		break;
 	default:
-		dev_err(cpu_dai->dev, "Unexpected format %d", format);
+		dev_err(dev, "Unexpected format %d", format);
 		return -EINVAL;
 	}
 
@@ -904,7 +912,9 @@ static int stm32_i2s_configure(struct snd_soc_dai *cpu_dai,
 static int stm32_i2s_startup(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_i2s_data *i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_i2s_data *i2s = dev_get_drvdata(dev);
 	int ret;
 
 	scoped_guard(spinlock_irqsave, &i2s->irq_lock)
@@ -916,7 +926,7 @@ static int stm32_i2s_startup(struct snd_pcm_substream *substream,
 
 	ret = clk_prepare_enable(i2s->i2sclk);
 	if (ret < 0) {
-		dev_err(cpu_dai->dev, "Failed to enable clock: %d\n", ret);
+		dev_err(dev, "Failed to enable clock: %d\n", ret);
 		return ret;
 	}
 
@@ -928,12 +938,14 @@ static int stm32_i2s_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_i2s_data *i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_i2s_data *i2s = dev_get_drvdata(dev);
 	int ret;
 
 	ret = stm32_i2s_configure(cpu_dai, params, substream);
 	if (ret < 0) {
-		dev_err(cpu_dai->dev, "Configuration returned error %d\n", ret);
+		dev_err(dev, "Configuration returned error %d\n", ret);
 		return ret;
 	}
 
@@ -946,7 +958,9 @@ static int stm32_i2s_hw_params(struct snd_pcm_substream *substream,
 static int stm32_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 			     struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_i2s_data *i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_i2s_data *i2s = dev_get_drvdata(dev);
 	bool playback_flg = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 	u32 cfg1_mask, ier;
 	int ret;
@@ -956,7 +970,7 @@ static int stm32_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 	case SNDRV_PCM_TRIGGER_RESUME:
 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
 		/* Enable i2s */
-		dev_dbg(cpu_dai->dev, "start I2S %s\n",
+		dev_dbg(dev, "start I2S %s\n",
 			snd_pcm_direction_name(substream->stream));
 
 		cfg1_mask = I2S_CFG1_RXDMAEN | I2S_CFG1_TXDMAEN;
@@ -966,14 +980,14 @@ static int stm32_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 		ret = regmap_update_bits(i2s->regmap, STM32_I2S_CR1_REG,
 					 I2S_CR1_SPE, I2S_CR1_SPE);
 		if (ret < 0) {
-			dev_err(cpu_dai->dev, "Error %d enabling I2S\n", ret);
+			dev_err(dev, "Error %d enabling I2S\n", ret);
 			return ret;
 		}
 
 		ret = regmap_write_bits(i2s->regmap, STM32_I2S_CR1_REG,
 					I2S_CR1_CSTART, I2S_CR1_CSTART);
 		if (ret < 0) {
-			dev_err(cpu_dai->dev, "Error %d starting I2S\n", ret);
+			dev_err(dev, "Error %d starting I2S\n", ret);
 			return ret;
 		}
 
@@ -1002,7 +1016,7 @@ static int stm32_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 	case SNDRV_PCM_TRIGGER_STOP:
 	case SNDRV_PCM_TRIGGER_SUSPEND:
 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-		dev_dbg(cpu_dai->dev, "stop I2S %s\n",
+		dev_dbg(dev, "stop I2S %s\n",
 			snd_pcm_direction_name(substream->stream));
 
 		if (playback_flg)
@@ -1022,7 +1036,7 @@ static int stm32_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 			ret = regmap_update_bits(i2s->regmap, STM32_I2S_CR1_REG,
 						 I2S_CR1_SPE, 0);
 			if (ret < 0) {
-				dev_err(cpu_dai->dev, "Error %d disabling I2S\n", ret);
+				dev_err(dev, "Error %d disabling I2S\n", ret);
 				return ret;
 			}
 		}
@@ -1041,7 +1055,9 @@ static int stm32_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 static void stm32_i2s_shutdown(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_i2s_data *i2s = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_i2s_data *i2s = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(i2s->i2sclk);
 
@@ -1059,7 +1075,9 @@ static void stm32_i2s_shutdown(struct snd_pcm_substream *substream,
 
 static int stm32_i2s_dai_probe(struct snd_soc_dai *cpu_dai)
 {
-	struct stm32_i2s_data *i2s = dev_get_drvdata(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct stm32_i2s_data *i2s = dev_get_drvdata(dev);
 	struct snd_dmaengine_dai_dma_data *dma_data_tx = &i2s->dma_data_tx;
 	struct snd_dmaengine_dai_dma_data *dma_data_rx = &i2s->dma_data_rx;
 
@@ -1071,7 +1089,8 @@ static int stm32_i2s_dai_probe(struct snd_soc_dai *cpu_dai)
 	dma_data_rx->addr = (dma_addr_t)(i2s->phys_addr) + STM32_I2S_RXDR_REG;
 	dma_data_rx->maxburst = 1;
 
-	snd_soc_dai_init_dma_data(cpu_dai, dma_data_tx, dma_data_rx);
+	snd_soc_dai_stream_dma_data_set_playback(cpu_dai, dma_data_tx);
+	snd_soc_dai_stream_dma_data_set_capture(cpu_dai,  dma_data_rx);
 
 	return 0;
 }
@@ -1269,7 +1288,7 @@ static int stm32_i2s_parse_dt(struct platform_device *pdev,
 static void stm32_i2s_remove(struct platform_device *pdev)
 {
 	snd_dmaengine_pcm_unregister(&pdev->dev);
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_component_unregister(&pdev->dev);
 	pm_runtime_disable(&pdev->dev);
 }
 
@@ -1307,7 +1326,7 @@ static int stm32_i2s_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	ret = snd_soc_register_component(&pdev->dev, &stm32_i2s_component,
+	ret = snd_soc_component_register(&pdev->dev, &stm32_i2s_component,
 					 i2s->dai_drv, 1);
 	if (ret) {
 		snd_dmaengine_pcm_unregister(&pdev->dev);

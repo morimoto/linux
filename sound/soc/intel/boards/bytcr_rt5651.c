@@ -156,6 +156,8 @@ static void log_quirks(struct device *dev)
 static int byt_rt5651_prepare_and_enable_pll1(struct snd_soc_dai *codec_dai,
 					      int rate, int bclk_ratio)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int clk_id, clk_freq, ret;
 
 	/* Configure the PLL before selecting it */
@@ -171,14 +173,14 @@ static int byt_rt5651_prepare_and_enable_pll1(struct snd_soc_dai *codec_dai,
 	}
 	ret = snd_soc_dai_set_pll(codec_dai, 0, clk_id, clk_freq, rate * 512);
 	if (ret < 0) {
-		dev_err(codec_dai->component->dev, "can't set pll: %d\n", ret);
+		dev_err(dev, "can't set pll: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5651_SCLK_S_PLL1,
 				     rate * 512, SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(codec_dai->component->dev, "can't set clock %d\n", ret);
+		dev_err(dev, "can't set clock %d\n", ret);
 		return ret;
 	}
 
@@ -190,22 +192,22 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
 	struct snd_soc_dai *codec_dai;
-	struct byt_rt5651_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_rt5651_private *priv = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	codec_dai = snd_soc_card_get_codec_dai(card, BYT_CODEC_DAI1);
 	if (!codec_dai)
 		codec_dai = snd_soc_card_get_codec_dai(card, BYT_CODEC_DAI2);
 	if (!codec_dai) {
-		dev_err(card->dev,
-			"Codec dai not found; Unable to set platform clock\n");
+		dev_err(dev, "Codec dai not found; Unable to set platform clock\n");
 		return -EIO;
 	}
 
 	if (SND_SOC_DAPM_EVENT_ON(event)) {
 		ret = clk_prepare_enable(priv->mclk);
 		if (ret < 0) {
-			dev_err(card->dev, "could not configure MCLK state: %d\n", ret);
+			dev_err(dev, "could not configure MCLK state: %d\n", ret);
 			return ret;
 		}
 		ret = byt_rt5651_prepare_and_enable_pll1(codec_dai, 48000, 50);
@@ -225,7 +227,7 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 	}
 
 	if (ret < 0) {
-		dev_err(card->dev, "can't set codec sysclk: %d\n", ret);
+		dev_err(dev, "can't set codec sysclk: %d\n", ret);
 		return ret;
 	}
 
@@ -236,7 +238,7 @@ static int rt5651_ext_amp_power_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct byt_rt5651_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_rt5651_private *priv = snd_soc_card_to_priv(card);
 
 	if (SND_SOC_DAPM_EVENT_ON(event))
 		gpiod_set_value_cansleep(priv->ext_amp_gpio, 1);
@@ -581,8 +583,9 @@ static int byt_rt5651_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_card *card = runtime->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct snd_soc_component *codec = snd_soc_rtd_to_codec(runtime, 0)->component;
-	struct byt_rt5651_private *priv = snd_soc_card_get_drvdata(card);
+	struct snd_soc_component *codec = snd_soc_dai_to_component(snd_soc_rtd_to_codec(runtime, 0));
+	struct byt_rt5651_private *priv = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	const struct snd_soc_dapm_route *custom_map;
 	int num_routes;
 	int report;
@@ -636,10 +639,10 @@ static int byt_rt5651_init(struct snd_soc_pcm_runtime *runtime)
 	if (ret)
 		return ret;
 
-	ret = snd_soc_add_card_controls(card, byt_rt5651_controls,
+	ret = snd_soc_card_add_controls(card, byt_rt5651_controls,
 					ARRAY_SIZE(byt_rt5651_controls));
 	if (ret) {
-		dev_err(card->dev, "unable to add card controls\n");
+		dev_err(dev, "unable to add card controls\n");
 		return ret;
 	}
 
@@ -661,7 +664,7 @@ static int byt_rt5651_init(struct snd_soc_pcm_runtime *runtime)
 		ret = clk_set_rate(priv->mclk, 19200000);
 
 	if (ret)
-		dev_err(card->dev, "unable to set MCLK rate\n");
+		dev_err(dev, "unable to set MCLK rate\n");
 
 	report = 0;
 	if (BYT_RT5651_JDSRC(byt_rt5651_quirk))
@@ -830,8 +833,10 @@ static int byt_rt5651_suspend(struct snd_soc_card *card)
 		return 0;
 
 	for_each_card_components(card, component) {
-		if (!strcmp(component->name, byt_rt5651_codec_name)) {
-			dev_dbg(component->dev, "disabling jack detect before suspend\n");
+		struct device *dev = snd_soc_component_to_dev(component);
+
+		if (!strcmp(snd_soc_component_name(component), byt_rt5651_codec_name)) {
+			dev_dbg(dev, "disabling jack detect before suspend\n");
 			snd_soc_component_set_jack(component, NULL, NULL);
 			break;
 		}
@@ -842,15 +847,17 @@ static int byt_rt5651_suspend(struct snd_soc_card *card)
 
 static int byt_rt5651_resume(struct snd_soc_card *card)
 {
-	struct byt_rt5651_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_rt5651_private *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_component *component;
 
 	if (!BYT_RT5651_JDSRC(byt_rt5651_quirk))
 		return 0;
 
 	for_each_card_components(card, component) {
-		if (!strcmp(component->name, byt_rt5651_codec_name)) {
-			dev_dbg(component->dev, "re-enabling jack detect after resume\n");
+		struct device *dev = snd_soc_component_to_dev(component);
+
+		if (!strcmp(snd_soc_component_name(component), byt_rt5651_codec_name)) {
+			dev_dbg(dev, "re-enabling jack detect after resume\n");
 			snd_soc_component_set_jack(component, &priv->jack,
 						   priv->hp_detect);
 			break;
@@ -1146,7 +1153,7 @@ err_device:
 static void snd_byt_rt5651_mc_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
-	struct byt_rt5651_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_rt5651_private *priv = snd_soc_card_to_priv(card);
 
 	device_remove_software_node(priv->codec_dev);
 	put_device(priv->codec_dev);

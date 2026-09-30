@@ -110,7 +110,8 @@ static int mtk_adda_mtkaif_cfg_event(struct snd_soc_dapm_widget *w,
 				     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	dev_dbg(afe->dev, "%s(), name %s, event 0x%x\n",
 		__func__, w->name, event);
@@ -131,7 +132,8 @@ static int mtk_adda_dl_event(struct snd_soc_dapm_widget *w,
 			     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	dev_dbg(afe->dev, "%s(), name %s, event 0x%x\n",
 		__func__, w->name, event);
@@ -181,7 +183,8 @@ static int mtk_adda_ul_event(struct snd_soc_dapm_widget *w,
 			     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtkaif_param *param = &afe_priv->mtkaif_params;
 
@@ -208,7 +211,8 @@ static int mtk_adda6_ul_event(struct snd_soc_dapm_widget *w,
 			      int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtkaif_param *param = &afe_priv->mtkaif_params;
 	unsigned int val;
@@ -244,7 +248,8 @@ static int mtk_audio_hires_event(struct snd_soc_dapm_widget *w,
 				 int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct clk *clk = afe_priv->clk[MT8195_CLK_TOP_AUDIO_H_SEL];
 	struct clk *clk_parent;
@@ -290,7 +295,8 @@ static int mtk_afe_adda_hires_connect(struct snd_soc_dapm_widget *source,
 {
 	struct snd_soc_dapm_widget *w = source;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mtk_dai_adda_priv *adda_priv;
 
 	adda_priv = get_adda_priv_by_name(afe, w->name);
@@ -456,7 +462,8 @@ static int mt8195_adda_dl_gain_put(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int reg = AFE_ADDA_DL_SRC2_CON1;
 	unsigned int mask = DL_2_GAIN_CTL_PRE_MASK;
 	unsigned int value = (unsigned int)(ucontrol->value.integer.value[0]);
@@ -469,7 +476,8 @@ static int mt8195_adda_dl_gain_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int reg = AFE_ADDA_DL_SRC2_CON1;
 	unsigned int mask = DL_2_GAIN_CTL_PRE_MASK;
 	unsigned int value = 0;
@@ -485,7 +493,8 @@ static int mt8195_adda6_only_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtkaif_param *param = &afe_priv->mtkaif_params;
 
@@ -497,7 +506,8 @@ static int mt8195_adda6_only_set(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtkaif_param *param = &afe_priv->mtkaif_params;
 	int mtkaif_adda6_only;
@@ -516,7 +526,8 @@ static int mt8195_adda_dmic_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtkaif_param *param = &afe_priv->mtkaif_params;
 
@@ -528,7 +539,8 @@ static int mt8195_adda_dmic_set(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtkaif_param *param = &afe_priv->mtkaif_params;
 	int dmic_on;
@@ -618,20 +630,23 @@ static int mtk_dai_adda_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_adda_priv *adda_priv;
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int rate = params_rate(params);
 	int ret;
 
-	if (dai->id != MT8195_AFE_IO_DL_SRC &&
-	    dai->id != MT8195_AFE_IO_UL_SRC1 &&
-	    dai->id != MT8195_AFE_IO_UL_SRC2)
+	if (dai_id != MT8195_AFE_IO_DL_SRC &&
+	    dai_id != MT8195_AFE_IO_UL_SRC1 &&
+	    dai_id != MT8195_AFE_IO_UL_SRC2)
 		return -EINVAL;
-	adda_priv = afe_priv->dai_priv[dai->id];
+	adda_priv = afe_priv->dai_priv[dai_id];
 
 	dev_dbg(afe->dev, "%s(), id %d, stream %d, rate %d\n",
-		__func__, dai->id, substream->stream, rate);
+		__func__, dai_id, substream->stream, rate);
 
 	if (rate > ADDA_HIRES_THRES)
 		adda_priv->hires_required = 1;
@@ -639,9 +654,9 @@ static int mtk_dai_adda_hw_params(struct snd_pcm_substream *substream,
 		adda_priv->hires_required = 0;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
-		ret = mtk_dai_da_configure(afe, rate, dai->id);
+		ret = mtk_dai_da_configure(afe, rate, dai_id);
 	else
-		ret = mtk_dai_ad_configure(afe, rate, dai->id);
+		ret = mtk_dai_ad_configure(afe, rate, dai_id);
 
 	return ret;
 }

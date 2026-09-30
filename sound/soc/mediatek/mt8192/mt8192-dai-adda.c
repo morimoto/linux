@@ -215,7 +215,8 @@ static int mtk_adda_ul_event(struct snd_soc_dapm_widget *w,
 			     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8192_afe_private *afe_priv = afe->platform_priv;
 	int mtkaif_dmic = afe_priv->mtkaif_dmic;
 	int ret;
@@ -258,7 +259,8 @@ static int mtk_adda_ch34_ul_event(struct snd_soc_dapm_widget *w,
 				  int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8192_afe_private *afe_priv = afe->platform_priv;
 	int mtkaif_dmic = afe_priv->mtkaif_dmic_ch34;
 	int mtkaif_adda6_only = afe_priv->mtkaif_adda6_only;
@@ -325,7 +327,8 @@ static int mtk_adda_pad_top_event(struct snd_soc_dapm_widget *w,
 				  int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8192_afe_private *afe_priv = afe->platform_priv;
 
 	switch (event) {
@@ -347,7 +350,8 @@ static int mtk_adda_mtkaif_cfg_event(struct snd_soc_dapm_widget *w,
 				     int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8192_afe_private *afe_priv = afe->platform_priv;
 	int delay_data;
 	int delay_cycle;
@@ -483,7 +487,8 @@ static int mtk_adda_ch34_dl_event(struct snd_soc_dapm_widget *w,
 				  int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	int ret;
 
 	switch (event) {
@@ -513,7 +518,8 @@ static int stf_positive_gain_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8192_afe_private *afe_priv = afe->platform_priv;
 
 	ucontrol->value.integer.value[0] = afe_priv->stf_positive_gain_db;
@@ -524,7 +530,8 @@ static int stf_positive_gain_set(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8192_afe_private *afe_priv = afe->platform_priv;
 	int gain_db = ucontrol->value.integer.value[0];
 	bool change = false;
@@ -548,7 +555,8 @@ static int mt8192_adda_dmic_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8192_afe_private *afe_priv = afe->platform_priv;
 
 	ucontrol->value.integer.value[0] = afe_priv->mtkaif_dmic;
@@ -559,7 +567,8 @@ static int mt8192_adda_dmic_set(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8192_afe_private *afe_priv = afe->platform_priv;
 	int dmic_on;
 	bool change;
@@ -579,7 +588,8 @@ static int mt8192_adda6_only_get(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8192_afe_private *afe_priv = afe->platform_priv;
 
 	ucontrol->value.integer.value[0] = afe_priv->mtkaif_adda6_only;
@@ -590,7 +600,8 @@ static int mt8192_adda6_only_set(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8192_afe_private *afe_priv = afe->platform_priv;
 	int mtkaif_adda6_only;
 	bool change;
@@ -653,7 +664,8 @@ static int mtk_stf_event(struct snd_soc_dapm_widget *w,
 			 int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	size_t half_tap_num;
 	const u16 *stf_coeff_table;
@@ -1083,9 +1095,11 @@ static int mtk_dai_adda_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
-	int id = dai->id;
+	int id = snd_soc_dai_id(dai);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		unsigned int dl_src2_con0 = 0;

@@ -292,7 +292,7 @@ static int siu_pcm_open(struct snd_soc_component *component,
 			struct snd_pcm_substream *ss)
 {
 	/* Playback / Capture */
-	struct siu_platform *pdata = component->dev->platform_data;
+	struct siu_platform *pdata = snd_soc_component_to_dev(component)->platform_data;
 	struct siu_info *info = siu_i2s_data;
 	struct siu_port *port_info = siu_port_info(ss);
 	struct siu_stream *siu_stream;
@@ -483,7 +483,7 @@ siu_pcm_pointer_dma(struct snd_soc_component *component,
 static int siu_pcm_new(struct snd_soc_component *component,
 		       struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(rtd->card);
 	struct snd_pcm *pcm = rtd->pcm;
 	struct siu_info *info = siu_i2s_data;
 	struct platform_device *pdev = to_platform_device(card->dev);

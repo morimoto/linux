@@ -269,7 +269,9 @@ static int atmel_ssc_hw_rule_rate(struct snd_pcm_hw_params *params,
 static int atmel_ssc_startup(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct platform_device *pdev = to_platform_device(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct platform_device *pdev = to_platform_device(dev);
 	struct atmel_ssc_info *ssc_p = &ssc_info[pdev->id];
 	struct atmel_pcm_dma_params *dma_params;
 	int dir, dir_mask;
@@ -305,7 +307,7 @@ static int atmel_ssc_startup(struct snd_pcm_substream *substream,
 				  SNDRV_PCM_HW_PARAM_FRAME_BITS,
 				  SNDRV_PCM_HW_PARAM_CHANNELS, -1);
 	if (ret < 0) {
-		dev_err(dai->dev, "Failed to specify rate rule: %d\n", ret);
+		dev_err(dev, "Failed to specify rate rule: %d\n", ret);
 		return ret;
 	}
 
@@ -315,7 +317,7 @@ static int atmel_ssc_startup(struct snd_pcm_substream *substream,
 
 	ssc_p->dma_params[dir] = dma_params;
 
-	snd_soc_dai_set_dma_data(dai, substream, dma_params);
+	snd_soc_dai_stream_dma_data_set(dai, substream, dma_params);
 
 	if (ssc_p->dir_mask & dir_mask)
 		return -EBUSY;
@@ -332,7 +334,9 @@ static int atmel_ssc_startup(struct snd_pcm_substream *substream,
 static void atmel_ssc_shutdown(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct platform_device *pdev = to_platform_device(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct platform_device *pdev = to_platform_device(dev);
 	struct atmel_ssc_info *ssc_p = &ssc_info[pdev->id];
 	struct atmel_pcm_dma_params *dma_params;
 	int dir, dir_mask;
@@ -378,7 +382,9 @@ static void atmel_ssc_shutdown(struct snd_pcm_substream *substream,
 static int atmel_ssc_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 		unsigned int fmt)
 {
-	struct platform_device *pdev = to_platform_device(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct platform_device *pdev = to_platform_device(dev);
 	struct atmel_ssc_info *ssc_p = &ssc_info[pdev->id];
 
 	ssc_p->daifmt = fmt;
@@ -391,7 +397,9 @@ static int atmel_ssc_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 static int atmel_ssc_set_dai_clkdiv(struct snd_soc_dai *cpu_dai,
 	int div_id, int div)
 {
-	struct platform_device *pdev = to_platform_device(cpu_dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct platform_device *pdev = to_platform_device(dev);
 	struct atmel_ssc_info *ssc_p = &ssc_info[pdev->id];
 
 	switch (div_id) {
@@ -458,7 +466,9 @@ static int atmel_ssc_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params,
 	struct snd_soc_dai *dai)
 {
-	struct platform_device *pdev = to_platform_device(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct platform_device *pdev = to_platform_device(dev);
 	int id = pdev->id;
 	struct atmel_ssc_info *ssc_p = &ssc_info[id];
 	struct ssc_device *ssc = ssc_p->ssc;
@@ -491,7 +501,7 @@ static int atmel_ssc_hw_params(struct snd_pcm_substream *substream,
 		int bclk_rate = snd_soc_params_to_bclk(params);
 
 		if (bclk_rate < 0) {
-			dev_err(dai->dev, "unable to calculate cmr_div: %d\n",
+			dev_err(dev, "unable to calculate cmr_div: %d\n",
 				bclk_rate);
 			return bclk_rate;
 		}
@@ -509,7 +519,7 @@ static int atmel_ssc_hw_params(struct snd_pcm_substream *substream,
 		int frame_size = snd_soc_params_to_frame_size(params);
 
 		if (frame_size < 0) {
-			dev_err(dai->dev,
+			dev_err(dev,
 				"unable to calculate tx/rx cmr_period: %d\n",
 				frame_size);
 			return frame_size;
@@ -658,7 +668,7 @@ static int atmel_ssc_hw_params(struct snd_pcm_substream *substream,
 		| SSC_BF(TFMR_DATLEN, (bits - 1));
 
 	if (fslen_ext && !ssc->pdata->has_fslen_ext) {
-		dev_err(dai->dev, "sample size %d is too large for SSC device\n",
+		dev_err(dev, "sample size %d is too large for SSC device\n",
 			bits);
 		return -EINVAL;
 	}
@@ -712,7 +722,9 @@ static int atmel_ssc_hw_params(struct snd_pcm_substream *substream,
 static int atmel_ssc_prepare(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct platform_device *pdev = to_platform_device(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct platform_device *pdev = to_platform_device(dev);
 	struct atmel_ssc_info *ssc_p = &ssc_info[pdev->id];
 	struct atmel_pcm_dma_params *dma_params;
 	int dir;
@@ -736,7 +748,9 @@ static int atmel_ssc_prepare(struct snd_pcm_substream *substream,
 static int atmel_ssc_trigger(struct snd_pcm_substream *substream,
 			     int cmd, struct snd_soc_dai *dai)
 {
-	struct platform_device *pdev = to_platform_device(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct platform_device *pdev = to_platform_device(dev);
 	struct atmel_ssc_info *ssc_p = &ssc_info[pdev->id];
 	struct atmel_pcm_dma_params *dma_params;
 	int dir;
@@ -765,7 +779,8 @@ static int atmel_ssc_trigger(struct snd_pcm_substream *substream,
 static int atmel_ssc_suspend(struct snd_soc_component *component)
 {
 	struct atmel_ssc_info *ssc_p;
-	struct platform_device *pdev = to_platform_device(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct platform_device *pdev = to_platform_device(dev);
 
 	if (!snd_soc_component_active(component))
 		return 0;
@@ -792,7 +807,8 @@ static int atmel_ssc_suspend(struct snd_soc_component *component)
 static int atmel_ssc_resume(struct snd_soc_component *component)
 {
 	struct atmel_ssc_info *ssc_p;
-	struct platform_device *pdev = to_platform_device(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct platform_device *pdev = to_platform_device(dev);
 	u32 cr;
 
 	if (!snd_soc_component_active(component))
@@ -874,7 +890,7 @@ static int asoc_ssc_init(struct device *dev)
 	struct ssc_device *ssc = dev_get_drvdata(dev);
 	int ret;
 
-	ret = devm_snd_soc_register_component(dev, &atmel_ssc_component,
+	ret = devm_snd_soc_component_register(dev, &atmel_ssc_component,
 					 &atmel_ssc_dai, 1);
 	if (ret) {
 		dev_err(dev, "Could not register DAI: %d\n", ret);

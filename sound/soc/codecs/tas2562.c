@@ -144,14 +144,15 @@ static int tas2562_set_dai_tdm_slot(struct snd_soc_dai *dai,
 		unsigned int tx_mask, unsigned int rx_mask,
 		int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2562_data *tas2562 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2562_data *tas2562 = dev_get_drvdata(dev);
 	int left_slot, right_slot;
 	int slots_cfg;
 	int ret;
 
 	if (!tx_mask) {
-		dev_err(component->dev, "tx masks must not be 0\n");
+		dev_err(dev, "tx masks must not be 0\n");
 		return -EINVAL;
 	}
 
@@ -285,8 +286,9 @@ static int tas2562_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2562_data *tas2562 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2562_data *tas2562 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = tas2562_set_bitwidth(tas2562, params_format(params));
@@ -304,8 +306,9 @@ static int tas2562_hw_params(struct snd_pcm_substream *substream,
 
 static int tas2562_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas2562_data *tas2562 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2562_data *tas2562 = dev_get_drvdata(dev);
 	u8 asi_cfg_1 = 0;
 	u8 tdm_rx_start_slot = 0;
 	int ret;
@@ -374,7 +377,9 @@ static int tas2562_update_pwr_ctrl(struct tas2562_data *tas2562)
 
 static int tas2562_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct tas2562_data *tas2562 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2562_data *tas2562 = dev_get_drvdata(dev);
 
 	tas2562->unmuted = !mute;
 	return tas2562_update_pwr_ctrl(tas2562);
@@ -382,7 +387,8 @@ static int tas2562_mute(struct snd_soc_dai *dai, int mute, int direction)
 
 static int tas2562_codec_probe(struct snd_soc_component *component)
 {
-	struct tas2562_data *tas2562 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2562_data *tas2562 = dev_get_drvdata(dev);
 
 	tas2562->component = component;
 
@@ -395,7 +401,8 @@ static int tas2562_codec_probe(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int tas2562_suspend(struct snd_soc_component *component)
 {
-	struct tas2562_data *tas2562 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2562_data *tas2562 = dev_get_drvdata(dev);
 
 	regcache_cache_only(tas2562->regmap, true);
 	regcache_mark_dirty(tas2562->regmap);
@@ -408,7 +415,8 @@ static int tas2562_suspend(struct snd_soc_component *component)
 
 static int tas2562_resume(struct snd_soc_component *component)
 {
-	struct tas2562_data *tas2562 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2562_data *tas2562 = dev_get_drvdata(dev);
 
 	if (tas2562->sdz_gpio)
 		gpiod_set_value_cansleep(tas2562->sdz_gpio, 1);
@@ -435,9 +443,9 @@ static const struct snd_kcontrol_new tas2562_asi1_mux =
 static int tas2562_dac_event(struct snd_soc_dapm_widget *w,
 			     struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-					snd_soc_dapm_to_component(w->dapm);
-	struct tas2562_data *tas2562 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2562_data *tas2562 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (event) {
@@ -461,7 +469,8 @@ static int tas2562_volume_control_get(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct tas2562_data *tas2562 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2562_data *tas2562 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = tas2562->volume_lvl;
 	return 0;
@@ -471,7 +480,8 @@ static int tas2562_volume_control_put(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct tas2562_data *tas2562 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas2562_data *tas2562 = dev_get_drvdata(dev);
 	int ret, index;
 	u32 reg_val;
 
@@ -773,12 +783,12 @@ static int tas2562_probe(struct i2c_client *client)
 	dev_set_drvdata(&client->dev, data);
 
 	if (data->model_id == TAS2110)
-		return devm_snd_soc_register_component(dev,
+		return devm_snd_soc_component_register(dev,
 						       &soc_component_dev_tas2110,
 						       tas2562_dai,
 						       ARRAY_SIZE(tas2562_dai));
 
-	return devm_snd_soc_register_component(dev, &soc_component_dev_tas2562,
+	return devm_snd_soc_component_register(dev, &soc_component_dev_tas2562,
 					       tas2562_dai,
 					       ARRAY_SIZE(tas2562_dai));
 

@@ -68,21 +68,25 @@ int qcom_snd_sdw_startup(struct snd_pcm_substream *substream)
 	u32 rx_ch[SDW_MAX_PORTS], tx_ch[SDW_MAX_PORTS];
 	struct sdw_stream_runtime *sruntime;
 	struct snd_soc_dai *codec_dai;
+	const char *cpu_name = snd_soc_dai_name(cpu_dai);
+	int cpu_id = snd_soc_dai_id(cpu_dai);
 	u32 rx_ch_cnt = 0, tx_ch_cnt = 0;
 	int ret, i, j;
 
-	if (!qcom_snd_is_sdw_dai(cpu_dai->id))
+	if (!qcom_snd_is_sdw_dai(cpu_id))
 		return 0;
 
-	sruntime = sdw_alloc_stream(cpu_dai->name, SDW_STREAM_PCM);
+	sruntime = sdw_alloc_stream(cpu_name, SDW_STREAM_PCM);
 	if (!sruntime)
 		return -ENOMEM;
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
+		const char *codec_name = snd_soc_dai_name(codec_dai);
+
 		ret = snd_soc_dai_set_stream(codec_dai, sruntime,
 					     substream->stream);
 		if (ret < 0 && ret != -ENOTSUPP) {
-			dev_err(rtd->dev, "Failed to set sdw stream on %s\n", codec_dai->name);
+			dev_err(rtd->dev, "Failed to set sdw stream on %s\n", codec_name);
 			goto err_set_stream;
 		} else if (ret == -ENOTSUPP) {
 			/* Ignore unsupported */
@@ -92,7 +96,7 @@ int qcom_snd_sdw_startup(struct snd_pcm_substream *substream)
 		ret = snd_soc_dai_get_channel_map(codec_dai, &tx_ch_cnt, tx_ch,
 						  &rx_ch_cnt, rx_ch);
 		if (ret != 0 && ret != -ENOTSUPP) {
-			dev_err(rtd->dev, "Failed to get codec chan map %s\n", codec_dai->name);
+			dev_err(rtd->dev, "Failed to get codec chan map %s\n", codec_name);
 			goto err_set_stream;
 		} else if (ret == -ENOTSUPP) {
 			/* Ignore unsupported */
@@ -100,7 +104,7 @@ int qcom_snd_sdw_startup(struct snd_pcm_substream *substream)
 		}
 	}
 
-	switch (cpu_dai->id) {
+	switch (cpu_id) {
 	case RX_CODEC_DMA_RX_0:
 	case TX_CODEC_DMA_TX_3:
 		if (tx_ch_cnt || rx_ch_cnt) {
@@ -129,10 +133,10 @@ int qcom_snd_sdw_prepare(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct sdw_stream_runtime *sruntime;
+	int cpu_id = snd_soc_dai_id(cpu_dai);
 	int ret;
 
-
-	if (!qcom_snd_is_sdw_dai(cpu_dai->id))
+	if (!qcom_snd_is_sdw_dai(cpu_id))
 		return 0;
 
 	sruntime = qcom_snd_sdw_get_stream(substream);
@@ -171,9 +175,10 @@ struct sdw_stream_runtime *qcom_snd_sdw_get_stream(struct snd_pcm_substream *sub
 	struct snd_soc_dai *codec_dai;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct sdw_stream_runtime *sruntime;
+	int cpu_id = snd_soc_dai_id(cpu_dai);
 	int i;
 
-	if (!qcom_snd_is_sdw_dai(cpu_dai->id))
+	if (!qcom_snd_is_sdw_dai(cpu_id))
 		return NULL;
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
@@ -198,8 +203,9 @@ int qcom_snd_sdw_hw_free(struct snd_pcm_substream *substream, bool *stream_prepa
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct sdw_stream_runtime *sruntime;
+	int cpu_id = snd_soc_dai_id(cpu_dai);
 
-	if (!qcom_snd_is_sdw_dai(cpu_dai->id))
+	if (!qcom_snd_is_sdw_dai(cpu_id))
 		return 0;
 
 	sruntime = qcom_snd_sdw_get_stream(substream);

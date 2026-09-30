@@ -168,7 +168,8 @@ struct jz_codec {
 static int jz4760_codec_set_bias_level(struct snd_soc_component *codec,
 				       enum snd_soc_bias_level level)
 {
-	struct jz_codec *jz_codec = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct jz_codec *jz_codec = dev_get_drvdata(dev);
 	struct regmap *regmap = jz_codec->regmap;
 
 	switch (level) {
@@ -195,7 +196,7 @@ static int jz4760_codec_set_bias_level(struct snd_soc_component *codec,
 static int jz4760_codec_startup(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *codec = dai->component;
+	struct snd_soc_component *codec = snd_soc_dai_to_component(dai);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(codec);
 	int ret = 0;
 
@@ -212,7 +213,7 @@ static int jz4760_codec_startup(struct snd_pcm_substream *substream,
 static void jz4760_codec_shutdown(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *codec = dai->component;
+	struct snd_soc_component *codec = snd_soc_dai_to_component(dai);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(codec);
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
@@ -223,7 +224,7 @@ static void jz4760_codec_shutdown(struct snd_pcm_substream *substream,
 static int jz4760_codec_pcm_trigger(struct snd_pcm_substream *substream,
 				    int cmd, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *codec = dai->component;
+	struct snd_soc_component *codec = snd_soc_dai_to_component(dai);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(codec);
 	int ret = 0;
 
@@ -248,8 +249,9 @@ static int jz4760_codec_pcm_trigger(struct snd_pcm_substream *substream,
 
 static int jz4760_codec_mute_stream(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *codec = dai->component;
-	struct jz_codec *jz_codec = snd_soc_component_get_drvdata(codec);
+	struct snd_soc_component *codec = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct jz_codec *jz_codec = dev_get_drvdata(dev);
 	unsigned int gain_bit = mute ? REG_IFR_GDO : REG_IFR_GUP;
 	unsigned int val, reg;
 	int change, err;
@@ -327,7 +329,8 @@ static int hpout_event(struct snd_soc_dapm_widget *w,
 		       struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *codec = snd_soc_dapm_to_component(w->dapm);
-	struct jz_codec *jz_codec = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct jz_codec *jz_codec = dev_get_drvdata(dev);
 	unsigned int val;
 	int err;
 
@@ -548,7 +551,8 @@ static const struct snd_soc_dapm_route jz4760_codec_dapm_routes[] = {
 
 static void jz4760_codec_codec_init_regs(struct snd_soc_component *codec)
 {
-	struct jz_codec *jz_codec = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct jz_codec *jz_codec = dev_get_drvdata(dev);
 	struct regmap *regmap = jz_codec->regmap;
 
 	/* Collect updates for later sending. */
@@ -629,7 +633,9 @@ static int jz4760_codec_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct jz_codec *codec = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz_codec *codec = dev_get_drvdata(dev);
 	unsigned int rate, bit_width;
 
 	switch (params_format(params)) {
@@ -829,7 +835,7 @@ static int jz4760_codec_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, codec);
 
-	ret = devm_snd_soc_register_component(dev, &jz4760_codec_soc_codec_dev,
+	ret = devm_snd_soc_component_register(dev, &jz4760_codec_soc_codec_dev,
 					      &jz4760_codec_dai, 1);
 	if (ret) {
 		dev_err(dev, "Failed to register codec: %d\n", ret);

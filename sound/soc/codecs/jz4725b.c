@@ -263,7 +263,8 @@ static int jz4725b_out_stage_enable(struct snd_soc_dapm_widget *w,
 				    int event)
 {
 	struct snd_soc_component *codec = snd_soc_dapm_to_component(w->dapm);
-	struct jz_icdc *icdc = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct jz_icdc *icdc = dev_get_drvdata(dev);
 	struct regmap *map = icdc->regmap;
 	unsigned int val;
 
@@ -372,7 +373,8 @@ static const struct snd_soc_dapm_route jz4725b_codec_dapm_routes[] = {
 static int jz4725b_codec_set_bias_level(struct snd_soc_component *component,
 					enum snd_soc_bias_level level)
 {
-	struct jz_icdc *icdc = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz_icdc *icdc = dev_get_drvdata(dev);
 	struct regmap *map = icdc->regmap;
 
 	switch (level) {
@@ -401,7 +403,8 @@ static int jz4725b_codec_set_bias_level(struct snd_soc_component *component,
 
 static int jz4725b_codec_dev_probe(struct snd_soc_component *component)
 {
-	struct jz_icdc *icdc = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz_icdc *icdc = dev_get_drvdata(dev);
 	struct regmap *map = icdc->regmap;
 
 	/* Write CONFIGn (n=1 to 8) bits.
@@ -437,7 +440,9 @@ static const unsigned int jz4725b_codec_sample_rates[] = {
 static int jz4725b_codec_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct jz_icdc *icdc = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct jz_icdc *icdc = dev_get_drvdata(dev);
 	unsigned int rate, bit_width;
 
 	switch (params_format(params)) {
@@ -629,7 +634,7 @@ static int jz4725b_codec_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, icdc);
 
-	ret = devm_snd_soc_register_component(dev, &jz4725b_codec,
+	ret = devm_snd_soc_component_register(dev, &jz4725b_codec,
 					      &jz4725b_codec_dai, 1);
 	if (ret)
 		dev_err(dev, "Failed to register codec\n");

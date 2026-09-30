@@ -184,7 +184,8 @@ static int rt5631_dmic_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt5631_priv *rt5631 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5631_priv *rt5631 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = rt5631->dmic_used_flag;
 
@@ -195,7 +196,8 @@ static int rt5631_dmic_put(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct rt5631_priv *rt5631 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5631_priv *rt5631 = dev_get_drvdata(dev);
 
 	rt5631->dmic_used_flag = ucontrol->value.integer.value[0];
 	return 0;
@@ -293,7 +295,8 @@ static int check_dmic_used(struct snd_soc_dapm_widget *source,
 			 struct snd_soc_dapm_widget *sink)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
-	struct rt5631_priv *rt5631 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5631_priv *rt5631 = dev_get_drvdata(dev);
 	return rt5631->dmic_used_flag;
 }
 
@@ -564,7 +567,8 @@ static int hp_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5631_priv *rt5631 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5631_priv *rt5631 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMD:
@@ -598,7 +602,8 @@ static int set_dmic_params(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5631_priv *rt5631 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5631_priv *rt5631 = dev_get_drvdata(dev);
 
 	switch (rt5631->rx_rate) {
 	case 44100:
@@ -1352,16 +1357,17 @@ static int get_coeff(int mclk, int rate, int timesofbclk)
 static int rt5631_hifi_pcm_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5631_priv *rt5631 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5631_priv *rt5631 = dev_get_drvdata(dev);
 	int timesofbclk = 32, coeff;
 	unsigned int iface = 0;
 
-	dev_dbg(component->dev, "enter %s\n", __func__);
+	dev_dbg(dev, "enter %s\n", __func__);
 
 	rt5631->bclk_rate = snd_soc_params_to_bclk(params);
 	if (rt5631->bclk_rate < 0) {
-		dev_err(component->dev, "Fail to get BCLK rate\n");
+		dev_err(dev, "Fail to get BCLK rate\n");
 		return rt5631->bclk_rate;
 	}
 	rt5631->rx_rate = params_rate(params);
@@ -1373,7 +1379,7 @@ static int rt5631_hifi_pcm_params(struct snd_pcm_substream *substream,
 		coeff = get_coeff(rt5631->sysclk, rt5631->rx_rate,
 					timesofbclk);
 	if (coeff < 0) {
-		dev_err(component->dev, "Fail to get coeff\n");
+		dev_err(dev, "Fail to get coeff\n");
 		return coeff;
 	}
 
@@ -1404,11 +1410,12 @@ static int rt5631_hifi_pcm_params(struct snd_pcm_substream *substream,
 static int rt5631_hifi_codec_set_dai_fmt(struct snd_soc_dai *codec_dai,
 						unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct rt5631_priv *rt5631 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5631_priv *rt5631 = dev_get_drvdata(dev);
 	unsigned int iface = 0;
 
-	dev_dbg(component->dev, "enter %s\n", __func__);
+	dev_dbg(dev, "enter %s\n", __func__);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -1456,10 +1463,11 @@ static int rt5631_hifi_codec_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int rt5631_hifi_codec_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				int clk_id, unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct rt5631_priv *rt5631 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5631_priv *rt5631 = dev_get_drvdata(dev);
 
-	dev_dbg(component->dev, "enter %s, syclk=%d\n", __func__, freq);
+	dev_dbg(dev, "enter %s, syclk=%d\n", __func__, freq);
 
 	if ((freq >= (256 * 8000)) && (freq <= (512 * 96000))) {
 		rt5631->sysclk = freq;
@@ -1472,14 +1480,15 @@ static int rt5631_hifi_codec_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int rt5631_codec_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 		int source, unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct rt5631_priv *rt5631 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5631_priv *rt5631 = dev_get_drvdata(dev);
 	int i, ret = -EINVAL;
 
-	dev_dbg(component->dev, "enter %s\n", __func__);
+	dev_dbg(dev, "enter %s\n", __func__);
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 
 		snd_soc_component_update_bits(component, RT5631_GLOBAL_CLK_CTRL,
 			RT5631_SYSCLK_SOUR_SEL_MASK,
@@ -1492,8 +1501,7 @@ static int rt5631_codec_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 		for (i = 0; i < ARRAY_SIZE(codec_master_pll_div); i++)
 			if (freq_in == codec_master_pll_div[i].pll_in &&
 			freq_out == codec_master_pll_div[i].pll_out) {
-				dev_info(component->dev,
-					"change PLL in master mode\n");
+				dev_info(dev, "change PLL in master mode\n");
 				snd_soc_component_write(component, RT5631_PLL_CTRL,
 					codec_master_pll_div[i].reg_val);
 				schedule_timeout_uninterruptible(
@@ -1511,8 +1519,7 @@ static int rt5631_codec_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 		for (i = 0; i < ARRAY_SIZE(codec_slave_pll_div); i++)
 			if (freq_in == codec_slave_pll_div[i].pll_in &&
 			freq_out == codec_slave_pll_div[i].pll_out) {
-				dev_info(component->dev,
-					"change PLL in slave mode\n");
+				dev_info(dev, "change PLL in slave mode\n");
 				snd_soc_component_write(component, RT5631_PLL_CTRL,
 					codec_slave_pll_div[i].reg_val);
 				schedule_timeout_uninterruptible(
@@ -1534,7 +1541,8 @@ static int rt5631_codec_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
 static int rt5631_set_bias_level(struct snd_soc_component *component,
 			enum snd_soc_bias_level level)
 {
-	struct rt5631_priv *rt5631 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5631_priv *rt5631 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
@@ -1575,7 +1583,8 @@ static int rt5631_set_bias_level(struct snd_soc_component *component,
 
 static int rt5631_probe(struct snd_soc_component *component)
 {
-	struct rt5631_priv *rt5631 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5631_priv *rt5631 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	unsigned int val;
 
@@ -1726,7 +1735,7 @@ static int rt5631_i2c_probe(struct i2c_client *i2c)
 	if (IS_ERR(rt5631->regmap))
 		return PTR_ERR(rt5631->regmap);
 
-	ret = devm_snd_soc_register_component(&i2c->dev,
+	ret = devm_snd_soc_component_register(&i2c->dev,
 			&soc_component_dev_rt5631,
 			rt5631_dai, ARRAY_SIZE(rt5631_dai));
 	return ret;

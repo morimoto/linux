@@ -38,27 +38,35 @@ static const struct snd_soc_dapm_route ak5386_dapm_routes[] = {
 
 static int ak5386_soc_probe(struct snd_soc_component *component)
 {
-	struct ak5386_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak5386_priv *priv = dev_get_drvdata(dev);
+
 	return regulator_bulk_enable(ARRAY_SIZE(priv->supplies), priv->supplies);
 }
 
 static void ak5386_soc_remove(struct snd_soc_component *component)
 {
-	struct ak5386_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak5386_priv *priv = dev_get_drvdata(dev);
+
 	regulator_bulk_disable(ARRAY_SIZE(priv->supplies), priv->supplies);
 }
 
 #ifdef CONFIG_PM
 static int ak5386_soc_suspend(struct snd_soc_component *component)
 {
-	struct ak5386_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak5386_priv *priv = dev_get_drvdata(dev);
+
 	regulator_bulk_disable(ARRAY_SIZE(priv->supplies), priv->supplies);
 	return 0;
 }
 
 static int ak5386_soc_resume(struct snd_soc_component *component)
 {
-	struct ak5386_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak5386_priv *priv = dev_get_drvdata(dev);
+
 	return regulator_bulk_enable(ARRAY_SIZE(priv->supplies), priv->supplies);
 }
 #else
@@ -83,12 +91,13 @@ static const struct snd_soc_component_driver soc_component_ak5386 = {
 static int ak5386_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			      unsigned int format)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	format &= SND_SOC_DAIFMT_FORMAT_MASK;
 	if (format != SND_SOC_DAIFMT_LEFT_J &&
 	    format != SND_SOC_DAIFMT_I2S) {
-		dev_err(component->dev, "Invalid DAI format\n");
+		dev_err(dev, "Invalid DAI format\n");
 		return -EINVAL;
 	}
 
@@ -99,8 +108,9 @@ static int ak5386_hw_params(struct snd_pcm_substream *substream,
 			    struct snd_pcm_hw_params *params,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak5386_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak5386_priv *priv = dev_get_drvdata(dev);
 
 	/*
 	 * From the datasheet:
@@ -120,8 +130,9 @@ static int ak5386_hw_params(struct snd_pcm_substream *substream,
 static int ak5386_hw_free(struct snd_pcm_substream *substream,
 			  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct ak5386_priv *priv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ak5386_priv *priv = dev_get_drvdata(dev);
 
 	gpiod_set_value(priv->reset_gpio, 0);
 
@@ -190,7 +201,7 @@ static int ak5386_probe(struct platform_device *pdev)
 
 	gpiod_set_consumer_name(priv->reset_gpio, "AK5386 Reset");
 
-	return devm_snd_soc_register_component(dev, &soc_component_ak5386,
+	return devm_snd_soc_component_register(dev, &soc_component_ak5386,
 				      &ak5386_dai, 1);
 }
 

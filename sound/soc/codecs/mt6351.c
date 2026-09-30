@@ -198,15 +198,17 @@ struct mt6351_priv {
 
 static void set_hp_gain_zero(struct snd_soc_component *cmpnt)
 {
-	regmap_update_bits(cmpnt->regmap, MT6351_ZCD_CON2,
+	snd_soc_component_update_bits(cmpnt, MT6351_ZCD_CON2,
 			   0x1f << 7, 0x8 << 7);
-	regmap_update_bits(cmpnt->regmap, MT6351_ZCD_CON2,
+	snd_soc_component_update_bits(cmpnt, MT6351_ZCD_CON2,
 			   0x1f << 0, 0x8 << 0);
 }
 
 static unsigned int get_cap_reg_val(struct snd_soc_component *cmpnt,
 				    unsigned int rate)
 {
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+
 	switch (rate) {
 	case 8000:
 		return 0;
@@ -221,8 +223,7 @@ static unsigned int get_cap_reg_val(struct snd_soc_component *cmpnt,
 	case 192000:
 		return 5;
 	default:
-		dev_warn(cmpnt->dev, "%s(), error rate %d, return 3",
-			 __func__, rate);
+		dev_warn(dev, "%s(), error rate %d, return 3", __func__, rate);
 		return 3;
 	}
 }
@@ -230,6 +231,8 @@ static unsigned int get_cap_reg_val(struct snd_soc_component *cmpnt,
 static unsigned int get_play_reg_val(struct snd_soc_component *cmpnt,
 				     unsigned int rate)
 {
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+
 	switch (rate) {
 	case 8000:
 		return 0;
@@ -252,8 +255,7 @@ static unsigned int get_play_reg_val(struct snd_soc_component *cmpnt,
 	case 192000:
 		return 8;
 	default:
-		dev_warn(cmpnt->dev, "%s(), error rate %d, return 8",
-			 __func__, rate);
+		dev_warn(dev, "%s(), error rate %d, return 8", __func__, rate);
 		return 8;
 	}
 }
@@ -262,8 +264,9 @@ static int mt6351_codec_dai_hw_params(struct snd_pcm_substream *substream,
 				      struct snd_pcm_hw_params *params,
 				      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *cmpnt = dai->component;
-	struct mt6351_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct snd_soc_component *cmpnt = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6351_priv *priv = dev_get_drvdata(dev);
 	unsigned int rate = params_rate(params);
 
 	dev_dbg(priv->dev, "%s(), substream->stream %d, rate %d\n",
@@ -320,7 +323,8 @@ enum {
 
 static void hp_gain_ramp_set(struct snd_soc_component *cmpnt, int hp_gain_ctl)
 {
-	struct mt6351_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6351_priv *priv = dev_get_drvdata(dev);
 	int idx, old_idx, offset, reg_idx;
 
 	if (hp_gain_ctl == HP_GAIN_SET_ZERO) {
@@ -345,7 +349,7 @@ static void hp_gain_ramp_set(struct snd_soc_component *cmpnt, int hp_gain_ctl)
 
 		/* check valid range, and set value */
 		if ((reg_idx >= 0 && reg_idx <= 0x12) || reg_idx == 0x1f) {
-			regmap_update_bits(cmpnt->regmap,
+			snd_soc_component_update_bits(cmpnt,
 					   MT6351_ZCD_CON2,
 					   0xf9f,
 					   (reg_idx << 7) | reg_idx);
@@ -359,20 +363,20 @@ static void hp_zcd_enable(struct snd_soc_component *cmpnt)
 {
 	/* Enable ZCD, for minimize pop noise */
 	/* when adjust gain during HP buffer on */
-	regmap_update_bits(cmpnt->regmap, MT6351_ZCD_CON0, 0x7 << 8, 0x1 << 8);
-	regmap_update_bits(cmpnt->regmap, MT6351_ZCD_CON0, 0x1 << 7, 0x0 << 7);
+	snd_soc_component_update_bits(cmpnt, MT6351_ZCD_CON0, 0x7 << 8, 0x1 << 8);
+	snd_soc_component_update_bits(cmpnt, MT6351_ZCD_CON0, 0x1 << 7, 0x0 << 7);
 
 	/* timeout, 1=5ms, 0=30ms */
-	regmap_update_bits(cmpnt->regmap, MT6351_ZCD_CON0, 0x1 << 6, 0x1 << 6);
+	snd_soc_component_update_bits(cmpnt, MT6351_ZCD_CON0, 0x1 << 6, 0x1 << 6);
 
-	regmap_update_bits(cmpnt->regmap, MT6351_ZCD_CON0, 0x3 << 4, 0x0 << 4);
-	regmap_update_bits(cmpnt->regmap, MT6351_ZCD_CON0, 0x7 << 1, 0x5 << 1);
-	regmap_update_bits(cmpnt->regmap, MT6351_ZCD_CON0, 0x1 << 0, 0x1 << 0);
+	snd_soc_component_update_bits(cmpnt, MT6351_ZCD_CON0, 0x3 << 4, 0x0 << 4);
+	snd_soc_component_update_bits(cmpnt, MT6351_ZCD_CON0, 0x7 << 1, 0x5 << 1);
+	snd_soc_component_update_bits(cmpnt, MT6351_ZCD_CON0, 0x1 << 0, 0x1 << 0);
 }
 
 static void hp_zcd_disable(struct snd_soc_component *cmpnt)
 {
-	regmap_write(cmpnt->regmap, MT6351_ZCD_CON0, 0x0000);
+	snd_soc_component_write(cmpnt, MT6351_ZCD_CON0, 0x0000);
 }
 
 static const DECLARE_TLV_DB_SCALE(playback_tlv, -1000, 100, 0);
@@ -581,13 +585,13 @@ static int mt_reg_set_clr_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_POST_PMU:
 		if (w->on_val) {
 			/* SET REG */
-			regmap_update_bits(cmpnt->regmap,
+			snd_soc_component_update_bits(cmpnt,
 					   w->reg + REG_STRIDE,
 					   0x1 << w->shift,
 					   0x1 << w->shift);
 		} else {
 			/* CLR REG */
-			regmap_update_bits(cmpnt->regmap,
+			snd_soc_component_update_bits(cmpnt,
 					   w->reg + REG_STRIDE * 2,
 					   0x1 << w->shift,
 					   0x1 << w->shift);
@@ -596,13 +600,13 @@ static int mt_reg_set_clr_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_PRE_PMD:
 		if (w->off_val) {
 			/* SET REG */
-			regmap_update_bits(cmpnt->regmap,
+			snd_soc_component_update_bits(cmpnt,
 					   w->reg + REG_STRIDE,
 					   0x1 << w->shift,
 					   0x1 << w->shift);
 		} else {
 			/* CLR REG */
-			regmap_update_bits(cmpnt->regmap,
+			snd_soc_component_update_bits(cmpnt,
 					   w->reg + REG_STRIDE * 2,
 					   0x1 << w->shift,
 					   0x1 << w->shift);
@@ -623,10 +627,10 @@ static int mt_ncp_event(struct snd_soc_dapm_widget *w,
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
-		regmap_update_bits(cmpnt->regmap, MT6351_AFE_NCP_CFG1,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFE_NCP_CFG1,
 				   0xffff, 0x1515);
 		/* NCP: ck1 and ck2 clock frequecy adjust configure */
-		regmap_update_bits(cmpnt->regmap, MT6351_AFE_NCP_CFG0,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFE_NCP_CFG0,
 				   0xfffe, 0x8C00);
 		break;
 	case SND_SOC_DAPM_POST_PMU:
@@ -647,9 +651,9 @@ static int mt_sgen_event(struct snd_soc_dapm_widget *w,
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
-		regmap_update_bits(cmpnt->regmap, MT6351_AFE_SGEN_CFG0,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFE_SGEN_CFG0,
 				   0xffef, 0x0008);
-		regmap_update_bits(cmpnt->regmap, MT6351_AFE_SGEN_CFG1,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFE_SGEN_CFG1,
 				   0xffff, 0x0101);
 		break;
 	default:
@@ -664,7 +668,8 @@ static int mt_aif_in_event(struct snd_soc_dapm_widget *w,
 			   int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6351_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6351_priv *priv = dev_get_drvdata(dev);
 
 	dev_dbg(priv->dev, "%s(), event 0x%x, rate %d\n",
 		__func__, event, priv->dl_rate);
@@ -672,29 +677,29 @@ static int mt_aif_in_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		/* sdm audio fifo clock power on */
-		regmap_update_bits(cmpnt->regmap, MT6351_AFUNC_AUD_CON2,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFUNC_AUD_CON2,
 				   0xffff, 0x0006);
 		/* scrambler clock on enable */
-		regmap_update_bits(cmpnt->regmap, MT6351_AFUNC_AUD_CON0,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFUNC_AUD_CON0,
 				   0xffff, 0xC3A1);
 		/* sdm power on */
-		regmap_update_bits(cmpnt->regmap, MT6351_AFUNC_AUD_CON2,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFUNC_AUD_CON2,
 				   0xffff, 0x0003);
 		/* sdm fifo enable */
-		regmap_update_bits(cmpnt->regmap, MT6351_AFUNC_AUD_CON2,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFUNC_AUD_CON2,
 				   0xffff, 0x000B);
 		/* set attenuation gain */
-		regmap_update_bits(cmpnt->regmap, MT6351_AFE_DL_SDM_CON1,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFE_DL_SDM_CON1,
 				   0xffff, 0x001E);
 
-		regmap_write(cmpnt->regmap, MT6351_AFE_PMIC_NEWIF_CFG0,
+		snd_soc_component_write(cmpnt, MT6351_AFE_PMIC_NEWIF_CFG0,
 			     (get_play_reg_val(cmpnt, priv->dl_rate) << 12) |
 			     0x330);
-		regmap_write(cmpnt->regmap, MT6351_AFE_DL_SRC2_CON0_H,
+		snd_soc_component_write(cmpnt, MT6351_AFE_DL_SRC2_CON0_H,
 			     (get_play_reg_val(cmpnt, priv->dl_rate) << 12) |
 			     0x300);
 
-		regmap_update_bits(cmpnt->regmap, MT6351_AFE_PMIC_NEWIF_CFG2,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFE_PMIC_NEWIF_CFG2,
 				   0x8000, 0x8000);
 		break;
 	default:
@@ -709,7 +714,8 @@ static int mt_hp_event(struct snd_soc_dapm_widget *w,
 		       int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6351_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6351_priv *priv = dev_get_drvdata(dev);
 	int reg;
 
 	dev_dbg(priv->dev, "%s(), event 0x%x, hp_en_counter %d\n",
@@ -728,34 +734,34 @@ static int mt_hp_event(struct snd_soc_dapm_widget *w,
 		hp_zcd_disable(cmpnt);
 
 		/* from yoyo HQA script */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDDEC_ANA_CON6,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDDEC_ANA_CON6,
 				   0x0700, 0x0700);
 
 		/* save target gain to restore after hardware open complete */
-		regmap_read(cmpnt->regmap, MT6351_ZCD_CON2, &reg);
+		reg = snd_soc_component_read(cmpnt, MT6351_ZCD_CON2);
 		priv->ana_gain[AUDIO_ANALOG_VOLUME_HPOUTL] = reg & 0x1f;
 		priv->ana_gain[AUDIO_ANALOG_VOLUME_HPOUTR] = (reg >> 7) & 0x1f;
 
 		/* Set HPR/HPL gain as minimum (~ -40dB) */
-		regmap_update_bits(cmpnt->regmap,
+		snd_soc_component_update_bits(cmpnt,
 				   MT6351_ZCD_CON2, 0xffff, 0x0F9F);
 		/* Set HS gain as minimum (~ -40dB) */
-		regmap_update_bits(cmpnt->regmap,
+		snd_soc_component_update_bits(cmpnt,
 				   MT6351_ZCD_CON3, 0xffff, 0x001F);
 		/* De_OSC of HP */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDDEC_ANA_CON2,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDDEC_ANA_CON2,
 				   0x0001, 0x0001);
 		/* enable output STBENH */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDDEC_ANA_CON1,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDDEC_ANA_CON1,
 				   0xffff, 0x2000);
 		/* De_OSC of voice, enable output STBENH */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDDEC_ANA_CON1,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDDEC_ANA_CON1,
 				   0xffff, 0x2100);
 		/* Enable voice driver */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDDEC_ANA_CON0,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDDEC_ANA_CON0,
 				   0x0010, 0xE090);
 		/* Enable pre-charge buffer  */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDDEC_ANA_CON1,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDDEC_ANA_CON1,
 				   0xffff, 0x2140);
 
 		usleep_range(50, 60);
@@ -764,18 +770,18 @@ static int mt_hp_event(struct snd_soc_dapm_widget *w,
 		set_hp_gain_zero(cmpnt);
 
 		/* Enable HPR/HPL */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDDEC_ANA_CON1,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDDEC_ANA_CON1,
 				   0xffff, 0x2100);
 		/* Disable pre-charge buffer */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDDEC_ANA_CON1,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDDEC_ANA_CON1,
 				   0xffff, 0x2000);
 		/* Disable De_OSC of voice */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDDEC_ANA_CON0,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDDEC_ANA_CON0,
 				   0x0010, 0xF4EF);
 		/* Disable voice buffer */
 
 		/* from yoyo HQ */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDDEC_ANA_CON6,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDDEC_ANA_CON6,
 				   0x0700, 0x0300);
 
 		/* Enable ZCD, for minimize pop noise */
@@ -812,12 +818,12 @@ static int mt_hp_event(struct snd_soc_dapm_widget *w,
 				priv->hp_en_counter);
 
 		/* reset*/
-		regmap_update_bits(cmpnt->regmap,
+		snd_soc_component_update_bits(cmpnt,
 				   MT6351_AUDDEC_ANA_CON6,
 				   0x0700,
 				   0x0000);
 		/* De_OSC of HP */
-		regmap_update_bits(cmpnt->regmap,
+		snd_soc_component_update_bits(cmpnt,
 				   MT6351_AUDDEC_ANA_CON2,
 				   0x0001,
 				   0x0000);
@@ -837,7 +843,8 @@ static int mt_aif_out_event(struct snd_soc_dapm_widget *w,
 			    int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mt6351_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6351_priv *priv = dev_get_drvdata(dev);
 
 	dev_dbg(priv->dev, "%s(), event 0x%x, rate %d\n",
 		__func__, event, priv->ul_rate);
@@ -845,29 +852,29 @@ static int mt_aif_out_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		/* dcclk_div=11'b00100000011, dcclk_ref_ck_sel=2'b00 */
-		regmap_update_bits(cmpnt->regmap, MT6351_AFE_DCCLK_CFG0,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFE_DCCLK_CFG0,
 				   0xffff, 0x2062);
 		/* dcclk_pdn=1'b0 */
-		regmap_update_bits(cmpnt->regmap, MT6351_AFE_DCCLK_CFG0,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFE_DCCLK_CFG0,
 				   0xffff, 0x2060);
 		/* dcclk_gen_on=1'b1 */
-		regmap_update_bits(cmpnt->regmap, MT6351_AFE_DCCLK_CFG0,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFE_DCCLK_CFG0,
 				   0xffff, 0x2061);
 
 		/* UL sample rate and mode configure */
-		regmap_update_bits(cmpnt->regmap, MT6351_AFE_UL_SRC_CON0_H,
+		snd_soc_component_update_bits(cmpnt, MT6351_AFE_UL_SRC_CON0_H,
 				   0x000E,
 				   get_cap_reg_val(cmpnt, priv->ul_rate) << 1);
 
 		/* fixed 260k path for 8/16/32/48 */
 		if (priv->ul_rate <= 48000) {
 			/* anc ul path src on */
-			regmap_update_bits(cmpnt->regmap,
+			snd_soc_component_update_bits(cmpnt,
 					   MT6351_AFE_HPANC_CFG0,
 					   0x1 << 1,
 					   0x1 << 1);
 			/* ANC clk pdn release */
-			regmap_update_bits(cmpnt->regmap,
+			snd_soc_component_update_bits(cmpnt,
 					   MT6351_AFE_HPANC_CFG0,
 					   0x1 << 0,
 					   0x0 << 0);
@@ -877,12 +884,12 @@ static int mt_aif_out_event(struct snd_soc_dapm_widget *w,
 		/* fixed 260k path for 8/16/32/48 */
 		if (priv->ul_rate <= 48000) {
 			/* anc ul path src on */
-			regmap_update_bits(cmpnt->regmap,
+			snd_soc_component_update_bits(cmpnt,
 					   MT6351_AFE_HPANC_CFG0,
 					   0x1 << 1,
 					   0x0 << 1);
 			/* ANC clk pdn release */
-			regmap_update_bits(cmpnt->regmap,
+			snd_soc_component_update_bits(cmpnt,
 					   MT6351_AFE_HPANC_CFG0,
 					   0x1 << 0,
 					   0x1 << 0);
@@ -904,12 +911,12 @@ static int mt_adc_clkgen_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		/* Audio ADC clock gen. mode: 00_divided by 2 (Normal) */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON3,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON3,
 				   0x3 << 4, 0x0);
 		break;
 	case SND_SOC_DAPM_POST_PMU:
 		/* ADC CLK from: 00_13MHz from CLKSQ (Default) */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON3,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON3,
 				   0x3 << 2, 0x0);
 		break;
 	default:
@@ -927,18 +934,18 @@ static int mt_pga_left_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		/* Audio L PGA precharge on */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON0,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON0,
 				   0x3 << RG_AUDPREAMPLDCPRECHARGE,
 				   0x1 << RG_AUDPREAMPLDCPRECHARGE);
 		/* Audio L PGA mode: 1_DCC */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON0,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON0,
 				   0x3 << RG_AUDPREAMPLDCCEN,
 				   0x1 << RG_AUDPREAMPLDCCEN);
 		break;
 	case SND_SOC_DAPM_POST_PMU:
 		usleep_range(100, 120);
 		/* Audio L PGA precharge off */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON0,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON0,
 				   0x3 << RG_AUDPREAMPLDCPRECHARGE,
 				   0x0 << RG_AUDPREAMPLDCPRECHARGE);
 		break;
@@ -957,18 +964,18 @@ static int mt_pga_right_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		/* Audio R PGA precharge on */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON1,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON1,
 				   0x3 << RG_AUDPREAMPRDCPRECHARGE,
 				   0x1 << RG_AUDPREAMPRDCPRECHARGE);
 		/* Audio R PGA mode: 1_DCC */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON1,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON1,
 				   0x3 << RG_AUDPREAMPRDCCEN,
 				   0x1 << RG_AUDPREAMPRDCCEN);
 		break;
 	case SND_SOC_DAPM_POST_PMU:
 		usleep_range(100, 120);
 		/* Audio R PGA precharge off */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON1,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON1,
 				   0x3 << RG_AUDPREAMPRDCPRECHARGE,
 				   0x0 << RG_AUDPREAMPRDCPRECHARGE);
 		break;
@@ -987,16 +994,16 @@ static int mt_mic_bias_0_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		/* MIC Bias 0 LowPower: 0_Normal */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON9,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON9,
 				   0x3 << RG_AUDMICBIAS0LOWPEN, 0x0);
 		/* MISBIAS0 = 1P9V */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON9,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON9,
 				   0x7 << RG_AUDMICBIAS0VREF,
 				   0x2 << RG_AUDMICBIAS0VREF);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		/* MISBIAS0 = 1P97 */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON9,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON9,
 				   0x7 << RG_AUDMICBIAS0VREF,
 				   0x0 << RG_AUDMICBIAS0VREF);
 		break;
@@ -1015,16 +1022,16 @@ static int mt_mic_bias_1_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		/* MIC Bias 1 LowPower: 0_Normal */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON10,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON10,
 				   0x3 << RG_AUDMICBIAS1LOWPEN, 0x0);
 		/* MISBIAS1 = 2P7V */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON10,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON10,
 				   0x7 << RG_AUDMICBIAS1VREF,
 				   0x7 << RG_AUDMICBIAS1VREF);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		/* MISBIAS1 = 1P7V */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON10,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON10,
 				   0x7 << RG_AUDMICBIAS1VREF,
 				   0x0 << RG_AUDMICBIAS1VREF);
 		break;
@@ -1043,16 +1050,16 @@ static int mt_mic_bias_2_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		/* MIC Bias 2 LowPower: 0_Normal */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON9,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON9,
 				   0x3 << RG_AUDMICBIAS2LOWPEN, 0x0);
 		/* MISBIAS2 = 1P9V */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON9,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON9,
 				   0x7 << RG_AUDMICBIAS2VREF,
 				   0x2 << RG_AUDMICBIAS2VREF);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		/* MISBIAS2 = 1P97 */
-		regmap_update_bits(cmpnt->regmap, MT6351_AUDENC_ANA_CON9,
+		snd_soc_component_update_bits(cmpnt, MT6351_AUDENC_ANA_CON9,
 				   0x7 << RG_AUDMICBIAS2VREF,
 				   0x0 << RG_AUDMICBIAS2VREF);
 		break;
@@ -1407,30 +1414,31 @@ static const struct snd_soc_dapm_route mt6351_dapm_routes[] = {
 static int mt6351_codec_init_reg(struct snd_soc_component *cmpnt)
 {
 	/* Disable CLKSQ 26MHz */
-	regmap_update_bits(cmpnt->regmap, MT6351_TOP_CLKSQ, 0x0001, 0x0);
+	snd_soc_component_update_bits(cmpnt, MT6351_TOP_CLKSQ, 0x0001, 0x0);
 	/* disable AUDGLB */
-	regmap_update_bits(cmpnt->regmap, MT6351_AUDDEC_ANA_CON9,
+	snd_soc_component_update_bits(cmpnt, MT6351_AUDDEC_ANA_CON9,
 			   0x1000, 0x1000);
 	/* Turn off AUDNCP_CLKDIV engine clock,Turn off AUD 26M */
-	regmap_update_bits(cmpnt->regmap, MT6351_TOP_CKPDN_CON0_SET,
+	snd_soc_component_update_bits(cmpnt, MT6351_TOP_CKPDN_CON0_SET,
 			   0x3800, 0x3800);
 	/* Disable HeadphoneL/HeadphoneR/voice short circuit protection */
-	regmap_update_bits(cmpnt->regmap, MT6351_AUDDEC_ANA_CON0,
+	snd_soc_component_update_bits(cmpnt, MT6351_AUDDEC_ANA_CON0,
 			   0xe000, 0xe000);
 	/* [5] = 1, disable LO buffer left short circuit protection */
-	regmap_update_bits(cmpnt->regmap, MT6351_AUDDEC_ANA_CON3,
+	snd_soc_component_update_bits(cmpnt, MT6351_AUDDEC_ANA_CON3,
 			   0x20, 0x20);
 	/* Reverse the PMIC clock*/
-	regmap_update_bits(cmpnt->regmap, MT6351_AFE_PMIC_NEWIF_CFG2,
+	snd_soc_component_update_bits(cmpnt, MT6351_AFE_PMIC_NEWIF_CFG2,
 			   0x8000, 0x8000);
 	return 0;
 }
 
 static int mt6351_codec_probe(struct snd_soc_component *cmpnt)
 {
-	struct mt6351_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mt6351_priv *priv = dev_get_drvdata(dev);
 
-	snd_soc_component_init_regmap(cmpnt, priv->regmap);
+	snd_soc_component_regmap_init(cmpnt, priv->regmap);
 
 	mt6351_codec_init_reg(cmpnt);
 	return 0;
@@ -1468,7 +1476,7 @@ static int mt6351_codec_driver_probe(struct platform_device *pdev)
 	dev_dbg(priv->dev, "%s(), dev name %s\n",
 		__func__, dev_name(&pdev->dev));
 
-	return devm_snd_soc_register_component(&pdev->dev,
+	return devm_snd_soc_component_register(&pdev->dev,
 					       &mt6351_soc_component_driver,
 					       mt6351_dai_driver,
 					       ARRAY_SIZE(mt6351_dai_driver));

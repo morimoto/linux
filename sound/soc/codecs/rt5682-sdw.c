@@ -90,7 +90,7 @@ static const struct regmap_config rt5682_sdw_indirect_regmap = {
 static int rt5682_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 				 int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -98,24 +98,25 @@ static int rt5682_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 static void rt5682_sdw_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static int rt5682_sdw_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 	struct sdw_stream_config stream_config = {0};
 	struct sdw_port_config port_config = {0};
 	struct sdw_stream_runtime *sdw_stream;
 	int retval;
 	unsigned int val_p = 0, val_c = 0, osr_p = 0, osr_c = 0;
 
-	dev_dbg(dai->dev, "%s %s", __func__, dai->name);
+	dev_dbg(dev, "%s %s", __func__, snd_soc_dai_name(dai));
 
-	sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 	if (!sdw_stream)
 		return -ENOMEM;
 
@@ -133,7 +134,7 @@ static int rt5682_sdw_hw_params(struct snd_pcm_substream *substream,
 	retval = sdw_stream_add_slave(rt5682->slave, &stream_config,
 				      &port_config, 1, sdw_stream);
 	if (retval) {
-		dev_err(dai->dev, "%s: Unable to configure port\n", __func__);
+		dev_err(dev, "%s: Unable to configure port\n", __func__);
 		return retval;
 	}
 
@@ -223,10 +224,11 @@ static int rt5682_sdw_hw_params(struct snd_pcm_substream *substream,
 static int rt5682_sdw_hw_free(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5682_priv *rt5682 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5682_priv *rt5682 = dev_get_drvdata(dev);
 	struct sdw_stream_runtime *sdw_stream =
-		snd_soc_dai_get_dma_data(dai, substream);
+		snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	if (!rt5682->slave)
 		return -EINVAL;
@@ -340,7 +342,7 @@ static int rt5682_sdw_init(struct device *dev, struct regmap *regmap,
 	INIT_DELAYED_WORK(&rt5682->jack_detect_work,
 		rt5682_jack_detect_handler);
 
-	ret = devm_snd_soc_register_component(dev,
+	ret = devm_snd_soc_component_register(dev,
 					      &rt5682_soc_component_dev,
 					      rt5682_dai, ARRAY_SIZE(rt5682_dai));
 	if (ret < 0)
