@@ -136,15 +136,12 @@ int snd_soc_jack_add_pins(struct snd_soc_jack *jack, int count,
 	int i;
 
 	for (i = 0; i < count; i++) {
-		if (!pins[i].pin) {
-			dev_err(dev, "ASoC: No name for pin %d\n", i);
-			return -EINVAL;
-		}
-		if (!pins[i].mask) {
-			dev_err(dev, "ASoC: No mask for pin %d"
+		if (!pins[i].pin)
+			return snd_soc_ret(dev, -EINVAL, "No name for pin %d\n", i);
+
+		if (!pins[i].mask)
+			return snd_soc_ret(dev, -EINVAL, "No mask for pin %d"
 				" (%s)\n", i, pins[i].pin);
-			return -EINVAL;
-		}
 
 		INIT_LIST_HEAD(&pins[i].list);
 		list_add(&(pins[i].list), &jack->pins);
@@ -311,8 +308,10 @@ int snd_soc_jack_add_gpios(struct snd_soc_jack *jack, int count,
 	struct device *dev = snd_soc_card_to_dev(gpios->jack->card);
 
 	tbl = devres_alloc(jack_devres_free_gpios, sizeof(*tbl), GFP_KERNEL);
-	if (!tbl)
-		return -ENOMEM;
+	if (!tbl) {
+		ret = -ENOMEM;
+		goto err;
+	}
 	tbl->jack = jack;
 	tbl->count = count;
 	tbl->gpios = gpios;
@@ -387,8 +386,8 @@ got_gpio:
 undo:
 	jack_free_gpios(jack, i, gpios);
 	devres_free(tbl);
-
-	return ret;
+err:
+	return snd_soc_ret(dev, ret, "\n");
 }
 EXPORT_SYMBOL_GPL(snd_soc_jack_add_gpios);
 
