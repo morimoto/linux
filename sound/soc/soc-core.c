@@ -599,24 +599,24 @@ static int soc_dai_link_sanity_check(struct snd_soc_card *card,
 	return 0;
 
 component_invalid:
-	dev_err(dev, "ASoC: Both Component name/of_node are set for %s\n", link->name);
-	return -EINVAL;
+	return snd_soc_ret(dev, -EINVAL,
+			   "Both Component name/of_node are set for %s\n", link->name);
 
 component_empty:
-	dev_err(dev, "ASoC: Neither Component name/of_node are set for %s\n", link->name);
-	return -EINVAL;
+	return snd_soc_ret(dev, -EINVAL,
+			   "Neither Component name/of_node are set for %s\n", link->name);
 
 component_not_found:
 	dev_dbg(dev, "ASoC: Component %s not found for link %s\n", dlc->name, link->name);
 	return -EPROBE_DEFER;
 
 dai_empty:
-	dev_err(dev, "ASoC: DAI name is not set for %s\n", link->name);
-	return -EINVAL;
+	return snd_soc_ret(dev, -EINVAL,
+			   "DAI name is not set for %s\n", link->name);
 
 component_dai_empty:
-	dev_err(dev, "ASoC: Neither DAI/Component name/of_node are set for %s\n", link->name);
-	return -EINVAL;
+	return snd_soc_ret(dev, -EINVAL,
+			   "Neither DAI/Component name/of_node are set for %s\n", link->name);
 }
 
 #define MAX_DEFAULT_CH_MAP_SIZE 8
@@ -666,11 +666,9 @@ static int snd_soc_compensate_channel_connection_map(struct snd_soc_card *card,
 
 	/* it should have ch_maps if connection was N:M */
 	if (dai_link->num_cpus > 1 && dai_link->num_codecs > 1 &&
-	    dai_link->num_cpus != dai_link->num_codecs && !dai_link->ch_maps) {
-		dev_err(dev, "need to have ch_maps when N:M connection (%s)",
-			dai_link->name);
-		return -EINVAL;
-	}
+	    dai_link->num_cpus != dai_link->num_codecs && !dai_link->ch_maps)
+		return snd_soc_ret(dev, -EINVAL,
+				"need to have ch_maps when N:M connection (%s)", dai_link->name);
 
 	/* do nothing if it has own maps */
 	if (dai_link->ch_maps)
@@ -678,10 +676,8 @@ static int snd_soc_compensate_channel_connection_map(struct snd_soc_card *card,
 
 	/* check default map size */
 	if (dai_link->num_cpus   > MAX_DEFAULT_CH_MAP_SIZE ||
-	    dai_link->num_codecs > MAX_DEFAULT_CH_MAP_SIZE) {
-		dev_err(dev, "soc-core.c needs update default_connection_maps");
-		return -EINVAL;
-	}
+	    dai_link->num_codecs > MAX_DEFAULT_CH_MAP_SIZE)
+		return snd_soc_ret(dev, -EINVAL, "needs update default_connection_maps");
 
 	/* Compensate missing map for ... */
 	if (dai_link->num_cpus == dai_link->num_codecs)
@@ -695,14 +691,12 @@ sanity_check:
 	dev_dbg(dev, "dai_link %s\n", dai_link->stream_name);
 	for_each_link_ch_maps(dai_link, i, ch_maps) {
 		if ((ch_maps->cpu   >= dai_link->num_cpus) ||
-		    (ch_maps->codec >= dai_link->num_codecs)) {
-			dev_err(dev,
+		    (ch_maps->codec >= dai_link->num_codecs))
+			return snd_soc_ret(dev, -EINVAL,
 				"unexpected dai_link->ch_maps[%d] index (cpu(%d/%d) codec(%d/%d))",
 				i,
 				ch_maps->cpu,	dai_link->num_cpus,
 				ch_maps->codec,	dai_link->num_codecs);
-			return -EINVAL;
-		}
 
 		dev_dbg(dev, "  [%d] cpu%d <-> codec%d\n",
 			i, ch_maps->cpu, ch_maps->codec);
@@ -762,7 +756,7 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 	 */
 	ret = snd_soc_card_add_dai_link(card, dai_link);
 	if (ret < 0)
-		return ret;
+		goto err;
 
 	if (dai_link->ignore)
 		return 0;
@@ -771,11 +765,13 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 
 	ret = soc_dai_link_sanity_check(card, dai_link);
 	if (ret < 0)
-		return ret;
+		goto err;
 
 	rtd = soc_new_pcm_runtime(card, dai_link);
-	if (!rtd)
-		return -ENOMEM;
+	if (!rtd) {
+		ret = -ENOMEM;
+		goto err;
+	}
 
 	for_each_link_cpus(dai_link, i, dlc) {
 		struct snd_soc_dai *cpu_dai = snd_soc_find_dai_nolock(dlc);
@@ -846,25 +842,30 @@ static int snd_soc_add_pcm_runtime(struct snd_soc_card *card,
 _err_defer:
 	snd_soc_remove_pcm_runtime(card, rtd);
 	return -EPROBE_DEFER;
+err:
+	return snd_soc_ret(dev, ret, "\n");
 }
 
 int snd_soc_add_pcm_runtimes(struct snd_soc_card *card,
 			     struct snd_soc_dai_link *dai_link,
 			     int num_dai_link)
 {
-	for (int i = 0; i < num_dai_link; i++) {
-		int ret;
+	struct device *dev = snd_soc_card_to_dev(card);
+	int ret;
 
+	for (int i = 0; i < num_dai_link; i++) {
 		ret = snd_soc_compensate_channel_connection_map(card, dai_link + i);
 		if (ret < 0)
-			return ret;
+			goto err;
 
 		ret = snd_soc_add_pcm_runtime(card, dai_link + i);
 		if (ret < 0)
-			return ret;
+			goto err;
 	}
 
 	return 0;
+err:
+	return snd_soc_ret(dev, ret, "\n");
 }
 EXPORT_SYMBOL_GPL(snd_soc_add_pcm_runtimes);
 
@@ -916,7 +917,7 @@ int snd_soc_runtime_set_dai_fmt(struct snd_soc_pcm_runtime *rtd,
 		ext_fmt = rtd->dai_link->codecs[i].ext_fmt;
 		ret = snd_soc_dai_set_fmt(codec_dai, dai_fmt | ext_fmt);
 		if (ret != 0 && ret != -ENOTSUPP)
-			return ret;
+			return snd_soc_ret(rtd->dev, ret, "\n");
 	}
 
 	/* Flip the polarity for the "CPU" end of link */
@@ -927,7 +928,7 @@ int snd_soc_runtime_set_dai_fmt(struct snd_soc_pcm_runtime *rtd,
 		ext_fmt = rtd->dai_link->cpus[i].ext_fmt;
 		ret = snd_soc_dai_set_fmt(cpu_dai, dai_fmt | ext_fmt);
 		if (ret != 0 && ret != -ENOTSUPP)
-			return ret;
+			return snd_soc_ret(rtd->dev, ret, "\n");
 	}
 
 	return 0;
@@ -938,20 +939,25 @@ EXPORT_SYMBOL_GPL(snd_soc_runtime_set_dai_fmt);
 static int soc_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card_driver *card_driver = platform_get_drvdata(pdev);
+	int ret;
 
 	/*
 	 * no card, so machine driver should be registering card
 	 * we should not be here in that case so ret error
 	 */
-	if (!card_driver)
-		return -EINVAL;
+	if (!card_driver) {
+		ret = -EINVAL;
+		goto err;
+	}
 
 	dev_warn(&pdev->dev,
 		 "ASoC: machine %s should use snd_soc_card_register()\n",
 		 card_driver->default_name);
 
 	/* Bodge while we unpick instantiation */
-	return devm_snd_soc_card_register(&pdev->dev, card_driver);
+	ret = devm_snd_soc_card_register(&pdev->dev, card_driver);
+err:
+	return snd_soc_ret(&pdev->dev, ret, "\n");
 }
 
 int snd_soc_poweroff(struct device *dev)
@@ -1050,11 +1056,8 @@ int snd_soc_add_controls(struct snd_card *card, struct device *dev,
 		const struct snd_kcontrol_new *control = &controls[i];
 		int err = snd_ctl_add(card, snd_soc_cnew(control, data,
 							 control->name, prefix));
-		if (err < 0) {
-			dev_err(dev, "ASoC: Failed to add %s: %d\n",
-				control->name, err);
-			return err;
-		}
+		if (err < 0)
+			return snd_soc_ret(dev, err, "Failed to add %s\n", control->name);
 	}
 
 	return 0;
@@ -1580,14 +1583,13 @@ static int __snd_soc_of_get_dai_link_component_alloc(
 	num = of_count_phandle_with_args(of_node, "sound-dai", "#sound-dai-cells");
 	if (num <= 0) {
 		if (num == -ENOENT)
-			dev_err(dev, "No 'sound-dai' property\n");
+			return snd_soc_ret(dev, num, "No 'sound-dai' property\n");
 		else
-			dev_err(dev, "Bad phandle in 'sound-dai'\n");
-		return num;
+			return snd_soc_ret(dev, num, "Bad phandle in 'sound-dai'\n");
 	}
 	dlc = devm_kcalloc(dev, num, sizeof(*dlc), GFP_KERNEL);
 	if (!dlc)
-		return -ENOMEM;
+		return snd_soc_ret(dev, -ENOMEM, "\n");
 
 	*ret_dlc	= dlc;
 	*ret_num	= num;
@@ -1635,7 +1637,7 @@ int snd_soc_of_get_dai_link_codecs(struct device *dev,
 	ret = __snd_soc_of_get_dai_link_component_alloc(dev, of_node,
 					 &dai_link->codecs, &dai_link->num_codecs);
 	if (ret < 0)
-		return ret;
+		goto out;
 
 	/* Parse the list */
 	for_each_link_codecs(dai_link, index, dlc) {
@@ -1648,7 +1650,8 @@ err:
 	snd_soc_of_put_dai_link_codecs(dai_link);
 	dai_link->codecs = NULL;
 	dai_link->num_codecs = 0;
-	return ret;
+out:
+	return snd_soc_ret(dev, ret, "\n");
 }
 EXPORT_SYMBOL_GPL(snd_soc_of_get_dai_link_codecs);
 
@@ -1690,7 +1693,7 @@ int snd_soc_of_get_dai_link_cpus(struct device *dev,
 	ret = __snd_soc_of_get_dai_link_component_alloc(dev, of_node,
 					 &dai_link->cpus, &dai_link->num_cpus);
 	if (ret < 0)
-		return ret;
+		goto out;
 
 	/* Parse the list */
 	for_each_link_cpus(dai_link, index, dlc) {
@@ -1703,8 +1706,8 @@ err:
 	snd_soc_of_put_dai_link_cpus(dai_link);
 	dai_link->cpus = NULL;
 	dai_link->num_cpus = 0;
-
-	return ret;
+out:
+	return snd_soc_ret(dev, ret, "\n");
 }
 EXPORT_SYMBOL_GPL(snd_soc_of_get_dai_link_cpus);
 
