@@ -19,13 +19,7 @@
 
 DEFINE_GUARD(snd_soc_card_mutex, struct snd_soc_card *,
 	     snd_soc_card_mutex_lock(_T), snd_soc_card_mutex_unlock(_T))
-#define soc_pcm_ret(rtd, ret) _soc_pcm_ret(rtd, __func__, ret)
-static inline int _soc_pcm_ret(struct snd_soc_pcm_runtime *rtd,
-			       const char *func, int ret)
-{
-	return snd_soc_ret(rtd->dev, ret,
-			   "at %s() on %s\n", func, rtd->dai_link->name);
-}
+#define soc_pcm_ret(rtd, ret) snd_soc_ret(rtd->dev, ret, "on %s\n", rtd->dai_link->name)
 
 /* is the current PCM operation for this FE ? */
 #if 0
@@ -233,7 +227,7 @@ static ssize_t dpcm_state_read_file(struct file *file, char __user *user_buf,
 
 	if (fe->dai_link->num_cpus > 1)
 		return snd_soc_ret(fe->dev, -EINVAL,
-			"%s doesn't support Multi CPU yet\n", __func__);
+				   "doesn't support Multi CPU yet\n");
 
 	buf = kmalloc(out_count, GFP_KERNEL);
 	if (!buf)
@@ -1355,8 +1349,8 @@ static int dpcm_be_connect(struct snd_soc_pcm_runtime *fe,
 
 	if (!fe_substream->pcm->nonatomic && be_substream->pcm->nonatomic)
 		return snd_soc_ret(be->dev, -EINVAL,
-			"%s: %s is atomic but %s is nonatomic, invalid configuration\n",
-				   __func__, fe->dai_link->name, be->dai_link->name);
+				   "%s is atomic but %s is nonatomic, invalid configuration\n",
+				   fe->dai_link->name, be->dai_link->name);
 
 	if (fe_substream->pcm->nonatomic && !be_substream->pcm->nonatomic) {
 		dev_dbg(be->dev, "FE is nonatomic but BE is not, forcing BE as nonatomic\n");
@@ -1530,7 +1524,7 @@ int dpcm_path_get(struct snd_soc_pcm_runtime *fe,
 
 	if (fe->dai_link->num_cpus > 1)
 		return snd_soc_ret(fe->dev, -EINVAL,
-			"%s doesn't support Multi CPU yet\n", __func__);
+				   "doesn't support Multi CPU yet\n");
 
 	/* get number of valid DAI paths and their widgets */
 	paths = snd_soc_dapm_dai_get_connected_widgets(cpu_dai, stream, list,
@@ -2685,8 +2679,7 @@ static int soc_dpcm_fe_runtime_update(struct snd_soc_pcm_runtime *fe, int new)
 		return 0;
 
 	if (fe->dai_link->num_cpus > 1)
-		return snd_soc_ret(fe->dev, -EINVAL,
-			"%s doesn't support Multi CPU yet\n", __func__);
+		return snd_soc_ret(fe->dev, -EINVAL, "doesn't support Multi CPU yet\n");
 
 	/* only check active links */
 	if (!snd_soc_dai_active(snd_soc_rtd_to_cpu(fe, 0)))
@@ -2766,7 +2759,7 @@ int snd_soc_dpcm_runtime_update(struct snd_soc_card *card)
 out:
 	snd_soc_dpcm_mutex_unlock(card);
 
-	return snd_soc_ret(dev, ret, "%s() failed\n", __func__);
+	return snd_soc_ret(dev, ret, "failed\n");
 }
 EXPORT_SYMBOL_GPL(snd_soc_dpcm_runtime_update);
 
