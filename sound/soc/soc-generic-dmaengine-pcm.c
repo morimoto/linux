@@ -47,17 +47,14 @@ int snd_dmaengine_pcm_prepare_slave_config(struct snd_pcm_substream *substream,
 	struct snd_dmaengine_dai_dma_data *dma_data;
 	int ret;
 
-	if (rtd->dai_link->num_cpus > 1) {
-		dev_err(rtd->dev,
-			"%s doesn't support Multi CPU yet\n", __func__);
-		return -EINVAL;
-	}
+	if (rtd->dai_link->num_cpus > 1)
+		return snd_soc_ret(rtd->dev, -EINVAL, "doesn't support Multi CPU yet\n");
 
 	dma_data = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 
 	ret = snd_hwparams_to_dma_slave_config(substream, params, slave_config);
 	if (ret)
-		return ret;
+		return snd_soc_ret(rtd->dev, ret, "\n");
 
 	snd_dmaengine_pcm_set_config_from_dai_data(substream, dma_data,
 		slave_config);
@@ -73,6 +70,7 @@ static int dmaengine_pcm_hw_params(struct snd_soc_component *component,
 	struct dmaengine_pcm *pcm = snd_soc_component_to_priv(component);
 	struct dma_chan *chan = snd_dmaengine_pcm_get_chan(substream);
 	struct dma_slave_config slave_config;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	if (!pcm->config->prepare_slave_config)
@@ -82,9 +80,11 @@ static int dmaengine_pcm_hw_params(struct snd_soc_component *component,
 
 	ret = pcm->config->prepare_slave_config(substream, params, &slave_config);
 	if (ret)
-		return ret;
+		goto err;
 
-	return dmaengine_slave_config(chan, &slave_config);
+	ret = dmaengine_slave_config(chan, &slave_config);
+err:
+	return snd_soc_ret(dev, ret, "\n");
 }
 
 static int
@@ -97,16 +97,16 @@ dmaengine_pcm_set_runtime_hwparams(struct snd_soc_component *component,
 	struct dma_chan *chan = pcm->chan[substream->stream];
 	struct snd_dmaengine_dai_dma_data *dma_data;
 	struct snd_pcm_hardware hw;
+	int ret;
 
-	if (rtd->dai_link->num_cpus > 1) {
-		dev_err(rtd->dev,
-			"%s doesn't support Multi CPU yet\n", __func__);
-		return -EINVAL;
+	if (rtd->dai_link->num_cpus > 1)
+		return snd_soc_ret(rtd->dev, -EINVAL, "doesn't support Multi CPU yet\n");
+
+	if (pcm->config->pcm_hardware) {
+		ret = snd_soc_set_runtime_hwparams(substream,
+						   pcm->config->pcm_hardware);
+		goto out;
 	}
-
-	if (pcm->config->pcm_hardware)
-		return snd_soc_set_runtime_hwparams(substream,
-				pcm->config->pcm_hardware);
 
 	dma_data = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 
@@ -134,8 +134,9 @@ dmaengine_pcm_set_runtime_hwparams(struct snd_soc_component *component,
 						  dma_data,
 						  &hw,
 						  chan);
-
-	return snd_soc_set_runtime_hwparams(substream, &hw);
+	ret = snd_soc_set_runtime_hwparams(substream, &hw);
+out:
+	return snd_soc_ret(rtd->dev, ret, "\n");
 }
 
 static int dmaengine_pcm_open(struct snd_soc_component *component,
@@ -143,25 +144,32 @@ static int dmaengine_pcm_open(struct snd_soc_component *component,
 {
 	struct dmaengine_pcm *pcm = snd_soc_component_to_priv(component);
 	struct dma_chan *chan = pcm->chan[substream->stream];
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = dmaengine_pcm_set_runtime_hwparams(component, substream);
 	if (ret)
-		return ret;
+		goto err;
 
-	return snd_dmaengine_pcm_open(substream, chan);
+	ret = snd_dmaengine_pcm_open(substream, chan);
+err:
+	return snd_soc_ret(dev, ret, "\n");
 }
 
 static int dmaengine_pcm_close(struct snd_soc_component *component,
 			       struct snd_pcm_substream *substream)
 {
-	return snd_dmaengine_pcm_close(substream);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	return snd_soc_ret(dev, snd_dmaengine_pcm_close(substream), "\n");
 }
 
 static int dmaengine_pcm_trigger(struct snd_soc_component *component,
 				 struct snd_pcm_substream *substream, int cmd)
 {
-	return snd_dmaengine_pcm_trigger(substream, cmd);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	return snd_soc_ret(dev, snd_dmaengine_pcm_trigger(substream, cmd), "\n");
 }
 
 static struct dma_chan *dmaengine_pcm_compat_request_channel(
@@ -245,10 +253,8 @@ static int dmaengine_pcm_new(struct snd_soc_component *component,
 				component, rtd, substream);
 		}
 
-		if (!pcm->chan[i]) {
-			dev_err(dev, "Missing dma channel for stream: %d\n", i);
-			return -EINVAL;
-		}
+		if (!pcm->chan[i])
+			return snd_soc_ret(dev, -EINVAL, "Missing dma channel for stream: %d\n", i);
 
 		snd_pcm_set_managed_buffer(substream,
 				SNDRV_DMA_TYPE_DEV_IRAM,
@@ -294,20 +300,21 @@ static int dmaengine_copy(struct snd_soc_component *component,
 	bool is_playback = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	void *dma_ptr = runtime->dma_area + hwoff +
 			channel * (runtime->dma_bytes / runtime->channels);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	if (is_playback)
 		if (copy_from_iter(dma_ptr, bytes, iter) != bytes)
-			return -EFAULT;
+			return snd_soc_ret(dev, -EFAULT, "\n");
 
 	if (process) {
 		int ret = process(substream, channel, hwoff, bytes);
 		if (ret < 0)
-			return ret;
+			return snd_soc_ret(dev, ret, "\n");
 	}
 
 	if (!is_playback)
 		if (copy_to_iter(dma_ptr, bytes, iter) != bytes)
-			return -EFAULT;
+			return snd_soc_ret(dev, -EFAULT, "\n");
 
 	return 0;
 }
@@ -406,10 +413,9 @@ static int dmaengine_pcm_request_chan_of(struct dmaengine_pcm *pcm,
 		pcm->chan[1] = pcm->chan[0];
 
 	if (!pcm->chan[0] &&
-	    !pcm->chan[1]) {
-		dev_err(dev, "no DMA channel found for either playback or capture\n");
-		return -ENODEV;
-	}
+	    !pcm->chan[1])
+		return snd_soc_ret(dev, -ENODEV,
+				"no DMA channel found for either playback or capture\n");
 
 	return 0;
 }
@@ -443,15 +449,15 @@ int snd_dmaengine_pcm_register(struct device *dev,
 	struct snd_soc_component *component;
 	const struct snd_soc_component_driver *driver;
 	struct dmaengine_pcm *pcm;
-	int ret;
+	int ret = -ENOMEM;
 
 	component = snd_soc_component_alloc(dev);
 	if (!component)
-		return -ENOMEM;
+		goto err;
 
 	pcm = kzalloc_obj(*pcm);
 	if (!pcm)
-		return -ENOMEM;
+		goto err;
 
 	if (!config)
 		config = &snd_dmaengine_pcm_default_config;
@@ -480,7 +486,8 @@ int snd_dmaengine_pcm_register(struct device *dev,
 err_free_dma:
 	dmaengine_pcm_release_chan(pcm);
 	kfree(pcm);
-	return ret;
+err:
+	return snd_soc_ret(dev, ret, "\n");
 }
 EXPORT_SYMBOL_GPL(snd_dmaengine_pcm_register);
 
@@ -526,11 +533,11 @@ int devm_snd_dmaengine_pcm_register(struct device *dev,
 				    const struct snd_dmaengine_pcm_config *config, unsigned int flags)
 {
 	struct device **ptr;
-	int ret;
+	int ret = -ENOMEM;
 
 	ptr = devres_alloc(devm_dmaengine_pcm_release, sizeof(*ptr), GFP_KERNEL);
 	if (!ptr)
-		return -ENOMEM;
+		goto err;
 
 	ret = snd_dmaengine_pcm_register(dev, config, flags);
 	if (ret == 0) {
@@ -539,8 +546,8 @@ int devm_snd_dmaengine_pcm_register(struct device *dev,
 	} else {
 		devres_free(ptr);
 	}
-
-	return ret;
+err:
+	return snd_soc_ret(dev, ret, "\n");
 }
 EXPORT_SYMBOL_GPL(devm_snd_dmaengine_pcm_register);
 
