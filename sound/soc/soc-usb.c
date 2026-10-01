@@ -78,16 +78,12 @@ int snd_soc_usb_setup_offload_jack(struct snd_soc_component *component,
 
 	ret = snd_soc_card_jack_new(card, "USB Offload Jack",
 				    SND_JACK_USB, jack);
-	if (ret < 0) {
-		dev_err(dev, "Unable to add USB offload jack: %d\n", ret);
-		return ret;
-	}
+	if (ret < 0)
+		return snd_soc_ret(dev, ret, "Unable to add USB offload jack\n");
 
 	ret = snd_soc_component_set_jack(component, jack, NULL);
-	if (ret) {
-		dev_err(dev, "Failed to set jack: %d\n", ret);
-		return ret;
-	}
+	if (ret)
+		return snd_soc_ret(dev, ret, "Failed to set jack\n");
 
 	return 0;
 }
@@ -126,7 +122,7 @@ int snd_soc_usb_update_offload_route(struct device *dev, int card, int pcm,
 exit:
 	mutex_unlock(&ctx_mutex);
 
-	return ret;
+	return snd_soc_ret(dev, ret, "\n");
 }
 EXPORT_SYMBOL_GPL(snd_soc_usb_update_offload_route);
 
@@ -274,7 +270,7 @@ int snd_soc_usb_connect(struct device *usbdev, struct snd_soc_usb_device *sdev)
 	struct snd_soc_usb *ctx;
 
 	if (!usbdev)
-		return -ENODEV;
+		return snd_soc_ret(usbdev, -ENODEV, "\n");
 
 	mutex_lock(&ctx_mutex);
 	ctx = snd_soc_find_usb_ctx(usbdev);
@@ -304,7 +300,7 @@ int snd_soc_usb_disconnect(struct device *usbdev, struct snd_soc_usb_device *sde
 	struct snd_soc_usb *ctx;
 
 	if (!usbdev)
-		return -ENODEV;
+		return snd_soc_ret(usbdev, -ENODEV, "\n");
 
 	mutex_lock(&ctx_mutex);
 	ctx = snd_soc_find_usb_ctx(usbdev);
