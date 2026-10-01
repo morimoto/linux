@@ -125,7 +125,8 @@ int snd_soc_calc_bclk(int fs, int sample_size, int channels, int tdm_slots);
 int snd_soc_params_to_bclk(const struct snd_pcm_hw_params *parms);
 int snd_soc_tdm_params_to_bclk(const struct snd_pcm_hw_params *params,
 			       int tdm_width, int tdm_slots, int slot_multiple);
-int snd_soc_ret(const struct device *dev, int ret, const char *fmt, ...);
+#define snd_soc_ret(dev, ret, fmt, ...) _snd_soc_ret(dev, ret, __func__, fmt, ##__VA_ARGS__)
+int _snd_soc_ret(const struct device *dev, int ret, const char *func, const char *fmt, ...);
 
 /* set runtime hw params */
 static inline int snd_soc_set_runtime_hwparams(struct snd_pcm_substream *substream,

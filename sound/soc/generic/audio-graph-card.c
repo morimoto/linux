@@ -20,12 +20,7 @@
 
 #define DPCM_SELECTABLE 1
 
-#define graph_ret(priv, ret) _graph_ret(priv, __func__, ret)
-static inline int _graph_ret(struct simple_util_priv *priv,
-			     const char *func, int ret)
-{
-	return snd_soc_ret(simple_priv_to_dev(priv), ret, "at %s()\n", func);
-}
+#define graph_ret(priv, ret) snd_soc_ret(simple_priv_to_dev(priv), ret, "\n")
 
 #define ep_to_port(ep)	of_get_parent(ep)
 static struct device_node *port_to_ports(struct device_node *port)

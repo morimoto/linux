@@ -64,21 +64,10 @@ struct snd_soc_component {
 	void *priv;
 };
 
-#define soc_component_ret(dai, ret) _soc_component_ret(dai, __func__, ret)
-static inline int _soc_component_ret(struct snd_soc_component *component, const char *func, int ret)
-{
-	return snd_soc_ret(component->dev, ret,
-			   "at %s() on %s\n", func, component->name);
-}
-
-#define soc_component_ret_reg_rw(dai, ret, reg) _soc_component_ret_reg_rw(dai, __func__, ret, reg)
-static inline int _soc_component_ret_reg_rw(struct snd_soc_component *component,
-					    const char *func, int ret, int reg)
-{
-	return snd_soc_ret(component->dev, ret,
-			   "at %s() on %s for register: [0x%08x]\n",
-			   func, component->name, reg);
-}
+#define soc_component_ret(component, ret) \
+	snd_soc_ret(component->dev, ret, "on %s\n", component->name)
+#define soc_component_ret_reg_rw(component, ret, reg) \
+	snd_soc_ret(component->dev, ret, "on %s for register: [0x%08x]\n", component->name, reg)
 
 struct snd_soc_component *snd_soc_component_alloc(struct device *dev)
 {
