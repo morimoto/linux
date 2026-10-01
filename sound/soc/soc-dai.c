@@ -52,15 +52,8 @@ struct snd_soc_dai {
 	void *priv;
 };
 
-#define soc_dai_ret(dai, ret) _soc_dai_ret(dai, __func__, ret)
-static inline int _soc_dai_ret(const struct snd_soc_dai *dai,
-			       const char *func, int ret)
-{
-	struct device *dev = snd_soc_component_to_dev(dai->component);
-
-	return snd_soc_ret(dev, ret,
-			   "at %s() on %s\n", func, dai->name);
-}
+#define soc_dai_ret(dai, ret) \
+	snd_soc_ret(snd_soc_component_to_dev(dai->component), ret, "on %s\n", dai->name)
 
 struct snd_soc_component *snd_soc_dai_to_component(const struct snd_soc_dai *dai)
 {
