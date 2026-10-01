@@ -71,13 +71,7 @@ struct snd_soc_card {
 	void *priv;
 };
 
-#define soc_card_ret(dai, ret) _soc_card_ret(dai, __func__, ret)
-static inline int _soc_card_ret(struct snd_soc_card *card,
-				const char *func, int ret)
-{
-	return snd_soc_ret(card->dev, ret,
-			   "at %s() on %s\n", func, card->name);
-}
+#define soc_card_ret(card, ret) snd_soc_ret(card->dev, ret, "on %s\n", card->name)
 
 struct snd_soc_dapm_context *snd_soc_card_to_dapm(struct snd_soc_card *card)
 {
