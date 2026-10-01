@@ -276,12 +276,12 @@ static int snd_soc_dummy_probe(struct faux_device *fdev)
 	ret = devm_snd_soc_register_component(&fdev->dev,
 					      &dummy_codec, &dummy_dai, 1);
 	if (ret < 0)
-		return ret;
+		return snd_soc_ret(&fdev->dev, ret, "\n");
 
 	ret = devm_snd_soc_register_component(&fdev->dev,
 					      &dummy_platform, NULL, 0);
 
-	return ret;
+	return snd_soc_ret(&fdev->dev, ret, "\n");
 }
 
 static struct faux_device_ops soc_dummy_ops = {
