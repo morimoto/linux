@@ -16,12 +16,7 @@
 #include <sound/simple_card_utils.h>
 #include "../soc-internal.h"
 
-#define simple_ret(priv, ret) _simple_ret(priv, __func__, ret)
-static inline int _simple_ret(struct simple_util_priv *priv,
-			      const char *func, int ret)
-{
-	return snd_soc_ret(simple_priv_to_dev(priv), ret, "at %s()\n", func);
-}
+#define simple_ret(priv, ret) snd_soc_ret(simple_priv_to_dev(priv), ret, "\n")
 
 int simple_util_get_sample_fmt(struct simple_util_data *data)
 {

@@ -8,13 +8,7 @@
 #include <sound/soc.h>
 #include "soc-internal.h"
 
-#define soc_link_ret(rtd, ret) _soc_link_ret(rtd, __func__, ret)
-static inline int _soc_link_ret(struct snd_soc_pcm_runtime *rtd,
-				const char *func, int ret)
-{
-	return snd_soc_ret(rtd->dev, ret,
-			   "at %s() on %s\n", func, rtd->dai_link->name);
-}
+#define soc_link_ret(rtd, ret) snd_soc_ret(rtd->dev, ret, "on %s\n", rtd->dai_link->name)
 
 /*
  * We might want to check substream by using list.
