@@ -2954,7 +2954,7 @@ static struct platform_driver renesas_eth_sw_driver_platform = {
 	.probe = renesas_eth_sw_probe,
 	.remove = renesas_eth_sw_remove,
 	.driver = {
-		.name = "renesas_eth_sw",
+		.name = "renesas_eth_sw3",
 		.pm = pm_sleep_ptr(&renesas_eth_sw_pm_ops),
 		.of_match_table = renesas_eth_sw_of_table,
 	}
