@@ -11,6 +11,8 @@
 #include <sound/soc.h>
 #include "soc-internal.h"
 
+#define soc_compr_ret(rtd, ret) snd_soc_ret(rtd->dev, ret, "on %s\n", rtd->dai_link->name)
+
 static int snd_soc_compr_components_open(struct snd_compr_stream *cstream)
 {
 	struct snd_soc_pcm_runtime *rtd = cstream->private_data;
@@ -28,7 +30,7 @@ static int snd_soc_compr_components_open(struct snd_compr_stream *cstream)
 			break;
 	}
 
-	return ret;
+	return soc_compr_ret(rtd, ret);
 }
 
 static void snd_soc_compr_components_free(struct snd_compr_stream *cstream,
@@ -117,7 +119,7 @@ err_no_lock:
 	if (ret < 0)
 		soc_compr_clean(cstream, 1);
 
-	return ret;
+	return soc_compr_ret(rtd, ret);
 }
 
 static int soc_compr_open_fe(struct snd_compr_stream *cstream)
@@ -187,7 +189,8 @@ out:
 be_err:
 	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_NO;
 	snd_soc_card_mutex_unlock(fe->card);
-	return ret;
+
+	return soc_compr_ret(fe, ret);
 }
 
 static int soc_compr_free_fe(struct snd_compr_stream *cstream)
@@ -260,7 +263,8 @@ static int soc_compr_trigger(struct snd_compr_stream *cstream, int cmd)
 
 out:
 	snd_soc_dpcm_mutex_unlock(rtd);
-	return ret;
+
+	return soc_compr_ret(rtd, ret);
 }
 
 static int soc_compr_trigger_fe(struct snd_compr_stream *cstream, int cmd)
@@ -271,18 +275,20 @@ static int soc_compr_trigger_fe(struct snd_compr_stream *cstream, int cmd)
 	int ret;
 
 	if (cmd == SND_COMPR_TRIGGER_PARTIAL_DRAIN ||
-	    cmd == SND_COMPR_TRIGGER_DRAIN)
-		return snd_soc_component_compr_trigger(cstream, cmd);
+	    cmd == SND_COMPR_TRIGGER_DRAIN) {
+		ret = snd_soc_component_compr_trigger(cstream, cmd);
+		goto out;
+	}
 
 	snd_soc_card_mutex_lock(fe->card);
 
 	ret = snd_soc_dai_compr_trigger(cpu_dai, cstream, cmd);
 	if (ret < 0)
-		goto out;
+		goto err;
 
 	ret = snd_soc_component_compr_trigger(cstream, cmd);
 	if (ret < 0)
-		goto out;
+		goto err;
 
 	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_FE;
 
@@ -302,11 +308,11 @@ static int soc_compr_trigger_fe(struct snd_compr_stream *cstream, int cmd)
 		fe->dpcm[stream].state = SND_SOC_DPCM_STATE_PAUSED;
 		break;
 	}
-
-out:
+err:
 	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_NO;
 	snd_soc_card_mutex_unlock(fe->card);
-	return ret;
+out:
+	return soc_compr_ret(fe, ret);
 }
 
 static int soc_compr_set_params(struct snd_compr_stream *cstream,
@@ -350,7 +356,8 @@ static int soc_compr_set_params(struct snd_compr_stream *cstream,
 
 err:
 	snd_soc_dpcm_mutex_unlock(rtd);
-	return ret;
+
+	return soc_compr_ret(rtd, ret);
 }
 
 static int soc_compr_set_params_fe(struct snd_compr_stream *cstream,
@@ -406,7 +413,8 @@ static int soc_compr_set_params_fe(struct snd_compr_stream *cstream,
 out:
 	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_NO;
 	snd_soc_card_mutex_unlock(fe->card);
-	return ret;
+
+	return soc_compr_ret(fe, ret);
 }
 
 static int soc_compr_get_params(struct snd_compr_stream *cstream,
@@ -425,7 +433,8 @@ static int soc_compr_get_params(struct snd_compr_stream *cstream,
 	ret = snd_soc_component_compr_get_params(cstream, params);
 err:
 	snd_soc_dpcm_mutex_unlock(rtd);
-	return ret;
+
+	return soc_compr_ret(rtd, ret);
 }
 
 static int soc_compr_ack(struct snd_compr_stream *cstream, size_t bytes)
@@ -443,7 +452,8 @@ static int soc_compr_ack(struct snd_compr_stream *cstream, size_t bytes)
 	ret = snd_soc_component_compr_ack(cstream, bytes);
 err:
 	snd_soc_dpcm_mutex_unlock(rtd);
-	return ret;
+
+	return soc_compr_ret(rtd, ret);
 }
 
 static int soc_compr_pointer(struct snd_compr_stream *cstream,
@@ -462,7 +472,8 @@ static int soc_compr_pointer(struct snd_compr_stream *cstream,
 	ret = snd_soc_component_compr_pointer(cstream, tstamp);
 out:
 	snd_soc_dpcm_mutex_unlock(rtd);
-	return ret;
+
+	return soc_compr_ret(rtd, ret);
 }
 
 static int soc_compr_set_metadata(struct snd_compr_stream *cstream,
@@ -474,9 +485,11 @@ static int soc_compr_set_metadata(struct snd_compr_stream *cstream,
 
 	ret = snd_soc_dai_compr_set_metadata(cpu_dai, cstream, metadata);
 	if (ret < 0)
-		return ret;
+		goto err;
 
-	return snd_soc_component_compr_set_metadata(cstream, metadata);
+	ret = snd_soc_component_compr_set_metadata(cstream, metadata);
+err:
+	return soc_compr_ret(rtd, ret);
 }
 
 static int soc_compr_get_metadata(struct snd_compr_stream *cstream,
@@ -488,9 +501,11 @@ static int soc_compr_get_metadata(struct snd_compr_stream *cstream,
 
 	ret = snd_soc_dai_compr_get_metadata(cpu_dai, cstream, metadata);
 	if (ret < 0)
-		return ret;
+		goto err;
 
-	return snd_soc_component_compr_get_metadata(cstream, metadata);
+	ret = snd_soc_component_compr_get_metadata(cstream, metadata);
+err:
+	return soc_compr_ret(rtd, ret);
 }
 
 /* ASoC Compress operations */
@@ -552,15 +567,11 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 	BUILD_BUG_ON((int)SNDRV_PCM_STREAM_CAPTURE  != (int)SND_COMPRESS_CAPTURE);
 
 	if (rtd->dai_link->num_cpus > 1 ||
-	    rtd->dai_link->num_codecs > 1) {
-		dev_err(dev, "Compress ASoC: Multi CPU/Codec not supported\n");
-		return -EINVAL;
-	}
+	    rtd->dai_link->num_codecs > 1)
+		return snd_soc_ret(dev, -EINVAL, "Multi CPU/Codec not supported\n");
 
-	if (!codec_dai) {
-		dev_err(dev, "Missing codec\n");
-		return -EINVAL;
-	}
+	if (!codec_dai)
+		return snd_soc_ret(dev, -EINVAL, "Missing codec\n");
 
 	/* check client and interface hw capabilities */
 	if (snd_soc_dai_stream_valid(codec_dai, SNDRV_PCM_STREAM_PLAYBACK) &&
@@ -574,11 +585,9 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 	 * Compress devices are unidirectional so only one of the directions
 	 * should be set, check for that (xor)
 	 */
-	if (playback + capture != 1) {
-		dev_err(dev, "Compress ASoC: Invalid direction for P %d, C %d\n",
-			playback, capture);
-		return -EINVAL;
-	}
+	if (playback + capture != 1)
+		return snd_soc_ret(dev, -EINVAL,
+				   "Invalid direction for P %d, C %d\n", playback, capture);
 
 	if (playback)
 		direction = SND_COMPRESS_PLAYBACK;
@@ -587,11 +596,11 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 
 	compr = devm_kzalloc(dev, sizeof(*compr), GFP_KERNEL);
 	if (!compr)
-		return -ENOMEM;
+		goto err_nomem;
 
 	compr->ops = devm_kzalloc(dev, sizeof(soc_compr_ops), GFP_KERNEL);
 	if (!compr->ops)
-		return -ENOMEM;
+		goto err_nomem;
 
 	if (rtd->dai_link->dynamic) {
 		int playback = 1;
@@ -607,11 +616,10 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 
 		ret = snd_pcm_new_internal(snd_card, new_name, rtd->id,
 				playback, capture, &be_pcm);
-		if (ret < 0) {
-			dev_err(dev, "Compress ASoC: can't create compressed for %s: %d\n",
-				rtd->dai_link->name, ret);
-			return ret;
-		}
+		if (ret < 0)
+			return snd_soc_ret(dev, ret,
+					   "can't create compressed for %s:\n",
+					   rtd->dai_link->name);
 
 		/* inherit atomicity from DAI link */
 		be_pcm->nonatomic = rtd->dai_link->nonatomic;
@@ -645,10 +653,8 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 	if (ret < 0) {
 		component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
-		dev_err(snd_soc_component_to_dev(component),
-			"Compress ASoC: can't create compress for codec %s: %d\n",
-			snd_soc_component_name(component), ret);
-		return ret;
+		return snd_soc_ret(snd_soc_component_to_dev(component), ret,
+			"can't create compress for codec %s\n", snd_soc_component_name(component));
 	}
 
 	/* DAPM dai link stream work */
@@ -661,5 +667,7 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 		snd_soc_dai_name(codec_dai), snd_soc_dai_name(cpu_dai));
 
 	return 0;
+err_nomem:
+	return soc_compr_ret(rtd, -ENOMEM);
 }
 EXPORT_SYMBOL_GPL(snd_soc_new_compress);
