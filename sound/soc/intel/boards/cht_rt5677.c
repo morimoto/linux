@@ -422,7 +422,7 @@ static const struct snd_soc_dai_link cht_rt5677_dailink[] = {
 	},
 };
 
-static const struct snd_soc_card cht_rt5677_card = {
+static const struct snd_soc_card_driver cht_rt5677_card_driver = {
 	.owner = THIS_MODULE,
 	.num_links = ARRAY_SIZE(cht_rt5677_dailink),
 	.num_aux_devs = 1,
@@ -475,7 +475,7 @@ static int cht_rt5677_get_gpio(struct device *dev, struct device *codec_dev,
 	return 0;
 }
 
-static int cht_rt5677_clone_dai_links(struct device *dev, struct snd_soc_card *card)
+static int cht_rt5677_clone_dai_links(struct device *dev, struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link_component *components;
 	struct snd_soc_dai_link *links;
@@ -513,7 +513,7 @@ static int cht_rt5677_clone_dai_links(struct device *dev, struct snd_soc_card *c
 		}
 	}
 
-	card->dai_link = links;
+	card_driver->dai_link = links;
 	return 0;
 }
 
@@ -525,6 +525,7 @@ static int snd_cht_rt5677_probe(struct platform_device *pdev)
 	struct snd_soc_aux_dev *aux_dev;
 	struct snd_soc_dai_link *dai_links;
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct acpi_device *adev;
 	struct device *codec_dev;
 	bool sof_parent;
@@ -535,21 +536,25 @@ static int snd_cht_rt5677_probe(struct platform_device *pdev)
 	if (!ctx)
 		return -ENOMEM;
 
-	card = devm_kmemdup(dev, &cht_rt5677_card, sizeof(*card), GFP_KERNEL);
+	card_driver = devm_kmemdup(dev, &cht_rt5677_card_driver, sizeof(*card_driver), GFP_KERNEL);
+	if (!card_driver)
+		return -ENOMEM;
+
+	card = snd_soc_card_alloc(dev);
 	if (!card)
 		return -ENOMEM;
 
-	ret = cht_rt5677_clone_dai_links(dev, card);
+	ret = cht_rt5677_clone_dai_links(dev, card_driver);
 	if (ret)
 		return ret;
-	dai_links = card->dai_link;
+	dai_links = card_driver->dai_link;
 
 	aux_dev = devm_kmemdup(dev, &cht_rt5677_headset_dev,
 			       sizeof(cht_rt5677_headset_dev), GFP_KERNEL);
 	if (!aux_dev)
 		return -ENOMEM;
 
-	card->aux_dev = aux_dev;
+	card_driver->aux_dev = aux_dev;
 
 	strscpy(ctx->codec_name, RT5677_I2C, sizeof(ctx->codec_name));
 
@@ -560,7 +565,7 @@ static int snd_cht_rt5677_probe(struct platform_device *pdev)
 			 "i2c-%s", acpi_dev_name(adev));
 
 		acpi_dev_put(adev);
-		for (i = 0; i < card->num_links; i++) {
+		for (i = 0; i < card_driver->num_links; i++) {
 			if (dai_links[i].codecs->name &&
 			    !strcmp(dai_links[i].codecs->name,
 				    RT5677_I2C)) {
@@ -610,8 +615,6 @@ static int snd_cht_rt5677_probe(struct platform_device *pdev)
 
 	put_device(codec_dev);
 
-	card->dev = dev;
-
 	ctx->mclk = devm_clk_get(dev, "pmc_plt_clk_3");
 	if (IS_ERR(ctx->mclk))
 		return dev_err_probe(dev, PTR_ERR(ctx->mclk), "getting MCLK failed\n");
@@ -621,14 +624,14 @@ static int snd_cht_rt5677_probe(struct platform_device *pdev)
 	sof_parent = snd_soc_acpi_sof_parent(dev);
 
 	if (sof_parent) {
-		card->name = SOF_CARD_NAME;
-		card->driver_name = SOF_DRIVER_NAME;
+		card_driver->default_name = SOF_CARD_NAME;
+		card_driver->driver_name = SOF_DRIVER_NAME;
 	} else {
-		card->name = CARD_NAME;
-		card->driver_name = DRIVER_NAME;
+		card_driver->default_name = CARD_NAME;
+		card_driver->driver_name = DRIVER_NAME;
 	}
 
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
 		return dev_err_probe(dev, ret, "registering sound card failed\n");
 
