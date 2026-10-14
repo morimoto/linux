@@ -107,7 +107,7 @@ struct its_node {
 	void __iomem		*base;
 	void __iomem		*sgir_base;
 	phys_addr_t		phys_base;
-	phys_addr_t		xlate_base;
+	u64			xlate_base;
 	struct its_cmd_block	*cmd_base;
 	struct its_cmd_block	*cmd_write;
 	struct its_baser	tables[GITS_BASER_NR_REGS];
