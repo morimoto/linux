@@ -618,6 +618,16 @@ static const struct mdlc_info r8a78000_mdlc_default[] = {
 	{ /* sentinel */ }
 };
 
+static const struct power_map_in r8a78000_mdlc_pere_power_fw[] = {
+	{ 1, 13 },		/* PD_UFS1 */
+	{ -1 }
+};
+
+static const struct mod_map_in r8a78000_mdlc_pere_mod_fw[] = {
+	{ 0x61, 199, -1 },	/* UFS1 */
+	{ -1 }
+};
+
 static const struct mod_map_in r8a78000_mdlc_perw_mod_fw[] = {
 	{ 0x40, 205, -1 },	/* SCIF0 */
 	{ 0x41, 206, -1 },	/* SCIF1 */
@@ -652,6 +662,10 @@ static const struct mod_map_in r8a78000_mdlc_scp_mod_fw[] = {
 
 static const struct mdlc_info r8a78000_mdlc_fw[] = {
 	{
+		.base = 0xc08f0000 /* mdlc_pere */,
+		.power_map = r8a78000_mdlc_pere_power_fw,
+		.mod_map = r8a78000_mdlc_pere_mod_fw,
+	}, {
 		.base = 0xc05d0000 /* mdlc_perw */,
 		.mod_map = r8a78000_mdlc_perw_mod_fw,
 	}, {
