@@ -336,7 +336,7 @@ static int p1022_rdk_probe(struct platform_device *pdev)
 	mdata->card_driver.dai_link = mdata->dai;
 
 	/* Register with ASoC */
-	ret = snd_soc_register_card2(&pdev->dev, &mdata->card_driver);
+	ret = snd_soc_register_card(&pdev->dev, &mdata->card_driver);
 	if (ret) {
 		dev_err(&pdev->dev, "could not register card (ret=%i)\n", ret);
 		goto error;
