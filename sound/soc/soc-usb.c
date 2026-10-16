@@ -32,7 +32,9 @@ static struct snd_soc_usb *snd_soc_usb_ctx_lookup(struct device_node *node)
 		return NULL;
 
 	list_for_each_entry(ctx, &usb_ctx_list, list) {
-		if (ctx->component->dev->of_node == node)
+		struct device *dev = snd_soc_component_to_dev(ctx->component);
+
+		if (dev->of_node == node)
 			return ctx;
 	}
 
@@ -70,19 +72,20 @@ static struct snd_soc_usb *snd_soc_find_usb_ctx(struct device *dev)
 int snd_soc_usb_setup_offload_jack(struct snd_soc_component *component,
 				   struct snd_soc_jack *jack)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
-	ret = snd_soc_card_jack_new(component->card, "USB Offload Jack",
+	ret = snd_soc_card_jack_new(card, "USB Offload Jack",
 				    SND_JACK_USB, jack);
 	if (ret < 0) {
-		dev_err(component->card->dev, "Unable to add USB offload jack: %d\n",
-			ret);
+		dev_err(dev, "Unable to add USB offload jack: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_component_set_jack(component, jack, NULL);
 	if (ret) {
-		dev_err(component->card->dev, "Failed to set jack: %d\n", ret);
+		dev_err(dev, "Failed to set jack: %d\n", ret);
 		return ret;
 	}
 

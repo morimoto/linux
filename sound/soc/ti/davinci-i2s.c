@@ -242,7 +242,9 @@ static int davinci_i2s_set_tdm_slot(struct snd_soc_dai *cpu_dai,
 				    unsigned int rx_mask,
 				    int slots, int slot_width)
 {
-	struct davinci_mcbsp_dev *dev = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct davinci_mcbsp_dev *dev = dev_get_drvdata(dai_dev);
 
 	dev_dbg(dev->dev, "slots %d, slot_width %d\n", slots, slot_width);
 
@@ -279,7 +281,9 @@ static int davinci_i2s_set_tdm_slot(struct snd_soc_dai *cpu_dai,
 static int davinci_i2s_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 				   unsigned int fmt)
 {
-	struct davinci_mcbsp_dev *dev = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct davinci_mcbsp_dev *dev = dev_get_drvdata(dai_dev);
 	unsigned int pcr;
 	unsigned int spcr;
 	unsigned int srgr;
@@ -444,7 +448,9 @@ static int davinci_i2s_set_dai_fmt(struct snd_soc_dai *cpu_dai,
 static int davinci_i2s_dai_set_clkdiv(struct snd_soc_dai *cpu_dai,
 				int div_id, int div)
 {
-	struct davinci_mcbsp_dev *dev = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct davinci_mcbsp_dev *dev = dev_get_drvdata(dai_dev);
 
 	if (div_id != DAVINCI_MCBSP_CLKGDV)
 		return -ENODEV;
@@ -457,7 +463,9 @@ static int davinci_i2s_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct davinci_mcbsp_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct davinci_mcbsp_dev *dev = dev_get_drvdata(dai_dev);
 	struct snd_interval *i = NULL;
 	int mcbsp_word_length, master;
 	unsigned int clk_div, freq, framesize;
@@ -655,7 +663,9 @@ static int davinci_i2s_hw_params(struct snd_pcm_substream *substream,
 static int davinci_i2s_prepare(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct davinci_mcbsp_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct davinci_mcbsp_dev *dev = dev_get_drvdata(dai_dev);
 	int playback = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 	u32 spcr;
 	u32 mask = playback ? DAVINCI_MCBSP_SPCR_XRST : DAVINCI_MCBSP_SPCR_RRST;
@@ -698,7 +708,9 @@ static int davinci_i2s_prepare(struct snd_pcm_substream *substream,
 static int davinci_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 			       struct snd_soc_dai *dai)
 {
-	struct davinci_mcbsp_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct davinci_mcbsp_dev *dev = dev_get_drvdata(dai_dev);
 	int ret = 0;
 	int playback = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 
@@ -722,7 +734,9 @@ static int davinci_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 static void davinci_i2s_shutdown(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct davinci_mcbsp_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct davinci_mcbsp_dev *dev = dev_get_drvdata(dai_dev);
 	int playback = (substream->stream == SNDRV_PCM_STREAM_PLAYBACK);
 	davinci_mcbsp_stop(dev, playback);
 }
@@ -734,11 +748,13 @@ static void davinci_i2s_shutdown(struct snd_pcm_substream *substream,
 
 static int davinci_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct davinci_mcbsp_dev *dev = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct davinci_mcbsp_dev *dev = dev_get_drvdata(dai_dev);
 	int stream;
 
 	for_each_pcm_streams(stream)
-		snd_soc_dai_dma_data_set(dai, stream, &dev->dma_data[stream]);
+		snd_soc_dai_stream_dma_data_set(dai, stream, &dev->dma_data[stream]);
 
 	return 0;
 }

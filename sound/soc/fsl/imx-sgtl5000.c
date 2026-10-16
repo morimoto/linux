@@ -26,8 +26,8 @@ struct imx_sgtl5000_data {
 
 static int imx_sgtl5000_dai_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct imx_sgtl5000_data *data = snd_soc_card_get_drvdata(rtd->card);
-	struct device *dev = rtd->card->dev;
+	struct imx_sgtl5000_data *data = snd_soc_card_to_priv(rtd->card);
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	int ret;
 
 	ret = snd_soc_dai_set_sysclk(snd_soc_rtd_to_codec(rtd, 0), SGTL5000_SYSCLK,
@@ -199,7 +199,7 @@ fail:
 static void imx_sgtl5000_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
-	struct imx_sgtl5000_data *data = snd_soc_card_get_drvdata(card);
+	struct imx_sgtl5000_data *data = snd_soc_card_to_priv(card);
 
 	clk_put(data->codec_clk);
 }

@@ -71,11 +71,12 @@ struct sof_hdmi_pcm {
 
 static int hdmi_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(rtd->card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct sof_hdmi_pcm *pcm;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 
-	pcm = devm_kzalloc(rtd->card->dev, sizeof(*pcm), GFP_KERNEL);
+	pcm = devm_kzalloc(dev, sizeof(*pcm), GFP_KERNEL);
 	if (!pcm)
 		return -ENOMEM;
 
@@ -90,7 +91,7 @@ static int hdmi_init(struct snd_soc_pcm_runtime *rtd)
 
 static int card_late_probe(struct snd_soc_card *card)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(card);
 	struct sof_hdmi_pcm *pcm;
 
 	if (list_empty(&ctx->hdmi_pcm_list))
@@ -101,7 +102,7 @@ static int card_late_probe(struct snd_soc_card *card)
 
 	pcm = list_first_entry(&ctx->hdmi_pcm_list, struct sof_hdmi_pcm, head);
 
-	return hda_dsp_hdmi_build_controls(card, pcm->codec_dai->component);
+	return hda_dsp_hdmi_build_controls(card, snd_soc_dai_to_component(pcm->codec_dai));
 }
 
 static int rt5660_hw_params(struct snd_pcm_substream *substream,
@@ -278,7 +279,7 @@ static int snd_ehl_rt5660_probe(struct platform_device *pdev)
 	if (!card || !ctx)
 		return -ENOMEM;
 	INIT_LIST_HEAD(&ctx->hdmi_pcm_list);
-	snd_soc_card_set_drvdata(card, ctx);
+	snd_soc_card_set_priv(card, ctx);
 
 	mach = pdev->dev.platform_data;
 	ret = snd_soc_card_driver_fixup_dai_links_platform_name(&pdev->dev,

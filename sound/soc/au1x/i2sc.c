@@ -80,7 +80,9 @@ static inline void WR(struct au1xpsc_audio_data *ctx, int reg, unsigned long v)
 
 static int au1xi2s_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 {
-	struct au1xpsc_audio_data *ctx = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct au1xpsc_audio_data *ctx = dev_get_drvdata(dev);
 	unsigned long c;
 	int ret;
 
@@ -136,7 +138,9 @@ out:
 static int au1xi2s_trigger(struct snd_pcm_substream *substream,
 			   int cmd, struct snd_soc_dai *dai)
 {
-	struct au1xpsc_audio_data *ctx = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct au1xpsc_audio_data *ctx = dev_get_drvdata(dev);
 	int stype = SUBSTREAM_TYPE(substream);
 
 	switch (cmd) {
@@ -182,7 +186,9 @@ static int au1xi2s_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct au1xpsc_audio_data *ctx = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct au1xpsc_audio_data *ctx = dev_get_drvdata(dev);
 	unsigned long v;
 
 	v = msbits_to_reg(params->msbits);
@@ -197,8 +203,11 @@ static int au1xi2s_hw_params(struct snd_pcm_substream *substream,
 static int au1xi2s_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
-	struct au1xpsc_audio_data *ctx = snd_soc_dai_get_drvdata(dai);
-	snd_soc_dai_set_dma_data(dai, substream, &ctx->dmaids[0]);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct au1xpsc_audio_data *ctx = dev_get_drvdata(dev);
+
+	snd_soc_dai_stream_dma_data_set(dai, substream, &ctx->dmaids[0]);
 	return 0;
 }
 
@@ -277,7 +286,7 @@ static int au1xi2s_drvprobe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, ctx);
 
-	return snd_soc_register_component(&pdev->dev, &au1xi2s_component,
+	return snd_soc_component_register(&pdev->dev, &au1xi2s_component,
 					  &au1xi2s_dai_driver, 1);
 }
 
@@ -285,7 +294,7 @@ static void au1xi2s_drvremove(struct platform_device *pdev)
 {
 	struct au1xpsc_audio_data *ctx = platform_get_drvdata(pdev);
 
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_component_unregister(&pdev->dev);
 
 	WR(ctx, I2S_ENABLE, EN_D);	/* clock off, disable */
 }

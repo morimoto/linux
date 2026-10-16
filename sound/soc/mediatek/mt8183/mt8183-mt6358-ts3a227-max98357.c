@@ -66,20 +66,21 @@ mt8183_mt6358_rt1015_i2s_hw_params(struct snd_pcm_substream *substream,
 	unsigned int mclk_fs = rate * mclk_fs_ratio;
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *codec_dai;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret, i;
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
 		ret = snd_soc_dai_set_pll(codec_dai, 0, RT1015_PLL_S_BCLK,
 				rate * 64, rate * 256);
 		if (ret < 0) {
-			dev_err(card->dev, "failed to set pll\n");
+			dev_err(dev, "failed to set pll\n");
 			return ret;
 		}
 
 		ret = snd_soc_dai_set_sysclk(codec_dai, RT1015_SCLK_S_PLL,
 				rate * 256, SND_SOC_CLOCK_IN);
 		if (ret < 0) {
-			dev_err(card->dev, "failed to set sysclk\n");
+			dev_err(dev, "failed to set sysclk\n");
 			return ret;
 		}
 	}
@@ -303,8 +304,8 @@ SND_SOC_DAILINK_DEFS(tdm,
 static int mt8183_mt6358_tdm_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mt8183_mt6358_ts3a227_max98357_priv *priv =
-		snd_soc_card_get_drvdata(rtd->card);
+	struct mt8183_mt6358_ts3a227_max98357_priv *priv = snd_soc_card_to_priv(rtd->card);
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	int ret;
 
 	if (IS_ERR(priv->pin_states[PIN_TDM_OUT_ON]))
@@ -313,8 +314,7 @@ static int mt8183_mt6358_tdm_startup(struct snd_pcm_substream *substream)
 	ret = pinctrl_select_state(priv->pinctrl,
 				   priv->pin_states[PIN_TDM_OUT_ON]);
 	if (ret)
-		dev_err(rtd->card->dev, "%s failed to select state %d\n",
-			__func__, ret);
+		dev_err(dev, "%s failed to select state %d\n", __func__, ret);
 
 	return ret;
 }
@@ -322,8 +322,8 @@ static int mt8183_mt6358_tdm_startup(struct snd_pcm_substream *substream)
 static void mt8183_mt6358_tdm_shutdown(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mt8183_mt6358_ts3a227_max98357_priv *priv =
-		snd_soc_card_get_drvdata(rtd->card);
+	struct mt8183_mt6358_ts3a227_max98357_priv *priv = snd_soc_card_to_priv(rtd->card);
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	int ret;
 
 	if (IS_ERR(priv->pin_states[PIN_TDM_OUT_OFF]))
@@ -332,8 +332,7 @@ static void mt8183_mt6358_tdm_shutdown(struct snd_pcm_substream *substream)
 	ret = pinctrl_select_state(priv->pinctrl,
 				   priv->pin_states[PIN_TDM_OUT_OFF]);
 	if (ret)
-		dev_err(rtd->card->dev, "%s failed to select state %d\n",
-			__func__, ret);
+		dev_err(dev, "%s failed to select state %d\n", __func__, ret);
 }
 
 static const struct snd_soc_ops mt8183_mt6358_tdm_ops = {
@@ -347,8 +346,7 @@ mt8183_mt6358_ts3a227_max98357_wov_startup(
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct mt8183_mt6358_ts3a227_max98357_priv *priv =
-			snd_soc_card_get_drvdata(card);
+	struct mt8183_mt6358_ts3a227_max98357_priv *priv = snd_soc_card_to_priv(card);
 
 	return pinctrl_select_state(priv->pinctrl,
 				    priv->pin_states[PIN_WOV]);
@@ -360,15 +358,14 @@ mt8183_mt6358_ts3a227_max98357_wov_shutdown(
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct mt8183_mt6358_ts3a227_max98357_priv *priv =
-			snd_soc_card_get_drvdata(card);
+	struct mt8183_mt6358_ts3a227_max98357_priv *priv = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	ret = pinctrl_select_state(priv->pinctrl,
 				   priv->pin_states[PIN_STATE_DEFAULT]);
 	if (ret)
-		dev_err(card->dev, "%s failed to select state %d\n",
-			__func__, ret);
+		dev_err(dev, "%s failed to select state %d\n", __func__, ret);
 }
 
 static const struct snd_soc_ops mt8183_mt6358_ts3a227_max98357_wov_ops = {
@@ -379,8 +376,9 @@ static const struct snd_soc_ops mt8183_mt6358_ts3a227_max98357_wov_ops = {
 static int
 mt8183_mt6358_ts3a227_max98357_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct mt8183_mt6358_ts3a227_max98357_priv *priv =
-		snd_soc_card_get_drvdata(rtd->card);
+	struct mt8183_mt6358_ts3a227_max98357_priv *priv = snd_soc_card_to_priv(rtd->card);
+	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int ret;
 
 	ret = snd_soc_card_jack_new(rtd->card, "HDMI Jack", SND_JACK_AVOUT,
@@ -388,15 +386,14 @@ mt8183_mt6358_ts3a227_max98357_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 	if (ret)
 		return ret;
 
-	return snd_soc_component_set_jack(snd_soc_rtd_to_codec(rtd, 0)->component,
-					  &priv->hdmi_jack, NULL);
+	return snd_soc_component_set_jack(component, &priv->hdmi_jack, NULL);
 }
 
 static int mt8183_bt_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *cmpnt_afe =
-		snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt_afe);
+	struct snd_soc_component *cmpnt_afe = snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
+	struct device *dev = snd_soc_component_to_dev(cmpnt_afe);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	int ret;
 
 	ret = mt8183_dai_i2s_set_share(afe, "I2S5", "I2S0");
@@ -409,9 +406,9 @@ static int mt8183_bt_init(struct snd_soc_pcm_runtime *rtd)
 
 static int mt8183_i2s2_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *cmpnt_afe =
-		snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt_afe);
+	struct snd_soc_component *cmpnt_afe = snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
+	struct device *dev = snd_soc_component_to_dev(cmpnt_afe);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	int ret;
 
 	ret = mt8183_dai_i2s_set_share(afe, "I2S2", "I2S3");
@@ -670,11 +667,11 @@ static int
 mt8183_mt6358_ts3a227_max98357_headset_init(struct snd_soc_component *component)
 {
 	int ret;
-	struct mt8183_mt6358_ts3a227_max98357_priv *priv =
-			snd_soc_card_get_drvdata(component->card);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct mt8183_mt6358_ts3a227_max98357_priv *priv = snd_soc_card_to_priv(card);
 
 	/* Enable Headset and 4 Buttons Jack detection */
-	ret = snd_soc_card_jack_new_pins(component->card,
+	ret = snd_soc_card_jack_new_pins(card,
 					 "Headset Jack",
 					 SND_JACK_HEADSET |
 					 SND_JACK_BTN_0 | SND_JACK_BTN_1 |
@@ -813,7 +810,7 @@ mt8183_mt6358_ts3a227_max98357_dev_probe(struct platform_device *pdev)
 		goto out;
 	}
 
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 
 	priv->pinctrl = devm_pinctrl_get(&pdev->dev);
 	if (IS_ERR(priv->pinctrl)) {

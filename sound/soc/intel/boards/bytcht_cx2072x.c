@@ -71,11 +71,11 @@ static int byt_cht_cx2072x_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct snd_soc_component *codec = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *codec = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
+	struct device *codec_dev = snd_soc_component_to_dev(codec);
 	int ret;
 
-	if (devm_acpi_dev_add_driver_gpios(codec->dev,
-					   byt_cht_cx2072x_acpi_gpios))
+	if (devm_acpi_dev_add_driver_gpios(codec_dev, byt_cht_cx2072x_acpi_gpios))
 		dev_warn(rtd->dev, "Unable to add GPIO mapping table\n");
 
 	snd_soc_dapm_set_idle_bias(dapm, false);

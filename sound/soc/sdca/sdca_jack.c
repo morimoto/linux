@@ -36,8 +36,9 @@ int sdca_jack_process(struct sdca_interrupt *interrupt)
 {
 	struct device *dev = interrupt->dev;
 	struct snd_soc_component *component = interrupt->component;
-	struct snd_soc_card *card = component->card;
-	struct rw_semaphore *rwsem = &card->snd_card->controls_rwsem;
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(component);
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(soc_card);
+	struct rw_semaphore *rwsem = &snd_card->controls_rwsem;
 	struct jack_state *state = interrupt->priv;
 	struct snd_kcontrol *kctl = state->kctl;
 	struct snd_ctl_elem_value *ucontrol __free(kfree) = NULL;
@@ -95,7 +96,7 @@ int sdca_jack_process(struct sdca_interrupt *interrupt)
 		return ret;
 	}
 
-	snd_ctl_notify(card->snd_card, SNDRV_CTL_EVENT_MASK_VALUE, &kctl->id);
+	snd_ctl_notify(snd_card, SNDRV_CTL_EVENT_MASK_VALUE, &kctl->id);
 
 	return sdca_jack_report(interrupt);
 }
