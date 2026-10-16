@@ -190,7 +190,7 @@ static int db1200_audio_probe(struct platform_device *pdev)
 
 	card_driver = db1200_cards[pid->driver_data];
 
-	return devm_snd_soc_register_card2(&pdev->dev, card_driver);
+	return devm_snd_soc_register_card(&pdev->dev, card_driver);
 }
 
 static struct platform_driver db1200_audio_driver = {
