@@ -163,7 +163,7 @@ static int mxs_sgtl5000_probe(struct platform_device *pdev)
 		}
 	}
 
-	ret = devm_snd_soc_register_card2(&pdev->dev, card_driver);
+	ret = devm_snd_soc_register_card(&pdev->dev, card_driver);
 
 	if (ret) {
 		mxs_saif_put_mclk(0);
