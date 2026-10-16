@@ -240,7 +240,7 @@ static int bdw_rt286_probe(struct platform_device *pdev)
 		bdw_rt286_card_driver.default_name = CARD_NAME;
 	}
 
-	return devm_snd_soc_register_card2(dev, &bdw_rt286_card_driver);
+	return devm_snd_soc_register_card(dev, &bdw_rt286_card_driver);
 }
 
 static struct platform_driver bdw_rt286_driver = {
