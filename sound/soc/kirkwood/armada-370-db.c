@@ -127,7 +127,7 @@ static int a370db_probe(struct platform_device *pdev)
 		of_parse_phandle(pdev->dev.of_node,
 				 "marvell,audio-codec", 2);
 
-	return devm_snd_soc_register_card2(&pdev->dev, &a370db);
+	return devm_snd_soc_register_card(&pdev->dev, &a370db);
 }
 
 static const struct of_device_id a370db_dt_ids[] __maybe_unused = {
