@@ -614,7 +614,7 @@ static int rockchip_sound_probe(struct platform_device *pdev)
 			"no optional property 'dmic-wakeup-delay-ms' found, default: no delay\n");
 	}
 
-	return devm_snd_soc_register_card2(&pdev->dev, card_driver);
+	return devm_snd_soc_register_card(&pdev->dev, card_driver);
 }
 
 static const struct of_device_id rockchip_sound_of_match[] = {
