@@ -1074,7 +1074,7 @@ static int soc_probe(struct platform_device *pdev)
 		 card_driver->default_name);
 
 	/* Bodge while we unpick instantiation */
-	return devm_snd_soc_register_card2(&pdev->dev, card_driver);
+	return devm_snd_soc_register_card(&pdev->dev, card_driver);
 }
 
 int snd_soc_poweroff(struct device *dev)
