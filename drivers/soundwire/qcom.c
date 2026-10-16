@@ -1306,8 +1306,11 @@ static int qcom_swrm_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			      struct snd_soc_dai *dai)
 {
-	struct qcom_swrm_ctrl *ctrl = dev_get_drvdata(dai->dev);
-	struct sdw_stream_runtime *sruntime = ctrl->sruntime[dai->id];
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qcom_swrm_ctrl *ctrl = dev_get_drvdata(dev);
+	int id = snd_soc_dai_id(dai);
+	struct sdw_stream_runtime *sruntime = ctrl->sruntime[id];
 	int ret;
 
 	ret = qcom_swrm_stream_alloc_ports(ctrl, sruntime, params,
@@ -1321,8 +1324,11 @@ static int qcom_swrm_hw_params(struct snd_pcm_substream *substream,
 static int qcom_swrm_hw_free(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct qcom_swrm_ctrl *ctrl = dev_get_drvdata(dai->dev);
-	struct sdw_stream_runtime *sruntime = ctrl->sruntime[dai->id];
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	int id = snd_soc_dai_id(dai);
+	struct qcom_swrm_ctrl *ctrl = dev_get_drvdata(dev);
+	struct sdw_stream_runtime *sruntime = ctrl->sruntime[id];
 
 	qcom_swrm_stream_free_ports(ctrl, sruntime);
 	sdw_stream_remove_master(&ctrl->bus, sruntime);
@@ -1333,24 +1339,32 @@ static int qcom_swrm_hw_free(struct snd_pcm_substream *substream,
 static int qcom_swrm_set_sdw_stream(struct snd_soc_dai *dai,
 				    void *stream, int direction)
 {
-	struct qcom_swrm_ctrl *ctrl = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qcom_swrm_ctrl *ctrl = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	ctrl->sruntime[dai->id] = stream;
+	ctrl->sruntime[dai_id] = stream;
 
 	return 0;
 }
 
 static void *qcom_swrm_get_sdw_stream(struct snd_soc_dai *dai, int direction)
 {
-	struct qcom_swrm_ctrl *ctrl = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qcom_swrm_ctrl *ctrl = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	return ctrl->sruntime[dai->id];
+	return ctrl->sruntime[dai_id];
 }
 
 static int qcom_swrm_startup(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
-	struct qcom_swrm_ctrl *ctrl = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qcom_swrm_ctrl *ctrl = dev_get_drvdata(dev);
 	int ret;
 
 	ret = pm_runtime_get_sync(ctrl->dev);
@@ -1368,7 +1382,9 @@ static int qcom_swrm_startup(struct snd_pcm_substream *substream,
 static void qcom_swrm_shutdown(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct qcom_swrm_ctrl *ctrl = dev_get_drvdata(dai->dev);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qcom_swrm_ctrl *ctrl = dev_get_drvdata(dev);
 
 	swrm_wait_for_wr_fifo_done(ctrl);
 	pm_runtime_mark_last_busy(ctrl->dev);
@@ -1425,7 +1441,7 @@ static int qcom_swrm_register_dais(struct qcom_swrm_ctrl *ctrl)
 		dais[i].id = i;
 	}
 
-	return devm_snd_soc_register_component(ctrl->dev,
+	return devm_snd_soc_component_register(ctrl->dev,
 						&qcom_swrm_dai_component,
 						dais, num_dais);
 }

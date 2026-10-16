@@ -171,7 +171,7 @@ static const struct snd_soc_dapm_route *get_codec_name_and_route(struct snd_soc_
 								 char *codec_name)
 {
 	/* get the codec name */
-	snprintf(codec_name, CODEC_NAME_SIZE, "%s", dai->name);
+	snprintf(codec_name, CODEC_NAME_SIZE, "%s", snd_soc_dai_name(dai));
 
 	/* choose the right codec's map  */
 	if (strcmp(codec_name, "rt1308") == 0)
@@ -197,9 +197,12 @@ int asoc_sdw_rt_amp_spk_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc
 	rt_amp_map = get_codec_name_and_route(dai, codec_name);
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-		if (strstr(codec_dai->component->name_prefix, "-1"))
+		struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+		const char *name_prefix = snd_soc_component_name_prefix(component);
+
+		if (strstr(name_prefix, "-1"))
 			ret = snd_soc_dapm_add_routes(dapm, rt_amp_map, 2);
-		else if (strstr(codec_dai->component->name_prefix, "-2"))
+		else if (strstr(name_prefix, "-2"))
 			ret = snd_soc_dapm_add_routes(dapm, rt_amp_map + 2, 2);
 	}
 
@@ -213,6 +216,7 @@ static int rt1308_i2s_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int clk_id, clk_freq, pll_out;
 	int err;
 
@@ -224,7 +228,7 @@ static int rt1308_i2s_hw_params(struct snd_pcm_substream *substream,
 	/* Set rt1308 pll */
 	err = snd_soc_dai_set_pll(codec_dai, 0, clk_id, clk_freq, pll_out);
 	if (err < 0) {
-		dev_err(card->dev, "Failed to set RT1308 PLL: %d\n", err);
+		dev_err(dev, "Failed to set RT1308 PLL: %d\n", err);
 		return err;
 	}
 
@@ -232,7 +236,7 @@ static int rt1308_i2s_hw_params(struct snd_pcm_substream *substream,
 	err = snd_soc_dai_set_sysclk(codec_dai, RT1308_FS_SYS_S_PLL, pll_out,
 				     SND_SOC_CLOCK_IN);
 	if (err < 0) {
-		dev_err(card->dev, "Failed to set RT1308 SYSCLK: %d\n", err);
+		dev_err(dev, "Failed to set RT1308 SYSCLK: %d\n", err);
 		return err;
 	}
 
@@ -247,7 +251,7 @@ EXPORT_SYMBOL_NS(soc_sdw_rt1308_i2s_ops, "SND_SOC_SDW_UTILS");
 
 int asoc_sdw_rt_amp_exit(struct snd_soc_card *card, struct snd_soc_dai_link *dai_link)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 
 	if (ctx->amp_dev1) {
 		device_remove_software_node(ctx->amp_dev1);
@@ -270,7 +274,7 @@ int asoc_sdw_rt_amp_init(struct snd_soc_card *card,
 			 struct asoc_sdw_codec_info *info,
 			 bool playback)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct device *sdw_dev1, *sdw_dev2;
 	int ret;
 

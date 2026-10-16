@@ -35,11 +35,12 @@ enum tplg_device_id {
 static int get_platform_name(struct snd_soc_card *card,
 			     const struct snd_soc_acpi_mach *mach, char *platform)
 {
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	ret = sscanf(mach->sof_tplg_filename, "sof-%3s-*.tplg", platform);
 	if (ret != 1) {
-		dev_err(card->dev, "Invalid platform name of tplg %s\n",
+		dev_err(dev, "Invalid platform name of tplg %s\n",
 			mach->sof_tplg_filename);
 		return -EINVAL;
 	}
@@ -166,13 +167,15 @@ static int get_ssp_tplg_dev(struct device *dev, struct snd_soc_dai_link *dai_lin
 int sof_sdw_get_tplg_files(struct snd_soc_card *card, const struct snd_soc_acpi_mach *mach,
 			   const char *prefix, const char ***tplg_files, bool best_effort)
 {
-	struct snd_soc_acpi_mach *card_mach = dev_get_platdata(card->dev);
+	struct device *dev = snd_soc_card_to_dev(card);
+	struct snd_soc_acpi_mach *card_mach = dev_get_platdata(dev);
 	/*
 	 * Use the acpi mach from the machine driver because the machine driver
 	 * may change the dmic_num based on the machine driver quirk.
 	 */
 	struct snd_soc_acpi_mach_params mach_params = card_mach->mach_params;
 	struct snd_soc_dai_link *dai_link;
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	char platform[SOF_INTEL_PLATFORM_NAME_MAX];
 	unsigned long tplg_mask = 0;
 	u16 hdmi_in_mask = 0;
@@ -186,16 +189,16 @@ int sof_sdw_get_tplg_files(struct snd_soc_card *card, const struct snd_soc_acpi_
 	if (ret < 0)
 		return ret;
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		char *tplg_dev_name;
 
-		dev_dbg(card->dev, "dai_link %s id %d\n", dai_link->name, dai_link->id);
+		dev_dbg(dev, "dai_link %s id %d\n", dai_link->name, dai_link->id);
 		if (strstr(dai_link->name, "SimpleJack")) {
 			tplg_dev = TPLG_DEVICE_SDCA_JACK;
 			tplg_dev_name = "sdca-jack";
 		} else if (strstr(dai_link->name, "SmartAmp")) {
 			tplg_dev = TPLG_DEVICE_SDCA_AMP;
-			tplg_dev_name = devm_kasprintf(card->dev, GFP_KERNEL,
+			tplg_dev_name = devm_kasprintf(dev, GFP_KERNEL,
 						       "sdca-%damp", dai_link->num_cpus);
 			if (!tplg_dev_name)
 				return -ENOMEM;
@@ -203,14 +206,14 @@ int sof_sdw_get_tplg_files(struct snd_soc_card *card, const struct snd_soc_acpi_
 			tplg_dev = TPLG_DEVICE_SDCA_MIC;
 			tplg_dev_name = "sdca-mic";
 		} else if (strstr(dai_link->name, "dmic")) {
-			if (get_dmic_tplg_dev(card->dev, mach_params.dmic_num,
+			if (get_dmic_tplg_dev(dev, mach_params.dmic_num,
 					      &tplg_dev, &tplg_dev_name) < 0)
 				continue;
 		} else if (strstr(dai_link->name, "iDisp")) {
 			tplg_dev = TPLG_DEVICE_HDMI;
 			tplg_dev_name = "hdmi-pcm5";
 		} else if (strstr(dai_link->name, "SSP")) {
-			if (get_ssp_tplg_dev(card->dev, dai_link, &hdmi_in_mask,
+			if (get_ssp_tplg_dev(dev, dai_link, &hdmi_in_mask,
 					     &tplg_dev, &tplg_dev_name) < 0)
 				continue;
 		} else if (strstr(dai_link->name, "Loopback_Virtual")) {
@@ -224,8 +227,7 @@ int sof_sdw_get_tplg_files(struct snd_soc_card *card, const struct snd_soc_acpi_
 			continue;
 		} else {
 			/* The dai link is not supported by separated tplg yet */
-			dev_dbg(card->dev,
-				"dai_link %s is not supported by separated tplg yet\n",
+			dev_dbg(dev, "dai_link %s is not supported by separated tplg yet\n",
 				dai_link->name);
 			if (best_effort)
 				continue;
@@ -235,14 +237,14 @@ int sof_sdw_get_tplg_files(struct snd_soc_card *card, const struct snd_soc_acpi_
 		if (tplg_mask & BIT(tplg_dev))
 			continue;
 
-		tplg_file = get_tplg_filename(card->dev, prefix, platform, tplg_dev_name,
+		tplg_file = get_tplg_filename(dev, prefix, platform, tplg_dev_name,
 					      dai_link->id, tplg_dev);
 		if (!tplg_file)
 			return -ENOMEM;
 
 		/* Check presence of sub-topologies */
-		if (!tplg_files_exist(card->dev, tplg_file)) {
-			devm_kfree(card->dev, tplg_file);
+		if (!tplg_files_exist(dev, tplg_file)) {
+			devm_kfree(dev, tplg_file);
 			if (best_effort)
 				continue;
 
@@ -255,7 +257,7 @@ int sof_sdw_get_tplg_files(struct snd_soc_card *card, const struct snd_soc_acpi_
 		tplg_num++;
 	}
 
-	dev_dbg(card->dev, "tplg_mask %#lx tplg_num %d\n", tplg_mask, tplg_num);
+	dev_dbg(dev, "tplg_mask %#lx tplg_num %d\n", tplg_mask, tplg_num);
 
 	return tplg_num;
 }
@@ -266,6 +268,8 @@ int sof_i2s_get_tplg_files(struct snd_soc_card *card, const struct snd_soc_acpi_
 {
 	struct snd_soc_acpi_mach_params mach_params = mach->mach_params;
 	struct snd_soc_dai_link *dai_link;
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	char platform[SOF_INTEL_PLATFORM_NAME_MAX];
 	unsigned long tplg_mask = 0;
 	u16 hdmi_in_mask = 0;
@@ -279,16 +283,16 @@ int sof_i2s_get_tplg_files(struct snd_soc_card *card, const struct snd_soc_acpi_
 	if (ret < 0)
 		return ret;
 
-	for_each_card_prelinks(card, i, dai_link) {
+	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		char *tplg_dev_name;
 
-		dev_dbg(card->dev, "dai_link %s id %d\n", dai_link->name, dai_link->id);
+		dev_dbg(dev, "dai_link %s id %d\n", dai_link->name, dai_link->id);
 		if (strstr(dai_link->name, "SSP")) {
-			if (get_ssp_tplg_dev(card->dev, dai_link, &hdmi_in_mask,
+			if (get_ssp_tplg_dev(dev, dai_link, &hdmi_in_mask,
 					     &tplg_dev, &tplg_dev_name) < 0)
 				continue;
 		} else if (strstr(dai_link->name, "dmic")) {
-			if (get_dmic_tplg_dev(card->dev, mach_params.dmic_num,
+			if (get_dmic_tplg_dev(dev, mach_params.dmic_num,
 					      &tplg_dev, &tplg_dev_name) < 0)
 				continue;
 		} else if (strstr(dai_link->name, "iDisp")) {
@@ -296,8 +300,7 @@ int sof_i2s_get_tplg_files(struct snd_soc_card *card, const struct snd_soc_acpi_
 			tplg_dev_name = "hdmi-pcm5";
 		} else {
 			/* The dai link is not supported by separated tplg yet */
-			dev_dbg(card->dev,
-				"dai_link %s is not supported by separated tplg yet\n",
+			dev_dbg(dev, "dai_link %s is not supported by separated tplg yet\n",
 				dai_link->name);
 			if (best_effort)
 				continue;
@@ -307,14 +310,14 @@ int sof_i2s_get_tplg_files(struct snd_soc_card *card, const struct snd_soc_acpi_
 		if (tplg_mask & BIT(tplg_dev))
 			continue;
 
-		tplg_file = get_tplg_filename(card->dev, prefix, platform, tplg_dev_name,
+		tplg_file = get_tplg_filename(dev, prefix, platform, tplg_dev_name,
 					      dai_link->id, tplg_dev);
 		if (!tplg_file)
 			return -ENOMEM;
 
 		/* Check presence of sub-topologies */
-		if (!tplg_files_exist(card->dev, tplg_file)) {
-			devm_kfree(card->dev, tplg_file);
+		if (!tplg_files_exist(dev, tplg_file)) {
+			devm_kfree(dev, tplg_file);
 			if (best_effort)
 				continue;
 
@@ -327,7 +330,7 @@ int sof_i2s_get_tplg_files(struct snd_soc_card *card, const struct snd_soc_acpi_
 		tplg_num++;
 	}
 
-	dev_dbg(card->dev, "tplg_mask %#lx tplg_num %d\n", tplg_mask, tplg_num);
+	dev_dbg(dev, "tplg_mask %#lx tplg_num %d\n", tplg_mask, tplg_num);
 
 	return tplg_num;
 }

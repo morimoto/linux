@@ -1874,7 +1874,8 @@ static int set_stream(struct snd_pcm_substream *substream,
 	for_each_rtd_dais(rtd, i, dai) {
 		ret = snd_soc_dai_set_stream(dai, sdw_stream, substream->stream);
 		if (ret < 0) {
-			dev_err(rtd->dev, "failed to set stream pointer on dai %s\n", dai->name);
+			dev_err(rtd->dev, "failed to set stream pointer on dai %s\n",
+				snd_soc_dai_name(dai));
 			break;
 		}
 	}
@@ -1974,7 +1975,7 @@ void sdw_shutdown_stream(void *sdw_substream)
 	sdw_stream = snd_soc_dai_get_stream(dai, substream->stream);
 
 	if (IS_ERR(sdw_stream)) {
-		dev_err(rtd->dev, "no stream found for DAI %s\n", dai->name);
+		dev_err(rtd->dev, "no stream found for DAI %s\n", snd_soc_dai_name(dai));
 		return;
 	}
 

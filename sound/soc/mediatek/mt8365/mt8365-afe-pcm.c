@@ -500,9 +500,11 @@ static int mt8365_afe_fe_startup(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	int memif_num = snd_soc_rtd_to_cpu(rtd, 0)->id;
+	int memif_num = snd_soc_dai_id(snd_soc_rtd_to_cpu(rtd, 0));
 	struct mtk_base_afe_memif *memif = &afe->memif[memif_num];
 	int ret;
 
@@ -528,8 +530,10 @@ static void mt8365_afe_fe_shutdown(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
-	int memif_num = snd_soc_rtd_to_cpu(rtd, 0)->id;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	int memif_num = snd_soc_dai_id(snd_soc_rtd_to_cpu(rtd, 0));
 	struct mtk_base_afe_memif *memif = &afe->memif[memif_num];
 
 	memif->substream = NULL;
@@ -542,10 +546,12 @@ static int mt8365_afe_fe_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8365_afe_private *afe_priv = afe->platform_priv;
 	struct mt8365_control_data *ctrl_data = &afe_priv->ctrl_data;
-	int dai_id = snd_soc_rtd_to_cpu(rtd, 0)->id;
+	int dai_id = snd_soc_dai_id(snd_soc_rtd_to_cpu(rtd, 0));
 	struct mtk_base_afe_memif *memif = &afe->memif[dai_id];
 	struct mt8365_fe_dai_data *fe_data = &afe_priv->fe_data[dai_id];
 	size_t request_size = params_buffer_bytes(params);
@@ -651,9 +657,11 @@ static int mt8365_afe_fe_hw_free(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8365_afe_private *afe_priv = afe->platform_priv;
-	int dai_id = snd_soc_rtd_to_cpu(rtd, 0)->id;
+	int dai_id = snd_soc_dai_id(snd_soc_rtd_to_cpu(rtd, 0));
 	struct mt8365_fe_dai_data *fe_data = &afe_priv->fe_data[dai_id];
 	int ret = 0;
 
@@ -672,8 +680,10 @@ static int mt8365_afe_fe_prepare(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
-	int dai_id = snd_soc_rtd_to_cpu(rtd, 0)->id;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(snd_soc_rtd_to_cpu(rtd, 0));
 	struct mtk_base_afe_memif *memif = &afe->memif[dai_id];
 
 	/* set format */
@@ -720,9 +730,11 @@ static int mt8365_afe_fe_trigger(struct snd_pcm_substream *substream, int cmd,
 				 struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8365_afe_private *afe_priv = afe->platform_priv;
-	int dai_id = snd_soc_rtd_to_cpu(rtd, 0)->id;
+	int dai_id = snd_soc_dai_id(snd_soc_rtd_to_cpu(rtd, 0));
 	struct mt8365_control_data *ctrl_data = &afe_priv->ctrl_data;
 
 	switch (cmd) {
@@ -762,7 +774,9 @@ static int mt8365_afe_fe_trigger(struct snd_pcm_substream *substream, int cmd,
 static int mt8365_afe_hw_gain1_startup(struct snd_pcm_substream *substream,
 				       struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	mt8365_afe_enable_main_clk(afe);
 	return 0;
@@ -771,10 +785,13 @@ static int mt8365_afe_hw_gain1_startup(struct snd_pcm_substream *substream,
 static void mt8365_afe_hw_gain1_shutdown(struct snd_pcm_substream *substream,
 					 struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8365_afe_private *afe_priv = afe->platform_priv;
 	struct mt8365_be_dai_data *be =
-		&afe_priv->be_data[dai->id - MT8365_AFE_BACKEND_BASE];
+		&afe_priv->be_data[dai_id - MT8365_AFE_BACKEND_BASE];
 
 	if (be->prepared[substream->stream]) {
 		regmap_update_bits(afe->regmap, AFE_GAIN1_CON0,
@@ -787,10 +804,13 @@ static void mt8365_afe_hw_gain1_shutdown(struct snd_pcm_substream *substream,
 static int mt8365_afe_hw_gain1_prepare(struct snd_pcm_substream *substream,
 				       struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8365_afe_private *afe_priv = afe->platform_priv;
 	struct mt8365_be_dai_data *be =
-		&afe_priv->be_data[dai->id - MT8365_AFE_BACKEND_BASE];
+		&afe_priv->be_data[dai_id - MT8365_AFE_BACKEND_BASE];
 
 	int fs;
 	unsigned int val1 = 0, val2 = 0;
@@ -832,7 +852,9 @@ static const struct snd_pcm_hardware mt8365_hostless_hardware = {
 static int mtk_dai_hostless_startup(struct snd_pcm_substream *substream,
 				    struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	int ret;
 
@@ -1261,7 +1283,8 @@ static int mt8365_afe_cm2_io_input_mux_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *comp = snd_soc_dapm_to_component(dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(comp);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8365_afe_private *afe_priv = afe->platform_priv;
 	int ret;
 

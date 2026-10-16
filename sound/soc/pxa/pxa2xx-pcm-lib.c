@@ -39,7 +39,7 @@ static int pxa2xx_pcm_hw_params(struct snd_pcm_substream *substream,
 	struct dma_slave_config config;
 	int ret;
 
-	dma_params = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	dma_params = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 	if (!dma_params)
 		return 0;
 
@@ -48,7 +48,7 @@ static int pxa2xx_pcm_hw_params(struct snd_pcm_substream *substream,
 		return ret;
 
 	snd_dmaengine_pcm_set_config_from_dai_data(substream,
-			snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream),
+			snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream),
 			&config);
 
 	ret = dmaengine_slave_config(chan, &config);
@@ -79,12 +79,15 @@ static int pxa2xx_pcm_open(struct snd_pcm_substream *substream)
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_dmaengine_dai_dma_data *dma_params;
+	const struct snd_soc_dai *dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct dma_chan *chan;
 	int ret;
 
 	runtime->hw = pxa2xx_pcm_hardware;
 
-	dma_params = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	dma_params = snd_soc_dai_stream_dma_data_get(dai, substream);
 	if (!dma_params)
 		return 0;
 
@@ -108,7 +111,7 @@ static int pxa2xx_pcm_open(struct snd_pcm_substream *substream)
 	if (ret < 0)
 		return ret;
 
-	chan = dma_request_chan(snd_soc_rtd_to_cpu(rtd, 0)->dev, dma_params->chan_name);
+	chan = dma_request_chan(dev, dma_params->chan_name);
 	if (IS_ERR(chan))
 		return -ENXIO;
 
@@ -131,7 +134,7 @@ static int pxa2xx_pcm_preallocate_dma_buffer(struct snd_pcm *pcm)
 int pxa2xx_soc_pcm_new(struct snd_soc_component *component,
 		       struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(rtd->card);
 	struct snd_pcm *pcm = rtd->pcm;
 	int ret;
 

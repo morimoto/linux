@@ -73,14 +73,17 @@ static int avs_max98927_hw_params(struct snd_pcm_substream *substream,
 	int i;
 
 	for_each_rtd_codec_dais(runtime, i, codec_dai) {
-		if (!strcmp(codec_dai->component->name, MAX98927_DEV0_NAME))
+		struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+		const char *component_name = snd_soc_component_name(component);
+
+		if (!strcmp(component_name, MAX98927_DEV0_NAME))
 			ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x30, 3, 8, 16);
-		else if (!strcmp(codec_dai->component->name, MAX98927_DEV1_NAME))
+		else if (!strcmp(component_name, MAX98927_DEV1_NAME))
 			ret = snd_soc_dai_set_tdm_slot(codec_dai, 0xC0, 3, 8, 16);
 
 		if (ret < 0) {
 			dev_err(runtime->dev, "hw_params for %s failed: %d\n",
-				codec_dai->component->name, ret);
+				component_name, ret);
 			return ret;
 		}
 	}

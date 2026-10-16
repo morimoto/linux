@@ -52,7 +52,9 @@ static void spdif_in_configure(struct spdif_in_dev *host)
 
 static int spdif_in_dai_probe(struct snd_soc_dai *dai)
 {
-	struct spdif_in_dev *host = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_in_dev *host = dev_get_drvdata(dev);
 
 	host->dma_params_rx.filter_data = &host->dma_params;
 	snd_soc_dai_dma_data_set_capture(dai, &host->dma_params_rx);
@@ -63,7 +65,9 @@ static int spdif_in_dai_probe(struct snd_soc_dai *dai)
 static void spdif_in_shutdown(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
-	struct spdif_in_dev *host = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_in_dev *host = dev_get_drvdata(dev);
 
 	if (substream->stream != SNDRV_PCM_STREAM_CAPTURE)
 		return;
@@ -92,7 +96,9 @@ static int spdif_in_hw_params(struct snd_pcm_substream *substream,
 		struct snd_pcm_hw_params *params,
 		struct snd_soc_dai *dai)
 {
-	struct spdif_in_dev *host = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_in_dev *host = dev_get_drvdata(dev);
 	u32 format;
 
 	if (substream->stream != SNDRV_PCM_STREAM_CAPTURE)
@@ -107,7 +113,9 @@ static int spdif_in_hw_params(struct snd_pcm_substream *substream,
 static int spdif_in_trigger(struct snd_pcm_substream *substream, int cmd,
 		struct snd_soc_dai *dai)
 {
-	struct spdif_in_dev *host = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct spdif_in_dev *host = dev_get_drvdata(dev);
 	u32 ctrl;
 	int ret = 0;
 
@@ -244,7 +252,7 @@ static int spdif_in_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	ret = devm_snd_soc_register_component(&pdev->dev, &spdif_in_component,
+	ret = devm_snd_soc_component_register(&pdev->dev, &spdif_in_component,
 					      &spdif_in_dai, 1);
 	if (ret)
 		return ret;

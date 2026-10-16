@@ -35,7 +35,9 @@
 static int g12a_frddr_dai_prepare(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct axg_fifo *fifo = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_fifo *fifo = dev_get_drvdata(dev);
 
 	/* Reset the read pointer to the FIFO_INIT_ADDR */
 	regmap_update_bits(fifo->map, FIFO_CTRL1,
@@ -52,7 +54,9 @@ static int axg_frddr_dai_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params,
 				   struct snd_soc_dai *dai)
 {
-	struct axg_fifo *fifo = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_fifo *fifo = dev_get_drvdata(dev);
 	unsigned int period, depth, val;
 
 	period = params_period_bytes(params);
@@ -69,7 +73,9 @@ static int axg_frddr_dai_hw_params(struct snd_pcm_substream *substream,
 static int axg_frddr_dai_startup(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
-	struct axg_fifo *fifo = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_fifo *fifo = dev_get_drvdata(dev);
 	int ret;
 
 	/* Enable pclk to access registers and clock the fifo ip */
@@ -86,7 +92,9 @@ static int axg_frddr_dai_startup(struct snd_pcm_substream *substream,
 static void axg_frddr_dai_shutdown(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct axg_fifo *fifo = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct axg_fifo *fifo = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(fifo->pclk);
 }
