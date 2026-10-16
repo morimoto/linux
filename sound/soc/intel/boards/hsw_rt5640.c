@@ -155,7 +155,7 @@ static int hsw_rt5640_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	return devm_snd_soc_register_card2(dev, &hsw_rt5640_card_driver);
+	return devm_snd_soc_register_card(dev, &hsw_rt5640_card_driver);
 }
 
 static struct platform_driver hsw_rt5640_driver = {
