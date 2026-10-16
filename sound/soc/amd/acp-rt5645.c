@@ -160,7 +160,7 @@ static int cz_probe(struct platform_device *pdev)
 {
 	int ret;
 
-	ret = devm_snd_soc_register_card2(&pdev->dev, &cz_card_driver);
+	ret = devm_snd_soc_register_card(&pdev->dev, &cz_card_driver);
 	if (ret) {
 		dev_err(&pdev->dev,
 				"devm_snd_soc_register_card(%s) failed: %d\n",
