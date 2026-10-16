@@ -171,7 +171,7 @@ static int arndale_audio_probe(struct platform_device *pdev)
 		goto err_put_of_nodes;
 	}
 
-	ret = devm_snd_soc_register_card2(&pdev->dev, card_driver);
+	ret = devm_snd_soc_register_card(&pdev->dev, card_driver);
 	if (ret) {
 		dev_err_probe(&pdev->dev, ret,
 			      "snd_soc_register_card() failed\n");

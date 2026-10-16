@@ -118,7 +118,7 @@ static int snd_smdk_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 
-	ret = devm_snd_soc_register_card2(&pdev->dev, &smdk_pcm);
+	ret = devm_snd_soc_register_card(&pdev->dev, &smdk_pcm);
 	if (ret)
 		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card() failed\n");
 

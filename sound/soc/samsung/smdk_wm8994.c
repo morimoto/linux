@@ -152,7 +152,7 @@ static int smdk_audio_probe(struct platform_device *pdev)
 		smdk_dai[0].platforms->of_node = smdk_dai[0].cpus->of_node;
 	}
 
-	ret = devm_snd_soc_register_card2(&pdev->dev, &smdk);
+	ret = devm_snd_soc_register_card(&pdev->dev, &smdk);
 
 	if (ret)
 		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card() failed\n");
