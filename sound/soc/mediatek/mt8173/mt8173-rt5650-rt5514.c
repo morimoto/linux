@@ -225,7 +225,7 @@ static int mt8173_rt5650_rt5514_dev_probe(struct platform_device *pdev)
 	mt8173_rt5650_rt5514_codec_conf[0].dlc.of_node =
 		mt8173_rt5650_rt5514_dais[DAI_LINK_CODEC_I2S].codecs[1].of_node;
 
-	ret = devm_snd_soc_register_card2(&pdev->dev, card_driver);
+	ret = devm_snd_soc_register_card(&pdev->dev, card_driver);
 
 out:
 	of_node_put(platform_node);
