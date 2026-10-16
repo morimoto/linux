@@ -294,7 +294,7 @@ static int mt8173_rt5650_rt5676_dev_probe(struct platform_device *pdev)
 		goto put_node;
 	}
 
-	ret = devm_snd_soc_register_card2(&pdev->dev, card_driver);
+	ret = devm_snd_soc_register_card(&pdev->dev, card_driver);
 
 put_node:
 	of_node_put(platform_node);
