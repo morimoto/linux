@@ -136,7 +136,7 @@ static int mt7986_wm8960_machine_probe(struct platform_device *pdev)
 	if (ret)
 		goto err_of_node_put;
 
-	ret = devm_snd_soc_register_card2(&pdev->dev, card_driver);
+	ret = devm_snd_soc_register_card(&pdev->dev, card_driver);
 	if (ret) {
 		dev_err_probe(&pdev->dev, ret, "%s snd_soc_register_card() fail\n", __func__);
 		goto err_of_node_put;

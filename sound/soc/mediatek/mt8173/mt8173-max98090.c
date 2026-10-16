@@ -175,7 +175,7 @@ static int mt8173_max98090_dev_probe(struct platform_device *pdev)
 		dai_link->codecs->of_node = codec_node;
 	}
 
-	ret = devm_snd_soc_register_card2(&pdev->dev, card_driver);
+	ret = devm_snd_soc_register_card(&pdev->dev, card_driver);
 
 	of_node_put(codec_node);
 
