@@ -187,7 +187,7 @@ static int lowland_probe(struct platform_device *pdev)
 {
 	int ret;
 
-	ret = devm_snd_soc_register_card2(&pdev->dev, &lowland);
+	ret = devm_snd_soc_register_card(&pdev->dev, &lowland);
 	if (ret)
 		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card() failed\n");
 
