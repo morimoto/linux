@@ -39,13 +39,13 @@ meson_codec_glue_get_input(struct snd_soc_dapm_widget *w)
 static void meson_codec_glue_input_set_data(struct snd_soc_dai *dai,
 					    struct meson_codec_glue_input *data)
 {
-	snd_soc_dai_dma_data_set_playback(dai, data);
+	snd_soc_dai_stream_dma_data_set_playback(dai, data);
 }
 
 struct meson_codec_glue_input *
 meson_codec_glue_input_get_data(struct snd_soc_dai *dai)
 {
-	return snd_soc_dai_dma_data_get_playback(dai);
+	return snd_soc_dai_stream_dma_data_get_playback(dai);
 }
 EXPORT_SYMBOL_GPL(meson_codec_glue_input_get_data);
 
@@ -77,7 +77,7 @@ int meson_codec_glue_input_hw_params(struct snd_pcm_substream *substream,
 	data->params.formats = 1ULL << params_format(params);
 	data->params.channels_min = params_channels(params);
 	data->params.channels_max = params_channels(params);
-	data->params.sig_bits = dai->driver->playback.sig_bits;
+	data->params.sig_bits = snd_soc_dai_to_driver(dai)->playback.sig_bits;
 
 	return 0;
 }
@@ -99,14 +99,16 @@ int meson_codec_glue_output_startup(struct snd_pcm_substream *substream,
 				    struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_soc_dapm_widget *w = snd_soc_dai_get_widget_capture(dai);
+	struct snd_soc_dapm_widget *w = snd_soc_dai_stream_widget_get_capture(dai);
 	struct meson_codec_glue_input *in_data = meson_codec_glue_output_get_input_data(w);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	if (!in_data)
 		return -ENODEV;
 
 	if (WARN_ON(!rtd->dai_link->c2c_params)) {
-		dev_warn(dai->dev, "codec2codec link expected\n");
+		dev_warn(dev, "codec2codec link expected\n");
 		return -EINVAL;
 	}
 

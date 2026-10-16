@@ -44,26 +44,27 @@ struct cht_rt5677_private {
 static int cht_rt5677_platform_clock_enable(struct snd_soc_card *card,
 					    struct snd_soc_dai *codec_dai)
 {
-	struct cht_rt5677_private *ctx = snd_soc_card_get_drvdata(card);
+	struct device *dev = snd_soc_card_to_dev(card);
+	struct cht_rt5677_private *ctx = snd_soc_card_to_priv(card);
 	int ret;
 
 	ret = clk_prepare_enable(ctx->mclk);
 	if (ret) {
-		dev_err(card->dev, "enabling MCLK failed: %d\n", ret);
+		dev_err(dev, "enabling MCLK failed: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_pll(codec_dai, 0, RT5677_PLL1_S_MCLK,
 				  CHT_PLAT_CLK_3_HZ, 48000 * 512);
 	if (ret) {
-		dev_err(card->dev, "setting codec PLL failed: %d\n", ret);
+		dev_err(dev, "setting codec PLL failed: %d\n", ret);
 		goto disable_mclk;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5677_SCLK_S_PLL1,
 				     48000 * 512, SND_SOC_CLOCK_IN);
 	if (ret) {
-		dev_err(card->dev, "setting codec sysclk failed: %d\n", ret);
+		dev_err(dev, "setting codec sysclk failed: %d\n", ret);
 		goto disable_mclk;
 	}
 
@@ -77,13 +78,14 @@ disable_mclk:
 static int cht_rt5677_platform_clock_disable(struct snd_soc_card *card,
 					     struct snd_soc_dai *codec_dai)
 {
-	struct cht_rt5677_private *ctx = snd_soc_card_get_drvdata(card);
+	struct device *dev = snd_soc_card_to_dev(card);
+	struct cht_rt5677_private *ctx = snd_soc_card_to_priv(card);
 	int ret;
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5677_SCLK_S_RCCLK,
 				     48000 * 512, SND_SOC_CLOCK_IN);
 	if (ret)
-		dev_warn(card->dev, "setting codec idle sysclk failed: %d\n", ret);
+		dev_warn(dev, "setting codec idle sysclk failed: %d\n", ret);
 
 	clk_disable_unprepare(ctx->mclk);
 
@@ -95,11 +97,12 @@ static int cht_rt5677_platform_clock_control(struct snd_soc_dapm_widget *w,
 					     int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct snd_soc_dai *codec_dai;
 
 	codec_dai = snd_soc_card_get_codec_dai(card, CHT_CODEC_DAI);
 	if (!codec_dai) {
-		dev_err(card->dev, "codec DAI not found\n");
+		dev_err(dev, "codec DAI not found\n");
 		return -EIO;
 	}
 
@@ -113,7 +116,7 @@ static int cht_rt5677_hp_event(struct snd_soc_dapm_widget *w,
 			       struct snd_kcontrol *kctl, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct cht_rt5677_private *ctx = snd_soc_card_get_drvdata(card);
+	struct cht_rt5677_private *ctx = snd_soc_card_to_priv(card);
 
 	return gpiod_set_value_cansleep(ctx->gpio_hp_en,
 					 SND_SOC_DAPM_EVENT_ON(event));
@@ -123,7 +126,8 @@ static int cht_rt5677_spk_event(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kctl, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct cht_rt5677_private *ctx = snd_soc_card_get_drvdata(card);
+	struct cht_rt5677_private *ctx = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	bool enable = SND_SOC_DAPM_EVENT_ON(event);
 	int rollback_ret;
 	int ret;
@@ -150,7 +154,7 @@ static int cht_rt5677_spk_event(struct snd_soc_dapm_widget *w,
 		rollback_ret = gpiod_set_value_cansleep(ctx->gpio_spk_en1,
 							!enable);
 		if (rollback_ret)
-			dev_warn(card->dev, "rolling back speaker GPIO failed: %d\n",
+			dev_warn(dev, "rolling back speaker GPIO failed: %d\n",
 				 rollback_ret);
 		return ret;
 	}
@@ -163,7 +167,7 @@ static int cht_rt5677_spk_event(struct snd_soc_dapm_widget *w,
 disable_boost:
 	rollback_ret = gpiod_set_value_cansleep(ctx->gpio_spk_en1, 0);
 	if (rollback_ret)
-		dev_warn(card->dev, "disabling speaker boost GPIO failed: %d\n",
+		dev_warn(dev, "disabling speaker boost GPIO failed: %d\n",
 			 rollback_ret);
 
 	return ret;
@@ -214,6 +218,8 @@ static int cht_rt5677_aif1_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+	struct device *codec_dev = snd_soc_component_to_dev(codec_component);
 	int ret;
 
 	ret = snd_soc_dai_set_pll(codec_dai, 0, RT5677_PLL1_S_MCLK,
@@ -236,7 +242,7 @@ static int cht_rt5677_aif1_hw_params(struct snd_pcm_substream *substream,
 				  SND_SOC_DAIFMT_IB_NF |
 				  SND_SOC_DAIFMT_CBC_CFC);
 	if (ret) {
-		dev_err(codec_dai->dev, "setting TDM format failed: %d\n", ret);
+		dev_err(codec_dev, "setting TDM format failed: %d\n", ret);
 		return ret;
 	}
 
@@ -253,8 +259,8 @@ static int cht_rt5677_aif1_hw_params(struct snd_pcm_substream *substream,
 static int cht_rt5677_codec_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(runtime, 0);
-	struct snd_soc_component *component = codec_dai->component;
-	struct cht_rt5677_private *ctx = snd_soc_card_get_drvdata(runtime->card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct cht_rt5677_private *ctx = snd_soc_card_to_priv(runtime->card);
 	int ret;
 
 	/*
@@ -331,12 +337,13 @@ static struct snd_soc_jack_pin cht_rt5677_jack_pins[] = {
 
 static int cht_rt5677_headset_init(struct snd_soc_component *component)
 {
-	struct snd_soc_card *card = component->card;
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct snd_soc_jack *jack;
 	int jack_type;
 	int ret;
 
-	jack = devm_kzalloc(card->dev, sizeof(*jack), GFP_KERNEL);
+	jack = devm_kzalloc(dev, sizeof(*jack), GFP_KERNEL);
 	if (!jack)
 		return -ENOMEM;
 
@@ -355,7 +362,7 @@ static int cht_rt5677_headset_init(struct snd_soc_component *component)
 					 jack, cht_rt5677_jack_pins,
 					 ARRAY_SIZE(cht_rt5677_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "creating headset jack failed: %d\n", ret);
+		dev_err(dev, "creating headset jack failed: %d\n", ret);
 		return ret;
 	}
 
@@ -619,7 +626,7 @@ static int snd_cht_rt5677_probe(struct platform_device *pdev)
 	if (IS_ERR(ctx->mclk))
 		return dev_err_probe(dev, PTR_ERR(ctx->mclk), "getting MCLK failed\n");
 
-	snd_soc_card_set_drvdata(card, ctx);
+	snd_soc_card_set_priv(card, ctx);
 
 	sof_parent = snd_soc_acpi_sof_parent(dev);
 

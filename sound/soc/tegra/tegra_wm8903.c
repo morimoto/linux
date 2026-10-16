@@ -54,9 +54,10 @@ static unsigned int tegra_wm8903_mclk_rate(unsigned int srate)
 
 static int tegra_wm8903_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct tegra_machine *machine = snd_soc_card_get_drvdata(rtd->card);
+	struct tegra_machine *machine = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int err;
 
 	/*
@@ -77,10 +78,10 @@ static int tegra_wm8903_init(struct snd_soc_pcm_runtime *rtd)
 
 	if (!machine->gpiod_mic_det && machine->asoc->add_mic_jack) {
 		struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-		struct snd_soc_component *component = codec_dai->component;
+		struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 		int shrt = 0;
 
-		err = snd_soc_card_jack_new_pins(rtd->card, "Mic Jack",
+		err = snd_soc_card_jack_new_pins(card, "Mic Jack",
 						 SND_JACK_MICROPHONE,
 						 machine->mic_jack,
 						 tegra_wm8903_mic_jack_pins,
@@ -90,7 +91,7 @@ static int tegra_wm8903_init(struct snd_soc_pcm_runtime *rtd)
 			return err;
 		}
 
-		if (of_property_read_bool(card->dev->of_node, "nvidia,headset"))
+		if (of_property_read_bool(dev->of_node, "nvidia,headset"))
 			shrt = SND_JACK_MICROPHONE;
 
 		wm8903_mic_detect(component, machine->mic_jack,
@@ -104,10 +105,10 @@ static int tegra_wm8903_init(struct snd_soc_pcm_runtime *rtd)
 
 static int tegra_wm8903_remove(struct snd_soc_card *card)
 {
-	struct snd_soc_dai_link *link = &card->dai_link[0];
-	struct snd_soc_pcm_runtime *rtd = snd_soc_get_pcm_runtime(card, link);
+	struct snd_soc_dai_link *link = &snd_soc_card_to_driver(card)->dai_link[0];
+	struct snd_soc_pcm_runtime *rtd = snd_soc_card_to_rtd(card, link);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
 	wm8903_mic_detect(component, NULL, 0, 0);
 

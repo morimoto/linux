@@ -53,16 +53,19 @@ static struct snd_pcm *hda_dsp_hdmi_pcm_handle(struct snd_soc_card *card,
 int hda_dsp_hdmi_build_controls(struct snd_soc_card *card,
 				struct snd_soc_component *comp)
 {
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	struct hdac_hda_priv *hda_pvt;
 	struct hda_codec *hcodec;
 	struct snd_pcm *spcm;
 	struct hda_pcm *hpcm;
+	struct device *dev;
 	int err = 0, i = 0;
 
 	if (!comp)
 		return -EINVAL;
 
-	hda_pvt = snd_soc_component_get_drvdata(comp);
+	dev = snd_soc_component_to_dev(comp);
+	hda_pvt = dev_get_drvdata(dev);
 	hcodec = hda_pvt->codec;
 
 	list_for_each_entry(hpcm, &hcodec->pcm_list_head, list) {
@@ -70,14 +73,12 @@ int hda_dsp_hdmi_build_controls(struct snd_soc_card *card,
 		if (spcm) {
 			hpcm->pcm = spcm;
 			hpcm->device = spcm->device;
-			dev_dbg(card->dev,
-				"mapping HDMI converter %d to PCM %d (%p)\n",
+			dev_dbg(card_dev, "mapping HDMI converter %d to PCM %d (%p)\n",
 				i, hpcm->device, spcm);
 		} else {
 			hpcm->pcm = NULL;
 			hpcm->device = SNDRV_PCM_INVALID_DEVICE;
-			dev_warn(card->dev,
-				 "%s: no PCM in topology for HDMI converter %d\n",
+			dev_warn(card_dev, "%s: no PCM in topology for HDMI converter %d\n",
 				 __func__, i);
 		}
 		i++;
@@ -86,7 +87,7 @@ int hda_dsp_hdmi_build_controls(struct snd_soc_card *card,
 			       HDA_CODEC_IDX_CONTROLLER, true);
 	err = snd_hda_codec_build_controls(hcodec);
 	if (err < 0)
-		dev_err(card->dev, "unable to create controls %d\n", err);
+		dev_err(card_dev, "unable to create controls %d\n", err);
 	snd_hdac_display_power(hcodec->core.bus,
 			       HDA_CODEC_IDX_CONTROLLER, false);
 

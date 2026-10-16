@@ -877,7 +877,7 @@ static int fsl_soc_dma_probe(struct platform_device *pdev)
                 /* Older 8610 DTs didn't have the fifo-depth property */
 		dma->ssi_fifo_depth = 8;
 
-	return devm_snd_soc_register_component(&pdev->dev, &dma->dai, NULL, 0);
+	return devm_snd_soc_component_register(&pdev->dev, &dma->dai, NULL, 0);
 }
 
 static const struct of_device_id fsl_soc_dma_ids[] = {

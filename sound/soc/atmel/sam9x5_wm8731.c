@@ -95,7 +95,7 @@ static int sam9x5_wm8731_driver_probe(struct platform_device *pdev)
 		goto out;
 	}
 
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 
 	card_driver->owner = THIS_MODULE;
 	card_driver->dai_link = dai;
@@ -117,7 +117,7 @@ static int sam9x5_wm8731_driver_probe(struct platform_device *pdev)
 	dai->dai_fmt = SND_SOC_DAIFMT_DSP_A | SND_SOC_DAIFMT_NB_NF
 		| SND_SOC_DAIFMT_CBP_CFP;
 
-	ret = snd_soc_of_parse_card_name(card, "atmel,model");
+	ret = snd_soc_card_of_parse_name(card, "atmel,model");
 	if (ret) {
 		dev_err(&pdev->dev, "atmel,model node missing\n");
 		goto out;
