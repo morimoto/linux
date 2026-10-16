@@ -396,14 +396,13 @@ static void snd_soc_card_fill_dummy_dai(struct snd_soc_card *card)
 static int snd_soc_card_init_pcm_runtime(struct snd_soc_card *card,
 					 struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_dai_link *dai_link = rtd->dai_link;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	int ret;
 
 	/* do machine specific initialization */
 	ret = snd_soc_link_init(rtd);
 	if (ret < 0)
-		return ret;
+		goto out;
 
 	ret = snd_soc_runtime_set_dai_fmt(rtd, snd_soc_dai_auto_select_format(rtd));
 	if (ret)
@@ -422,11 +421,8 @@ static int snd_soc_card_init_pcm_runtime(struct snd_soc_card *card,
 
 	/* create the pcm */
 	ret = soc_new_pcm(rtd);
-	if (ret < 0) {
-		dev_err(card->dev, "ASoC: can't create pcm %s :%d\n",
-			dai_link->stream_name, ret);
+	if (ret < 0)
 		goto err;
-	}
 
 	ret = snd_soc_pcm_dai_new(rtd);
 	if (ret < 0)
@@ -437,8 +433,8 @@ end:
 	return 0;
 err:
 	snd_soc_link_exit(rtd);
-
-	return ret;
+out:
+	return soc_card_ret(card, ret);
 }
 
 static void snd_soc_card_link_dais_remove(struct snd_soc_card *card)
@@ -464,7 +460,7 @@ static int snd_soc_card_link_dais_probe(struct snd_soc_card *card)
 			/* probe all rtd connected DAIs in good order */
 			ret = snd_soc_pcm_dai_probe(rtd, order);
 			if (ret)
-				return ret;
+				return soc_card_ret(card, ret);
 		}
 	}
 
@@ -507,7 +503,7 @@ static int snd_soc_card_link_components_probe(struct snd_soc_card *card)
 
 				ret = snd_soc_component_probe(component, card);
 				if (ret < 0)
-					return ret;
+					return soc_card_ret(card, ret);
 			}
 		}
 	}
@@ -561,7 +557,7 @@ static int snd_soc_card_aux_probe(struct snd_soc_card *card)
 
 			ret = snd_soc_component_probe(component, card);
 			if (ret < 0)
-				return ret;
+				return soc_card_ret(card, ret);
 		}
 	}
 
@@ -706,7 +702,7 @@ static int snd_soc_card_set_dmi_name(struct snd_soc_card *card)
 
 	dmi_longname = devm_kzalloc(card->dev, DMI_LONGNAME_LEN, GFP_KERNEL);
 	if (!dmi_longname)
-		return -ENOMEM;
+		return soc_card_ret(card, -ENOMEM);
 
 	snprintf(dmi_longname, DMI_LONGNAME_LEN, "%s", vendor);
 	cleanup_dmi_name(dmi_longname);
@@ -1112,8 +1108,9 @@ int snd_soc_card_add_controls(struct snd_soc_card *soc_card,
 			      const struct snd_kcontrol_new *controls, int num_controls)
 {
 	struct snd_card *card = soc_card->snd_card;
+	int ret = snd_soc_add_controls(card, soc_card->dev, controls, num_controls, NULL, soc_card);
 
-	return snd_soc_add_controls(card, soc_card->dev, controls, num_controls, NULL, soc_card);
+	return soc_card_ret(soc_card, ret);
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_add_controls);
 
@@ -1201,29 +1198,18 @@ static int snd_soc_card_bind(struct snd_soc_card *card)
 
 	/* probe all components used by DAI links on this card */
 	ret = snd_soc_card_link_components_probe(card);
-	if (ret < 0) {
-		if (ret != -EPROBE_DEFER) {
-			dev_err(card->dev,
-				"ASoC: failed to instantiate card %d\n", ret);
-		}
+	if (ret < 0)
 		goto probe_end;
-	}
 
 	/* probe auxiliary components */
 	ret = snd_soc_card_aux_probe(card);
-	if (ret < 0) {
-		dev_err(card->dev,
-			"ASoC: failed to probe aux component %d\n", ret);
+	if (ret < 0)
 		goto probe_end;
-	}
 
 	/* probe all DAI links on this card */
 	ret = snd_soc_card_link_dais_probe(card);
-	if (ret < 0) {
-		dev_err(card->dev,
-			"ASoC: failed to instantiate card %d\n", ret);
+	if (ret < 0)
 		goto probe_end;
-	}
 
 	for_each_card_rtds(card, rtd) {
 		ret = snd_soc_card_init_pcm_runtime(card, rtd);
@@ -1323,7 +1309,7 @@ probe_end:
 	}
 	snd_soc_card_mutex_unlock(card);
 
-	return ret;
+	return soc_card_ret(card, ret);
 }
 
 void snd_soc_card_rebind(void)
@@ -1348,8 +1334,10 @@ static int devm_snd_soc_card_bind(struct device *dev, struct snd_soc_card *card)
 	devres_destroy(dev, devm_snd_soc_card_bind_release, NULL, NULL);
 
 	ptr = devres_alloc(devm_snd_soc_card_bind_release, sizeof(*ptr), GFP_KERNEL);
-	if (!ptr)
-		return -ENOMEM;
+	if (!ptr) {
+		ret = -ENOMEM;
+		goto err;
+	}
 
 	ret = snd_soc_card_bind(card);
 	if (ret == 0) {
@@ -1358,8 +1346,8 @@ static int devm_snd_soc_card_bind(struct device *dev, struct snd_soc_card *card)
 	} else {
 		devres_free(ptr);
 	}
-
-	return ret;
+err:
+	return soc_card_ret(card, ret);
 }
 
 int snd_soc_card_bind_call(struct snd_soc_card *card)
@@ -1450,7 +1438,7 @@ int snd_soc_card_get_pci_ssid(struct snd_soc_card *card,
 			      unsigned short *device)
 {
 	if (!card->pci_subsystem_set)
-		return -ENOENT;
+		return soc_card_ret(card, -ENOENT);
 
 	*vendor = card->pci_subsystem_vendor;
 	*device = card->pci_subsystem_device;
@@ -1500,6 +1488,8 @@ EXPORT_SYMBOL_GPL(snd_soc_card_alloc);
 
 int snd_soc_card_register(struct snd_soc_card *card, struct snd_soc_card_driver *driver)
 {
+	int ret;
+
 	if (!card->name)
 		snd_soc_card_set_name(card, driver->default_name);
 	if (!card->long_name)
@@ -1510,8 +1500,10 @@ int snd_soc_card_register(struct snd_soc_card *card, struct snd_soc_card_driver 
 	card->driver		= driver;
 	card->instantiated	= 0;
 	card->dapm		= snd_soc_dapm_alloc(card->dev);
-	if (!card->dapm)
-		return -ENOMEM;
+	if (!card->dapm) {
+		ret = -ENOMEM;
+		goto err;
+	}
 
 	dev_set_drvdata(card->dev, card);
 
@@ -1530,7 +1522,9 @@ int snd_soc_card_register(struct snd_soc_card *card, struct snd_soc_card_driver 
 
 	guard(mutex)(&client_mutex);
 
-	return snd_soc_card_bind_call(card);
+	ret = snd_soc_card_bind_call(card);
+err:
+	return soc_card_ret(card, ret);
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_register);
 
@@ -1540,9 +1534,10 @@ int snd_soc_register_card(struct device *dev, struct snd_soc_card_driver *driver
 
 	card = snd_soc_card_alloc(dev);
 	if (!card)
-		return -ENOMEM;
+		return snd_soc_ret(dev, -ENOMEM, "\n");
 
-	return snd_soc_card_register(card, driver);
+	return soc_card_ret(card, snd_soc_card_register(card, driver));
+
 }
 EXPORT_SYMBOL_GPL(snd_soc_register_card);
 
@@ -1565,7 +1560,7 @@ EXPORT_SYMBOL_GPL(snd_soc_card_unregister);
 int devm_snd_soc_card_register(struct snd_soc_card *card, struct snd_soc_card_driver *driver)
 {
 	card->devres_dev = card->dev;
-	return snd_soc_card_register(card, driver);
+	return soc_card_ret(card, snd_soc_card_register(card, driver));
 }
 EXPORT_SYMBOL_GPL(devm_snd_soc_card_register);
 
@@ -1575,11 +1570,11 @@ int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card_driver *d
 
 	card = snd_soc_card_alloc(dev);
 	if (!card)
-		return -ENOMEM;
+		return snd_soc_ret(dev, -ENOMEM, "\n");
 
 	snd_soc_card_set_name(card, driver->default_name);
 
-	return devm_snd_soc_card_register(card, driver);
+	return soc_card_ret(card, devm_snd_soc_card_register(card, driver));
 }
 EXPORT_SYMBOL_GPL(devm_snd_soc_register_card);
 
@@ -1600,35 +1595,25 @@ int snd_soc_card_driver_of_parse_simple_widgets(struct device *dev,
 	int i, j, num_widgets;
 
 	num_widgets = of_property_count_strings(np, propname);
-	if (num_widgets < 0) {
-		dev_err(dev, "ASoC: Property '%s' does not exist\n",	propname);
-		return -EINVAL;
-	}
-	if (!num_widgets) {
-		dev_err(dev, "ASoC: Property '%s's length is zero\n", propname);
-		return -EINVAL;
-	}
-	if (num_widgets & 1) {
-		dev_err(dev, "ASoC: Property '%s' length is not even\n", propname);
-		return -EINVAL;
-	}
+	if (num_widgets < 0)
+		return snd_soc_ret(dev, -EINVAL, "Property '%s' does not exist\n", propname);
+	if (!num_widgets)
+		return snd_soc_ret(dev, -EINVAL, "Property '%s's length is zero\n", propname);
+	if (num_widgets & 1)
+		return snd_soc_ret(dev, -EINVAL, "Property '%s' length is not even\n", propname);
 
 	num_widgets /= 2;
 
 	widgets = devm_kcalloc(dev, num_widgets, sizeof(*widgets), GFP_KERNEL);
-	if (!widgets) {
-		dev_err(dev, "ASoC: Could not allocate memory for widgets\n");
-		return -ENOMEM;
-	}
+	if (!widgets)
+		return snd_soc_ret(dev, -ENOMEM, "Could not allocate memory for widgets\n");
 
 	for (i = 0; i < num_widgets; i++) {
 		int ret = of_property_read_string_index(np, propname,
 							2 * i, &template);
-		if (ret) {
-			dev_err(dev, "ASoC: Property '%s' index %d read error:%d\n",
-				propname, 2 * i, ret);
-			return -EINVAL;
-		}
+		if (ret)
+			return snd_soc_ret(dev, -EINVAL,
+					"Property '%s' index %d read error\n", propname, 2 * i);
 
 		for (j = 0; j < ARRAY_SIZE(simple_widgets); j++) {
 			if (!strncmp(template, simple_widgets[j].name,
@@ -1638,19 +1623,16 @@ int snd_soc_card_driver_of_parse_simple_widgets(struct device *dev,
 			}
 		}
 
-		if (j >= ARRAY_SIZE(simple_widgets)) {
-			dev_err(dev, "ASoC: DAPM widget '%s' is not supported\n", template);
-			return -EINVAL;
-		}
+		if (j >= ARRAY_SIZE(simple_widgets))
+			return snd_soc_ret(dev, -EINVAL,
+					"DAPM widget '%s' is not supported\n", template);
 
 		ret = of_property_read_string_index(np, propname,
 						    (2 * i) + 1,
 						    &wname);
-		if (ret) {
-			dev_err(dev, "ASoC: Property '%s' index %d read error:%d\n",
-				propname, (2 * i) + 1, ret);
-			return -EINVAL;
-		}
+		if (ret)
+			return snd_soc_ret(dev, -EINVAL,
+				"Property '%s' index %d read error\n", propname, (2 * i) + 1);
 
 		widgets[i].name = wname;
 	}
@@ -1681,12 +1663,8 @@ int snd_soc_card_of_parse_name(struct snd_soc_card *card, const char *propname)
 	 * card->name was previously set, which is checked later in
 	 * snd_soc_card_register().
 	 */
-	if (ret < 0 && ret != -EINVAL) {
-		dev_err(card->dev,
-			"ASoC: Property '%s' could not be read: %d\n",
-			propname, ret);
-		return ret;
-	}
+	if (ret < 0 && ret != -EINVAL)
+		return snd_soc_ret(card->dev, ret, "Property '%s' could not be read\n", propname);
 
 	return 0;
 }
@@ -1707,26 +1685,32 @@ int snd_soc_card_driver_of_parse_pin_switches(struct device *dev,
 
 	strings = devm_kcalloc(dev, nb_controls_max,
 			       sizeof(*strings), GFP_KERNEL);
-	if (!strings)
-		return -ENOMEM;
+	if (!strings) {
+		ret = -ENOMEM;
+		goto err;
+	}
 
 	ret = of_property_read_string_array(dev->of_node, propname,
 					    strings, nb_controls_max);
 	if (ret < 0)
-		return ret;
+		goto err;
 
 	nb_controls = (unsigned int)ret;
 
 	controls = devm_kcalloc(dev, nb_controls,
 				sizeof(*controls), GFP_KERNEL);
-	if (!controls)
-		return -ENOMEM;
+	if (!controls) {
+		ret = -ENOMEM;
+		goto err;
+	}
 
 	for (i = 0; i < nb_controls; i++) {
 		control_name = devm_kasprintf(dev, GFP_KERNEL,
 					      "%s Switch", strings[i]);
-		if (!control_name)
-			return -ENOMEM;
+		if (!control_name) {
+			ret = -ENOMEM;
+			goto err;
+		}
 
 		controls[i].iface = SNDRV_CTL_ELEM_IFACE_MIXER;
 		controls[i].name = control_name;
@@ -1740,6 +1724,8 @@ int snd_soc_card_driver_of_parse_pin_switches(struct device *dev,
 	card_driver->num_controls	= nb_controls;
 
 	return 0;
+err:
+	return snd_soc_ret(dev, ret, "\n");
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_driver_of_parse_pin_switches);
 
@@ -1753,34 +1739,31 @@ int snd_soc_card_driver_of_parse_audio_routing(struct device *dev,
 	int i;
 
 	num_routes = of_property_count_strings(np, propname);
-	if (num_routes < 0 || num_routes & 1) {
-		dev_err(dev, "ASoC: Property '%s' does not exist or its length is not even\n",
-			propname);
-		return -EINVAL;
-	}
+	if (num_routes < 0 || num_routes & 1)
+		return snd_soc_ret(dev, -EINVAL,
+			"Property '%s' does not exist or its length is not even\n", propname);
+
 	num_routes /= 2;
 
 	routes = devm_kcalloc(dev, num_routes, sizeof(*routes), GFP_KERNEL);
-	if (!routes) {
-		dev_err(dev, "ASoC: Could not allocate DAPM route table\n");
-		return -ENOMEM;
-	}
+	if (!routes)
+		return snd_soc_ret(dev, -ENOMEM, "Could not allocate DAPM route table\n");
+
 
 	for (i = 0; i < num_routes; i++) {
 		int ret = of_property_read_string_index(np, propname,
 							2 * i, &routes[i].sink);
-		if (ret) {
-			dev_err(dev, "ASoC: Property '%s' index %d could not be read: %d\n",
-				propname, 2 * i, ret);
-			return -EINVAL;
-		}
+		if (ret)
+			return snd_soc_ret(dev, -EINVAL,
+					"Property '%s' index %d could not be read\n",
+					propname, 2 * i);
+
 		ret = of_property_read_string_index(np, propname,
 						    (2 * i) + 1, &routes[i].source);
-		if (ret) {
-			dev_err(dev, "ASoC: Property '%s' index %d could not be read: %d\n",
-				propname, (2 * i) + 1, ret);
-			return -EINVAL;
-		}
+		if (ret)
+			return snd_soc_ret(dev, -EINVAL,
+					"Property '%s' index %d could not be read: %d\n",
+					propname, (2 * i) + 1);
 	}
 
 	card_driver->of_dapm_routes	= routes;
@@ -1796,31 +1779,34 @@ int snd_soc_card_driver_of_parse_aux_devs(struct device *dev,
 {
 	struct device_node *node = dev->of_node;
 	struct snd_soc_aux_dev *aux;
-	int num, i;
+	int num, i, ret;
 
 	num = of_count_phandle_with_args(node, propname, NULL);
-	if (num == -ENOENT) {
+	if (num == -ENOENT)
 		return 0;
-	} else if (num < 0) {
-		dev_err(dev, "ASOC: Property '%s' could not be read: %d\n",
-			propname, num);
-		return num;
-	}
+	else if (num < 0)
+		return snd_soc_ret(dev, num, "Property '%s' could not be read\n", propname);
 
 	aux = devm_kcalloc(dev, num, sizeof(*aux), GFP_KERNEL);
-	if (!aux)
-		return -ENOMEM;
+	if (!aux) {
+		ret = -ENOMEM;
+		goto err;
+	}
 
 	card_driver->aux_dev		= aux;
 	card_driver->num_aux_devs	= num;
 
 	for_each_card_driver_pre_auxs(card_driver, i, aux) {
 		aux->dlc.of_node = of_parse_phandle(node, propname, i);
-		if (!aux->dlc.of_node)
-			return -EINVAL;
+		if (!aux->dlc.of_node) {
+			ret = -EINVAL;
+			goto err;
+		}
 	}
 
 	return 0;
+err:
+	return snd_soc_ret(dev, ret, "\n");
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_driver_of_parse_aux_devs);
 
@@ -1834,24 +1820,21 @@ int snd_soc_card_driver_of_parse_ignore_suspend_widgets(struct device *dev,
 	int i;
 
 	num_widgets = of_property_count_strings(np, propname);
-	if (num_widgets < 0) {
-		dev_err(dev, "ASoC: Property '%s' does not exist\n", propname);
-		return -EINVAL;
-	}
+	if (num_widgets < 0)
+		return snd_soc_ret(dev, -EINVAL, "Property '%s' does not exist\n");
 
 	widgets = devm_kcalloc(dev, num_widgets, sizeof(char *), GFP_KERNEL);
 	if (!widgets)
-		return -ENOMEM;
+		return snd_soc_ret(dev, -ENOMEM, "\n");
 
 	for (i = 0; i < num_widgets; i++) {
 		const char *name;
 		int ret = of_property_read_string_index(np, propname, i, &name);
 
-		if (ret) {
-			dev_err(dev, "ASoC: Property '%s' could not be read: %d\n",
-				propname, ret);
-			return -EINVAL;
-		}
+		if (ret)
+			return snd_soc_ret(dev, -EINVAL,
+					   "Property '%s' could not be read\n", propname);
+
 		widgets[i] = name;
 	}
 
@@ -1868,7 +1851,7 @@ int snd_soc_card_driver_fixup_dai_links_platform_name(struct device *dev,
 {
 	struct snd_soc_dai_link *dai_link;
 	const char *name;
-	int i;
+	int i, ret;
 
 	if (!platform_name) /* nothing to do */
 		return 0;
@@ -1876,21 +1859,29 @@ int snd_soc_card_driver_fixup_dai_links_platform_name(struct device *dev,
 	/* set platform name for each dailink */
 	for_each_card_driver_prelinks(card_driver, i, dai_link) {
 		/* only single platform is supported for now */
-		if (dai_link->num_platforms != 1)
-			return -EINVAL;
+		if (dai_link->num_platforms != 1) {
+			ret = -EINVAL;
+			goto err;
+		}
 
-		if (!dai_link->platforms)
-			return -EINVAL;
+		if (!dai_link->platforms) {
+			ret = -EINVAL;
+			goto err;
+		}
 
 		name = devm_kstrdup(dev, platform_name, GFP_KERNEL);
-		if (!name)
-			return -ENOMEM;
+		if (!name) {
+			ret = -ENOMEM;
+			goto err;
+		}
 
 		/* only single platform is supported for now */
 		dai_link->platforms->name = name;
 	}
 
 	return 0;
+err:
+	return snd_soc_ret(dev, ret, "\n");
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_driver_fixup_dai_links_platform_name);
 
