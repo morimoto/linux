@@ -991,7 +991,7 @@ check_dmi_entry:
 		return -ENODEV;
 	dev_info(&pdev->dev, "Enabling ACP DMIC support via %s", dmi_id ? "DMI" : "ACPI");
 
-	ret = devm_snd_soc_register_card2(&pdev->dev, card_driver);
+	ret = devm_snd_soc_register_card(&pdev->dev, card_driver);
 	if (ret) {
 		return dev_err_probe(&pdev->dev, ret,
 				"snd_soc_register_card(%s) failed\n",
