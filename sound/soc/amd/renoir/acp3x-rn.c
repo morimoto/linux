@@ -45,7 +45,7 @@ static int acp_probe(struct platform_device *pdev)
 {
 	int ret;
 
-	ret = devm_snd_soc_register_card2(&pdev->dev, &acp_card_driver);
+	ret = devm_snd_soc_register_card(&pdev->dev, &acp_card_driver);
 	if (ret) {
 		return dev_err_probe(&pdev->dev, ret,
 				"snd_soc_register_card(%s) failed\n",
