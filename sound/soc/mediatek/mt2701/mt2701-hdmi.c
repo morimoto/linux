@@ -83,7 +83,7 @@ static int mt2701_hdmi_machine_probe(struct platform_device *pdev)
 	}
 	mt2701_hdmi_dai_links[DAI_LINK_BE_HDMI_I2S].codecs->of_node = codec_node;
 
-	ret = devm_snd_soc_register_card2(dev, card_driver);
+	ret = devm_snd_soc_register_card(dev, card_driver);
 
 	of_node_put(platform_node);
 	of_node_put(codec_node);
