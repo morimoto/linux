@@ -371,7 +371,7 @@ static int speyside_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	ret = devm_snd_soc_register_card2(&pdev->dev, &speyside);
+	ret = devm_snd_soc_register_card(&pdev->dev, &speyside);
 	if (ret)
 		dev_err_probe(&pdev->dev, ret, "snd_soc_register_card() failed\n");
 
