@@ -39,7 +39,7 @@ static struct snd_soc_card_driver db1000_ac97 = {
 
 static int db1000_audio_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_register_card2(&pdev->dev, &db1000_ac97);
+	return devm_snd_soc_register_card(&pdev->dev, &db1000_ac97);
 }
 
 static struct platform_driver db1000_audio_driver = {
