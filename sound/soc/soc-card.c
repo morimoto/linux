@@ -1406,8 +1406,7 @@ int snd_soc_card_register(struct snd_soc_card *card, struct snd_soc_card_driver 
 }
 EXPORT_SYMBOL_GPL(snd_soc_card_register);
 
-/* RENAME ME */
-int snd_soc_register_card2(struct device *dev, struct snd_soc_card_driver *driver)
+int snd_soc_register_card(struct device *dev, struct snd_soc_card_driver *driver)
 {
 	struct snd_soc_card *card;
 
@@ -1417,7 +1416,7 @@ int snd_soc_register_card2(struct device *dev, struct snd_soc_card_driver *drive
 
 	return snd_soc_card_register(card, driver);
 }
-EXPORT_SYMBOL_GPL(snd_soc_register_card2);
+EXPORT_SYMBOL_GPL(snd_soc_register_card);
 
 /**
  * snd_soc_card_unregister - Unregister a card with the ASoC core
@@ -1442,7 +1441,7 @@ int devm_snd_soc_card_register(struct snd_soc_card *card, struct snd_soc_card_dr
 }
 EXPORT_SYMBOL_GPL(devm_snd_soc_card_register);
 
-int devm_snd_soc_register_card2(struct device *dev, struct snd_soc_card_driver *driver)
+int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card_driver *driver)
 {
 	struct snd_soc_card *card;
 
@@ -1454,7 +1453,7 @@ int devm_snd_soc_register_card2(struct device *dev, struct snd_soc_card_driver *
 
 	return devm_snd_soc_card_register(card, driver);
 }
-EXPORT_SYMBOL_GPL(devm_snd_soc_register_card2);
+EXPORT_SYMBOL_GPL(devm_snd_soc_register_card);
 
 static const struct snd_soc_dapm_widget simple_widgets[] = {
 	SND_SOC_DAPM_MIC("Microphone", NULL),
