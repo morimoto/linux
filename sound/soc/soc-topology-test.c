@@ -411,7 +411,7 @@ static void snd_soc_tplg_test_load_empty_tplg(struct kunit *test)
 	snd_soc_component_set_priv(component, kunit_comp);
 
 	/* run test */
-	ret = snd_soc_register_card2(test_dev, &test_card_driver);
+	ret = snd_soc_register_card(test_dev, &test_card_driver);
 	if (ret != 0 && ret != -EPROBE_DEFER)
 		KUNIT_FAIL(test, "Failed to register card");
 
