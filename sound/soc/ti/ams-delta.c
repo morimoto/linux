@@ -573,7 +573,7 @@ static int ams_delta_probe(struct platform_device *pdev)
 	if (IS_ERR(handsfree_mute))
 		return PTR_ERR(handsfree_mute);
 
-	ret = snd_soc_register_card2(&pdev->dev, &ams_delta_audio_card_driver);
+	ret = snd_soc_register_card(&pdev->dev, &ams_delta_audio_card_driver);
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret,
 				     "snd_soc_register_card() failed\n");
