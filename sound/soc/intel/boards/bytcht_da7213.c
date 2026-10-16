@@ -287,7 +287,7 @@ static int bytcht_da7213_probe(struct platform_device *pdev)
 	if (sof_parent)
 		pdev->dev.driver->pm = &snd_soc_pm_ops;
 
-	ret_val = devm_snd_soc_register_card2(&pdev->dev, card_driver);
+	ret_val = devm_snd_soc_register_card(&pdev->dev, card_driver);
 	if (ret_val) {
 		dev_err(&pdev->dev,
 			"snd_soc_register_card() failed %d\n", ret_val);

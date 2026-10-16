@@ -166,7 +166,7 @@ static int snd_bytcht_nocodec_mc_probe(struct platform_device *pdev)
 	int ret_val = 0;
 
 	/* register the soc card */
-	ret_val = devm_snd_soc_register_card2(&pdev->dev, &bytcht_nocodec_card_driver);
+	ret_val = devm_snd_soc_register_card(&pdev->dev, &bytcht_nocodec_card_driver);
 
 	if (ret_val) {
 		dev_err(&pdev->dev, "devm_snd_soc_card_register() failed %d\n",
