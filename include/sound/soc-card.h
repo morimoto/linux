@@ -97,11 +97,15 @@ void snd_soc_card_set_topology_shortname(struct snd_soc_card *card, const char *
 struct snd_soc_card *snd_soc_card_alloc(struct device *dev);
 int snd_soc_card_register(struct snd_soc_card *card, struct snd_soc_card_driver *driver);
 /* RENAME ME */
-int snd_soc_register_card2(struct device *dev, struct snd_soc_card_driver *driver);
+int snd_soc_register_card(struct device *dev, struct snd_soc_card_driver *driver);
 int devm_snd_soc_card_register(struct snd_soc_card *card, struct snd_soc_card_driver *driver);
 /* RENAME ME */
-int devm_snd_soc_register_card2(struct device *dev, struct snd_soc_card_driver *driver);
+int devm_snd_soc_register_card(struct device *dev, struct snd_soc_card_driver *driver);
 void snd_soc_card_unregister(struct snd_soc_card *card);
+
+/* REMOVE ME */
+#define snd_soc_register_card2		snd_soc_register_card
+#define devm_snd_soc_register_card2	devm_snd_soc_register_card
 
 int snd_soc_card_add_controls(struct snd_soc_card *soc_card,
 			      const struct snd_kcontrol_new *controls, int num_controls);
