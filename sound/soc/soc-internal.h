@@ -273,6 +273,7 @@ int snd_soc_pcm_close_no_lock(struct snd_soc_pcm_runtime *rtd,
 			      struct snd_pcm_substream *substream, int rollback);
 int snd_soc_pcm_detect_playback_capture(struct snd_soc_pcm_runtime *rtd,
 					int *playback, int *capture);
+snd_pcm_uframes_t snd_soc_pcm_pointer(struct snd_pcm_substream *substream);
 
 /*
  *	PCM helper functions
