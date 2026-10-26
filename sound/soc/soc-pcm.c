@@ -2831,8 +2831,8 @@ open_end:
 	return soc_pcm_ret(fe, ret);
 }
 
-static int soc_get_playback_capture(struct snd_soc_pcm_runtime *rtd,
-				    int *playback, int *capture)
+int snd_soc_pcm_detect_playback_capture(struct snd_soc_pcm_runtime *rtd,
+					int *playback, int *capture)
 {
 	struct snd_soc_dai_link *dai_link = rtd->dai_link;
 	struct snd_soc_dai *cpu_dai;
@@ -2950,7 +2950,7 @@ int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
 	int ret = 0, playback = 0, capture = 0;
 	int i;
 
-	ret = soc_get_playback_capture(rtd, &playback, &capture);
+	ret = snd_soc_pcm_detect_playback_capture(rtd, &playback, &capture);
 	if (ret < 0)
 		goto err;
 
