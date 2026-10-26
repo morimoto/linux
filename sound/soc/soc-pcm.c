@@ -1310,7 +1310,7 @@ err:
  * If cpu_dai, codec_dai, component driver has the delay callback, then
  * the runtime->delay will be updated via snd_soc_pcm_component/dai_delay().
  */
-static snd_pcm_uframes_t soc_pcm_pointer(struct snd_pcm_substream *substream)
+snd_pcm_uframes_t snd_soc_pcm_pointer(struct snd_pcm_substream *substream)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	snd_pcm_uframes_t offset = 0;
@@ -2989,7 +2989,7 @@ int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
 		rtd->ops.trigger	= dpcm_fe_dai_trigger;
 		rtd->ops.hw_free	= dpcm_fe_dai_hw_free;
 		rtd->ops.close		= dpcm_fe_dai_close;
-		rtd->ops.pointer	= soc_pcm_pointer;
+		rtd->ops.pointer	= snd_soc_pcm_pointer;
 	} else {
 		rtd->ops.open		= soc_pcm_open;
 		rtd->ops.hw_params	= soc_pcm_hw_params;
@@ -2997,7 +2997,7 @@ int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
 		rtd->ops.trigger	= soc_pcm_trigger;
 		rtd->ops.hw_free	= soc_pcm_hw_free;
 		rtd->ops.close		= soc_pcm_close;
-		rtd->ops.pointer	= soc_pcm_pointer;
+		rtd->ops.pointer	= snd_soc_pcm_pointer;
 	}
 
 	for_each_rtd_components(rtd, i, component) {
