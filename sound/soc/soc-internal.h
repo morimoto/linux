@@ -265,6 +265,8 @@ void dpcm_dapm_stream_event(struct snd_soc_pcm_runtime *fe, int dir, int event);
  */
 int snd_soc_pcm_prepare_no_lock(struct snd_soc_pcm_runtime *rtd,
 				struct snd_pcm_substream *substream);
+int snd_soc_pcm_hw_params_no_lock(struct snd_pcm_substream *substream,
+				  struct snd_pcm_hw_params *params);
 
 /*
  *	PCM helper functions
