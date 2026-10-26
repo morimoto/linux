@@ -2934,14 +2934,48 @@ static int soc_create_pcm(struct snd_pcm **pcm,
 	return 0;
 }
 
+int snd_soc_pcm_new_common(struct snd_soc_pcm_runtime *rtd, int playback, int capture)
+{
+	struct snd_soc_component *component;
+	int i, ret;
+
+	if (!rtd->pcm)
+		return soc_pcm_ret(rtd, -EINVAL);
+
+	for_each_rtd_components(rtd, i, component) {
+		const struct snd_soc_component_driver *drv = snd_soc_component_to_driver(component);
+
+		if (drv->ioctl)
+			rtd->ops.ioctl		= snd_soc_pcm_component_ioctl;
+		if (drv->sync_stop)
+			rtd->ops.sync_stop	= snd_soc_pcm_component_sync_stop;
+		if (drv->copy)
+			rtd->ops.copy		= snd_soc_pcm_component_copy;
+		if (drv->page)
+			rtd->ops.page		= snd_soc_pcm_component_page;
+		if (drv->mmap)
+			rtd->ops.mmap		= snd_soc_pcm_component_mmap;
+		if (drv->ack)
+			rtd->ops.ack            = snd_soc_pcm_component_ack;
+	}
+
+	if (playback)
+		snd_pcm_set_ops(rtd->pcm, SNDRV_PCM_STREAM_PLAYBACK, &rtd->ops);
+
+	if (capture)
+		snd_pcm_set_ops(rtd->pcm, SNDRV_PCM_STREAM_CAPTURE, &rtd->ops);
+
+	ret = snd_soc_pcm_component_new(rtd);
+
+	return soc_pcm_ret(rtd, ret);
+}
+
 /* create a new pcm */
 int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *component;
 	struct snd_soc_dai_link *dai_link = rtd->dai_link;
 	struct snd_pcm *pcm;
 	int ret = 0, playback = 0, capture = 0;
-	int i;
 
 	ret = snd_soc_pcm_detect_playback_capture(rtd, &playback, &capture);
 	if (ret < 0)
@@ -2993,30 +3027,7 @@ int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
 		rtd->ops.pointer	= snd_soc_pcm_pointer;
 	}
 
-	for_each_rtd_components(rtd, i, component) {
-		const struct snd_soc_component_driver *drv = snd_soc_component_to_driver(component);
-
-		if (drv->ioctl)
-			rtd->ops.ioctl		= snd_soc_pcm_component_ioctl;
-		if (drv->sync_stop)
-			rtd->ops.sync_stop	= snd_soc_pcm_component_sync_stop;
-		if (drv->copy)
-			rtd->ops.copy		= snd_soc_pcm_component_copy;
-		if (drv->page)
-			rtd->ops.page		= snd_soc_pcm_component_page;
-		if (drv->mmap)
-			rtd->ops.mmap		= snd_soc_pcm_component_mmap;
-		if (drv->ack)
-			rtd->ops.ack            = snd_soc_pcm_component_ack;
-	}
-
-	if (playback)
-		snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_PLAYBACK, &rtd->ops);
-
-	if (capture)
-		snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_CAPTURE, &rtd->ops);
-
-	ret = snd_soc_pcm_component_new(rtd);
+	ret = snd_soc_pcm_new_common(rtd, playback, capture);
 	if (ret < 0)
 		goto err;
 out:
