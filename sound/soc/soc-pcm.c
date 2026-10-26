@@ -606,8 +606,7 @@ void snd_soc_pcm_hw_init(struct snd_pcm_hardware *hw, bool force)
 	}
 }
 
-static void soc_pcm_hw_update_rate(struct snd_pcm_hardware *hw,
-				   const struct snd_soc_pcm_stream *p)
+void snd_soc_pcm_hw_update_rate(struct snd_pcm_hardware *hw, const struct snd_soc_pcm_stream *p)
 {
 	hw->rates = snd_pcm_rate_mask_intersect(hw->rates, p->rates);
 
@@ -619,15 +618,13 @@ static void soc_pcm_hw_update_rate(struct snd_pcm_hardware *hw,
 	hw->rate_max = min_not_zero(hw->rate_max, p->rate_max);
 }
 
-static void soc_pcm_hw_update_chan(struct snd_pcm_hardware *hw,
-				   const struct snd_soc_pcm_stream *p)
+void snd_soc_pcm_hw_update_chan(struct snd_pcm_hardware *hw, const struct snd_soc_pcm_stream *p)
 {
 	hw->channels_min = max(hw->channels_min, p->channels_min);
 	hw->channels_max = min(hw->channels_max, p->channels_max);
 }
 
-static void soc_pcm_hw_update_format(struct snd_pcm_hardware *hw,
-				     const struct snd_soc_pcm_stream *p)
+void snd_soc_pcm_hw_update_format(struct snd_pcm_hardware *hw, const struct snd_soc_pcm_stream *p)
 {
 	hw->formats	&= p->formats;
 	hw->subformats	&= p->subformats;
@@ -668,9 +665,9 @@ int snd_soc_runtime_calc_hw(struct snd_soc_pcm_runtime *rtd,
 
 		cpu_stream = snd_soc_dai_pcm_stream_get(cpu_dai, stream);
 
-		soc_pcm_hw_update_chan(hw, cpu_stream);
-		soc_pcm_hw_update_rate(hw, cpu_stream);
-		soc_pcm_hw_update_format(hw, cpu_stream);
+		snd_soc_pcm_hw_update_chan(hw, cpu_stream);
+		snd_soc_pcm_hw_update_rate(hw, cpu_stream);
+		snd_soc_pcm_hw_update_format(hw, cpu_stream);
 	}
 	cpu_chan_min = hw->channels_min;
 	cpu_chan_max = hw->channels_max;
@@ -689,9 +686,9 @@ int snd_soc_runtime_calc_hw(struct snd_soc_pcm_runtime *rtd,
 
 		codec_stream = snd_soc_dai_pcm_stream_get(codec_dai, stream);
 
-		soc_pcm_hw_update_chan(hw, codec_stream);
-		soc_pcm_hw_update_rate(hw, codec_stream);
-		soc_pcm_hw_update_format(hw, codec_stream);
+		snd_soc_pcm_hw_update_chan(hw, codec_stream);
+		snd_soc_pcm_hw_update_rate(hw, codec_stream);
+		snd_soc_pcm_hw_update_format(hw, codec_stream);
 	}
 
 	/* Verify both a valid CPU DAI and a valid CODEC DAI were found */
@@ -1793,9 +1790,9 @@ static void dpcm_runtime_setup_fe(struct snd_pcm_substream *substream)
 
 		cpu_stream = snd_soc_dai_pcm_stream_get(dai, stream);
 
-		soc_pcm_hw_update_rate(hw, cpu_stream);
-		soc_pcm_hw_update_chan(hw, cpu_stream);
-		soc_pcm_hw_update_format(hw, cpu_stream);
+		snd_soc_pcm_hw_update_rate(hw, cpu_stream);
+		snd_soc_pcm_hw_update_chan(hw, cpu_stream);
+		snd_soc_pcm_hw_update_format(hw, cpu_stream);
 	}
 
 }
@@ -1832,7 +1829,7 @@ static void dpcm_runtime_setup_be_format(struct snd_pcm_substream *substream)
 
 			codec_stream = snd_soc_dai_pcm_stream_get(dai, stream);
 
-			soc_pcm_hw_update_format(hw, codec_stream);
+			snd_soc_pcm_hw_update_format(hw, codec_stream);
 		}
 	}
 }
@@ -1869,7 +1866,7 @@ static void dpcm_runtime_setup_be_chan(struct snd_pcm_substream *substream)
 
 			cpu_stream = snd_soc_dai_pcm_stream_get(dai, stream);
 
-			soc_pcm_hw_update_chan(hw, cpu_stream);
+			snd_soc_pcm_hw_update_chan(hw, cpu_stream);
 		}
 
 		/*
@@ -1880,7 +1877,7 @@ static void dpcm_runtime_setup_be_chan(struct snd_pcm_substream *substream)
 			const struct snd_soc_pcm_stream *codec_stream = snd_soc_dai_pcm_stream_get(
 				snd_soc_rtd_to_codec(be, 0), stream);
 
-			soc_pcm_hw_update_chan(hw, codec_stream);
+			snd_soc_pcm_hw_update_chan(hw, codec_stream);
 		}
 	}
 }
@@ -1917,7 +1914,7 @@ static void dpcm_runtime_setup_be_rate(struct snd_pcm_substream *substream)
 
 			pcm = snd_soc_dai_pcm_stream_get(dai, stream);
 
-			soc_pcm_hw_update_rate(hw, pcm);
+			snd_soc_pcm_hw_update_rate(hw, pcm);
 		}
 	}
 }

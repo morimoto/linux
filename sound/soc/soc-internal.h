@@ -278,6 +278,9 @@ int snd_soc_pcm_trigger(struct snd_pcm_substream *substream, int cmd);
 void snd_soc_pcm_hw_init(struct snd_pcm_hardware *hw, bool force);
 int snd_soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
 			 struct snd_pcm_substream *substream, int rollback);
+void snd_soc_pcm_hw_update_rate(struct snd_pcm_hardware *hw, const struct snd_soc_pcm_stream *p);
+void snd_soc_pcm_hw_update_chan(struct snd_pcm_hardware *hw, const struct snd_soc_pcm_stream *p);
+void snd_soc_pcm_hw_update_format(struct snd_pcm_hardware *hw, const struct snd_soc_pcm_stream *p);
 
 /*
  *	PCM helper functions
