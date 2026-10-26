@@ -281,6 +281,7 @@ int snd_soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
 void snd_soc_pcm_hw_update_rate(struct snd_pcm_hardware *hw, const struct snd_soc_pcm_stream *p);
 void snd_soc_pcm_hw_update_chan(struct snd_pcm_hardware *hw, const struct snd_soc_pcm_stream *p);
 void snd_soc_pcm_hw_update_format(struct snd_pcm_hardware *hw, const struct snd_soc_pcm_stream *p);
+int snd_soc_pcm_new_common(struct snd_soc_pcm_runtime *rtd, int playback, int capture);
 
 /*
  *	PCM helper functions
