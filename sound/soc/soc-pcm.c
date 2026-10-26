@@ -584,7 +584,7 @@ static void soc_pcm_apply_msb(struct snd_pcm_substream *substream)
 	soc_pcm_set_msb(substream, cpu_bits);
 }
 
-static void soc_pcm_hw_init(struct snd_pcm_hardware *hw, bool force)
+void snd_soc_pcm_hw_init(struct snd_pcm_hardware *hw, bool force)
 {
 	if (force) {
 		hw->rates = UINT_MAX;
@@ -652,7 +652,7 @@ int snd_soc_runtime_calc_hw(struct snd_soc_pcm_runtime *rtd,
 	unsigned int cpu_chan_min = 0, cpu_chan_max = UINT_MAX;
 	int i;
 
-	soc_pcm_hw_init(hw, true);
+	snd_soc_pcm_hw_init(hw, true);
 
 	/* first calculate min/max only for CPUs in the DAI link */
 	for_each_rtd_cpu_dais(rtd, i, cpu_dai) {
@@ -1026,8 +1026,8 @@ static void soc_pcm_codec_params_fixup(struct snd_pcm_hw_params *params,
 	interval->max = channels;
 }
 
-static int soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
-			    struct snd_pcm_substream *substream, int rollback)
+int snd_soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
+			 struct snd_pcm_substream *substream, int rollback)
 {
 	struct snd_soc_dai *dai;
 	int i;
@@ -1065,12 +1065,6 @@ static int soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
 /*
  * Frees resources allocated by hw_params, can be called multiple times
  */
-static int __soc_pcm_hw_free(struct snd_soc_pcm_runtime *rtd,
-			     struct snd_pcm_substream *substream)
-{
-	return soc_pcm_hw_clean(rtd, substream, 0);
-}
-
 /* hw_free PCM ops for non-DPCM streams */
 static int soc_pcm_hw_free(struct snd_pcm_substream *substream)
 {
@@ -1078,7 +1072,7 @@ static int soc_pcm_hw_free(struct snd_pcm_substream *substream)
 	int ret;
 
 	snd_soc_dpcm_mutex_lock(rtd);
-	ret = __soc_pcm_hw_free(rtd, substream);
+	ret = snd_soc_pcm_hw_clean(rtd, substream, 0);
 	snd_soc_dpcm_mutex_unlock(rtd);
 	return ret;
 }
@@ -1192,7 +1186,7 @@ int snd_soc_pcm_hw_params_no_lock(struct snd_pcm_substream *substream,
 	ret = snd_soc_pcm_component_hw_params(substream, params);
 out:
 	if (ret < 0)
-		soc_pcm_hw_clean(rtd, substream, 1);
+		snd_soc_pcm_hw_clean(rtd, substream, 1);
 
 	return soc_pcm_ret(rtd, ret);
 }
@@ -1698,7 +1692,7 @@ void dpcm_be_dai_stop(struct snd_soc_pcm_runtime *fe, int stream,
 				continue;
 
 			if (be->dpcm[stream].state != SND_SOC_DPCM_STATE_HW_FREE) {
-				__soc_pcm_hw_free(be, be_substream);
+				snd_soc_pcm_hw_clean(be, be_substream, 0);
 				be->dpcm[stream].state = SND_SOC_DPCM_STATE_HW_FREE;
 			}
 		}
@@ -1785,7 +1779,7 @@ static void dpcm_runtime_setup_fe(struct snd_pcm_substream *substream)
 	int stream = substream->stream;
 	int i;
 
-	soc_pcm_hw_init(hw, false);
+	snd_soc_pcm_hw_init(hw, false);
 
 	for_each_rtd_cpu_dais(fe, i, dai) {
 		const struct snd_soc_pcm_stream *cpu_stream;
@@ -2073,7 +2067,7 @@ void dpcm_be_dai_hw_free(struct snd_soc_pcm_runtime *fe, int stream)
 		dev_dbg(be->dev, "ASoC: hw_free BE %s\n",
 			be->dai_link->name);
 
-		__soc_pcm_hw_free(be, be_substream);
+		snd_soc_pcm_hw_clean(be, be_substream, 0);
 
 		be->dpcm[stream].state = SND_SOC_DPCM_STATE_HW_FREE;
 	}
@@ -2090,7 +2084,7 @@ static int dpcm_fe_dai_hw_free(struct snd_pcm_substream *substream)
 	dev_dbg(fe->dev, "ASoC: hw_free FE %s\n", fe->dai_link->name);
 
 	/* call hw_free on the frontend */
-	soc_pcm_hw_clean(fe, substream, 0);
+	snd_soc_pcm_hw_clean(fe, substream, 0);
 
 	/* only hw_params backends that are either sinks or sources
 	 * to this frontend DAI */
@@ -2175,7 +2169,7 @@ unwind:
 		   (be->dpcm[stream].state != SND_SOC_DPCM_STATE_STOP))
 			continue;
 
-		__soc_pcm_hw_free(be, be_substream);
+		snd_soc_pcm_hw_clean(be, be_substream, 0);
 	}
 
 	return soc_pcm_ret(fe, ret);

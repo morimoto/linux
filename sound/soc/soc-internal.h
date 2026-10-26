@@ -275,6 +275,9 @@ int snd_soc_pcm_detect_playback_capture(struct snd_soc_pcm_runtime *rtd,
 					int *playback, int *capture);
 snd_pcm_uframes_t snd_soc_pcm_pointer(struct snd_pcm_substream *substream);
 int snd_soc_pcm_trigger(struct snd_pcm_substream *substream, int cmd);
+void snd_soc_pcm_hw_init(struct snd_pcm_hardware *hw, bool force);
+int snd_soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
+			 struct snd_pcm_substream *substream, int rollback);
 
 /*
  *	PCM helper functions
