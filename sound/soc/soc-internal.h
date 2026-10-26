@@ -261,6 +261,12 @@ int dpcm_be_dai_prepare(struct snd_soc_pcm_runtime *fe, int stream);
 void dpcm_dapm_stream_event(struct snd_soc_pcm_runtime *fe, int dir, int event);
 
 /*
+ * In soc-pcm
+ */
+int snd_soc_pcm_prepare_no_lock(struct snd_soc_pcm_runtime *rtd,
+				struct snd_pcm_substream *substream);
+
+/*
  *	PCM helper functions
  */
 static inline void snd_soc_dpcm_mutex_lock_r(struct snd_soc_pcm_runtime *rtd)

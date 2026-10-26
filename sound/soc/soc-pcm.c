@@ -957,8 +957,8 @@ static int soc_pcm_open(struct snd_pcm_substream *substream)
  * rate, etc.  This function is non atomic and can be called multiple times,
  * it can refer to the runtime info.
  */
-static int __soc_pcm_prepare(struct snd_soc_pcm_runtime *rtd,
-			     struct snd_pcm_substream *substream)
+int snd_soc_pcm_prepare_no_lock(struct snd_soc_pcm_runtime *rtd,
+				struct snd_pcm_substream *substream)
 {
 	struct snd_soc_dai *dai;
 	int i, ret = 0;
@@ -1009,7 +1009,7 @@ static int soc_pcm_prepare(struct snd_pcm_substream *substream)
 	int ret;
 
 	snd_soc_dpcm_mutex_lock(rtd);
-	ret = __soc_pcm_prepare(rtd, substream);
+	ret = snd_soc_pcm_prepare_no_lock(rtd, substream);
 	snd_soc_dpcm_mutex_unlock(rtd);
 
 	/*
@@ -2530,7 +2530,7 @@ int dpcm_be_dai_prepare(struct snd_soc_pcm_runtime *fe, int stream)
 		dev_dbg(be->dev, "ASoC: prepare BE %s\n",
 			be->dai_link->name);
 
-		ret = __soc_pcm_prepare(be, be_substream);
+		ret = snd_soc_pcm_prepare_no_lock(be, be_substream);
 		if (ret < 0)
 			break;
 
@@ -2562,7 +2562,7 @@ static int dpcm_fe_dai_prepare(struct snd_pcm_substream *substream)
 		goto out;
 
 	/* call prepare on the frontend */
-	ret = __soc_pcm_prepare(fe, substream);
+	ret = snd_soc_pcm_prepare_no_lock(fe, substream);
 	if (ret < 0)
 		goto out;
 
