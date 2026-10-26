@@ -2951,6 +2951,7 @@ static int soc_create_pcm(struct snd_pcm **pcm,
 int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_component *component;
+	struct snd_soc_dai_link *dai_link = rtd->dai_link;
 	struct snd_pcm *pcm;
 	int ret = 0, playback = 0, capture = 0;
 	int i;
@@ -3035,6 +3036,10 @@ out:
 	dev_dbg(snd_soc_card_to_dev(rtd->card), "%s <-> %s mapping ok\n",
 		soc_codec_dai_name(rtd), soc_cpu_dai_name(rtd));
 err:
+	if (ret < 0)
+		dev_err(rtd->dev, "ASoC: can't create pcm %s :%d\n",
+			dai_link->stream_name, ret);
+
 	return soc_pcm_ret(rtd, ret);
 }
 

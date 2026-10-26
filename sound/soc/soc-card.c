@@ -396,7 +396,6 @@ static void snd_soc_card_fill_dummy_dai(struct snd_soc_card *card)
 static int snd_soc_card_init_pcm_runtime(struct snd_soc_card *card,
 					 struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_dai_link *dai_link = rtd->dai_link;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	int ret;
 
@@ -422,11 +421,8 @@ static int snd_soc_card_init_pcm_runtime(struct snd_soc_card *card,
 
 	/* create the pcm */
 	ret = soc_new_pcm(rtd);
-	if (ret < 0) {
-		dev_err(card->dev, "ASoC: can't create pcm %s :%d\n",
-			dai_link->stream_name, ret);
+	if (ret < 0)
 		goto err;
-	}
 
 	ret = snd_soc_pcm_dai_new(rtd);
 	if (ret < 0)
