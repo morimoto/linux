@@ -267,6 +267,10 @@ int snd_soc_pcm_prepare_no_lock(struct snd_soc_pcm_runtime *rtd,
 				struct snd_pcm_substream *substream);
 int snd_soc_pcm_hw_params_no_lock(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params);
+int snd_soc_pcm_open_no_lock(struct snd_soc_pcm_runtime *rtd,
+			     struct snd_pcm_substream *substream);
+int snd_soc_pcm_close_no_lock(struct snd_soc_pcm_runtime *rtd,
+			      struct snd_pcm_substream *substream, int rollback);
 
 /*
  *	PCM helper functions

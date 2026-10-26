@@ -766,8 +766,8 @@ static int soc_pcm_components_close(struct snd_pcm_substream *substream,
 	return soc_pcm_ret(rtd, ret);
 }
 
-static int soc_pcm_clean(struct snd_soc_pcm_runtime *rtd,
-			 struct snd_pcm_substream *substream, int rollback)
+int snd_soc_pcm_close_no_lock(struct snd_soc_pcm_runtime *rtd,
+			      struct snd_pcm_substream *substream, int rollback)
 {
 	struct snd_soc_component *component;
 	struct snd_soc_dai *dai;
@@ -809,19 +809,13 @@ static int soc_pcm_clean(struct snd_soc_pcm_runtime *rtd,
  * freed here. The cpu DAI, codec DAI, machine and components are also
  * shutdown.
  */
-static int __soc_pcm_close(struct snd_soc_pcm_runtime *rtd,
-			   struct snd_pcm_substream *substream)
-{
-	return soc_pcm_clean(rtd, substream, 0);
-}
-
 /* PCM close ops for non-DPCM streams */
 static int soc_pcm_close(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 
 	snd_soc_dpcm_mutex_lock(rtd);
-	__soc_pcm_close(rtd, substream);
+	snd_soc_pcm_close_no_lock(rtd, substream, 0);
 	snd_soc_dpcm_mutex_unlock(rtd);
 	return 0;
 }
@@ -868,8 +862,8 @@ config_err:
  * then initialized and any private data can be allocated. This also calls
  * startup for the cpu DAI, component, machine and codec DAI.
  */
-static int __soc_pcm_open(struct snd_soc_pcm_runtime *rtd,
-			  struct snd_pcm_substream *substream)
+int snd_soc_pcm_open_no_lock(struct snd_soc_pcm_runtime *rtd,
+			     struct snd_pcm_substream *substream)
 {
 	struct snd_soc_component *component;
 	struct snd_soc_dai *dai;
@@ -935,7 +929,7 @@ dynamic:
 	ret = 0;
 err:
 	if (ret < 0)
-		soc_pcm_clean(rtd, substream, 1);
+		snd_soc_pcm_close_no_lock(rtd, substream, 1);
 
 	return soc_pcm_ret(rtd, ret);
 }
@@ -947,7 +941,7 @@ static int soc_pcm_open(struct snd_pcm_substream *substream)
 	int ret;
 
 	snd_soc_dpcm_mutex_lock(rtd);
-	ret = __soc_pcm_open(rtd, substream);
+	ret = snd_soc_pcm_open_no_lock(rtd, substream);
 	snd_soc_dpcm_mutex_unlock(rtd);
 	return ret;
 }
@@ -1709,7 +1703,7 @@ void dpcm_be_dai_stop(struct snd_soc_pcm_runtime *fe, int stream,
 			}
 		}
 
-		__soc_pcm_close(be, be_substream);
+		snd_soc_pcm_close_no_lock(be, be_substream, 0);
 		be_substream->runtime = NULL;
 		be->dpcm[stream].state = SND_SOC_DPCM_STATE_CLOSE;
 	}
@@ -1758,7 +1752,7 @@ int dpcm_be_dai_startup(struct snd_soc_pcm_runtime *fe, int stream)
 			snd_pcm_direction_name(stream), be->dai_link->name);
 
 		be_substream->runtime = fe_substream->runtime;
-		err = __soc_pcm_open(be, be_substream);
+		err = snd_soc_pcm_open_no_lock(be, be_substream);
 		if (err < 0) {
 			be->dpcm[stream].users--;
 			if (be->dpcm[stream].users < 0)
@@ -1996,7 +1990,7 @@ static int dpcm_fe_dai_startup(struct snd_pcm_substream *fe_substream)
 	dev_dbg(fe->dev, "ASoC: open FE %s\n", fe->dai_link->name);
 
 	/* start the DAI frontend */
-	ret = __soc_pcm_open(fe, fe_substream);
+	ret = snd_soc_pcm_open_no_lock(fe, fe_substream);
 	if (ret < 0)
 		goto unwind;
 
@@ -2034,7 +2028,7 @@ static int dpcm_fe_dai_shutdown(struct snd_pcm_substream *substream)
 	dev_dbg(fe->dev, "ASoC: close FE %s\n", fe->dai_link->name);
 
 	/* now shutdown the frontend */
-	__soc_pcm_close(fe, substream);
+	snd_soc_pcm_close_no_lock(fe, substream, 0);
 
 	/* run the stream stop event */
 	dpcm_dapm_stream_event(fe, stream, SND_SOC_DAPM_STREAM_STOP);
