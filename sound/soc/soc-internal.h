@@ -235,6 +235,32 @@ void snd_soc_link_compr_shutdown(struct snd_compr_stream *cstream,
 int snd_soc_link_compr_set_params(struct snd_compr_stream *cstream);
 
 /*
+ * In soc-dpcm
+ */
+#ifdef CONFIG_DEBUG_FS
+void soc_dpcm_debugfs_add(struct snd_soc_pcm_runtime *rtd);
+#else
+static inline void soc_dpcm_debugfs_add(struct snd_soc_pcm_runtime *rtd)
+{
+}
+#endif
+int dpcm_path_get(struct snd_soc_pcm_runtime *fe,
+		  int stream, struct snd_soc_dapm_widget_list **list_);
+void dpcm_path_put(struct snd_soc_dapm_widget_list **list);
+int dpcm_add_paths(struct snd_soc_pcm_runtime *fe, int stream,
+		   struct snd_soc_dapm_widget_list **list_);
+int dpcm_be_dai_startup(struct snd_soc_pcm_runtime *fe, int stream);
+void dpcm_be_dai_stop(struct snd_soc_pcm_runtime *fe, int stream,
+		      int do_hw_free, struct snd_soc_dpcm *last);
+void dpcm_be_disconnect(struct snd_soc_pcm_runtime *fe, int stream);
+void dpcm_clear_pending_state(struct snd_soc_pcm_runtime *fe, int stream);
+void dpcm_be_dai_hw_free(struct snd_soc_pcm_runtime *fe, int stream);
+int dpcm_be_dai_hw_params(struct snd_soc_pcm_runtime *fe, int tream);
+int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream, int cmd);
+int dpcm_be_dai_prepare(struct snd_soc_pcm_runtime *fe, int stream);
+void dpcm_dapm_stream_event(struct snd_soc_pcm_runtime *fe, int dir, int event);
+
+/*
  *	PCM helper functions
  */
 static inline void snd_soc_dpcm_mutex_lock_r(struct snd_soc_pcm_runtime *rtd)
