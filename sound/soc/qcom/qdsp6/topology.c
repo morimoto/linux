@@ -592,7 +592,8 @@ static int audioreach_widget_load_module_common(struct snd_soc_component *compon
 						int index, struct snd_soc_dapm_widget *w,
 						const struct snd_soc_tplg_dapm_widget *tplg_w)
 {
-	struct q6apm *apm = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm *apm = dev_get_drvdata(dev);
 	struct audioreach_container *cont;
 	struct audioreach_sub_graph *sg;
 	struct audioreach_module *mod;
@@ -926,7 +927,8 @@ static int audioreach_widget_load_mixer(struct snd_soc_component *component,
 	const struct snd_soc_tplg_vendor_value_elem *w_elem;
 	const struct snd_soc_tplg_vendor_array *w_array;
 	struct snd_ar_control *scontrol;
-	struct q6apm *data = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm *data = dev_get_drvdata(dev);
 	struct snd_soc_dobj *dobj;
 	int tkn_count = 0;
 
@@ -968,8 +970,9 @@ static int audioreach_pga_event(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_dapm_context *dapm = w->dapm;
 	struct snd_soc_component *c = snd_soc_dapm_to_component(dapm);
+	struct device *dev = snd_soc_component_to_dev(c);
 	struct audioreach_module *mod = w->dobj.private;
-	struct q6apm *apm = dev_get_drvdata(c->dev);
+	struct q6apm *apm = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -991,6 +994,7 @@ static int audioreach_widget_load_pga(struct snd_soc_component *component,
 				      int index, struct snd_soc_dapm_widget *w,
 				      const struct snd_soc_tplg_dapm_widget *tplg_w)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct audioreach_module *mod;
 	struct snd_soc_dobj *dobj;
 	int ret;
@@ -1007,7 +1011,7 @@ static int audioreach_widget_load_pga(struct snd_soc_component *component,
 					     ARRAY_SIZE(audioreach_widget_ops),
 					     le16_to_cpu(tplg_w->event_type));
 	if (ret) {
-		dev_err(component->dev, "matching event handlers NOT found for %d\n",
+		dev_err(dev, "matching event handlers NOT found for %d\n",
 			le16_to_cpu(tplg_w->event_type));
 		return -EINVAL;
 	}
@@ -1019,6 +1023,8 @@ static int audioreach_widget_ready(struct snd_soc_component *component,
 				   int index, struct snd_soc_dapm_widget *w,
 				   struct snd_soc_tplg_dapm_widget *tplg_w)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	switch (w->id) {
 	case snd_soc_dapm_aif_in:
 	case snd_soc_dapm_aif_out:
@@ -1040,7 +1046,7 @@ static int audioreach_widget_ready(struct snd_soc_component *component,
 	case snd_soc_dapm_scheduler:
 	case snd_soc_dapm_out_drv:
 	default:
-		dev_err(component->dev, "Widget type (0x%x) not yet supported\n", w->id);
+		dev_err(dev, "Widget type (0x%x) not yet supported\n", w->id);
 		break;
 	}
 
@@ -1051,7 +1057,8 @@ static int audioreach_widget_unload(struct snd_soc_component *scomp,
 				    struct snd_soc_dobj *dobj)
 {
 	const struct snd_soc_dapm_widget *w = container_of(dobj, struct snd_soc_dapm_widget, dobj);
-	struct q6apm *apm = dev_get_drvdata(scomp->dev);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct q6apm *apm = dev_get_drvdata(dev);
 	struct audioreach_container *cont;
 	struct audioreach_module *mod;
 
@@ -1108,7 +1115,8 @@ static int audioreach_widget_unload(struct snd_soc_component *scomp,
 static struct snd_ar_control *audioreach_find_widget(struct snd_soc_component *comp,
 						     const char *name)
 {
-	struct q6apm *apm = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct q6apm *apm = dev_get_drvdata(dev);
 	struct snd_ar_control *control;
 
 	list_for_each_entry(control, &apm->widget_list, node) {
@@ -1122,7 +1130,8 @@ static struct snd_ar_control *audioreach_find_widget(struct snd_soc_component *c
 static struct audioreach_module *audioreach_find_module(struct snd_soc_component *comp,
 							const char *name)
 {
-	struct q6apm *apm = dev_get_drvdata(comp->dev);
+	struct device *dev = snd_soc_component_to_dev(comp);
+	struct q6apm *apm = dev_get_drvdata(dev);
 	struct audioreach_module *module;
 	int id;
 
@@ -1194,11 +1203,12 @@ static int audioreach_link_load(struct snd_soc_component *component, int index,
 				struct snd_soc_dai_link *link,
 				struct snd_soc_tplg_link_config *cfg)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
+
 	link->nonatomic = true;
 	link->dynamic = true;
 	link->platforms->name = NULL;
-	link->platforms->of_node = of_get_compatible_child(component->dev->of_node,
-							   "qcom,q6apm-dais");
+	link->platforms->of_node = of_get_compatible_child(dev->of_node, "qcom,q6apm-dais");
 	return 0;
 }
 
@@ -1251,9 +1261,10 @@ static int audioreach_get_audio_mixer(struct snd_kcontrol *kcontrol,
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	const struct snd_soc_dapm_widget *dw = snd_soc_dapm_kcontrol_to_widget(kcontrol);
 	struct snd_soc_component *c = snd_soc_dapm_to_component(dapm);
+	struct device *dev = snd_soc_component_to_dev(c);
 	const struct snd_ar_control *dapm_scontrol = dw->dobj.private;
 	const struct snd_ar_control *scontrol = mc->dobj.private;
-	struct q6apm *data = dev_get_drvdata(c->dev);
+	struct q6apm *data = dev_get_drvdata(dev);
 	bool connected;
 
 	connected = audioreach_is_vmixer_connected(data, scontrol, dapm_scontrol);
@@ -1272,9 +1283,10 @@ static int audioreach_put_audio_mixer(struct snd_kcontrol *kcontrol,
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_dapm_widget *dw = snd_soc_dapm_kcontrol_to_widget(kcontrol);
 	struct snd_soc_component *c = snd_soc_dapm_to_component(dapm);
+	struct device *dev = snd_soc_component_to_dev(c);
 	const struct snd_ar_control *dapm_scontrol = dw->dobj.private;
 	const struct snd_ar_control *scontrol = mc->dobj.private;
-	struct q6apm *data = dev_get_drvdata(c->dev);
+	struct q6apm *data = dev_get_drvdata(dev);
 
 	if (ucontrol->value.integer.value[0]) {
 		audioreach_connect_sub_graphs(data, scontrol, dapm_scontrol, true);
@@ -1346,6 +1358,7 @@ static int audioreach_control_load(struct snd_soc_component *scomp, int index,
 				   struct snd_kcontrol_new *kc,
 				   struct snd_soc_tplg_ctl_hdr *hdr)
 {
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	struct snd_ar_control *scontrol;
 	struct soc_mixer_control *sm;
 	struct snd_soc_dobj *dobj;
@@ -1368,7 +1381,7 @@ static int audioreach_control_load(struct snd_soc_component *scomp, int index,
 		dobj = &sm->dobj;
 		break;
 	default:
-		dev_warn(scomp->dev, "control type not supported %d:%d:%d\n",
+		dev_warn(dev, "control type not supported %d:%d:%d\n",
 			 hdr->ops.get, hdr->ops.put, hdr->ops.info);
 		kfree(scontrol);
 		return -EINVAL;
@@ -1414,14 +1427,15 @@ static const struct snd_soc_tplg_ops audioreach_tplg_ops = {
 
 int audioreach_tplg_init(struct snd_soc_component *component)
 {
-	struct snd_soc_card *card = component->card;
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	int ret;
 
 	/* Inline with Qualcomm UCM configs and linux-firmware path */
 	char *tplg_fw_name __free(kfree) = kasprintf(GFP_KERNEL, "qcom/%s/%s-tplg.bin",
-						     card->driver_name,
-						     card->name);
+						     card_driver->driver_name,
+						     snd_soc_card_name(card));
 	if (!tplg_fw_name)
 		return -ENOMEM;
 

@@ -35,7 +35,7 @@ static int odroid_card_fe_hw_params(struct snd_pcm_substream *substream,
 				      struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct odroid_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct odroid_priv *priv = snd_soc_card_to_priv(rtd->card);
 
 	guard(spinlock_irqsave)(&priv->lock);
 	if (priv->be_active && priv->be_sample_rate != params_rate(params))
@@ -53,7 +53,7 @@ static int odroid_card_be_hw_params(struct snd_pcm_substream *substream,
 				      struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct odroid_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct odroid_priv *priv = snd_soc_card_to_priv(rtd->card);
 	unsigned int pll_freq, rclk_freq, rfs;
 	int ret;
 
@@ -109,7 +109,7 @@ static int odroid_card_be_hw_params(struct snd_pcm_substream *substream,
 static int odroid_card_be_trigger(struct snd_pcm_substream *substream, int cmd)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct odroid_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct odroid_priv *priv = snd_soc_card_to_priv(rtd->card);
 
 	guard(spinlock_irqsave)(&priv->lock);
 
@@ -205,9 +205,9 @@ static int odroid_audio_probe(struct platform_device *pdev)
 	card_driver->fully_routed = true;
 
 	spin_lock_init(&priv->lock);
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 
-	ret = snd_soc_of_parse_card_name(card, "model");
+	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret < 0)
 		return ret;
 

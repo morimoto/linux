@@ -47,12 +47,13 @@ static int omap_abe_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct snd_soc_card *card = rtd->card;
-	struct abe_twl6040 *priv = snd_soc_card_get_drvdata(card);
+	struct abe_twl6040 *priv = snd_soc_card_to_priv(card);
 	int clk_id, freq;
 	int ret;
 
-	clk_id = twl6040_get_clk_id(codec_dai->component);
+	clk_id = twl6040_get_clk_id(component);
 	if (clk_id == TWL6040_SYSCLK_SEL_HPPLL)
 		freq = priv->mclk_freq;
 	else if (clk_id == TWL6040_SYSCLK_SEL_LPPLL)
@@ -166,9 +167,9 @@ static const struct snd_soc_dapm_route audio_map[] = {
 
 static int omap_abe_twl6040_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	struct snd_soc_card *card = rtd->card;
-	struct abe_twl6040 *priv = snd_soc_card_get_drvdata(card);
+	struct abe_twl6040 *priv = snd_soc_card_to_priv(card);
 	int hs_trim;
 	int ret;
 
@@ -235,7 +236,7 @@ static int omap_abe_probe(struct platform_device *pdev)
 	card_driver->dapm_routes = audio_map;
 	card_driver->num_dapm_routes = ARRAY_SIZE(audio_map);
 
-	ret = snd_soc_of_parse_card_name(card, "ti,model");
+	ret = snd_soc_card_of_parse_name(card, "ti,model");
 	if (ret)
 		return ret;
 
@@ -293,7 +294,7 @@ static int omap_abe_probe(struct platform_device *pdev)
 	card_driver->dai_link = priv->dai_links;
 	card_driver->num_links = num_links;
 
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 
 	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)

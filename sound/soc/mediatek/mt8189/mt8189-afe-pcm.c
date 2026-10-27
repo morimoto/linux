@@ -136,10 +136,12 @@ static int mt8189_fe_startup(struct snd_pcm_substream *substream,
 			     struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	int memif_num = cpu_dai->id;
+	int memif_num = snd_soc_dai_id(cpu_dai);
 	struct mtk_base_afe_memif *memif = &afe->memif[memif_num];
 	const struct snd_pcm_hardware *mtk_afe_hardware = afe->mtk_afe_hardware;
 	int ret;
@@ -181,9 +183,11 @@ static void mt8189_fe_shutdown(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	int memif_num = cpu_dai->id;
+	int memif_num = snd_soc_dai_id(cpu_dai);
 	struct mtk_base_afe_memif *memif = &afe->memif[memif_num];
 	int irq_id = memif->irq_usage;
 
@@ -202,9 +206,11 @@ static int mt8189_fe_hw_params(struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params,
 			       struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8189_afe_private *afe_priv = afe->platform_priv;
-	int id = dai->id;
+	int id = snd_soc_dai_id(dai);
 	int cm;
 
 	switch (id) {
@@ -232,9 +238,11 @@ static int mt8189_fe_trigger(struct snd_pcm_substream *substream, int cmd,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_pcm_runtime *const runtime = substream->runtime;
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	int id = cpu_dai->id;
+	int id = snd_soc_dai_id(cpu_dai);
 	struct mtk_base_afe_memif *memif = &afe->memif[id];
 	int irq_id = memif->irq_usage;
 	struct mtk_base_afe_irq *irqs = &afe->irqs[irq_id];
@@ -327,11 +335,13 @@ static int mt8189_memif_fs(struct snd_pcm_substream *substream,
 	struct snd_soc_component *component =
 		snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
 	struct mtk_base_afe *afe = NULL;
+	struct device *dev;
 
 	if (!component)
 		return -EINVAL;
 
-	afe = snd_soc_component_get_drvdata(component);
+	dev = snd_soc_component_to_dev(component);
+	afe = dev_get_drvdata(dev);
 	if (!afe)
 		return -EINVAL;
 
@@ -350,10 +360,13 @@ static int mt8189_irq_fs(struct snd_pcm_substream *substream, unsigned int rate)
 	struct snd_soc_component *component =
 		snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
 	struct mtk_base_afe *afe = NULL;
+	struct device *dev;
 
 	if (!component)
 		return -EINVAL;
-	afe = snd_soc_component_get_drvdata(component);
+
+	dev = snd_soc_component_to_dev(component);
+	afe = dev_get_drvdata(dev);
 
 	return mt8189_rate_transform(afe->dev, rate);
 }
@@ -463,7 +476,8 @@ static int ul_cm0_event(struct snd_soc_dapm_widget *w,
 			int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8189_afe_private *afe_priv = afe->platform_priv;
 	unsigned int channels = afe_priv->cm_channels;
 
@@ -495,7 +509,8 @@ static int ul_cm1_event(struct snd_soc_dapm_widget *w,
 			int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8189_afe_private *afe_priv = afe->platform_priv;
 	unsigned int channels = afe_priv->cm_channels;
 
@@ -2372,7 +2387,8 @@ err_set_cache_only:
 
 static int mt8189_afe_component_probe(struct snd_soc_component *component)
 {
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	int ret;
 
 	/* enable clock for regcache get default value from hw */

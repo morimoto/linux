@@ -103,8 +103,8 @@ static long long rt5575_get_priv_id(struct rt5575_priv *rt5575)
 
 static int rt5575_probe(struct snd_soc_component *component)
 {
-	struct rt5575_priv *rt5575 = snd_soc_component_get_drvdata(component);
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5575_priv *rt5575 = dev_get_drvdata(dev);
 
 	rt5575->component = component;
 

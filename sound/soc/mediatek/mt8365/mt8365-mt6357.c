@@ -70,8 +70,9 @@ static const struct snd_soc_dapm_route mt8365_mt6357_routes[] = {
 static int mt8365_mt6357_int_adda_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(rtd->card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(rtd->card);
 	struct mt8365_mt6357_priv *priv = soc_card_data->mach_priv;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	int ret = 0;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
@@ -81,8 +82,7 @@ static int mt8365_mt6357_int_adda_startup(struct snd_pcm_substream *substream)
 		ret = pinctrl_select_state(priv->pinctrl,
 					   priv->pin_states[PIN_STATE_MOSI_ON]);
 		if (ret)
-			dev_err(rtd->card->dev, "%s failed to select state %d\n",
-				__func__, ret);
+			dev_err(dev, "%s failed to select state %d\n", __func__, ret);
 	}
 
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE) {
@@ -92,8 +92,7 @@ static int mt8365_mt6357_int_adda_startup(struct snd_pcm_substream *substream)
 		ret = pinctrl_select_state(priv->pinctrl,
 					   priv->pin_states[PIN_STATE_MISO_ON]);
 		if (ret)
-			dev_err(rtd->card->dev, "%s failed to select state %d\n",
-				__func__, ret);
+			dev_err(dev, "%s failed to select state %d\n", __func__, ret);
 	}
 
 	return 0;
@@ -102,8 +101,9 @@ static int mt8365_mt6357_int_adda_startup(struct snd_pcm_substream *substream)
 static void mt8365_mt6357_int_adda_shutdown(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(rtd->card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(rtd->card);
 	struct mt8365_mt6357_priv *priv = soc_card_data->mach_priv;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	int ret = 0;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
@@ -113,8 +113,7 @@ static void mt8365_mt6357_int_adda_shutdown(struct snd_pcm_substream *substream)
 		ret = pinctrl_select_state(priv->pinctrl,
 					   priv->pin_states[PIN_STATE_MOSI_OFF]);
 		if (ret)
-			dev_err(rtd->card->dev, "%s failed to select state %d\n",
-				__func__, ret);
+			dev_err(dev, "%s failed to select state %d\n", __func__, ret);
 	}
 
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE) {
@@ -124,8 +123,7 @@ static void mt8365_mt6357_int_adda_shutdown(struct snd_pcm_substream *substream)
 		ret = pinctrl_select_state(priv->pinctrl,
 					   priv->pin_states[PIN_STATE_MISO_OFF]);
 		if (ret)
-			dev_err(rtd->card->dev, "%s failed to select state %d\n",
-				__func__, ret);
+			dev_err(dev, "%s failed to select state %d\n", __func__, ret);
 	}
 }
 
@@ -247,9 +245,9 @@ static struct snd_soc_dai_link mt8365_mt6357_dais[] = {
 
 static int mt8365_mt6357_gpio_probe(struct snd_soc_card *card)
 {
-	struct mtk_soc_card_data *soc_card_data = snd_soc_card_get_drvdata(card);
+	struct mtk_soc_card_data *soc_card_data = snd_soc_card_to_priv(card);
 	struct mt8365_mt6357_priv *priv = soc_card_data->mach_priv;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret, i;
 
 	priv->pinctrl = devm_pinctrl_get(dev);
@@ -293,7 +291,7 @@ static int mt8365_mt6357_dev_probe(struct mtk_soc_card_data *soc_card_data, bool
 {
 	struct mtk_platform_card_data *card_data = soc_card_data->card_data;
 	struct snd_soc_card *card = card_data->card;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct mt8365_mt6357_priv *mach_priv;
 	int ret;
 
@@ -306,7 +304,7 @@ static int mt8365_mt6357_dev_probe(struct mtk_soc_card_data *soc_card_data, bool
 	if (!mach_priv)
 		return -ENOMEM;
 	soc_card_data->mach_priv = mach_priv;
-	snd_soc_card_set_drvdata(card, soc_card_data);
+	snd_soc_card_set_priv(card, soc_card_data);
 	mt8365_mt6357_gpio_probe(card);
 	return 0;
 

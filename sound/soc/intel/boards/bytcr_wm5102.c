@@ -100,7 +100,7 @@ static int byt_wm5102_spkvdd_power_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct byt_wm5102_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_wm5102_private *priv = snd_soc_card_to_priv(card);
 
 	gpiod_set_value_cansleep(priv->spkvdd_en_gpio,
 				 !!SND_SOC_DAPM_EVENT_ON(event));
@@ -110,8 +110,10 @@ static int byt_wm5102_spkvdd_power_event(struct snd_soc_dapm_widget *w,
 
 static int byt_wm5102_prepare_and_enable_pll1(struct snd_soc_dai *codec_dai, int rate)
 {
-	struct snd_soc_component *codec_component = codec_dai->component;
-	struct byt_wm5102_private *priv = snd_soc_card_get_drvdata(codec_component->card);
+	struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+	struct snd_soc_card *card = snd_soc_component_to_card(codec_component);
+	struct device *dev = snd_soc_component_to_dev(codec_component);
+	struct byt_wm5102_private *priv = snd_soc_card_to_priv(card);
 	int sr_mult = ((rate % 4000) == 0) ?
 		(WM5102_MAX_SYSCLK_4K / rate) :
 		(WM5102_MAX_SYSCLK_11025 / rate);
@@ -125,7 +127,7 @@ static int byt_wm5102_prepare_and_enable_pll1(struct snd_soc_dai *codec_dai, int
 	ret = snd_soc_dai_set_pll(codec_dai, WM5102_FLL1, ARIZONA_CLK_SRC_MCLK1,
 				  priv->mclk_freq, rate * sr_mult);
 	if (ret) {
-		dev_err(codec_component->dev, "Error setting PLL: %d\n", ret);
+		dev_err(dev, "Error setting PLL: %d\n", ret);
 		return ret;
 	}
 
@@ -133,14 +135,14 @@ static int byt_wm5102_prepare_and_enable_pll1(struct snd_soc_dai *codec_dai, int
 					   ARIZONA_CLK_SRC_FLL1, rate * sr_mult,
 					   SND_SOC_CLOCK_IN);
 	if (ret) {
-		dev_err(codec_component->dev, "Error setting SYSCLK: %d\n", ret);
+		dev_err(dev, "Error setting SYSCLK: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, ARIZONA_CLK_SYSCLK,
 				     rate * 512, SND_SOC_CLOCK_IN);
 	if (ret) {
-		dev_err(codec_component->dev, "Error setting clock: %d\n", ret);
+		dev_err(dev, "Error setting clock: %d\n", ret);
 		return ret;
 	}
 
@@ -151,25 +153,26 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 				  struct snd_kcontrol *k, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	struct snd_soc_dai *codec_dai;
-	struct byt_wm5102_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_wm5102_private *priv = snd_soc_card_to_priv(card);
 	int ret;
 
 	codec_dai = snd_soc_card_get_codec_dai(card, "wm5102-aif1");
 	if (!codec_dai) {
-		dev_err(card->dev, "Error codec DAI not found\n");
+		dev_err(card_dev, "Error codec DAI not found\n");
 		return -EIO;
 	}
 
 	if (SND_SOC_DAPM_EVENT_ON(event)) {
 		ret = clk_prepare_enable(priv->mclk);
 		if (ret) {
-			dev_err(card->dev, "Error enabling MCLK: %d\n", ret);
+			dev_err(card_dev, "Error enabling MCLK: %d\n", ret);
 			return ret;
 		}
 		ret = byt_wm5102_prepare_and_enable_pll1(codec_dai, 48000);
 		if (ret) {
-			dev_err(card->dev, "Error setting codec sysclk: %d\n", ret);
+			dev_err(card_dev, "Error setting codec sysclk: %d\n", ret);
 			clk_disable_unprepare(priv->mclk);
 			return ret;
 		}
@@ -284,17 +287,18 @@ static int byt_wm5102_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_card *card = runtime->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct byt_wm5102_private *priv = snd_soc_card_get_drvdata(card);
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(runtime, 0)->component;
+	struct byt_wm5102_private *priv = snd_soc_card_to_priv(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(runtime, 0));
+	struct device *dev = snd_soc_card_to_dev(card);
 	const struct snd_soc_dapm_route *custom_map = NULL;
 	int ret, jack_type, num_routes = 0;
 
 	snd_soc_dapm_set_idle_bias(dapm, false);
 
-	ret = snd_soc_add_card_controls(card, byt_wm5102_controls,
+	ret = snd_soc_card_add_controls(card, byt_wm5102_controls,
 					ARRAY_SIZE(byt_wm5102_controls));
 	if (ret) {
-		dev_err(card->dev, "Error adding card controls: %d\n", ret);
+		dev_err(dev, "Error adding card controls: %d\n", ret);
 		return ret;
 	}
 
@@ -356,7 +360,7 @@ static int byt_wm5102_init(struct snd_soc_pcm_runtime *runtime)
 
 	ret = clk_set_rate(priv->mclk, priv->mclk_freq);
 	if (ret) {
-		dev_err(card->dev, "Error setting MCLK rate: %d\n", ret);
+		dev_err(dev, "Error setting MCLK rate: %d\n", ret);
 		return ret;
 	}
 
@@ -366,7 +370,7 @@ static int byt_wm5102_init(struct snd_soc_pcm_runtime *runtime)
 					 &priv->jack, byt_wm5102_pins,
 					 ARRAY_SIZE(byt_wm5102_pins));
 	if (ret) {
-		dev_err(card->dev, "Error creating jack: %d\n", ret);
+		dev_err(dev, "Error creating jack: %d\n", ret);
 		return ret;
 	}
 
@@ -651,7 +655,7 @@ out_put_gpio:
 static void snd_byt_wm5102_mc_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
-	struct byt_wm5102_private *priv = snd_soc_card_get_drvdata(card);
+	struct byt_wm5102_private *priv = snd_soc_card_to_priv(card);
 
 	gpiod_put(priv->spkvdd_en_gpio);
 }

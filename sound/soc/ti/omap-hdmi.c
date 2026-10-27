@@ -43,7 +43,7 @@ struct hdmi_audio_data *card_drvdata_substream(struct snd_pcm_substream *ss)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(ss);
 
-	return snd_soc_card_get_drvdata(rtd->card);
+	return snd_soc_card_to_priv(rtd->card);
 }
 
 static void hdmi_dai_abort(struct device *dev)
@@ -64,6 +64,8 @@ static int hdmi_dai_startup(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *dai)
 {
 	struct hdmi_audio_data *ad = card_drvdata_substream(substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 	/*
 	 * Make sure that the period bytes are multiple of the DMA packet size.
@@ -72,19 +74,19 @@ static int hdmi_dai_startup(struct snd_pcm_substream *substream,
 	ret = snd_pcm_hw_constraint_step(substream->runtime, 0,
 					 SNDRV_PCM_HW_PARAM_PERIOD_BYTES, 128);
 	if (ret < 0) {
-		dev_err(dai->dev, "Could not apply period constraint: %d\n",
+		dev_err(dev, "Could not apply period constraint: %d\n",
 			ret);
 		return ret;
 	}
 	ret = snd_pcm_hw_constraint_step(substream->runtime, 0,
 					 SNDRV_PCM_HW_PARAM_BUFFER_BYTES, 128);
 	if (ret < 0) {
-		dev_err(dai->dev, "Could not apply buffer constraint: %d\n",
+		dev_err(dev, "Could not apply buffer constraint: %d\n",
 			ret);
 		return ret;
 	}
 
-	snd_soc_dai_set_dma_data(dai, substream, &ad->dma_data);
+	snd_soc_dai_stream_dma_data_set(dai, substream, &ad->dma_data);
 
 	scoped_guard(mutex, &ad->current_stream_lock)
 		ad->current_stream = substream;
@@ -106,6 +108,8 @@ static int hdmi_dai_hw_params(struct snd_pcm_substream *substream,
 	struct hdmi_audio_data *ad = card_drvdata_substream(substream);
 	struct snd_aes_iec958 *iec = &ad->iec;
 	struct snd_cea_861_aud_if *cea = &ad->cea;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	WARN_ON(ad->current_stream != substream);
 
@@ -117,7 +121,7 @@ static int hdmi_dai_hw_params(struct snd_pcm_substream *substream,
 		ad->dma_data.maxburst = 32;
 		break;
 	default:
-		dev_err(dai->dev, "format not supported!\n");
+		dev_err(dev, "format not supported!\n");
 		return -EINVAL;
 	}
 
@@ -168,7 +172,7 @@ static int hdmi_dai_hw_params(struct snd_pcm_substream *substream,
 		iec->status[3] |= IEC958_AES3_CON_FS_192000;
 		break;
 	default:
-		dev_err(dai->dev, "rate not supported!\n");
+		dev_err(dev, "rate not supported!\n");
 		return -EINVAL;
 	}
 
@@ -190,7 +194,7 @@ static int hdmi_dai_hw_params(struct snd_pcm_substream *substream,
 		iec->status[4] |= IEC958_AES4_CON_MAX_WORDLEN_24;
 		break;
 	default:
-		dev_err(dai->dev, "format not supported!\n");
+		dev_err(dev, "format not supported!\n");
 		return -EINVAL;
 	}
 
@@ -278,13 +282,14 @@ static void hdmi_audio_hpd(struct device *dev, bool connected)
 static int hdmi_audio_dai_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct hdmi_audio_data *ad = snd_soc_card_get_drvdata(rtd->card);
+	struct hdmi_audio_data *ad = snd_soc_card_to_priv(rtd->card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	ret = snd_soc_card_jack_new(
 		      card, "HDMI", SND_JACK_AVOUT, &ad->jack);
 	if (ret < 0) {
-		dev_err(card->dev, "Cannot create HDMI jack: %i\n", ret);
+		dev_err(dev, "Cannot create HDMI jack: %i\n", ret);
 		return ret;
 	}
 
@@ -399,8 +404,8 @@ static int omap_hdmi_audio_probe(struct platform_device *pdev)
 	card_driver->dai_link->platforms	= &compnent[1];
 	card_driver->dai_link->num_platforms	= 1;
 
-	card_driver->dai_link->name = card->name;
-	card_driver->dai_link->stream_name = card->name;
+	card_driver->dai_link->name =
+	card_driver->dai_link->stream_name = snd_soc_card_name(card);
 	card_driver->dai_link->cpus->dai_name = dev_name(ad->dssdev);
 	card_driver->dai_link->platforms->name = dev_name(ad->dssdev);
 	card_driver->dai_link->init = hdmi_audio_dai_init;
@@ -408,7 +413,7 @@ static int omap_hdmi_audio_probe(struct platform_device *pdev)
 
 	atomic_set(&ad->jack_state, -1);
 
-	snd_soc_card_set_drvdata(card, ad);
+	snd_soc_card_set_priv(card, ad);
 	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
 		return dev_err_probe(dev, ret, "snd_soc_card_register() failed\n");
