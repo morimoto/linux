@@ -546,7 +546,7 @@ static inline int dev_pm_domain_set_performance_state(struct device *dev,
 {
 	return 0;
 }
-static bool dev_pm_domain_allow_detach_on_unbind_cleanup(void)
+static inline bool dev_pm_domain_allow_detach_on_unbind_cleanup(void)
 {
 	return false;
 }
