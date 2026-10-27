@@ -560,12 +560,17 @@ struct snd_soc_aux_dev {
 	int (*init)(struct snd_soc_component *component);
 };
 
+struct snd_soc_rtd_ops {
+	int (*new_pcm)(struct snd_soc_pcm_runtime *rtd);
+};
+
 /* SoC machine DAI configuration, glues a codec and cpu DAI together */
 struct snd_soc_pcm_runtime {
 	struct device *dev;
 	struct snd_soc_card *card;
 	struct snd_soc_dai_link *dai_link;
 	struct snd_pcm_ops ops;
+	struct snd_soc_rtd_ops *rtd_ops;
 
 	unsigned int c2c_params_select; /* currently selected c2c_param for dai link */
 
