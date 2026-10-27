@@ -1150,27 +1150,17 @@ err:
 	return soc_pcm_ret(rtd, ret);
 }
 
+struct snd_soc_rtd_ops rtd_ops_normal = {
+	.new_pcm	= soc_new_pcm_normal,
+};
+
 int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai_link *dai_link = rtd->dai_link;
 	struct device *dev = rtd->dev;
 	int ret;
 
-	/*
-	 * UPDATE ME
-	 *
-	 * Maybe this should be grouped as a collection of function
-	 * pointers in the future. But is calling each function directly for now
-	 */
-	if (dai_link->dynamic)
-		ret = snd_soc_pcm_new_dpcm_fe(rtd);
-	else if (dai_link->no_pcm)
-		ret = snd_soc_pcm_new_dpcm_be(rtd);
-	else if (dai_link->c2c_params)
-		ret = snd_soc_pcm_new_c2c(rtd);
-	else
-		ret = soc_new_pcm_normal(rtd);
-
+	ret = rtd->rtd_ops->new_pcm(rtd);
 	if (ret < 0)
 		dev_err(dev, "ASoC: can't create pcm %s :%d\n",
 			dai_link->stream_name, ret);

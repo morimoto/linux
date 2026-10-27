@@ -282,11 +282,8 @@ void snd_soc_pcm_hw_update_rate(struct snd_pcm_hardware *hw, const struct snd_so
 void snd_soc_pcm_hw_update_chan(struct snd_pcm_hardware *hw, const struct snd_soc_pcm_stream *p);
 void snd_soc_pcm_hw_update_format(struct snd_pcm_hardware *hw, const struct snd_soc_pcm_stream *p);
 int snd_soc_pcm_new_common(struct snd_soc_pcm_runtime *rtd, int playback, int capture);
-int snd_soc_pcm_new_dpcm_fe(struct snd_soc_pcm_runtime *rtd);
-int snd_soc_pcm_new_dpcm_be(struct snd_soc_pcm_runtime *rtd);
 int snd_soc_pcm_new_nopcm(struct snd_soc_pcm_runtime *rtd, char *name_prefix,
 			  bool use_dummy_codec, bool delayed_work);
-int snd_soc_pcm_new_c2c(struct snd_soc_pcm_runtime *rtd);
 
 /*
  *	PCM helper functions

@@ -1824,7 +1824,7 @@ open_end:
 	return soc_pcm_ret(fe, ret);
 }
 
-int snd_soc_pcm_new_dpcm_fe(struct snd_soc_pcm_runtime *rtd)
+static int dpcm_fe_new_pcm(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai_link *dai_link = rtd->dai_link;
 	struct snd_card *snd_card = snd_soc_card_to_snd_card(rtd->card);
@@ -1913,7 +1913,15 @@ err:
 	return soc_pcm_ret(rtd, ret);
 }
 
-int snd_soc_pcm_new_dpcm_be(struct snd_soc_pcm_runtime *rtd)
+static int dpcm_be_new_pcm(struct snd_soc_pcm_runtime *rtd)
 {
 	return snd_soc_pcm_new_nopcm(rtd, "", true, true);
 }
+
+struct snd_soc_rtd_ops rtd_ops_dpcm_fe = {
+	.new_pcm	= dpcm_fe_new_pcm,
+};
+
+struct snd_soc_rtd_ops rtd_ops_dpcm_be = {
+	.new_pcm	= dpcm_be_new_pcm,
+};

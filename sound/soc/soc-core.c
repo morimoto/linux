@@ -301,6 +301,10 @@ static void close_delayed_work(struct work_struct *work) {
 		rtd->close_delayed_work_func(rtd);
 }
 
+extern struct snd_soc_rtd_ops rtd_ops_dpcm_fe;
+extern struct snd_soc_rtd_ops rtd_ops_dpcm_be;
+extern struct snd_soc_rtd_ops rtd_ops_c2c;
+extern struct snd_soc_rtd_ops rtd_ops_normal;
 static struct snd_soc_pcm_runtime *soc_new_pcm_runtime(
 	struct snd_soc_card *card, struct snd_soc_dai_link *dai_link)
 {
@@ -376,6 +380,16 @@ static struct snd_soc_pcm_runtime *soc_new_pcm_runtime(
 	rtd->dai_link	= dai_link;
 	rtd->id		= snd_soc_card_connect_rtd(card, rtd);
 	rtd->pmdown_time = pmdown_time;			/* default power off timeout */
+
+	/* setup rtd ops */
+	if (dai_link->dynamic)
+		rtd->rtd_ops = &rtd_ops_dpcm_fe;
+	else if (dai_link->no_pcm)
+		rtd->rtd_ops = &rtd_ops_dpcm_be;
+	else if (dai_link->c2c_params)
+		rtd->rtd_ops = &rtd_ops_c2c;
+	else
+		rtd->rtd_ops = &rtd_ops_normal;
 
 	ret = device_add_groups(dev, soc_dev_attr_groups);
 	if (ret < 0)
