@@ -1046,7 +1046,7 @@ int snd_soc_pcm_detect_playback_capture(struct snd_soc_pcm_runtime *rtd,
 		 * Codec capture validation check will be fail, but system should allow capture
 		 * capabilities. We have no solution for it today.
 		 */
-		if (use_dummy_codec || dai_link->no_pcm)
+		if (use_dummy_codec)
 			codec_dai = dummy_dai;
 
 		if (snd_soc_dai_stream_valid(codec_dai, SNDRV_PCM_STREAM_PLAYBACK) &&
@@ -1088,12 +1088,6 @@ static int soc_create_pcm(struct snd_pcm **pcm,
 
 		ret = snd_pcm_new_internal(snd_card, new_name, rtd->id,
 					   playback, capture, pcm);
-	} else if (rtd->dai_link->no_pcm) {
-		snprintf(new_name, sizeof(new_name), "(%s)",
-			rtd->dai_link->stream_name);
-
-		ret = snd_pcm_new_internal(snd_card, new_name, rtd->id,
-				playback, capture, pcm);
 	} else {
 		snprintf(new_name, sizeof(new_name), "%s %s-%d",
 			 rtd->dai_link->stream_name,
@@ -1176,7 +1170,7 @@ static int soc_new_pcm_orig(struct snd_soc_pcm_runtime *rtd)
 	pcm->private_data = rtd;
 	pcm->no_device_suspend = true;
 
-	if (rtd->dai_link->no_pcm || rtd->dai_link->c2c_params) {
+	if (rtd->dai_link->c2c_params) {
 		if (playback)
 			pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream->private_data = rtd;
 		if (capture)
@@ -1212,6 +1206,8 @@ int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
 	 */
 	if (dai_link->dynamic)
 		ret = snd_soc_pcm_new_dpcm_fe(rtd);
+	else if (dai_link->no_pcm)
+		ret = snd_soc_pcm_new_dpcm_be(rtd);
 	else
 		ret = soc_new_pcm_orig(rtd);
 
