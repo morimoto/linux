@@ -1960,9 +1960,11 @@ static int dpcm_be_new_pcm(struct snd_soc_pcm_runtime *rtd)
 struct snd_soc_rtd_ops rtd_ops_dpcm_fe = {
 	.new_pcm	= dpcm_fe_new_pcm,
 	.new_compress	= dpcm_fe_new_compress,
+	.open_dynamic	= 1,
 };
 
 struct snd_soc_rtd_ops rtd_ops_dpcm_be = {
 	.new_pcm	= dpcm_be_new_pcm,
 	.new_compress	= snd_soc_basic_new_compress,
+	.open_dynamic	= 1,
 };
