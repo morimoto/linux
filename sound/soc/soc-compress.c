@@ -685,7 +685,7 @@ err:
 }
 
 /* ASoC Compress operations */
-static struct snd_compr_ops soc_compr_ops = {
+struct snd_compr_ops soc_compr_ops = {
 	.open		= soc_compr_open,
 	.free		= soc_compr_free,
 	.set_params	= soc_compr_set_params,
@@ -700,7 +700,7 @@ static struct snd_compr_ops soc_compr_ops = {
 };
 
 /* ASoC Dynamic Compress operations */
-static struct snd_compr_ops soc_compr_dyn_ops = {
+struct snd_compr_ops soc_compr_dyn_ops = {
 	.open		= soc_compr_open_fe,
 	.free		= soc_compr_free_fe,
 	.set_params	= soc_compr_set_params_fe,
@@ -713,6 +713,20 @@ static struct snd_compr_ops soc_compr_dyn_ops = {
 	.get_caps	= snd_soc_component_compr_get_caps,
 	.get_codec_caps = snd_soc_component_compr_get_codec_caps,
 };
+
+extern struct snd_compr_ops soc_compr_ops;
+int snd_soc_basic_new_compress(struct snd_soc_pcm_runtime *rtd, struct snd_compr *compr,
+			       char *new_name, int name_size)
+{
+	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+
+	snprintf(new_name, name_size, "%s %s-%d",
+		 rtd->dai_link->stream_name, snd_soc_dai_name(codec_dai), rtd->id);
+
+	memcpy(compr->ops, &soc_compr_ops, sizeof(soc_compr_ops));
+
+	return 0;
+}
 
 /**
  * snd_soc_new_compress - create a new compress.
@@ -728,7 +742,6 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_compr *compr;
-	struct snd_pcm *be_pcm;
 	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	char new_name[64];
 	int ret = 0, direction = 0;
@@ -778,41 +791,11 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd)
 	if (!compr->ops)
 		goto err_nomem;
 
-	if (rtd->dai_link->dynamic) {
-		int playback = 1;
-		int capture  = 1;
-
-		if (rtd->dai_link->capture_only)
-			playback = 0;
-		if (rtd->dai_link->playback_only)
-			capture = 0;
-
-		snprintf(new_name, sizeof(new_name), "(%s)",
-			rtd->dai_link->stream_name);
-
-		ret = snd_pcm_new_internal(snd_card, new_name, rtd->id,
-				playback, capture, &be_pcm);
-		if (ret < 0)
-			return snd_soc_ret(dev, ret,
-					   "can't create compressed for %s:\n",
-					   rtd->dai_link->name);
-
-		/* inherit atomicity from DAI link */
-		be_pcm->nonatomic = rtd->dai_link->nonatomic;
-
-		rtd->pcm = be_pcm;
-		rtd->fe_compr = 1;
-		if (playback)
-			be_pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream->private_data = rtd;
-		if (capture)
-			be_pcm->streams[SNDRV_PCM_STREAM_CAPTURE].substream->private_data = rtd;
-		memcpy(compr->ops, &soc_compr_dyn_ops, sizeof(soc_compr_dyn_ops));
-	} else {
-		snprintf(new_name, sizeof(new_name), "%s %s-%d",
-			 rtd->dai_link->stream_name, snd_soc_dai_name(codec_dai), rtd->id);
-
-		memcpy(compr->ops, &soc_compr_ops, sizeof(soc_compr_ops));
-	}
+	ret = rtd->rtd_ops->new_compress(rtd, compr, new_name, sizeof(new_name));
+	if (ret < 0)
+		return snd_soc_ret(dev, ret,
+				   "can't create compressed for %s:\n",
+				   rtd->dai_link->name);
 
 	for_each_rtd_components(rtd, i, component) {
 		const struct snd_soc_component_driver *driver = snd_soc_component_to_driver(component);

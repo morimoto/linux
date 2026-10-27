@@ -6,6 +6,7 @@
 //
 #include <linux/debugfs.h>
 #include <sound/soc.h>
+#include <sound/compress_driver.h>
 #include "soc-internal.h"
 
 #define DPCM_MAX_BE_USERS	8
@@ -1824,6 +1825,44 @@ open_end:
 	return soc_pcm_ret(fe, ret);
 }
 
+extern struct snd_compr_ops soc_compr_dyn_ops;
+static int dpcm_fe_new_compress(struct snd_soc_pcm_runtime *rtd, struct snd_compr *compr,
+				char *new_name, int name_size)
+{
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(rtd->card);
+	struct snd_soc_dai_link *dai_link = rtd->dai_link;
+	struct snd_pcm *pcm; /* BE */
+	int ret;
+	int playback = 1;
+	int capture  = 1;
+
+	if (dai_link->capture_only)
+		playback = 0;
+	if (dai_link->playback_only)
+		capture = 0;
+
+	snprintf(new_name, name_size, "(%s)", dai_link->stream_name);
+
+	ret = snd_pcm_new_internal(snd_card, new_name, rtd->id, playback, capture, &pcm);
+	if (ret < 0)
+		return soc_pcm_ret(rtd, ret);
+
+	/* inherit atomicity from DAI link */
+	pcm->nonatomic = dai_link->nonatomic;
+
+	rtd->pcm	= pcm;
+	rtd->fe_compr	= 1;
+
+	if (playback)
+		pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream->private_data	= rtd;
+	if (capture)
+		pcm->streams[SNDRV_PCM_STREAM_CAPTURE].substream->private_data	= rtd;
+
+	memcpy(compr->ops, &soc_compr_dyn_ops, sizeof(soc_compr_dyn_ops));
+
+	return 0;
+}
+
 static int dpcm_fe_new_pcm(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai_link *dai_link = rtd->dai_link;
@@ -1920,8 +1959,10 @@ static int dpcm_be_new_pcm(struct snd_soc_pcm_runtime *rtd)
 
 struct snd_soc_rtd_ops rtd_ops_dpcm_fe = {
 	.new_pcm	= dpcm_fe_new_pcm,
+	.new_compress	= dpcm_fe_new_compress,
 };
 
 struct snd_soc_rtd_ops rtd_ops_dpcm_be = {
 	.new_pcm	= dpcm_be_new_pcm,
+	.new_compress	= snd_soc_basic_new_compress,
 };
