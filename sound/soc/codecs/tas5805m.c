@@ -228,8 +228,8 @@ static int tas5805m_vol_get(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct tas5805m_priv *tas5805m =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5805m_priv *tas5805m = dev_get_drvdata(dev);
 
 	guard(mutex)(&tas5805m->lock);
 	ucontrol->value.integer.value[0] = tas5805m->vol[0];
@@ -247,8 +247,8 @@ static int tas5805m_vol_put(struct snd_kcontrol *kcontrol,
 			    struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct tas5805m_priv *tas5805m =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5805m_priv *tas5805m = dev_get_drvdata(dev);
 
 	if (!(volume_is_valid(ucontrol->value.integer.value[0]) &&
 	      volume_is_valid(ucontrol->value.integer.value[1])))
@@ -259,7 +259,7 @@ static int tas5805m_vol_put(struct snd_kcontrol *kcontrol,
 	    tas5805m->vol[1] != ucontrol->value.integer.value[1]) {
 		tas5805m->vol[0] = ucontrol->value.integer.value[0];
 		tas5805m->vol[1] = ucontrol->value.integer.value[1];
-		dev_dbg(component->dev, "set vol=%d/%d (is_powered=%d)\n",
+		dev_dbg(dev, "set vol=%d/%d (is_powered=%d)\n",
 			tas5805m->vol[0], tas5805m->vol[1],
 			tas5805m->is_powered);
 		if (tas5805m->is_powered)
@@ -298,15 +298,15 @@ static void send_cfg(struct regmap *rm,
 static int tas5805m_trigger(struct snd_pcm_substream *substream, int cmd,
 			    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas5805m_priv *tas5805m =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5805m_priv *tas5805m = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 	case SNDRV_PCM_TRIGGER_RESUME:
 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-		dev_dbg(component->dev, "clock start\n");
+		dev_dbg(dev, "clock start\n");
 		schedule_work(&tas5805m->work);
 		break;
 
@@ -349,14 +349,14 @@ static int tas5805m_dac_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct tas5805m_priv *tas5805m =
-		snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5805m_priv *tas5805m = dev_get_drvdata(dev);
 	struct regmap *rm = tas5805m->regmap;
 
 	if (event & SND_SOC_DAPM_PRE_PMD) {
 		unsigned int chan, global1, global2;
 
-		dev_dbg(component->dev, "DSP shutdown\n");
+		dev_dbg(dev, "DSP shutdown\n");
 		cancel_work_sync(&tas5805m->work);
 
 		guard(mutex)(&tas5805m->lock);
@@ -370,7 +370,7 @@ static int tas5805m_dac_event(struct snd_soc_dapm_widget *w,
 			regmap_read(rm, REG_GLOBAL_FAULT1, &global1);
 			regmap_read(rm, REG_GLOBAL_FAULT2, &global2);
 
-			dev_dbg(component->dev, "fault regs: CHAN=%02x, "
+			dev_dbg(dev, "fault regs: CHAN=%02x, "
 				"GLOBAL1=%02x, GLOBAL2=%02x\n",
 				chan, global1, global2);
 
@@ -406,12 +406,12 @@ static const struct snd_soc_component_driver soc_codec_dev_tas5805m = {
 
 static int tas5805m_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct tas5805m_priv *tas5805m =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tas5805m_priv *tas5805m = dev_get_drvdata(dev);
 
 	guard(mutex)(&tas5805m->lock);
-	dev_dbg(component->dev, "set mute=%d (is_powered=%d)\n",
+	dev_dbg(dev, "set mute=%d (is_powered=%d)\n",
 		mute, tas5805m->is_powered);
 
 	tas5805m->is_muted = mute;

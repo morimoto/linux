@@ -51,7 +51,8 @@ static int sof_ipc3_compr_open(struct snd_soc_component *component,
 static int sof_ipc3_compr_free(struct snd_soc_component *component,
 			       struct snd_compr_stream *cstream)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_compr_stream *sstream = cstream->runtime->private_data;
 	struct snd_soc_pcm_runtime *rtd = cstream->private_data;
 	struct sof_ipc_stream stream;
@@ -83,7 +84,8 @@ static int sof_ipc3_compr_set_params(struct snd_soc_component *component,
 				     struct snd_compr_stream *cstream,
 				     struct snd_compr_params *params)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct snd_soc_pcm_runtime *rtd = cstream->private_data;
 	struct snd_compr_runtime *crtd = cstream->runtime;
 	struct sof_ipc_pcm_params_reply ipc_params_reply;
@@ -96,8 +98,7 @@ static int sof_ipc3_compr_set_params(struct snd_soc_component *component,
 	int ret;
 
 	if (v->abi_version < SOF_ABI_VER(3, 22, 0)) {
-		dev_err(component->dev,
-			"Compress params not supported with FW ABI version %d:%d:%d\n",
+		dev_err(dev, "Compress params not supported with FW ABI version %d:%d:%d\n",
 			SOF_ABI_VERSION_MAJOR(v->abi_version),
 			SOF_ABI_VERSION_MINOR(v->abi_version),
 			SOF_ABI_VERSION_PATCH(v->abi_version));
@@ -161,14 +162,14 @@ static int sof_ipc3_compr_set_params(struct snd_soc_component *component,
 	ret = sof_ipc_tx_message(sdev->ipc, pcm, sizeof(*pcm) + ext_data_size,
 				 &ipc_params_reply, sizeof(ipc_params_reply));
 	if (ret < 0) {
-		dev_err(component->dev, "error ipc failed\n");
+		dev_err(dev, "error ipc failed\n");
 		goto out;
 	}
 
 	ret = snd_sof_set_stream_data_offset(sdev, &spcm->stream[cstream->direction],
 					     ipc_params_reply.posn_offset);
 	if (ret < 0) {
-		dev_err(component->dev, "Invalid stream data offset for Compr %u\n",
+		dev_err(dev, "Invalid stream data offset for Compr %u\n",
 			le32_to_cpu(spcm->pcm.pcm_id));
 		goto out;
 	}
@@ -200,7 +201,8 @@ static int sof_ipc3_compr_get_params(struct snd_soc_component *component,
 static int sof_ipc3_compr_trigger(struct snd_soc_component *component,
 				  struct snd_compr_stream *cstream, int cmd)
 {
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct snd_soc_pcm_runtime *rtd = cstream->private_data;
 	struct sof_ipc_stream stream;
 	struct snd_sof_pcm *spcm;
@@ -227,7 +229,7 @@ static int sof_ipc3_compr_trigger(struct snd_soc_component *component,
 		stream.hdr.cmd |= SOF_IPC_STREAM_TRIG_RELEASE;
 		break;
 	default:
-		dev_err(component->dev, "error: unhandled trigger cmd %d\n", cmd);
+		dev_err(dev, "error: unhandled trigger cmd %d\n", cmd);
 		break;
 	}
 

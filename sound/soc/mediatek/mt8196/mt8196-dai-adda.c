@@ -283,7 +283,8 @@ static int mtk_adda_sleep_on_pmd_event(struct snd_soc_dapm_widget *w,
 				       struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	dev_dbg(afe->dev, "name %s, event 0x%x\n", w->name, event);
 
@@ -409,12 +410,14 @@ static const struct snd_soc_dapm_route mtk_dai_adda_routes[] = {
 static int set_playback_hw_params(struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8196_afe_private *afe_priv = afe->platform_priv;
 	unsigned int rate = params_rate(params);
 	struct mtk_afe_adda_priv *adda_priv;
 	unsigned int mtkaif_rate = 0;
-	int id = dai->id;
+	int id = snd_soc_dai_id(dai);
 
 	adda_priv = afe_priv->dai_priv[id];
 	if (!adda_priv)
@@ -467,14 +470,16 @@ static int set_playback_hw_params(struct snd_pcm_hw_params *params,
 static int set_capture_hw_params(struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8196_afe_private *afe_priv = afe->platform_priv;
 	unsigned int rate = params_rate(params);
 	struct mtk_afe_adda_priv *adda_priv;
 	unsigned int voice_mode = 0;
 	unsigned int ul_src_con0 = 0;
 	unsigned int mtkaif_rate = 0;
-	int id = dai->id;
+	int id = snd_soc_dai_id(dai);
 
 	adda_priv = afe_priv->dai_priv[id];
 	if (!adda_priv)
@@ -657,8 +662,10 @@ static int mtk_dai_adda_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
-	int id = dai->id;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	int id = snd_soc_dai_id(dai);
 
 	if (id >= MT8196_DAI_NUM || id < 0)
 		return -EINVAL;

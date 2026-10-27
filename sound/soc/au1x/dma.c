@@ -176,7 +176,9 @@ static const struct snd_pcm_hardware alchemy_pcm_hardware = {
 static inline struct alchemy_pcm_ctx *ss_to_ctx(struct snd_pcm_substream *ss,
 						struct snd_soc_component *component)
 {
-	return snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	return dev_get_drvdata(dev);
 }
 
 static inline struct audio_stream *ss_to_as(struct snd_pcm_substream *ss,
@@ -194,7 +196,7 @@ static int alchemy_pcm_open(struct snd_soc_component *component,
 	int *dmaids, s = substream->stream;
 	char *name;
 
-	dmaids = snd_soc_dai_get_dma_data(snd_soc_rtd_to_cpu(rtd, 0), substream);
+	dmaids = snd_soc_dai_stream_dma_data_get(snd_soc_rtd_to_cpu(rtd, 0), substream);
 	if (!dmaids)
 		return -ENODEV;	/* whoa, has ordering changed? */
 

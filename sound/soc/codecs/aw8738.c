@@ -14,7 +14,8 @@ static int aw8738_drv_event(struct snd_soc_dapm_widget *w,
 			    struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *c = snd_soc_dapm_to_component(w->dapm);
-	struct aw8738_priv *aw = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct aw8738_priv *aw = dev_get_drvdata(dev);
 	int i;
 
 	switch (event) {

@@ -34,7 +34,8 @@ static int pcm3008_dac_ev(struct snd_soc_dapm_widget *w,
 			  int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct pcm3008 *pcm = component->dev->platform_data;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm3008 *pcm = dev->platform_data;
 
 	gpiod_set_value_cansleep(pcm->pdda_pin,
 				 SND_SOC_DAPM_EVENT_ON(event));
@@ -47,7 +48,8 @@ static int pcm3008_adc_ev(struct snd_soc_dapm_widget *w,
 			  int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct pcm3008 *pcm = component->dev->platform_data;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm3008 *pcm = dev->platform_data;
 
 	gpiod_set_value_cansleep(pcm->pdad_pin,
 				 SND_SOC_DAPM_EVENT_ON(event));

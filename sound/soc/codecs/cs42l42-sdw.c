@@ -51,7 +51,9 @@ static const struct snd_soc_dapm_route cs42l42_sdw_audio_map[] = {
 static int cs42l42_sdw_dai_startup(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct cs42l42_private *cs42l42 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l42_private *cs42l42 = dev_get_drvdata(dev);
 
 	if (!cs42l42->init_done)
 		return -ENODEV;
@@ -63,8 +65,10 @@ static int cs42l42_sdw_dai_hw_params(struct snd_pcm_substream *substream,
 				     struct snd_pcm_hw_params *params,
 				     struct snd_soc_dai *dai)
 {
-	struct cs42l42_private *cs42l42 = snd_soc_component_get_drvdata(dai->component);
-	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct cs42l42_private *cs42l42 = dev_get_drvdata(dai_dev);
+	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 	struct sdw_stream_config stream_config = {0};
 	struct sdw_port_config port_config = {0};
 	int ret;
@@ -85,11 +89,11 @@ static int cs42l42_sdw_dai_hw_params(struct snd_pcm_substream *substream,
 	ret = sdw_stream_add_slave(cs42l42->sdw_peripheral, &stream_config, &port_config, 1,
 				   sdw_stream);
 	if (ret) {
-		dev_err(dai->dev, "Failed to add sdw stream: %d\n", ret);
+		dev_err(dai_dev, "Failed to add sdw stream: %d\n", ret);
 		return ret;
 	}
 
-	cs42l42_src_config(dai->component, params_rate(params));
+	cs42l42_src_config(component, params_rate(params));
 
 	return 0;
 }
@@ -97,9 +101,11 @@ static int cs42l42_sdw_dai_hw_params(struct snd_pcm_substream *substream,
 static int cs42l42_sdw_dai_prepare(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct cs42l42_private *cs42l42 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct cs42l42_private *cs42l42 = dev_get_drvdata(dai_dev);
 
-	dev_dbg(dai->dev, "dai_prepare: sclk=%u rate=%u\n", cs42l42->sclk, cs42l42->sample_rate);
+	dev_dbg(dai_dev, "dai_prepare: sclk=%u rate=%u\n", cs42l42->sclk, cs42l42->sample_rate);
 
 	if (!cs42l42->sclk || !cs42l42->sample_rate)
 		return -EINVAL;
@@ -110,14 +116,16 @@ static int cs42l42_sdw_dai_prepare(struct snd_pcm_substream *substream,
 	 * an unsupported SWIRE_CLK and sample_rate combination.
 	 */
 
-	return cs42l42_pll_config(dai->component, cs42l42->sclk, cs42l42->sample_rate);
+	return cs42l42_pll_config(component, cs42l42->sclk, cs42l42->sample_rate);
 }
 
 static int cs42l42_sdw_dai_hw_free(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct cs42l42_private *cs42l42 = snd_soc_component_get_drvdata(dai->component);
-	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_get_dma_data(dai, substream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l42_private *cs42l42 = dev_get_drvdata(dev);
+	struct sdw_stream_runtime *sdw_stream = snd_soc_dai_stream_dma_data_get(dai, substream);
 
 	sdw_stream_remove_slave(cs42l42->sdw_peripheral, sdw_stream);
 	cs42l42->sample_rate = 0;
@@ -152,7 +160,7 @@ static int cs42l42_sdw_port_prep(struct sdw_slave *slave,
 static int cs42l42_sdw_dai_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_stream,
 					  int direction)
 {
-	snd_soc_dai_dma_data_set(dai, direction, sdw_stream);
+	snd_soc_dai_stream_dma_data_set(dai, direction, sdw_stream);
 
 	return 0;
 }
@@ -160,7 +168,7 @@ static int cs42l42_sdw_dai_set_sdw_stream(struct snd_soc_dai *dai, void *sdw_str
 static void cs42l42_sdw_dai_shutdown(struct snd_pcm_substream *substream,
 				     struct snd_soc_dai *dai)
 {
-	snd_soc_dai_set_dma_data(dai, substream, NULL);
+	snd_soc_dai_stream_dma_data_set(dai, substream, NULL);
 }
 
 static const struct snd_soc_dai_ops cs42l42_sdw_dai_ops = {

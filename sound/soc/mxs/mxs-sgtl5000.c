@@ -21,6 +21,10 @@ static int mxs_sgtl5000_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *codec_dev = snd_soc_component_to_dev(codec_component);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
 	unsigned int rate = params_rate(params);
 	u32 mclk;
 	int ret;
@@ -38,7 +42,7 @@ static int mxs_sgtl5000_hw_params(struct snd_pcm_substream *substream,
 	/* Set SGTL5000's SYSCLK (provided by SAIF MCLK) */
 	ret = snd_soc_dai_set_sysclk(codec_dai, SGTL5000_SYSCLK, mclk, 0);
 	if (ret) {
-		dev_err(codec_dai->dev, "Failed to set sysclk to %u.%03uMHz\n",
+		dev_err(codec_dev, "Failed to set sysclk to %u.%03uMHz\n",
 			mclk / 1000000, mclk / 1000 % 1000);
 		return ret;
 	}
@@ -46,7 +50,7 @@ static int mxs_sgtl5000_hw_params(struct snd_pcm_substream *substream,
 	/* The SAIF MCLK should be the same as SGTL5000_SYSCLK */
 	ret = snd_soc_dai_set_sysclk(cpu_dai, MXS_SAIF_MCLK, mclk, 0);
 	if (ret) {
-		dev_err(cpu_dai->dev, "Failed to set sysclk to %u.%03uMHz\n",
+		dev_err(cpu_dev, "Failed to set sysclk to %u.%03uMHz\n",
 			mclk / 1000000, mclk / 1000 % 1000);
 		return ret;
 	}

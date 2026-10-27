@@ -126,19 +126,20 @@ static int acp_card_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
-	dev_info(rtd->dev, "codec dai name = %s\n", codec_dai->name);
+	dev_info(rtd->dev, "codec dai name = %s\n", snd_soc_dai_name(codec_dai));
 
 	if (drvdata->hs_codec_id != RT5682)
 		return -EINVAL;
 
-	drvdata->wclk = devm_clk_get(component->dev, "rt5682-dai-wclk");
+	drvdata->wclk = devm_clk_get(dev, "rt5682-dai-wclk");
 	if (IS_ERR(drvdata->wclk))
 		return PTR_ERR(drvdata->wclk);
 
-	drvdata->bclk = devm_clk_get(component->dev, "rt5682-dai-bclk");
+	drvdata->bclk = devm_clk_get(dev, "rt5682-dai-bclk");
 	if (IS_ERR(drvdata->bclk))
 		return PTR_ERR(drvdata->bclk);
 
@@ -149,7 +150,7 @@ static int acp_card_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, rt5682_controls,
+	ret = snd_soc_card_add_controls(card, rt5682_controls,
 					ARRAY_SIZE(rt5682_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
@@ -164,7 +165,7 @@ static int acp_card_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 					 rt5682_jack_pins,
 					 ARRAY_SIZE(rt5682_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+		dev_err(snd_soc_card_to_dev(card), "HP jack creation failed %d\n", ret);
 		return ret;
 	}
 
@@ -204,7 +205,7 @@ static int acp_card_hs_startup(struct snd_pcm_substream *substream)
 
 	ret =  snd_soc_dai_set_fmt(codec_dai, fmt);
 	if (ret < 0) {
-		dev_err(rtd->card->dev, "Failed to set dai fmt: %d\n", ret);
+		dev_err(snd_soc_card_to_dev(rtd->card), "Failed to set dai fmt: %d\n", ret);
 		return ret;
 	}
 
@@ -235,6 +236,7 @@ static int acp_card_rt5682_hw_params(struct snd_pcm_substream *substream,
 	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 	unsigned int fmt, srate, ch, format;
 
@@ -260,7 +262,7 @@ static int acp_card_rt5682_hw_params(struct snd_pcm_substream *substream,
 
 	ret =  snd_soc_dai_set_fmt(codec_dai, fmt);
 	if (ret < 0) {
-		dev_err(rtd->card->dev, "Failed to set dai fmt: %d\n", ret);
+		dev_err(dev, "Failed to set dai fmt: %d\n", ret);
 		return ret;
 	}
 
@@ -321,7 +323,7 @@ static int acp_card_rt5682_hw_params(struct snd_pcm_substream *substream,
 	if (!drvdata->soc_mclk) {
 		ret = acp_clk_enable(drvdata, srate, ch * format);
 		if (ret < 0) {
-			dev_err(rtd->card->dev, "Failed to enable HS clk: %d\n", ret);
+			dev_err(dev, "Failed to enable HS clk: %d\n", ret);
 			return ret;
 		}
 	}
@@ -373,20 +375,21 @@ static int acp_card_rt5682s_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
-	dev_info(rtd->dev, "codec dai name = %s\n", codec_dai->name);
+	dev_info(rtd->dev, "codec dai name = %s\n", snd_soc_dai_name(codec_dai));
 
 	if (drvdata->hs_codec_id != RT5682S)
 		return -EINVAL;
 
 	if (!drvdata->soc_mclk) {
-		drvdata->wclk = devm_clk_get(component->dev, "rt5682-dai-wclk");
+		drvdata->wclk = devm_clk_get(dev, "rt5682-dai-wclk");
 		if (IS_ERR(drvdata->wclk))
 			return PTR_ERR(drvdata->wclk);
 
-		drvdata->bclk = devm_clk_get(component->dev, "rt5682-dai-bclk");
+		drvdata->bclk = devm_clk_get(dev, "rt5682-dai-bclk");
 		if (IS_ERR(drvdata->bclk))
 			return PTR_ERR(drvdata->bclk);
 	}
@@ -398,7 +401,7 @@ static int acp_card_rt5682s_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, rt5682s_controls,
+	ret = snd_soc_card_add_controls(card, rt5682s_controls,
 					ARRAY_SIZE(rt5682s_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
@@ -413,7 +416,7 @@ static int acp_card_rt5682s_init(struct snd_soc_pcm_runtime *rtd)
 					 rt5682s_jack_pins,
 					 ARRAY_SIZE(rt5682s_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+		dev_err(snd_soc_card_to_dev(card), "HP jack creation failed %d\n", ret);
 		return ret;
 	}
 
@@ -439,6 +442,7 @@ static int acp_card_rt5682s_hw_params(struct snd_pcm_substream *substream,
 	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 	unsigned int fmt, srate, ch, format;
 
@@ -464,7 +468,7 @@ static int acp_card_rt5682s_hw_params(struct snd_pcm_substream *substream,
 
 	ret =  snd_soc_dai_set_fmt(codec_dai, fmt);
 	if (ret < 0) {
-		dev_err(rtd->card->dev, "Failed to set dai fmt: %d\n", ret);
+		dev_err(dev, "Failed to set dai fmt: %d\n", ret);
 		return ret;
 	}
 
@@ -527,7 +531,7 @@ static int acp_card_rt5682s_hw_params(struct snd_pcm_substream *substream,
 	if (!drvdata->soc_mclk) {
 		ret = acp_clk_enable(drvdata, srate, ch * format);
 		if (ret < 0) {
-			dev_err(rtd->card->dev, "Failed to enable HS clk: %d\n", ret);
+			dev_err(dev, "Failed to enable HS clk: %d\n", ret);
 			return ret;
 		}
 	}
@@ -614,7 +618,7 @@ static int acp_card_rt1019_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, rt1019_controls,
+	ret = snd_soc_card_add_controls(card, rt1019_controls,
 					ARRAY_SIZE(rt1019_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
@@ -633,6 +637,7 @@ static int acp_card_rt1019_hw_params(struct snd_pcm_substream *substream,
 	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int i, ret = 0;
 	unsigned int fmt, srate, ch, format;
 
@@ -671,7 +676,7 @@ static int acp_card_rt1019_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-		if (strcmp(codec_dai->name, "rt1019-aif"))
+		if (strcmp(snd_soc_dai_name(codec_dai), "rt1019-aif"))
 			continue;
 
 		if (drvdata->tdm_mode)
@@ -690,17 +695,20 @@ static int acp_card_rt1019_hw_params(struct snd_pcm_substream *substream,
 			return ret;
 
 		if (drvdata->tdm_mode) {
+			struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+			const char *component_name = snd_soc_component_name(component);
+
 			ret = snd_soc_dai_set_fmt(codec_dai, SND_SOC_DAIFMT_DSP_A
 							| SND_SOC_DAIFMT_NB_NF);
 			if (ret < 0) {
-				dev_err(rtd->card->dev, "Failed to set dai fmt: %d\n", ret);
+				dev_err(dev, "Failed to set dai fmt: %d\n", ret);
 				return ret;
 			}
 
 			/**
 			 * As codec supports slot 2 for left channel playback.
 			 */
-			if (!strcmp(codec_dai->component->name, "i2c-10EC1019:00")) {
+			if (!strcmp(component_name, "i2c-10EC1019:00")) {
 				ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x4, 0x4, 8, 16);
 				if (ret < 0)
 					break;
@@ -709,7 +717,7 @@ static int acp_card_rt1019_hw_params(struct snd_pcm_substream *substream,
 			/**
 			 * As codec supports slot 3 for right channel playback.
 			 */
-			if (!strcmp(codec_dai->component->name, "i2c-10EC1019:01")) {
+			if (!strcmp(component_name, "i2c-10EC1019:01")) {
 				ret = snd_soc_dai_set_tdm_slot(codec_dai, 0x8, 0x8, 8, 16);
 				if (ret < 0)
 					break;
@@ -720,7 +728,7 @@ static int acp_card_rt1019_hw_params(struct snd_pcm_substream *substream,
 	if (!drvdata->soc_mclk) {
 		ret = acp_clk_enable(drvdata, srate, ch * format);
 		if (ret < 0) {
-			dev_err(rtd->card->dev, "Failed to enable AMP clk: %d\n", ret);
+			dev_err(dev, "Failed to enable AMP clk: %d\n", ret);
 			return ret;
 		}
 	}
@@ -780,7 +788,7 @@ static int acp_card_maxim_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, max98360a_controls,
+	ret = snd_soc_card_add_controls(card, max98360a_controls,
 					ARRAY_SIZE(max98360a_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
@@ -835,7 +843,7 @@ static int acp_card_maxim_hw_params(struct snd_pcm_substream *substream,
 	if (!drvdata->soc_mclk) {
 		ret = acp_clk_enable(drvdata, srate, ch * format);
 		if (ret < 0) {
-			dev_err(rtd->card->dev, "Failed to enable AMP clk: %d\n", ret);
+			dev_err(snd_soc_card_to_dev(rtd->card), "Failed to enable AMP clk: %d\n", ret);
 			return ret;
 		}
 	}
@@ -919,7 +927,7 @@ static int acp_card_max98388_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, max98388_controls,
+	ret = snd_soc_card_add_controls(card, max98388_controls,
 					ARRAY_SIZE(max98388_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
@@ -986,10 +994,11 @@ static int acp_card_nau8825_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
-	dev_info(rtd->dev, "codec dai name = %s\n", codec_dai->name);
+	dev_info(rtd->dev, "codec dai name = %s\n", snd_soc_dai_name(codec_dai));
 
 	if (drvdata->hs_codec_id != NAU8825)
 		return -EINVAL;
@@ -1001,7 +1010,7 @@ static int acp_card_nau8825_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, nau8825_controls,
+	ret = snd_soc_card_add_controls(card, nau8825_controls,
 					ARRAY_SIZE(nau8825_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
@@ -1016,7 +1025,7 @@ static int acp_card_nau8825_init(struct snd_soc_pcm_runtime *rtd)
 					 nau8825_jack_pins,
 					 ARRAY_SIZE(nau8825_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+		dev_err(dev, "HP jack creation failed %d\n", ret);
 		return ret;
 	}
 
@@ -1042,6 +1051,7 @@ static int acp_nau8825_hw_params(struct snd_pcm_substream *substream,
 	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 	unsigned int fmt;
 
@@ -1075,7 +1085,7 @@ static int acp_nau8825_hw_params(struct snd_pcm_substream *substream,
 
 	ret =  snd_soc_dai_set_fmt(codec_dai, fmt);
 	if (ret < 0) {
-		dev_err(rtd->card->dev, "Failed to set dai fmt: %d\n", ret);
+		dev_err(dev, "Failed to set dai fmt: %d\n", ret);
 		return ret;
 	}
 
@@ -1122,30 +1132,35 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
 	struct snd_soc_dai *codec_dai;
+	struct snd_soc_component *codec_component;
+	struct device *codec_dev;
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	int ret = 0;
 
 	codec_dai = snd_soc_card_get_codec_dai(card, NAU8821_CODEC_DAI);
 	if (!codec_dai) {
-		dev_err(card->dev, "Codec dai not found\n");
+		dev_err(card_dev, "Codec dai not found\n");
 		return -EIO;
 	}
+	codec_component = snd_soc_dai_to_component(codec_dai);
+	codec_dev = snd_soc_component_to_dev(codec_component);
 
 	if (SND_SOC_DAPM_EVENT_OFF(event)) {
 		ret = snd_soc_dai_set_sysclk(codec_dai, NAU8821_CLK_INTERNAL,
 					     0, SND_SOC_CLOCK_IN);
 		if (ret < 0) {
-			dev_err(card->dev, "set sysclk err = %d\n", ret);
+			dev_err(card_dev, "set sysclk err = %d\n", ret);
 			return -EIO;
 		}
 	} else {
 		ret = snd_soc_dai_set_sysclk(codec_dai, NAU8821_CLK_FLL_BLK, 0,
 					     SND_SOC_CLOCK_IN);
 		if (ret < 0)
-			dev_err(codec_dai->dev, "can't set FS clock %d\n", ret);
+			dev_err(codec_dev, "can't set FS clock %d\n", ret);
 		ret = snd_soc_dai_set_pll(codec_dai, 0, 0, NAU8821_BCLK,
 					  NAU8821_FREQ_OUT);
 		if (ret < 0)
-			dev_err(codec_dai->dev, "can't set FLL: %d\n", ret);
+			dev_err(codec_dev, "can't set FLL: %d\n", ret);
 	}
 	return ret;
 }
@@ -1200,10 +1215,10 @@ static int acp_8821_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	int ret;
 
-	dev_info(rtd->dev, "codec dai name = %s\n", codec_dai->name);
+	dev_info(rtd->dev, "codec dai name = %s\n", snd_soc_dai_name(codec_dai));
 
 	ret = snd_soc_dapm_new_controls(dapm, nau8821_widgets,
 					ARRAY_SIZE(nau8821_widgets));
@@ -1213,7 +1228,7 @@ static int acp_8821_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	ret = snd_soc_add_card_controls(card, nau8821_controls,
+	ret = snd_soc_card_add_controls(card, nau8821_controls,
 					ARRAY_SIZE(nau8821_controls));
 	if (ret) {
 		dev_err(rtd->dev, "unable to add card controls, ret %d\n", ret);
@@ -1265,6 +1280,7 @@ static int acp_nau8821_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_card *card = rtd->card;
 	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 	unsigned int fmt;
 
@@ -1275,18 +1291,18 @@ static int acp_nau8821_hw_params(struct snd_pcm_substream *substream,
 
 	ret =  snd_soc_dai_set_fmt(codec_dai, fmt);
 	if (ret < 0) {
-		dev_err(rtd->card->dev, "Failed to set dai fmt: %d\n", ret);
+		dev_err(dev, "Failed to set dai fmt: %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, NAU8821_CLK_FLL_BLK, 0,
 				     SND_SOC_CLOCK_IN);
 	if (ret < 0)
-		dev_err(card->dev, "can't set FS clock %d\n", ret);
+		dev_err(dev, "can't set FS clock %d\n", ret);
 	ret = snd_soc_dai_set_pll(codec_dai, 0, 0, snd_soc_params_to_bclk(params),
 				  params_rate(params) * 256);
 	if (ret < 0)
-		dev_err(card->dev, "can't set FLL: %d\n", ret);
+		dev_err(dev, "can't set FLL: %d\n", ret);
 
 	return ret;
 }
@@ -1359,14 +1375,16 @@ static int acp_rtk_set_bias_level(struct snd_soc_card *card,
 				  enum snd_soc_bias_level level)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_card_drvdata *drvdata = snd_soc_card_to_priv(card);
+	const char *component_name = snd_soc_component_name(component);
 	int ret = 0;
 
 	if (!component)
 		return 0;
 
-	if (strncmp(component->name, "i2c-RTL5682", 11) &&
-	    strncmp(component->name, "i2c-10EC1019", 12))
+	if (strncmp(component_name, "i2c-RTL5682", 11) &&
+	    strncmp(component_name, "i2c-10EC1019", 12))
 		return 0;
 
 	/*
@@ -1382,7 +1400,7 @@ static int acp_rtk_set_bias_level(struct snd_soc_card *card,
 			/* Increase bclk's enable_count */
 			ret = clk_prepare_enable(drvdata->bclk);
 			if (ret < 0)
-				dev_err(component->dev, "Failed to enable bclk %d\n", ret);
+				dev_err(dev, "Failed to enable bclk %d\n", ret);
 		} else {
 			/*
 			 * Decrease bclk's enable_count.
@@ -1402,7 +1420,7 @@ int acp_sofdsp_dai_links_create(struct snd_soc_card *card,
 				struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *links;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct acp_card_drvdata *drv_data = snd_soc_card_to_priv(card);
 	const struct dmi_system_id *dmi_id = dmi_first_match(acp_quirk_table);
 
@@ -1614,7 +1632,7 @@ int acp_legacy_dai_links_create(struct snd_soc_card *card,
 				struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *links;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct acp_card_drvdata *drv_data = snd_soc_card_to_priv(card);
 	int i = 0, num_links = 0;
 	int rc;
