@@ -286,6 +286,12 @@ int snd_soc_pcm_new_nopcm(struct snd_soc_pcm_runtime *rtd, char *name_prefix,
 			  bool use_dummy_codec, bool delayed_work);
 
 /*
+ * In soc-compress
+ */
+int snd_soc_basic_new_compress(struct snd_soc_pcm_runtime *rtd, struct snd_compr *compr,
+			       char *new_name, int name_size);
+
+/*
  *	PCM helper functions
  */
 static inline void snd_soc_dpcm_mutex_lock_r(struct snd_soc_pcm_runtime *rtd)

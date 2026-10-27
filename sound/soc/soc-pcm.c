@@ -1152,6 +1152,7 @@ err:
 
 struct snd_soc_rtd_ops rtd_ops_normal = {
 	.new_pcm	= soc_new_pcm_normal,
+	.new_compress	= snd_soc_basic_new_compress,
 };
 
 int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)

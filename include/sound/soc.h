@@ -562,6 +562,8 @@ struct snd_soc_aux_dev {
 
 struct snd_soc_rtd_ops {
 	int (*new_pcm)(struct snd_soc_pcm_runtime *rtd);
+	int (*new_compress)(struct snd_soc_pcm_runtime *rtd, struct snd_compr *compr,
+			    char *new_name, int name_size);
 };
 
 /* SoC machine DAI configuration, glues a codec and cpu DAI together */

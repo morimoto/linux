@@ -14,4 +14,5 @@ static int c2c_pcm_new(struct snd_soc_pcm_runtime *rtd)
 
 struct snd_soc_rtd_ops rtd_ops_c2c = {
 	.new_pcm	= c2c_pcm_new,
+	.new_compress	= snd_soc_basic_new_compress,
 };
