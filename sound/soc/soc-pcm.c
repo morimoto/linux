@@ -570,7 +570,7 @@ int snd_soc_pcm_open_no_lock(struct snd_soc_pcm_runtime *rtd,
 	}
 
 	/* Dynamic PCM DAI links compat checks use dynamic capabilities */
-	if (rtd->dai_link->dynamic || rtd->dai_link->no_pcm)
+	if (rtd->rtd_ops->open_dynamic)
 		goto dynamic;
 
 	/* Check that the codec and cpu DAIs are compatible */
