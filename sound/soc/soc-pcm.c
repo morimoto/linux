@@ -1082,20 +1082,13 @@ static int soc_create_pcm(struct snd_pcm **pcm,
 	int ret;
 
 	/* create the PCM */
-	if (rtd->dai_link->c2c_params) {
-		snprintf(new_name, sizeof(new_name), "codec2codec(%s)",
-			 rtd->dai_link->stream_name);
+	snprintf(new_name, sizeof(new_name), "%s %s-%d",
+		 rtd->dai_link->stream_name,
+		 soc_codec_dai_name(rtd), rtd->id);
 
-		ret = snd_pcm_new_internal(snd_card, new_name, rtd->id,
-					   playback, capture, pcm);
-	} else {
-		snprintf(new_name, sizeof(new_name), "%s %s-%d",
-			 rtd->dai_link->stream_name,
-			 soc_codec_dai_name(rtd), rtd->id);
+	ret = snd_pcm_new(snd_card, new_name, rtd->id, playback,
+			  capture, pcm);
 
-		ret = snd_pcm_new(snd_card, new_name, rtd->id, playback,
-			capture, pcm);
-	}
 	if (ret < 0)
 		return snd_soc_ret(rtd->dev, ret,
 			"can't create pcm %s for dailink %s\n", new_name, rtd->dai_link->name);
@@ -1155,28 +1148,12 @@ static int soc_new_pcm_orig(struct snd_soc_pcm_runtime *rtd)
 	if (ret < 0)
 		goto err;
 
-	/* DAPM dai link stream work */
-	/*
-	 * Currently nothing to do for c2c links
-	 * Since c2c links are internal nodes in the DAPM graph and
-	 * don't interface with the outside world or application layer
-	 * we don't have to do any special handling on close.
-	 */
-	if (!rtd->dai_link->c2c_params)
-		rtd->close_delayed_work_func = snd_soc_close_delayed_work;
+	rtd->pcm			= pcm;
+	rtd->close_delayed_work_func	= snd_soc_close_delayed_work;
 
-	rtd->pcm = pcm;
-	pcm->nonatomic = rtd->dai_link->nonatomic;
-	pcm->private_data = rtd;
-	pcm->no_device_suspend = true;
-
-	if (rtd->dai_link->c2c_params) {
-		if (playback)
-			pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream->private_data = rtd;
-		if (capture)
-			pcm->streams[SNDRV_PCM_STREAM_CAPTURE].substream->private_data = rtd;
-		goto err;
-	}
+	pcm->nonatomic			= rtd->dai_link->nonatomic;
+	pcm->private_data		= rtd;
+	pcm->no_device_suspend		= true;
 
 	/* ASoC PCM operations */
 	rtd->ops.open		= soc_pcm_open;
@@ -1208,6 +1185,8 @@ int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
 		ret = snd_soc_pcm_new_dpcm_fe(rtd);
 	else if (dai_link->no_pcm)
 		ret = snd_soc_pcm_new_dpcm_be(rtd);
+	else if (dai_link->c2c_params)
+		ret = snd_soc_pcm_new_c2c(rtd);
 	else
 		ret = soc_new_pcm_orig(rtd);
 
