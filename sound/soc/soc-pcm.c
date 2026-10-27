@@ -1010,7 +1010,7 @@ int widget_in_list(struct snd_soc_dapm_widget_list *list,
 EXPORT_SYMBOL_GPL(widget_in_list);
 
 int snd_soc_pcm_detect_playback_capture(struct snd_soc_pcm_runtime *rtd,
-					int *playback, int *capture)
+					int *playback, int *capture, bool use_dummy_codec)
 {
 	struct snd_soc_dai_link *dai_link = rtd->dai_link;
 	struct snd_soc_dai *cpu_dai;
@@ -1022,10 +1022,6 @@ int snd_soc_pcm_detect_playback_capture(struct snd_soc_pcm_runtime *rtd,
 	int has_playback = 0;
 	int has_capture  = 0;
 	int i;
-
-	if (dai_link->dynamic && dai_link->num_cpus > 1)
-		return snd_soc_ret(rtd->dev, -EINVAL,
-				"DPCM doesn't support Multi CPU for Front-Ends yet\n");
 
 	/* Adapt stream for codec2codec links */
 	cpu_capture  = snd_soc_get_stream_cpu(dai_link, SNDRV_PCM_STREAM_CAPTURE);
@@ -1050,7 +1046,7 @@ int snd_soc_pcm_detect_playback_capture(struct snd_soc_pcm_runtime *rtd,
 		 * Codec capture validation check will be fail, but system should allow capture
 		 * capabilities. We have no solution for it today.
 		 */
-		if (dai_link->dynamic || dai_link->no_pcm)
+		if (use_dummy_codec || dai_link->no_pcm)
 			codec_dai = dummy_dai;
 
 		if (snd_soc_dai_stream_valid(codec_dai, SNDRV_PCM_STREAM_PLAYBACK) &&
@@ -1099,13 +1095,9 @@ static int soc_create_pcm(struct snd_pcm **pcm,
 		ret = snd_pcm_new_internal(snd_card, new_name, rtd->id,
 				playback, capture, pcm);
 	} else {
-		if (rtd->dai_link->dynamic)
-			snprintf(new_name, sizeof(new_name), "%s (*)",
-				rtd->dai_link->stream_name);
-		else
-			snprintf(new_name, sizeof(new_name), "%s %s-%d",
-				rtd->dai_link->stream_name,
-				soc_codec_dai_name(rtd), rtd->id);
+		snprintf(new_name, sizeof(new_name), "%s %s-%d",
+			 rtd->dai_link->stream_name,
+			 soc_codec_dai_name(rtd), rtd->id);
 
 		ret = snd_pcm_new(snd_card, new_name, rtd->id, playback,
 			capture, pcm);
@@ -1156,13 +1148,12 @@ int snd_soc_pcm_new_common(struct snd_soc_pcm_runtime *rtd, int playback, int ca
 }
 
 /* create a new pcm */
-int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
+static int soc_new_pcm_orig(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_dai_link *dai_link = rtd->dai_link;
 	struct snd_pcm *pcm;
 	int ret = 0, playback = 0, capture = 0;
 
-	ret = snd_soc_pcm_detect_playback_capture(rtd, &playback, &capture);
+	ret = snd_soc_pcm_detect_playback_capture(rtd, &playback, &capture, false);
 	if (ret < 0)
 		goto err;
 
@@ -1190,38 +1181,46 @@ int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
 			pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream->private_data = rtd;
 		if (capture)
 			pcm->streams[SNDRV_PCM_STREAM_CAPTURE].substream->private_data = rtd;
-		goto out;
+		goto err;
 	}
 
 	/* ASoC PCM operations */
-	if (rtd->dai_link->dynamic) {
-		rtd->ops.open		= dpcm_fe_dai_open;
-		rtd->ops.hw_params	= dpcm_fe_dai_hw_params;
-		rtd->ops.prepare	= dpcm_fe_dai_prepare;
-		rtd->ops.trigger	= dpcm_fe_dai_trigger;
-		rtd->ops.hw_free	= dpcm_fe_dai_hw_free;
-		rtd->ops.close		= dpcm_fe_dai_close;
-		rtd->ops.pointer	= snd_soc_pcm_pointer;
-	} else {
-		rtd->ops.open		= soc_pcm_open;
-		rtd->ops.hw_params	= soc_pcm_hw_params;
-		rtd->ops.prepare	= soc_pcm_prepare;
-		rtd->ops.trigger	= snd_soc_pcm_trigger;
-		rtd->ops.hw_free	= soc_pcm_hw_free;
-		rtd->ops.close		= soc_pcm_close;
-		rtd->ops.pointer	= snd_soc_pcm_pointer;
-	}
+	rtd->ops.open		= soc_pcm_open;
+	rtd->ops.hw_params	= soc_pcm_hw_params;
+	rtd->ops.prepare	= soc_pcm_prepare;
+	rtd->ops.trigger	= snd_soc_pcm_trigger;
+	rtd->ops.hw_free	= soc_pcm_hw_free;
+	rtd->ops.close		= soc_pcm_close;
+	rtd->ops.pointer	= snd_soc_pcm_pointer;
 
 	ret = snd_soc_pcm_new_common(rtd, playback, capture);
-	if (ret < 0)
-		goto err;
-out:
-	dev_dbg(snd_soc_card_to_dev(rtd->card), "%s <-> %s mapping ok\n",
-		soc_codec_dai_name(rtd), soc_cpu_dai_name(rtd));
 err:
+	return soc_pcm_ret(rtd, ret);
+}
+
+int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
+{
+	struct snd_soc_dai_link *dai_link = rtd->dai_link;
+	struct device *dev = rtd->dev;
+	int ret;
+
+	/*
+	 * UPDATE ME
+	 *
+	 * Maybe this should be grouped as a collection of function
+	 * pointers in the future. But is calling each function directly for now
+	 */
+	if (dai_link->dynamic)
+		ret = snd_soc_pcm_new_dpcm_fe(rtd);
+	else
+		ret = soc_new_pcm_orig(rtd);
+
 	if (ret < 0)
-		dev_err(rtd->dev, "ASoC: can't create pcm %s :%d\n",
+		dev_err(dev, "ASoC: can't create pcm %s :%d\n",
 			dai_link->stream_name, ret);
+	else
+		dev_dbg(dev, "%s <-> %s mapping ok\n",
+			soc_codec_dai_name(rtd), soc_cpu_dai_name(rtd));
 
 	return soc_pcm_ret(rtd, ret);
 }
