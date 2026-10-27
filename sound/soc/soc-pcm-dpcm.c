@@ -1866,3 +1866,38 @@ int snd_soc_pcm_new_dpcm_fe(struct snd_soc_pcm_runtime *rtd)
 err:
 	return soc_pcm_ret(rtd, ret);
 }
+
+int snd_soc_pcm_new_dpcm_be(struct snd_soc_pcm_runtime *rtd)
+{
+	struct snd_soc_dai_link *dai_link = rtd->dai_link;
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(rtd->card);
+	struct snd_pcm *pcm;
+	char new_name[64];
+	int ret = 0, playback = 0, capture = 0;
+
+	snprintf(new_name, sizeof(new_name), "(%s)", dai_link->stream_name);
+
+	ret = snd_soc_pcm_detect_playback_capture(rtd, &playback, &capture, true);
+	if (ret < 0)
+		goto err;
+
+	ret = snd_pcm_new_internal(snd_card, new_name, rtd->id, playback, capture, &pcm);
+	if (ret < 0)
+		goto err;
+
+	rtd->pcm			= pcm;
+	rtd->close_delayed_work_func	= snd_soc_close_delayed_work;
+
+	pcm->nonatomic			= dai_link->nonatomic;
+	pcm->private_data		= rtd;
+	pcm->no_device_suspend		= true;
+
+	if (playback)
+		pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream->private_data	= rtd;
+	if (capture)
+		pcm->streams[SNDRV_PCM_STREAM_CAPTURE].substream->private_data	= rtd;
+
+	ret = 0;
+err:
+	return soc_pcm_ret(rtd, ret);
+}
