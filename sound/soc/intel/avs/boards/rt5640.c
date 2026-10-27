@@ -53,12 +53,13 @@ static int avs_rt5640_codec_init(struct snd_soc_pcm_runtime *runtime)
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	struct snd_soc_jack_pin *pins;
 	struct snd_soc_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int num_pins, ret;
 
-	jack = snd_soc_card_get_drvdata(card);
+	jack = snd_soc_card_to_priv(card);
 	num_pins = ARRAY_SIZE(card_headset_pins);
 
-	pins = devm_kmemdup(card->dev, card_headset_pins, sizeof(*pins) * num_pins, GFP_KERNEL);
+	pins = devm_kmemdup(dev, card_headset_pins, sizeof(*pins) * num_pins, GFP_KERNEL);
 	if (!pins)
 		return -ENOMEM;
 
@@ -67,7 +68,7 @@ static int avs_rt5640_codec_init(struct snd_soc_pcm_runtime *runtime)
 	if (ret)
 		return ret;
 
-	snd_soc_component_set_jack(codec_dai->component, jack, NULL);
+	snd_soc_component_set_jack(snd_soc_dai_to_component(codec_dai), jack, NULL);
 	snd_soc_dapm_set_idle_bias(dapm, false);
 
 	return 0;
@@ -77,7 +78,8 @@ static void avs_rt5640_codec_exit(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(runtime, 0);
 
-	snd_soc_component_set_jack(codec_dai->component, NULL, NULL);
+	snd_soc_component_set_jack(
+		snd_soc_dai_to_component(codec_dai), NULL, NULL);
 }
 
 static int avs_rt5640_be_fixup(struct snd_soc_pcm_runtime *runtime,
@@ -113,7 +115,7 @@ static int avs_rt5640_hw_params(struct snd_pcm_substream *substream,
 		return ret;
 	}
 
-	ret = rt5640_sel_asrc_clk_src(codec_dai->component,
+	ret = rt5640_sel_asrc_clk_src(snd_soc_dai_to_component(codec_dai),
 				      RT5640_DA_STEREO_FILTER | RT5640_AD_STEREO_FILTER |
 				      RT5640_DA_MONO_L_FILTER | RT5640_DA_MONO_R_FILTER |
 				      RT5640_AD_MONO_L_FILTER | RT5640_AD_MONO_R_FILTER,
@@ -186,15 +188,15 @@ static int avs_card_suspend_pre(struct snd_soc_card *card)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_card_get_codec_dai(card, RT5640_CODEC_DAI);
 
-	return snd_soc_component_set_jack(codec_dai->component, NULL, NULL);
+	return snd_soc_component_set_jack(snd_soc_dai_to_component(codec_dai), NULL, NULL);
 }
 
 static int avs_card_resume_post(struct snd_soc_card *card)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_card_get_codec_dai(card, RT5640_CODEC_DAI);
-	struct snd_soc_jack *jack = snd_soc_card_get_drvdata(card);
+	struct snd_soc_jack *jack = snd_soc_card_to_priv(card);
 
-	return snd_soc_component_set_jack(codec_dai->component, jack, NULL);
+	return snd_soc_component_set_jack(snd_soc_dai_to_component(codec_dai), jack, NULL);
 }
 
 static int avs_rt5640_probe(struct platform_device *pdev)
@@ -246,7 +248,7 @@ static int avs_rt5640_probe(struct platform_device *pdev)
 	card_driver->fully_routed = true;
 	snd_soc_card_set_name(card, name);
 	snd_soc_card_set_long_name(card, name);
-	snd_soc_card_set_drvdata(card, jack);
+	snd_soc_card_set_priv(card, jack);
 
 	return devm_snd_soc_card_register(card, card_driver);
 }

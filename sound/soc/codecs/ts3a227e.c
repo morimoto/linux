@@ -242,7 +242,8 @@ static irqreturn_t ts3a227e_interrupt(int irq, void *data)
 int ts3a227e_enable_jack_detect(struct snd_soc_component *component,
 				struct snd_soc_jack *jack)
 {
-	struct ts3a227e *ts3a227e = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct ts3a227e *ts3a227e = dev_get_drvdata(dev);
 
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
 	snd_jack_set_key(jack->jack, SND_JACK_BTN_1, KEY_VOICECOMMAND);

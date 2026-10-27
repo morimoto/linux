@@ -721,15 +721,18 @@ static int intel_hw_params(struct snd_pcm_substream *substream,
 			   struct snd_pcm_hw_params *params,
 			   struct snd_soc_dai *dai)
 {
-	struct sdw_cdns *cdns = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sdw_cdns *cdns = dev_get_drvdata(dev);
 	struct sdw_intel *sdw = cdns_to_intel(cdns);
 	struct sdw_cdns_dai_runtime *dai_runtime;
 	struct sdw_cdns_pdi *pdi;
 	struct sdw_stream_config sconfig;
+	int id = snd_soc_dai_id(dai);
 	int ch, dir;
 	int ret;
 
-	dai_runtime = cdns->dai_runtime_array[dai->id];
+	dai_runtime = cdns->dai_runtime_array[id];
 	if (!dai_runtime)
 		return -EIO;
 
@@ -739,7 +742,7 @@ static int intel_hw_params(struct snd_pcm_substream *substream,
 	else
 		dir = SDW_DATA_DIR_TX;
 
-	pdi = sdw_cdns_alloc_pdi(cdns, &cdns->pcm, ch, dir, dai->id);
+	pdi = sdw_cdns_alloc_pdi(cdns, &cdns->pcm, ch, dir, id);
 
 	if (!pdi)
 		return -EINVAL;
@@ -787,15 +790,18 @@ static int intel_hw_params(struct snd_pcm_substream *substream,
 static int intel_prepare(struct snd_pcm_substream *substream,
 			 struct snd_soc_dai *dai)
 {
-	struct sdw_cdns *cdns = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sdw_cdns *cdns = dev_get_drvdata(dev);
 	struct sdw_intel *sdw = cdns_to_intel(cdns);
 	struct sdw_cdns_dai_runtime *dai_runtime;
+	int id = snd_soc_dai_id(dai);
 	int ch, dir;
 	int ret = 0;
 
-	dai_runtime = cdns->dai_runtime_array[dai->id];
+	dai_runtime = cdns->dai_runtime_array[id];
 	if (!dai_runtime) {
-		dev_err(dai->dev, "failed to get dai runtime in %s\n",
+		dev_err(dev, "failed to get dai runtime in %s\n",
 			__func__);
 		return -EIO;
 	}
@@ -840,12 +846,15 @@ static int intel_prepare(struct snd_pcm_substream *substream,
 static int
 intel_hw_free(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
-	struct sdw_cdns *cdns = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sdw_cdns *cdns = dev_get_drvdata(dev);
 	struct sdw_intel *sdw = cdns_to_intel(cdns);
 	struct sdw_cdns_dai_runtime *dai_runtime;
+	int id = snd_soc_dai_id(dai);
 	int ret;
 
-	dai_runtime = cdns->dai_runtime_array[dai->id];
+	dai_runtime = cdns->dai_runtime_array[id];
 	if (!dai_runtime)
 		return -EIO;
 
@@ -857,14 +866,14 @@ intel_hw_free(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 	 */
 	ret = sdw_stream_remove_master(&cdns->bus, dai_runtime->stream);
 	if (ret < 0) {
-		dev_err(dai->dev, "remove master from stream %s failed: %d\n",
+		dev_err(dev, "remove master from stream %s failed: %d\n",
 			dai_runtime->stream->name, ret);
 		return ret;
 	}
 
 	ret = intel_free_stream(sdw, substream, dai, sdw->instance);
 	if (ret < 0) {
-		dev_err(dai->dev, "intel_free_stream: failed %d\n", ret);
+		dev_err(dev, "intel_free_stream: failed %d\n", ret);
 		return ret;
 	}
 
@@ -882,10 +891,13 @@ static int intel_pcm_set_sdw_stream(struct snd_soc_dai *dai,
 static void *intel_get_sdw_stream(struct snd_soc_dai *dai,
 				  int direction)
 {
-	struct sdw_cdns *cdns = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sdw_cdns *cdns = dev_get_drvdata(dev);
 	struct sdw_cdns_dai_runtime *dai_runtime;
+	int id = snd_soc_dai_id(dai);
 
-	dai_runtime = cdns->dai_runtime_array[dai->id];
+	dai_runtime = cdns->dai_runtime_array[id];
 	if (!dai_runtime)
 		return ERR_PTR(-EINVAL);
 
@@ -894,13 +906,16 @@ static void *intel_get_sdw_stream(struct snd_soc_dai *dai,
 
 static int intel_trigger(struct snd_pcm_substream *substream, int cmd, struct snd_soc_dai *dai)
 {
-	struct sdw_cdns *cdns = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sdw_cdns *cdns = dev_get_drvdata(dev);
 	struct sdw_cdns_dai_runtime *dai_runtime;
+	int id = snd_soc_dai_id(dai);
 	int ret = 0;
 
-	dai_runtime = cdns->dai_runtime_array[dai->id];
+	dai_runtime = cdns->dai_runtime_array[id];
 	if (!dai_runtime) {
-		dev_err(dai->dev, "failed to get dai runtime in %s\n",
+		dev_err(dev, "failed to get dai runtime in %s\n",
 			__func__);
 		return -EIO;
 	}
@@ -922,6 +937,7 @@ static int intel_trigger(struct snd_pcm_substream *substream, int cmd, struct sn
 
 static int intel_component_probe(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	/*
@@ -930,7 +946,7 @@ static int intel_component_probe(struct snd_soc_component *component)
 	 * We use pm_runtime_resume() here, without taking a reference
 	 * and releasing it immediately.
 	 */
-	ret = pm_runtime_resume(component->dev);
+	ret = pm_runtime_resume(dev);
 	if (ret < 0 && ret != -EACCES)
 		return ret;
 
@@ -939,6 +955,8 @@ static int intel_component_probe(struct snd_soc_component *component)
 
 static int intel_component_dais_suspend(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sdw_cdns *cdns = dev_get_drvdata(dev);
 	struct snd_soc_dai *dai;
 
 	/*
@@ -950,10 +968,10 @@ static int intel_component_dais_suspend(struct snd_soc_component *component)
 	 * experiences xrun at suspend time.
 	 */
 	for_each_component_dais(component, dai) {
-		struct sdw_cdns *cdns = snd_soc_dai_get_drvdata(dai);
 		struct sdw_cdns_dai_runtime *dai_runtime;
+		int id = snd_soc_dai_id(dai);
 
-		dai_runtime = cdns->dai_runtime_array[dai->id];
+		dai_runtime = cdns->dai_runtime_array[id];
 
 		if (dai_runtime)
 			dai_runtime->suspended = true;
@@ -1062,7 +1080,7 @@ static int intel_register_dai(struct sdw_intel *sdw)
 	if (ret)
 		return ret;
 
-	return devm_snd_soc_register_component(cdns->dev, &dai_component,
+	return devm_snd_soc_component_register(cdns->dev, &dai_component,
 					       dais, num_dai);
 }
 

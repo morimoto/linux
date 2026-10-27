@@ -17,7 +17,8 @@ static int sof_ipc4_set_get_kcontrol_data(struct snd_sof_control *scontrol,
 					  bool set, bool lock)
 {
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	const struct sof_ipc_ops *iops = sdev->ipc->ops;
 	struct snd_sof_widget *swidget;
 	bool widget_found = false;
@@ -32,7 +33,7 @@ static int sof_ipc4_set_get_kcontrol_data(struct snd_sof_control *scontrol,
 	}
 
 	if (!widget_found) {
-		dev_err(scomp->dev, "Failed to find widget for kcontrol %s\n", scontrol->name);
+		dev_err(dev, "Failed to find widget for kcontrol %s\n", scontrol->name);
 		return -ENOENT;
 	}
 
@@ -143,7 +144,8 @@ static bool sof_ipc4_volume_put(struct snd_sof_control *scontrol,
 {
 	struct sof_ipc4_control_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	unsigned int channels = scontrol->num_channels;
 	struct snd_sof_widget *swidget;
 	bool widget_found = false;
@@ -161,7 +163,7 @@ static bool sof_ipc4_volume_put(struct snd_sof_control *scontrol,
 		cdata->chanv[i].value = value;
 	}
 
-	if (!pm_runtime_active(scomp->dev))
+	if (!pm_runtime_active(dev))
 		return change;
 
 	/* find widget associated with the control */
@@ -173,7 +175,7 @@ static bool sof_ipc4_volume_put(struct snd_sof_control *scontrol,
 	}
 
 	if (!widget_found) {
-		dev_err(scomp->dev, "Failed to find widget for kcontrol %s\n", scontrol->name);
+		dev_err(dev, "Failed to find widget for kcontrol %s\n", scontrol->name);
 		return false;
 	}
 
@@ -243,6 +245,7 @@ static void sof_ipc4_refresh_generic_control(struct snd_sof_control *scontrol)
 	struct snd_soc_component *scomp = scontrol->scomp;
 	struct sof_ipc4_control_msg_payload *data;
 	struct sof_ipc4_msg msg;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	size_t data_size;
 	unsigned int i;
 	int ret;
@@ -250,7 +253,7 @@ static void sof_ipc4_refresh_generic_control(struct snd_sof_control *scontrol)
 	if (!scontrol->comp_data_dirty)
 		return;
 
-	if (!pm_runtime_active(scomp->dev))
+	if (!pm_runtime_active(dev))
 		return;
 
 	data_size = struct_size(data, chanv, scontrol->num_channels);
@@ -273,8 +276,7 @@ static void sof_ipc4_refresh_generic_control(struct snd_sof_control *scontrol)
 			cdata->chanv[i].value = data->chanv[i].value;
 		}
 	} else {
-		dev_err(scomp->dev, "Failed to read control data for %s\n",
-			scontrol->name);
+		dev_err(dev, "Failed to read control data for %s\n", scontrol->name);
 		scontrol->comp_data_dirty = true;
 	}
 
@@ -289,6 +291,7 @@ sof_ipc4_set_bytes_control_data(struct snd_sof_control *scontrol, bool lock)
 	struct sof_ipc4_control_msg_payload *msg_data;
 	struct sof_abi_hdr *data = cdata->data;
 	struct sof_ipc4_msg msg;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	size_t data_size;
 	int ret;
 
@@ -309,7 +312,7 @@ sof_ipc4_set_bytes_control_data(struct snd_sof_control *scontrol, bool lock)
 
 	ret = sof_ipc4_set_get_kcontrol_data(scontrol, &msg, true, lock);
 	if (ret < 0)
-		dev_err(scomp->dev, "%s: Failed to set control update for %s\n",
+		dev_err(dev, "%s: Failed to set control update for %s\n",
 			__func__, scontrol->name);
 
 	kfree(msg_data);
@@ -325,13 +328,14 @@ sof_ipc4_refresh_bytes_control(struct snd_sof_control *scontrol, bool lock)
 	struct sof_ipc4_control_msg_payload *msg_data;
 	struct sof_abi_hdr *data = cdata->data;
 	struct sof_ipc4_msg msg;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	size_t data_size;
 	int ret = 0;
 
 	if (!scontrol->comp_data_dirty)
 		return 0;
 
-	if (!pm_runtime_active(scomp->dev))
+	if (!pm_runtime_active(dev))
 		return 0;
 
 	data_size = scontrol->max_size - sizeof(*data);
@@ -355,7 +359,7 @@ sof_ipc4_refresh_bytes_control(struct snd_sof_control *scontrol, bool lock)
 	ret = sof_ipc4_set_get_kcontrol_data(scontrol, &msg, false, lock);
 	if (!ret) {
 		if (msg.data_size > scontrol->max_size - sizeof(*data)) {
-			dev_err(scomp->dev,
+			dev_err(dev,
 				"%s: no space for data in %s (%zu, %zu)\n",
 				__func__, scontrol->name, msg.data_size,
 				scontrol->max_size - sizeof(*data));
@@ -367,8 +371,7 @@ sof_ipc4_refresh_bytes_control(struct snd_sof_control *scontrol, bool lock)
 		scontrol->size = sizeof(*cdata) + sizeof(*data) + data->size;
 		memcpy(data->data, msg.data_ptr, data->size);
 	} else {
-		dev_err(scomp->dev, "Failed to read control data for %s\n",
-			scontrol->name);
+		dev_err(dev, "Failed to read control data for %s\n", scontrol->name);
 		scontrol->comp_data_dirty = true;
 	}
 
@@ -383,7 +386,8 @@ static bool sof_ipc4_switch_put(struct snd_sof_control *scontrol,
 {
 	struct sof_ipc4_control_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct snd_sof_widget *swidget;
 	bool widget_found = false;
 	bool change = false;
@@ -399,7 +403,7 @@ static bool sof_ipc4_switch_put(struct snd_sof_control *scontrol,
 		cdata->chanv[i].value = value;
 	}
 
-	if (!pm_runtime_active(scomp->dev))
+	if (!pm_runtime_active(dev))
 		return change;
 
 	/* find widget associated with the control */
@@ -411,7 +415,7 @@ static bool sof_ipc4_switch_put(struct snd_sof_control *scontrol,
 	}
 
 	if (!widget_found) {
-		dev_err(scomp->dev, "Failed to find widget for kcontrol %s\n", scontrol->name);
+		dev_err(dev, "Failed to find widget for kcontrol %s\n", scontrol->name);
 		return false;
 	}
 
@@ -442,7 +446,8 @@ static bool sof_ipc4_enum_put(struct snd_sof_control *scontrol,
 {
 	struct sof_ipc4_control_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct snd_sof_widget *swidget;
 	bool widget_found = false;
 	bool change = false;
@@ -458,7 +463,7 @@ static bool sof_ipc4_enum_put(struct snd_sof_control *scontrol,
 		cdata->chanv[i].value = value;
 	}
 
-	if (!pm_runtime_active(scomp->dev))
+	if (!pm_runtime_active(dev))
 		return change;
 
 	/* find widget associated with the control */
@@ -470,7 +475,7 @@ static bool sof_ipc4_enum_put(struct snd_sof_control *scontrol,
 	}
 
 	if (!widget_found) {
-		dev_err(scomp->dev, "Failed to find widget for kcontrol %s\n", scontrol->name);
+		dev_err(dev, "Failed to find widget for kcontrol %s\n", scontrol->name);
 		return false;
 	}
 
@@ -552,7 +557,8 @@ static int sof_ipc4_bytes_put(struct snd_sof_control *scontrol,
 {
 	struct sof_ipc4_control_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_abi_hdr *data = cdata->data;
 	const struct sof_abi_hdr *new_hdr =
 		(const struct sof_abi_hdr *)ucontrol->value.bytes.data;
@@ -560,16 +566,14 @@ static int sof_ipc4_bytes_put(struct snd_sof_control *scontrol,
 	int ret;
 
 	if (scontrol->max_size > sizeof(ucontrol->value.bytes.data)) {
-		dev_err_ratelimited(scomp->dev,
-				    "data max %zu exceeds ucontrol data array size\n",
+		dev_err_ratelimited(dev, "data max %zu exceeds ucontrol data array size\n",
 				    scontrol->max_size);
 		return -EINVAL;
 	}
 
 	/* Validate the new data's size, not the old one */
 	if (new_hdr->size > scontrol->max_size - sizeof(*new_hdr)) {
-		dev_err_ratelimited(scomp->dev,
-				    "data size too big %u bytes max is %zu\n",
+		dev_err_ratelimited(dev, "data size too big %u bytes max is %zu\n",
 				    new_hdr->size,
 				    scontrol->max_size - sizeof(*new_hdr));
 		return -EINVAL;
@@ -594,17 +598,17 @@ static int sof_ipc4_bytes_get(struct snd_sof_control *scontrol,
 	struct sof_ipc4_control_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;
 	struct sof_abi_hdr *data = cdata->data;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	size_t size;
 
 	if (scontrol->max_size > sizeof(ucontrol->value.bytes.data)) {
-		dev_err_ratelimited(scomp->dev, "data max %zu exceeds ucontrol data array size\n",
+		dev_err_ratelimited(dev, "data max %zu exceeds ucontrol data array size\n",
 				    scontrol->max_size);
 		return -EINVAL;
 	}
 
 	if (data->size > scontrol->max_size - sizeof(*data)) {
-		dev_err_ratelimited(scomp->dev,
-				    "%u bytes of control data is invalid, max is %zu\n",
+		dev_err_ratelimited(dev, "%u bytes of control data is invalid, max is %zu\n",
 				    data->size, scontrol->max_size - sizeof(*data));
 		return -EINVAL;
 	}
@@ -626,7 +630,8 @@ static int sof_ipc4_bytes_ext_put(struct snd_sof_control *scontrol,
 	struct snd_ctl_tlv __user *tlvd = (struct snd_ctl_tlv __user *)binary_data;
 	struct sof_ipc4_control_data *cdata = scontrol->ipc_control_data;
 	struct snd_soc_component *scomp = scontrol->scomp;
-	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+	struct device *dev = snd_soc_component_to_dev(scomp);
+	struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 	struct sof_abi_hdr *data = cdata->data;
 	struct sof_abi_hdr abi_hdr;
 	struct snd_ctl_tlv header;
@@ -641,24 +646,21 @@ static int sof_ipc4_bytes_ext_put(struct snd_sof_control *scontrol,
 
 	/* make sure TLV info is consistent */
 	if (header.length + sizeof(struct snd_ctl_tlv) > size) {
-		dev_err_ratelimited(scomp->dev,
-				    "Inconsistent TLV, data %d + header %zu > %d\n",
+		dev_err_ratelimited(dev, "Inconsistent TLV, data %d + header %zu > %d\n",
 				    header.length, sizeof(struct snd_ctl_tlv), size);
 		return -EINVAL;
 	}
 
 	/* be->max is coming from topology */
 	if (header.length > scontrol->max_size) {
-		dev_err_ratelimited(scomp->dev,
-				    "Bytes data size %d exceeds max %zu\n",
+		dev_err_ratelimited(dev, "Bytes data size %d exceeds max %zu\n",
 				    header.length, scontrol->max_size);
 		return -EINVAL;
 	}
 
 	/* Check header id */
 	if (header.numid != SOF_CTRL_CMD_BINARY) {
-		dev_err_ratelimited(scomp->dev,
-				    "Incorrect numid for bytes put %d\n",
+		dev_err_ratelimited(dev, "Incorrect numid for bytes put %d\n",
 				    header.numid);
 		return -EINVAL;
 	}
@@ -668,14 +670,12 @@ static int sof_ipc4_bytes_ext_put(struct snd_sof_control *scontrol,
 		return -EFAULT;
 
 	if (abi_hdr.magic != SOF_IPC4_ABI_MAGIC) {
-		dev_err_ratelimited(scomp->dev, "Wrong ABI magic 0x%08x\n",
-				    abi_hdr.magic);
+		dev_err_ratelimited(dev, "Wrong ABI magic 0x%08x\n", abi_hdr.magic);
 		return -EINVAL;
 	}
 
 	if (abi_hdr.size > scontrol->max_size - sizeof(abi_hdr)) {
-		dev_err_ratelimited(scomp->dev,
-				    "%u bytes of control data is invalid, max is %zu\n",
+		dev_err_ratelimited(dev, "%u bytes of control data is invalid, max is %zu\n",
 				    abi_hdr.size, scontrol->max_size - sizeof(abi_hdr));
 		return -EINVAL;
 	}
@@ -712,6 +712,7 @@ static int _sof_ipc4_bytes_ext_get(struct snd_sof_control *scontrol,
 	struct snd_soc_component *scomp = scontrol->scomp;
 	struct sof_abi_hdr *data = cdata->data;
 	struct snd_ctl_tlv header;
+	struct device *dev = snd_soc_component_to_dev(scomp);
 	size_t data_size;
 
 	/*
@@ -725,7 +726,8 @@ static int _sof_ipc4_bytes_ext_get(struct snd_sof_control *scontrol,
 
 	/* get all the component data from DSP */
 	if (from_dsp) {
-		struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
+		struct device *dev = snd_soc_component_to_dev(scomp);
+		struct snd_sof_dev *sdev = dev_get_drvdata(dev);
 		int ret = sof_ipc4_set_get_bytes_data(sdev, scontrol, false, true);
 
 		if (ret < 0)
@@ -736,8 +738,7 @@ static int _sof_ipc4_bytes_ext_get(struct snd_sof_control *scontrol,
 	}
 
 	if (data->size > scontrol->max_size - sizeof(*data)) {
-		dev_err_ratelimited(scomp->dev,
-				    "%u bytes of control data is invalid, max is %zu\n",
+		dev_err_ratelimited(dev, "%u bytes of control data is invalid, max is %zu\n",
 				    data->size, scontrol->max_size - sizeof(*data));
 		return -EINVAL;
 	}
@@ -800,6 +801,8 @@ static void sof_ipc4_control_update(struct snd_sof_dev *sdev, void *ipc_message)
 	struct snd_sof_control *scontrol;
 	struct snd_sof_widget *swidget;
 	struct snd_kcontrol *kc = NULL;
+	struct snd_soc_card *soc_card;
+	struct snd_card *snd_card;
 	bool scontrol_found = false;
 	u32 event_param_id;
 	int i, type;
@@ -954,8 +957,9 @@ notify:
 	if (!kc)
 		return;
 
-	snd_ctl_notify_one(swidget->scomp->card->snd_card,
-			   SNDRV_CTL_EVENT_MASK_VALUE, kc, 0);
+	soc_card = snd_soc_component_to_card(swidget->scomp);
+	snd_card = snd_soc_card_to_snd_card(soc_card);
+	snd_ctl_notify_one(snd_card, SNDRV_CTL_EVENT_MASK_VALUE, kc, 0);
 }
 
 /* set up all controls for the widget */

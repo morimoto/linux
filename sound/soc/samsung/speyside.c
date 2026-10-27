@@ -22,12 +22,17 @@ static int speyside_set_bias_level(struct snd_soc_card *card,
 {
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *codec_dai;
+	struct snd_soc_component *codec_component;
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct device *dev;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[1]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[1]);
 	codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	codec_component = snd_soc_dai_to_component(codec_dai);
+	dev = snd_soc_component_to_dev(codec_component);
 
-	if (snd_soc_dapm_to_dev(dapm) != codec_dai->dev)
+	if (snd_soc_dapm_to_dev(dapm) != dev)
 		return 0;
 
 	switch (level) {
@@ -58,12 +63,17 @@ static int speyside_set_bias_level_post(struct snd_soc_card *card,
 {
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *codec_dai;
+	struct snd_soc_component *codec_component;
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct device *dev;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[1]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[1]);
 	codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	codec_component = snd_soc_dai_to_component(codec_dai);
+	dev = snd_soc_component_to_dev(codec_component);
 
-	if (snd_soc_dapm_to_dev(dapm) != codec_dai->dev)
+	if (snd_soc_dapm_to_dev(dapm) != dev)
 		return 0;
 
 	switch (level) {
@@ -143,7 +153,8 @@ static int speyside_wm0010_init(struct snd_soc_pcm_runtime *rtd)
 static int speyside_wm8996_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	enum gpiod_flags flags;
 	int ret;
 
@@ -155,9 +166,7 @@ static int speyside_wm8996_init(struct snd_soc_pcm_runtime *rtd)
 		flags = GPIOD_OUT_HIGH;
 	else
 		flags = GPIOD_OUT_LOW;
-	speyside_hpsel_gpio = devm_gpiod_get(rtd->card->dev,
-					     "hp-sel",
-					     flags);
+	speyside_hpsel_gpio = devm_gpiod_get(dev, "hp-sel", flags);
 	if (IS_ERR(speyside_hpsel_gpio))
 		return PTR_ERR(speyside_hpsel_gpio);
 

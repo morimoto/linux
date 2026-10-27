@@ -19,12 +19,17 @@ static int tobermory_set_bias_level(struct snd_soc_card *card,
 {
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *codec_dai;
+	struct snd_soc_component *component;
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct device *dev;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[0]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[0]);
 	codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	component = snd_soc_dai_to_component(codec_dai);
+	dev = snd_soc_component_to_dev(component);
 
-	if (snd_soc_dapm_to_dev(dapm) != codec_dai->dev)
+	if (snd_soc_dapm_to_dev(dapm) != dev)
 		return 0;
 
 	switch (level) {
@@ -62,12 +67,17 @@ static int tobermory_set_bias_level_post(struct snd_soc_card *card,
 {
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_dai *codec_dai;
+	struct snd_soc_component *component;
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct device *dev;
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[0]);
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[0]);
 	codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	component = snd_soc_dai_to_component(codec_dai);
+	dev = snd_soc_component_to_dev(component);
 
-	if (snd_soc_dapm_to_dev(dapm) != codec_dai->dev)
+	if (snd_soc_dapm_to_dev(dapm) != dev)
 		return 0;
 
 	switch (level) {
@@ -175,11 +185,12 @@ static int tobermory_late_probe(struct snd_soc_card *card)
 	struct snd_soc_pcm_runtime *rtd;
 	struct snd_soc_component *component;
 	struct snd_soc_dai *codec_dai;
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
 	int ret;
 
-	rtd = snd_soc_get_pcm_runtime(card, &card->dai_link[0]);
-	component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	rtd = snd_soc_card_to_rtd(card, &card_driver->dai_link[0]);
 	codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	component = snd_soc_dai_to_component(codec_dai);
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, WM8962_SYSCLK_MCLK,
 				     32768, SND_SOC_CLOCK_IN);

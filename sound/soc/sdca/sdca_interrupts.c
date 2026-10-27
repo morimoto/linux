@@ -371,7 +371,7 @@ int sdca_irq_data_populate(struct device *dev, struct regmap *regmap,
 	const char *name;
 
 	if (!dev && component)
-		dev = component->dev;
+		dev = snd_soc_component_to_dev(component);
 	if (!dev)
 		return -ENODEV;
 
@@ -382,7 +382,7 @@ int sdca_irq_data_populate(struct device *dev, struct regmap *regmap,
 	interrupt->name = name;
 	interrupt->dev = dev;
 	if (!regmap && component)
-		interrupt->function_regmap = component->regmap;
+		interrupt->function_regmap = snd_soc_component_to_regmap(component);
 	else
 		interrupt->function_regmap = regmap;
 	interrupt->component = component;
@@ -520,7 +520,7 @@ int sdca_irq_populate(struct sdca_function_data *function,
 		      struct snd_soc_component *component,
 		      struct sdca_interrupt_info *info)
 {
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int i, ret;
 
 	guard(mutex)(&info->irq_lock);

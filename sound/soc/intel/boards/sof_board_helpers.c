@@ -12,17 +12,17 @@
  */
 static int hdmi_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(rtd->card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
 
-	ctx->hdmi.hdmi_comp = dai->component;
+	ctx->hdmi.hdmi_comp = snd_soc_dai_to_component(dai);
 
 	return 0;
 }
 
 int sof_intel_board_card_late_probe(struct snd_soc_card *card)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(card);
 
 	if (!ctx->hdmi_num)
 		return 0;
