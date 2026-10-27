@@ -1070,7 +1070,7 @@ void dpcm_be_dai_hw_free(struct snd_soc_pcm_runtime *fe, int stream)
 	}
 }
 
-int dpcm_fe_dai_hw_free(struct snd_pcm_substream *substream)
+static int dpcm_fe_dai_hw_free(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(substream);
 	int stream = substream->stream;
@@ -1172,8 +1172,8 @@ unwind:
 	return soc_pcm_ret(fe, ret);
 }
 
-int dpcm_fe_dai_hw_params(struct snd_pcm_substream *substream,
-			  struct snd_pcm_hw_params *params)
+static int dpcm_fe_dai_hw_params(struct snd_pcm_substream *substream,
+				 struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(substream);
 	int ret, stream = substream->stream;
@@ -1473,7 +1473,7 @@ out:
 	return soc_pcm_ret(fe, ret);
 }
 
-int dpcm_fe_dai_trigger(struct snd_pcm_substream *substream, int cmd)
+static int dpcm_fe_dai_trigger(struct snd_pcm_substream *substream, int cmd)
 {
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(substream);
 	int stream = substream->stream;
@@ -1533,7 +1533,7 @@ int dpcm_be_dai_prepare(struct snd_soc_pcm_runtime *fe, int stream)
 	return ret;
 }
 
-int dpcm_fe_dai_prepare(struct snd_pcm_substream *substream)
+static int dpcm_fe_dai_prepare(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(substream);
 	int stream = substream->stream, ret = 0;
@@ -1769,7 +1769,7 @@ static void dpcm_fe_dai_cleanup(struct snd_pcm_substream *fe_substream)
 	dpcm_be_disconnect(fe, stream);
 }
 
-int dpcm_fe_dai_close(struct snd_pcm_substream *fe_substream)
+static int dpcm_fe_dai_close(struct snd_pcm_substream *fe_substream)
 {
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(fe_substream);
 	int ret;
@@ -1784,7 +1784,7 @@ int dpcm_fe_dai_close(struct snd_pcm_substream *fe_substream)
 	return soc_pcm_ret(fe, ret);
 }
 
-int dpcm_fe_dai_open(struct snd_pcm_substream *fe_substream)
+static int dpcm_fe_dai_open(struct snd_pcm_substream *fe_substream)
 {
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(fe_substream);
 	struct snd_soc_dapm_widget_list *list;

@@ -288,15 +288,6 @@ int snd_soc_pcm_new_nopcm(struct snd_soc_pcm_runtime *rtd, char *name_prefix,
 			  bool use_dummy_codec, bool delayed_work);
 int snd_soc_pcm_new_c2c(struct snd_soc_pcm_runtime *rtd);
 
-/* REMOVE ME */
-int dpcm_fe_dai_open(struct snd_pcm_substream *fe_substream);
-int dpcm_fe_dai_hw_params(struct snd_pcm_substream *substream,
-			  struct snd_pcm_hw_params *params);
-int dpcm_fe_dai_prepare(struct snd_pcm_substream *substream);
-int dpcm_fe_dai_trigger(struct snd_pcm_substream *substream, int cmd);
-int dpcm_fe_dai_hw_free(struct snd_pcm_substream *substream);
-int dpcm_fe_dai_close(struct snd_pcm_substream *fe_substream);
-
 /*
  *	PCM helper functions
  */
