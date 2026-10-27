@@ -564,6 +564,8 @@ struct snd_soc_rtd_ops {
 	int (*new_pcm)(struct snd_soc_pcm_runtime *rtd);
 	int (*new_compress)(struct snd_soc_pcm_runtime *rtd, struct snd_compr *compr,
 			    char *new_name, int name_size);
+	void (*debugfs_add)(struct snd_soc_pcm_runtime *rtd);
+
 	/* bit field */
 	unsigned int open_dynamic:1;
 };

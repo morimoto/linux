@@ -408,8 +408,9 @@ static int snd_soc_card_init_pcm_runtime(struct snd_soc_card *card,
 	if (ret)
 		goto err;
 
-	/* add DPCM sysfs entries */
-	soc_dpcm_debugfs_add(rtd);
+	/* add special debugfs entries */
+	if (rtd->rtd_ops->debugfs_add)
+		rtd->rtd_ops->debugfs_add(rtd);
 
 	/* create compress_device if possible */
 	ret = snd_soc_dai_compress_new(cpu_dai, rtd);
