@@ -284,37 +284,19 @@ static int nau8821_biq_coeff_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct soc_bytes_ext *params = (void *)kcontrol->private_value;
 
-	if (!component->regmap)
-		return -EINVAL;
+	ucontrol->value.integer.value[0] = snd_soc_component_read(component, NAU8821_R21_BIQ0_COF1);
 
-	return regmap_raw_read(component->regmap, NAU8821_R21_BIQ0_COF1,
-		ucontrol->value.bytes.data, params->max);
+	return 0;
 }
 
 static int nau8821_biq_coeff_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct soc_bytes_ext *params = (void *)kcontrol->private_value;
-	void *data;
-	int ret;
 
-	if (!component->regmap)
-		return -EINVAL;
-
-	data = kmemdup(ucontrol->value.bytes.data,
-		params->max, GFP_KERNEL | GFP_DMA);
-	if (!data)
-		return -ENOMEM;
-
-	ret = regmap_raw_write(component->regmap, NAU8821_R21_BIQ0_COF1,
-		data, params->max);
-
-	kfree(data);
-
-	return ret;
+	return snd_soc_component_write(component, NAU8821_R21_BIQ0_COF1,
+				       ucontrol->value.integer.value[0]);
 }
 
 static const char * const nau8821_adc_decimation[] = {
@@ -467,9 +449,9 @@ static const struct snd_kcontrol_new nau8821_dmic_mode_switch =
 static int dmic_clock_control(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *k, int  event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 	int i, speed_selection = -1, clk_adc_src, clk_adc;
 	unsigned int clk_divider_r03;
 
@@ -506,9 +488,9 @@ static int dmic_clock_control(struct snd_soc_dapm_widget *w,
 static int nau8821_left_adc_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -526,9 +508,9 @@ static int nau8821_left_adc_event(struct snd_soc_dapm_widget *w,
 static int nau8821_right_adc_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -546,10 +528,9 @@ static int nau8821_right_adc_event(struct snd_soc_dapm_widget *w,
 static int nau8821_pump_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct nau8821 *nau8821 =
-		snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -572,9 +553,9 @@ static int nau8821_pump_event(struct snd_soc_dapm_widget *w,
 static int nau8821_output_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -596,9 +577,9 @@ static int nau8821_output_dac_event(struct snd_soc_dapm_widget *w,
 static int system_clock_control(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *k, int  event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 
 	if (SND_SOC_DAPM_EVENT_OFF(event)) {
 		dev_dbg(nau8821->dev, "system clock control : POWER OFF\n");
@@ -621,7 +602,8 @@ static int nau8821_left_fepga_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 
 	if (!nau8821->left_input_single_end)
 		return 0;
@@ -826,8 +808,9 @@ nau8821_get_osr(struct nau8821 *nau8821, int stream)
 static int nau8821_dai_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 	const struct nau8821_osr_attr *osr;
 	int ret;
 
@@ -852,8 +835,9 @@ static int nau8821_dai_startup(struct snd_pcm_substream *substream,
 static int nau8821_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 	unsigned int val_len = 0, ctrl_val, bclk_fs, clk_div;
 	const struct nau8821_osr_attr *osr;
 
@@ -923,8 +907,9 @@ static int nau8821_hw_params(struct snd_pcm_substream *substream,
 
 static int nau8821_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 	unsigned int ctrl1_val = 0, ctrl2_val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -980,8 +965,9 @@ static int nau8821_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 static int nau8821_digital_mute(struct snd_soc_dai *dai, int mute,
 		int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 	unsigned int val = 0;
 
 	if (mute)
@@ -1283,7 +1269,8 @@ static const struct regmap_config nau8821_regmap_config = {
 
 static int nau8821_component_probe(struct snd_soc_component *component)
 {
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	nau8821->dapm = dapm;
@@ -1293,7 +1280,8 @@ static int nau8821_component_probe(struct snd_soc_component *component)
 
 static void nau8821_component_remove(struct snd_soc_component *component)
 {
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 
 	if (nau8821->jdet_active)
 		cancel_delayed_work_sync(&nau8821->jdet_work);
@@ -1432,7 +1420,8 @@ static void nau8821_fll_apply(struct nau8821 *nau8821,
 static int nau8821_set_fll(struct snd_soc_component *component,
 	int pll_id, int source, unsigned int freq_in, unsigned int freq_out)
 {
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 	struct nau8821_fll fll_set_param, *fll_param = &fll_set_param;
 	int ret, fs;
 
@@ -1549,7 +1538,8 @@ static int nau8821_configure_sysclk(struct nau8821 *nau8821,
 static int nau8821_set_sysclk(struct snd_soc_component *component, int clk_id,
 	int source, unsigned int freq, int dir)
 {
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 
 	return nau8821_configure_sysclk(nau8821, clk_id, freq);
 }
@@ -1582,7 +1572,8 @@ static int nau8821_resume_setup(struct nau8821 *nau8821)
 static int nau8821_set_bias_level(struct snd_soc_component *component,
 		enum snd_soc_bias_level level)
 {
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8821->regmap;
 
 	switch (level) {
@@ -1628,7 +1619,8 @@ static int nau8821_set_bias_level(struct snd_soc_component *component,
 
 static int __maybe_unused nau8821_suspend(struct snd_soc_component *component)
 {
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 
 	if (nau8821->irq)
 		disable_irq(nau8821->irq);
@@ -1648,7 +1640,8 @@ static int __maybe_unused nau8821_suspend(struct snd_soc_component *component)
 
 static int __maybe_unused nau8821_resume(struct snd_soc_component *component)
 {
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 
 	regcache_cache_only(nau8821->regmap, false);
 	regcache_sync(nau8821->regmap);
@@ -1691,7 +1684,8 @@ static const struct snd_soc_component_driver nau8821_component_driver = {
 int nau8821_enable_jack_detect(struct snd_soc_component *component,
 	struct snd_soc_jack *jack)
 {
-	struct nau8821 *nau8821 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8821 *nau8821 = dev_get_drvdata(dev);
 	int ret;
 
 	nau8821->jack = jack;

@@ -439,7 +439,8 @@ int madera_set_output_mode(struct snd_soc_component *component, int output,
 static inline int madera_register_notifier(struct snd_soc_component *component,
 					   struct notifier_block *nb)
 {
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 
 	return blocking_notifier_chain_register(&madera->notifier, nb);
@@ -449,7 +450,8 @@ static inline int
 madera_unregister_notifier(struct snd_soc_component *component,
 			   struct notifier_block *nb)
 {
-	struct madera_priv *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct madera_priv *priv = dev_get_drvdata(dev);
 	struct madera *madera = priv->madera;
 
 	return blocking_notifier_chain_unregister(&madera->notifier, nb);

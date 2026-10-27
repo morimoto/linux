@@ -46,14 +46,16 @@ struct tegra_audio_cdata {
 
 static bool need_clk_update(struct snd_soc_dai *dai)
 {
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+
 	if (snd_soc_dai_is_dummy(dai) ||
-	    !dai->driver->ops ||
-	    !dai->driver->name)
+	    !dai_driver->ops ||
+	    !dai_driver->name)
 		return false;
 
-	if (strstr(dai->driver->name, "I2S") ||
-	    strstr(dai->driver->name, "DMIC") ||
-	    strstr(dai->driver->name, "DSPK"))
+	if (strstr(dai_driver->name, "I2S") ||
+	    strstr(dai_driver->name, "DMIC") ||
+	    strstr(dai_driver->name, "DSPK"))
 		return true;
 
 	return false;
@@ -64,9 +66,9 @@ static int tegra_audio_graph_update_pll(struct snd_pcm_substream *substream,
 					struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct simple_util_priv *simple = snd_soc_card_get_drvdata(rtd->card);
+	struct simple_util_priv *simple = snd_soc_card_to_priv(rtd->card);
 	struct tegra_audio_priv *priv = simple_to_tegra_priv(simple);
-	struct device *dev = rtd->card->dev;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	const struct tegra_audio_cdata *data = of_device_get_match_data(dev);
 	unsigned int plla_rate, plla_out0_rate, bclk;
 	unsigned int srate = params_rate(params);
@@ -91,7 +93,7 @@ static int tegra_audio_graph_update_pll(struct snd_pcm_substream *substream,
 		plla_rate = data->plla_rates[x8_RATE];
 		break;
 	default:
-		dev_err(rtd->card->dev, "Unsupported sample rate %u\n",
+		dev_err(dev, "Unsupported sample rate %u\n",
 			srate);
 		return -EINVAL;
 	}
@@ -123,14 +125,14 @@ static int tegra_audio_graph_update_pll(struct snd_pcm_substream *substream,
 	if (div_u64(plla_out0_rate, bclk) > MAX_PLLA_OUT0_DIV)
 		plla_out0_rate >>= 1;
 
-	dev_dbg(rtd->card->dev,
+	dev_dbg(dev,
 		"Update clock rates: PLLA(= %u Hz) and PLLA_OUT0(= %u Hz)\n",
 		plla_rate, plla_out0_rate);
 
 	/* Set PLLA rate */
 	err = clk_set_rate(priv->clk_plla, plla_rate);
 	if (err) {
-		dev_err(rtd->card->dev,
+		dev_err(dev,
 			"Can't set plla rate for %u, err: %d\n",
 			plla_rate, err);
 		return err;
@@ -139,7 +141,7 @@ static int tegra_audio_graph_update_pll(struct snd_pcm_substream *substream,
 	/* Set PLLA_OUT0 rate */
 	err = clk_set_rate(priv->clk_plla_out0, plla_out0_rate);
 	if (err) {
-		dev_err(rtd->card->dev,
+		dev_err(dev,
 			"Can't set plla_out0 rate %u, err: %d\n",
 			plla_out0_rate, err);
 		return err;
@@ -172,23 +174,24 @@ static const struct snd_soc_ops tegra_audio_graph_ops = {
 
 static int tegra_audio_graph_card_probe(struct snd_soc_card *card)
 {
-	struct simple_util_priv *simple = snd_soc_card_get_drvdata(card);
+	struct simple_util_priv *simple = snd_soc_card_to_priv(card);
 	struct tegra_audio_priv *priv = simple_to_tegra_priv(simple);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
-	priv->clk_plla = devm_clk_get(card->dev, "pll_a");
+	priv->clk_plla = devm_clk_get(dev, "pll_a");
 	if (IS_ERR(priv->clk_plla))
-		return dev_err_probe(card->dev, PTR_ERR(priv->clk_plla),
+		return dev_err_probe(dev, PTR_ERR(priv->clk_plla),
 				     "can't retrieve clk pll_a\n");
 
-	priv->clk_plla_out0 = devm_clk_get(card->dev, "plla_out0");
+	priv->clk_plla_out0 = devm_clk_get(dev, "plla_out0");
 	if (IS_ERR(priv->clk_plla_out0))
-		return dev_err_probe(card->dev, PTR_ERR(priv->clk_plla_out0),
+		return dev_err_probe(dev, PTR_ERR(priv->clk_plla_out0),
 				     "can't retrieve clk plla_out0\n");
 
 	ret = graph_util_card_probe(card);
 	if (ret < 0)
-		return dev_err_probe(card->dev, ret, "graph_util_card_probe failed\n");
+		return dev_err_probe(dev, ret, "graph_util_card_probe failed\n");
 
 	return ret;
 }

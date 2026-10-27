@@ -77,7 +77,7 @@ static const struct snd_kcontrol_new tegra_wm8994_controls[] = {
 
 static int tegra_wm8994_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct tegra_machine *machine = snd_soc_card_get_drvdata(rtd->card);
+	struct tegra_machine *machine = snd_soc_card_to_priv(rtd->card);
 	int err;
 
 	err = tegra_asoc_machine_init(rtd);
@@ -86,7 +86,7 @@ static int tegra_wm8994_init(struct snd_soc_pcm_runtime *rtd)
 
 	if (!machine->gpiod_mic_det && machine->asoc->add_mic_jack) {
 		struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-		struct snd_soc_component *component = codec_dai->component;
+		struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
 		err = snd_soc_card_jack_new_pins(rtd->card, "Mic Jack",
 						 SND_JACK_MICROPHONE,
@@ -106,11 +106,12 @@ static int tegra_wm8994_init(struct snd_soc_pcm_runtime *rtd)
 
 static int tegra_wm8994_remove(struct snd_soc_card *card)
 {
-	struct snd_soc_dai_link *link = &card->dai_link[0];
-	struct snd_soc_pcm_runtime *rtd = snd_soc_get_pcm_runtime(card, link);
-	struct tegra_machine *machine = snd_soc_card_get_drvdata(rtd->card);
+	struct snd_soc_card_driver *card_driver = snd_soc_card_to_driver(card);
+	struct snd_soc_dai_link *link = &card_driver->dai_link[0];
+	struct snd_soc_pcm_runtime *rtd = snd_soc_card_to_rtd(card, link);
+	struct tegra_machine *machine = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
 	if (!machine->gpiod_mic_det && machine->asoc->add_mic_jack)
 		wm8994_mic_detect(component, NULL, 1);

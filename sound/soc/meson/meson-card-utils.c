@@ -42,7 +42,7 @@ EXPORT_SYMBOL_GPL(meson_card_i2s_set_sysclk);
 int meson_card_reallocate_links(struct snd_soc_card *card,
 				unsigned int num_links)
 {
-	struct meson_card *priv = snd_soc_card_get_drvdata(card);
+	struct meson_card *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_dai_link *links;
 	void **ldata;
 
@@ -71,7 +71,7 @@ int meson_card_parse_dai(struct snd_soc_card *card,
 			 struct device_node *node,
 			 struct snd_soc_dai_link_component *dlc)
 {
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	if (!dlc || !node)
@@ -90,7 +90,7 @@ static int meson_card_set_link_name(struct snd_soc_card *card,
 				    struct device_node *node,
 				    const char *prefix)
 {
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	char *name = devm_kasprintf(dev, GFP_KERNEL, "%s.%s",
 				    prefix, node->full_name);
 	if (!name)
@@ -134,7 +134,7 @@ int meson_card_set_be_link(struct snd_soc_card *card,
 			   struct device_node *node)
 {
 	struct snd_soc_dai_link_component *codec;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret, num_codecs;
 
 	num_codecs = of_get_child_count(node);
@@ -191,8 +191,8 @@ EXPORT_SYMBOL_GPL(meson_card_set_fe_link);
 
 static int meson_card_add_links(struct snd_soc_card *card)
 {
-	struct meson_card *priv = snd_soc_card_get_drvdata(card);
-	struct device *dev = card->dev;
+	struct meson_card *priv = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct device_node *node = dev->of_node;
 	int num, i, ret;
 
@@ -224,8 +224,8 @@ static int meson_card_parse_of_optional(struct snd_soc_card *card,
 						    struct snd_soc_card_driver *c,
 						    const char *p))
 {
-	struct meson_card *priv = snd_soc_card_get_drvdata(card);
-	struct device *dev = card->dev;
+	struct meson_card *priv = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 
 	/* If property is not provided, don't fail ... */
 	if (!of_property_present(dev->of_node, propname))

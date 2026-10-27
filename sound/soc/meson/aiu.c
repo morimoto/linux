@@ -66,7 +66,7 @@ int aiu_of_xlate_dai_name(struct snd_soc_component *component,
 
 	id = args->args[1];
 
-	if (id < 0 || id >= component->num_dai)
+	if (id < 0 || id >= snd_soc_component_num_dai(component))
 		return -EINVAL;
 
 	for_each_component_dais(component, dai) {
@@ -75,7 +75,7 @@ int aiu_of_xlate_dai_name(struct snd_soc_component *component,
 		id--;
 	}
 
-	*dai_name = dai->driver->name;
+	*dai_name = snd_soc_dai_to_driver(dai)->name;
 
 	return 0;
 }
@@ -89,7 +89,8 @@ static int aiu_cpu_of_xlate_dai_name(struct snd_soc_component *component,
 
 static int aiu_cpu_component_probe(struct snd_soc_component *component)
 {
-	struct aiu *aiu = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aiu *aiu = dev_get_drvdata(dev);
 
 	/* Required for the SPDIF Source control operation */
 	return clk_prepare_enable(aiu->i2s.clks[PCLK].clk);
@@ -97,7 +98,8 @@ static int aiu_cpu_component_probe(struct snd_soc_component *component)
 
 static void aiu_cpu_component_remove(struct snd_soc_component *component)
 {
-	struct aiu *aiu = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aiu *aiu = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(aiu->i2s.clks[PCLK].clk);
 }

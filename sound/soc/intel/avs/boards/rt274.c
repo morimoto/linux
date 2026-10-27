@@ -29,17 +29,22 @@ avs_rt274_clock_control(struct snd_soc_dapm_widget *w, struct snd_kcontrol *cont
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
 	struct snd_soc_dai *codec_dai;
+	struct snd_soc_component *component;
+	struct device *dev;
 	int ret;
 
 	codec_dai = snd_soc_card_get_codec_dai(card, RT274_CODEC_DAI);
 	if (!codec_dai)
 		return -EINVAL;
 
+	component = snd_soc_dai_to_component(codec_dai);
+	dev = snd_soc_component_to_dev(component);
+
 	/* Codec needs clock for Jack detection and button press */
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT274_SCLK_S_PLL2, AVS_RT274_FREQ_OUT,
 				     SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "set codec sysclk failed: %d\n", ret);
+		dev_err(dev, "set codec sysclk failed: %d\n", ret);
 		return ret;
 	}
 
@@ -51,7 +56,7 @@ avs_rt274_clock_control(struct snd_soc_dapm_widget *w, struct snd_kcontrol *cont
 		ret = snd_soc_dai_set_pll(codec_dai, 0, RT274_PLL2_S_BCLK,
 					  AVS_RT274_BE_FIXUP_RATE * ratio, AVS_RT274_FREQ_OUT);
 		if (ret) {
-			dev_err(codec_dai->dev, "failed to enable PLL2: %d\n", ret);
+			dev_err(dev, "failed to enable PLL2: %d\n", ret);
 			return ret;
 		}
 	}
@@ -88,17 +93,18 @@ static const struct snd_soc_jack_pin card_headset_pins[] = {
 static int avs_rt274_codec_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(runtime, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct snd_soc_jack_pin *pins;
 	struct snd_soc_jack *jack;
 	struct snd_soc_card *card = runtime->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int num_pins, ret;
 
-	jack = snd_soc_card_get_drvdata(card);
+	jack = snd_soc_card_to_priv(card);
 	num_pins = ARRAY_SIZE(card_headset_pins);
 
-	pins = devm_kmemdup_array(card->dev, card_headset_pins, num_pins,
+	pins = devm_kmemdup_array(dev, card_headset_pins, num_pins,
 				  sizeof(card_headset_pins[0]), GFP_KERNEL);
 	if (!pins)
 		return -ENOMEM;
@@ -113,7 +119,7 @@ static int avs_rt274_codec_init(struct snd_soc_pcm_runtime *runtime)
 	/* TDM 4 slots 24 bit, set Rx & Tx bitmask to 4 active slots */
 	ret = snd_soc_dai_set_tdm_slot(codec_dai, 0xF, 0xF, 4, 24);
 	if (ret < 0) {
-		dev_err(card->dev, "can't set codec pcm format %d\n", ret);
+		dev_err(dev, "can't set codec pcm format %d\n", ret);
 		return ret;
 	}
 
@@ -124,7 +130,9 @@ static int avs_rt274_codec_init(struct snd_soc_pcm_runtime *runtime)
 
 static void avs_rt274_codec_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	snd_soc_component_set_jack(snd_soc_rtd_to_codec(rtd, 0)->component, NULL, NULL);
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
+
+	snd_soc_component_set_jack(component, NULL, NULL);
 }
 
 static int avs_rt274_be_fixup(struct snd_soc_pcm_runtime *runtime, struct snd_pcm_hw_params *params)
@@ -193,16 +201,18 @@ static int avs_create_dai_link(struct device *dev, int ssp_port, int tdm_slot,
 static int avs_card_suspend_pre(struct snd_soc_card *card)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_card_get_codec_dai(card, RT274_CODEC_DAI);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
-	return snd_soc_component_set_jack(codec_dai->component, NULL, NULL);
+	return snd_soc_component_set_jack(component, NULL, NULL);
 }
 
 static int avs_card_resume_post(struct snd_soc_card *card)
 {
 	struct snd_soc_dai *codec_dai = snd_soc_card_get_codec_dai(card, RT274_CODEC_DAI);
-	struct snd_soc_jack *jack = snd_soc_card_get_drvdata(card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct snd_soc_jack *jack = snd_soc_card_to_priv(card);
 
-	return snd_soc_component_set_jack(codec_dai->component, jack, NULL);
+	return snd_soc_component_set_jack(component, jack, NULL);
 }
 
 static int avs_rt274_probe(struct platform_device *pdev)
@@ -254,7 +264,7 @@ static int avs_rt274_probe(struct platform_device *pdev)
 	card_driver->dapm_routes = card_base_routes;
 	card_driver->num_dapm_routes = ARRAY_SIZE(card_base_routes);
 	card_driver->fully_routed = true;
-	snd_soc_card_set_drvdata(card, jack);
+	snd_soc_card_set_priv(card, jack);
 
 	return devm_snd_soc_card_register(card, card_driver);
 }

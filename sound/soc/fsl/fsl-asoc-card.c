@@ -254,12 +254,12 @@ static int fsl_asoc_card_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct fsl_asoc_card_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct fsl_asoc_card_priv *priv = snd_soc_card_to_priv(rtd->card);
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	struct codec_priv *codec_priv;
 	struct snd_soc_dai *codec_dai;
 	struct cpu_priv *cpu_priv = &priv->cpu_priv;
-	struct device *dev = rtd->card->dev;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	unsigned int pll_out, sysclk_freq;
 	int codec_idx;
 	int ret;
@@ -338,10 +338,10 @@ fail:
 static int fsl_asoc_card_hw_free(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct fsl_asoc_card_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct fsl_asoc_card_priv *priv = snd_soc_card_to_priv(rtd->card);
 	struct codec_priv *codec_priv;
 	struct snd_soc_dai *codec_dai;
-	struct device *dev = rtd->card->dev;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	int codec_idx;
 	int ret;
 
@@ -376,7 +376,7 @@ static int fsl_asoc_card_hw_free(struct snd_pcm_substream *substream)
 static int fsl_asoc_card_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-	struct fsl_asoc_card_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct fsl_asoc_card_priv *priv = snd_soc_card_to_priv(rtd->card);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	int ret;
 
@@ -421,7 +421,7 @@ static const struct snd_soc_ops fsl_asoc_card_ops = {
 static int be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 			      struct snd_pcm_hw_params *params)
 {
-	struct fsl_asoc_card_priv *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct fsl_asoc_card_priv *priv = snd_soc_card_to_priv(rtd->card);
 	struct snd_interval *rate;
 	struct snd_mask *mask;
 
@@ -882,11 +882,13 @@ static struct notifier_block mic_jack_nb = {
 static int fsl_asoc_card_init_cpu(struct snd_soc_card *card,
 				  struct snd_soc_pcm_runtime *rtd)
 {
-	struct fsl_asoc_card_priv *priv = snd_soc_card_get_drvdata(card);
+	struct fsl_asoc_card_priv *priv = snd_soc_card_to_priv(card);
 	struct device_node *np = priv->pdev->dev.of_node;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	const char *comp_drv_name = cpu_dai->component->driver->name;
-	struct device *dev = card->dev;
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	const struct snd_soc_component_driver *cpu_driver = snd_soc_component_to_driver(cpu_component);
+	const char *comp_drv_name = cpu_driver->name;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	if (!strcmp(comp_drv_name, "fsl-ssi")) {
@@ -897,7 +899,7 @@ static int fsl_asoc_card_init_cpu(struct snd_soc_card *card,
 			return ret;
 		}
 	} else if (!strcmp(comp_drv_name, "fsl-esai")) {
-		struct clk *esai_clk = clk_get(cpu_dai->dev, "extal");
+		struct clk *esai_clk = clk_get(snd_soc_component_to_dev(cpu_component), "extal");
 
 		if (!IS_ERR(esai_clk)) {
 			priv->cpu_priv.sysclk_freq[TX] = clk_get_rate(esai_clk);
@@ -928,17 +930,19 @@ static int fsl_asoc_card_init_cpu(struct snd_soc_card *card,
 static int fsl_asoc_card_init_codecs(struct snd_soc_card *card,
 				     struct snd_soc_pcm_runtime *rtd)
 {
-	struct fsl_asoc_card_priv *priv = snd_soc_card_get_drvdata(card);
+	struct fsl_asoc_card_priv *priv = snd_soc_card_to_priv(card);
 	const struct fsl_asoc_card_pdata *pdata = priv->pdata;
 	struct snd_soc_dai *codec_dai;
 	struct codec_priv *codec_priv;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int codec_idx;
 	int ret;
 
 	/* Read MCLK rate from each bound codec component */
 	for_each_rtd_codec_dais(rtd, codec_idx, codec_dai) {
-		struct clk *codec_clk = clk_get(codec_dai->component->dev, NULL);
+		struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+		struct device *component_dev = snd_soc_component_to_dev(component);
+		struct clk *codec_clk = clk_get(component_dev, NULL);
 
 		codec_priv = &priv->codec_priv[codec_idx];
 		if (!IS_ERR(codec_clk)) {
@@ -969,7 +973,7 @@ static int fsl_asoc_card_init_codecs(struct snd_soc_card *card,
 
 static void fsl_asoc_card_free_jack(struct snd_soc_card *card)
 {
-	struct fsl_asoc_card_priv *priv = snd_soc_card_get_drvdata(card);
+	struct fsl_asoc_card_priv *priv = snd_soc_card_to_priv(card);
 
 	if (priv->hp_jack.gpio.desc) {
 		snd_soc_jack_notifier_unregister(&priv->hp_jack.jack, &hp_jack_nb);
@@ -991,7 +995,7 @@ static void fsl_asoc_card_free_jack(struct snd_soc_card *card)
  */
 static int fsl_asoc_card_init_jack(struct snd_soc_card *card)
 {
-	struct fsl_asoc_card_priv *priv = snd_soc_card_get_drvdata(card);
+	struct fsl_asoc_card_priv *priv = snd_soc_card_to_priv(card);
 	struct device_node *np = priv->pdev->dev.of_node;
 	int ret;
 
@@ -1025,12 +1029,12 @@ static int fsl_asoc_card_init_jack(struct snd_soc_card *card)
 
 static int fsl_asoc_card_late_probe(struct snd_soc_card *card)
 {
-	struct fsl_asoc_card_priv *priv = snd_soc_card_get_drvdata(card);
+	struct fsl_asoc_card_priv *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_pcm_runtime *rtd;
 	int ret;
 
 	/* Use the first rtd which carries the CPU+codec DAIs */
-	rtd = list_first_entry(&card->rtd_list_head,
+	rtd = list_first_entry(snd_soc_card_to_rtd_list_head(card),
 			       struct snd_soc_pcm_runtime, rtd_list);
 
 	ret = fsl_asoc_card_init_jack(card);
@@ -1043,8 +1047,10 @@ static int fsl_asoc_card_late_probe(struct snd_soc_card *card)
 
 	if (fsl_asoc_card_is_ac97(priv)) {
 #if IS_ENABLED(CONFIG_SND_AC97_CODEC)
-		struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
-		struct snd_ac97 *ac97 = snd_soc_component_get_drvdata(component);
+		struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
+		struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+		struct device *dev = snd_soc_component_to_dev(component);
+		struct snd_ac97 *ac97 = dev_get_drvdata(dev);
 
 		/*
 		 * Use slots 3/4 for S/PDIF so SSI won't try to enable

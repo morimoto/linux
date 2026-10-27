@@ -236,7 +236,8 @@ int axg_tdm_formatter_event(struct snd_soc_dapm_widget *w,
 			    int event)
 {
 	struct snd_soc_component *c = snd_soc_dapm_to_component(w->dapm);
-	struct axg_tdm_formatter *formatter = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct axg_tdm_formatter *formatter = dev_get_drvdata(dev);
 	int ret = 0;
 
 	switch (event) {
@@ -249,7 +250,7 @@ int axg_tdm_formatter_event(struct snd_soc_dapm_widget *w,
 		break;
 
 	default:
-		dev_err(c->dev, "Unexpected event %d\n", event);
+		dev_err(dev, "Unexpected event %d\n", event);
 		return -EINVAL;
 	}
 
