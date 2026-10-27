@@ -1073,31 +1073,6 @@ int snd_soc_pcm_detect_playback_capture(struct snd_soc_pcm_runtime *rtd,
 	return 0;
 }
 
-static int soc_create_pcm(struct snd_pcm **pcm,
-			  struct snd_soc_pcm_runtime *rtd,
-			  int playback, int capture)
-{
-	struct snd_card *snd_card = snd_soc_card_to_snd_card(rtd->card);
-	char new_name[64];
-	int ret;
-
-	/* create the PCM */
-	snprintf(new_name, sizeof(new_name), "%s %s-%d",
-		 rtd->dai_link->stream_name,
-		 soc_codec_dai_name(rtd), rtd->id);
-
-	ret = snd_pcm_new(snd_card, new_name, rtd->id, playback,
-			  capture, pcm);
-
-	if (ret < 0)
-		return snd_soc_ret(rtd->dev, ret,
-			"can't create pcm %s for dailink %s\n", new_name, rtd->dai_link->name);
-
-	dev_dbg(snd_soc_card_to_dev(rtd->card), "ASoC: registered pcm #%d %s\n", rtd->id, new_name);
-
-	return 0;
-}
-
 int snd_soc_pcm_new_common(struct snd_soc_pcm_runtime *rtd, int playback, int capture)
 {
 	struct snd_soc_component *component;
@@ -1135,16 +1110,22 @@ int snd_soc_pcm_new_common(struct snd_soc_pcm_runtime *rtd, int playback, int ca
 }
 
 /* create a new pcm */
-static int soc_new_pcm_orig(struct snd_soc_pcm_runtime *rtd)
+static int soc_new_pcm_normal(struct snd_soc_pcm_runtime *rtd)
 {
+	struct snd_soc_dai_link *dai_link = rtd->dai_link;
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(rtd->card);
 	struct snd_pcm *pcm;
+	char new_name[64];
 	int ret = 0, playback = 0, capture = 0;
+
+	snprintf(new_name, sizeof(new_name), "%s %s-%d", dai_link->stream_name,
+		 soc_codec_dai_name(rtd), rtd->id);
 
 	ret = snd_soc_pcm_detect_playback_capture(rtd, &playback, &capture, false);
 	if (ret < 0)
 		goto err;
 
-	ret = soc_create_pcm(&pcm, rtd, playback, capture);
+	ret = snd_pcm_new(snd_card, new_name, rtd->id, playback, capture, &pcm);
 	if (ret < 0)
 		goto err;
 
@@ -1188,7 +1169,7 @@ int soc_new_pcm(struct snd_soc_pcm_runtime *rtd)
 	else if (dai_link->c2c_params)
 		ret = snd_soc_pcm_new_c2c(rtd);
 	else
-		ret = soc_new_pcm_orig(rtd);
+		ret = soc_new_pcm_normal(rtd);
 
 	if (ret < 0)
 		dev_err(dev, "ASoC: can't create pcm %s :%d\n",
