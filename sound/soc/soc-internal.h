@@ -272,7 +272,7 @@ int snd_soc_pcm_open_no_lock(struct snd_soc_pcm_runtime *rtd,
 int snd_soc_pcm_close_no_lock(struct snd_soc_pcm_runtime *rtd,
 			      struct snd_pcm_substream *substream, int rollback);
 int snd_soc_pcm_detect_playback_capture(struct snd_soc_pcm_runtime *rtd,
-					int *playback, int *capture);
+				int *playback, int *capture, bool use_dummy_codec);
 snd_pcm_uframes_t snd_soc_pcm_pointer(struct snd_pcm_substream *substream);
 int snd_soc_pcm_trigger(struct snd_pcm_substream *substream, int cmd);
 void snd_soc_pcm_hw_init(struct snd_pcm_hardware *hw, bool force);
@@ -282,6 +282,7 @@ void snd_soc_pcm_hw_update_rate(struct snd_pcm_hardware *hw, const struct snd_so
 void snd_soc_pcm_hw_update_chan(struct snd_pcm_hardware *hw, const struct snd_soc_pcm_stream *p);
 void snd_soc_pcm_hw_update_format(struct snd_pcm_hardware *hw, const struct snd_soc_pcm_stream *p);
 int snd_soc_pcm_new_common(struct snd_soc_pcm_runtime *rtd, int playback, int capture);
+int snd_soc_pcm_new_dpcm_fe(struct snd_soc_pcm_runtime *rtd);
 
 /* REMOVE ME */
 int dpcm_fe_dai_open(struct snd_pcm_substream *fe_substream);

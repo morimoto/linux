@@ -1823,3 +1823,46 @@ open_end:
 
 	return soc_pcm_ret(fe, ret);
 }
+
+int snd_soc_pcm_new_dpcm_fe(struct snd_soc_pcm_runtime *rtd)
+{
+	struct snd_soc_dai_link *dai_link = rtd->dai_link;
+	struct snd_card *snd_card = snd_soc_card_to_snd_card(rtd->card);
+	struct snd_pcm *pcm;
+	char new_name[64];
+	int ret = 0, playback = 0, capture = 0;
+
+	if (dai_link->num_cpus > 1)
+		return snd_soc_ret(rtd->dev, -EINVAL,
+				   "DPCM doesn't support Multi CPU for Front-Ends yet\n");
+
+	snprintf(new_name, sizeof(new_name), "%s (*)", dai_link->stream_name);
+
+	ret = snd_soc_pcm_detect_playback_capture(rtd, &playback, &capture, true);
+	if (ret < 0)
+		goto err;
+
+	ret = snd_pcm_new(snd_card, new_name, rtd->id, playback, capture, &pcm);
+	if (ret < 0)
+		goto err;
+
+	rtd->pcm			= pcm;
+	rtd->close_delayed_work_func	= snd_soc_close_delayed_work;
+
+	pcm->nonatomic			= dai_link->nonatomic;
+	pcm->private_data		= rtd;
+	pcm->no_device_suspend		= true;
+
+	/* ASoC PCM operations */
+	rtd->ops.open		= dpcm_fe_dai_open;
+	rtd->ops.hw_params	= dpcm_fe_dai_hw_params;
+	rtd->ops.prepare	= dpcm_fe_dai_prepare;
+	rtd->ops.trigger	= dpcm_fe_dai_trigger;
+	rtd->ops.hw_free	= dpcm_fe_dai_hw_free;
+	rtd->ops.close		= dpcm_fe_dai_close;
+	rtd->ops.pointer	= snd_soc_pcm_pointer;
+
+	ret = snd_soc_pcm_new_common(rtd, playback, capture);
+err:
+	return soc_pcm_ret(rtd, ret);
+}
