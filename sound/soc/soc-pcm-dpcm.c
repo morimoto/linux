@@ -1867,7 +1867,9 @@ err:
 	return soc_pcm_ret(rtd, ret);
 }
 
-int snd_soc_pcm_new_dpcm_be(struct snd_soc_pcm_runtime *rtd)
+int snd_soc_pcm_new_nopcm(struct snd_soc_pcm_runtime *rtd, char *name_prefix,
+			  bool use_dummy_codec,
+			  bool delayed_work)
 {
 	struct snd_soc_dai_link *dai_link = rtd->dai_link;
 	struct snd_card *snd_card = snd_soc_card_to_snd_card(rtd->card);
@@ -1875,9 +1877,9 @@ int snd_soc_pcm_new_dpcm_be(struct snd_soc_pcm_runtime *rtd)
 	char new_name[64];
 	int ret = 0, playback = 0, capture = 0;
 
-	snprintf(new_name, sizeof(new_name), "(%s)", dai_link->stream_name);
+	snprintf(new_name, sizeof(new_name), "%s(%s)", name_prefix, dai_link->stream_name);
 
-	ret = snd_soc_pcm_detect_playback_capture(rtd, &playback, &capture, true);
+	ret = snd_soc_pcm_detect_playback_capture(rtd, &playback, &capture, use_dummy_codec);
 	if (ret < 0)
 		goto err;
 
@@ -1885,8 +1887,17 @@ int snd_soc_pcm_new_dpcm_be(struct snd_soc_pcm_runtime *rtd)
 	if (ret < 0)
 		goto err;
 
+	/* DAPM dai link stream work */
+	/*
+	 * Currently nothing to do for c2c links
+	 * Since c2c links are internal nodes in the DAPM graph and
+	 * don't interface with the outside world or application layer
+	 * we don't have to do any special handling on close.
+	 */
+	if (delayed_work)
+		rtd->close_delayed_work_func = snd_soc_close_delayed_work;
+
 	rtd->pcm			= pcm;
-	rtd->close_delayed_work_func	= snd_soc_close_delayed_work;
 
 	pcm->nonatomic			= dai_link->nonatomic;
 	pcm->private_data		= rtd;
@@ -1900,4 +1911,9 @@ int snd_soc_pcm_new_dpcm_be(struct snd_soc_pcm_runtime *rtd)
 	ret = 0;
 err:
 	return soc_pcm_ret(rtd, ret);
+}
+
+int snd_soc_pcm_new_dpcm_be(struct snd_soc_pcm_runtime *rtd)
+{
+	return snd_soc_pcm_new_nopcm(rtd, "", true, true);
 }
