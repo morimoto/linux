@@ -237,13 +237,6 @@ int snd_soc_link_compr_set_params(struct snd_compr_stream *cstream);
 /*
  * In soc-dpcm
  */
-#ifdef CONFIG_DEBUG_FS
-void soc_dpcm_debugfs_add(struct snd_soc_pcm_runtime *rtd);
-#else
-static inline void soc_dpcm_debugfs_add(struct snd_soc_pcm_runtime *rtd)
-{
-}
-#endif
 int dpcm_path_get(struct snd_soc_pcm_runtime *fe,
 		  int stream, struct snd_soc_dapm_widget_list **list_);
 void dpcm_path_put(struct snd_soc_dapm_widget_list **list);

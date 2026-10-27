@@ -234,12 +234,10 @@ static const struct file_operations dpcm_state_fops = {
 	.llseek = default_llseek,
 };
 
-void soc_dpcm_debugfs_add(struct snd_soc_pcm_runtime *rtd)
+static void dpcm_fe_debugfs_add(struct snd_soc_pcm_runtime *rtd)
 {
+#ifdef CONFIG_DEBUG_FS
 	struct dentry *debugfs_root = snd_soc_card_to_debugfs_root(rtd->card);
-
-	if (!rtd->dai_link->dynamic)
-		return;
 
 	if (!debugfs_root)
 		return;
@@ -249,6 +247,7 @@ void soc_dpcm_debugfs_add(struct snd_soc_pcm_runtime *rtd)
 
 	debugfs_create_file("state", 0444, debugfs_root,
 			    rtd, &dpcm_state_fops);
+#endif
 }
 
 static void dpcm_create_debugfs_state(struct snd_soc_dpcm *dpcm, int stream)
@@ -1960,6 +1959,7 @@ static int dpcm_be_new_pcm(struct snd_soc_pcm_runtime *rtd)
 struct snd_soc_rtd_ops rtd_ops_dpcm_fe = {
 	.new_pcm	= dpcm_fe_new_pcm,
 	.new_compress	= dpcm_fe_new_compress,
+	.debugfs_add	= dpcm_fe_debugfs_add,
 	.open_dynamic	= 1,
 };
 
