@@ -361,7 +361,7 @@ void snd_soc_runtime_action(struct snd_soc_pcm_runtime *rtd,
 	for_each_rtd_components(rtd, i, component) {
 		if (snd_soc_component_num_dai(component))
 			continue;
-		snd_soc_component_active_action(component, action);
+		snd_soc_component_user_update(component, action);
 	}
 }
 EXPORT_SYMBOL_GPL(snd_soc_runtime_action);
