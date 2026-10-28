@@ -216,10 +216,8 @@ static void snd_soc_card_resume_deferred(struct work_struct *work)
 	if (card->driver->resume_pre)
 		card->driver->resume_pre(card);
 
-	for_each_card_components(card, component) {
-		if (snd_soc_component_is_suspended(component))
-			snd_soc_component_resume(component);
-	}
+	for_each_card_components(card, component)
+		snd_soc_component_resume(component);
 
 	snd_soc_dapm_suspend_resume(card, SND_SOC_DAPM_STREAM_RESUME);
 
