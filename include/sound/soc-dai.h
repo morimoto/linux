@@ -204,7 +204,10 @@ int snd_soc_dai_is_dummy(const struct snd_soc_dai *dai);
 int snd_soc_dai_add_controls(struct snd_soc_dai *dai,
 			     const struct snd_kcontrol_new *controls, int num_controls);
 
-int snd_soc_dai_active(const struct snd_soc_dai *dai);
+/* REMOVE ME */
+#define snd_soc_dai_active	snd_soc_dai_user_cnt
+#define snd_soc_dai_is_active(d)	(snd_soc_dai_user_cnt(d) > 0)
+int snd_soc_dai_user_cnt(const struct snd_soc_dai *dai);
 
 const char *snd_soc_dai_name(const struct snd_soc_dai *dai);
 int snd_soc_dai_id(const struct snd_soc_dai *dai);
@@ -370,7 +373,7 @@ struct snd_soc_dai_driver {
 struct snd_soc_dai_stream {
 	struct snd_soc_dapm_widget *widget;
 
-	unsigned int active;	/* usage count */
+	unsigned int user_cnt;
 	unsigned int tdm_mask;	/* CODEC TDM slot masks and params (for fixup) */
 
 	void *dma_data;		/* DAI DMA data */
@@ -417,7 +420,10 @@ static inline void snd_soc_dai_stream_dma_data_set_s(struct snd_soc_dai *dai, st
 	int :				snd_soc_dai_stream_dma_data_set_i,	\
 	struct snd_pcm_substream * :	snd_soc_dai_stream_dma_data_set_s)(dai, x, data)
 
-unsigned int snd_soc_dai_stream_active(const struct snd_soc_dai *dai, int stream);
+/* REMOVE ME */
+#define snd_soc_dai_stream_active	snd_soc_dai_stream_user_cnt
+#define snd_soc_dai_stream_is_active(d, s)	(snd_soc_dai_stream_user_cnt(d, s) > 0)
+unsigned int snd_soc_dai_stream_user_cnt(const struct snd_soc_dai *dai, int stream);
 
 int snd_soc_dai_set_stream(struct snd_soc_dai *dai, void *stream, int direction);
 void *snd_soc_dai_get_stream(struct snd_soc_dai *dai, int direction);
