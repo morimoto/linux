@@ -569,7 +569,7 @@ static bool cdns_i2s_mc_other_dai_active(struct snd_soc_dai *cpu_dai)
 	for_each_component_dais(component, dai) {
 		if (dai == cpu_dai)
 			continue;
-		if (snd_soc_dai_active(dai))
+		if (snd_soc_dai_is_active(dai))
 			return true;
 	}
 

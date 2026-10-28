@@ -651,7 +651,7 @@ static void bcm2835_i2s_stop(struct bcm2835_i2s_dev *dev,
 			BCM2835_I2S_CS_A_REG, mask, 0);
 
 	/* Stop also the clock when not SND_SOC_DAIFMT_CONT */
-	if (!snd_soc_dai_active(dai) && !(dev->fmt & SND_SOC_DAIFMT_CONT))
+	if (!snd_soc_dai_is_active(dai) && !(dev->fmt & SND_SOC_DAIFMT_CONT))
 		bcm2835_i2s_stop_clock(dev);
 }
 
@@ -697,7 +697,7 @@ static int bcm2835_i2s_startup(struct snd_pcm_substream *substream,
 	struct device *dai_dev = snd_soc_component_to_dev(component);
 	struct bcm2835_i2s_dev *dev = dev_get_drvdata(dai_dev);
 
-	if (snd_soc_dai_active(dai))
+	if (snd_soc_dai_is_active(dai))
 		return 0;
 
 	/* Should this still be running stop it */
@@ -727,7 +727,7 @@ static void bcm2835_i2s_shutdown(struct snd_pcm_substream *substream,
 	bcm2835_i2s_stop(dev, substream, dai);
 
 	/* If both streams are stopped, disable module and clock */
-	if (snd_soc_dai_active(dai))
+	if (snd_soc_dai_is_active(dai))
 		return;
 
 	/* Disable the module */

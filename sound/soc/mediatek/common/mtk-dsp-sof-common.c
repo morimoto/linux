@@ -32,7 +32,7 @@ int mtk_sof_dai_link_fixup(struct snd_soc_pcm_runtime *rtd,
 				continue;
 
 			for_each_rtd_cpu_dais(runtime, j, cpu_dai) {
-				if (snd_soc_dai_stream_active(cpu_dai, conn->stream_dir) > 0) {
+				if (snd_soc_dai_stream_is_active(cpu_dai, conn->stream_dir) > 0) {
 					sof_dai_link = runtime->dai_link;
 					break;
 				}
