@@ -396,7 +396,7 @@ static void tlv320aic23_shutdown(struct snd_pcm_substream *substream,
 	struct aic23 *aic23 = dev_get_drvdata(dev);
 
 	/* deactivate */
-	if (!snd_soc_component_active(component)) {
+	if (!snd_soc_component_is_active(component)) {
 		udelay(50);
 		snd_soc_component_write(component, TLV320AIC23_ACTIVE, 0x0);
 	}

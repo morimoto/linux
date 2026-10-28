@@ -231,7 +231,7 @@ static int aiu_encoder_i2s_hw_free(struct snd_pcm_substream *substream,
 	 * If this is the last substream being closed then disable the i2s
 	 * clock divider.
 	 */
-	if (snd_soc_dai_active(dai) <= 1)
+	if (snd_soc_dai_user_cnt(dai) <= 1)
 		aiu_encoder_i2s_divider_enable(component, 0);
 
 	if (ts->clk_enabled) {

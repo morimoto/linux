@@ -769,7 +769,7 @@ static int omap_mcbsp_dai_startup(struct snd_pcm_substream *substream,
 	struct omap_mcbsp *mcbsp = dev_get_drvdata(dev);
 	int err = 0;
 
-	if (!snd_soc_dai_active(cpu_dai))
+	if (!snd_soc_dai_is_active(cpu_dai))
 		err = omap_mcbsp_request(mcbsp);
 
 	/*
@@ -826,7 +826,7 @@ static void omap_mcbsp_dai_shutdown(struct snd_pcm_substream *substream,
 
 	mcbsp->latency[stream1] = 0;
 
-	if (!snd_soc_dai_active(cpu_dai)) {
+	if (!snd_soc_dai_is_active(cpu_dai)) {
 		omap_mcbsp_free(mcbsp);
 		mcbsp->configured = 0;
 	}

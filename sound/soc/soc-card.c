@@ -356,7 +356,7 @@ int snd_soc_card_resume(struct snd_soc_card *card)
 
 	/* activate pins from sleep state */
 	for_each_card_components(card, component)
-		if (snd_soc_component_active(component))
+		if (snd_soc_component_is_active(component))
 			pinctrl_pm_select_default_state(snd_soc_component_to_dev(component));
 
 	dev_dbg(card->dev, "ASoC: Scheduling resume work\n");
@@ -1293,7 +1293,7 @@ static int snd_soc_card_bind(struct snd_soc_card *card)
 
 	/* deactivate pins to sleep state */
 	for_each_card_components(card, component)
-		if (!snd_soc_component_active(component))
+		if (!snd_soc_component_is_active(component))
 			pinctrl_pm_select_sleep_state(snd_soc_component_to_dev(component));
 probe_end:
 	if (ret < 0) {

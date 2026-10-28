@@ -241,7 +241,7 @@ static int avs_card_resume_post(struct snd_soc_card *card)
 		return -EINVAL;
 	}
 
-	if (snd_soc_dai_stream_active(codec_dai, stream) &&
+	if (snd_soc_dai_stream_is_active(codec_dai, stream) &&
 	    snd_soc_dai_stream_widget_get(codec_dai, stream)->active)
 		snd_soc_dai_set_sysclk(codec_dai, NAU8825_CLK_FLL_FS, 0, SND_SOC_CLOCK_IN);
 
