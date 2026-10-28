@@ -84,7 +84,6 @@ int snd_soc_dai_symmetric_params(struct snd_pcm_substream *substream, struct snd
 void snd_soc_dai_symmetric_update(struct snd_pcm_substream *substream);
 struct clk *snd_soc_dai_get_bclk(struct snd_soc_dai *dai);
 unsigned int snd_soc_dai_get_bclk_ratio(struct snd_soc_dai *dai);
-void snd_soc_dai_active_update(struct snd_soc_dai *dai, int stream, int action);
 unsigned int snd_soc_dai_auto_select_format(const struct snd_soc_pcm_runtime *rtd);
 int snd_soc_dai_prepare(struct snd_soc_dai *dai, struct snd_pcm_substream *substream);
 int snd_soc_dai_mute_is_ctrled_at_trigger(struct snd_soc_dai *dai);
@@ -97,6 +96,7 @@ void snd_soc_dai_shutdown(struct snd_soc_dai *dai, struct snd_pcm_substream *sub
 			  int rollback);
 int snd_soc_dai_compress_new(struct snd_soc_dai *dai, struct snd_soc_pcm_runtime *rtd);
 bool snd_soc_dai_stream_valid(const struct snd_soc_dai *dai, int stream);
+void snd_soc_dai_stream_user_update(struct snd_soc_dai *dai, int stream, int action);
 int snd_soc_pcm_dai_probe(struct snd_soc_pcm_runtime *rtd, int order);
 int snd_soc_pcm_dai_remove(struct snd_soc_pcm_runtime *rtd, int order);
 int snd_soc_pcm_dai_new(struct snd_soc_pcm_runtime *rtd);
