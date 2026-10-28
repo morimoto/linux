@@ -746,8 +746,8 @@ void snd_soc_dai_active_update(struct snd_soc_dai *dai, int stream, int action)
 	/* see snd_soc_dai_stream_active() */
 	dai->stream[stream].active	+= action;
 
-	/* see snd_soc_component_active() */
-	snd_soc_component_active_action(dai->component, action);
+	/* see snd_soc_component_user_cnt() */
+	snd_soc_component_user_update(dai->component, action);
 }
 
 int snd_soc_dai_active(const struct snd_soc_dai *dai)
