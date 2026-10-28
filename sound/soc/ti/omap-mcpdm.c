@@ -254,7 +254,7 @@ static int omap_mcpdm_dai_startup(struct snd_pcm_substream *substream,
 
 	guard(mutex)(&mcpdm->mutex);
 
-	if (!snd_soc_dai_active(dai))
+	if (!snd_soc_dai_is_active(dai))
 		omap_mcpdm_open_streams(mcpdm);
 
 	return 0;
@@ -272,7 +272,7 @@ static void omap_mcpdm_dai_shutdown(struct snd_pcm_substream *substream,
 
 	guard(mutex)(&mcpdm->mutex);
 
-	if (!snd_soc_dai_active(dai)) {
+	if (!snd_soc_dai_is_active(dai)) {
 		if (omap_mcpdm_active(mcpdm)) {
 			omap_mcpdm_stop(mcpdm);
 			omap_mcpdm_close_streams(mcpdm);
@@ -473,7 +473,7 @@ static int omap_mcpdm_suspend(struct snd_soc_component *component)
 	struct device *dev = snd_soc_component_to_dev(component);
 	struct omap_mcpdm *mcpdm = dev_get_drvdata(dev);
 
-	if (snd_soc_component_active(component)) {
+	if (snd_soc_component_is_active(component)) {
 		omap_mcpdm_stop(mcpdm);
 		omap_mcpdm_close_streams(mcpdm);
 	}
@@ -496,7 +496,7 @@ static int omap_mcpdm_resume(struct snd_soc_component *component)
 		while (mcpdm->pm_active_count--)
 			pm_runtime_get_sync(mcpdm->dev);
 
-		if (snd_soc_component_active(component)) {
+		if (snd_soc_component_is_active(component)) {
 			omap_mcpdm_open_streams(mcpdm);
 			omap_mcpdm_start(mcpdm);
 		}

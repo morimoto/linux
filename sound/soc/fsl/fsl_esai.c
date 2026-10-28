@@ -525,7 +525,7 @@ static int fsl_esai_startup(struct snd_pcm_substream *substream,
 	struct device *dev = snd_soc_component_to_dev(component);
 	struct fsl_esai *esai_priv = dev_get_drvdata(dev);
 
-	if (!snd_soc_dai_active(dai)) {
+	if (!snd_soc_dai_is_active(dai)) {
 		/* Set synchronous mode */
 		regmap_update_bits(esai_priv->regmap, REG_ESAI_SAICR,
 				   ESAI_SAICR_SYNC, esai_priv->synchronous ?

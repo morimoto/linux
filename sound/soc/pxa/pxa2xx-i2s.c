@@ -99,7 +99,7 @@ static int pxa2xx_i2s_startup(struct snd_pcm_substream *substream,
 	if (IS_ERR(clk_i2s))
 		return PTR_ERR(clk_i2s);
 
-	if (!snd_soc_dai_active(cpu_dai))
+	if (!snd_soc_dai_is_active(cpu_dai))
 		writel(0, i2s_reg_base + SACR0);
 
 	return 0;

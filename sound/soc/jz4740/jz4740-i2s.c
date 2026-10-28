@@ -110,14 +110,14 @@ static int jz4740_i2s_startup(struct snd_pcm_substream *substream,
 			regmap_set_bits(i2s->regmap, JZ_REG_AIC_CTRL, JZ_AIC_CTRL_RFLUSH);
 	}
 
-	if (snd_soc_dai_active(dai))
+	if (snd_soc_dai_is_active(dai))
 		return 0;
 
 	/*
 	 * When there is a shared flush bit for both FIFOs, the TFLUSH
 	 * bit flushes both FIFOs. Flushing while the DAI is active would
 	 * cause FIFO underruns in other active substreams so we have to
-	 * guard this behind the snd_soc_dai_active() check.
+	 * guard this behind the snd_soc_dai_is_active() check.
 	 */
 	if (i2s->soc_info->shared_fifo_flush)
 		regmap_set_bits(i2s->regmap, JZ_REG_AIC_CTRL, JZ_AIC_CTRL_TFLUSH);
@@ -137,7 +137,7 @@ static void jz4740_i2s_shutdown(struct snd_pcm_substream *substream,
 	struct device *dev = snd_soc_component_to_dev(component);
 	struct jz4740_i2s *i2s = dev_get_drvdata(dev);
 
-	if (snd_soc_dai_active(dai))
+	if (snd_soc_dai_is_active(dai))
 		return;
 
 	regmap_clear_bits(i2s->regmap, JZ_REG_AIC_CONF, JZ_AIC_CONF_ENABLE);
@@ -438,7 +438,7 @@ static int jz4740_i2s_suspend(struct snd_soc_component *component)
 	struct device *dev = snd_soc_component_to_dev(component);
 	struct jz4740_i2s *i2s = dev_get_drvdata(dev);
 
-	if (snd_soc_component_active(component)) {
+	if (snd_soc_component_is_active(component)) {
 		regmap_clear_bits(i2s->regmap, JZ_REG_AIC_CONF, JZ_AIC_CONF_ENABLE);
 		clk_disable_unprepare(i2s->clk_i2s);
 	}
@@ -458,7 +458,7 @@ static int jz4740_i2s_resume(struct snd_soc_component *component)
 	if (ret)
 		return ret;
 
-	if (snd_soc_component_active(component)) {
+	if (snd_soc_component_is_active(component)) {
 		ret = clk_prepare_enable(i2s->clk_i2s);
 		if (ret) {
 			clk_disable_unprepare(i2s->clk_aic);

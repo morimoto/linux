@@ -113,7 +113,7 @@ static int mt8365_dai_pcm1_startup(struct snd_pcm_substream *substream,
 	struct device *dev = snd_soc_component_to_dev(component);
 	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
-	if (snd_soc_dai_active(dai))
+	if (snd_soc_dai_is_active(dai))
 		return 0;
 
 	mt8365_afe_enable_main_clk(afe);
@@ -128,7 +128,7 @@ static void mt8365_dai_pcm1_shutdown(struct snd_pcm_substream *substream,
 	struct device *dev = snd_soc_component_to_dev(component);
 	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
-	if (snd_soc_dai_active(dai))
+	if (snd_soc_dai_is_active(dai))
 		return;
 
 	mt8365_dai_disable_pcm1(afe);
@@ -143,12 +143,12 @@ static int mt8365_dai_pcm1_prepare(struct snd_pcm_substream *substream,
 	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	int ret;
 
-	if ((snd_soc_dai_stream_active(dai, SNDRV_PCM_STREAM_PLAYBACK) +
-	     snd_soc_dai_stream_active(dai, SNDRV_PCM_STREAM_CAPTURE)) > 1) {
+	if ((snd_soc_dai_stream_is_active(dai, SNDRV_PCM_STREAM_PLAYBACK) +
+	     snd_soc_dai_stream_is_active(dai, SNDRV_PCM_STREAM_CAPTURE)) > 1) {
 		dev_info(afe->dev, "%s '%s' active(%u-%u) already\n",
 			 __func__, snd_pcm_stream_str(substream),
-			 snd_soc_dai_stream_active(dai, SNDRV_PCM_STREAM_PLAYBACK),
-			 snd_soc_dai_stream_active(dai, SNDRV_PCM_STREAM_CAPTURE));
+			 snd_soc_dai_stream_is_active(dai, SNDRV_PCM_STREAM_PLAYBACK),
+			 snd_soc_dai_stream_is_active(dai, SNDRV_PCM_STREAM_CAPTURE));
 		return 0;
 	}
 

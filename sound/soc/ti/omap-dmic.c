@@ -95,7 +95,7 @@ static int omap_dmic_dai_startup(struct snd_pcm_substream *substream,
 
 	guard(mutex)(&dmic->mutex);
 
-	if (snd_soc_dai_active(dai))
+	if (snd_soc_dai_is_active(dai))
 		return -EBUSY;
 
 	dmic->active = 1;
@@ -113,7 +113,7 @@ static void omap_dmic_dai_shutdown(struct snd_pcm_substream *substream,
 
 	cpu_latency_qos_remove_request(&dmic->pm_qos_req);
 
-	if (!snd_soc_dai_active(dai))
+	if (!snd_soc_dai_is_active(dai))
 		dmic->active = 0;
 }
 
