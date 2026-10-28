@@ -300,8 +300,6 @@ int snd_soc_component_fixup_controls(struct snd_soc_component *component);
 int snd_soc_component_add_controls(struct snd_soc_component *component,
 				const struct snd_kcontrol_new *controls, unsigned int num_controls);
 
-/* REMOVE ME */
-#define snd_soc_component_active	snd_soc_component_is_active
 #define snd_soc_component_is_active(c)	(snd_soc_component_user_cnt(c) > 0)
 unsigned int snd_soc_component_user_cnt(struct snd_soc_component *component);
 int snd_soc_component_num_dai(struct snd_soc_component *component);
