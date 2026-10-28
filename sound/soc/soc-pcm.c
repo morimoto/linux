@@ -256,6 +256,7 @@ static const struct file_operations dpcm_state_fops = {
 
 void soc_dpcm_debugfs_add(struct snd_soc_pcm_runtime *rtd)
 {
+#ifdef CONFIG_DEBUG_FS
 	struct dentry *debugfs_root = snd_soc_card_to_debugfs_root(rtd->card);
 
 	if (!rtd->dai_link->dynamic)
@@ -269,6 +270,7 @@ void soc_dpcm_debugfs_add(struct snd_soc_pcm_runtime *rtd)
 
 	debugfs_create_file("state", 0444, debugfs_root,
 			    rtd, &dpcm_state_fops);
+#endif
 }
 
 static void dpcm_create_debugfs_state(struct snd_soc_dpcm *dpcm, int stream)
