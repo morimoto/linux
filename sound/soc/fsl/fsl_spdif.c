@@ -615,7 +615,7 @@ static int fsl_spdif_startup(struct snd_pcm_substream *substream,
 	int ret;
 
 	/* Reset module and interrupts only for first initialization */
-	if (!snd_soc_dai_active(cpu_dai)) {
+	if (!snd_soc_dai_is_active(cpu_dai)) {
 		ret = spdif_softreset(spdif_priv);
 		if (ret) {
 			dev_err(&pdev->dev, "failed to soft reset\n");
@@ -670,7 +670,7 @@ static void fsl_spdif_shutdown(struct snd_pcm_substream *substream,
 	regmap_update_bits(regmap, REG_SPDIF_SCR, mask, scr);
 
 	/* Power down SPDIF module only if tx&rx are both inactive */
-	if (!snd_soc_dai_active(cpu_dai)) {
+	if (!snd_soc_dai_is_active(cpu_dai)) {
 		spdif_intr_status_clear(spdif_priv);
 		regmap_update_bits(regmap, REG_SPDIF_SCR,
 				SCR_LOW_POWER, SCR_LOW_POWER);
@@ -1034,7 +1034,7 @@ static int fsl_spdif_bypass_put(struct snd_kcontrol *kcontrol,
 	if (priv->bypass == set)
 		return 0; /* nothing to do */
 
-	if (snd_soc_dai_active(dai)) {
+	if (snd_soc_dai_is_active(dai)) {
 		dev_err(dai_dev, "Cannot change BYPASS mode while stream is running.\n");
 		return -EBUSY;
 	}
