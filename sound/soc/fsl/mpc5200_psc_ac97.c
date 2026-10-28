@@ -284,7 +284,7 @@ static int psc_ac97_of_probe(struct platform_device *op)
 		return rc;
 	}
 
-	rc = devm_snd_soc_component_register(&op->dev, &psc_ac97_component,
+	rc = devm_snd_soc_register_component(&op->dev, &psc_ac97_component,
 					psc_ac97_dai, ARRAY_SIZE(psc_ac97_dai));
 	if (rc != 0) {
 		dev_err(&op->dev, "Failed to register DAI\n");

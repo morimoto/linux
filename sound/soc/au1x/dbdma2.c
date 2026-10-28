@@ -335,7 +335,7 @@ static int au1xpsc_pcm_drvprobe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, dmadata);
 
-	return devm_snd_soc_component_register(&pdev->dev,
+	return devm_snd_soc_register_component(&pdev->dev,
 					&au1xpsc_soc_component, NULL, 0);
 }
 

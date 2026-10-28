@@ -321,7 +321,7 @@ static const struct snd_soc_component_driver sh7760_soc_component = {
 
 static int sh7760_soc_platform_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_component_register(&pdev->dev, &sh7760_soc_component,
+	return devm_snd_soc_register_component(&pdev->dev, &sh7760_soc_component,
 					       NULL, 0);
 }
 

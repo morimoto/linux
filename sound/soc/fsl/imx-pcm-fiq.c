@@ -298,7 +298,7 @@ int imx_pcm_fiq_init(struct platform_device *pdev,
 	params->dma_params_tx->maxburst = 4;
 	params->dma_params_rx->maxburst = 6;
 
-	ret = devm_snd_soc_component_register(&pdev->dev, &imx_soc_component_fiq,
+	ret = devm_snd_soc_register_component(&pdev->dev, &imx_soc_component_fiq,
 					      NULL, 0);
 	if (ret)
 		goto failed_register;

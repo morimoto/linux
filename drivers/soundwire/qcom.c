@@ -1441,7 +1441,7 @@ static int qcom_swrm_register_dais(struct qcom_swrm_ctrl *ctrl)
 		dais[i].id = i;
 	}
 
-	return devm_snd_soc_component_register(ctrl->dev,
+	return devm_snd_soc_register_component(ctrl->dev,
 						&qcom_swrm_dai_component,
 						dais, num_dais);
 }

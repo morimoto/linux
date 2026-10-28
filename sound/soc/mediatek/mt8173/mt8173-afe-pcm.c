@@ -1149,18 +1149,18 @@ static int mt8173_afe_pcm_dev_probe(struct platform_device *pdev)
 	afe->runtime_resume = mt8173_afe_runtime_resume;
 	afe->runtime_suspend = mt8173_afe_runtime_suspend;
 
-	ret = devm_snd_soc_component_register(dev, &mtk_afe_pcm_platform,
+	ret = devm_snd_soc_register_component(dev, &mtk_afe_pcm_platform,
 					      NULL, 0);
 	if (ret)
 		goto err_pm_disable;
 
-	ret = snd_soc_component_register(dev, &mt8173_afe_pcm_dai_component,
+	ret = snd_soc_register_component(dev, &mt8173_afe_pcm_dai_component,
 				    mt8173_afe_pcm_dais,
 				    ARRAY_SIZE(mt8173_afe_pcm_dais));
 	if (ret)
 		goto err_pm_disable;
 
-	ret = snd_soc_component_register(dev, &mt8173_afe_hdmi_dai_component,
+	ret = snd_soc_register_component(dev, &mt8173_afe_hdmi_dai_component,
 				    mt8173_afe_hdmi_dais,
 				    ARRAY_SIZE(mt8173_afe_hdmi_dais));
 	if (ret)
@@ -1175,7 +1175,7 @@ static int mt8173_afe_pcm_dev_probe(struct platform_device *pdev)
 	return 0;
 
 err_cleanup_components:
-	snd_soc_component_unregister(dev);
+	snd_soc_unregister_component(dev);
 err_pm_disable:
 	pm_runtime_disable(dev);
 	return ret;
@@ -1185,7 +1185,7 @@ static void mt8173_afe_pcm_dev_remove(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 
-	snd_soc_component_unregister(dev);
+	snd_soc_unregister_component(dev);
 
 	pm_runtime_disable(dev);
 	if (!pm_runtime_status_suspended(dev))

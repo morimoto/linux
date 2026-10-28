@@ -388,7 +388,7 @@ static int pxa2xx_i2s_drv_probe(struct platform_device *pdev)
 	pxa2xx_i2s_pcm_stereo_out.addr = res->start + SADR;
 	pxa2xx_i2s_pcm_stereo_in.addr = res->start + SADR;
 
-	return devm_snd_soc_component_register(&pdev->dev, &pxa_i2s_component,
+	return devm_snd_soc_register_component(&pdev->dev, &pxa_i2s_component,
 					       &pxa_i2s_dai, 1);
 }
 

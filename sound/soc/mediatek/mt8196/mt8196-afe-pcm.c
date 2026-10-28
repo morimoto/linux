@@ -2477,7 +2477,7 @@ static int mt8196_afe_pcm_dev_probe(struct platform_device *pdev)
 	regcache_mark_dirty(afe->regmap);
 
 	/* register component */
-	ret = devm_snd_soc_component_register(dev,
+	ret = devm_snd_soc_register_component(dev,
 					      &mt8196_afe_component,
 					      afe->dai_drivers,
 					      afe->num_dai_drivers);

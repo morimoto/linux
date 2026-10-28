@@ -2772,7 +2772,7 @@ static int tda1997x_probe(struct i2c_client *client)
 		else
 			formats = SNDRV_PCM_FMTBIT_S16_LE;
 		tda1997x_audio_dai.capture.formats = formats;
-		ret = devm_snd_soc_component_register(&state->client->dev,
+		ret = devm_snd_soc_register_component(&state->client->dev,
 					     &tda1997x_codec_driver,
 					     &tda1997x_audio_dai, 1);
 		if (ret) {

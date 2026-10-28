@@ -836,14 +836,14 @@ static int mt6797_afe_pcm_dev_probe(struct platform_device *pdev)
 	pm_runtime_get_sync(&pdev->dev);
 
 	/* register component */
-	ret = devm_snd_soc_component_register(dev, &mtk_afe_pcm_platform,
+	ret = devm_snd_soc_register_component(dev, &mtk_afe_pcm_platform,
 					      NULL, 0);
 	if (ret) {
 		dev_warn(dev, "err_platform\n");
 		goto err_pm_disable;
 	}
 
-	ret = devm_snd_soc_component_register(afe->dev,
+	ret = devm_snd_soc_register_component(afe->dev,
 				     &mt6797_afe_pcm_dai_component,
 				     afe->dai_drivers,
 				     afe->num_dai_drivers);

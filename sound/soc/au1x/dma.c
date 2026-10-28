@@ -311,7 +311,7 @@ static int alchemy_pcm_drvprobe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, ctx);
 
-	return devm_snd_soc_component_register(&pdev->dev,
+	return devm_snd_soc_register_component(&pdev->dev,
 					&alchemy_pcm_soc_component, NULL, 0);
 }
 

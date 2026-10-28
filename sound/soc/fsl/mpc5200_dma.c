@@ -418,7 +418,7 @@ int mpc5200_audio_dma_create(struct platform_device *op)
 	dev_set_drvdata(&op->dev, psc_dma);
 
 	/* Tell the ASoC OF helpers about it */
-	return devm_snd_soc_component_register(&op->dev,
+	return devm_snd_soc_register_component(&op->dev,
 					&mpc5200_audio_dma_component, NULL, 0);
 }
 EXPORT_SYMBOL_GPL(mpc5200_audio_dma_create);

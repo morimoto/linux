@@ -320,7 +320,7 @@ static int hac_soc_platform_probe(struct platform_device *pdev)
 	if (ret != 0)
 		return ret;
 
-	return devm_snd_soc_component_register(&pdev->dev, &sh4_hac_component,
+	return devm_snd_soc_register_component(&pdev->dev, &sh4_hac_component,
 					  sh4_hac_dai, ARRAY_SIZE(sh4_hac_dai));
 }
 

@@ -1092,7 +1092,7 @@ static const struct dev_pm_ops gbaudio_codec_pm_ops = {
 
 static int gbaudio_codec_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_component_register(&pdev->dev,
+	return devm_snd_soc_register_component(&pdev->dev,
 			&soc_codec_dev_gbaudio,
 			gbaudio_dai, ARRAY_SIZE(gbaudio_dai));
 }

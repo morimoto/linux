@@ -939,7 +939,7 @@ static int amd_sdw_register_dais(struct amd_sdw_manager *amd_manager)
 		dais[i].id = i;
 	}
 
-	return devm_snd_soc_component_register(dev, &amd_sdw_dai_component,
+	return devm_snd_soc_register_component(dev, &amd_sdw_dai_component,
 					       dais, num_dais);
 }
 

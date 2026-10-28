@@ -2357,9 +2357,9 @@ static int vc4_hdmi_audio_init(struct vc4_hdmi *vc4_hdmi)
 	 *
 	 * However, the ASoC core uses a number of devm_kzalloc calls
 	 * when registering, even when using non-device-managed
-	 * functions (such as in snd_soc_component_register()).
+	 * functions (such as in snd_soc_register_component()).
 	 *
-	 * If we call snd_soc_component_unregister() in a DRM-managed
+	 * If we call snd_soc_unregister_component() in a DRM-managed
 	 * action, the device-managed actions have already been executed
 	 * and thus we would access memory that has been freed.
 	 *
@@ -2380,7 +2380,7 @@ static int vc4_hdmi_audio_init(struct vc4_hdmi *vc4_hdmi)
 		return ret;
 	}
 
-	ret = devm_snd_soc_component_register(dev, &vc4_hdmi_audio_cpu_dai_comp,
+	ret = devm_snd_soc_register_component(dev, &vc4_hdmi_audio_cpu_dai_comp,
 					      &vc4_hdmi_audio_cpu_dai_drv, 1);
 	if (ret) {
 		dev_err(dev, "Could not register CPU DAI: %d\n", ret);

@@ -894,7 +894,7 @@ MODULE_DEVICE_TABLE(of, pxa_ssp_of_ids);
 
 static int asoc_ssp_probe(struct platform_device *pdev)
 {
-	return devm_snd_soc_component_register(&pdev->dev, &pxa_ssp_component,
+	return devm_snd_soc_register_component(&pdev->dev, &pxa_ssp_component,
 					       &pxa_ssp_dai, 1);
 }
 

@@ -359,7 +359,7 @@ int zynqmp_audio_init(struct zynqmp_dpsub *dpsub)
 		},
 	};
 
-	ret = devm_snd_soc_component_register(dev, &zynqmp_dp_component_driver,
+	ret = devm_snd_soc_register_component(dev, &zynqmp_dp_component_driver,
 					      &audio->dai_driver, 1);
 	if (ret) {
 		dev_err(dev, "Failed to register CPU DAI\n");

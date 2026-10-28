@@ -1080,7 +1080,7 @@ static int intel_register_dai(struct sdw_intel *sdw)
 	if (ret)
 		return ret;
 
-	return devm_snd_soc_component_register(cdns->dev, &dai_component,
+	return devm_snd_soc_register_component(cdns->dev, &dai_component,
 					       dais, num_dai);
 }
 

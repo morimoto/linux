@@ -554,7 +554,7 @@ static int asoc_mmp_sspa_probe(struct platform_device *pdev)
 			return ret;
 	}
 
-	ret = devm_snd_soc_component_register(&pdev->dev, &mmp_sspa_component,
+	ret = devm_snd_soc_register_component(&pdev->dev, &mmp_sspa_component,
 					      &mmp_sspa_dai, 1);
 	if (ret)
 		return ret;

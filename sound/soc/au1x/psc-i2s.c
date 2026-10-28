@@ -359,7 +359,7 @@ static int au1xpsc_i2s_drvprobe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, wd);
 
-	return devm_snd_soc_component_register(&pdev->dev,
+	return devm_snd_soc_register_component(&pdev->dev,
 				&au1xpsc_i2s_component, &wd->dai_drv, 1);
 }
 

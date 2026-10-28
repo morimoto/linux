@@ -561,13 +561,13 @@ static int mt7986_afe_pcm_dev_probe(struct platform_device *pdev)
 	afe->runtime_suspend = mt7986_afe_runtime_suspend;
 
 	/* register component */
-	ret = devm_snd_soc_component_register(&pdev->dev,
+	ret = devm_snd_soc_register_component(&pdev->dev,
 					      &mtk_afe_pcm_platform,
 					      NULL, 0);
 	if (ret)
 		return dev_err_probe(dev, ret, "Cannot register AFE component\n");
 
-	ret = devm_snd_soc_component_register(afe->dev,
+	ret = devm_snd_soc_register_component(afe->dev,
 					      &mt7986_afe_pcm_dai_component,
 					      afe->dai_drivers,
 					      afe->num_dai_drivers);
