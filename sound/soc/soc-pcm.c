@@ -1032,6 +1032,9 @@ static void soc_pcm_codec_params_fixup(struct snd_pcm_hw_params *params,
 	interval->max = channels;
 }
 
+/*
+ * Frees resources allocated by hw_params, can be called multiple times
+ */
 static int soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
 			    struct snd_pcm_substream *substream, int rollback)
 {
@@ -1068,15 +1071,6 @@ static int soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
 	return 0;
 }
 
-/*
- * Frees resources allocated by hw_params, can be called multiple times
- */
-static int __soc_pcm_hw_free(struct snd_soc_pcm_runtime *rtd,
-			     struct snd_pcm_substream *substream)
-{
-	return soc_pcm_hw_clean(rtd, substream, 0);
-}
-
 /* hw_free PCM ops for non-DPCM streams */
 static int soc_pcm_hw_free(struct snd_pcm_substream *substream)
 {
@@ -1084,7 +1078,7 @@ static int soc_pcm_hw_free(struct snd_pcm_substream *substream)
 	int ret;
 
 	snd_soc_dpcm_mutex_lock(rtd);
-	ret = __soc_pcm_hw_free(rtd, substream);
+	ret = soc_pcm_hw_clean(rtd, substream, 0);
 	snd_soc_dpcm_mutex_unlock(rtd);
 	return ret;
 }
@@ -1704,7 +1698,7 @@ void dpcm_be_dai_stop(struct snd_soc_pcm_runtime *fe, int stream,
 				continue;
 
 			if (be->dpcm[stream].state != SND_SOC_DPCM_STATE_HW_FREE) {
-				__soc_pcm_hw_free(be, be_substream);
+				soc_pcm_hw_clean(be, be_substream, 0);
 				be->dpcm[stream].state = SND_SOC_DPCM_STATE_HW_FREE;
 			}
 		}
@@ -2079,7 +2073,7 @@ void dpcm_be_dai_hw_free(struct snd_soc_pcm_runtime *fe, int stream)
 		dev_dbg(be->dev, "ASoC: hw_free BE %s\n",
 			be->dai_link->name);
 
-		__soc_pcm_hw_free(be, be_substream);
+		soc_pcm_hw_clean(be, be_substream, 0);
 
 		be->dpcm[stream].state = SND_SOC_DPCM_STATE_HW_FREE;
 	}
@@ -2181,7 +2175,7 @@ unwind:
 		   (be->dpcm[stream].state != SND_SOC_DPCM_STATE_STOP))
 			continue;
 
-		__soc_pcm_hw_free(be, be_substream);
+		soc_pcm_hw_clean(be, be_substream, 0);
 	}
 
 	return soc_pcm_ret(fe, ret);
