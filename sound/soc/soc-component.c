@@ -19,7 +19,7 @@ struct snd_soc_component {
 	struct device *dev;
 	struct snd_soc_card *card;
 
-	unsigned int active;
+	unsigned int user_cnt;
 
 	unsigned int suspended:1; /* is in suspend PM state */
 
@@ -136,15 +136,15 @@ struct regmap *snd_soc_component_to_regmap(struct snd_soc_component *component)
 }
 EXPORT_SYMBOL_GPL(snd_soc_component_to_regmap);
 
-unsigned int snd_soc_component_active(struct snd_soc_component *component)
+unsigned int snd_soc_component_user_cnt(struct snd_soc_component *component)
 {
-	return component->active;
+	return component->user_cnt;
 }
-EXPORT_SYMBOL_GPL(snd_soc_component_active);
+EXPORT_SYMBOL_GPL(snd_soc_component_user_cnt);
 
-void snd_soc_component_active_action(struct snd_soc_component *component, int action)
+void snd_soc_component_user_update(struct snd_soc_component *component, int update)
 {
-	component->active += action;
+	component->user_cnt += update;
 }
 
 int snd_soc_component_num_dai(struct snd_soc_component *component)
