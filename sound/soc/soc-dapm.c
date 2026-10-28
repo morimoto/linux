@@ -4065,7 +4065,7 @@ static int dapm_dai_link_event_pre_pmu(struct snd_soc_dapm_widget *w,
 		if (ret < 0)
 			goto err;
 
-		snd_soc_dai_active_update(source, substream->stream, 1);
+		snd_soc_dai_stream_user_update(source, substream->stream, 1);
 	}
 
 	substream->stream = SNDRV_PCM_STREAM_PLAYBACK;
@@ -4076,7 +4076,7 @@ static int dapm_dai_link_event_pre_pmu(struct snd_soc_dapm_widget *w,
 		if (ret < 0)
 			goto err;
 
-		snd_soc_dai_active_update(sink, substream->stream, 1);
+		snd_soc_dai_stream_user_update(sink, substream->stream, 1);
 	}
 
 	substream->hw_opened = 1;
@@ -4210,14 +4210,14 @@ static int dapm_dai_link_event(struct snd_soc_dapm_widget *w,
 		substream->stream = SNDRV_PCM_STREAM_CAPTURE;
 		snd_soc_dapm_widget_for_each_source_path(w, path) {
 			source = path->source->priv;
-			snd_soc_dai_active_update(source, substream->stream, -1);
+			snd_soc_dai_stream_user_update(source, substream->stream, -1);
 			snd_soc_dai_shutdown(source, substream, 0);
 		}
 
 		substream->stream = SNDRV_PCM_STREAM_PLAYBACK;
 		snd_soc_dapm_widget_for_each_sink_path(w, path) {
 			sink = path->sink->priv;
-			snd_soc_dai_active_update(sink, substream->stream, -1);
+			snd_soc_dai_stream_user_update(sink, substream->stream, -1);
 			snd_soc_dai_shutdown(sink, substream, 0);
 		}
 		break;
