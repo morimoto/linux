@@ -378,7 +378,7 @@ static int tas675x_set_dcldg_trigger(struct snd_kcontrol *kcontrol,
 	if (!ucontrol->value.integer.value[0])
 		return 0;
 
-	if (snd_soc_component_active(comp))
+	if (snd_soc_component_is_active(comp))
 		return -EBUSY;
 
 	ret = pm_runtime_resume_and_get(tas->dev);
@@ -495,7 +495,7 @@ static int tas675x_set_acldg_trigger(struct snd_kcontrol *kcontrol,
 	if (!ucontrol->value.integer.value[0])
 		return 0;
 
-	if (snd_soc_component_active(comp))
+	if (snd_soc_component_is_active(comp))
 		return -EBUSY;
 
 	ret = pm_runtime_resume_and_get(tas->dev);

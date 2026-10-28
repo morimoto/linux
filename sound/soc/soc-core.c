@@ -240,7 +240,7 @@ void snd_soc_close_delayed_work(struct snd_soc_pcm_runtime *rtd)
 	dev_dbg(rtd->dev,
 		"ASoC: pop wq checking: %s status: %s waiting: %s\n",
 		codec_driver->playback.stream_name,
-		snd_soc_dai_stream_active(codec_dai, playback) ?
+		snd_soc_dai_stream_is_active(codec_dai, playback) ?
 		"active" : "inactive",
 		str_yes_no(rtd->pop_wait));
 
@@ -402,7 +402,7 @@ void snd_soc_playback_digital_mute(struct snd_soc_card *card, int mute)
 			continue;
 
 		for_each_rtd_dais(rtd, i, dai) {
-			if (snd_soc_dai_stream_active(dai, playback))
+			if (snd_soc_dai_stream_is_active(dai, playback))
 				snd_soc_dai_digital_mute(dai, mute, playback);
 		}
 	}

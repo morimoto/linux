@@ -410,7 +410,7 @@ static int nau8360_peq_coeff_get(struct snd_kcontrol *kcontrol,
 	 * PEQ access during active audio streams (playback and capture).
 	 */
 	snd_soc_dapm_mutex_lock(dapm);
-	if (snd_soc_component_active(cp)) {
+	if (snd_soc_component_is_active(cp)) {
 		dev_dbg(nau8360->dev,
 			"PEQ coefficient access is ignored during audio is active");
 		ret = -EBUSY;
@@ -455,7 +455,7 @@ static int nau8360_peq_coeff_put(struct snd_kcontrol *kcontrol,
 	 * PEQ access during active audio streams (playback and capture).
 	 */
 	snd_soc_dapm_mutex_lock(dapm);
-	if (snd_soc_component_active(cp)) {
+	if (snd_soc_component_is_active(cp)) {
 		dev_dbg(nau8360->dev,
 			"PEQ coefficient access is ignored during audio is active");
 		ret = -EBUSY;

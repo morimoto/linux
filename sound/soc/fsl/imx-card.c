@@ -490,12 +490,12 @@ static void imx_aif_shutdown(struct snd_pcm_substream *substream)
 	int i;
 
 	for_each_rtd_cpu_dais(rtd, i, cpu_dai) {
-		if (!snd_soc_dai_active(cpu_dai))
+		if (!snd_soc_dai_is_active(cpu_dai))
 			snd_soc_dai_set_sysclk(cpu_dai, 0, 0, SND_SOC_CLOCK_OUT);
 	}
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-		if (!snd_soc_dai_active(codec_dai))
+		if (!snd_soc_dai_is_active(codec_dai))
 			snd_soc_dai_set_sysclk(codec_dai, 0, 0, SND_SOC_CLOCK_IN);
 	}
 }

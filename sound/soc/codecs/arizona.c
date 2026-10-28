@@ -1945,7 +1945,7 @@ static int arizona_dai_set_sysclk(struct snd_soc_dai *dai,
 	if (clk_id == dai_priv->clk)
 		return 0;
 
-	if (snd_soc_dai_active(dai)) {
+	if (snd_soc_dai_is_active(dai)) {
 		dev_err(dev, "Can't change clock on active DAI %d\n", dai_id);
 		return -EBUSY;
 	}
