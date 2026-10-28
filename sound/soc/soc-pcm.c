@@ -355,7 +355,7 @@ void snd_soc_runtime_action(struct snd_soc_pcm_runtime *rtd,
 	snd_soc_dpcm_mutex_assert_held(rtd);
 
 	for_each_rtd_dais(rtd, i, dai)
-		snd_soc_dai_active_update(dai, stream, action);
+		snd_soc_dai_stream_user_update(dai, stream, action);
 
 	/* Increments/Decrements the active count for components without DAIs */
 	for_each_rtd_components(rtd, i, component) {
@@ -457,7 +457,7 @@ static int soc_pcm_shared_bclk_rule_rate(struct snd_pcm_hw_params *params,
 				continue;
 			if (!other_dai_bclk)
 				continue;
-			if (!snd_soc_dai_active(other_dai))
+			if (!snd_soc_dai_is_active(other_dai))
 				continue;
 			/*
 			 * Skip peers whose hw_params hasn't run yet.
@@ -782,7 +782,7 @@ static int soc_pcm_clean(struct snd_soc_pcm_runtime *rtd,
 
 		/* Make sure DAI parameters cleared if the DAI becomes inactive */
 		for_each_rtd_dais(rtd, i, dai) {
-			if (snd_soc_dai_active(dai) == 0)
+			if (snd_soc_dai_user_cnt(dai) == 0)
 				snd_soc_dai_symmetric_set_params(dai, NULL);
 		}
 	}
@@ -797,7 +797,7 @@ static int soc_pcm_clean(struct snd_soc_pcm_runtime *rtd,
 	snd_soc_pcm_component_pm_runtime_put(rtd, substream, rollback);
 
 	for_each_rtd_components(rtd, i, component)
-		if (!snd_soc_component_active(component)) {
+		if (!snd_soc_component_is_active(component)) {
 			struct device *dev = snd_soc_component_to_dev(component);
 
 			pinctrl_pm_select_sleep_state(dev);
@@ -1047,10 +1047,10 @@ static int soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
 
 	/* clear the corresponding DAIs parameters when going to be inactive */
 	for_each_rtd_dais(rtd, i, dai) {
-		if (snd_soc_dai_active(dai) == 1)
+		if (snd_soc_dai_user_cnt(dai) == 1)
 			snd_soc_dai_symmetric_set_params(dai, NULL);
 
-		if (snd_soc_dai_stream_active(dai, substream->stream) == 1) {
+		if (snd_soc_dai_stream_user_cnt(dai, substream->stream) == 1) {
 			if (!snd_soc_dai_mute_is_ctrled_at_trigger(dai))
 				snd_soc_dai_digital_mute(dai, 1, substream->stream);
 		}
@@ -2682,7 +2682,7 @@ static int soc_dpcm_fe_runtime_update(struct snd_soc_pcm_runtime *fe, int new)
 		return snd_soc_ret(fe->dev, -EINVAL, "doesn't support Multi CPU yet\n");
 
 	/* only check active links */
-	if (!snd_soc_dai_active(snd_soc_rtd_to_cpu(fe, 0)))
+	if (!snd_soc_dai_is_active(snd_soc_rtd_to_cpu(fe, 0)))
 		return 0;
 
 	/* DAPM sync will call this to update DSP paths */
@@ -2697,8 +2697,8 @@ static int soc_dpcm_fe_runtime_update(struct snd_soc_pcm_runtime *fe, int new)
 			continue;
 
 		/* skip if FE isn't currently playing/capturing */
-		if (!snd_soc_dai_stream_active(snd_soc_rtd_to_cpu(fe, 0), stream) ||
-		    !snd_soc_dai_stream_active(snd_soc_rtd_to_codec(fe, 0), stream))
+		if (!snd_soc_dai_stream_is_active(snd_soc_rtd_to_cpu(fe, 0), stream) ||
+		    !snd_soc_dai_stream_is_active(snd_soc_rtd_to_codec(fe, 0), stream))
 			continue;
 
 		paths = dpcm_path_get(fe, stream, &list);
