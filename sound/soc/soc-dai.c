@@ -741,26 +741,25 @@ bool snd_soc_dai_stream_valid(const struct snd_soc_dai *dai, int dir)
 	return stream->channels_min;
 }
 
-void snd_soc_dai_active_update(struct snd_soc_dai *dai, int stream, int action)
+void snd_soc_dai_stream_user_update(struct snd_soc_dai *dai, int stream, int update)
 {
-	/* see snd_soc_dai_stream_active() */
-	dai->stream[stream].active	+= action;
+	/* see snd_soc_dai_stream_user_cnt() */
+	dai->stream[stream].user_cnt += update;
 
 	/* see snd_soc_component_user_cnt() */
-	snd_soc_component_user_update(dai->component, action);
+	snd_soc_component_user_update(dai->component, update);
 }
 
-int snd_soc_dai_active(const struct snd_soc_dai *dai)
+int snd_soc_dai_user_cnt(const struct snd_soc_dai *dai)
 {
-	int stream, active;
+	int stream, cnt = 0;
 
-	active = 0;
 	for_each_pcm_streams(stream)
-		active += snd_soc_dai_stream_active(dai, stream);
+		cnt += snd_soc_dai_stream_user_cnt(dai, stream);
 
-	return active;
+	return cnt;
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_active);
+EXPORT_SYMBOL_GPL(snd_soc_dai_user_cnt);
 
 int snd_soc_pcm_dai_probe(struct snd_soc_pcm_runtime *rtd, int order)
 {
@@ -1187,12 +1186,12 @@ void snd_soc_dai_stream_tdm_mask_set(struct snd_soc_dai *dai, int stream, unsign
 	dai->stream[stream].tdm_mask = tdm_mask;
 }
 
-unsigned int snd_soc_dai_stream_active(const struct snd_soc_dai *dai, int stream)
+unsigned int snd_soc_dai_stream_user_cnt(const struct snd_soc_dai *dai, int stream)
 {
-	/* see snd_soc_dai_active_update() for setup */
-	return dai->stream[stream].active;
+	/* see snd_soc_dai_stream_user_update() for update */
+	return dai->stream[stream].user_cnt;
 }
-EXPORT_SYMBOL_GPL(snd_soc_dai_stream_active);
+EXPORT_SYMBOL_GPL(snd_soc_dai_stream_user_cnt);
 
 /**
  * snd_soc_dai_set_stream() - Configures a DAI for stream operation
@@ -1342,7 +1341,7 @@ int snd_soc_dai_symmetric_apply(struct snd_pcm_substream *substream, struct snd_
 	struct device *dev = snd_soc_component_to_dev(dai->component);
 	int ret;
 
-	if (!snd_soc_dai_active(dai))
+	if (!snd_soc_dai_is_active(dai))
 		return 0;
 
 #define __symmetric_apply(name, NAME)							\
