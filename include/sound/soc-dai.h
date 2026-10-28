@@ -204,8 +204,6 @@ int snd_soc_dai_is_dummy(const struct snd_soc_dai *dai);
 int snd_soc_dai_add_controls(struct snd_soc_dai *dai,
 			     const struct snd_kcontrol_new *controls, int num_controls);
 
-/* REMOVE ME */
-#define snd_soc_dai_active	snd_soc_dai_user_cnt
 #define snd_soc_dai_is_active(d)	(snd_soc_dai_user_cnt(d) > 0)
 int snd_soc_dai_user_cnt(const struct snd_soc_dai *dai);
 
@@ -420,8 +418,6 @@ static inline void snd_soc_dai_stream_dma_data_set_s(struct snd_soc_dai *dai, st
 	int :				snd_soc_dai_stream_dma_data_set_i,	\
 	struct snd_pcm_substream * :	snd_soc_dai_stream_dma_data_set_s)(dai, x, data)
 
-/* REMOVE ME */
-#define snd_soc_dai_stream_active	snd_soc_dai_stream_user_cnt
 #define snd_soc_dai_stream_is_active(d, s)	(snd_soc_dai_stream_user_cnt(d, s) > 0)
 unsigned int snd_soc_dai_stream_user_cnt(const struct snd_soc_dai *dai, int stream);
 
