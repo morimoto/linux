@@ -116,20 +116,12 @@
 /*
  * DAI hardware clock providers/consumers
  *
- * This is wrt the codec, the inverse is true for the interface
- * i.e. if the codec is clk and FRM provider then the interface is
- * clk and frame consumer.
+ * when passed to set_fmt directly indicate if the device is provider or consumer
  */
-#define SND_SOC_DAIFMT_CBP_CFP		(1 << 12) /* codec clk provider & frame provider */
-#define SND_SOC_DAIFMT_CBC_CFP		(2 << 12) /* codec clk consumer & frame provider */
-#define SND_SOC_DAIFMT_CBP_CFC		(3 << 12) /* codec clk provider & frame consumer */
-#define SND_SOC_DAIFMT_CBC_CFC		(4 << 12) /* codec clk consumer & frame consumer */
-
-/* when passed to set_fmt directly indicate if the device is provider or consumer */
-#define SND_SOC_DAIFMT_BP_FP		SND_SOC_DAIFMT_CBP_CFP
-#define SND_SOC_DAIFMT_BC_FP		SND_SOC_DAIFMT_CBC_CFP
-#define SND_SOC_DAIFMT_BP_FC		SND_SOC_DAIFMT_CBP_CFC
-#define SND_SOC_DAIFMT_BC_FC		SND_SOC_DAIFMT_CBC_CFC
+#define SND_SOC_DAIFMT_BP_FP		(1 << 12) /* clk provider & frame provider */
+#define SND_SOC_DAIFMT_BC_FP		(2 << 12) /* clk consumer & frame provider */
+#define SND_SOC_DAIFMT_BP_FC		(3 << 12) /* clk provider & frame consumer */
+#define SND_SOC_DAIFMT_BC_FC		(4 << 12) /* clk consumer & frame consumer */
 
 #define SND_SOC_DAIFMT_FORMAT_MASK		0x000f
 #define SND_SOC_DAIFMT_CLOCK_MASK		0x00f0
