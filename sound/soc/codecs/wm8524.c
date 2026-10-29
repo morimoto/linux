@@ -134,7 +134,7 @@ static int wm8524_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 		SND_SOC_DAIFMT_MASTER_MASK);
 
 	if (fmt != (SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
-		    SND_SOC_DAIFMT_CBC_CFC)) {
+		    SND_SOC_DAIFMT_BC_FC)) {
 		dev_err(dev, "Invalid DAI format\n");
 		return -EINVAL;
 	}

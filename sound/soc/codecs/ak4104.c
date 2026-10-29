@@ -82,7 +82,7 @@ static int ak4104_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	}
 
 	/* This device can only be consumer */
-	if ((format & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_CBC_CFC)
+	if ((format & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_BC_FC)
 		return -EINVAL;
 
 	ret = regmap_update_bits(ak4104->regmap, AK4104_REG_CONTROL1,

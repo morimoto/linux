@@ -54,8 +54,8 @@ static int set_dailink_daifmt(struct device_node *sub_node,
 		char *name;
 		unsigned int val;
 	} of_clk_table[] = {
-		{ "cpu",	SND_SOC_DAIFMT_CBC_CFC },
-		{ "codec",	SND_SOC_DAIFMT_CBP_CFP },
+		{ "cpu",	SND_SOC_DAIFMT_BC_FC },
+		{ "codec",	SND_SOC_DAIFMT_BP_FP },
 	};
 
 	daifmt = snd_soc_daifmt_parse_format(sub_node, NULL);

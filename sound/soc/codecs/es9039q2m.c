@@ -1378,10 +1378,10 @@ static int es9039q2m_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	 * do either, so the driver offers either.
 	 */
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		priv->provider = false;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		if (!priv->mclk)
 			return -EINVAL;
 		priv->provider = true;
