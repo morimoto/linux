@@ -508,7 +508,7 @@ static int rzv2h_icu_swpe_set_irqchip_state(struct irq_data *d, enum irqchip_irq
 	return 0;
 }
 
-static int rzv2h_irqc_irq_suspend(void)
+static int rzv2h_irqc_irq_suspend(void *data)
 {
 	struct rzv2h_irqc_reg_cache *cache = &rzv2h_icu_data->cache;
 	void __iomem *base = rzv2h_icu_data->base;
@@ -521,7 +521,7 @@ static int rzv2h_irqc_irq_suspend(void)
 	return 0;
 }
 
-static void rzv2h_irqc_irq_resume(void)
+static void rzv2h_irqc_irq_resume(void *data)
 {
 	struct rzv2h_irqc_reg_cache *cache = &rzv2h_icu_data->cache;
 	void __iomem *base = rzv2h_icu_data->base;
@@ -537,9 +537,14 @@ static void rzv2h_irqc_irq_resume(void)
 	writel_relaxed(cache->nitsr, base + ICU_NITSR);
 }
 
-static struct syscore_ops rzv2h_irqc_syscore_ops = {
+static const struct syscore_ops rzv2h_irqc_syscore_ops = {
 	.suspend	= rzv2h_irqc_irq_suspend,
 	.resume		= rzv2h_irqc_irq_resume,
+};
+
+
+static struct syscore rzv2h_irqc_syscore = {
+	.ops = &rzv2h_irqc_syscore_ops,
 };
 
 static const struct irq_chip rzv2h_icu_tint_chip = {
@@ -873,7 +878,7 @@ static int rzv2h_icu_init_common(struct device_node *node, struct device_node *p
 
 	rzv2h_icu_data->info = hw_info;
 
-	register_syscore_ops(&rzv2h_irqc_syscore_ops);
+	register_syscore(&rzv2h_irqc_syscore);
 
 	ret = rzv2h_icu_setup_irqs(pdev, irq_domain);
 	if (ret)
