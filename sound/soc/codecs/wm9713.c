@@ -932,19 +932,19 @@ static int wm9713_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 	/* clock masters */
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		reg |= 0x4000;
 		gpio |= 0x0010;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFC:
+	case SND_SOC_DAIFMT_BP_FC:
 		reg |= 0x6000;
 		gpio |= 0x0018;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		reg |= 0x2000;
 		gpio |= 0x001a;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFP:
+	case SND_SOC_DAIFMT_BC_FP:
 		gpio |= 0x0012;
 		break;
 	}

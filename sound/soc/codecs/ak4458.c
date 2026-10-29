@@ -470,11 +470,11 @@ static int ak4458_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	int ret;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC: /* Consumer Mode */
+	case SND_SOC_DAIFMT_BC_FC: /* Consumer Mode */
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP: /* Provider Mode is not supported */
-	case SND_SOC_DAIFMT_CBC_CFP:
-	case SND_SOC_DAIFMT_CBP_CFC:
+	case SND_SOC_DAIFMT_BP_FP: /* Provider Mode is not supported */
+	case SND_SOC_DAIFMT_BC_FP:
+	case SND_SOC_DAIFMT_BP_FC:
 	default:
 		dev_err(dev, "Clock provider mode unsupported\n");
 		return -EINVAL;

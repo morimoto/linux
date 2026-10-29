@@ -1220,15 +1220,15 @@ static int wm8903_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		  WM8903_AIF_LRCLK_INV | WM8903_AIF_BCLK_INV);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
-	case SND_SOC_DAIFMT_CBC_CFP:
+	case SND_SOC_DAIFMT_BC_FP:
 		aif1 |= WM8903_LRCLK_DIR;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		aif1 |= WM8903_LRCLK_DIR | WM8903_BCLK_DIR;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFC:
+	case SND_SOC_DAIFMT_BP_FC:
 		aif1 |= WM8903_BCLK_DIR;
 		break;
 	default:

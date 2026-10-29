@@ -515,11 +515,11 @@ static int cs35l34_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	struct cs35l34_private *priv = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		regmap_update_bits(priv->regmap, CS35L34_ADSP_CLK_CTL,
 				    0x80, 0x80);
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		regmap_update_bits(priv->regmap, CS35L34_ADSP_CLK_CTL,
 				    0x80, 0x00);
 		break;

@@ -364,7 +364,7 @@ static struct snd_soc_dai_link cht_dailink[] = {
 		.id = 0,
 		.no_pcm = 1,
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF
-					| SND_SOC_DAIFMT_CBC_CFC,
+					| SND_SOC_DAIFMT_BC_FC,
 		.init = cht_codec_init,
 		.be_hw_params_fixup = cht_codec_fixup,
 		.ops = &cht_be_ssp2_ops,

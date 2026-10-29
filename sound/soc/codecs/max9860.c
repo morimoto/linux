@@ -264,10 +264,10 @@ static int max9860_hw_params(struct snd_pcm_substream *substream,
 		ifc1b |= MAX9860_ST;
 
 	switch (max9860->fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		master = 0;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		master = MAX9860_MASTER;
 		break;
 	default:
@@ -442,8 +442,8 @@ static int max9860_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	struct max9860_priv *max9860 = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BP_FP:
+	case SND_SOC_DAIFMT_BC_FC:
 		max9860->fmt = fmt;
 		return 0;
 

@@ -120,7 +120,7 @@ static struct snd_soc_dai_link tegra_wm8962_dai = {
 	.init = tegra_wm8962_init,
 	.dai_fmt = SND_SOC_DAIFMT_I2S |
 		   SND_SOC_DAIFMT_NB_NF |
-		   SND_SOC_DAIFMT_CBC_CFC,
+		   SND_SOC_DAIFMT_BC_FC,
 	SND_SOC_DAILINK_REG(wm8962_hifi),
 };
 

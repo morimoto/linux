@@ -1206,7 +1206,7 @@ static struct snd_soc_dai_link mt8188_mt6359_dai_links[] = {
 		.no_pcm = 1,
 		.dai_fmt = SND_SOC_DAIFMT_I2S |
 			SND_SOC_DAIFMT_NB_NF |
-			SND_SOC_DAIFMT_CBP_CFP,
+			SND_SOC_DAIFMT_BP_FP,
 		.capture_only = 1,
 		.ignore_suspend = 1,
 		SND_SOC_DAILINK_REG(etdm1_in),
@@ -1216,7 +1216,7 @@ static struct snd_soc_dai_link mt8188_mt6359_dai_links[] = {
 		.no_pcm = 1,
 		.dai_fmt = SND_SOC_DAIFMT_I2S |
 			SND_SOC_DAIFMT_NB_NF |
-			SND_SOC_DAIFMT_CBP_CFP,
+			SND_SOC_DAIFMT_BP_FP,
 		.capture_only = 1,
 		SND_SOC_DAILINK_REG(etdm2_in),
 	},
@@ -1225,7 +1225,7 @@ static struct snd_soc_dai_link mt8188_mt6359_dai_links[] = {
 		.no_pcm = 1,
 		.dai_fmt = SND_SOC_DAIFMT_I2S |
 			SND_SOC_DAIFMT_NB_NF |
-			SND_SOC_DAIFMT_CBC_CFC,
+			SND_SOC_DAIFMT_BC_FC,
 		.playback_only = 1,
 		SND_SOC_DAILINK_REG(etdm1_out),
 	},
@@ -1234,7 +1234,7 @@ static struct snd_soc_dai_link mt8188_mt6359_dai_links[] = {
 		.no_pcm = 1,
 		.dai_fmt = SND_SOC_DAIFMT_I2S |
 			SND_SOC_DAIFMT_NB_NF |
-			SND_SOC_DAIFMT_CBC_CFC,
+			SND_SOC_DAIFMT_BC_FC,
 		.playback_only = 1,
 		SND_SOC_DAILINK_REG(etdm2_out),
 	},
@@ -1243,7 +1243,7 @@ static struct snd_soc_dai_link mt8188_mt6359_dai_links[] = {
 		.no_pcm = 1,
 		.dai_fmt = SND_SOC_DAIFMT_I2S |
 			SND_SOC_DAIFMT_NB_NF |
-			SND_SOC_DAIFMT_CBC_CFC,
+			SND_SOC_DAIFMT_BC_FC,
 		.playback_only = 1,
 		SND_SOC_DAILINK_REG(etdm3_out),
 	},
@@ -1252,7 +1252,7 @@ static struct snd_soc_dai_link mt8188_mt6359_dai_links[] = {
 		.no_pcm = 1,
 		.dai_fmt = SND_SOC_DAIFMT_I2S |
 			SND_SOC_DAIFMT_NB_NF |
-			SND_SOC_DAIFMT_CBC_CFC,
+			SND_SOC_DAIFMT_BC_FC,
 		SND_SOC_DAILINK_REG(pcm1),
 	},
 	[DAI_LINK_UL_SRC_BE] = {

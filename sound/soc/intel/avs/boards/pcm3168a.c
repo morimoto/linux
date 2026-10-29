@@ -72,7 +72,7 @@ static int avs_create_dai_links(struct device *dev, struct snd_soc_dai_link **li
 	dl[0].num_codecs = 1;
 	dl[0].platforms = platform;
 	dl[0].num_platforms = 1;
-	dl[0].dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
+	dl[0].dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BP_FP;
 	dl[0].be_hw_params_fixup = avs_pcm3168a_be_fixup;
 	dl[0].nonatomic = 1;
 	dl[0].no_pcm = 1;

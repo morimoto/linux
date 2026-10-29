@@ -1137,14 +1137,14 @@ static int max98088_dai1_set_fmt(struct snd_soc_dai *codec_dai,
                cdata->fmt = fmt;
 
                switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-               case SND_SOC_DAIFMT_CBC_CFC:
+               case SND_SOC_DAIFMT_BC_FC:
                        /* Consumer mode PLL */
                        snd_soc_component_write(component, M98088_REG_12_DAI1_CLKCFG_HI,
                                0x80);
                        snd_soc_component_write(component, M98088_REG_13_DAI1_CLKCFG_LO,
                                0x00);
                        break;
-               case SND_SOC_DAIFMT_CBP_CFP:
+               case SND_SOC_DAIFMT_BP_FP:
                        /* Set to provider mode */
                        reg14val |= M98088_DAI_MAS;
                        break;
@@ -1207,14 +1207,14 @@ static int max98088_dai2_set_fmt(struct snd_soc_dai *codec_dai,
                cdata->fmt = fmt;
 
                switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-               case SND_SOC_DAIFMT_CBC_CFC:
+               case SND_SOC_DAIFMT_BC_FC:
                        /* Consumer mode PLL */
                        snd_soc_component_write(component, M98088_REG_1A_DAI2_CLKCFG_HI,
                                0x80);
                        snd_soc_component_write(component, M98088_REG_1B_DAI2_CLKCFG_LO,
                                0x00);
                        break;
-               case SND_SOC_DAIFMT_CBP_CFP:
+               case SND_SOC_DAIFMT_BP_FP:
                        /* Set to provider mode */
                        reg1Cval |= M98088_DAI_MAS;
                        break;

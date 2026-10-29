@@ -689,11 +689,11 @@ static int rt1305_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	int dai_id = snd_soc_dai_id(dai);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		reg_val |= RT1305_SEL_I2S_OUT_MODE_M;
 		rt1305->master = 1;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		reg_val |= RT1305_SEL_I2S_OUT_MODE_S;
 		rt1305->master = 0;
 		break;
