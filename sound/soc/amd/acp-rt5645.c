@@ -97,7 +97,7 @@ static struct snd_soc_dai_link cz_dai_rt5650[] = {
 		.name = "amd-rt5645-play",
 		.stream_name = "RT5645_AIF1",
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF
-				| SND_SOC_DAIFMT_CBP_CFP,
+				| SND_SOC_DAIFMT_BP_FP,
 		.init = cz_init,
 		.ops = &cz_aif1_ops,
 		SND_SOC_DAILINK_REG(designware1, codec, platform),
@@ -106,7 +106,7 @@ static struct snd_soc_dai_link cz_dai_rt5650[] = {
 		.name = "amd-rt5645-cap",
 		.stream_name = "RT5645_AIF1",
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF
-				| SND_SOC_DAIFMT_CBP_CFP,
+				| SND_SOC_DAIFMT_BP_FP,
 		.ops = &cz_aif1_ops,
 		SND_SOC_DAILINK_REG(designware2, codec, platform),
 	},

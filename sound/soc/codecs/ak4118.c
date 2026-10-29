@@ -202,10 +202,10 @@ static int ak4118_set_dai_fmt(struct snd_soc_dai *dai,
 	int ret = 0;
 
 	switch (format & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		dif = ak4118_set_dai_fmt_provider(ak4118, format);
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		dif = ak4118_set_dai_fmt_consumer(ak4118, format);
 		break;
 	default:

@@ -194,9 +194,9 @@ static int acp_card_hs_startup(struct snd_pcm_substream *substream)
 		fmt = SND_SOC_DAIFMT_I2S;
 
 	if (drvdata->soc_mclk)
-		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBC_CFC;
+		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BC_FC;
 	else
-		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
+		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BP_FP;
 
 	ret =  snd_soc_dai_set_fmt(codec_dai, fmt);
 	if (ret < 0) {
@@ -245,9 +245,9 @@ static int acp_card_rt5682_hw_params(struct snd_pcm_substream *substream,
 		fmt = SND_SOC_DAIFMT_I2S;
 
 	if (drvdata->soc_mclk)
-		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBC_CFC;
+		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BC_FC;
 	else
-		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
+		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BP_FP;
 
 	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
 	if (ret && ret != -ENOTSUPP) {
@@ -451,9 +451,9 @@ static int acp_card_rt5682s_hw_params(struct snd_pcm_substream *substream,
 		fmt = SND_SOC_DAIFMT_I2S;
 
 	if (drvdata->soc_mclk)
-		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBC_CFC;
+		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BC_FC;
 	else
-		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
+		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BP_FP;
 
 	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
 	if (ret && ret != -ENOTSUPP) {
@@ -649,9 +649,9 @@ static int acp_card_rt1019_hw_params(struct snd_pcm_substream *substream,
 		fmt = SND_SOC_DAIFMT_I2S;
 
 	if (drvdata->soc_mclk)
-		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBC_CFC;
+		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BC_FC;
 	else
-		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
+		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BP_FP;
 
 	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
 	if (ret && ret != -ENOTSUPP) {
@@ -814,9 +814,9 @@ static int acp_card_maxim_hw_params(struct snd_pcm_substream *substream,
 		fmt = SND_SOC_DAIFMT_I2S;
 
 	if (drvdata->soc_mclk)
-		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBC_CFC;
+		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BC_FC;
 	else
-		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
+		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BP_FP;
 
 	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
 	if (ret && ret != -ENOTSUPP) {
@@ -943,7 +943,7 @@ static int acp_max98388_hw_params(struct snd_pcm_substream *substream,
 						   MAX98388_CODEC_DAI);
 
 	return snd_soc_dai_set_fmt(codec_dai,
-				   SND_SOC_DAIFMT_CBC_CFC | SND_SOC_DAIFMT_I2S |
+				   SND_SOC_DAIFMT_BC_FC | SND_SOC_DAIFMT_I2S |
 				   SND_SOC_DAIFMT_NB_NF);
 }
 
@@ -1068,9 +1068,9 @@ static int acp_nau8825_hw_params(struct snd_pcm_substream *substream,
 		fmt = SND_SOC_DAIFMT_I2S;
 
 	if (drvdata->soc_mclk)
-		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBC_CFC;
+		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BC_FC;
 	else
-		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
+		fmt |= SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BP_FP;
 
 	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
 	if (ret && ret != -ENOTSUPP) {
@@ -1280,9 +1280,9 @@ static int acp_nau8821_hw_params(struct snd_pcm_substream *substream,
 	unsigned int fmt;
 
 	if (drvdata->soc_mclk)
-		fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBC_CFC;
+		fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BC_FC;
 	else
-		fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
+		fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BP_FP;
 
 	ret =  snd_soc_dai_set_fmt(codec_dai, fmt);
 	if (ret < 0) {

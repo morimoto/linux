@@ -169,7 +169,7 @@ static int cs40l50_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	struct device *dev = snd_soc_component_to_dev(component);
 	struct cs40l50_codec *codec = dev_get_drvdata(dev);
 
-	if ((fmt & SND_SOC_DAIFMT_MASTER_MASK) != SND_SOC_DAIFMT_CBC_CFC)
+	if ((fmt & SND_SOC_DAIFMT_MASTER_MASK) != SND_SOC_DAIFMT_BC_FC)
 		return -EINVAL;
 
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
