@@ -135,9 +135,9 @@ static int snd_proto_probe(struct platform_device *pdev)
 	}
 	if (bitclkmaster) {
 		if (codec_np == bitclkmaster)
-			dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
+			dai_fmt |= SND_SOC_DAIFMT_BP_FP;
 		else
-			dai_fmt |= SND_SOC_DAIFMT_CBC_CFC;
+			dai_fmt |= SND_SOC_DAIFMT_BC_FC;
 	} else {
 		dai_fmt |= snd_soc_daifmt_parse_clock_provider_as_flag(np, NULL);
 	}

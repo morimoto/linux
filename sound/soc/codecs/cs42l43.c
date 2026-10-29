@@ -525,11 +525,11 @@ static int cs42l43_asp_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	}
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		if (provider)
 			snd_soc_dapm_del_routes(dapm, routes, ARRAY_SIZE(routes));
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		if (!provider)
 			snd_soc_dapm_add_routes(dapm, routes, ARRAY_SIZE(routes));
 		clk_config |= CS42L43_ASP_MASTER_MODE_MASK;

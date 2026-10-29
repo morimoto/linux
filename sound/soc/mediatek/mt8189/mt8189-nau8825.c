@@ -931,7 +931,7 @@ static struct snd_soc_dai_link mt8189_nau8825_dai_links[] = {
 	/* Back End DAI links */
 	{
 		.name = "I2SIN0_BE",
-		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBC_CFC
+		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_BC_FC
 			| SND_SOC_DAIFMT_GATED,
 		.ops = &mt8189_common_i2s_ops,
 		.no_pcm = 1,
@@ -941,7 +941,7 @@ static struct snd_soc_dai_link mt8189_nau8825_dai_links[] = {
 	},
 	{
 		.name = "I2SIN1_BE",
-		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBC_CFC
+		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_BC_FC
 			| SND_SOC_DAIFMT_GATED,
 		.ops = &mt8189_common_i2s_ops,
 		.no_pcm = 1,
@@ -951,7 +951,7 @@ static struct snd_soc_dai_link mt8189_nau8825_dai_links[] = {
 	},
 	{
 		.name = "I2SOUT0_BE",
-		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBC_CFC
+		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_BC_FC
 			| SND_SOC_DAIFMT_GATED,
 		.ops = &mt8189_common_i2s_ops,
 		.no_pcm = 1,
@@ -961,7 +961,7 @@ static struct snd_soc_dai_link mt8189_nau8825_dai_links[] = {
 	},
 	{
 		.name = "I2SOUT1_BE",
-		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBC_CFC
+		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_BC_FC
 			| SND_SOC_DAIFMT_GATED,
 		.ops = &mt8189_common_i2s_ops,
 		.no_pcm = 1,
@@ -985,7 +985,7 @@ static struct snd_soc_dai_link mt8189_nau8825_dai_links[] = {
 	},
 	{
 		.name = "TDM_DPTX_BE",
-		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBC_CFC
+		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_BC_FC
 			| SND_SOC_DAIFMT_GATED,
 		.ops = &mt8189_dptx_ops,
 		.be_hw_params_fixup = mt8189_dptx_hw_params_fixup,
@@ -996,7 +996,7 @@ static struct snd_soc_dai_link mt8189_nau8825_dai_links[] = {
 	},
 	{
 		.name = "PCM_0_BE",
-		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBC_CFC
+		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_BC_FC
 			| SND_SOC_DAIFMT_GATED,
 		.no_pcm = 1,
 		.ops = &mt8189_pcm_ops,

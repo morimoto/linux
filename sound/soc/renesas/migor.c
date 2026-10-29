@@ -127,7 +127,7 @@ static struct snd_soc_dai_link migor_dai = {
 	.name = "wm8978",
 	.stream_name = "WM8978",
 	.dai_fmt = SND_SOC_DAIFMT_NB_IF | SND_SOC_DAIFMT_I2S |
-		   SND_SOC_DAIFMT_CBC_CFC,
+		   SND_SOC_DAIFMT_BC_FC,
 	.ops = &migor_dai_ops,
 	SND_SOC_DAILINK_REG(wm8978),
 };
