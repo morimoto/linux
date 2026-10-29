@@ -947,7 +947,7 @@ static int nau8360_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	unsigned int ctrl_val, ctrl1_val;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
 	default:
 		return -EINVAL;

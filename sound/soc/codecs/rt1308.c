@@ -526,7 +526,7 @@ static int rt1308_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	int dai_id = snd_soc_dai_id(dai);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		rt1308->master = 0;
 		break;
 	default:

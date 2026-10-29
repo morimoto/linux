@@ -668,12 +668,12 @@ static int es8389_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	u8 state = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFP:
+	case SND_SOC_DAIFMT_BC_FP:
 		regmap_update_bits(es8389->regmap, ES8389_MASTER_MODE,
 				ES8389_MASTER_MODE_EN, ES8389_MASTER_MODE_EN);
 		es8389->mastermode = 1;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		es8389->mastermode = 0;
 		break;
 	default:

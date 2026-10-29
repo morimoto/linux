@@ -169,7 +169,7 @@ static int pcm1681_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	struct pcm1681_private *priv = dev_get_drvdata(dev);
 
 	/* The PCM1681 can only be consumer to all clocks */
-	if ((format & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_CBC_CFC) {
+	if ((format & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_BC_FC) {
 		dev_err(dev, "Invalid clocking mode\n");
 		return -EINVAL;
 	}

@@ -167,9 +167,9 @@ static int avs_create_dai_link(struct device *dev, int ssp_port, int tdm_slot,
 	dl->num_platforms = 1;
 	dl->id = 0;
 	if (dmi_first_match(kblr_dmi_table))
-		dl->dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBC_CFC;
+		dl->dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BC_FC;
 	else
-		dl->dai_fmt = SND_SOC_DAIFMT_DSP_A | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBC_CFC;
+		dl->dai_fmt = SND_SOC_DAIFMT_DSP_A | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BC_FC;
 	dl->init = avs_rt298_codec_init;
 	dl->exit = avs_rt298_codec_exit;
 	dl->be_hw_params_fixup = avs_rt298_be_fixup;

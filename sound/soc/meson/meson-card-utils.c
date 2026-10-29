@@ -116,10 +116,10 @@ unsigned int meson_card_parse_daifmt(struct device_node *node,
 	/* If no master is provided, default to cpu master */
 	if (!bitclkmaster || bitclkmaster == cpu_node) {
 		daifmt |= (!framemaster || framemaster == cpu_node) ?
-			SND_SOC_DAIFMT_CBC_CFC : SND_SOC_DAIFMT_CBC_CFP;
+			SND_SOC_DAIFMT_BC_FC : SND_SOC_DAIFMT_BC_FP;
 	} else {
 		daifmt |= (!framemaster || framemaster == cpu_node) ?
-			SND_SOC_DAIFMT_CBP_CFC : SND_SOC_DAIFMT_CBP_CFP;
+			SND_SOC_DAIFMT_BP_FC : SND_SOC_DAIFMT_BP_FP;
 	}
 
 	of_node_put(bitclkmaster);

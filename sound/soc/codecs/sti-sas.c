@@ -151,7 +151,7 @@ static int sti_sas_dac_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	struct device *dev = snd_soc_component_to_dev(component);
 
 	/* Sanity check only */
-	if ((fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_CBC_CFC) {
+	if ((fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_BC_FC) {
 		dev_err(dev,
 			"%s: ERROR: Unsupported clocking 0x%x\n",
 			__func__, fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK);
@@ -199,7 +199,7 @@ static int sti_sas_spdif_set_fmt(struct snd_soc_dai *dai,
 	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct device *dev = snd_soc_component_to_dev(component);
 
-	if ((fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_CBC_CFC) {
+	if ((fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_BC_FC) {
 		dev_err(dev,
 			"%s: ERROR: Unsupported clocking mask 0x%x\n",
 			__func__, fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK);

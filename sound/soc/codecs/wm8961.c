@@ -628,10 +628,10 @@ static int wm8961_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		 WM8961_MS | WM8961_FORMAT_MASK);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		aif |= WM8961_MS;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
 	default:
 		return -EINVAL;

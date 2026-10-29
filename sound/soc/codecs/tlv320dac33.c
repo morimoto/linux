@@ -1331,10 +1331,10 @@ static int dac33_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	aictrl_b = dac33_read_reg_cache(component, DAC33_SER_AUDIOIF_CTRL_B);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		aictrl_a |= (DAC33_MSBCLK | DAC33_MSWCLK);
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		if (dac33->fifo_mode) {
 			dev_err(dev, "FIFO mode requires provider mode\n");
 			return -EINVAL;

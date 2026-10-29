@@ -1304,15 +1304,15 @@ static int wm5100_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	}
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
-	case SND_SOC_DAIFMT_CBC_CFP:
+	case SND_SOC_DAIFMT_BC_FP:
 		lrclk |= WM5100_AIF1TX_LRCLK_MSTR;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFC:
+	case SND_SOC_DAIFMT_BP_FC:
 		bclk |= WM5100_AIF1_BCLK_MSTR;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		lrclk |= WM5100_AIF1TX_LRCLK_MSTR;
 		bclk |= WM5100_AIF1_BCLK_MSTR;
 		break;

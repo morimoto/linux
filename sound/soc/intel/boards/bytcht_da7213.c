@@ -197,7 +197,7 @@ static struct snd_soc_dai_link dailink[] = {
 		.id = 0,
 		.no_pcm = 1,
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF
-						| SND_SOC_DAIFMT_CBC_CFC,
+						| SND_SOC_DAIFMT_BC_FC,
 		.be_hw_params_fixup = codec_fixup,
 		.ops = &ssp2_ops,
 		SND_SOC_DAILINK_REG(ssp2_port, ssp2_codec, platform),

@@ -202,11 +202,11 @@ static int rk3036_codec_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	dev_dbg(dev, "rk3036_codec dai set fmt : %08x\n", fmt);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		reg01_val |= INNO_R01_PINDIR_IN_SLAVE |
 			     INNO_R01_I2SMODE_SLAVE;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		reg01_val |= INNO_R01_PINDIR_OUT_MASTER |
 			     INNO_R01_I2SMODE_MASTER;
 		break;

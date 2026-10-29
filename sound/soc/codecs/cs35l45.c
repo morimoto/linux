@@ -700,7 +700,7 @@ static int cs35l45_asp_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	unsigned int asp_fmt, fsync_inv, bclk_inv;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
 	default:
 		dev_err(cs35l45->dev, "Invalid DAI clocking\n");

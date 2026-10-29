@@ -408,7 +408,7 @@ static int acp3x_es83xx_configure_link(struct snd_soc_card *card, struct snd_soc
 	link->init = acp3x_es83xx_init;
 	link->ops = &acp3x_es83xx_ops;
 	link->dai_fmt = SND_SOC_DAIFMT_I2S
-		| SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBP_CFP;
+		| SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BP_FP;
 
 	return 0;
 }

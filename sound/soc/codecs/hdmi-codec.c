@@ -669,17 +669,17 @@ static int hdmi_codec_i2s_set_fmt(struct snd_soc_dai *dai,
 	memset(cf, 0, sizeof(*cf));
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		cf->bit_clk_provider = 1;
 		cf->frame_clk_provider = 1;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFP:
+	case SND_SOC_DAIFMT_BC_FP:
 		cf->frame_clk_provider = 1;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFC:
+	case SND_SOC_DAIFMT_BP_FC:
 		cf->bit_clk_provider = 1;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
 	default:
 		return -EINVAL;
@@ -750,7 +750,7 @@ static int hdmi_codec_mute(struct snd_soc_dai *dai, int mute, int direction)
 }
 
 /*
- * This driver can select all SND_SOC_DAIFMT_CBx_CFx,
+ * This driver can select all SND_SOC_DAIFMT_Bx_Fx,
  * but need to be selected from Sound Card, not be auto selected.
  * Because it might be used from other driver.
  * For example,

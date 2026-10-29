@@ -366,7 +366,7 @@ static int pcm186x_set_fmt(struct snd_soc_dai *dai, unsigned int format)
 	dev_dbg(dev, "%s() format=0x%x\n", __func__, format);
 
 	switch (format & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		if (!priv->sysclk) {
 			dev_err(dev, "operating in provider mode requires sysclock to be configured\n");
 			return -EINVAL;
@@ -374,7 +374,7 @@ static int pcm186x_set_fmt(struct snd_soc_dai *dai, unsigned int format)
 		clk_ctrl |= PCM186X_CLK_CTRL_MST_MODE;
 		priv->is_provider_mode = true;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		priv->is_provider_mode = false;
 		break;
 	default:

@@ -476,12 +476,12 @@ static int max9867_dai_set_fmt(struct snd_soc_dai *codec_dai,
 	u8 iface1A, iface1B;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		max9867->provider = true;
 		iface1A = MAX9867_MASTER;
 		iface1B = MAX9867_IFC1B_48X;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		max9867->provider = false;
 		iface1A = iface1B = 0;
 		break;

@@ -194,7 +194,7 @@ static struct snd_soc_dai_link byt_cht_cx2072x_dais[] = {
 		.id = 0,
 		.no_pcm = 1,
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF
-					      | SND_SOC_DAIFMT_CBC_CFC,
+					      | SND_SOC_DAIFMT_BC_FC,
 		.init = byt_cht_cx2072x_init,
 		.be_hw_params_fixup = byt_cht_cx2072x_fixup,
 		SND_SOC_DAILINK_REG(ssp2, cx2072x, platform),

@@ -262,10 +262,10 @@ static int wm8523_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		      WM8523_FMT_MASK | WM8523_AIF_MSTR_MASK);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		aifctrl1 |= WM8523_AIF_MSTR;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
 	default:
 		return -EINVAL;

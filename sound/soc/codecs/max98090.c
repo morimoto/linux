@@ -1632,7 +1632,7 @@ static int max98090_dai_set_fmt(struct snd_soc_dai *codec_dai,
 		regval = 0;
 		tdm_regval = 0;
 		switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-		case SND_SOC_DAIFMT_CBC_CFC:
+		case SND_SOC_DAIFMT_BC_FC:
 			/* Set to consumer mode PLL - MAS mode off */
 			snd_soc_component_write(component,
 				M98090_REG_CLOCK_RATIO_NI_MSB, 0x00);
@@ -1642,7 +1642,7 @@ static int max98090_dai_set_fmt(struct snd_soc_dai *codec_dai,
 				M98090_USE_M1_MASK, 0);
 			max98090->master = false;
 			break;
-		case SND_SOC_DAIFMT_CBP_CFP:
+		case SND_SOC_DAIFMT_BP_FP:
 			/* Set to provider mode */
 			if (max98090->tdm_slots == 4) {
 				/* TDM */

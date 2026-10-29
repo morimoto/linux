@@ -489,7 +489,7 @@ static int fsl_asoc_card_audmux_init(struct device_node *np,
 	 * synchronous mode and enable 4 PADs in IOMUX.
 	 */
 	switch (priv->dai_fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		int_ptcr = IMX_AUDMUX_V2_PTCR_RFSEL(8 | ext_port) |
 			   IMX_AUDMUX_V2_PTCR_RCSEL(8 | ext_port) |
 			   IMX_AUDMUX_V2_PTCR_TFSEL(ext_port) |
@@ -499,7 +499,7 @@ static int fsl_asoc_card_audmux_init(struct device_node *np,
 			   IMX_AUDMUX_V2_PTCR_TFSDIR |
 			   IMX_AUDMUX_V2_PTCR_TCLKDIR;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFC:
+	case SND_SOC_DAIFMT_BP_FC:
 		int_ptcr = IMX_AUDMUX_V2_PTCR_RCSEL(8 | ext_port) |
 			   IMX_AUDMUX_V2_PTCR_TCSEL(ext_port) |
 			   IMX_AUDMUX_V2_PTCR_RCLKDIR |
@@ -509,7 +509,7 @@ static int fsl_asoc_card_audmux_init(struct device_node *np,
 			   IMX_AUDMUX_V2_PTCR_RFSDIR |
 			   IMX_AUDMUX_V2_PTCR_TFSDIR;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFP:
+	case SND_SOC_DAIFMT_BC_FP:
 		int_ptcr = IMX_AUDMUX_V2_PTCR_RFSEL(8 | ext_port) |
 			   IMX_AUDMUX_V2_PTCR_TFSEL(ext_port) |
 			   IMX_AUDMUX_V2_PTCR_RFSDIR |
@@ -519,7 +519,7 @@ static int fsl_asoc_card_audmux_init(struct device_node *np,
 			   IMX_AUDMUX_V2_PTCR_RCLKDIR |
 			   IMX_AUDMUX_V2_PTCR_TCLKDIR;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		ext_ptcr = IMX_AUDMUX_V2_PTCR_RFSEL(8 | int_port) |
 			   IMX_AUDMUX_V2_PTCR_RCSEL(8 | int_port) |
 			   IMX_AUDMUX_V2_PTCR_TFSEL(int_port) |
@@ -688,7 +688,7 @@ static int fsl_asoc_card_wm8958_codec_init(struct fsl_asoc_card_priv *priv)
 
 static const struct fsl_asoc_card_pdata fsl_asoc_cs42888_pdata = {
 	.codec_dai_name      = "cs42888",
-	.dai_fmt             = DAI_FMT_BASE | SND_SOC_DAIFMT_CBC_CFC,
+	.dai_fmt             = DAI_FMT_BASE | SND_SOC_DAIFMT_BC_FC,
 	.sysclk_dir          = { SND_SOC_CLOCK_OUT, SND_SOC_CLOCK_OUT },
 	.slot_width          = 32,
 	.dapm_routes         = audio_map,
@@ -698,7 +698,7 @@ static const struct fsl_asoc_card_pdata fsl_asoc_cs42888_pdata = {
 
 static const struct fsl_asoc_card_pdata fsl_asoc_cs427x_pdata = {
 	.codec_dai_name  = "cs4271-hifi",
-	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
+	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_BP_FP,
 	.codec_mclk_id   = CS427x_SYSCLK_MCLK,
 	.dapm_routes     = audio_map,
 	.num_dapm_routes = ARRAY_SIZE(audio_map),
@@ -706,7 +706,7 @@ static const struct fsl_asoc_card_pdata fsl_asoc_cs427x_pdata = {
 
 static const struct fsl_asoc_card_pdata fsl_asoc_sgtl5000_pdata = {
 	.codec_dai_name  = "sgtl5000",
-	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
+	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_BP_FP,
 	.codec_mclk_id   = SGTL5000_SYSCLK,
 	.dapm_routes     = audio_map,
 	.num_dapm_routes = ARRAY_SIZE(audio_map),
@@ -714,14 +714,14 @@ static const struct fsl_asoc_card_pdata fsl_asoc_sgtl5000_pdata = {
 
 static const struct fsl_asoc_card_pdata fsl_asoc_tlv320aic32x4_pdata = {
 	.codec_dai_name  = "tlv320aic32x4-hifi",
-	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
+	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_BP_FP,
 	.dapm_routes     = audio_map,
 	.num_dapm_routes = ARRAY_SIZE(audio_map),
 };
 
 static const struct fsl_asoc_card_pdata fsl_asoc_tlv320aic31xx_pdata = {
 	.codec_dai_name  = "tlv320dac31xx-hifi",
-	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBC_CFC,
+	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_BC_FC,
 	.sysclk_dir      = { SND_SOC_CLOCK_OUT, SND_SOC_CLOCK_OUT },
 	.playback_only   = true,
 	.dapm_routes     = audio_map_tx,
@@ -730,7 +730,7 @@ static const struct fsl_asoc_card_pdata fsl_asoc_tlv320aic31xx_pdata = {
 
 static const struct fsl_asoc_card_pdata fsl_asoc_wm8962_pdata = {
 	.codec_dai_name      = "wm8962",
-	.dai_fmt             = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
+	.dai_fmt             = DAI_FMT_BASE | SND_SOC_DAIFMT_BP_FP,
 	.codec_mclk_id       = WM8962_SYSCLK_MCLK,
 	.has_pll             = true,
 	.codec_fll_id        = WM8962_SYSCLK_FLL,
@@ -746,7 +746,7 @@ static const struct fsl_asoc_card_pdata fsl_asoc_wm8962_pdata = {
 
 static const struct fsl_asoc_card_pdata fsl_asoc_wm8960_pdata = {
 	.codec_dai_name      = "wm8960-hifi",
-	.dai_fmt             = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
+	.dai_fmt             = DAI_FMT_BASE | SND_SOC_DAIFMT_BP_FP,
 	.has_pll             = true,
 	.codec_fll_id        = WM8960_SYSCLK_AUTO,
 	.codec_pll_id        = WM8960_SYSCLK_AUTO,
@@ -775,7 +775,7 @@ static const struct fsl_asoc_card_pdata fsl_asoc_ac97_pdata = {
 
 static const struct fsl_asoc_card_pdata fsl_asoc_mqs_pdata = {
 	.codec_dai_name  = "fsl-mqs-dai",
-	.dai_fmt         = SND_SOC_DAIFMT_LEFT_J | SND_SOC_DAIFMT_CBC_CFC |
+	.dai_fmt         = SND_SOC_DAIFMT_LEFT_J | SND_SOC_DAIFMT_BC_FC |
 			   SND_SOC_DAIFMT_NB_NF,
 	.playback_only   = true,
 	.dapm_routes     = audio_map_tx,
@@ -784,7 +784,7 @@ static const struct fsl_asoc_card_pdata fsl_asoc_mqs_pdata = {
 
 static const struct fsl_asoc_card_pdata fsl_asoc_wm8524_pdata = {
 	.codec_dai_name  = "wm8524-hifi",
-	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBC_CFC,
+	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_BC_FC,
 	/* RX=0, TX=1: set TX (index 1) to CLOCK_OUT, RX stays at default IN */
 	.sysclk_dir      = { 0, SND_SOC_CLOCK_OUT },
 	.sysclk_ratio    = { 0, 256 },
@@ -796,14 +796,14 @@ static const struct fsl_asoc_card_pdata fsl_asoc_wm8524_pdata = {
 
 static const struct fsl_asoc_card_pdata fsl_asoc_si476x_pdata = {
 	.codec_dai_name  = "si476x-codec",
-	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBC_CFC,
+	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_BC_FC,
 	.dapm_routes     = audio_map_rx,
 	.num_dapm_routes = ARRAY_SIZE(audio_map_rx),
 };
 
 static const struct fsl_asoc_card_pdata fsl_asoc_wm8958_pdata = {
 	.codec_dai_name  = "wm8994-aif1",
-	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
+	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_BP_FP,
 	.codec_mclk_id   = WM8994_FLL_SRC_MCLK1,
 	.has_pll         = true,
 	.codec_fll_id    = WM8994_SYSCLK_FLL1,
@@ -813,7 +813,7 @@ static const struct fsl_asoc_card_pdata fsl_asoc_wm8958_pdata = {
 
 static const struct fsl_asoc_card_pdata fsl_asoc_nau8822_pdata = {
 	.codec_dai_name  = "nau8822-hifi",
-	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
+	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_BP_FP,
 	.codec_mclk_id   = NAU8822_CLK_MCLK,
 	.has_pll         = true,
 	.codec_fll_id    = NAU8822_CLK_PLL,
@@ -824,7 +824,7 @@ static const struct fsl_asoc_card_pdata fsl_asoc_nau8822_pdata = {
 
 static const struct fsl_asoc_card_pdata fsl_asoc_wm8904_pdata = {
 	.codec_dai_name      = "wm8904-hifi",
-	.dai_fmt             = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
+	.dai_fmt             = DAI_FMT_BASE | SND_SOC_DAIFMT_BP_FP,
 	.codec_mclk_id       = WM8904_FLL_MCLK,
 	.has_pll             = true,
 	.codec_fll_id        = WM8904_CLK_FLL,
@@ -1246,17 +1246,17 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
 
 		if (codec_bitclkprovider)
 			daifmt |= (codec_frameprovider) ?
-				SND_SOC_DAIFMT_CBP_CFP : SND_SOC_DAIFMT_CBP_CFC;
+				SND_SOC_DAIFMT_BP_FP : SND_SOC_DAIFMT_BP_FC;
 		else
 			daifmt |= (codec_frameprovider) ?
-				SND_SOC_DAIFMT_CBC_CFP : SND_SOC_DAIFMT_CBC_CFC;
+				SND_SOC_DAIFMT_BC_FP : SND_SOC_DAIFMT_BC_FC;
 
 		/* Override dai_fmt with value from DT */
 		priv->dai_fmt = daifmt;
 	}
 
 	/* Change direction according to format */
-	if (priv->dai_fmt & SND_SOC_DAIFMT_CBP_CFP) {
+	if (priv->dai_fmt & SND_SOC_DAIFMT_BP_FP) {
 		priv->cpu_priv.sysclk_dir[TX] = SND_SOC_CLOCK_IN;
 		priv->cpu_priv.sysclk_dir[RX] = SND_SOC_CLOCK_IN;
 	}

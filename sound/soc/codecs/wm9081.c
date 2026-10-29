@@ -912,18 +912,18 @@ static int wm9081_set_dai_fmt(struct snd_soc_dai *dai,
 		  WM9081_BCLK_DIR | WM9081_LRCLK_DIR | WM9081_AIF_FMT_MASK);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		wm9081->master = 0;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFP:
+	case SND_SOC_DAIFMT_BC_FP:
 		aif2 |= WM9081_LRCLK_DIR;
 		wm9081->master = 1;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFC:
+	case SND_SOC_DAIFMT_BP_FC:
 		aif2 |= WM9081_BCLK_DIR;
 		wm9081->master = 1;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		aif2 |= WM9081_LRCLK_DIR | WM9081_BCLK_DIR;
 		wm9081->master = 1;
 		break;

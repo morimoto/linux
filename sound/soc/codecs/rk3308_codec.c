@@ -599,9 +599,9 @@ static int rk3308_codec_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	int grp;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		adc_aif2 |= RK3308_ADC_IO_MODE_MASTER;
 		adc_aif2 |= RK3308_ADC_MODE_MASTER;
 		dac_aif2 |= dac_master_bits;

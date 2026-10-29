@@ -674,9 +674,9 @@ static int wm8955_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	u16 aif = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		aif |= WM8955_MS;
 		break;
 	default:

@@ -509,12 +509,12 @@ static int cv1800b_i2s_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		dev_dbg(i2s->dev, "set to master mode\n");
 		master = 1;
 		break;
 
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		dev_dbg(i2s->dev, "set to slave mode\n");
 		master = 0;
 		break;

@@ -369,12 +369,12 @@ static int cs35l35_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	struct cs35l35_private *cs35l35 = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		regmap_update_bits(cs35l35->regmap, CS35L35_CLK_CTL1,
 				    CS35L35_MS_MASK, 1 << CS35L35_MS_SHIFT);
 		cs35l35->clock_consumer = false;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		regmap_update_bits(cs35l35->regmap, CS35L35_CLK_CTL1,
 				    CS35L35_MS_MASK, 0 << CS35L35_MS_SHIFT);
 		cs35l35->clock_consumer = true;

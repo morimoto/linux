@@ -243,10 +243,10 @@ static int wm8804_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	snd_soc_component_update_bits(component, WM8804_AIFRX, 0x3, format);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		master = 1;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		master = 0;
 		break;
 	default:

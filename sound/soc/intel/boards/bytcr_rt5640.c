@@ -1622,7 +1622,7 @@ static struct snd_soc_dai_link byt_rt5640_dais[] = {
 		.id = 0,
 		.no_pcm = 1,
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF
-						| SND_SOC_DAIFMT_CBC_CFC,
+						| SND_SOC_DAIFMT_BC_FC,
 		.be_hw_params_fixup = byt_rt5640_codec_fixup,
 		.init = byt_rt5640_init,
 		.exit = byt_rt5640_exit,

@@ -1683,16 +1683,16 @@ static int wm8996_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	}
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
-	case SND_SOC_DAIFMT_CBC_CFP:
+	case SND_SOC_DAIFMT_BC_FP:
 		lrclk_tx |= WM8996_AIF1TX_LRCLK_MSTR;
 		lrclk_rx |= WM8996_AIF1RX_LRCLK_MSTR;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFC:
+	case SND_SOC_DAIFMT_BP_FC:
 		bclk |= WM8996_AIF1_BCLK_MSTR;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		bclk |= WM8996_AIF1_BCLK_MSTR;
 		lrclk_tx |= WM8996_AIF1TX_LRCLK_MSTR;
 		lrclk_rx |= WM8996_AIF1RX_LRCLK_MSTR;

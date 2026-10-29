@@ -632,7 +632,7 @@ static int sta350_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	unsigned int confb = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
 	default:
 		return -EINVAL;

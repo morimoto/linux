@@ -473,7 +473,7 @@ static struct snd_soc_dai_link aries_dai[] = {
 		.name = "WM8994 AIF1",
 		.stream_name = "HiFi",
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
-			SND_SOC_DAIFMT_CBP_CFP,
+			SND_SOC_DAIFMT_BP_FP,
 		.ops = &aries_ops,
 		SND_SOC_DAILINK_REG(aif1),
 	},
@@ -509,13 +509,13 @@ static struct snd_soc_card_driver aries_card_driver = {
 };
 
 static const struct aries_wm8994_variant fascinate4g_variant = {
-	.modem_dai_fmt = SND_SOC_DAIFMT_DSP_A | SND_SOC_DAIFMT_CBC_CFC
+	.modem_dai_fmt = SND_SOC_DAIFMT_DSP_A | SND_SOC_DAIFMT_BC_FC
 		| SND_SOC_DAIFMT_IB_NF,
 	.has_fm_radio = false,
 };
 
 static const struct aries_wm8994_variant aries_variant = {
-	.modem_dai_fmt = SND_SOC_DAIFMT_DSP_A | SND_SOC_DAIFMT_CBP_CFP
+	.modem_dai_fmt = SND_SOC_DAIFMT_DSP_A | SND_SOC_DAIFMT_BP_FP
 		| SND_SOC_DAIFMT_IB_NF,
 	.has_fm_radio = true,
 };

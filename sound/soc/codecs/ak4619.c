@@ -670,7 +670,7 @@ static int ak4619_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 	/* Only slave mode is support */
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
 	default:
 		return -EINVAL;

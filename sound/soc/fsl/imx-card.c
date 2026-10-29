@@ -723,7 +723,7 @@ static int imx_card_parse_of(struct snd_soc_card *card, struct imx_card_data *da
 					       NULL, &link->dai_fmt);
 		if (ret)
 			link->dai_fmt = SND_SOC_DAIFMT_NB_NF |
-					SND_SOC_DAIFMT_CBC_CFC |
+					SND_SOC_DAIFMT_BC_FC |
 					SND_SOC_DAIFMT_I2S;
 
 		/* Get tdm slot */

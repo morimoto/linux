@@ -182,10 +182,10 @@ static int mc13783_set_fmt(struct snd_soc_dai *dai, unsigned int fmt,
 
 	/* DAI clock master masks */
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		val |= AUDIO_C_CLK_EN;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		val |= AUDIO_CSM;
 		break;
 	default:
@@ -222,7 +222,7 @@ static int mc13783_set_fmt_sync(struct snd_soc_dai *dai, unsigned int fmt)
 	 * so that the clock / framesync from the stereo DAC is used
 	 */
 	fmt &= ~SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK;
-	fmt |= SND_SOC_DAIFMT_CBC_CFC;
+	fmt |= SND_SOC_DAIFMT_BC_FC;
 	ret = mc13783_set_fmt(dai, fmt, MC13783_AUDIO_CODEC);
 
 	return ret;

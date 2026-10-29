@@ -819,10 +819,10 @@ static int alc5632_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 	/* set audio interface clocking */
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		iface = ALC5632_DAI_SDP_MASTER_MODE;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		iface = ALC5632_DAI_SDP_SLAVE_MODE;
 		break;
 	default:

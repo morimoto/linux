@@ -491,7 +491,7 @@ static struct snd_soc_dai_link byt_wm5102_dais[] = {
 		.id = 0,
 		.no_pcm = 1,
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF
-						| SND_SOC_DAIFMT_CBC_CFC,
+						| SND_SOC_DAIFMT_BC_FC,
 		.be_hw_params_fixup = byt_wm5102_codec_fixup,
 		.init = byt_wm5102_init,
 		SND_SOC_DAILINK_REG(ssp0_port, ssp0_codec, platform),
