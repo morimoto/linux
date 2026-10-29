@@ -10,31 +10,13 @@
 #ifndef __LINUX_SND_SOC_H
 #define __LINUX_SND_SOC_H
 
-#include <linux/args.h>
-#include <linux/array_size.h>
-#include <linux/device.h>
-#include <linux/errno.h>
 #include <linux/interrupt.h>
-#include <linux/list.h>
-#include <linux/lockdep.h>
-#include <linux/log2.h>
-#include <linux/mutex.h>
-#include <linux/notifier.h>
 #include <linux/of.h>
 #include <linux/slab.h>
 #include <linux/types.h>
 #include <linux/workqueue.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
-
-#include <sound/ac97_codec.h>
-#include <sound/asoc.h>
-#include <sound/compress_driver.h>
-#include <sound/control.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/jack.h>
 
 /* Forward Declaration */
 struct firmware;
@@ -50,6 +32,11 @@ struct soc_enum;
 
 enum snd_soc_bias_level;
 
+#include <sound/ac97_codec.h>
+#include <sound/asoc.h>
+#include <sound/compress_driver.h>
+#include <sound/jack.h>
+#include <sound/pcm_params.h>
 #include <sound/soc-card.h>
 #include <sound/soc-topology.h>
 #include <sound/soc-dapm.h>
