@@ -775,10 +775,10 @@ static int cs42l56_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	struct cs42l56_private *cs42l56 = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		cs42l56->iface = CS42L56_MASTER_MODE;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		cs42l56->iface = CS42L56_SLAVE_MODE;
 		break;
 	default:

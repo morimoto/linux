@@ -223,7 +223,7 @@ static struct snd_soc_dai_link speyside_dai[] = {
 		.stream_name = "CPU-DSP",
 		.init = speyside_wm0010_init,
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF
-				| SND_SOC_DAIFMT_CBP_CFP,
+				| SND_SOC_DAIFMT_BP_FP,
 		SND_SOC_DAILINK_REG(cpu_dsp),
 	},
 	{
@@ -231,7 +231,7 @@ static struct snd_soc_dai_link speyside_dai[] = {
 		.stream_name = "DSP-CODEC",
 		.init = speyside_wm8996_init,
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF
-				| SND_SOC_DAIFMT_CBP_CFP,
+				| SND_SOC_DAIFMT_BP_FP,
 		.c2c_params = &dsp_codec_params,
 		.num_c2c_params = 1,
 		.ignore_suspend = 1,
@@ -241,7 +241,7 @@ static struct snd_soc_dai_link speyside_dai[] = {
 		.name = "Baseband",
 		.stream_name = "Baseband",
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF
-				| SND_SOC_DAIFMT_CBP_CFP,
+				| SND_SOC_DAIFMT_BP_FP,
 		.ignore_suspend = 1,
 		SND_SOC_DAILINK_REG(baseband),
 	},

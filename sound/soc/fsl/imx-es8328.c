@@ -202,7 +202,7 @@ static int imx_es8328_probe(struct platform_device *pdev)
 	data->dai.cpus->of_node = ssi_np;
 	data->dai.init = &imx_es8328_dai_init;
 	data->dai.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
-			    SND_SOC_DAIFMT_CBP_CFP;
+			    SND_SOC_DAIFMT_BP_FP;
 
 	data->card_driver.dapm_widgets = imx_es8328_dapm_widgets;
 	data->card_driver.num_dapm_widgets = ARRAY_SIZE(imx_es8328_dapm_widgets);

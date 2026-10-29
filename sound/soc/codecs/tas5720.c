@@ -80,7 +80,7 @@ static int tas5720_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	u8 serial_format;
 	int ret;
 
-	if ((fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_CBC_CFC) {
+	if ((fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_BC_FC) {
 		dev_vdbg(dev, "DAI clocking invalid\n");
 		return -EINVAL;
 	}

@@ -683,10 +683,10 @@ static int cs35l41_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	unsigned int daifmt = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		daifmt |= CS35L41_SCLK_MSTR_MASK | CS35L41_LRCLK_MSTR_MASK;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
 	default:
 		dev_warn(cs35l41->dev, "Mixed provider/consumer mode unsupported\n");

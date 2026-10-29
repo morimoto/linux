@@ -669,7 +669,7 @@ static int es8311_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	struct es8311_priv *es8311 = dev_get_drvdata(dev);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		/* Master mode */
 		es8311->provider = true;
 
@@ -677,7 +677,7 @@ static int es8311_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 					      ES8311_RESET_MSC,
 					      ES8311_RESET_MSC);
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		/* Slave mode */
 		es8311->provider = false;
 		snd_soc_component_update_bits(component, ES8311_RESET,

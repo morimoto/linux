@@ -1209,17 +1209,17 @@ unsigned int snd_soc_daifmt_clock_provider_flipped(unsigned int dai_fmt)
 	unsigned int inv_dai_fmt = dai_fmt & ~SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK;
 
 	switch (dai_fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
-		inv_dai_fmt |= SND_SOC_DAIFMT_CBC_CFC;
+	case SND_SOC_DAIFMT_BP_FP:
+		inv_dai_fmt |= SND_SOC_DAIFMT_BC_FC;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFC:
-		inv_dai_fmt |= SND_SOC_DAIFMT_CBC_CFP;
+	case SND_SOC_DAIFMT_BP_FC:
+		inv_dai_fmt |= SND_SOC_DAIFMT_BC_FP;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFP:
-		inv_dai_fmt |= SND_SOC_DAIFMT_CBP_CFC;
+	case SND_SOC_DAIFMT_BC_FP:
+		inv_dai_fmt |= SND_SOC_DAIFMT_BP_FC;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
-		inv_dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
+	case SND_SOC_DAIFMT_BC_FC:
+		inv_dai_fmt |= SND_SOC_DAIFMT_BP_FP;
 		break;
 	}
 
@@ -1237,13 +1237,13 @@ unsigned int snd_soc_daifmt_clock_provider_from_bitmap(unsigned int bit_frame)
 	/* Codec base */
 	switch (bit_frame) {
 	case 0x11:
-		return SND_SOC_DAIFMT_CBP_CFP;
+		return SND_SOC_DAIFMT_BP_FP;
 	case 0x10:
-		return SND_SOC_DAIFMT_CBP_CFC;
+		return SND_SOC_DAIFMT_BP_FC;
 	case 0x01:
-		return SND_SOC_DAIFMT_CBC_CFP;
+		return SND_SOC_DAIFMT_BC_FP;
 	default:
-		return SND_SOC_DAIFMT_CBC_CFC;
+		return SND_SOC_DAIFMT_BC_FC;
 	}
 
 	return 0;

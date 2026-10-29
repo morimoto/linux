@@ -1854,11 +1854,11 @@ static int twl4030_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	format = old_format;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		format &= ~(TWL4030_AIF_SLAVE_EN);
 		format &= ~(TWL4030_CLK256FS_EN);
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		format |= TWL4030_AIF_SLAVE_EN;
 		format |= TWL4030_CLK256FS_EN;
 		break;
@@ -2050,10 +2050,10 @@ static int twl4030_voice_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	format = old_format;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		format &= ~(TWL4030_VIF_SLAVE_EN);
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		format |= TWL4030_VIF_SLAVE_EN;
 		break;
 	default:

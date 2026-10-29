@@ -602,7 +602,7 @@ static int es8328_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	u8 adc_mode = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		/* Master serial port mode, with BCLK generated automatically */
 		ret = snd_soc_component_update_bits(component, ES8328_MASTERMODE,
 						    ES8328_MASTERMODE_MSC,
@@ -611,7 +611,7 @@ static int es8328_set_dai_fmt(struct snd_soc_dai *codec_dai,
 			return ret;
 		es8328->provider = true;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		/* Slave serial port mode */
 		ret = snd_soc_component_update_bits(component, ES8328_MASTERMODE,
 						    ES8328_MASTERMODE_MSC, 0);

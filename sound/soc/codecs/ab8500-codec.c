@@ -1639,16 +1639,16 @@ static int ab8500_codec_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 			BIT(AB8500_DIGIFCONF3_IF0MASTER);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		dev_dbg(dev, "%s: IF0 Master-mode: AB8500 provider.\n", __func__);
 		conf3_val |= BIT(AB8500_DIGIFCONF3_IF0MASTER);
 		provider = true;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		dev_dbg(dev, "%s: IF0 Master-mode: AB8500 consumer.\n", __func__);
 		break;
-	case SND_SOC_DAIFMT_CBC_CFP:
-	case SND_SOC_DAIFMT_CBP_CFC:
+	case SND_SOC_DAIFMT_BC_FP:
+	case SND_SOC_DAIFMT_BP_FC:
 		dev_err(dev, "%s: ERROR: The device is either a provider or a consumer.\n",
 			__func__);
 		fallthrough;

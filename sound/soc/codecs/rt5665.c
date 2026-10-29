@@ -4115,10 +4115,10 @@ static int rt5665_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	unsigned int reg_val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		rt5665->master[dai_id] = 1;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		reg_val |= RT5665_I2S_MS_S;
 		rt5665->master[dai_id] = 0;
 		break;

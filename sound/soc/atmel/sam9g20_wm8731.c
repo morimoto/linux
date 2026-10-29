@@ -84,7 +84,7 @@ static struct snd_soc_dai_link at91sam9g20ek_dai = {
 	.stream_name = "WM8731 PCM",
 	.init = at91sam9g20ek_wm8731_init,
 	.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
-		   SND_SOC_DAIFMT_CBP_CFP,
+		   SND_SOC_DAIFMT_BP_FP,
 #ifndef ENABLE_MIC_INPUT
 	.playback_only = true,
 #endif

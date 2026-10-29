@@ -654,11 +654,11 @@ static int pcm512x_dai_startup(struct snd_pcm_substream *substream,
 	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 
 	switch (pcm512x->fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
-	case SND_SOC_DAIFMT_CBP_CFC:
+	case SND_SOC_DAIFMT_BP_FP:
+	case SND_SOC_DAIFMT_BP_FC:
 		return pcm512x_dai_startup_master(substream, dai);
 
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		return pcm512x_dai_startup_slave(substream, dai);
 
 	default:
@@ -1201,7 +1201,7 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if ((pcm512x->fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) ==
-	    SND_SOC_DAIFMT_CBC_CFC) {
+	    SND_SOC_DAIFMT_BC_FC) {
 		ret = regmap_update_bits(pcm512x->regmap, PCM512x_ERROR_DETECT,
 					 PCM512x_DCAS, 0);
 		if (ret != 0) {
@@ -1357,15 +1357,15 @@ static int pcm512x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	int ret;
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		clock_output = 0;
 		provider_mode = 0;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		clock_output = PCM512x_BCKO | PCM512x_LRKO;
 		provider_mode = PCM512x_RLRK | PCM512x_RBCK;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFC:
+	case SND_SOC_DAIFMT_BP_FC:
 		clock_output = PCM512x_BCKO;
 		provider_mode = PCM512x_RBCK;
 		break;
