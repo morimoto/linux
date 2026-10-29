@@ -172,8 +172,8 @@ static int aic26_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 		codec_dai, fmt);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP: aic26->clock_provider = 1; break;
-	case SND_SOC_DAIFMT_CBC_CFC: aic26->clock_provider = 0; break;
+	case SND_SOC_DAIFMT_BP_FP: aic26->clock_provider = 1; break;
+	case SND_SOC_DAIFMT_BC_FC: aic26->clock_provider = 0; break;
 	default:
 		dev_dbg(&aic26->spi->dev, "bad master\n"); return -EINVAL;
 	}

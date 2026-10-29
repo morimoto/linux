@@ -1024,7 +1024,7 @@ static int aic31xx_clock_master_routes(struct snd_soc_component *component,
 	int ret;
 
 	fmt &= SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK;
-	if (fmt == SND_SOC_DAIFMT_CBC_CFC &&
+	if (fmt == SND_SOC_DAIFMT_BC_FC &&
 	    aic31xx->master_dapm_route_applied) {
 		/*
 		 * Remove the DAPM route(s) for codec clock master modes,
@@ -1041,7 +1041,7 @@ static int aic31xx_clock_master_routes(struct snd_soc_component *component,
 			return ret;
 
 		aic31xx->master_dapm_route_applied = false;
-	} else if (fmt != SND_SOC_DAIFMT_CBC_CFC &&
+	} else if (fmt != SND_SOC_DAIFMT_BC_FC &&
 		   !aic31xx->master_dapm_route_applied) {
 		/*
 		 * Add the needed DAPM route(s) for codec clock master modes,
@@ -1075,16 +1075,16 @@ static int aic31xx_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	dev_dbg(dev, "## %s: fmt = 0x%x\n", __func__, fmt);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		iface_reg1 |= AIC31XX_BCLK_MASTER | AIC31XX_WCLK_MASTER;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFP:
+	case SND_SOC_DAIFMT_BC_FP:
 		iface_reg1 |= AIC31XX_WCLK_MASTER;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFC:
+	case SND_SOC_DAIFMT_BP_FC:
 		iface_reg1 |= AIC31XX_BCLK_MASTER;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
 	default:
 		dev_err(dev, "Invalid DAI clock provider\n");

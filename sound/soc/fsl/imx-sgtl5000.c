@@ -158,7 +158,7 @@ static int imx_sgtl5000_probe(struct platform_device *pdev)
 	data->dai.platforms->of_node = ssi_np;
 	data->dai.init = &imx_sgtl5000_dai_init;
 	data->dai.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
-			    SND_SOC_DAIFMT_CBP_CFP;
+			    SND_SOC_DAIFMT_BP_FP;
 
 	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret)

@@ -42,7 +42,7 @@ static struct snd_soc_dai_link mt2701_hdmi_dai_links[] = {
 		.no_pcm = 1,
 		.playback_only = 1,
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
-			   SND_SOC_DAIFMT_CBC_CFC,
+			   SND_SOC_DAIFMT_BC_FC,
 		SND_SOC_DAILINK_REG(be_hdmi_i2s),
 	},
 };

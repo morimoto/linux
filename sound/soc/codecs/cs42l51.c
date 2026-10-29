@@ -317,10 +317,10 @@ static int cs42l51_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	}
 
 	switch (format & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		cs42l51->func = MODE_MASTER;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		cs42l51->func = MODE_SLAVE_AUTO;
 		break;
 	default:

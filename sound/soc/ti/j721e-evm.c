@@ -30,7 +30,7 @@ enum j721e_audio_domain_id {
 
 #define J721E_DAI_FMT		(SND_SOC_DAIFMT_RIGHT_J | \
 				 SND_SOC_DAIFMT_NB_NF |   \
-				 SND_SOC_DAIFMT_CBC_CFC)
+				 SND_SOC_DAIFMT_BC_FC)
 
 enum j721e_board_type {
 	J721E_BOARD_CPB = 1,

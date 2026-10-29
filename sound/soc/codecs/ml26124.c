@@ -396,10 +396,10 @@ static int ml26124_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		mode = 1;
 		break;
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		mode = 0;
 		break;
 	default:

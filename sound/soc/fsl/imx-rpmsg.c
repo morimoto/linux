@@ -173,7 +173,7 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
 	data->dai.stream_name = "rpmsg hifi";
 	data->dai.dai_fmt = SND_SOC_DAIFMT_I2S |
 			    SND_SOC_DAIFMT_NB_NF |
-			    SND_SOC_DAIFMT_CBC_CFC;
+			    SND_SOC_DAIFMT_BC_FC;
 	data->dai.ops = &imx_rpmsg_ops;
 
 	/*

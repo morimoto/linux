@@ -602,7 +602,7 @@ static const struct qcom_snd_soc_common maili_priv_data = {
 static const struct qcom_snd_soc_common nord_priv_data = {
 	.driver_name = "nord",
 	.mi2s_bclk_enable = true,
-	.codec_dai_fmt = SND_SOC_DAIFMT_CBC_CFC |
+	.codec_dai_fmt = SND_SOC_DAIFMT_BC_FC |
 			 SND_SOC_DAIFMT_NB_NF |
 			 SND_SOC_DAIFMT_DSP_A,
 	.snd_init = nord_snd_init,

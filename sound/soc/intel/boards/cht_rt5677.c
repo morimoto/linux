@@ -233,7 +233,7 @@ static int cht_rt5677_aif1_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_fmt(codec_dai,
 				  SND_SOC_DAIFMT_DSP_B |
 				  SND_SOC_DAIFMT_IB_NF |
-				  SND_SOC_DAIFMT_CBC_CFC);
+				  SND_SOC_DAIFMT_BC_FC);
 	if (ret) {
 		dev_err(codec_dev, "setting TDM format failed: %d\n", ret);
 		return ret;

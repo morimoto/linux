@@ -625,10 +625,10 @@ static int cs43130_set_sp_fmt(int dai_id, unsigned int bitwidth_sclk,
 	}
 
 	switch (cs43130->dais[dai_id].dai_mode) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		dai_mode_val = 0;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		dai_mode_val = 1;
 		break;
 	default:
@@ -838,7 +838,7 @@ static int cs43130_dsd_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	if (cs43130->dais[dai_id].dai_mode == SND_SOC_DAIFMT_CBP_CFP)
+	if (cs43130->dais[dai_id].dai_mode == SND_SOC_DAIFMT_BP_FP)
 		regmap_update_bits(cs43130->regmap, CS43130_DSD_INT_CFG,
 				   CS43130_DSD_MASTER, CS43130_DSD_MASTER);
 	else
@@ -940,7 +940,7 @@ static int cs43130_hw_params(struct snd_pcm_substream *substream,
 		break;
 	}
 
-	if (!sclk && cs43130->dais[dai_id].dai_mode == SND_SOC_DAIFMT_CBP_CFP)
+	if (!sclk && cs43130->dais[dai_id].dai_mode == SND_SOC_DAIFMT_BP_FP)
 		/* Calculate SCLK in master mode if unassigned */
 		sclk = params_rate(params) * bitwidth_dai *
 		       params_channels(params);
@@ -1512,11 +1512,11 @@ static int cs43130_pcm_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	int dai_id = snd_soc_dai_id(codec_dai);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
-		cs43130->dais[dai_id].dai_mode = SND_SOC_DAIFMT_CBC_CFC;
+	case SND_SOC_DAIFMT_BC_FC:
+		cs43130->dais[dai_id].dai_mode = SND_SOC_DAIFMT_BC_FC;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
-		cs43130->dais[dai_id].dai_mode = SND_SOC_DAIFMT_CBP_CFP;
+	case SND_SOC_DAIFMT_BP_FP:
+		cs43130->dais[dai_id].dai_mode = SND_SOC_DAIFMT_BP_FP;
 		break;
 	default:
 		dev_err(cs43130->dev, "unsupported mode\n");
@@ -1577,11 +1577,11 @@ static int cs43130_dsd_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	int dai_id = snd_soc_dai_id(codec_dai);
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
-		cs43130->dais[dai_id].dai_mode = SND_SOC_DAIFMT_CBC_CFC;
+	case SND_SOC_DAIFMT_BC_FC:
+		cs43130->dais[dai_id].dai_mode = SND_SOC_DAIFMT_BC_FC;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
-		cs43130->dais[dai_id].dai_mode = SND_SOC_DAIFMT_CBP_CFP;
+	case SND_SOC_DAIFMT_BP_FP:
+		cs43130->dais[dai_id].dai_mode = SND_SOC_DAIFMT_BP_FP;
 		break;
 	default:
 		dev_err(cs43130->dev, "Unsupported DAI format.\n");
