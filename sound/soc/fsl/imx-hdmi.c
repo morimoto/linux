@@ -163,7 +163,7 @@ static int imx_hdmi_probe(struct platform_device *pdev)
 		data->dai.codecs->name = "hdmi-audio-codec.1";
 		data->dai.dai_fmt = data->dai_fmt |
 				    SND_SOC_DAIFMT_NB_NF |
-				    SND_SOC_DAIFMT_CBC_CFC;
+				    SND_SOC_DAIFMT_BC_FC;
 	}
 
 	if (hdmi_in) {
@@ -173,7 +173,7 @@ static int imx_hdmi_probe(struct platform_device *pdev)
 		data->dai.codecs->name = "hdmi-audio-codec.2";
 		data->dai.dai_fmt = data->dai_fmt |
 				    SND_SOC_DAIFMT_NB_NF |
-				    SND_SOC_DAIFMT_CBP_CFP;
+				    SND_SOC_DAIFMT_BP_FP;
 	}
 
 	data->card_driver.dapm_widgets = imx_hdmi_widgets;

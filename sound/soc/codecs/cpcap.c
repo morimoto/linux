@@ -1179,11 +1179,11 @@ static int cpcap_hifi_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 	/*
 	 * "HiFi Playback" should always be configured as
-	 * SND_SOC_DAIFMT_CBP_CFP - codec clk & frm provider
+	 * SND_SOC_DAIFMT_BP_FP - codec clk & frm provider
 	 * SND_SOC_DAIFMT_I2S - I2S mode
 	 */
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		val &= ~BIT(CPCAP_BIT_SMB_ST_DAC);
 		break;
 	default:
@@ -1346,11 +1346,11 @@ static int cpcap_voice_set_dai_fmt(struct snd_soc_dai *codec_dai,
 
 	/*
 	 * "Voice Playback" and "Voice Capture" should always be
-	 * configured as SND_SOC_DAIFMT_CBP_CFP - codec clk & frm
+	 * configured as SND_SOC_DAIFMT_BP_FP - codec clk & frm
 	 * provider
 	 */
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		val &= ~BIT(CPCAP_BIT_SMB_CDC);
 		break;
 	default:

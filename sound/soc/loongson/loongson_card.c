@@ -32,21 +32,21 @@ struct loongson_card_config {
 };
 
 static const struct loongson_card_config ls2k1000_card_config = {
-	.fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_IB_NF | SND_SOC_DAIFMT_CBC_CFC,
+	.fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_IB_NF | SND_SOC_DAIFMT_BC_FC,
 	.add_hp_jack = false,
 	.add_dapm_widgets = false,
 	.add_dapm_routes = false,
 };
 
 static const struct loongson_card_config ls2k0300_forever_pi_card_config = {
-	.fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBC_CFC,
+	.fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BC_FC,
 	.add_hp_jack = false,
 	.add_dapm_widgets = false,
 	.add_dapm_routes = false,
 };
 
 static const struct loongson_card_config ls2k0300_dl2k0300b_card_config = {
-	.fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBC_CFC,
+	.fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_BC_FC,
 	.add_hp_jack = true,
 	.add_dapm_widgets = true,
 	.add_dapm_routes = true,

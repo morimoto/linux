@@ -63,7 +63,7 @@ static int si476x_codec_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	int err;
 	u16 format = 0;
 
-	if ((fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_CBC_CFC)
+	if ((fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_BC_FC)
 		return -EINVAL;
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {

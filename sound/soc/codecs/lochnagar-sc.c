@@ -133,12 +133,12 @@ static int lochnagar_sc_check_fmt(struct snd_soc_dai *dai, unsigned int fmt,
 
 static int lochnagar_sc_set_line_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	return lochnagar_sc_check_fmt(dai, fmt, SND_SOC_DAIFMT_CBC_CFC);
+	return lochnagar_sc_check_fmt(dai, fmt, SND_SOC_DAIFMT_BC_FC);
 }
 
 static int lochnagar_sc_set_usb_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	return lochnagar_sc_check_fmt(dai, fmt, SND_SOC_DAIFMT_CBP_CFP);
+	return lochnagar_sc_check_fmt(dai, fmt, SND_SOC_DAIFMT_BP_FP);
 }
 
 static const u64 lochnagar_selectable_formats =

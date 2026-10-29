@@ -309,7 +309,7 @@ static struct snd_soc_dai_link rx51_dai[] = {
 		.name = "TLV320AIC34",
 		.stream_name = "AIC34",
 		.dai_fmt = SND_SOC_DAIFMT_DSP_A | SND_SOC_DAIFMT_IB_NF |
-			   SND_SOC_DAIFMT_CBP_CFP,
+			   SND_SOC_DAIFMT_BP_FP,
 		.init = rx51_aic34_init,
 		.ops = &rx51_ops,
 		SND_SOC_DAILINK_REG(aic34),

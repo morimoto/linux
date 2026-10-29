@@ -301,9 +301,9 @@ static int cs4234_dai_set_fmt(struct snd_soc_dai *codec_dai, unsigned int format
 	}
 
 	switch (format & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		if (cs4234->format == SND_SOC_DAIFMT_DSP_A) {
 			dev_err(dev, "Unsupported DSP A format in master mode\n");
 			return -EINVAL;

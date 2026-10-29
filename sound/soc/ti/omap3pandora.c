@@ -192,7 +192,7 @@ static struct snd_soc_dai_link omap3pandora_dai[] = {
 		.name = "PCM1773",
 		.stream_name = "HiFi Out",
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
-			   SND_SOC_DAIFMT_CBC_CFC,
+			   SND_SOC_DAIFMT_BC_FC,
 		.ops = &omap3pandora_ops,
 		.init = omap3pandora_out_init,
 		SND_SOC_DAILINK_REG(out),
@@ -200,7 +200,7 @@ static struct snd_soc_dai_link omap3pandora_dai[] = {
 		.name = "TWL4030",
 		.stream_name = "Line/Mic In",
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
-			   SND_SOC_DAIFMT_CBC_CFC,
+			   SND_SOC_DAIFMT_BC_FC,
 		.ops = &omap3pandora_ops,
 		.init = omap3pandora_in_init,
 		SND_SOC_DAILINK_REG(in),

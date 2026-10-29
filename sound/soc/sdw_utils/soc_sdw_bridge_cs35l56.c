@@ -94,7 +94,7 @@ static const struct snd_soc_dai_link bridge_dai_template = {
 	.name = "cs42l43-cs35l56",
 	.init = asoc_sdw_bridge_cs35l56_asp_init,
 	.c2c_params = &asoc_sdw_bridge_params,
-	.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_IB_IF | SND_SOC_DAIFMT_CBC_CFC,
+	.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_IB_IF | SND_SOC_DAIFMT_BC_FC,
 	SND_SOC_DAILINK_REG(asoc_sdw_bridge_dai),
 };
 
