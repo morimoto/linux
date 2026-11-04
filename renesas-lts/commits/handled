@@ -1,5 +1,22 @@
 # Empty line below is needed
 
+# upstream: cba3b5f4cc008ca9877f8add2096ad09c7bfc6cb rtc: rzn1: add R-Car X5H support
+e302251e40c3e rtc: rcar: Add SCMI clock support for R-Car X5H RTC Driver
+db17ccea5af44 rtc: rcar: Add additional information for proc interface
+1b175469ffe6c rtc: rcar: Update time reading procedure
+83c267fb1952c rtc: rcar: Add compatible string for X5H
+07c2583004656 rtc: Add Renesas R-Car RTC driver
+# upstream: 3b3fdc9fd40dc9a0f1e52f1b1965c6fa369d0e37 dt-bindings: rtc: rzn1: add R-Car X5H support
+# upstream: 73defdbfce6228e815d1590769589c4d210b339c dt-bindings: rtc: rzn1: add SoC names next to their IDs
+# upstream: a867106d8a8951c8f390e21082a08c1c2b674498 dt-bindings: rtc: rzn1: drop unneeded 'start-year' from example
+80f31738655be dt-bindings: rtc: rcar: Add R-Car Gen5 RTC support
+# upstream: 1d8ae2003de08f61095e4e928b1b8cce6c23cabd dmaengine: sh: rcar-dmac: Add support for R-Car Gen5 SoC
+6a44573397f60 dmaengine: rcar-dmac: Add support for X5H SoC
+# upstream: 8d4237d153174af7cda2b3e45f4f47586a04dc95 dt-bindings: renesas,rcar-dmac: Add support for R-Car X5H SoC
+7da2c066c191c dt-bindings: renesas,rcar-dmac: Add R-Car X5H SoC support
+# upstream: 73812307647a90234cbc1e474f2dec4bfa4ad34f dmaengine: sh: rcar-dmac: SMMU doesn't need IPMMU workaround
+# upstream: a416b656798317f1c6eb69d7a034b4dc392b3781 dmaengine: sh: rcar-dmac: fix style in struct initialization
+6dd61b9a71617 dmaengine: rcar-dmac: Enable channel 0 when using SMMU
 # upstream: a5c811aa0a1550c302855176b309e6ed46ce01fe # dt-bindings: i2c: rcar-i2c: Document R-Car X5H support
 # upstream: 87e713f2004811062e5283a5a4efb52c883bb355 # i2c: rcar: add R-Car Gen5 support
 # upstream: 7a79b02dd1b09c235c3cf6075bccca2160d1b826 # i2c: rcar: fix reset handling for Gen5
