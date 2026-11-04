@@ -73,14 +73,6 @@
 #define CGROUP_FILE_NOTIFY_MIN_INTV	DIV_ROUND_UP(HZ, 100)
 
 /*
- * To avoid confusing the compiler (and generating warnings) with code
- * that attempts to access what would be a 0-element array (i.e. sized
- * to a potentially empty array when CGROUP_SUBSYS_COUNT == 0), this
- * constant expression can be added.
- */
-#define CGROUP_HAS_SUBSYS_CONFIG	(CGROUP_SUBSYS_COUNT > 0)
-
-/*
  * cgroup_mutex is the master lock.  Any modification to cgroup or its
  * hierarchy must be performed while holding it.
  *
@@ -235,6 +227,14 @@ static u16 have_release_callback __read_mostly;
 static u16 have_canfork_callback __read_mostly;
 
 static bool have_favordynmods __ro_after_init = IS_ENABLED(CONFIG_CGROUP_FAVOR_DYNMODS);
+
+/*
+ * Write protected by cgroup_mutex and write-lock of cgroup_threadgroup_rwsem,
+ * read protected by either.
+ *
+ * Can only be turned on, but not turned off.
+ */
+bool cgroup_enable_per_threadgroup_rwsem __read_mostly;
 
 /* cgroup namespace for init task */
 struct cgroup_namespace init_cgroup_ns = {
@@ -501,27 +501,6 @@ static u16 cgroup_ss_mask(struct cgroup *cgrp)
 }
 
 /**
- * cgroup_css - obtain a cgroup's css for the specified subsystem
- * @cgrp: the cgroup of interest
- * @ss: the subsystem of interest (%NULL returns @cgrp->self)
- *
- * Return @cgrp's css (cgroup_subsys_state) associated with @ss.  This
- * function must be called either under cgroup_mutex or rcu_read_lock() and
- * the caller is responsible for pinning the returned css if it wants to
- * keep accessing it outside the said locks.  This function may return
- * %NULL if @cgrp doesn't have @subsys_id enabled.
- */
-static struct cgroup_subsys_state *cgroup_css(struct cgroup *cgrp,
-					      struct cgroup_subsys *ss)
-{
-	if (CGROUP_HAS_SUBSYS_CONFIG && ss)
-		return rcu_dereference_check(cgrp->subsys[ss->id],
-					lockdep_is_held(&cgroup_mutex));
-	else
-		return &cgrp->self;
-}
-
-/**
  * cgroup_e_css_by_mask - obtain a cgroup's effective css for the specified ss
  * @cgrp: the cgroup of interest
  * @ss: the subsystem of interest (%NULL returns @cgrp->self)
@@ -718,32 +697,6 @@ EXPORT_SYMBOL_GPL(of_css);
 		}							\
 	}								\
 } while (false)
-
-/* iterate over child cgrps, lock should be held throughout iteration */
-#define cgroup_for_each_live_child(child, cgrp)				\
-	list_for_each_entry((child), &(cgrp)->self.children, self.sibling) \
-		if (({ lockdep_assert_held(&cgroup_mutex);		\
-		       cgroup_is_dead(child); }))			\
-			;						\
-		else
-
-/* walk live descendants in pre order */
-#define cgroup_for_each_live_descendant_pre(dsct, d_css, cgrp)		\
-	css_for_each_descendant_pre((d_css), cgroup_css((cgrp), NULL))	\
-		if (({ lockdep_assert_held(&cgroup_mutex);		\
-		       (dsct) = (d_css)->cgroup;			\
-		       cgroup_is_dead(dsct); }))			\
-			;						\
-		else
-
-/* walk live descendants in postorder */
-#define cgroup_for_each_live_descendant_post(dsct, d_css, cgrp)		\
-	css_for_each_descendant_post((d_css), cgroup_css((cgrp), NULL))	\
-		if (({ lockdep_assert_held(&cgroup_mutex);		\
-		       (dsct) = (d_css)->cgroup;			\
-		       cgroup_is_dead(dsct); }))			\
-			;						\
-		else
 
 /*
  * The default css_set - used by init and its children prior to any
@@ -1309,14 +1262,30 @@ void cgroup_favor_dynmods(struct cgroup_root *root, bool favor)
 {
 	bool favoring = root->flags & CGRP_ROOT_FAVOR_DYNMODS;
 
-	/* see the comment above CGRP_ROOT_FAVOR_DYNMODS definition */
+	/*
+	 * see the comment above CGRP_ROOT_FAVOR_DYNMODS definition.
+	 * favordynmods can flip while task is between
+	 * cgroup_threadgroup_change_begin() and end(), so down_write global
+	 * cgroup_threadgroup_rwsem to synchronize them.
+	 *
+	 * Once cgroup_enable_per_threadgroup_rwsem is enabled, holding
+	 * cgroup_threadgroup_rwsem doesn't exlude tasks between
+	 * cgroup_thread_group_change_begin() and end() and thus it's unsafe to
+	 * turn off. As the scenario is unlikely, simply disallow disabling once
+	 * enabled and print out a warning.
+	 */
+	percpu_down_write(&cgroup_threadgroup_rwsem);
 	if (favor && !favoring) {
+		cgroup_enable_per_threadgroup_rwsem = true;
 		rcu_sync_enter(&cgroup_threadgroup_rwsem.rss);
 		root->flags |= CGRP_ROOT_FAVOR_DYNMODS;
 	} else if (!favor && favoring) {
+		if (cgroup_enable_per_threadgroup_rwsem)
+			pr_warn_once("cgroup favordynmods: per threadgroup rwsem mechanism can't be disabled\n");
 		rcu_sync_exit(&cgroup_threadgroup_rwsem.rss);
 		root->flags &= ~CGRP_ROOT_FAVOR_DYNMODS;
 	}
+	percpu_up_write(&cgroup_threadgroup_rwsem);
 }
 
 static int cgroup_init_root_id(struct cgroup_root *root)
@@ -2465,7 +2434,8 @@ EXPORT_SYMBOL_GPL(cgroup_path_ns);
 
 /**
  * cgroup_attach_lock - Lock for ->attach()
- * @lock_threadgroup: whether to down_write cgroup_threadgroup_rwsem
+ * @lock_mode: whether acquire and acquire which rwsem
+ * @tsk: thread group to lock
  *
  * cgroup migration sometimes needs to stabilize threadgroups against forks and
  * exits by write-locking cgroup_threadgroup_rwsem. However, some ->attach()
@@ -2485,22 +2455,55 @@ EXPORT_SYMBOL_GPL(cgroup_path_ns);
  * Resolve the situation by always acquiring cpus_read_lock() before optionally
  * write-locking cgroup_threadgroup_rwsem. This allows ->attach() to assume that
  * CPU hotplug is disabled on entry.
+ *
+ * When favordynmods is enabled, take per threadgroup rwsem to reduce overhead
+ * on dynamic cgroup modifications. see the comment above
+ * CGRP_ROOT_FAVOR_DYNMODS definition.
+ *
+ * tsk is not NULL only when writing to cgroup.procs.
  */
-void cgroup_attach_lock(bool lock_threadgroup)
+void cgroup_attach_lock(enum cgroup_attach_lock_mode lock_mode,
+			struct task_struct *tsk)
 {
 	cpus_read_lock();
-	if (lock_threadgroup)
+
+	switch (lock_mode) {
+	case CGRP_ATTACH_LOCK_NONE:
+		break;
+	case CGRP_ATTACH_LOCK_GLOBAL:
 		percpu_down_write(&cgroup_threadgroup_rwsem);
+		break;
+	case CGRP_ATTACH_LOCK_PER_THREADGROUP:
+		down_write(&tsk->signal->cgroup_threadgroup_rwsem);
+		break;
+	default:
+		pr_warn("cgroup: Unexpected attach lock mode.");
+		break;
+	}
 }
 
 /**
  * cgroup_attach_unlock - Undo cgroup_attach_lock()
- * @lock_threadgroup: whether to up_write cgroup_threadgroup_rwsem
+ * @lock_mode: whether release and release which rwsem
+ * @tsk: thread group to lock
  */
-void cgroup_attach_unlock(bool lock_threadgroup)
+void cgroup_attach_unlock(enum cgroup_attach_lock_mode lock_mode,
+			  struct task_struct *tsk)
 {
-	if (lock_threadgroup)
+	switch (lock_mode) {
+	case CGRP_ATTACH_LOCK_NONE:
+		break;
+	case CGRP_ATTACH_LOCK_GLOBAL:
 		percpu_up_write(&cgroup_threadgroup_rwsem);
+		break;
+	case CGRP_ATTACH_LOCK_PER_THREADGROUP:
+		up_write(&tsk->signal->cgroup_threadgroup_rwsem);
+		break;
+	default:
+		pr_warn("cgroup: Unexpected attach lock mode.");
+		break;
+	}
+
 	cpus_read_unlock();
 }
 
@@ -2978,7 +2981,7 @@ int cgroup_attach_task(struct cgroup *dst_cgrp, struct task_struct *leader,
 }
 
 struct task_struct *cgroup_procs_write_start(char *buf, bool threadgroup,
-					     bool *threadgroup_locked,
+					     enum cgroup_attach_lock_mode *lock_mode,
 					     struct cgroup *dst_cgrp)
 {
 	struct task_struct *tsk;
@@ -2988,24 +2991,13 @@ struct task_struct *cgroup_procs_write_start(char *buf, bool threadgroup,
 	if (kstrtoint(strstrip(buf), 0, &pid) || pid < 0)
 		return ERR_PTR(-EINVAL);
 
-	/*
-	 * If we migrate a single thread, we don't care about threadgroup
-	 * stability. If the thread is `current`, it won't exit(2) under our
-	 * hands or change PID through exec(2). We exclude
-	 * cgroup_update_dfl_csses and other cgroup_{proc,thread}s_write
-	 * callers by cgroup_mutex.
-	 * Therefore, we can skip the global lock.
-	 */
-	lockdep_assert_held(&cgroup_mutex);
-	*threadgroup_locked = pid || threadgroup;
-	cgroup_attach_lock(*threadgroup_locked);
-
+retry_find_task:
 	rcu_read_lock();
 	if (pid) {
 		tsk = find_task_by_vpid(pid);
 		if (!tsk) {
 			tsk = ERR_PTR(-ESRCH);
-			goto out_unlock_threadgroup;
+			goto out_unlock_rcu;
 		}
 	} else {
 		tsk = current;
@@ -3025,29 +3017,61 @@ struct task_struct *cgroup_procs_write_start(char *buf, bool threadgroup,
 	 */
 	if (!force_migration && (tsk->no_cgroup_migration || (tsk->flags & PF_NO_SETAFFINITY))) {
 		tsk = ERR_PTR(-EINVAL);
-		goto out_unlock_threadgroup;
+		goto out_unlock_rcu;
+	}
+	get_task_struct(tsk);
+	rcu_read_unlock();
+
+	/*
+	 * If we migrate a single thread, we don't care about threadgroup
+	 * stability. If the thread is `current`, it won't exit(2) under our
+	 * hands or change PID through exec(2). We exclude
+	 * cgroup_update_dfl_csses and other cgroup_{proc,thread}s_write callers
+	 * by cgroup_mutex. Therefore, we can skip the global lock.
+	 */
+	lockdep_assert_held(&cgroup_mutex);
+
+	if (pid || threadgroup) {
+		if (cgroup_enable_per_threadgroup_rwsem)
+			*lock_mode = CGRP_ATTACH_LOCK_PER_THREADGROUP;
+		else
+			*lock_mode = CGRP_ATTACH_LOCK_GLOBAL;
+	} else {
+		*lock_mode = CGRP_ATTACH_LOCK_NONE;
 	}
 
-	get_task_struct(tsk);
-	goto out_unlock_rcu;
+	cgroup_attach_lock(*lock_mode, tsk);
 
-out_unlock_threadgroup:
-	cgroup_attach_unlock(*threadgroup_locked);
-	*threadgroup_locked = false;
+	if (threadgroup) {
+		if (!thread_group_leader(tsk)) {
+			/*
+			 * A race with de_thread from another thread's exec()
+			 * may strip us of our leadership. If this happens,
+			 * throw this task away and try again.
+			 */
+			cgroup_attach_unlock(*lock_mode, tsk);
+			put_task_struct(tsk);
+			goto retry_find_task;
+		}
+	}
+
+	return tsk;
+
 out_unlock_rcu:
 	rcu_read_unlock();
 	return tsk;
 }
 
-void cgroup_procs_write_finish(struct task_struct *task, bool threadgroup_locked)
+void cgroup_procs_write_finish(struct task_struct *task,
+			       enum cgroup_attach_lock_mode lock_mode)
 {
 	struct cgroup_subsys *ss;
 	int ssid;
 
+	cgroup_attach_unlock(lock_mode, task);
+
 	/* release reference from cgroup_procs_write_start() */
 	put_task_struct(task);
-
-	cgroup_attach_unlock(threadgroup_locked);
 
 	for_each_subsys(ss, ssid)
 		if (ss->post_attach)
@@ -3103,6 +3127,7 @@ static int cgroup_update_dfl_csses(struct cgroup *cgrp)
 	struct cgroup_subsys_state *d_css;
 	struct cgroup *dsct;
 	struct css_set *src_cset;
+	enum cgroup_attach_lock_mode lock_mode;
 	bool has_tasks;
 	int ret;
 
@@ -3134,7 +3159,13 @@ static int cgroup_update_dfl_csses(struct cgroup *cgrp)
 	 * write-locking can be skipped safely.
 	 */
 	has_tasks = !list_empty(&mgctx.preloaded_src_csets);
-	cgroup_attach_lock(has_tasks);
+
+	if (has_tasks)
+		lock_mode = CGRP_ATTACH_LOCK_GLOBAL;
+	else
+		lock_mode = CGRP_ATTACH_LOCK_NONE;
+
+	cgroup_attach_lock(lock_mode, NULL);
 
 	/* NULL dst indicates self on default hierarchy */
 	ret = cgroup_migrate_prepare_dst(&mgctx);
@@ -3155,7 +3186,7 @@ static int cgroup_update_dfl_csses(struct cgroup *cgrp)
 	ret = cgroup_migrate_execute(&mgctx);
 out_finish:
 	cgroup_migrate_finish(&mgctx);
-	cgroup_attach_unlock(has_tasks);
+	cgroup_attach_unlock(lock_mode, NULL);
 	return ret;
 }
 
@@ -5284,13 +5315,13 @@ static ssize_t __cgroup_procs_write(struct kernfs_open_file *of, char *buf,
 	struct task_struct *task;
 	const struct cred *saved_cred;
 	ssize_t ret;
-	bool threadgroup_locked;
+	enum cgroup_attach_lock_mode lock_mode;
 
 	dst_cgrp = cgroup_kn_lock_live(of->kn, false);
 	if (!dst_cgrp)
 		return -ENODEV;
 
-	task = cgroup_procs_write_start(buf, threadgroup, &threadgroup_locked, dst_cgrp);
+	task = cgroup_procs_write_start(buf, threadgroup, &lock_mode, dst_cgrp);
 	ret = PTR_ERR_OR_ZERO(task);
 	if (ret)
 		goto out_unlock;
@@ -5316,7 +5347,7 @@ static ssize_t __cgroup_procs_write(struct kernfs_open_file *of, char *buf,
 	ret = cgroup_attach_task(dst_cgrp, task, threadgroup);
 
 out_finish:
-	cgroup_procs_write_finish(task, threadgroup_locked);
+	cgroup_procs_write_finish(task, lock_mode);
 out_unlock:
 	cgroup_kn_unlock(of->kn);
 
@@ -5530,6 +5561,7 @@ static void css_free_rwork_fn(struct work_struct *work)
 			psi_cgroup_free(cgrp);
 			cgroup_rstat_exit(cgrp);
 			kernfs_put(cgrp->kn);
+			kfree(cgrp->kmi_ext_info);
 			kfree(cgrp);
 		} else {
 			/*
@@ -5794,15 +5826,17 @@ static struct cgroup *cgroup_create(struct cgroup *parent, const char *name,
 	if (ret)
 		goto out_kernfs_remove;
 
+	cgrp->kmi_ext_info = kzalloc(sizeof(*cgrp->kmi_ext_info), GFP_KERNEL);
+	if (!cgrp->kmi_ext_info) {
+		ret = -ENOMEM;
+		goto out_psi_free;
+	}
+
 	if (cgrp->root == &cgrp_dfl_root) {
 		ret = cgroup_bpf_inherit(cgrp);
 		if (ret)
-			goto out_psi_free;
+			goto out_kmi_ext_free;
 	}
-
-	cgrp->kmi_ext_info = kzalloc(sizeof(*cgrp->kmi_ext_info), GFP_KERNEL);
-	if (!cgrp->kmi_ext_info)
-		goto out_psi_free;
 
 	/*
 	 * New cgroup inherits effective freeze counter, and
@@ -5864,6 +5898,8 @@ static struct cgroup *cgroup_create(struct cgroup *parent, const char *name,
 
 	return cgrp;
 
+out_kmi_ext_free:
+	kfree(cgrp->kmi_ext_info);
 out_psi_free:
 	psi_cgroup_free(cgrp);
 out_kernfs_remove:
@@ -6108,7 +6144,6 @@ static int cgroup_destroy_locked(struct cgroup *cgrp)
 	spin_lock_irq(&css_set_lock);
 	list_for_each_entry(link, &cgrp->cset_links, cset_link)
 		link->cset->dead = true;
-	kfree(cgrp->kmi_ext_info);
 	spin_unlock_irq(&css_set_lock);
 
 	/* initiate massacre of all css's */

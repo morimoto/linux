@@ -1920,6 +1920,10 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	tty_audit_fork(sig);
 	sched_autogroup_fork(sig);
 
+#ifdef CONFIG_CGROUPS
+	init_rwsem(&sig->cgroup_threadgroup_rwsem);
+#endif
+
 	sig->oom_score_adj = current->signal->oom_score_adj;
 	sig->oom_score_adj_min = current->signal->oom_score_adj_min;
 
@@ -2378,6 +2382,7 @@ __latent_entropy struct task_struct *copy_process(
 
 	p->blocked_on_state = BO_RUNNABLE;
 	p->blocked_on = NULL; /* not blocked yet */
+	p->blocked_on_l.lock = NULL; /* not blocked yet */
 	p->blocked_donor = NULL; /* nobody is boosting p yet */
 	INIT_LIST_HEAD(&p->migration_node);
 #ifdef CONFIG_SCHED_PROXY_EXEC
@@ -2471,6 +2476,7 @@ __latent_entropy struct task_struct *copy_process(
 
 #ifdef CONFIG_BLOCK
 	p->plug = NULL;
+	p->flags &= ~PF_BLOCK_TS;
 #endif
 	futex_init_task(p);
 

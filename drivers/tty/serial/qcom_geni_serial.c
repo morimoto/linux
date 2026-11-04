@@ -237,9 +237,11 @@ static struct qcom_geni_serial_port *get_port_from_line(int line, bool console, 
 		int max_alias_num = of_alias_get_highest_id("serial");
 
 		if (line < 0 || line >= nr_ports)
-			line = ida_alloc_range(&port_ida, max_alias_num + 1, nr_ports, GFP_KERNEL);
+			line = ida_alloc_range(&port_ida, max_alias_num + 1,
+					       nr_ports - 1, GFP_KERNEL);
 		else
-			line = ida_alloc_range(&port_ida, line, nr_ports, GFP_KERNEL);
+			line = ida_alloc_range(&port_ida, line,
+					       nr_ports - 1, GFP_KERNEL);
 
 		if (line < 0)
 			return ERR_PTR(-ENXIO);
@@ -863,12 +865,9 @@ static void qcom_geni_serial_handle_rx_dma(struct uart_port *uport, bool drop)
 	port->rx_dma_addr = 0;
 
 	rx_in = readl(uport->membase + SE_DMA_RX_LEN_IN);
-	if (!rx_in) {
-		dev_warn(uport->dev, "serial engine reports 0 RX bytes in!\n");
-		return;
-	}
-
-	if (!drop)
+	if (!rx_in)
+		dev_warn_ratelimited(uport->dev, "serial engine reports 0 RX bytes in!\n");
+	else if (!drop)
 		handle_rx_uart(uport, rx_in);
 
 	ret = geni_se_rx_dma_prep(&port->se, port->rx_buf,

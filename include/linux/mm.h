@@ -430,6 +430,13 @@ extern unsigned int kobjsize(const void *objp);
 #endif
 
 #ifdef CONFIG_64BIT
+#define VM_NO_REMAP_FILE_PAGES_BIT	41
+#define VM_NO_REMAP_FILE_PAGES		BIT(VM_NO_REMAP_FILE_PAGES_BIT)
+#else
+#define VM_NO_REMAP_FILE_PAGES		VM_NONE
+#endif
+
+#ifdef CONFIG_64BIT
 /* VM is sealed, in vm_flags */
 #define VM_SEALED	_BITUL(63)
 #endif
@@ -4107,19 +4114,11 @@ extern int soft_offline_page(unsigned long pfn, int flags);
  */
 extern const struct attribute_group memory_failure_attr_group;
 extern void memory_failure_queue(unsigned long pfn, int flags);
-extern int __get_huge_page_for_hwpoison(unsigned long pfn, int flags,
-					bool *migratable_cleared);
 void num_poisoned_pages_inc(unsigned long pfn);
 void num_poisoned_pages_sub(unsigned long pfn, long i);
 #else
 static inline void memory_failure_queue(unsigned long pfn, int flags)
 {
-}
-
-static inline int __get_huge_page_for_hwpoison(unsigned long pfn, int flags,
-					bool *migratable_cleared)
-{
-	return 0;
 }
 
 static inline void num_poisoned_pages_inc(unsigned long pfn)

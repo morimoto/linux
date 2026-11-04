@@ -4232,6 +4232,7 @@ F:	net/sched/act_bpf.c
 F:	net/sched/cls_bpf.c
 F:	samples/bpf/
 F:	scripts/bpf_doc.py
+F:	scripts/gen-btf.sh
 F:	scripts/Makefile.btf
 F:	scripts/pahole-version.sh
 F:	tools/bpf/
@@ -12899,6 +12900,7 @@ L:	linux-security-module@vger.kernel.org
 S:	Supported
 W:	https://landlock.io
 T:	git https://git.kernel.org/pub/scm/linux/kernel/git/mic/linux.git
+F:	Documentation/admin-guide/LSM/landlock.rst
 F:	Documentation/security/landlock.rst
 F:	Documentation/userspace-api/landlock.rst
 F:	fs/ioctl.c
@@ -13381,6 +13383,7 @@ F:	include/linux/seqlock.h
 F:	include/linux/spinlock*.h
 F:	kernel/locking/
 F:	lib/locking*.[ch]
+F:	rust/kernel/sync/lockdep.rs
 X:	kernel/locking/locktorture.c
 
 LOGICAL DISK MANAGER SUPPORT (LDM, Windows 2000/XP/Vista Dynamic Disks)

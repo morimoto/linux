@@ -205,6 +205,26 @@ static int __init setup_proxy_exec_toggle(void)
 	return 0;
 }
 late_initcall(setup_proxy_exec_toggle);
+
+static inline struct task_struct *__blocked_on_owner(struct blocked_on_lock *bo)
+{
+	if (bo->lock == PROXY_WAKING)
+		return NULL;
+	switch (bo->type) {
+	case BO_T_NONE:
+		return NULL;
+	case BO_T_MUTEX:
+		return __mutex_owner(bo->lock);
+	default:
+		BUG();
+	}
+}
+
+static inline struct task_struct *task_blocked_on_owner(struct task_struct *p)
+{
+	return __blocked_on_owner(&p->blocked_on_l);
+}
+
 #else
 static int __init setup_proxy_exec(char *str)
 {
@@ -213,6 +233,7 @@ static int __init setup_proxy_exec(char *str)
 }
 #endif
 __setup("sched_proxy_exec=", setup_proxy_exec);
+
 
 #ifdef CONFIG_SCHED_DEBUG
 /*
@@ -3960,7 +3981,8 @@ static inline void proxy_set_task_cpu(struct task_struct *p, int cpu)
 }
 #endif /* CONFIG_SMP */
 
-static void do_activate_blocked_waiter(struct rq *target_rq, struct task_struct *p, int en_flags)
+static void do_activate_blocked_waiter(struct rq *target_rq, struct task_struct *owner,
+				       struct task_struct *p, int en_flags)
 {
 	unsigned int state;
 	struct rq_flags rf;
@@ -3992,6 +4014,22 @@ static void do_activate_blocked_waiter(struct rq *target_rq, struct task_struct 
 			 */
 			return;
 		}
+
+		scoped_guard (raw_spinlock, &p->blocked_lock) {
+			/*
+			 * Again, if activation is delayed, its possible
+			 * the task has been woken and is no longer
+			 * blocked_on or blocked on a different mutex
+			 * so double check we're still blocked on
+			 * the owner who is activating us.
+			 */
+			struct task_struct *curr_owner;
+
+			curr_owner = __mutex_owner(__get_task_blocked_on(p));
+			if (curr_owner != owner)
+				return;
+		}
+
 		/*
 		 * Have to make sure we handle nr_iowait adjustment before
 		 * we call proxy_set_task_cpu() to ensure we are adjusting
@@ -4002,7 +4040,12 @@ static void do_activate_blocked_waiter(struct rq *target_rq, struct task_struct 
 			delayacct_blkio_end(p);
 			atomic_dec(&task_rq(p)->nr_iowait);
 		}
-		proxy_set_task_cpu(p, target_cpu);
+
+		if (task_cpu(p) != target_cpu) {
+			en_flags |= ENQUEUE_MIGRATED;
+			psi_ttwu_dequeue(p);
+			proxy_set_task_cpu(p, target_cpu);
+		}
 		rq_lock_irqsave(target_rq, &rf);
 		/*
 		 * proxy_enqueue_on_owner() called block_task() which
@@ -4030,9 +4073,6 @@ static void activate_blocked_waiters(struct rq *target_rq,
 		return;
 
 	INIT_LIST_HEAD(&bal_head);
-
-	if (wake_flags & WF_MIGRATED)
-		en_flags |= ENQUEUE_MIGRATED;
 
 	/*
 	 * A whole bunch of waiting donor tasks back this blocked
@@ -4085,7 +4125,7 @@ static void activate_blocked_waiters(struct rq *target_rq,
 			__proxy_remove_from_sleeping_owner(owner, p);
 			raw_spin_unlock_irqrestore(&owner->blocked_lock, flags);
 
-			do_activate_blocked_waiter(target_rq, p, en_flags);
+			do_activate_blocked_waiter(target_rq, owner, p, en_flags);
 			trace_sched_pe_activate_blocked_entity(owner, p);
 
 			raw_spin_lock_irqsave(&p->blocked_lock, flags);
@@ -4134,7 +4174,7 @@ struct task_struct *find_exec_ctx(struct rq *rq, struct task_struct *p)
 	for (exec_ctx = p; task_is_blocked(exec_ctx) && !task_on_cpu(rq, exec_ctx);
 							exec_ctx = owner) {
 		guard(raw_spinlock)(&exec_ctx->blocked_lock);
-		owner = __mutex_owner(__get_task_blocked_on(exec_ctx));
+		owner = task_blocked_on_owner(exec_ctx);
 		if (!owner || owner == exec_ctx)
 			break;
 
@@ -4167,7 +4207,7 @@ void move_queued_task_locked(struct rq *src_rq, struct rq *dst_rq, struct task_s
 			break;
 
 		if (task_is_blocked(task))
-			owner = __mutex_owner(get_task_blocked_on(task));
+			owner = task_blocked_on_owner(task);
 
 		__move_queued_task_locked(src_rq, dst_rq, task);
 		if (task == owner)
@@ -5942,6 +5982,12 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	 */
 	kmap_local_sched_in();
 
+	/*
+	 * Any cached block-layer timestamp (plug->cur_ktime) is stale now,
+	 * invalidate it.
+	 */
+	blk_plug_invalidate_ts();
+
 	fire_sched_in_preempt_notifiers(current);
 	/*
 	 * When switching through a kernel thread, the loop in
@@ -7427,6 +7473,28 @@ static void proxy_enqueue_on_owner(struct rq *rq, struct task_struct *owner,
 	block_task(rq, p, READ_ONCE(p->__state));
 }
 
+static void
+lock_blocked_on_lock(struct blocked_on_lock *bo)
+{
+	if (bo->type == BO_T_MUTEX)
+		raw_spin_lock(&((struct mutex *)bo->lock)->wait_lock);
+	else
+		BUG();
+}
+
+static void
+unlock_blocked_on_lock(struct blocked_on_lock *bo)
+{
+	if (bo->type == BO_T_MUTEX)
+		raw_spin_unlock(&((struct mutex *)bo->lock)->wait_lock);
+	else
+		BUG();
+}
+
+DEFINE_LOCK_GUARD_1(blocked_on_lock, struct blocked_on_lock,
+		    lock_blocked_on_lock(_T->lock),
+		    unlock_blocked_on_lock(_T->lock))
+
 /*
  * Find runnable lock owner to proxy for mutex blocked donor
  *
@@ -7456,22 +7524,27 @@ static void proxy_enqueue_on_owner(struct rq *rq, struct task_struct *owner,
 static struct task_struct *
 find_proxy_task(struct rq *rq, struct task_struct *donor, struct rq_flags *rf)
 {
+	struct blocked_on_lock bo, *blocked_on;
 	struct task_struct *owner = NULL;
 	bool curr_in_chain = false;
 	int this_cpu = cpu_of(rq);
 	struct task_struct *p;
-	struct mutex *mutex;
 	int owner_cpu;
 
 	/* Follow blocked_on chain. */
 	for (p = donor; task_is_blocked(p); p = owner) {
-		mutex = p->blocked_on;
+		/* copy the entire blocked_on structure */
+		raw_spin_lock(&p->blocked_lock);
+		bo = p->blocked_on_l;
+		raw_spin_unlock(&p->blocked_lock);
+		blocked_on = &bo;
+
 		/* Something changed in the chain, so pick again */
-		if (!mutex)
+		if (!blocked_on->lock)
 			return NULL;
 
 		/* if its PROXY_WAKING, do return migration or run if current */
-		if (mutex == PROXY_WAKING) {
+		if (blocked_on->lock == PROXY_WAKING) {
 			if (task_current(rq, p)) {
 				clear_task_blocked_on(p, PROXY_WAKING);
 				return p;
@@ -7483,11 +7556,11 @@ find_proxy_task(struct rq *rq, struct task_struct *donor, struct rq_flags *rf)
 		 * By taking mutex->wait_lock we hold off concurrent mutex_unlock()
 		 * and ensure @owner sticks around.
 		 */
-		guard(raw_spinlock)(&mutex->wait_lock);
+		guard(blocked_on_lock)(blocked_on);
 		guard(raw_spinlock)(&p->blocked_lock);
 
 		/* Check again that p is blocked with blocked_lock held */
-		if (mutex != __get_task_blocked_on(p)) {
+		if (blocked_on->lock != __get_task_blocked_on(p)) {
 			/*
 			 * Something changed in the blocked_on chain and
 			 * we don't know if only at this level. So, let's
@@ -7500,7 +7573,7 @@ find_proxy_task(struct rq *rq, struct task_struct *donor, struct rq_flags *rf)
 		if (task_current(rq, p))
 			curr_in_chain = true;
 
-		owner = __mutex_owner(mutex);
+		owner = __blocked_on_owner(blocked_on);
 		if (!owner) {
 			/*
 			 * If there is no owner, either clear blocked_on
@@ -7761,7 +7834,7 @@ static void __sched notrace __schedule(int sched_mode)
 		block = try_to_block_task(rq, prev, &prev_state,
 					  !task_is_blocked(prev));
 		switch_count = &prev->nvcsw;
-	} else if (preempt && prev->blocked_on) {
+	} else if (preempt && prev->blocked_on_l.lock) {
 		/*
 		 * If we are SM_PREEMPT, we may have interrupted
 		 * after blocked_on was set, before schedule()
@@ -7782,12 +7855,12 @@ pick_again:
 	if (sched_proxy_exec()) {
 		struct task_struct *prev_donor = rq->donor;
 
-		if (!prev_state && prev->blocked_on)
+		if (!prev_state && prev->blocked_on_l.lock)
 			clear_task_blocked_on(prev, NULL);
 
 		rq_set_donor(rq, next);
 		next->blocked_donor = NULL;
-		if (unlikely(next->blocked_on)) {
+		if (unlikely(next->blocked_on_l.lock)) {
 			next = find_proxy_task(rq, next, &rf);
 			if (!next) {
 				/* zap the balance_callbacks before picking again */
@@ -7943,12 +8016,10 @@ static inline void sched_submit_work(struct task_struct *tsk)
 
 static void sched_update_worker(struct task_struct *tsk)
 {
-	if (tsk->flags & (PF_WQ_WORKER | PF_IO_WORKER | PF_BLOCK_TS)) {
-		if (tsk->flags & PF_BLOCK_TS)
-			blk_plug_invalidate_ts(tsk);
+	if (tsk->flags & (PF_WQ_WORKER | PF_IO_WORKER)) {
 		if (tsk->flags & PF_WQ_WORKER)
 			wq_worker_running(tsk);
-		else if (tsk->flags & PF_IO_WORKER)
+		else
 			io_wq_worker_running(tsk);
 	}
 }

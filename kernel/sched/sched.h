@@ -1240,7 +1240,7 @@ struct rq {
 	 * one CPU and if it got migrated afterwards it may decrease
 	 * it on another CPU. Always updated under the runqueue lock:
 	 */
-	unsigned long 		nr_uninterruptible;
+	unsigned long		nr_uninterruptible;
 
 #ifdef CONFIG_SCHED_PROXY_EXEC
 	struct task_struct __rcu	*donor;  /* Scheduling context */
@@ -2393,7 +2393,7 @@ static inline bool task_is_blocked(struct task_struct *p)
 	if (!sched_proxy_exec())
 		return false;
 
-	return !!p->blocked_on;
+	return !!p->blocked_on_l.lock;
 }
 
 static inline int task_on_cpu(struct rq *rq, struct task_struct *p)
