@@ -1160,6 +1160,8 @@ static int devm_snd_soc_card_bind(struct device *dev, struct snd_soc_card *card)
 
 int snd_soc_card_bind_call(struct snd_soc_card *card)
 {
+	guard(mutex)(&client_mutex);
+
 	if (card->devres_dev)
 		return devm_snd_soc_card_bind(card->devres_dev, card);
 	return snd_soc_card_bind(card);
@@ -1303,8 +1305,6 @@ int snd_soc_register_card(struct snd_soc_card *card)
 	mutex_init(&card->mutex);
 	mutex_init(&card->dapm_mutex);
 	mutex_init(&card->pcm_mutex);
-
-	guard(mutex)(&client_mutex);
 
 	return snd_soc_card_bind_call(card);
 }
