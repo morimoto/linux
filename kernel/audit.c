@@ -1462,6 +1462,8 @@ static int audit_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
 		err = audit_list_rules_send(skb, seq);
 		break;
 	case AUDIT_TRIM:
+		if (audit_enabled == AUDIT_LOCKED)
+			return -EPERM;
 		audit_trim_trees();
 		audit_log_common_recv_msg(audit_context(), &ab,
 					  AUDIT_CONFIG_CHANGE);
@@ -1474,6 +1476,8 @@ static int audit_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
 		size_t msglen = data_len;
 		char *old, *new;
 
+		if (audit_enabled == AUDIT_LOCKED)
+			return -EPERM;
 		err = -EINVAL;
 		if (msglen < 2 * sizeof(u32))
 			break;
@@ -2096,6 +2100,7 @@ void audit_log_n_hex(struct audit_buffer *ab, const unsigned char *buf,
 	*ptr = 0;
 	skb_put(skb, len << 1); /* new string is twice the old string */
 }
+EXPORT_SYMBOL_GPL(audit_log_n_hex);
 
 /*
  * Format a string of no more than slen characters into the audit buffer,
@@ -2179,6 +2184,7 @@ void audit_log_untrustedstring(struct audit_buffer *ab, const char *string)
 {
 	audit_log_n_untrustedstring(ab, string, strlen(string));
 }
+EXPORT_SYMBOL_GPL(audit_log_untrustedstring);
 
 /* This is a helper-function to print the escaped d_path */
 void audit_log_d_path(struct audit_buffer *ab, const char *prefix,

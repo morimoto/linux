@@ -101,6 +101,7 @@ pub mod id_pool;
 #[doc(hidden)]
 pub mod impl_flags;
 pub mod init;
+pub mod interrupt;
 pub mod io;
 pub mod ioctl;
 pub mod iov;
@@ -128,6 +129,7 @@ pub mod prelude;
 pub mod print;
 pub mod processor;
 pub mod ptr;
+pub mod ratelimit;
 pub mod rbtree;
 pub mod regulator;
 pub mod revocable;

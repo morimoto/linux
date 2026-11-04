@@ -95,6 +95,7 @@
 #include <linux/thread_info.h>
 #include <linux/kstack_erase.h>
 #include <linux/kasan.h>
+#include <linux/randomize_kstack.h>
 #include <linux/scs.h>
 #include <linux/io_uring.h>
 #include <linux/bpf.h>
@@ -128,6 +129,7 @@
 #undef CREATE_TRACE_POINTS
 #include <trace/hooks/sched.h>
 #include <trace/hooks/dtask.h>
+#include <trace/hooks/security.h>
 /*
  * Minimum number of threads to boot the kernel
  */
@@ -1335,6 +1337,7 @@ struct file *get_task_exe_file(struct task_struct *task)
 	task_unlock(task);
 	return exe_file;
 }
+EXPORT_SYMBOL_GPL(get_task_exe_file);
 
 /**
  * get_task_mm - acquire a reference to the task's mm
@@ -1937,9 +1940,11 @@ static void rv_task_fork(struct task_struct *p)
 
 static bool need_futex_hash_allocate_default(u64 clone_flags)
 {
-	if ((clone_flags & (CLONE_THREAD | CLONE_VM)) != (CLONE_THREAD | CLONE_VM))
-		return false;
-	return true;
+	/*
+	 * Allocate a default futex hash for any sibling that will
+	 * share the parent's mm, except vfork.
+	 */
+	return (clone_flags & (CLONE_VM | CLONE_VFORK)) == CLONE_VM;
 }
 
 /*
@@ -2167,7 +2172,6 @@ __latent_entropy struct task_struct *copy_process(
 	p->blocked_on.lock = NULL; /* not blocked yet */
 	p->blocked_donor = NULL; /* nobody is boosting p yet */
 #ifdef CONFIG_SCHED_PROXY_EXEC
-	INIT_LIST_HEAD(&p->migration_node);
 	INIT_LIST_HEAD(&p->blocked_head);
 	INIT_LIST_HEAD(&p->blocked_node);
 	INIT_LIST_HEAD(&p->blocked_activation_node);
@@ -2229,6 +2233,7 @@ __latent_entropy struct task_struct *copy_process(
 	if (retval)
 		goto bad_fork_cleanup_io;
 
+	random_kstack_task_init(p);
 	stackleak_task_init(p);
 
 	if (pid != &init_struct_pid) {
@@ -2338,10 +2343,6 @@ __latent_entropy struct task_struct *copy_process(
 	if (retval)
 		goto bad_fork_cancel_cgroup;
 
-	/*
-	 * Allocate a default futex hash for the user process once the first
-	 * thread spawns.
-	 */
 	if (need_futex_hash_allocate_default(clone_flags)) {
 		retval = futex_hash_allocate_default();
 		if (retval)
@@ -2405,6 +2406,10 @@ __latent_entropy struct task_struct *copy_process(
 		retval = -EINTR;
 		goto bad_fork_core_free;
 	}
+
+	trace_android_rvh_copy_process_integrity(clone_flags, p, &retval);
+	if (retval)
+		goto bad_fork_cancel_cgroup;
 
 	/* No more failure paths after this point. */
 
@@ -3181,11 +3186,10 @@ int ksys_unshare(unsigned long unshare_flags)
 					 new_cred, new_fs);
 	if (err)
 		goto bad_unshare_cleanup_cred;
-
 	if (new_cred) {
 		err = set_cred_ucounts(new_cred);
 		if (err)
-			goto bad_unshare_cleanup_cred;
+			goto bad_unshare_cleanup_nsproxy;
 	}
 
 	if (new_fs || new_fd || do_sysvsem || new_cred || new_nsproxy) {
@@ -3201,8 +3205,10 @@ int ksys_unshare(unsigned long unshare_flags)
 			shm_init_task(current);
 		}
 
-		if (new_nsproxy)
+		if (new_nsproxy) {
 			switch_task_namespaces(current, new_nsproxy);
+			new_nsproxy = NULL;
+		}
 
 		task_lock(current);
 
@@ -3243,13 +3249,15 @@ int ksys_unshare(unsigned long unshare_flags)
 
 	perf_event_namespaces(current);
 
+bad_unshare_cleanup_nsproxy:
+	if (new_nsproxy)
+		put_nsproxy(new_nsproxy);
 bad_unshare_cleanup_cred:
 	if (new_cred)
 		put_cred(new_cred);
 bad_unshare_cleanup_fd:
 	if (new_fd)
 		put_files_struct(new_fd);
-
 bad_unshare_cleanup_fs:
 	if (new_fs)
 		free_fs_struct(new_fs);
@@ -3340,3 +3348,12 @@ static int __init init_fork_sysctl(void)
 }
 
 subsys_initcall(init_fork_sysctl);
+
+int object_is_on_stack(const void *obj)
+{
+	void *stack = task_stack_page(current);
+
+	obj = kasan_reset_tag(obj);
+	return (obj >= stack) && (obj < (stack + THREAD_SIZE));
+}
+EXPORT_SYMBOL(object_is_on_stack);
