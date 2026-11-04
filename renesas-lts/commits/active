@@ -1,19 +1,12 @@
 # Empty line below is needed
 
 # Wolfram
-# git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git renesas/x5h/i2c-experimental
-# - lore: 20260909094009.2167-6-wsa+renesas@sang-engineering.com
-6dd61b9a71617 dmaengine: rcar-dmac: Enable channel 0 when using SMMU
-7da2c066c191c dt-bindings: renesas,rcar-dmac: Add R-Car X5H SoC support
-6a44573397f60 dmaengine: rcar-dmac: Add support for X5H SoC
+d05fe7100a5be i3c: rcar: add suspend/resume support
+9fe94ef68a2f2 i3c: rcar: add I3C driver support for R-Car X5H
+64eec21623eab dt-bindings: i3c: Add binding for Renesas R-Car I3C master controller
 
-# Wolfram
-# git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git renesas/x5h/rtc-experimental
-# - lore: 20260917111349.52250-1-wsa+renesas@sang-engineering.com
-80f31738655be dt-bindings: rtc: rcar: Add R-Car Gen5 RTC support
-e302251e40c3e rtc: rcar: Add SCMI clock support for R-Car X5H RTC Driver
-db17ccea5af44 rtc: rcar: Add additional information for proc interface
-f018e70966742 rtc: rcar: Add support for interrupt requests generator and output pulse control
-1b175469ffe6c rtc: rcar: Update time reading procedure
-83c267fb1952c rtc: rcar: Add compatible string for X5H
-07c2583004656 rtc: Add Renesas R-Car RTC driver
+# Sam Agazaryan, Google
+# https://jpn01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fr%2F20260921230603.2518652-1-samagazaryan%40google.com&data=05%7C02%7Ckuninori.morimoto.gx%40renesas.com%7C207385d72e604da676d908df2b75a4d4%7C53d82571da1947e49cb4625a166a4a2a%7C0%7C0%7C639277456461913815%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Vnk%2FgZ0PbbVQDkZ3%2BXHt17dXBGKQuABAtlpcpIJEn5c%3D&reserved=0
+49619329c5120 i3c: add i3cdev module to expose i3c dev in /dev
+de9f99ad308c9 i3c: master: add i3c_for_each_dev helper
+d04030e7de8b0 i3c: master: export i3c_masterdev_type
