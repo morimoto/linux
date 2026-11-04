@@ -1,3 +1,26 @@
+74d360a1a1935 arm64: dts: renesas: perceptor: Refactor common parts of Perceptor variants
+2d6d0e0cb9353 arm64: dts: renesas: ironhide/perceptor: Document out-of-tree driver
+15c52c8e9df99 arm64: dts: renesas: perceptor: Set MIPI controller to port B
+cfd21cf62a97b arm64: dts: renesas: ironhide: Fix line orders for Gen5 board
+1a88d158ed247 media: renesas: rcar-csi2: Fix line orders error in Gen5 board
+d49430478deae arm64: dts: renesas: perceptor: Enable Video Capture
+51aadb6a307d6 arm64: dts: renesas: ironhide-fakra: Update compatible string
+3a55a88134c4a dt-bindings: media: i2c: Document Sony IMX728/IMX623 camera sensors
+0b0ab76c9c6e0 media: renesas: rcar-isp: Fix wrong VC-to-ISPCS-output mapping
+8363e47d03a4d media: renesas: rcar-vin: Remove FPS debug code
+f9e50add52a30 media: renesas: rcar-vin: Fix ISP source pad lookup
+64f0b8af232db arm64: dts: renesas: r8a78000: Fix ISP output port numbering
+f353d6a57b38a arm64: defconfig: Add renesas_bsp_defconfig
+1ab97e3a027bd arm64: dts: renesas: perceptor: Enable audio support
+6f8eaa9803f6e arm64: dts: renesas: perceptor: Enable VSPI/VSPB and GSX
+9724c75eb05d6 arm64: dts: renesas: perceptor: Enable display subsystem
+71589466a6722 arm64: dts: renesas: perceptor: Enable I3C support
+129e54b838b50 arm64: dts: renesas: perceptor: Enable CAN support
+8c2d36d31a743 arm64: dts: renesas: perceptor: Enable WWDT support
+c99806cae1dda arm64: dts: renesas: perceptor: Use common Perceptor DT
+4312f387be64f drm: renesas: rcar-vcon: Fix black write-back screenshot with SMMU
+e1ac1624029e3 media: renesas: vsp1: Add dma-buf mapping helpers for VSP writes
+7c505c16b7f7a drm: renesas: rcar-vcon: Fix use-after-free of VSP planes array
 f018e70966742 rtc: rcar: Add support for interrupt requests generator and output pulse control
 e1e83b5711610 arm64: dts: renesas: r8j78070-perceptor: Enable RPMsg support
 9fd7508f2a71e arm64: dts: renesas: r8a78000: Add RPMsg over UCIe nodes
