@@ -766,6 +766,11 @@ static int soc_pcm_components_close(struct snd_pcm_substream *substream,
 	return soc_pcm_ret(rtd, ret);
 }
 
+/*
+ * Called by ALSA when a PCM substream is closed. Private data can be
+ * freed here. The cpu DAI, codec DAI, machine and components are also
+ * shutdown.
+ */
 static int soc_pcm_clean(struct snd_soc_pcm_runtime *rtd,
 			 struct snd_pcm_substream *substream, int rollback)
 {
@@ -804,24 +809,13 @@ static int soc_pcm_clean(struct snd_soc_pcm_runtime *rtd,
 	return 0;
 }
 
-/*
- * Called by ALSA when a PCM substream is closed. Private data can be
- * freed here. The cpu DAI, codec DAI, machine and components are also
- * shutdown.
- */
-static int __soc_pcm_close(struct snd_soc_pcm_runtime *rtd,
-			   struct snd_pcm_substream *substream)
-{
-	return soc_pcm_clean(rtd, substream, 0);
-}
-
 /* PCM close ops for non-DPCM streams */
 static int soc_pcm_close(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 
 	snd_soc_dpcm_mutex_lock(rtd);
-	__soc_pcm_close(rtd, substream);
+	soc_pcm_clean(rtd, substream, 0);
 	snd_soc_dpcm_mutex_unlock(rtd);
 	return 0;
 }
@@ -1703,7 +1697,7 @@ void dpcm_be_dai_stop(struct snd_soc_pcm_runtime *fe, int stream,
 			}
 		}
 
-		__soc_pcm_close(be, be_substream);
+		soc_pcm_clean(be, be_substream, 0);
 		be_substream->runtime = NULL;
 		be->dpcm[stream].state = SND_SOC_DPCM_STATE_CLOSE;
 	}
@@ -2028,7 +2022,7 @@ static int dpcm_fe_dai_shutdown(struct snd_pcm_substream *substream)
 	dev_dbg(fe->dev, "ASoC: close FE %s\n", fe->dai_link->name);
 
 	/* now shutdown the frontend */
-	__soc_pcm_close(fe, substream);
+	soc_pcm_clean(fe, substream, 0);
 
 	/* run the stream stop event */
 	dpcm_dapm_stream_event(fe, stream, SND_SOC_DAPM_STREAM_STOP);
