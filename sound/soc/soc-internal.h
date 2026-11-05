@@ -215,6 +215,7 @@ void snd_soc_pcm_component_delay(struct snd_pcm_substream *substream,
  * In soc-pcm
  */
 int soc_new_pcm(struct snd_soc_pcm_runtime *rtd);
+int soc_new_pcm_mod(struct snd_soc_pcm_runtime *rtd);
 
 /*
  * In soc-link

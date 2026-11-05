@@ -204,6 +204,11 @@ struct snd_soc_component*
 snd_soc_rtdcom_lookup(struct snd_soc_pcm_runtime *rtd,
 		       const char *driver_name);
 
+/* for SND_SOC_DAI_CLASS_MODULE */
+struct snd_soc_dai_link_param_mod {
+	struct snd_pcm_ops custom;
+};
+
 struct snd_soc_dai_link_component {
 	const char *name;
 	struct device_node *of_node;
@@ -238,7 +243,7 @@ struct snd_soc_dai_link_component {
  * ch-map[0].cpu = 0	ch-map[0].codec = 0
  * ch-map[1].cpu = 1	ch-map[1].codec = 1
  * ch-map[2].cpu = 2	ch-map[2].codec = 2
- *
+    *
  *-------------------------
  * CPU0 <---> Codec0
  * CPU1 <-+-> Codec1

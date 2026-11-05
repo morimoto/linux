@@ -344,6 +344,7 @@ struct snd_soc_dai_driver {
 	const char *name;
 	unsigned int id;
 	unsigned int base;
+	enum snd_soc_connect_class class;
 	struct snd_soc_dobj dobj;
 	const struct of_phandle_args *dai_args;
 

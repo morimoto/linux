@@ -395,6 +395,7 @@ static int snd_soc_card_init_pcm_runtime(struct snd_soc_card *card,
 					 struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_dai_driver *cpu_driver = snd_soc_dai_to_driver(cpu_dai);
 	int ret;
 
 	/* do machine specific initialization */
@@ -418,7 +419,18 @@ static int snd_soc_card_init_pcm_runtime(struct snd_soc_card *card,
 	}
 
 	/* create the pcm */
-	ret = soc_new_pcm(rtd);
+	switch (cpu_driver->class) {
+	case SND_SOC_CONNECT_CLASS_MODULE:
+		ret = soc_new_pcm_mod(rtd);
+		break;
+	case SND_SOC_CONNECT_CLASS_NORMAL:
+	case SND_SOC_CONNECT_CLASS_DPCM:
+	case SND_SOC_CONNECT_CLASS_CODEC2CODEC:
+	default:
+		ret = soc_new_pcm(rtd);
+		break;
+	}
+
 	if (ret < 0)
 		goto err;
 

@@ -407,5 +407,11 @@ struct snd_soc_pcm_stream {
 	unsigned int sig_bits;		/* number of bits of content */
 };
 
+enum snd_soc_connect_class {
+	SND_SOC_CONNECT_CLASS_NORMAL,
+	SND_SOC_CONNECT_CLASS_DPCM,
+	SND_SOC_CONNECT_CLASS_CODEC2CODEC,
+	SND_SOC_CONNECT_CLASS_MODULE,
+};
 
 #endif /* __SOC_DEF_H */

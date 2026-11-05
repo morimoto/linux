@@ -105,6 +105,14 @@ config SND_SOC_USB
 config SND_SOC_TEST_HACK
 	tristate
 
+config SND_SOC_MODULE
+	bool "SoC Module support (Experimental)"
+	default n
+	help
+	  Enable this option if an ASoC CPU driver is created as ASoC Module base.
+	  This is still under experimental. Don't use/select it except
+	  test/development user.
+
 # All the supported SoCs
 source "sound/soc/adi/Kconfig"
 source "sound/soc/amd/Kconfig"

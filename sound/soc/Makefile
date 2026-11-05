@@ -3,6 +3,10 @@ snd-soc-core-y := soc-core.o soc-dapm.o soc-jack.o soc-utils.o soc-dai.o soc-com
 snd-soc-core-y += soc-pcm.o soc-ops.o soc-link.o soc-card.o
 snd-soc-core-$(CONFIG_SND_SOC_COMPRESS) += soc-compress.o
 
+ifneq ($(CONFIG_SND_SOC_MODULE),)
+snd-soc-core-y += soc-pcm-mod.o
+endif
+
 ifneq ($(CONFIG_SND_SOC_TOPOLOGY),)
 snd-soc-core-y += soc-topology.o
 endif
