@@ -246,7 +246,7 @@ static int rsnd_dmaen_attach(struct rsnd_dai_stream *io,
 	 * see
 	 *	rsnd_preallocate_pages()
 	 */
-	io->dmac_dev = chan->device->dev;
+	io->dmac_dev = dmaengine_get_dma_device(chan);
 
 	dma_release_channel(chan);
 
