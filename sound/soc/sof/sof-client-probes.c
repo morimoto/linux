@@ -440,6 +440,7 @@ static int sof_probes_client_probe(struct auxiliary_device *auxdev,
 		}
 	};
 	struct snd_soc_card *card;
+	struct snd_soc_card_driver *card_driver;
 	struct sof_probes_priv *priv;
 	struct snd_soc_dai_link_component *cpus;
 	struct sof_probes_host_ops *ops;
@@ -461,8 +462,9 @@ static int sof_probes_client_probe(struct auxiliary_device *auxdev,
 		return -ENODEV;
 	}
 
+	card = snd_soc_card_alloc(dev);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
+	if (!card || !priv)
 		return -ENOMEM;
 
 	priv->host_ops = ops;
@@ -530,17 +532,15 @@ static int sof_probes_client_probe(struct auxiliary_device *auxdev,
 	links[0].num_platforms = ARRAY_SIZE(platform_component);
 	links[0].nonatomic = 1;
 
-	card = &priv->card;
+	card_driver = &priv->card_driver;
+	card_driver->owner = THIS_MODULE;
+	card_driver->num_links = SOF_PROBES_NUM_DAI_LINKS;
+	card_driver->dai_link = links;
 
-	card->dev = dev;
-	card->name = "sof-probes";
-	card->owner = THIS_MODULE;
-	card->num_links = SOF_PROBES_NUM_DAI_LINKS;
-	card->dai_link = links;
+	snd_soc_card_set_name(card, "sof-probes");
+	snd_soc_card_set_priv(card, cdev);
 
-	snd_soc_card_set_drvdata(card, cdev);
-
-	ret = devm_snd_soc_register_card(dev, card);
+	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret < 0) {
 		debugfs_remove(priv->dfs_points);
 		debugfs_remove(priv->dfs_points_remove);
