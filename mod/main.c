@@ -10,8 +10,9 @@
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define EINVAL	123
 
-struct snd_soc_mod_graph;
 struct snd_soc_mod_ctr;
+struct snd_soc_mod_graph;
+struct snd_soc_mod_path;
 
 /*
  * ex)
@@ -44,9 +45,7 @@ struct snd_soc_mod {
  */
 struct snd_soc_mod_ctr {
 	char *base_name;
-	int (*probe)(struct snd_soc_mod *mod);
-	int (*remove)(struct snd_soc_mod *mod);
-	int (*get_rate)(struct snd_soc_mod **path, struct snd_soc_mod *mod);
+	int (*get_rate)(struct snd_soc_mod_path *path, struct snd_soc_mod *mod);
 	struct snd_soc_mod *mods;
 	int num_mods;
 
@@ -67,8 +66,6 @@ struct snd_soc_mod_ctr {
  */
 struct snd_soc_mod_graph {
 	char *name;
-	int (*probe)(struct snd_soc_mod_ctr *ctr);
-	int (*remove)(struct snd_soc_mod_ctr *ctr);
 	struct snd_soc_mod_ctr **ctrs;
 	int num_ctrs;
 
@@ -76,7 +73,15 @@ struct snd_soc_mod_graph {
 };
 #define snd_soc_mod_graph_to_priv(graph)	(graph)->priv
 
-#define snd_soc_mod_to_priv(mod)	(mod)->priv
+struct snd_soc_mod_path {
+	struct snd_soc_mod **mods;
+	int num_mods;
+
+	void  *priv;
+};
+#define snd_soc_mod_path_to_priv(path)	(path)->priv
+
+
 #define for_each_snd_mod_ctrs(graph, i, ctr)		\
 	for ((i) = 0;					\
 	     ((i) < (graph)->num_ctrs) &&		\
@@ -98,8 +103,9 @@ struct snd_soc_mod_graph {
 		     ((out) = *((mod)->mod_out + i));	\
 	     (i)++)
 #define for_each_snd_mod_in_path(path, i, mod)	\
-	for (i = 0;				\
-	     path[i] && ((mod) = path[i]);	\
+	for ((i) = 0;				\
+	     ((i) < (path)->num_mods) &&	\
+		     ((mod) = (path)->mods[i]);	\
 	     (i)++)
 
 #define snd_soc_mod_id(mod) ((mod) - (mod)->ctr->mods)
@@ -109,12 +115,12 @@ static char *snd_soc_mod_name(struct snd_soc_mod *mod)
 	return mod->name;
 }
 
-static int snd_soc_mod_get_rate(struct snd_soc_mod **path, struct snd_soc_mod *mod)
+static int snd_soc_mod_get_rate(struct snd_soc_mod_path *path, struct snd_soc_mod *mod)
 {
 	return mod->ctr->get_rate(path, mod);
 }
 
-static struct snd_soc_mod *snd_soc_mod_get_prev_mod(struct snd_soc_mod **path, struct snd_soc_mod *mod)
+static struct snd_soc_mod *snd_soc_mod_get_prev_mod(struct snd_soc_mod_path *path, struct snd_soc_mod *mod)
 {
 	struct snd_soc_mod *m;
 	int i;
@@ -124,14 +130,14 @@ static struct snd_soc_mod *snd_soc_mod_get_prev_mod(struct snd_soc_mod **path, s
 			if (i == 0)
 				return NULL;
 			else
-				return path[i - 1];
+				return path->mods[i - 1];
 		}
 	}
 
 	return NULL;
 }
 
-static int snd_soc_mod_common_get_rate(struct snd_soc_mod **path, struct snd_soc_mod *mod)
+static int snd_soc_mod_common_get_rate(struct snd_soc_mod_path *path, struct snd_soc_mod *mod)
 {
 	struct snd_soc_mod *prev_mod = snd_soc_mod_get_prev_mod(path, mod);
 
@@ -228,20 +234,25 @@ int snd_soc_mod_graph_init(struct snd_soc_mod_graph *graph)
 	return snd_soc_mod_graph_sanity_check(graph);
 }
 
-struct snd_soc_mod **snd_soc_mod_alloc_path(struct snd_soc_mod_graph *graph,
-					    char **path, int num_path)
+struct snd_soc_mod_path *snd_soc_mod_alloc_path(struct snd_soc_mod_graph *graph,
+						char **path_name, int num_path_name, void *priv)
 {
+	struct snd_soc_mod_path *path;
 	struct snd_soc_mod *prev;
 	struct snd_soc_mod **mods;
 	int i;
 
-	/* NULL terminate */
-	mods = malloc(sizeof(mods) * (num_path + 1));
-	if (!mods)
+	path = malloc(sizeof(*path));
+	mods = malloc(sizeof(*mods) * num_path_name);
+	if (!path || !mods)
 		goto err;
 
+	path->mods	= mods;
+	path->num_mods	= num_path_name;
+	path->priv	= priv;
+
 	prev = NULL;
-	for (i = 0; i < num_path; i++) {
+	for (i = 0; i < num_path_name; i++) {
 		struct snd_soc_mod_ctr *ctr;
 		struct snd_soc_mod *mod, *in, *out;
 		int j, t;
@@ -252,10 +263,10 @@ struct snd_soc_mod **snd_soc_mod_alloc_path(struct snd_soc_mod_graph *graph,
 		 */
 		for_each_snd_mod_ctrs(graph, j, ctr)
 			for_each_snd_mods(ctr, t, mod)
-				if (strncmp(path[i], snd_soc_mod_name(mod), strlen(path[i])) == 0)
+				if (strncmp(path_name[i], snd_soc_mod_name(mod), strlen(path_name[i])) == 0)
 					goto found;
 
-		printf("can't find path(%s) in graph(%s)\n", path[i], graph->name);
+		printf("can't find path(%s) in graph(%s)\n", path_name[i], graph->name);
 		goto free;
 	found:
 		/*
@@ -276,29 +287,28 @@ struct snd_soc_mod **snd_soc_mod_alloc_path(struct snd_soc_mod_graph *graph,
 			if (in == prev)
 				goto in_check_ok;
 
-		printf("can't find %s in %s's mod_in \n", snd_soc_mod_name(prev), path[i]);
+		printf("can't find %s in %s's mod_in \n", snd_soc_mod_name(prev), path_name[i]);
 		goto free;
 	in_check_ok:
 		/*
 		 * In above sample case, ssi0 (= last mod) has no mod_out
 		 */
-		if (!mod->num_mod_out && (i + 1) == num_path)
+		if (!mod->num_mod_out && (i + 1) == num_path_name)
 			goto out_check_ok;
 
 		for_each_snd_mod_out(prev, t, out)
 			if (out == mod)
 				goto out_check_ok;
-		printf("can't find path(%s) in mod(%s)'s out \n", path[i], snd_soc_mod_name(mod));
+		printf("can't find path(%s) in mod(%s)'s out \n", path_name[i], snd_soc_mod_name(mod));
 		goto free;
 	out_check_ok:
 		prev = mod;
 		mods[i] = mod;
 	}
 
-	mods[i] = NULL; // NULL terminate
-
-	return mods;
+	return path;
 free:
+	free(path);
 	free(mods);
 err:
 	return NULL;
@@ -350,7 +360,7 @@ struct snd_soc_src_priv {
 	{.rate = 96000	},	// to 96000
 };
 
-static int snd_soc_src_get_rate(struct snd_soc_mod **path, struct snd_soc_mod *mod)
+static int snd_soc_src_get_rate(struct snd_soc_mod_path *path, struct snd_soc_mod *mod)
 {
 	struct snd_soc_src_priv *priv = snd_soc_mod_to_priv(mod);
 
@@ -445,15 +455,15 @@ char *my_path2[]   = {"src3", "mix1", "dvc1", "ssi2"};
 void main(void)
 {
 	struct snd_soc_mod *mod;
-	struct snd_soc_mod **path1, **path2;
+	struct snd_soc_mod_path *path1, *path2;
 	int i, ret;
 
 	ret = snd_soc_mod_graph_init(&graph);
 	if (ret < 0)
 		return;
 
-	path1 = snd_soc_mod_alloc_path(&graph, my_path1, ARRAY_SIZE(my_path1));
-	path2 = snd_soc_mod_alloc_path(&graph, my_path2, ARRAY_SIZE(my_path2));
+	path1 = snd_soc_mod_alloc_path(&graph, my_path1, ARRAY_SIZE(my_path1), NULL);
+	path2 = snd_soc_mod_alloc_path(&graph, my_path2, ARRAY_SIZE(my_path2), NULL);
 	if (!path1 || !path2)
 		goto err;
 
