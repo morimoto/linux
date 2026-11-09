@@ -12,6 +12,7 @@
 
 struct snd_soc_mod_ctr;
 struct snd_soc_mod_graph;
+struct snd_soc_mod_subpath;
 struct snd_soc_mod_path;
 
 /*
@@ -45,7 +46,7 @@ struct snd_soc_mod {
  */
 struct snd_soc_mod_ctr {
 	char *base_name;
-	int (*get_rate)(struct snd_soc_mod_path *path, struct snd_soc_mod *mod);
+	int (*get_rate)(struct snd_soc_mod_subpath *path, struct snd_soc_mod *mod);
 	struct snd_soc_mod *mods;
 	int num_mods;
 
@@ -73,14 +74,38 @@ struct snd_soc_mod_graph {
 };
 #define snd_soc_mod_graph_to_priv(graph)	(graph)->priv
 
-struct snd_soc_mod_path {
+/*
+ * ex)
+ *	subpath
+ *	 - [SRC2] - [MIX1] - [DVC1] - [SSI2]
+ */
+struct snd_soc_mod_subpath {
 	struct snd_soc_mod **mods;
 	int num_mods;
 
 	void  *priv;
 };
-#define snd_soc_mod_path_to_priv(path)	(path)->priv
+#define snd_soc_mod_subpath_to_priv(path)	(path)->priv
 
+/*
+ * ex)
+ *	path
+ *	 - [SRC2] - [MIX1] - [DVC1] - [SSI2]
+ *	 - [SRC2] - [MIX1] - [DVC1] - [SSI3]
+ *	 - ...
+ *
+ * Some vendor might want to use 1subpath : 1path,
+ * some vendor might want to use Nsubpath : 1path,
+ * but framework doesn't define details. Leave it to vendor
+ */
+struct snd_soc_mod_path {
+	struct snd_soc_mod_subpath *current_subpath;
+	struct snd_soc_mod_subpath **subpath;
+	int num_subpath;
+
+	void  *priv;
+};
+#define snd_soc_mod_path_to_priv(path)	(path)->priv
 
 #define for_each_snd_mod_ctrs(graph, i, ctr)		\
 	for ((i) = 0;					\
@@ -102,10 +127,15 @@ struct snd_soc_mod_path {
 	     ((i) < (mod)->num_mod_out) &&		\
 		     ((out) = *((mod)->mod_out + i));	\
 	     (i)++)
-#define for_each_snd_mod_in_path(path, i, mod)	\
-	for ((i) = 0;				\
-	     ((i) < (path)->num_mods) &&	\
-		     ((mod) = (path)->mods[i]);	\
+#define for_each_snd_mod_in_subpath(subpath, i, mod)	\
+	for ((i) = 0;					\
+	     ((i) < (subpath)->num_mods) &&		\
+		     ((mod) = (subpath)->mods[i]);	\
+	     (i)++)
+#define for_each_snd_mod_in_path(path, i, mod)			\
+	for ((i) = 0;						\
+	     ((i) < (path)->current_subpath->num_mods) &&	\
+		     ((mod) = (path)->current_subpath->mods[i]);\
 	     (i)++)
 
 #define snd_soc_mod_id(mod) ((mod) - (mod)->ctr->mods)
@@ -115,29 +145,38 @@ static char *snd_soc_mod_name(struct snd_soc_mod *mod)
 	return mod->name;
 }
 
-static int snd_soc_mod_get_rate(struct snd_soc_mod_path *path, struct snd_soc_mod *mod)
+static int snd_soc_mod_get_rate_via_subpath(struct snd_soc_mod_subpath *subpath, struct snd_soc_mod *mod)
 {
-	return mod->ctr->get_rate(path, mod);
+	return mod->ctr->get_rate(subpath, mod);
 }
 
-static struct snd_soc_mod *snd_soc_mod_get_prev_mod(struct snd_soc_mod_path *path, struct snd_soc_mod *mod)
+static int snd_soc_mod_get_rate_via_path(struct snd_soc_mod_path *path, struct snd_soc_mod *mod)
+{
+	return snd_soc_mod_get_rate_via_subpath(path->current_subpath, mod);
+}
+
+#define snd_soc_mod_get_rate(path, mod) _Generic((path),	  \
+struct snd_soc_mod_subpath * :	snd_soc_mod_get_rate_via_subpath, \
+struct snd_soc_mod_path * :	snd_soc_mod_get_rate_via_path)(path, mod)
+
+static struct snd_soc_mod *snd_soc_mod_get_prev_mod(struct snd_soc_mod_subpath *subpath, struct snd_soc_mod *mod)
 {
 	struct snd_soc_mod *m;
 	int i;
 
-	for_each_snd_mod_in_path(path, i, m) {
+	for_each_snd_mod_in_subpath(subpath, i, m) {
 		if (m == mod) {
 			if (i == 0)
 				return NULL;
 			else
-				return path->mods[i - 1];
+				return subpath->mods[i - 1];
 		}
 	}
 
 	return NULL;
 }
 
-static int snd_soc_mod_common_get_rate(struct snd_soc_mod_path *path, struct snd_soc_mod *mod)
+static int snd_soc_mod_common_get_rate(struct snd_soc_mod_subpath *path, struct snd_soc_mod *mod)
 {
 	struct snd_soc_mod *prev_mod = snd_soc_mod_get_prev_mod(path, mod);
 
@@ -234,12 +273,12 @@ int snd_soc_mod_graph_init(struct snd_soc_mod_graph *graph)
 	return snd_soc_mod_graph_sanity_check(graph);
 }
 
-struct snd_soc_mod_path *snd_soc_mod_alloc_path(struct snd_soc_mod_graph *graph,
+struct snd_soc_mod_subpath *snd_soc_mod_alloc_subpath(struct snd_soc_mod_graph *graph,
 						char **path_name, int num_path_name, void *priv)
 {
-	struct snd_soc_mod_path *path;
-	struct snd_soc_mod *prev;
+	struct snd_soc_mod_subpath *path;
 	struct snd_soc_mod **mods;
+	struct snd_soc_mod *prev;
 	int i;
 
 	path = malloc(sizeof(*path));
@@ -314,6 +353,62 @@ err:
 	return NULL;
 }
 
+struct snd_soc_mod_path *snd_soc_mod_alloc_path(int num_subpath)
+{
+	struct snd_soc_mod_path *path;
+	struct snd_soc_mod_subpath **subpath;
+	int i;
+
+	path	= malloc(sizeof(*path));
+	subpath	= malloc(sizeof(*subpath) * num_subpath);
+	if (!path || !subpath)
+		goto err;
+
+	path->subpath		= subpath;
+	path->num_subpath	= num_subpath;
+
+	/* remove me */
+	for (i = 0; i < num_subpath; i++)
+		path->subpath[i] = NULL;
+
+	return path;
+err:
+	free(path);
+	free(subpath);
+
+	return NULL;
+}
+
+int snd_soc_mod_path_set(struct snd_soc_mod_path *path, int id, struct snd_soc_mod_subpath *subpath)
+{
+	if (id < 0 ||
+	    id >= path->num_subpath)
+		return -EINVAL;
+	if (path->subpath[id]) // no overwrite
+		return -EINVAL;
+
+	path->subpath[id] = subpath;
+
+	/* default path */
+	if (!path->current_subpath)
+		path->current_subpath = subpath;
+
+	return 0;
+}
+
+int snd_soc_mod_path_switch(struct snd_soc_mod_path *path, int id)
+{
+	if (id < 0 ||
+	    id >= path->num_subpath)
+		return -EINVAL;
+	if (!path->subpath[id])
+		return -EINVAL;
+
+	path->current_subpath = path->subpath[id];
+
+	return 0;
+}
+
 #define SND_SOC_MOD_DEFINE(in, out, p)		\
 {						\
 	.mod_in		= in,			\
@@ -360,7 +455,7 @@ struct snd_soc_src_priv {
 	{.rate = 96000	},	// to 96000
 };
 
-static int snd_soc_src_get_rate(struct snd_soc_mod_path *path, struct snd_soc_mod *mod)
+static int snd_soc_src_get_rate(struct snd_soc_mod_subpath *path, struct snd_soc_mod *mod)
 {
 	struct snd_soc_src_priv *priv = snd_soc_mod_to_priv(mod);
 
@@ -449,29 +544,54 @@ struct snd_soc_mod_graph graph = {
 };
 
 //char *my_path[] = {"src0", "mix1", "dvc0", "ssi3"}; // sanity error
-char *my_path1[]   = {"src2", "mix1", "dvc1", "ssi2"};
-char *my_path2[]   = {"src3", "mix1", "dvc1", "ssi2"};
+char *my_path0[]   = {"src2", "mix1", "dvc1", "ssi2"};
+char *my_path1[]   = {"src3", "mix1", "dvc1", "ssi2"};
 
 void main(void)
 {
 	struct snd_soc_mod *mod;
-	struct snd_soc_mod_path *path1, *path2;
+	struct snd_soc_mod_subpath *subpath0, *subpath1;
+	struct snd_soc_mod_path *path;
 	int i, ret;
 
 	ret = snd_soc_mod_graph_init(&graph);
 	if (ret < 0)
 		return;
 
-	path1 = snd_soc_mod_alloc_path(&graph, my_path1, ARRAY_SIZE(my_path1), NULL);
-	path2 = snd_soc_mod_alloc_path(&graph, my_path2, ARRAY_SIZE(my_path2), NULL);
-	if (!path1 || !path2)
+	subpath0 = snd_soc_mod_alloc_subpath(&graph, my_path0, ARRAY_SIZE(my_path0), NULL);
+	subpath1 = snd_soc_mod_alloc_subpath(&graph, my_path1, ARRAY_SIZE(my_path1), NULL);
+	if (!subpath0 || !subpath1)
 		goto err;
 
-	for_each_snd_mod_in_path(path1, i, mod)
-		printf("%s (%d), ", snd_soc_mod_name(mod), snd_soc_mod_get_rate(path1, mod));
+	for_each_snd_mod_in_subpath(subpath0, i, mod)
+		printf("%s (%d), ", snd_soc_mod_name(mod), snd_soc_mod_get_rate(subpath0, mod));
 	printf("\n");
-	for_each_snd_mod_in_path(path2, i, mod)
-		printf("%s (%d), ", snd_soc_mod_name(mod), snd_soc_mod_get_rate(path2, mod));
+	for_each_snd_mod_in_subpath(subpath1, i, mod)
+		printf("%s (%d), ", snd_soc_mod_name(mod), snd_soc_mod_get_rate(subpath1, mod));
+	printf("\n");
+
+	path = snd_soc_mod_alloc_path(2);
+	if (!path)
+		goto err;
+
+	ret = snd_soc_mod_path_set(path, 0, subpath0);
+	if (ret < 0)
+		goto err;
+
+	ret = snd_soc_mod_path_set(path, 1, subpath1);
+	if (ret < 0)
+		goto err;
+
+	for_each_snd_mod_in_path(path, i, mod)
+		printf("%s (%d), ", snd_soc_mod_name(mod), snd_soc_mod_get_rate(path, mod));
+	printf("\n");
+
+	ret = snd_soc_mod_path_switch(path, 1);
+	if (ret < 0)
+		goto err;
+
+	for_each_snd_mod_in_path(path, i, mod)
+		printf("%s (%d), ", snd_soc_mod_name(mod), snd_soc_mod_get_rate(path, mod));
 	printf("\n");
 
 	return;
