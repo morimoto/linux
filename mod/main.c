@@ -159,6 +159,26 @@ static int snd_soc_mod_get_rate_via_path(struct snd_soc_mod_path *path, struct s
 struct snd_soc_mod_subpath * :	snd_soc_mod_get_rate_via_subpath, \
 struct snd_soc_mod_path * :	snd_soc_mod_get_rate_via_path)(path, mod)
 
+static void snd_soc_mod_print_subpath(struct snd_soc_mod_subpath *subpath)
+{
+	struct snd_soc_mod *mod;
+	int i;
+
+	for_each_snd_mod_in_subpath(subpath, i, mod)
+		printf("%d: %s [%d]\n", i, snd_soc_mod_name(mod), snd_soc_mod_get_rate(subpath, mod));
+	printf("\n");
+}
+
+static void snd_soc_mod_print_path(struct snd_soc_mod_path *path)
+{
+	struct snd_soc_mod *mod;
+	int i;
+
+	for_each_snd_mod_in_path(path, i, mod)
+		printf("%d: %s [%d]\n", i, snd_soc_mod_name(mod), snd_soc_mod_get_rate(path, mod));
+	printf("\n");
+}
+
 static struct snd_soc_mod *snd_soc_mod_get_prev_mod(struct snd_soc_mod_subpath *subpath, struct snd_soc_mod *mod)
 {
 	struct snd_soc_mod *m;
@@ -563,12 +583,8 @@ void main(void)
 	if (!subpath0 || !subpath1)
 		goto err;
 
-	for_each_snd_mod_in_subpath(subpath0, i, mod)
-		printf("%s (%d), ", snd_soc_mod_name(mod), snd_soc_mod_get_rate(subpath0, mod));
-	printf("\n");
-	for_each_snd_mod_in_subpath(subpath1, i, mod)
-		printf("%s (%d), ", snd_soc_mod_name(mod), snd_soc_mod_get_rate(subpath1, mod));
-	printf("\n");
+	snd_soc_mod_print_subpath(subpath0);
+	snd_soc_mod_print_subpath(subpath1);
 
 	path = snd_soc_mod_alloc_path(2);
 	if (!path)
@@ -582,17 +598,13 @@ void main(void)
 	if (ret < 0)
 		goto err;
 
-	for_each_snd_mod_in_path(path, i, mod)
-		printf("%s (%d), ", snd_soc_mod_name(mod), snd_soc_mod_get_rate(path, mod));
-	printf("\n");
+	snd_soc_mod_print_path(path);
 
 	ret = snd_soc_mod_path_switch(path, 1);
 	if (ret < 0)
 		goto err;
 
-	for_each_snd_mod_in_path(path, i, mod)
-		printf("%s (%d), ", snd_soc_mod_name(mod), snd_soc_mod_get_rate(path, mod));
-	printf("\n");
+	snd_soc_mod_print_path(path);
 
 	return;
 err:
