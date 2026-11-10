@@ -333,7 +333,7 @@ static void dpcm_set_be_update_state(struct snd_soc_pcm_runtime *be,
 }
 
 /**
- * snd_soc_runtime_action() - Increment/Decrement active count for
+ * snd_soc_runtime_stream_user_update() - Increment/Decrement active count for
  * PCM runtime components
  * @rtd: ASoC PCM runtime that is activated
  * @stream: Direction of the PCM stream
@@ -345,8 +345,8 @@ static void dpcm_set_be_update_state(struct snd_soc_pcm_runtime *be,
  *
  * Must be called with the rtd->card->pcm_mutex being held
  */
-void snd_soc_runtime_action(struct snd_soc_pcm_runtime *rtd,
-			    int stream, int action)
+void snd_soc_runtime_stream_user_update(struct snd_soc_pcm_runtime *rtd,
+					int stream, int update)
 {
 	struct snd_soc_component *component;
 	struct snd_soc_dai *dai;
@@ -355,16 +355,16 @@ void snd_soc_runtime_action(struct snd_soc_pcm_runtime *rtd,
 	snd_soc_dpcm_mutex_assert_held(rtd);
 
 	for_each_rtd_dais(rtd, i, dai)
-		snd_soc_dai_stream_user_update(dai, stream, action);
+		snd_soc_dai_stream_user_update(dai, stream, update);
 
 	/* Increments/Decrements the active count for components without DAIs */
 	for_each_rtd_components(rtd, i, component) {
 		if (snd_soc_component_num_dai(component))
 			continue;
-		snd_soc_component_user_update(component, action);
+		snd_soc_component_user_update(component, update);
 	}
 }
-EXPORT_SYMBOL_GPL(snd_soc_runtime_action);
+EXPORT_SYMBOL_GPL(snd_soc_runtime_stream_user_update);
 
 /**
  * snd_soc_runtime_ignore_pmdown_time() - Check whether to ignore the power down delay
@@ -783,7 +783,7 @@ static int soc_pcm_clean(struct snd_soc_pcm_runtime *rtd,
 	snd_soc_dpcm_mutex_assert_held(rtd);
 
 	if (!rollback) {
-		snd_soc_runtime_deactivate(rtd, substream->stream);
+		snd_soc_runtime_stream_user_update(rtd, substream->stream, -1);
 
 		/* Make sure DAI parameters cleared if the DAI becomes inactive */
 		for_each_rtd_dais(rtd, i, dai) {
@@ -927,7 +927,7 @@ static int __soc_pcm_open(struct snd_soc_pcm_runtime *rtd,
 			goto err;
 	}
 dynamic:
-	snd_soc_runtime_activate(rtd, substream->stream);
+	snd_soc_runtime_stream_user_update(rtd, substream->stream, 1);
 	ret = 0;
 err:
 	if (ret < 0)
