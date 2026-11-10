@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 // Copyright (c) 2018, Linaro Limited
 
-#include <linux/module.h>
-#include <linux/platform_device.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/pcm.h>
 #include "common.h"
 
 #define SLIM_MAX_TX_PORTS 16

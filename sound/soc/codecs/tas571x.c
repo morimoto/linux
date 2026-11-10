@@ -13,18 +13,10 @@
  */
 
 #include <linux/clk.h>
-#include <linux/delay.h>
-#include <linux/device.h>
 #include <linux/gpio/consumer.h>
 #include <linux/i2c.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
 #include <linux/stddef.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 #include <linux/unaligned.h>

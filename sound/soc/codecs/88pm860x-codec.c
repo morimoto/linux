@@ -6,21 +6,10 @@
  * Author: Haojian Zhuang <haojian.zhuang@marvell.com>
  */
 
-#include <linux/kernel.h>
-#include <linux/module.h>
 #include <linux/i2c.h>
-#include <linux/platform_device.h>
 #include <linux/mfd/88pm860x.h>
-#include <linux/slab.h>
-#include <linux/delay.h>
-#include <linux/regmap.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
-#include <sound/initval.h>
-#include <sound/jack.h>
 #include <trace/events/asoc.h>
 
 #include "88pm860x-codec.h"

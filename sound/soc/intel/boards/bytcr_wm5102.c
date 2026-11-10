@@ -12,17 +12,9 @@
 #include <linux/acpi.h>
 #include <linux/bitfield.h>
 #include <linux/clk.h>
-#include <linux/device.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/moduleparam.h>
 #include <linux/platform_data/x86/soc.h>
 #include <linux/platform_device.h>
-#include <linux/slab.h>
 #include <linux/spi/spi.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
 #include "../../codecs/wm5102.h"

@@ -7,15 +7,10 @@
 //
 
 #include <linux/bitfield.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <linux/delay.h>
 #include <linux/export.h>
 #include <linux/pm_runtime.h>
 #include <linux/dma-mapping.h>
 #include <sound/soc.h>
-#include <linux/regmap.h>
-#include <sound/pcm_params.h>
 #include "loongson_i2s.h"
 
 #define LOONGSON_I2S_FORMATS (SNDRV_PCM_FMTBIT_S8 | \

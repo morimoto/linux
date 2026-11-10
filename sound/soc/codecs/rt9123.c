@@ -4,25 +4,11 @@
 //
 // Author: ChiYuan Huang <cy_huang@richtek.com>
 
-#include <linux/acpi.h>
 #include <linux/bitfield.h>
-#include <linux/bits.h>
-#include <linux/byteorder/generic.h>
-#include <linux/delay.h>
-#include <linux/err.h>
 #include <linux/gpio/consumer.h>
 #include <linux/i2c.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/pm_runtime.h>
-#include <linux/property.h>
-#include <linux/regmap.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
 
 #define RT9123_REG_AMPCTRL	0x01

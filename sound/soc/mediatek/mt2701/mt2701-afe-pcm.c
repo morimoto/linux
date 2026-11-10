@@ -8,12 +8,8 @@
  *	   Ryder Lee <ryder.lee@mediatek.com>
  */
 
-#include <linux/delay.h>
-#include <linux/module.h>
 #include <linux/mfd/syscon.h>
-#include <linux/of.h>
 #include <linux/pm_runtime.h>
-#include <sound/pcm_params.h>
 
 #include "mt2701-afe-common.h"
 #include "mt2701-afe-clock-ctrl.h"

@@ -8,7 +8,6 @@
 // Authors: Keyon Jie <yang.jie@linux.intel.com>
 //
 
-#include <sound/pcm_params.h>
 #include <sound/hdaudio_ext.h>
 #include <sound/hda-mlink.h>
 #include <sound/hda_register.h>

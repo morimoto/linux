@@ -7,16 +7,11 @@
  *  soc_sdw_rt5682 - Helpers to handle RT5682 from generic machine driver
  */
 
-#include <linux/device.h>
-#include <linux/errno.h>
 #include <linux/input.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_type.h>
-#include <sound/control.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dapm.h>
-#include <sound/jack.h>
 #include <sound/soc_sdw_utils.h>
 
 static const struct snd_soc_dapm_route rt5682_map[] = {

@@ -9,7 +9,6 @@
 #ifndef __SOUND_SOC_INTEL_AVS_PATH_H
 #define __SOUND_SOC_INTEL_AVS_PATH_H
 
-#include <linux/list.h>
 #include "avs.h"
 #include "topology.h"
 
