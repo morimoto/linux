@@ -118,13 +118,14 @@ static int mt8365_dai_configure_dmic(struct mtk_base_afe *afe,
 	unsigned int clk_phase_sel_ch1 = dmic_data->clk_phase_sel_ch1;
 	unsigned int clk_phase_sel_ch2 = dmic_data->clk_phase_sel_ch2;
 	unsigned int val = 0;
-	unsigned int rate = dai->symmetric_rate;
-	int reg = get_chan_reg(dai->symmetric_channels);
+	unsigned int rate = snd_soc_dai_get_symmetric_rate(dai);
+	unsigned int channels = snd_soc_dai_get_symmetric_channels(dai);
+	int reg = get_chan_reg(channels);
 
 	if (reg < 0)
 		return -EINVAL;
 
-	dmic_data->dmic_channel = dai->symmetric_channels;
+	dmic_data->dmic_channel = channels;
 
 	val |= DMIC_TOP_CON_SDM3_LEVEL_MODE;
 
@@ -162,7 +163,9 @@ static int mt8365_dai_configure_dmic(struct mtk_base_afe *afe,
 static int mt8365_dai_dmic_startup(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	mt8365_afe_enable_main_clk(afe);
 
@@ -179,7 +182,9 @@ static int mt8365_dai_dmic_startup(struct snd_pcm_substream *substream,
 static void mt8365_dai_dmic_shutdown(struct snd_pcm_substream *substream,
 				     struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	mt8365_dai_disable_dmic(afe, substream, dai);
 	audio_dmic_adda_disable(afe);
@@ -196,7 +201,9 @@ static void mt8365_dai_dmic_shutdown(struct snd_pcm_substream *substream,
 static int mt8365_dai_dmic_prepare(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	mt8365_dai_configure_dmic(afe, substream, dai);
 	mt8365_dai_enable_dmic(afe, substream, dai);

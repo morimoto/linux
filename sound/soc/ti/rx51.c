@@ -41,7 +41,7 @@ static int rx51_jack_func;
 static void rx51_ext_control(struct snd_soc_dapm_context *dapm)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
-	struct rx51_audio_pdata *pdata = snd_soc_card_get_drvdata(card);
+	struct rx51_audio_pdata *pdata = snd_soc_card_to_priv(card);
 	int hp = 0, hs = 0, tvout = 0;
 
 	switch (rx51_jack_func) {
@@ -139,7 +139,7 @@ static int rx51_spk_event(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_dapm_context *dapm = w->dapm;
 	struct snd_soc_card *card = snd_soc_dapm_to_card(dapm);
-	struct rx51_audio_pdata *pdata = snd_soc_card_get_drvdata(card);
+	struct rx51_audio_pdata *pdata = snd_soc_card_to_priv(card);
 
 	gpiod_set_raw_value_cansleep(pdata->speaker_amp_gpio,
 				     !!SND_SOC_DAPM_EVENT_ON(event));
@@ -262,13 +262,14 @@ static const struct snd_kcontrol_new aic34_rx51_controls[] = {
 static int rx51_aic34_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int err;
 
 	snd_soc_limit_volume(card, "TPA6130A2 Headphone Playback Volume", 42);
 
 	err = omap_mcbsp_st_add_controls(rtd, 2);
 	if (err < 0) {
-		dev_err(card->dev, "Failed to add MCBSP controls\n");
+		dev_err(dev, "Failed to add MCBSP controls\n");
 		return err;
 	}
 
@@ -277,11 +278,11 @@ static int rx51_aic34_init(struct snd_soc_pcm_runtime *rtd)
 				    SND_JACK_HEADSET | SND_JACK_VIDEOOUT,
 				    &rx51_av_jack);
 	if (err) {
-		dev_err(card->dev, "Failed to add AV Jack\n");
+		dev_err(dev, "Failed to add AV Jack\n");
 		return err;
 	}
 
-	rx51_av_jack_gpios[0].gpiod_dev = card->dev;
+	rx51_av_jack_gpios[0].gpiod_dev = dev;
 	/* Name is assigned in the struct */
 	rx51_av_jack_gpios[0].idx = 0;
 
@@ -289,7 +290,7 @@ static int rx51_aic34_init(struct snd_soc_pcm_runtime *rtd)
 				     ARRAY_SIZE(rx51_av_jack_gpios),
 				     rx51_av_jack_gpios);
 	if (err) {
-		dev_err(card->dev, "Failed to add GPIOs\n");
+		dev_err(dev, "Failed to add GPIOs\n");
 		return err;
 	}
 
@@ -413,7 +414,7 @@ static int rx51_soc_probe(struct platform_device *pdev)
 	if (!card || !pdata)
 		return -ENOMEM;
 
-	snd_soc_card_set_drvdata(card, pdata);
+	snd_soc_card_set_priv(card, pdata);
 
 	pdata->tvout_selection_gpio = devm_gpiod_get(dev,
 						     "tvout-selection",

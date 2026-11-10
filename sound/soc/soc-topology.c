@@ -340,16 +340,18 @@ static int soc_tplg_add_kcontrol(struct soc_tplg *tplg,
 	struct snd_kcontrol_new *k, struct snd_kcontrol **kcontrol)
 {
 	struct snd_soc_component *comp = tplg->comp;
+	struct snd_soc_card *card = snd_soc_component_to_card(comp);
 
-	return soc_tplg_add_dcontrol(comp->card->snd_card,
-				tplg->dev, k, comp->name_prefix, comp, kcontrol);
+	return soc_tplg_add_dcontrol(snd_soc_card_to_snd_card(card),
+			tplg->dev, k, snd_soc_component_name_prefix(comp), comp, kcontrol);
 }
 
 /* remove kcontrol */
 static void soc_tplg_remove_kcontrol(struct snd_soc_component *comp, struct snd_soc_dobj *dobj,
 				     int pass)
 {
-	struct snd_card *card = comp->card->snd_card;
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(comp);
+	struct snd_card *card = snd_soc_card_to_snd_card(soc_card);
 
 	if (pass != SOC_TPLG_PASS_CONTROL)
 		return;
@@ -378,7 +380,8 @@ static void soc_tplg_remove_route(struct snd_soc_component *comp,
 static void soc_tplg_remove_widget(struct snd_soc_component *comp,
 	struct snd_soc_dobj *dobj, int pass)
 {
-	struct snd_card *card = comp->card->snd_card;
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(comp);
+	struct snd_card *card = snd_soc_card_to_snd_card(soc_card);
 	struct snd_soc_dapm_widget *w =
 		container_of(dobj, struct snd_soc_dapm_widget, dobj);
 	int i;
@@ -413,8 +416,8 @@ static void soc_tplg_remove_dai(struct snd_soc_component *comp,
 		dobj->unload(comp, dobj);
 
 	for_each_component_dais_safe(comp, dai, _dai)
-		if (dai->driver == dai_drv)
-			snd_soc_unregister_dai(dai);
+		if (snd_soc_dai_to_driver(dai) == dai_drv)
+			snd_soc_dai_unregister(dai);
 
 	list_del(&dobj->dobj_list);
 }
@@ -423,6 +426,7 @@ static void soc_tplg_remove_dai(struct snd_soc_component *comp,
 static void soc_tplg_remove_link(struct snd_soc_component *comp,
 	struct snd_soc_dobj *dobj, int pass)
 {
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(comp);
 	struct snd_soc_dai_link *link =
 		container_of(dobj, struct snd_soc_dai_link, dobj);
 
@@ -436,8 +440,8 @@ static void soc_tplg_remove_link(struct snd_soc_component *comp,
 
 	/* Ignored links do not need to be removed, they are not added */
 	if (!link->ignore)
-		snd_soc_remove_pcm_runtime(comp->card,
-				snd_soc_get_pcm_runtime(comp->card, link));
+		snd_soc_remove_pcm_runtime(soc_card,
+				snd_soc_card_to_rtd(soc_card, link));
 }
 
 /* unload dai link */
@@ -1104,7 +1108,7 @@ static int soc_tplg_dapm_widget_create(struct soc_tplg *tplg,
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(tplg->comp);
 	struct snd_soc_dapm_widget template, *widget;
 	struct snd_soc_tplg_ctl_hdr *control_hdr;
-	struct snd_soc_card *card = tplg->comp->card;
+	struct snd_soc_card *card = snd_soc_component_to_card(tplg->comp);
 	unsigned int *kcontrol_type = NULL;
 	struct snd_kcontrol_new *kc;
 	int mixer_count = 0;
@@ -1308,7 +1312,7 @@ static int soc_tplg_dapm_widget_elems_load(struct soc_tplg *tplg,
 
 static int soc_tplg_dapm_complete(struct soc_tplg *tplg)
 {
-	struct snd_soc_card *card = tplg->comp->card;
+	struct snd_soc_card *card = snd_soc_component_to_card(tplg->comp);
 	int ret;
 
 	/* Card might not have been registered at this point.
@@ -1441,15 +1445,19 @@ static int soc_tplg_dai_create(struct soc_tplg *tplg,
 	list_add(&dai_drv->dobj.dobj_list, snd_soc_component_to_dobj_list_head(tplg->comp));
 
 	/* register the DAI to the component */
-	dai = snd_soc_register_dai(tplg->comp, dai_drv, false);
+	dai = snd_soc_dai_register(tplg->comp, dai_drv, false);
 	if (!dai)
 		return -ENOMEM;
 
 	/* Create the DAI widgets here */
 	ret = snd_soc_dapm_new_dai_widgets(dapm, dai);
 	if (ret != 0) {
-		dev_err(dai->dev, "Failed to create DAI widgets %d\n", ret);
-		snd_soc_unregister_dai(dai);
+		struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+		struct device *dev = snd_soc_component_to_dev(component);
+
+		dev_err(dev, "Failed to create DAI widgets %d\n", ret);
+		snd_soc_dai_unregister(dai);
+
 		return ret;
 	}
 
@@ -1562,7 +1570,7 @@ static int soc_tplg_fe_link_create(struct soc_tplg *tplg,
 		goto err;
 	}
 
-	ret = snd_soc_add_pcm_runtimes(tplg->comp->card, link, 1);
+	ret = snd_soc_add_pcm_runtimes(snd_soc_component_to_card(tplg->comp), link, 1);
 	if (ret < 0) {
 		if (ret != -EPROBE_DEFER)
 			dev_err(tplg->dev, "ASoC: adding FE link failed\n");
@@ -1774,7 +1782,7 @@ static int soc_tplg_link_config(struct soc_tplg *tplg,
 	else
 		stream_name = NULL;
 
-	link = snd_soc_find_dai_link(tplg->comp->card, le32_to_cpu(cfg->id),
+	link = snd_soc_find_dai_link(snd_soc_component_to_card(tplg->comp), le32_to_cpu(cfg->id),
 				     name, stream_name);
 	if (!link) {
 		dev_err(tplg->dev, "ASoC: physical link %s (id %u) not exist\n",
@@ -1887,13 +1895,13 @@ static int soc_tplg_dai_config(struct soc_tplg *tplg,
 		return -EINVAL;
 	}
 
-	if (le32_to_cpu(d->dai_id) != dai->id) {
+	if (le32_to_cpu(d->dai_id) != snd_soc_dai_id(dai)) {
 		dev_err(tplg->dev, "ASoC: physical DAI %s id mismatch\n",
 			d->dai_name);
 		return -EINVAL;
 	}
 
-	dai_drv = dai->driver;
+	dai_drv = snd_soc_dai_to_driver(dai);
 	if (!dai_drv)
 		return -EINVAL;
 
@@ -2161,6 +2169,8 @@ int snd_soc_tplg_component_load(struct snd_soc_component *comp,
 	const struct snd_soc_tplg_ops *ops, const struct firmware *fw)
 {
 	struct soc_tplg tplg;
+	struct snd_soc_card *card;
+	struct device *dev;
 	int ret;
 
 	/*
@@ -2170,13 +2180,21 @@ int snd_soc_tplg_component_load(struct snd_soc_component *comp,
 	 * comp->card->dev - used for resource management and prints
 	 * fw - we need it, as it is the very thing we parse
 	 */
-	if (!comp || !comp->card || !comp->card->dev || !fw)
+	if (!comp)
+		return -EINVAL;
+	card = snd_soc_component_to_card(comp);
+	if (!card)
+		return -EINVAL;
+	dev = snd_soc_card_to_dev(card);
+	if (!dev)
+		return -EINVAL;
+	if (!fw)
 		return -EINVAL;
 
 	/* setup parsing context */
 	memset(&tplg, 0, sizeof(tplg));
 	tplg.fw = fw;
-	tplg.dev = comp->card->dev;
+	tplg.dev = dev;
 	tplg.comp = comp;
 	if (ops) {
 		tplg.ops = ops;
@@ -2199,6 +2217,7 @@ EXPORT_SYMBOL_GPL(snd_soc_tplg_component_load);
 int snd_soc_tplg_component_remove(struct snd_soc_component *comp)
 {
 	struct snd_soc_dobj *dobj, *next_dobj;
+	struct device *dev = snd_soc_component_to_dev(comp);
 	int pass;
 
 	/* process the header types from end to start */
@@ -2234,7 +2253,7 @@ int snd_soc_tplg_component_remove(struct snd_soc_component *comp)
 				remove_backend_link(comp, dobj, pass);
 				break;
 			default:
-				dev_err(comp->dev, "ASoC: invalid component type %d for removal\n",
+				dev_err(dev, "ASoC: invalid component type %d for removal\n",
 					dobj->type);
 				break;
 			}

@@ -94,7 +94,7 @@ static int atmel_asoc_wm8904_dt_init(struct snd_soc_card *card)
 		return -EINVAL;
 	}
 
-	ret = snd_soc_of_parse_card_name(card, "atmel,model");
+	ret = snd_soc_card_of_parse_name(card, "atmel,model");
 	if (ret) {
 		dev_err(dev, "failed to parse card name\n");
 		return ret;

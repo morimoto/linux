@@ -127,14 +127,16 @@ int gx_formatter_event(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_component *c;
 	struct gx_formatter *formatter;
+	struct device *dev;
 	int ret = 0;
 
 	c = snd_soc_dapm_to_component(w->dapm);
+	dev = snd_soc_component_to_dev(c);
 
 	if (w->priv)
 		formatter = w->priv;
 	else
-		formatter = snd_soc_component_get_drvdata(c);
+		formatter = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -146,7 +148,7 @@ int gx_formatter_event(struct snd_soc_dapm_widget *w,
 		break;
 
 	default:
-		dev_err(c->dev, "Unexpected event %d\n", event);
+		dev_err(dev, "Unexpected event %d\n", event);
 		return -EINVAL;
 	}
 

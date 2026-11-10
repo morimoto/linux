@@ -176,7 +176,9 @@ static inline void tegra20_ac97_stop_capture(struct tegra20_ac97 *ac97)
 static int tegra20_ac97_trigger(struct snd_pcm_substream *substream, int cmd,
 				struct snd_soc_dai *dai)
 {
-	struct tegra20_ac97 *ac97 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra20_ac97 *ac97 = dev_get_drvdata(dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -204,10 +206,12 @@ static int tegra20_ac97_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int tegra20_ac97_probe(struct snd_soc_dai *dai)
 {
-	struct tegra20_ac97 *ac97 = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tegra20_ac97 *ac97 = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai,	&ac97->playback_dma_data,
-					&ac97->capture_dma_data);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &ac97->playback_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &ac97->capture_dma_data);
 
 	return 0;
 }

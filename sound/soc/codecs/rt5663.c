@@ -1399,7 +1399,8 @@ static SOC_ENUM_SINGLE_DECL(rt5663_if1_adc_enum, RT5663_TDM_2,
 static void rt5663_enable_push_button_irq(struct snd_soc_component *component,
 	bool enable)
 {
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 
 	if (enable) {
 		snd_soc_component_update_bits(component, RT5663_IL_CMD_6,
@@ -1423,7 +1424,7 @@ static void rt5663_enable_push_button_irq(struct snd_soc_component *component,
 				RT5663_EN_IRQ_INLINE_NOR);
 			break;
 		default:
-			dev_err(component->dev, "Unknown CODEC Version\n");
+			dev_err(dev, "Unknown CODEC Version\n");
 		}
 	} else {
 		switch (rt5663->codec_ver) {
@@ -1438,7 +1439,7 @@ static void rt5663_enable_push_button_irq(struct snd_soc_component *component,
 				RT5663_EN_IRQ_INLINE_BYP);
 			break;
 		default:
-			dev_err(component->dev, "Unknown CODEC Version\n");
+			dev_err(dev, "Unknown CODEC Version\n");
 		}
 		snd_soc_component_update_bits(component, RT5663_IL_CMD_6,
 			RT5663_EN_4BTN_INL_MASK, RT5663_EN_4BTN_INL_DIS);
@@ -1465,10 +1466,11 @@ static void rt5663_enable_push_button_irq(struct snd_soc_component *component,
 static int rt5663_v2_jack_detect(struct snd_soc_component *component, int jack_insert)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 	int val, i = 0, sleep_time[5] = {300, 150, 100, 50, 30};
 
-	dev_dbg(component->dev, "%s jack_insert:%d\n", __func__, jack_insert);
+	dev_dbg(dev, "%s jack_insert:%d\n", __func__, jack_insert);
 	if (jack_insert) {
 		snd_soc_component_write(component, RT5663_CBJ_TYPE_2, 0x8040);
 		snd_soc_component_write(component, RT5663_CBJ_TYPE_3, 0x1484);
@@ -1487,11 +1489,11 @@ static int rt5663_v2_jack_detect(struct snd_soc_component *component, int jack_i
 			val = snd_soc_component_read(component, RT5663_CBJ_TYPE_2) & 0x0003;
 			if (val == 0x1 || val == 0x2 || val == 0x3)
 				break;
-			dev_dbg(component->dev, "%s: MX-0011 val=%x sleep %d\n",
+			dev_dbg(dev, "%s: MX-0011 val=%x sleep %d\n",
 				__func__, val, sleep_time[i]);
 			i++;
 		}
-		dev_dbg(component->dev, "%s val = %d\n", __func__, val);
+		dev_dbg(dev, "%s val = %d\n", __func__, val);
 		switch (val) {
 		case 1:
 		case 2:
@@ -1521,7 +1523,7 @@ static int rt5663_v2_jack_detect(struct snd_soc_component *component, int jack_i
 		rt5663->jack_type = 0;
 	}
 
-	dev_dbg(component->dev, "jack_type = %d\n", rt5663->jack_type);
+	dev_dbg(dev, "jack_type = %d\n", rt5663->jack_type);
 	return rt5663->jack_type;
 }
 
@@ -1536,10 +1538,11 @@ static int rt5663_v2_jack_detect(struct snd_soc_component *component, int jack_i
  */
 static int rt5663_jack_detect(struct snd_soc_component *component, int jack_insert)
 {
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 	int val, i = 0;
 
-	dev_dbg(component->dev, "%s jack_insert:%d\n", __func__, jack_insert);
+	dev_dbg(dev, "%s jack_insert:%d\n", __func__, jack_insert);
 
 	if (jack_insert) {
 		snd_soc_component_update_bits(component, RT5663_DIG_MISC,
@@ -1598,7 +1601,7 @@ static int rt5663_jack_detect(struct snd_soc_component *component, int jack_inse
 		}
 
 		val = snd_soc_component_read(component, RT5663_EM_JACK_TYPE_2) & 0x0003;
-		dev_dbg(component->dev, "%s val = %d\n", __func__, val);
+		dev_dbg(dev, "%s val = %d\n", __func__, val);
 
 		snd_soc_component_update_bits(component, RT5663_HP_CHARGE_PUMP_1,
 			RT5663_OSW_HP_L_MASK | RT5663_OSW_HP_R_MASK,
@@ -1666,13 +1669,14 @@ static int rt5663_jack_detect(struct snd_soc_component *component, int jack_inse
 			RT5663_PWR_VREF2_MASK, 0);
 	}
 
-	dev_dbg(component->dev, "jack_type = %d\n", rt5663->jack_type);
+	dev_dbg(dev, "jack_type = %d\n", rt5663->jack_type);
 	return rt5663->jack_type;
 }
 
 static int rt5663_impedance_sensing(struct snd_soc_component *component)
 {
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 	unsigned int value, i, reg84, reg26, reg2fa, reg91, reg10, reg80;
 
 	for (i = 0; i < rt5663->pdata.impedance_sensing_num; i++) {
@@ -1843,10 +1847,11 @@ static int rt5663_impedance_sensing(struct snd_soc_component *component)
 
 static int rt5663_button_detect(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int btn_type, val;
 
 	val = snd_soc_component_read(component, RT5663_IL_CMD_5);
-	dev_dbg(component->dev, "%s: val=0x%x\n", __func__, val);
+	dev_dbg(dev, "%s: val=0x%x\n", __func__, val);
 	btn_type = val & 0xfff0;
 	snd_soc_component_write(component, RT5663_IL_CMD_5, val);
 
@@ -1869,7 +1874,8 @@ static irqreturn_t rt5663_irq(int irq, void *data)
 static int rt5663_set_jack_detect(struct snd_soc_component *component,
 	struct snd_soc_jack *hs_jack, void *data)
 {
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 
 	rt5663->hs_jack = hs_jack;
 
@@ -1880,10 +1886,11 @@ static int rt5663_set_jack_detect(struct snd_soc_component *component,
 
 static bool rt5663_check_jd_status(struct snd_soc_component *component)
 {
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 	int val = snd_soc_component_read(component, RT5663_INT_ST_1);
 
-	dev_dbg(component->dev, "%s val=%x\n", __func__, val);
+	dev_dbg(dev, "%s val=%x\n", __func__, val);
 
 	/* JD1 */
 	switch (rt5663->codec_ver) {
@@ -1892,7 +1899,7 @@ static bool rt5663_check_jd_status(struct snd_soc_component *component)
 	case CODEC_VER_0:
 		return !(val & 0x1000);
 	default:
-		dev_err(component->dev, "Unknown CODEC Version\n");
+		dev_err(dev, "Unknown CODEC Version\n");
 	}
 
 	return false;
@@ -1903,6 +1910,7 @@ static void rt5663_jack_detect_work(struct work_struct *work)
 	struct rt5663_priv *rt5663 =
 		container_of(work, struct rt5663_priv, jack_detect_work.work);
 	struct snd_soc_component *component = rt5663->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int btn_type, report = 0;
 
 	if (!component)
@@ -1923,7 +1931,7 @@ static void rt5663_jack_detect_work(struct work_struct *work)
 					rt5663_impedance_sensing(rt5663->component);
 				break;
 			default:
-				dev_err(component->dev, "Unknown CODEC Version\n");
+				dev_err(dev, "Unknown CODEC Version\n");
 			}
 
 			/* Delay the jack insert report to avoid pop noise */
@@ -1964,9 +1972,7 @@ static void rt5663_jack_detect_work(struct work_struct *work)
 				break;
 			default:
 				btn_type = 0;
-				dev_err(rt5663->component->dev,
-					"Unexpected button code 0x%04x\n",
-					btn_type);
+				dev_err(dev, "Unexpected button code 0x%04x\n", btn_type);
 				break;
 			}
 			/* button release or spurious interrput*/
@@ -1990,10 +1996,10 @@ static void rt5663_jack_detect_work(struct work_struct *work)
 			report = rt5663_jack_detect(rt5663->component, 0);
 			break;
 		default:
-			dev_err(component->dev, "Unknown CODEC Version\n");
+			dev_err(dev, "Unknown CODEC Version\n");
 		}
 	}
-	dev_dbg(component->dev, "%s jack report: 0x%04x\n", __func__, report);
+	dev_dbg(dev, "%s jack report: 0x%04x\n", __func__, report);
 	snd_soc_jack_report(rt5663->hs_jack, report, SND_JACK_HEADSET |
 			    SND_JACK_BTN_0 | SND_JACK_BTN_1 |
 			    SND_JACK_BTN_2 | SND_JACK_BTN_3);
@@ -2004,6 +2010,7 @@ static void rt5663_jd_unplug_work(struct work_struct *work)
 	struct rt5663_priv *rt5663 =
 		container_of(work, struct rt5663_priv, jd_unplug_work.work);
 	struct snd_soc_component *component = rt5663->component;
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	if (!component)
 		return;
@@ -2018,7 +2025,7 @@ static void rt5663_jd_unplug_work(struct work_struct *work)
 			rt5663_jack_detect(rt5663->component, 0);
 			break;
 		default:
-			dev_err(component->dev, "Unknown CODEC Version\n");
+			dev_err(dev, "Unknown CODEC Version\n");
 		}
 
 		snd_soc_jack_report(rt5663->hs_jack, 0, SND_JACK_HEADSET |
@@ -2087,7 +2094,8 @@ static int rt5663_is_using_asrc(struct snd_soc_dapm_widget *w,
 {
 	unsigned int reg, shift, val;
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 
 	if (rt5663->codec_ver == CODEC_VER_1) {
 		switch (w->shift) {
@@ -2129,7 +2137,8 @@ static int rt5663_i2s_use_asrc(struct snd_soc_dapm_widget *source,
 	struct snd_soc_dapm_widget *sink)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(source->dapm);
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 	int da_asrc_en, ad_asrc_en;
 
 	da_asrc_en = (snd_soc_component_read(component, RT5663_ASRC_2) &
@@ -2144,7 +2153,7 @@ static int rt5663_i2s_use_asrc(struct snd_soc_dapm_widget *source,
 			RT5663_AD_STO1_TRACK_MASK) ? 1 : 0;
 		break;
 	default:
-		dev_err(component->dev, "Unknown CODEC Version\n");
+		dev_err(dev, "Unknown CODEC Version\n");
 		return 1;
 	}
 
@@ -2152,7 +2161,7 @@ static int rt5663_i2s_use_asrc(struct snd_soc_dapm_widget *source,
 		if (rt5663->sysclk > rt5663->lrck * 384)
 			return 1;
 
-	dev_err(component->dev, "sysclk < 384 x fs, disable i2s asrc\n");
+	dev_err(dev, "sysclk < 384 x fs, disable i2s asrc\n");
 
 	return 0;
 }
@@ -2174,7 +2183,8 @@ static int rt5663_i2s_use_asrc(struct snd_soc_dapm_widget *source,
 int rt5663_sel_asrc_clk_src(struct snd_soc_component *component,
 		unsigned int filter_mask, unsigned int clk_src)
 {
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 	unsigned int asrc2_mask = 0;
 	unsigned int asrc2_value = 0;
 	unsigned int asrc3_mask = 0;
@@ -2205,7 +2215,7 @@ int rt5663_sel_asrc_clk_src(struct snd_soc_component *component,
 			asrc2_value |= clk_src << RT5663_AD_STO1_TRACK_SHIFT;
 			break;
 		default:
-			dev_err(component->dev, "Unknown CODEC Version\n");
+			dev_err(dev, "Unknown CODEC Version\n");
 		}
 	}
 
@@ -2321,7 +2331,8 @@ static int rt5663_hp_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -2379,7 +2390,8 @@ static int rt5663_charge_pump_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -2764,24 +2776,26 @@ static const struct snd_soc_dapm_route rt5663_specific_dapm_routes[] = {
 static int rt5663_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int val_len = 0;
 	int pre_div;
 
 	rt5663->lrck = params_rate(params);
 
-	dev_dbg(dai->dev, "bclk is %dHz and sysclk is %dHz\n",
+	dev_dbg(dev, "bclk is %dHz and sysclk is %dHz\n",
 		rt5663->lrck, rt5663->sysclk);
 
 	pre_div = rl6231_get_clk_info(rt5663->sysclk, rt5663->lrck);
 	if (pre_div < 0) {
-		dev_err(component->dev, "Unsupported clock setting %d for DAI %d\n",
-			rt5663->lrck, dai->id);
+		dev_err(dev, "Unsupported clock setting %d for DAI %d\n",
+			rt5663->lrck, dai_id);
 		return -EINVAL;
 	}
 
-	dev_dbg(dai->dev, "pre_div is %d for iis %d\n", pre_div, dai->id);
+	dev_dbg(dev, "pre_div is %d for iis %d\n", pre_div, dai_id);
 
 	switch (params_width(params)) {
 	case 8:
@@ -2811,7 +2825,7 @@ static int rt5663_hw_params(struct snd_pcm_substream *substream,
 
 static int rt5663_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int reg_val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -2859,8 +2873,9 @@ static int rt5663_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt5663_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 	unsigned int freq, int dir)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0;
 
 	if (freq == rt5663->sysclk && clk_id == rt5663->sysclk_src)
@@ -2877,7 +2892,7 @@ static int rt5663_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 		reg_val |= RT5663_SCLK_SRC_RCCLK;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clock id (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock id (%d)\n", clk_id);
 		return -EINVAL;
 	}
 	snd_soc_component_update_bits(component, RT5663_GLB_CLK, RT5663_SCLK_SRC_MASK,
@@ -2885,8 +2900,7 @@ static int rt5663_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 	rt5663->sysclk = freq;
 	rt5663->sysclk_src = clk_id;
 
-	dev_dbg(component->dev, "Sysclk is %dHz and clock id is %d\n",
-		freq, clk_id);
+	dev_dbg(dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
 
 	return 0;
 }
@@ -2894,8 +2908,9 @@ static int rt5663_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 static int rt5663_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 			unsigned int freq_in, unsigned int freq_out)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 	struct rl6231_pll_code pll_code;
 	int ret;
 	int mask, shift, val;
@@ -2905,7 +2920,7 @@ static int rt5663_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 		return 0;
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 
 		rt5663->pll_in = 0;
 		rt5663->pll_out = 0;
@@ -2924,7 +2939,7 @@ static int rt5663_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 		shift = RT5663_PLL1_SRC_SHIFT;
 		break;
 	default:
-		dev_err(component->dev, "Unknown CODEC Version\n");
+		dev_err(dev, "Unknown CODEC Version\n");
 		return -EINVAL;
 	}
 
@@ -2936,18 +2951,18 @@ static int rt5663_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 		val = 0x1;
 		break;
 	default:
-		dev_err(component->dev, "Unknown PLL source %d\n", source);
+		dev_err(dev, "Unknown PLL source %d\n", source);
 		return -EINVAL;
 	}
 	snd_soc_component_update_bits(component, RT5663_GLB_CLK, mask, (val << shift));
 
 	ret = rl6231_pll_calc(freq_in, freq_out, &pll_code);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupported input clock %d\n", freq_in);
+		dev_err(dev, "Unsupported input clock %d\n", freq_in);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "bypass=%d m=%d n=%d k=%d\n", pll_code.m_bp,
+	dev_dbg(dev, "bypass=%d m=%d n=%d k=%d\n", pll_code.m_bp,
 		(pll_code.m_bp ? 0 : pll_code.m_code), pll_code.n_code,
 		pll_code.k_code);
 
@@ -2967,8 +2982,9 @@ static int rt5663_set_dai_pll(struct snd_soc_dai *dai, int pll_id, int source,
 static int rt5663_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 	unsigned int val = 0, reg;
 
 	if (rx_mask || tx_mask)
@@ -3020,7 +3036,7 @@ static int rt5663_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 		reg = RT5663_TDM_1;
 		break;
 	default:
-		dev_err(component->dev, "Unknown CODEC Version\n");
+		dev_err(dev, "Unknown CODEC Version\n");
 		return -EINVAL;
 	}
 
@@ -3033,11 +3049,12 @@ static int rt5663_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 
 static int rt5663_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 	unsigned int reg;
 
-	dev_dbg(component->dev, "%s ratio = %d\n", __func__, ratio);
+	dev_dbg(dev, "%s ratio = %d\n", __func__, ratio);
 
 	if (rt5663->codec_ver == CODEC_VER_1)
 		reg = RT5663_TDM_9;
@@ -3066,7 +3083,7 @@ static int rt5663_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 			RT5663_TDM_LENGTN_32);
 		break;
 	default:
-		dev_err(component->dev, "Invalid ratio!\n");
+		dev_err(dev, "Invalid ratio!\n");
 		return -EINVAL;
 	}
 
@@ -3076,7 +3093,8 @@ static int rt5663_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 static int rt5663_set_bias_level(struct snd_soc_component *component,
 			enum snd_soc_bias_level level)
 {
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
@@ -3142,7 +3160,8 @@ static int rt5663_set_bias_level(struct snd_soc_component *component,
 static int rt5663_probe(struct snd_soc_component *component)
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 
 	rt5663->component = component;
 
@@ -3154,7 +3173,7 @@ static int rt5663_probe(struct snd_soc_component *component)
 		snd_soc_dapm_add_routes(dapm,
 			rt5663_v2_specific_dapm_routes,
 			ARRAY_SIZE(rt5663_v2_specific_dapm_routes));
-		snd_soc_add_component_controls(component, rt5663_v2_specific_controls,
+		snd_soc_component_add_controls(component, rt5663_v2_specific_controls,
 			ARRAY_SIZE(rt5663_v2_specific_controls));
 		break;
 	case CODEC_VER_0:
@@ -3164,11 +3183,11 @@ static int rt5663_probe(struct snd_soc_component *component)
 		snd_soc_dapm_add_routes(dapm,
 			rt5663_specific_dapm_routes,
 			ARRAY_SIZE(rt5663_specific_dapm_routes));
-		snd_soc_add_component_controls(component, rt5663_specific_controls,
+		snd_soc_component_add_controls(component, rt5663_specific_controls,
 			ARRAY_SIZE(rt5663_specific_controls));
 
 		if (!rt5663->imp_table)
-			snd_soc_add_component_controls(component, rt5663_hpvol_controls,
+			snd_soc_component_add_controls(component, rt5663_hpvol_controls,
 				ARRAY_SIZE(rt5663_hpvol_controls));
 		break;
 	}
@@ -3178,7 +3197,8 @@ static int rt5663_probe(struct snd_soc_component *component)
 
 static void rt5663_remove(struct snd_soc_component *component)
 {
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 
 	regmap_write(rt5663->regmap, RT5663_RESET, 0);
 }
@@ -3186,7 +3206,8 @@ static void rt5663_remove(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int rt5663_suspend(struct snd_soc_component *component)
 {
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 
 	if (rt5663->irq && !rt5663->suspend_irq_disabled) {
 		disable_irq(rt5663->irq);
@@ -3204,7 +3225,8 @@ static int rt5663_suspend(struct snd_soc_component *component)
 
 static int rt5663_resume(struct snd_soc_component *component)
 {
-	struct rt5663_priv *rt5663 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5663_priv *rt5663 = dev_get_drvdata(dev);
 	int ret;
 
 	regcache_cache_only(rt5663->regmap, false);

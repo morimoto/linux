@@ -158,7 +158,8 @@ static int sst_slot_get(struct snd_kcontrol *kcontrol,
 {
 	struct sst_enum *e = (void *)kcontrol->private_value;
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct sst_data *drv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct sst_data *drv = dev_get_drvdata(dev);
 	unsigned int ctl_no = e->reg;
 	unsigned int is_tx = e->tx;
 	unsigned int val, mux;
@@ -173,7 +174,7 @@ static int sst_slot_get(struct snd_kcontrol *kcontrol,
 
 	ucontrol->value.enumerated.item[0] = mux;
 
-	dev_dbg(c->dev, "%s - %s map = %#x\n",
+	dev_dbg(dev, "%s - %s map = %#x\n",
 			is_tx ? "tx channel" : "rx slot",
 			 e->texts[mux], mux ? map[mux - 1] : -1);
 	return 0;
@@ -215,7 +216,8 @@ static int sst_slot_put(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *c = snd_kcontrol_chip(kcontrol);
-	struct sst_data *drv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct sst_data *drv = dev_get_drvdata(dev);
 	struct sst_enum *e = (void *)kcontrol->private_value;
 	int i, ret = 0;
 	unsigned int ctl_no = e->reg;
@@ -247,7 +249,7 @@ static int sst_slot_put(struct snd_kcontrol *kcontrol,
 	slot_channel_no = mux - 1;
 	map[slot_channel_no] |= val;
 
-	dev_dbg(c->dev, "%s %s map = %#x\n",
+	dev_dbg(dev, "%s %s map = %#x\n",
 			is_tx ? "tx channel" : "rx slot",
 			e->texts[mux], map[slot_channel_no]);
 
@@ -325,14 +327,14 @@ static int sst_algo_control_get(struct snd_kcontrol *kcontrol,
 {
 	struct sst_algo_control *bc = (void *)kcontrol->private_value;
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(component);
 
 	switch (bc->type) {
 	case SST_ALGO_PARAMS:
 		memcpy(ucontrol->value.bytes.data, bc->params, bc->max);
 		break;
 	default:
-		dev_err(component->dev, "Invalid Input- algo type:%d\n",
-				bc->type);
+		dev_err(dev, "Invalid Input- algo type:%d\n", bc->type);
 		return -EINVAL;
 
 	}
@@ -344,18 +346,18 @@ static int sst_algo_control_set(struct snd_kcontrol *kcontrol,
 {
 	int ret = 0;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct sst_data *drv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct sst_data *drv = dev_get_drvdata(dev);
 	struct sst_algo_control *bc = (void *)kcontrol->private_value;
 
-	dev_dbg(cmpnt->dev, "control_name=%s\n", kcontrol->id.name);
+	dev_dbg(dev, "control_name=%s\n", kcontrol->id.name);
 	guard(mutex)(&drv->lock);
 	switch (bc->type) {
 	case SST_ALGO_PARAMS:
 		memcpy(bc->params, ucontrol->value.bytes.data, bc->max);
 		break;
 	default:
-		dev_err(cmpnt->dev, "Invalid Input- algo type:%d\n",
-				bc->type);
+		dev_err(dev, "Invalid Input- algo type:%d\n", bc->type);
 		return -EINVAL;
 	}
 	/*if pipe is enabled, need to send the algo params from here*/
@@ -432,6 +434,7 @@ static int sst_gain_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct sst_gain_mixer_control *mc = (void *)kcontrol->private_value;
 	struct sst_gain_value *gv = mc->gain_val;
 
@@ -450,8 +453,7 @@ static int sst_gain_get(struct snd_kcontrol *kcontrol,
 		break;
 
 	default:
-		dev_err(component->dev, "Invalid Input- gain type:%d\n",
-				mc->type);
+		dev_err(dev, "Invalid Input- gain type:%d\n", mc->type);
 		return -EINVAL;
 	}
 
@@ -463,7 +465,8 @@ static int sst_gain_put(struct snd_kcontrol *kcontrol,
 {
 	int ret = 0;
 	struct snd_soc_component *cmpnt = snd_kcontrol_chip(kcontrol);
-	struct sst_data *drv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct sst_data *drv = dev_get_drvdata(dev);
 	struct sst_gain_mixer_control *mc = (void *)kcontrol->private_value;
 	struct sst_gain_value *gv = mc->gain_val;
 
@@ -473,24 +476,21 @@ static int sst_gain_put(struct snd_kcontrol *kcontrol,
 	case SST_GAIN_TLV:
 		gv->l_gain = ucontrol->value.integer.value[0];
 		gv->r_gain = ucontrol->value.integer.value[1];
-		dev_dbg(cmpnt->dev, "%s: Volume %d, %d\n",
-				mc->pname, gv->l_gain, gv->r_gain);
+		dev_dbg(dev, "%s: Volume %d, %d\n", mc->pname, gv->l_gain, gv->r_gain);
 		break;
 
 	case SST_GAIN_MUTE:
 		gv->mute = !ucontrol->value.integer.value[0];
-		dev_dbg(cmpnt->dev, "%s: Mute %d\n", mc->pname, gv->mute);
+		dev_dbg(dev, "%s: Mute %d\n", mc->pname, gv->mute);
 		break;
 
 	case SST_GAIN_RAMP_DURATION:
 		gv->ramp_duration = ucontrol->value.integer.value[0];
-		dev_dbg(cmpnt->dev, "%s: Ramp Delay%d\n",
-					mc->pname, gv->ramp_duration);
+		dev_dbg(dev, "%s: Ramp Delay%d\n", mc->pname, gv->ramp_duration);
 		break;
 
 	default:
-		dev_err(cmpnt->dev, "Invalid Input- gain type:%d\n",
-				mc->type);
+		dev_err(dev, "Invalid Input- gain type:%d\n", mc->type);
 		return -EINVAL;
 	}
 
@@ -508,7 +508,8 @@ static int sst_send_pipe_module_params(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol)
 {
 	struct snd_soc_component *c = snd_soc_dapm_to_component(w->dapm);
-	struct sst_data *drv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct sst_data *drv = dev_get_drvdata(dev);
 	struct sst_ids *ids = w->priv;
 
 	guard(mutex)(&drv->lock);
@@ -556,10 +557,11 @@ static const uint swm_mixer_input_ids[SST_SWM_INPUT_COUNT] = {
 static int fill_swm_input(struct snd_soc_component *cmpnt,
 		struct swm_input_ids *swm_input, unsigned int reg)
 {
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
 	uint i, is_set, nb_inputs = 0;
 	u16 input_loc_id;
 
-	dev_dbg(cmpnt->dev, "reg: %#x\n", reg);
+	dev_dbg(dev, "reg: %#x\n", reg);
 	for (i = 0; i < SST_SWM_INPUT_COUNT; i++) {
 		is_set = reg & BIT(i);
 		if (!is_set)
@@ -570,11 +572,10 @@ static int fill_swm_input(struct snd_soc_component *cmpnt,
 				     input_loc_id, SST_DEFAULT_MODULE_ID);
 		nb_inputs++;
 		swm_input++;
-		dev_dbg(cmpnt->dev, "input id: %#x, nb_inputs: %d\n",
-				input_loc_id, nb_inputs);
+		dev_dbg(dev, "input id: %#x, nb_inputs: %d\n", input_loc_id, nb_inputs);
 
 		if (nb_inputs == SST_CMD_SWM_MAX_INPUTS) {
-			dev_warn(cmpnt->dev, "SET_SWM cmd max inputs reached");
+			dev_warn(dev, "SET_SWM cmd max inputs reached");
 			break;
 		}
 	}
@@ -613,14 +614,15 @@ static int sst_swm_mixer_event(struct snd_soc_dapm_widget *w,
 {
 	struct sst_cmd_set_swm cmd;
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct sst_data *drv = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct sst_data *drv = dev_get_drvdata(dev);
 	struct sst_ids *ids = w->priv;
 	bool set_mixer = false;
 	struct soc_mixer_control *mc;
 	int val = 0;
 	int i = 0;
 
-	dev_dbg(cmpnt->dev, "widget = %s\n", w->name);
+	dev_dbg(dev, "widget = %s\n", w->name);
 	/*
 	 * Identify which mixer input is on and send the bitmap of the
 	 * inputs as an IPC to the DSP.
@@ -631,7 +633,7 @@ static int sst_swm_mixer_event(struct snd_soc_dapm_widget *w,
 			val |= 1 << mc->shift;
 		}
 	}
-	dev_dbg(cmpnt->dev, "val = %#x\n", val);
+	dev_dbg(dev, "val = %#x\n", val);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -732,14 +734,16 @@ int sst_handle_vb_timer(struct snd_soc_dai *dai, bool enable)
 {
 	int ret = 0;
 	struct sst_cmd_generic cmd;
-	struct sst_data *drv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sst_data *drv = dev_get_drvdata(dev);
 	static int timer_usage;
 
 	if (enable)
 		cmd.header.command_id = SBA_VB_START;
 	else
 		cmd.header.command_id = SBA_IDLE;
-	dev_dbg(dai->dev, "enable=%u, usage=%d\n", enable, timer_usage);
+	dev_dbg(dev, "enable=%u, usage=%d\n", enable, timer_usage);
 
 	SST_FILL_DEFAULT_DESTINATION(cmd.header.dst);
 	cmd.header.length = 0;
@@ -782,7 +786,9 @@ int sst_handle_vb_timer(struct snd_soc_dai *dai, bool enable)
 int sst_fill_ssp_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 		unsigned int rx_mask, int slots, int slot_width)
 {
-	struct sst_data *ctx = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sst_data *ctx = dev_get_drvdata(dev);
 
 	ctx->ssp_cmd.nb_slots = slots;
 	ctx->ssp_cmd.active_tx_slot_map = tx_mask;
@@ -795,10 +801,12 @@ int sst_fill_ssp_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 static int sst_get_frame_sync_polarity(struct snd_soc_dai *dai,
 		unsigned int fmt)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int format;
 
 	format = fmt & SND_SOC_DAIFMT_INV_MASK;
-	dev_dbg(dai->dev, "Enter:%s, format=%x\n", __func__, format);
+	dev_dbg(dev, "Enter:%s, format=%x\n", __func__, format);
 
 	switch (format) {
 	case SND_SOC_DAIFMT_NB_NF:
@@ -808,7 +816,7 @@ static int sst_get_frame_sync_polarity(struct snd_soc_dai *dai,
 	case SND_SOC_DAIFMT_IB_IF:
 		return SSP_FS_ACTIVE_LOW;
 	default:
-		dev_err(dai->dev, "Invalid frame sync polarity %d\n", format);
+		dev_err(dev, "Invalid frame sync polarity %d\n", format);
 	}
 
 	return -EINVAL;
@@ -816,10 +824,12 @@ static int sst_get_frame_sync_polarity(struct snd_soc_dai *dai,
 
 static int sst_get_ssp_mode(struct snd_soc_dai *dai, unsigned int fmt)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int format;
 
 	format = (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK);
-	dev_dbg(dai->dev, "Enter:%s, format=%x\n", __func__, format);
+	dev_dbg(dev, "Enter:%s, format=%x\n", __func__, format);
 
 	switch (format) {
 	case SND_SOC_DAIFMT_BP_FP:
@@ -827,7 +837,7 @@ static int sst_get_ssp_mode(struct snd_soc_dai *dai, unsigned int fmt)
 	case SND_SOC_DAIFMT_BC_FC:
 		return SSP_MODE_CONSUMER;
 	default:
-		dev_err(dai->dev, "Invalid ssp protocol: %d\n", format);
+		dev_err(dev, "Invalid ssp protocol: %d\n", format);
 	}
 
 	return -EINVAL;
@@ -838,7 +848,9 @@ int sst_fill_ssp_config(struct snd_soc_dai *dai, unsigned int fmt)
 {
 	unsigned int mode;
 	int fs_polarity;
-	struct sst_data *ctx = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sst_data *ctx = dev_get_drvdata(dev);
 
 	mode = fmt & SND_SOC_DAIFMT_FORMAT_MASK;
 
@@ -876,7 +888,7 @@ int sst_fill_ssp_config(struct snd_soc_dai *dai, unsigned int fmt)
 		break;
 
 	default:
-		dev_dbg(dai->dev, "using default ssp configs\n");
+		dev_dbg(dev, "using default ssp configs\n");
 	}
 
 	fs_polarity = sst_get_frame_sync_polarity(dai, fmt);
@@ -911,7 +923,9 @@ static const struct sst_ssp_config sst_ssp_configs = {
 void sst_fill_ssp_defaults(struct snd_soc_dai *dai)
 {
 	const struct sst_ssp_config *config;
-	struct sst_data *ctx = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sst_data *ctx = dev_get_drvdata(dev);
 
 	config = &sst_ssp_configs;
 
@@ -933,17 +947,19 @@ void sst_fill_ssp_defaults(struct snd_soc_dai *dai)
 
 int send_ssp_cmd(struct snd_soc_dai *dai, const char *id, bool enable)
 {
-	struct sst_data *drv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sst_data *drv = dev_get_drvdata(dev);
 	int ssp_id;
 
-	dev_dbg(dai->dev, "Enter: enable=%d port_name=%s\n", enable, id);
+	dev_dbg(dev, "Enter: enable=%d port_name=%s\n", enable, id);
 
 	if (strcmp(id, "ssp0-port") == 0)
 		ssp_id = SSP_MODEM;
 	else if (strcmp(id, "ssp2-port") == 0)
 		ssp_id = SSP_CODEC;
 	else {
-		dev_dbg(dai->dev, "port %s is not supported\n", id);
+		dev_dbg(dev, "port %s is not supported\n", id);
 		return -1;
 	}
 
@@ -953,7 +969,7 @@ int send_ssp_cmd(struct snd_soc_dai *dai, const char *id, bool enable)
 				- sizeof(struct sst_dsp_header);
 
 	drv->ssp_cmd.selection = ssp_id;
-	dev_dbg(dai->dev, "ssp_id: %u\n", ssp_id);
+	dev_dbg(dev, "ssp_id: %u\n", ssp_id);
 
 	if (enable)
 		drv->ssp_cmd.switch_state = SST_SWITCH_ON;
@@ -970,9 +986,10 @@ static int sst_set_be_modules(struct snd_soc_dapm_widget *w,
 {
 	int ret = 0;
 	struct snd_soc_component *c = snd_soc_dapm_to_component(w->dapm);
-	struct sst_data *drv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct sst_data *drv = dev_get_drvdata(dev);
 
-	dev_dbg(c->dev, "Enter: widget=%s\n", w->name);
+	dev_dbg(dev, "Enter: widget=%s\n", w->name);
 
 	if (SND_SOC_DAPM_EVENT_ON(event)) {
 		mutex_lock(&drv->lock);
@@ -991,12 +1008,12 @@ static int sst_set_media_path(struct snd_soc_dapm_widget *w,
 	int ret = 0;
 	struct sst_cmd_set_media_path cmd;
 	struct snd_soc_component *c = snd_soc_dapm_to_component(w->dapm);
-	struct sst_data *drv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct sst_data *drv = dev_get_drvdata(dev);
 	struct sst_ids *ids = w->priv;
 
-	dev_dbg(c->dev, "widget=%s\n", w->name);
-	dev_dbg(c->dev, "task=%u, location=%#x\n",
-				ids->task_id, ids->location_id);
+	dev_dbg(dev, "widget=%s\n", w->name);
+	dev_dbg(dev, "task=%u, location=%#x\n", ids->task_id, ids->location_id);
 
 	if (SND_SOC_DAPM_EVENT_ON(event))
 		cmd.switch_state = SST_PATH_ON;
@@ -1028,10 +1045,11 @@ static int sst_set_media_loop(struct snd_soc_dapm_widget *w,
 	int ret = 0;
 	struct sst_cmd_sba_set_media_loop_map cmd;
 	struct snd_soc_component *c = snd_soc_dapm_to_component(w->dapm);
-	struct sst_data *drv = snd_soc_component_get_drvdata(c);
+	struct device *dev = snd_soc_component_to_dev(c);
+	struct sst_data *drv = dev_get_drvdata(dev);
 	struct sst_ids *ids = w->priv;
 
-	dev_dbg(c->dev, "Enter:widget=%s\n", w->name);
+	dev_dbg(dev, "Enter:widget=%s\n", w->name);
 	if (SND_SOC_DAPM_EVENT_ON(event))
 		cmd.switch_state = SST_SWITCH_ON;
 	else
@@ -1317,12 +1335,14 @@ static bool is_sst_dapm_widget(struct snd_soc_dapm_widget *w)
  */
 int sst_send_pipe_gains(struct snd_soc_dai *dai, int stream, int mute)
 {
-	struct sst_data *drv = snd_soc_dai_get_drvdata(dai);
-	struct snd_soc_dapm_widget *w = snd_soc_dai_get_widget(dai, stream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sst_data *drv = dev_get_drvdata(dev);
+	struct snd_soc_dapm_widget *w = snd_soc_dai_stream_widget_get(dai, stream);
 	struct snd_soc_dapm_path *p;
 
-	dev_dbg(dai->dev, "enter, dai-name=%s dir=%d\n", dai->name, stream);
-	dev_dbg(dai->dev, "Stream name=%s\n", w->name);
+	dev_dbg(dev, "enter, dai-name=%s dir=%d\n", snd_soc_dai_name(dai), stream);
+	dev_dbg(dev, "Stream name=%s\n", w->name);
 
 	if (stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		snd_soc_dapm_widget_for_each_sink_path(w, p) {
@@ -1333,7 +1353,7 @@ int sst_send_pipe_gains(struct snd_soc_dai *dai, int stream, int mute)
 					is_sst_dapm_widget(p->sink)) {
 				struct sst_ids *ids = p->sink->priv;
 
-				dev_dbg(dai->dev, "send gains for widget=%s\n",
+				dev_dbg(dev, "send gains for widget=%s\n",
 						p->sink->name);
 				mutex_lock(&drv->lock);
 				sst_set_pipe_gain(ids, drv, mute);
@@ -1349,7 +1369,7 @@ int sst_send_pipe_gains(struct snd_soc_dai *dai, int stream, int mute)
 					is_sst_dapm_widget(p->source)) {
 				struct sst_ids *ids = p->source->priv;
 
-				dev_dbg(dai->dev, "send gain for widget=%s\n",
+				dev_dbg(dev, "send gain for widget=%s\n",
 						p->source->name);
 				mutex_lock(&drv->lock);
 				sst_set_pipe_gain(ids, drv, mute);
@@ -1380,10 +1400,11 @@ static int sst_fill_module_list(struct snd_kcontrol *kctl,
 {
 	struct sst_module *module;
 	struct snd_soc_component *c = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(c);
 	struct sst_ids *ids = w->priv;
 	int ret = 0;
 
-	module = devm_kzalloc(c->dev, sizeof(*module), GFP_KERNEL);
+	module = devm_kzalloc(dev, sizeof(*module), GFP_KERNEL);
 	if (!module)
 		return -ENOMEM;
 
@@ -1400,8 +1421,7 @@ static int sst_fill_module_list(struct snd_kcontrol *kctl,
 		module->kctl = kctl;
 		list_add_tail(&module->node, &ids->algo_list);
 	} else {
-		dev_err(c->dev, "invoked for unknown type %d module %s",
-				type, kctl->id.name);
+		dev_err(dev, "invoked for unknown type %d module %s", type, kctl->id.name);
 		ret = -EINVAL;
 	}
 
@@ -1420,9 +1440,10 @@ static int sst_fill_module_list(struct snd_kcontrol *kctl,
 static int sst_fill_widget_module_info(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *component)
 {
+	struct snd_soc_card *soc_card = snd_soc_component_to_card(component);
 	struct snd_kcontrol *kctl;
 	int index, ret = 0;
-	struct snd_card *card = component->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(soc_card);
 	char *idx;
 
 	down_read(&card->controls_rwsem);
@@ -1477,10 +1498,11 @@ static int sst_fill_widget_module_info(struct snd_soc_dapm_widget *w,
 static void sst_fill_linked_widgets(struct snd_soc_component *component,
 						struct sst_ids *ids)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
 	struct snd_soc_dapm_widget *w;
 	unsigned int len = strlen(ids->parent_wname);
 
-	list_for_each_entry(w, &component->card->widget_list_head, widget_list) {
+	for_each_card_widgets(card, w) {
 		if (!strncmp(ids->parent_wname, w->name, len)) {
 			ids->parent_w = w;
 			break;
@@ -1494,15 +1516,16 @@ static void sst_fill_linked_widgets(struct snd_soc_component *component,
  */
 static int sst_map_modules_to_pipe(struct snd_soc_component *component)
 {
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_soc_dapm_widget *w;
 	int ret = 0;
 
-	list_for_each_entry(w, &component->card->widget_list_head, widget_list) {
+	for_each_card_widgets(card, w) {
 		if (is_sst_dapm_widget(w) && (w->priv)) {
 			struct sst_ids *ids = w->priv;
 
-			dev_dbg(component->dev, "widget type=%d name=%s\n",
-					w->id, w->name);
+			dev_dbg(dev, "widget type=%d name=%s\n", w->id, w->name);
 			INIT_LIST_HEAD(&ids->algo_list);
 			INIT_LIST_HEAD(&ids->gain_list);
 			ret = sst_fill_widget_module_info(w, component);
@@ -1522,11 +1545,12 @@ int sst_dsp_init_v2_dpcm(struct snd_soc_component *component)
 {
 	int i, ret = 0;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct sst_data *drv = snd_soc_component_get_drvdata(component);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sst_data *drv = dev_get_drvdata(dev);
 	unsigned int gains = ARRAY_SIZE(sst_gain_controls)/3;
 
-	drv->byte_stream = devm_kzalloc(component->dev,
-					SST_MAX_BIN_BYTES, GFP_KERNEL);
+	drv->byte_stream = devm_kzalloc(dev, SST_MAX_BIN_BYTES, GFP_KERNEL);
 	if (!drv->byte_stream)
 		return -ENOMEM;
 
@@ -1534,7 +1558,7 @@ int sst_dsp_init_v2_dpcm(struct snd_soc_component *component)
 			ARRAY_SIZE(sst_dapm_widgets));
 	snd_soc_dapm_add_routes(dapm, intercon,
 			ARRAY_SIZE(intercon));
-	snd_soc_dapm_new_widgets(component->card);
+	snd_soc_dapm_new_widgets(card);
 
 	for (i = 0; i < gains; i++) {
 		sst_gains[i].mute = SST_GAIN_MUTE_DEFAULT;
@@ -1543,21 +1567,21 @@ int sst_dsp_init_v2_dpcm(struct snd_soc_component *component)
 		sst_gains[i].ramp_duration = SST_GAIN_RAMP_DURATION_DEFAULT;
 	}
 
-	ret = snd_soc_add_component_controls(component, sst_gain_controls,
+	ret = snd_soc_component_add_controls(component, sst_gain_controls,
 			ARRAY_SIZE(sst_gain_controls));
 	if (ret)
 		return ret;
 
 	/* Initialize algo control params */
-	ret = sst_algo_control_init(component->dev);
+	ret = sst_algo_control_init(dev);
 	if (ret)
 		return ret;
-	ret = snd_soc_add_component_controls(component, sst_algo_controls,
+	ret = snd_soc_component_add_controls(component, sst_algo_controls,
 			ARRAY_SIZE(sst_algo_controls));
 	if (ret)
 		return ret;
 
-	ret = snd_soc_add_component_controls(component, sst_slot_controls,
+	ret = snd_soc_component_add_controls(component, sst_slot_controls,
 			ARRAY_SIZE(sst_slot_controls));
 	if (ret)
 		return ret;

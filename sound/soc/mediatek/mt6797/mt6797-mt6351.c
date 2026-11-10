@@ -214,7 +214,7 @@ static int mt6797_mt6351_dev_probe(struct platform_device *pdev)
 		dai_link->codecs->of_node = codec_node;
 	}
 
-	ret = devm_snd_soc_card_register(&pdev->dev, card_driver);
+	ret = devm_snd_soc_register_card(&pdev->dev, card_driver);
 
 	if (ret)
 		dev_err(&pdev->dev, "%s snd_soc_card_register() fail %d\n",

@@ -113,8 +113,9 @@ static int acp_probes_compr_pointer(struct sof_client_dev *cdev,
 {
 	struct acp_dsp_stream *stream = cstream->runtime->private_data;
 	struct snd_soc_pcm_stream *pstream;
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 
-	pstream = &dai->driver->capture;
+	pstream = &dai_driver->capture;
 	tstamp->copied_total = stream->cstream_posn;
 	tstamp->sampling_rate = snd_pcm_rate_bit_to_rate(pstream->rates);
 

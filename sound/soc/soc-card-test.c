@@ -37,7 +37,7 @@ static void test_snd_soc_card_get_kcontrol(struct kunit *test)
 	struct soc_mixer_control *mc;
 	int i, ret;
 
-	ret = snd_soc_add_card_controls(card, test_card_controls, ARRAY_SIZE(test_card_controls));
+	ret = snd_soc_card_add_controls(card, test_card_controls, ARRAY_SIZE(test_card_controls));
 	KUNIT_ASSERT_EQ(test, ret, 0);
 
 	/* Look up every control */

@@ -198,7 +198,7 @@ static int uniphier_aiodma_mmap(struct snd_soc_component *component,
 static int uniphier_aiodma_new(struct snd_soc_component *component,
 			       struct snd_soc_pcm_runtime *rtd)
 {
-	struct device *dev = rtd->card->snd_card->dev;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	struct snd_pcm *pcm = rtd->pcm;
 	int ret;
 

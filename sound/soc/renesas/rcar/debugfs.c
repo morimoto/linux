@@ -66,7 +66,8 @@ void rsnd_debugfs_mod_reg_show(struct seq_file *m, struct rsnd_mod *mod,
 
 int rsnd_debugfs_probe(struct snd_soc_component *component)
 {
-	struct rsnd_priv *priv = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rsnd_priv *priv = dev_get_drvdata(dev);
 	struct rsnd_dai *rdai;
 	struct dentry *dir;
 	char name[64];
@@ -84,7 +85,7 @@ int rsnd_debugfs_probe(struct snd_soc_component *component)
 		 *	soc_cleanup_component_debugfs()
 		 */
 		snprintf(name, sizeof(name), "rdai%d", i);
-		dir = debugfs_create_dir(name, component->debugfs_root);
+		dir = debugfs_create_dir(name, snd_soc_component_to_debugfs_root(component));
 
 		debugfs_create_file("playback", 0444, dir, &rdai->playback, &rsnd_debugfs_fops);
 		debugfs_create_file("capture",  0444, dir, &rdai->capture,  &rsnd_debugfs_fops);

@@ -177,7 +177,8 @@ static int aw87390_profile_info(struct snd_kcontrol *kcontrol,
 			 struct snd_ctl_elem_info *uinfo)
 {
 	struct snd_soc_component *codec = snd_kcontrol_chip(kcontrol);
-	struct aw87390 *aw87390 = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct aw87390 *aw87390 = dev_get_drvdata(dev);
 	char *prof_name;
 	int count, ret;
 
@@ -212,7 +213,8 @@ static int aw87390_profile_get(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *codec = snd_kcontrol_chip(kcontrol);
-	struct aw87390 *aw87390 = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct aw87390 *aw87390 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = aw87390->aw_pa->prof_index;
 
@@ -223,13 +225,14 @@ static int aw87390_profile_set(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *codec = snd_kcontrol_chip(kcontrol);
-	struct aw87390 *aw87390 = snd_soc_component_get_drvdata(codec);
+	struct device *dev = snd_soc_component_to_dev(codec);
+	struct aw87390 *aw87390 = dev_get_drvdata(dev);
 	int ret;
 
 	guard(mutex)(&aw87390->lock);
 	ret = aw87390_dev_set_profile_index(aw87390->aw_pa, ucontrol->value.integer.value[0]);
 	if (ret) {
-		dev_dbg(codec->dev, "profile index does not change\n");
+		dev_dbg(dev, "profile index does not change\n");
 		return 0;
 	}
 
@@ -288,7 +291,8 @@ static int aw87390_drv_event(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct aw87390 *aw87390 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aw87390 *aw87390 = dev_get_drvdata(dev);
 	struct aw_device *aw_dev = aw87390->aw_pa;
 	int ret;
 
@@ -311,7 +315,8 @@ static int aw87391_rgds_drv_event(struct snd_soc_dapm_widget *w,
 				struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct aw87390 *aw87390 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aw87390 *aw87390 = dev_get_drvdata(dev);
 	struct aw_device *aw_dev = aw87390->aw_pa;
 
 	switch (event) {
@@ -368,7 +373,8 @@ static const struct snd_soc_dapm_route aw87390_dapm_routes[] = {
 
 static int aw87390_codec_probe(struct snd_soc_component *component)
 {
-	struct aw87390 *aw87390 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aw87390 *aw87390 = dev_get_drvdata(dev);
 	int ret;
 
 	ret = aw87390_request_firmware_file(aw87390);
@@ -439,7 +445,8 @@ static void aw87391_rgds_codec_init(struct aw87390 *aw87390)
 
 static int aw87391_rgds_codec_probe(struct snd_soc_component *component)
 {
-	struct aw87390 *aw87390 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aw87390 *aw87390 = dev_get_drvdata(dev);
 
 	aw87390->vdd_reg = devm_regulator_get_optional(aw87390->aw_pa->dev,
 						       "vdd");

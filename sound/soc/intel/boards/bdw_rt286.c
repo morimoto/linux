@@ -61,7 +61,7 @@ static const struct snd_soc_dapm_route card_routes[] = {
 
 static int codec_link_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *codec = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *codec = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	int ret;
 
 	ret = snd_soc_card_jack_new_pins(rtd->card, "Headset", SND_JACK_HEADSET | SND_JACK_BTN_0,
@@ -75,7 +75,7 @@ static int codec_link_init(struct snd_soc_pcm_runtime *rtd)
 
 static void codec_link_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *codec = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *codec = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	snd_soc_component_set_jack(codec, NULL, NULL);
 }
@@ -186,7 +186,7 @@ static int card_suspend_pre(struct snd_soc_card *card)
 	if (!codec_dai)
 		return 0;
 
-	return snd_soc_component_set_jack(codec_dai->component, NULL, NULL);
+	return snd_soc_component_set_jack(snd_soc_dai_to_component(codec_dai), NULL, NULL);
 }
 
 static int card_resume_post(struct snd_soc_card *card)
@@ -196,7 +196,7 @@ static int card_resume_post(struct snd_soc_card *card)
 	if (!codec_dai)
 		return 0;
 
-	return snd_soc_component_set_jack(codec_dai->component, &card_headset, NULL);
+	return snd_soc_component_set_jack(snd_soc_dai_to_component(codec_dai), &card_headset, NULL);
 }
 
 static struct snd_soc_card_driver bdw_rt286_card_driver = {

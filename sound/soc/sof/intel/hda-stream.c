@@ -1218,7 +1218,7 @@ static u64 hda_dsp_get_llp(struct snd_sof_dev *sdev,
 	if (!cpu_dai)
 		return 0;
 
-	hext_stream = snd_soc_dai_dma_data_get(cpu_dai, dir);
+	hext_stream = snd_soc_dai_stream_dma_data_get(cpu_dai, dir);
 	if (!hext_stream)
 		return 0;
 

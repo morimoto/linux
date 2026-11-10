@@ -233,7 +233,8 @@ static int nau8540_fepga_event(struct snd_soc_dapm_widget *w,
 			       struct snd_kcontrol *k, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct nau8540 *nau8540 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8540 *nau8540 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -254,7 +255,8 @@ static int nau8540_precharge_event(struct snd_soc_dapm_widget *w,
 				   struct snd_kcontrol *k, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct nau8540 *nau8540 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8540 *nau8540 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -276,7 +278,8 @@ static int adc_power_control(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *k, int  event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct nau8540 *nau8540 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8540 *nau8540 = dev_get_drvdata(dev);
 
 	if (SND_SOC_DAPM_EVENT_ON(event)) {
 		msleep(160);
@@ -302,7 +305,8 @@ static int aiftx_power_control(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *k, int  event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct nau8540 *nau8540 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8540 *nau8540 = dev_get_drvdata(dev);
 
 	if (SND_SOC_DAPM_EVENT_OFF(event)) {
 		regmap_write(nau8540->regmap, NAU8540_REG_RST, 0x0001);
@@ -416,8 +420,9 @@ nau8540_get_osr(struct nau8540 *nau8540)
 static int nau8540_dai_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8540 *nau8540 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8540 *nau8540 = dev_get_drvdata(dev);
 	const struct nau8540_osr_attr *osr;
 	int ret;
 
@@ -442,8 +447,9 @@ static int nau8540_dai_startup(struct snd_pcm_substream *substream,
 static int nau8540_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8540 *nau8540 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8540 *nau8540 = dev_get_drvdata(dev);
 	unsigned int val_len = 0;
 	const struct nau8540_osr_attr *osr;
 
@@ -487,8 +493,9 @@ static int nau8540_hw_params(struct snd_pcm_substream *substream,
 
 static int nau8540_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8540 *nau8540 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8540 *nau8540 = dev_get_drvdata(dev);
 	unsigned int ctrl1_val = 0, ctrl2_val = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -558,8 +565,9 @@ static int nau8540_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int nau8540_set_tdm_slot(struct snd_soc_dai *dai,
 	unsigned int tx_mask, unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8540 *nau8540 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8540 *nau8540 = dev_get_drvdata(dev);
 	unsigned int ctrl2_val = 0, ctrl4_val = 0;
 
 	if (slots > 4 || ((tx_mask & 0xf0) && (tx_mask & 0xf)))
@@ -587,8 +595,9 @@ static int nau8540_set_tdm_slot(struct snd_soc_dai *dai,
 static int nau8540_dai_trigger(struct snd_pcm_substream *substream,
 			       int cmd, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct nau8540 *nau8540 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8540 *nau8540 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8540->regmap;
 	unsigned int val;
 	int ret = 0;
@@ -778,7 +787,8 @@ static void nau8540_fll_apply(struct regmap *regmap,
 static int nau8540_set_pll(struct snd_soc_component *component, int pll_id, int source,
 		unsigned int freq_in, unsigned int freq_out)
 {
-	struct nau8540 *nau8540 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8540 *nau8540 = dev_get_drvdata(dev);
 	struct nau8540_fll fll_param;
 	int ret, fs;
 
@@ -831,7 +841,8 @@ static int nau8540_set_pll(struct snd_soc_component *component, int pll_id, int 
 static int nau8540_set_sysclk(struct snd_soc_component *component,
 	int clk_id, int source, unsigned int freq, int dir)
 {
-	struct nau8540 *nau8540 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8540 *nau8540 = dev_get_drvdata(dev);
 
 	switch (clk_id) {
 	case NAU8540_CLK_DIS:
@@ -905,7 +916,8 @@ static void nau8540_init_regs(struct nau8540 *nau8540)
 
 static int __maybe_unused nau8540_suspend(struct snd_soc_component *component)
 {
-	struct nau8540 *nau8540 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8540 *nau8540 = dev_get_drvdata(dev);
 
 	regcache_cache_only(nau8540->regmap, true);
 	regcache_mark_dirty(nau8540->regmap);
@@ -915,7 +927,8 @@ static int __maybe_unused nau8540_suspend(struct snd_soc_component *component)
 
 static int __maybe_unused nau8540_resume(struct snd_soc_component *component)
 {
-	struct nau8540 *nau8540 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8540 *nau8540 = dev_get_drvdata(dev);
 
 	regcache_cache_only(nau8540->regmap, false);
 	return regcache_sync(nau8540->regmap);

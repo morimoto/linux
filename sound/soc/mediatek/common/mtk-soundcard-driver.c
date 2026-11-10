@@ -88,7 +88,7 @@ int parse_dai_link_info(struct mtk_platform_card_data *card_data)
 {
 	struct snd_soc_card *card = card_data->card;
 	struct snd_soc_card_driver *card_driver = card_data->card_driver;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct snd_soc_dai_link *dai_link;
 	const char *dai_link_name;
 	int ret, i;
@@ -140,7 +140,7 @@ int mtk_soundcard_startup(struct snd_pcm_substream *substream,
 			  enum mtk_pcm_constraint_type ctype)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mtk_soc_card_data *soc_card = snd_soc_card_get_drvdata(rtd->card);
+	struct mtk_soc_card_data *soc_card = snd_soc_card_to_priv(rtd->card);
 	const struct mtk_pcm_constraints_data *mpc = &soc_card->card_data->pcm_constraints[ctype];
 	int ret;
 
@@ -196,8 +196,8 @@ static void mtk_soundcard_restore_name(void *data)
 {
 	struct mtk_soundcard_name *saved = data;
 
-	saved->card->name = saved->name;
-	saved->card->topology_shortname = NULL;
+	snd_soc_card_set_name(saved->card, saved->name);
+	snd_soc_card_set_topology_shortname(saved->card, NULL);
 }
 
 /*
@@ -216,10 +216,10 @@ static int mtk_soundcard_set_topology_name(struct device *dev,
 		return -ENOMEM;
 
 	saved->card = card;
-	saved->name = card->name;
-	card->topology_shortname = NULL;
+	saved->name = snd_soc_card_name(card);
 
 	snd_soc_card_set_topology_name(card, "sof");
+	snd_soc_card_set_topology_shortname(card, NULL);
 
 	return devm_add_action_or_reset(dev, mtk_soundcard_restore_name, saved);
 }
@@ -252,15 +252,15 @@ int mtk_soundcard_common_probe(struct platform_device *pdev)
 
 	snd_soc_card_set_name(card, card_driver->default_name);
 
-	ret = snd_soc_of_parse_card_name(card, "model");
+	ret = snd_soc_card_of_parse_name(card, "model");
 	if (ret)
 		return ret;
 
-	if (!card->name) {
+	if (!snd_soc_card_name(card)) {
 		if (!pdata->card_name)
 			return -EINVAL;
 
-		card->name = pdata->card_name;
+		snd_soc_card_set_name(card, pdata->card_name);
 	}
 
 	needs_legacy_probe = !of_property_present(pdev->dev.of_node, "audio-routing");
@@ -286,7 +286,7 @@ int mtk_soundcard_common_probe(struct platform_device *pdev)
 
 	soc_card_data->card_data = pdata->card_data;
 
-	jacks = devm_kcalloc(card->dev, soc_card_data->card_data->num_jacks,
+	jacks = devm_kcalloc(&pdev->dev, soc_card_data->card_data->num_jacks,
 			     sizeof(*jacks), GFP_KERNEL);
 	if (!jacks)
 		return -ENOMEM;
@@ -297,7 +297,7 @@ int mtk_soundcard_common_probe(struct platform_device *pdev)
 	if (accdet_node) {
 		accdet_pdev = of_find_device_by_node(accdet_node);
 		if (accdet_pdev) {
-			accdet_comp = snd_soc_lookup_component(&accdet_pdev->dev, NULL);
+			accdet_comp = snd_soc_component_lookup(&accdet_pdev->dev, NULL);
 			if (accdet_comp)
 				soc_card_data->accdet = accdet_comp;
 			else
@@ -377,7 +377,7 @@ int mtk_soundcard_common_probe(struct platform_device *pdev)
 			goto err_restore_dais;
 		}
 	}
-	snd_soc_card_set_drvdata(card, soc_card_data);
+	snd_soc_card_set_priv(card, soc_card_data);
 
 	ret = devm_snd_soc_card_register(card, card_driver);
 

@@ -1946,9 +1946,11 @@ static void vc4_hdmi_set_n_cts(struct vc4_hdmi *vc4_hdmi, unsigned int samplerat
 
 static inline struct vc4_hdmi *dai_to_hdmi(struct snd_soc_dai *dai)
 {
-	struct snd_soc_card *card = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_card *card = dev_get_drvdata(dev);
 
-	return snd_soc_card_get_drvdata(card);
+	return snd_soc_card_to_priv(card);
 }
 
 static bool vc4_hdmi_audio_can_stream(struct vc4_hdmi *vc4_hdmi)
@@ -2230,7 +2232,7 @@ static int vc4_hdmi_audio_cpu_dai_probe(struct snd_soc_dai *dai)
 {
 	struct vc4_hdmi *vc4_hdmi = dai_to_hdmi(dai);
 
-	snd_soc_dai_init_dma_data(dai, &vc4_hdmi->audio.dma_data, NULL);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &vc4_hdmi->audio.dma_data);
 
 	return 0;
 }
@@ -2267,8 +2269,8 @@ static const struct drm_connector_hdmi_audio_funcs vc4_hdmi_audio_funcs = {
 
 static int vc4_hdmi_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct vc4_hdmi *vc4_hdmi = snd_soc_card_get_drvdata(rtd->card);
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct vc4_hdmi *vc4_hdmi = snd_soc_card_to_priv(rtd->card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	int ret;
 
 	ret = snd_soc_card_jack_new(rtd->card, "HDMI Jack", SND_JACK_LINEOUT,
@@ -2418,9 +2420,9 @@ static int vc4_hdmi_audio_init(struct vc4_hdmi *vc4_hdmi)
 	 * stores a pointer to the snd card object in dev->driver_data. This
 	 * means we cannot use it for something else. The hdmi back-pointer is
 	 * now stored in card->drvdata and should be retrieved with
-	 * snd_soc_card_get_drvdata() if needed.
+	 * snd_soc_card_to_priv() if needed.
 	 */
-	snd_soc_card_set_drvdata(card, vc4_hdmi);
+	snd_soc_card_set_priv(card, vc4_hdmi);
 	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret)
 		dev_err_probe(dev, ret, "Could not register sound card\n");

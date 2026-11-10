@@ -183,7 +183,8 @@ static int qaif_config_shram(struct qaif_drv_data *drvdata)
 
 static int qaif_init(struct snd_soc_component *component)
 {
-	struct qaif_drv_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	int ret;
 
 	if (drvdata->qaif_hw_configured)
@@ -191,13 +192,13 @@ static int qaif_init(struct snd_soc_component *component)
 
 	ret = qaif_config_shram(drvdata);
 	if (ret) {
-		dev_err(component->dev, "failed to config shram: %d\n", ret);
+		dev_err(dev, "failed to config shram: %d\n", ret);
 		return ret;
 	}
 
 	ret = qaif_map_ee_resource(drvdata);
 	if (ret) {
-		dev_err(component->dev, "failed to map EE resources: %d\n", ret);
+		dev_err(dev, "failed to map EE resources: %d\n", ret);
 		return ret;
 	}
 
@@ -215,15 +216,16 @@ static int qaif_platform_pcmops_open(struct snd_soc_component *component,
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct qaif_drv_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = snd_soc_dai_id(cpu_dai);
 	struct qaif_pcm_data *data;
 	int ret, stream_dma_idx, dma_reg_idx, dir = substream->stream;
 
 	dma_reg_idx = v->get_dma_idx(dai_id);
 	if (dma_reg_idx < 0) {
-		dev_err(component->dev, "invalid DMA register index for DAI %u: %d\n",
+		dev_err(dev, "invalid DMA register index for DAI %u: %d\n",
 			dai_id, dma_reg_idx);
 		return dma_reg_idx;
 	}
@@ -289,10 +291,11 @@ static int qaif_platform_pcmops_close(struct snd_soc_component *component,
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct qaif_drv_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
 	struct qaif_pcm_data *data = substream->runtime->private_data;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = snd_soc_dai_id(cpu_dai);
 
 	if (qaif_is_cif_port(dai_id))
 		WRITE_ONCE(drvdata->cif_substream[data->stream_dma_idx], NULL);
@@ -314,10 +317,11 @@ static int qaif_platform_pcmops_hw_params(struct snd_soc_component *component,
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct qaif_drv_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
 	struct qaif_pcm_data *data = substream->runtime->private_data;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = snd_soc_dai_id(cpu_dai);
 	int idx = data->dma_reg_idx;
 	int ret;
 
@@ -343,10 +347,11 @@ static int qaif_platform_pcmops_hw_free(struct snd_soc_component *component,
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct qaif_drv_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
 	struct qaif_pcm_data *data = substream->runtime->private_data;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = snd_soc_dai_id(cpu_dai);
 	int idx = data->dma_reg_idx;
 	int ret;
 
@@ -371,11 +376,12 @@ static int qaif_platform_pcmops_prepare(struct snd_soc_component *component,
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct qaif_drv_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
 	struct regmap *map = drvdata->audio_qaif_map;
 	struct qaif_pcm_data *data = runtime->private_data;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = snd_soc_dai_id(cpu_dai);
 	int idx = data->dma_reg_idx;
 	int ret, dir = substream->stream;
 
@@ -424,11 +430,12 @@ static snd_pcm_uframes_t qaif_platform_pcmops_pointer(struct snd_soc_component *
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct qaif_drv_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
 	struct regmap *map = drvdata->audio_qaif_map;
 	struct qaif_pcm_data *data = substream->runtime->private_data;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = snd_soc_dai_id(cpu_dai);
 	unsigned int base_addr, curr_addr;
 	int idx = data->dma_reg_idx;
 	int ret, dir = substream->stream;
@@ -454,9 +461,10 @@ static int qaif_platform_pcmops_mmap(struct snd_soc_component *component,
 				     struct snd_pcm_substream *substream,
 				     struct vm_area_struct *vma)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 
-	return dma_mmap_coherent(component->dev, vma,
+	return dma_mmap_coherent(dev, vma,
 				 runtime->dma_area, runtime->dma_addr,
 				 runtime->dma_bytes);
 }
@@ -464,11 +472,11 @@ static int qaif_platform_pcmops_mmap(struct snd_soc_component *component,
 static int qaif_platform_pcm_new(struct snd_soc_component *component,
 				 struct snd_soc_pcm_runtime *rtd)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_pcm *pcm = rtd->pcm;
 
 	return snd_pcm_set_fixed_buffer_all(pcm, SNDRV_DMA_TYPE_DEV,
-					    component->dev,
-					    QAIF_PLATFORM_BUFFER_BYTES_MAX);
+					    dev, QAIF_PLATFORM_BUFFER_BYTES_MAX);
 }
 
 static int qaif_platform_irq_op(struct qaif_drv_data *drvdata, int dir,
@@ -523,10 +531,11 @@ static int qaif_platform_pcmops_trigger(struct snd_soc_component *component,
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct qaif_drv_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
 	struct qaif_pcm_data *data = substream->runtime->private_data;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = snd_soc_dai_id(cpu_dai);
 	enum qaif_irq_type irq_type = qaif_is_cif_port(dai_id) ? QAIF_CIF_IRQ : QAIF_AIF_IRQ;
 	struct regmap *map = drvdata->audio_qaif_map;
 	int idx = data->dma_reg_idx;
@@ -594,11 +603,12 @@ static int qaif_platform_pcmops_sync_stop(struct snd_soc_component *component,
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
-	struct qaif_drv_data *drvdata = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	struct qaif_pcm_data *data = substream->runtime->private_data;
 	const struct qaif_variant *v = drvdata->variant;
 	struct regmap *map = drvdata->audio_qaif_map;
-	unsigned int dai_id = cpu_dai->driver->id;
+	unsigned int dai_id = snd_soc_dai_id(cpu_dai);
 	enum qaif_irq_type irq_type = qaif_is_cif_port(dai_id) ? QAIF_CIF_IRQ : QAIF_AIF_IRQ;
 	int idx = data->dma_reg_idx;
 	unsigned int val;

@@ -358,7 +358,7 @@ static int preallocate_idma_buffer(struct snd_pcm *pcm, int stream)
 static int idma_new(struct snd_soc_component *component,
 		    struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(rtd->card);
 	struct snd_pcm *pcm = rtd->pcm;
 	int ret;
 

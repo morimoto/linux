@@ -61,7 +61,7 @@ EXPORT_SYMBOL_NS(hda_dai_config, "SND_SOC_SOF_INTEL_HDA_COMMON");
 static struct snd_sof_dev *dai_to_sdev(struct snd_pcm_substream *substream,
 				       struct snd_soc_dai *cpu_dai)
 {
-	struct snd_soc_dapm_widget *w = snd_soc_dai_get_widget(cpu_dai, substream->stream);
+	struct snd_soc_dapm_widget *w = snd_soc_dai_stream_widget_get(cpu_dai, substream->stream);
 
 	return widget_to_sdev(w);
 }
@@ -69,7 +69,9 @@ static struct snd_sof_dev *dai_to_sdev(struct snd_pcm_substream *substream,
 static const struct hda_dai_widget_dma_ops *
 hda_dai_get_ops(struct snd_pcm_substream *substream, struct snd_soc_dai *cpu_dai)
 {
-	struct snd_soc_dapm_widget *w = snd_soc_dai_get_widget(cpu_dai, substream->stream);
+	struct snd_soc_dapm_widget *w = snd_soc_dai_stream_widget_get(cpu_dai, substream->stream);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_sof_widget *swidget;
 	struct snd_sof_dev *sdev;
 	struct snd_sof_dai *sdai;
@@ -80,7 +82,7 @@ hda_dai_get_ops(struct snd_pcm_substream *substream, struct snd_soc_dai *cpu_dai
 	 * dereference later on.
 	 */
 	if (!w) {
-		dev_err(cpu_dai->dev, "%s: widget is NULL\n", __func__);
+		dev_err(dev, "%s: widget is NULL\n", __func__);
 		return NULL;
 	}
 
@@ -119,13 +121,15 @@ hda_link_dma_cleanup(struct snd_pcm_substream *substream,
 		     struct snd_soc_dai *cpu_dai, bool release)
 {
 	const struct hda_dai_widget_dma_ops *ops = hda_dai_get_ops(substream, cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
 	struct sof_intel_hda_stream *hda_stream;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct hdac_ext_link *hlink;
 	struct snd_sof_dev *sdev;
 	int stream_tag;
 
 	if (!ops) {
-		dev_err(cpu_dai->dev, "DAI widget ops not set\n");
+		dev_err(dev, "DAI widget ops not set\n");
 		return -EINVAL;
 	}
 
@@ -167,6 +171,8 @@ static int hda_link_dma_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params, struct snd_soc_dai *cpu_dai)
 {
 	const struct hda_dai_widget_dma_ops *ops = hda_dai_get_ops(substream, cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct hdac_ext_stream *hext_stream;
 	struct hdac_stream *hstream;
 	struct hdac_ext_link *hlink;
@@ -174,7 +180,7 @@ static int hda_link_dma_hw_params(struct snd_pcm_substream *substream,
 	int stream_tag;
 
 	if (!ops) {
-		dev_err(cpu_dai->dev, "DAI widget ops not set\n");
+		dev_err(dev, "DAI widget ops not set\n");
 		return -EINVAL;
 	}
 
@@ -222,11 +228,13 @@ static int __maybe_unused hda_dai_hw_free(struct snd_pcm_substream *substream,
 					  struct snd_soc_dai *cpu_dai)
 {
 	const struct hda_dai_widget_dma_ops *ops = hda_dai_get_ops(substream, cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct hdac_ext_stream *hext_stream;
 	struct snd_sof_dev *sdev = dai_to_sdev(substream, cpu_dai);
 
 	if (!ops) {
-		dev_err(cpu_dai->dev, "DAI widget ops not set\n");
+		dev_err(dev, "DAI widget ops not set\n");
 		return -EINVAL;
 	}
 
@@ -243,7 +251,7 @@ static int __maybe_unused hda_dai_hw_params_data(struct snd_pcm_substream *subst
 						 struct snd_sof_dai_config_data *data,
 						 unsigned int flags)
 {
-	struct snd_soc_dapm_widget *w = snd_soc_dai_get_widget(dai, substream->stream);
+	struct snd_soc_dapm_widget *w = snd_soc_dai_stream_widget_get(dai, substream->stream);
 	const struct hda_dai_widget_dma_ops *ops = hda_dai_get_ops(substream, dai);
 	struct hdac_ext_stream *hext_stream;
 	struct snd_sof_dev *sdev = widget_to_sdev(w);
@@ -288,17 +296,19 @@ static int __maybe_unused hda_dai_trigger(struct snd_pcm_substream *substream, i
 					  struct snd_soc_dai *dai)
 {
 	const struct hda_dai_widget_dma_ops *ops = hda_dai_get_ops(substream, dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	struct hdac_ext_stream *hext_stream;
 	struct snd_sof_dev *sdev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	if (!ops) {
-		dev_err(dai->dev, "DAI widget ops not set\n");
+		dev_err(dev, "DAI widget ops not set\n");
 		return -EINVAL;
 	}
 
-	dev_dbg(dai->dev, "cmd=%d dai %s direction %d\n", cmd,
-		dai->name, substream->stream);
+	dev_dbg(dev, "cmd=%d dai %s direction %d\n", cmd,
+		snd_soc_dai_name(dai), substream->stream);
 
 	sdev = dai_to_sdev(substream, dai);
 
@@ -375,8 +385,9 @@ static int non_hda_dai_hw_params_data(struct snd_pcm_substream *substream,
 				      struct snd_sof_dai_config_data *data,
 				      unsigned int flags)
 {
-	struct snd_soc_dapm_widget *w = snd_soc_dai_get_widget(cpu_dai, substream->stream);
+	struct snd_soc_dapm_widget *w = snd_soc_dai_stream_widget_get(cpu_dai, substream->stream);
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
 	struct sof_ipc4_dma_config_tlv *dma_config_tlv;
 	const struct hda_dai_widget_dma_ops *ops;
 	struct sof_ipc4_dma_config *dma_config;
@@ -385,13 +396,14 @@ static int non_hda_dai_hw_params_data(struct snd_pcm_substream *substream,
 	struct hdac_stream *hstream;
 	struct snd_sof_dev *sdev;
 	struct snd_soc_dai *dai;
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
 	int cpu_dai_id;
 	int stream_id;
 	int ret;
 
 	ops = hda_dai_get_ops(substream, cpu_dai);
 	if (!ops) {
-		dev_err(cpu_dai->dev, "DAI widget ops not set\n");
+		dev_err(cpu_dev, "DAI widget ops not set\n");
 		return -EINVAL;
 	}
 
@@ -405,7 +417,7 @@ static int non_hda_dai_hw_params_data(struct snd_pcm_substream *substream,
 	/* use HDaudio stream handling */
 	ret = hda_dai_hw_params_data(substream, params, cpu_dai, data, flags);
 	if (ret < 0) {
-		dev_err(cpu_dai->dev, "%s: hda_dai_hw_params_data failed: %d\n", __func__, ret);
+		dev_err(cpu_dev, "%s: hda_dai_hw_params_data failed: %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -416,7 +428,7 @@ static int non_hda_dai_hw_params_data(struct snd_pcm_substream *substream,
 	hext_stream = ops->get_hext_stream(sdev, cpu_dai, substream);
 
 	if (!hext_stream) {
-		dev_err(cpu_dai->dev, "%s: no hext_stream found\n", __func__);
+		dev_err(cpu_dev, "%s: no hext_stream found\n", __func__);
 		return -ENODEV;
 	}
 
@@ -424,7 +436,7 @@ static int non_hda_dai_hw_params_data(struct snd_pcm_substream *substream,
 	stream_id = hstream->stream_tag;
 
 	if (!stream_id) {
-		dev_err(cpu_dai->dev, "%s: no stream_id allocated\n", __func__);
+		dev_err(cpu_dev, "%s: no stream_id allocated\n", __func__);
 		return -ENODEV;
 	}
 
@@ -496,8 +508,9 @@ int sdw_hda_dai_hw_params(struct snd_pcm_substream *substream,
 			  int link_id,
 			  int intel_alh_id)
 {
-	struct snd_soc_dapm_widget *w = snd_soc_dai_get_widget(cpu_dai, substream->stream);
+	struct snd_soc_dapm_widget *w = snd_soc_dai_stream_widget_get(cpu_dai, substream->stream);
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
 	struct sof_ipc4_dma_config_tlv *dma_config_tlv;
 	struct snd_sof_dai_config_data data = { 0 };
 	unsigned int flags = SOF_DAI_CONFIG_FLAGS_HW_PARAMS;
@@ -507,21 +520,23 @@ int sdw_hda_dai_hw_params(struct snd_pcm_substream *substream,
 	struct hdac_ext_stream *hext_stream;
 	struct snd_soc_dai *dai;
 	struct snd_sof_dev *sdev;
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
 	bool cpu_dai_found = false;
+	int cpu_id = snd_soc_dai_id(cpu_dai);
 	int cpu_dai_id;
 	int ch_mask;
 	int ret;
 	int i;
 
 	if (!w) {
-		dev_err(cpu_dai->dev, "%s widget not found, check amp link num in the topology\n",
-			cpu_dai->name);
+		dev_err(cpu_dev, "%s widget not found, check amp link num in the topology\n",
+			snd_soc_dai_name(cpu_dai));
 		return -EINVAL;
 	}
 
 	ops = hda_dai_get_ops(substream, cpu_dai);
 	if (!ops) {
-		dev_err(cpu_dai->dev, "DAI widget ops not set\n");
+		dev_err(cpu_dev, "DAI widget ops not set\n");
 		return -EINVAL;
 	}
 
@@ -536,19 +551,19 @@ int sdw_hda_dai_hw_params(struct snd_pcm_substream *substream,
 	 * reset the PCMSyCM registers to handle a prepare callback when the PCM is restarted
 	 * due to xruns or after a call to snd_pcm_drain/drop()
 	 */
-	ret = hdac_bus_eml_sdw_map_stream_ch(sof_to_bus(sdev), link_id, cpu_dai->id,
+	ret = hdac_bus_eml_sdw_map_stream_ch(sof_to_bus(sdev), link_id, cpu_id,
 					     0, 0, substream->stream);
 	if (ret < 0) {
-		dev_err(cpu_dai->dev, "%s:  hdac_bus_eml_sdw_map_stream_ch failed %d\n",
+		dev_err(cpu_dev, "%s:  hdac_bus_eml_sdw_map_stream_ch failed %d\n",
 			__func__, ret);
 		return ret;
 	}
 
-	data.dai_index = (link_id << 8) | cpu_dai->id;
+	data.dai_index = (link_id << 8) | cpu_id;
 	data.dai_node_id = intel_alh_id;
 	ret = non_hda_dai_hw_params_data(substream, params, cpu_dai, &data, flags);
 	if (ret < 0) {
-		dev_err(cpu_dai->dev, "%s: non_hda_dai_hw_params failed %d\n", __func__, ret);
+		dev_err(cpu_dev, "%s: non_hda_dai_hw_params failed %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -573,12 +588,12 @@ int sdw_hda_dai_hw_params(struct snd_pcm_substream *substream,
 
 	ch_mask = GENMASK(params_channels(params) - 1, 0);
 
-	ret = hdac_bus_eml_sdw_map_stream_ch(sof_to_bus(sdev), link_id, cpu_dai->id,
+	ret = hdac_bus_eml_sdw_map_stream_ch(sof_to_bus(sdev), link_id, cpu_id,
 					     ch_mask,
 					     hdac_stream(hext_stream)->stream_tag,
 					     substream->stream);
 	if (ret < 0) {
-		dev_err(cpu_dai->dev, "%s:  hdac_bus_eml_sdw_map_stream_ch failed %d\n",
+		dev_err(cpu_dev, "%s:  hdac_bus_eml_sdw_map_stream_ch failed %d\n",
 			__func__, ret);
 		return ret;
 	}
@@ -597,11 +612,11 @@ int sdw_hda_dai_hw_params(struct snd_pcm_substream *substream,
 	 * will be handled in sof_ipc4_prepare_copier_module.
 	 */
 	for_each_rtd_cpu_dais(rtd, i, dai) {
-		w = snd_soc_dai_get_widget(dai, substream->stream);
+		w = snd_soc_dai_stream_widget_get(dai, substream->stream);
 		if (!w) {
-			dev_err(cpu_dai->dev,
+			dev_err(cpu_dev,
 				"%s widget not found, check amp link num in the topology\n",
-				dai->name);
+				snd_soc_dai_name(dai));
 			return -EINVAL;
 		}
 		ipc4_copier = widget_to_copier(w);
@@ -616,23 +631,25 @@ int sdw_hda_dai_hw_free(struct snd_pcm_substream *substream,
 			struct snd_soc_dai *cpu_dai,
 			int link_id)
 {
-	struct snd_soc_dapm_widget *w = snd_soc_dai_get_widget(cpu_dai, substream->stream);
+	struct snd_soc_dapm_widget *w = snd_soc_dai_stream_widget_get(cpu_dai, substream->stream);
 	struct snd_sof_dev *sdev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = hda_dai_hw_free(substream, cpu_dai);
 	if (ret < 0) {
-		dev_err(cpu_dai->dev, "%s: non_hda_dai_hw_free failed %d\n", __func__, ret);
+		dev_err(dev, "%s: non_hda_dai_hw_free failed %d\n", __func__, ret);
 		return ret;
 	}
 
 	sdev = widget_to_sdev(w);
 
 	/* in the case of SoundWire we need to reset the PCMSyCM registers */
-	ret = hdac_bus_eml_sdw_map_stream_ch(sof_to_bus(sdev), link_id, cpu_dai->id,
+	ret = hdac_bus_eml_sdw_map_stream_ch(sof_to_bus(sdev), link_id, snd_soc_dai_id(cpu_dai),
 					     0, 0, substream->stream);
 	if (ret < 0) {
-		dev_err(cpu_dai->dev, "%s:  hdac_bus_eml_sdw_map_stream_ch failed %d\n",
+		dev_err(dev, "%s:  hdac_bus_eml_sdw_map_stream_ch failed %d\n",
 			__func__, ret);
 		return ret;
 	}
@@ -676,7 +693,7 @@ static int hda_dai_suspend(struct hdac_bus *bus)
 
 			rtd = snd_soc_substream_to_rtd(hext_stream->link_substream);
 			cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-			w = snd_soc_dai_get_widget(cpu_dai, hdac_stream(hext_stream)->direction);
+			w = snd_soc_dai_stream_widget_get(cpu_dai, hdac_stream(hext_stream)->direction);
 			swidget = w->dobj.private;
 			sdev = widget_to_sdev(w);
 			sdai = swidget->private;

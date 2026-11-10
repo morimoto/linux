@@ -120,7 +120,8 @@ static int mtk_pcm_en_event(struct snd_soc_dapm_widget *w,
 			    int event)
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
+	struct device *dev = snd_soc_component_to_dev(cmpnt);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	dev_dbg(afe->dev, "%s(), name %s, event 0x%x\n",
 		__func__, w->name, event);
@@ -216,14 +217,16 @@ static int mtk_dai_pcm_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
-	struct snd_soc_dapm_widget *p = snd_soc_dai_get_widget_playback(dai);
-	struct snd_soc_dapm_widget *c = snd_soc_dai_get_widget_capture(dai);
-	int pcm_id = dai->id;
-	struct mtk_afe_pcm_priv *pcm_priv = afe_priv->dai_priv[pcm_id];
+	struct snd_soc_dapm_widget *p = snd_soc_dai_stream_widget_get_playback(dai);
+	struct snd_soc_dapm_widget *c = snd_soc_dai_stream_widget_get_capture(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct mtk_afe_pcm_priv *pcm_priv = afe_priv->dai_priv[dai_id];
 	unsigned int rate = params_rate(params);
-	unsigned int rate_reg = mt8186_rate_transform(afe->dev, rate, dai->id);
+	unsigned int rate_reg = mt8186_rate_transform(afe->dev, rate, dai_id);
 	snd_pcm_format_t format = params_format(params);
 	unsigned int data_width =
 		snd_pcm_format_width(format);
@@ -232,14 +235,14 @@ static int mtk_dai_pcm_hw_params(struct snd_pcm_substream *substream,
 	unsigned int pcm_con = 0;
 
 	dev_dbg(afe->dev, "%s(), id %d, stream %d, widget active p %d, c %d\n",
-		__func__, dai->id, substream->stream, p->active, c->active);
+		__func__, dai_id, substream->stream, p->active, c->active);
 	dev_dbg(afe->dev, "%s(), rate %d, rate_reg %d, data_width %d, wlen_width %d\n",
 		__func__, rate, rate_reg, data_width, wlen_width);
 
 	if (p->active || c->active)
 		return 0;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case MT8186_DAI_PCM:
 		pcm_con |= AUD_TX_LCH_RPT_NO_REPEAT << PCM_TX_LCH_RPT_SFT;
 		pcm_con |= AUD_VBT_16K_MODE_DISABLE << PCM_VBT_16K_MODE_SFT;
@@ -275,7 +278,7 @@ static int mtk_dai_pcm_hw_params(struct snd_pcm_substream *substream,
 		regmap_update_bits(afe->regmap, PCM_INTF_CON1, 0xfffffffe, pcm_con);
 		break;
 	default:
-		dev_err(afe->dev, "%s(), id %d not support\n", __func__, dai->id);
+		dev_err(afe->dev, "%s(), id %d not support\n", __func__, dai_id);
 		return -EINVAL;
 	}
 
@@ -284,9 +287,12 @@ static int mtk_dai_pcm_hw_params(struct snd_pcm_substream *substream,
 
 static int mtk_dai_pcm_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	int dai_id = snd_soc_dai_id(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8186_afe_private *afe_priv = afe->platform_priv;
-	struct mtk_afe_pcm_priv *pcm_priv = afe_priv->dai_priv[dai->id];
+	struct mtk_afe_pcm_priv *pcm_priv = afe_priv->dai_priv[dai_id];
 
 	/* DAI mode*/
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {

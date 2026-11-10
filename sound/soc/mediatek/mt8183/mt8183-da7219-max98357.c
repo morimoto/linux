@@ -77,7 +77,9 @@ static int mt8183_da7219_i2s_hw_params(struct snd_pcm_substream *substream,
 		dev_err(rtd->dev, "failed to set cpu dai sysclk\n");
 
 	for_each_rtd_codec_dais(rtd, j, codec_dai) {
-		if (!strcmp(codec_dai->component->name, DA7219_DEV_NAME)) {
+		struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+
+		if (!strcmp(snd_soc_component_name(component), DA7219_DEV_NAME)) {
 			ret = snd_soc_dai_set_sysclk(codec_dai,
 						     DA7219_CLKSRC_MCLK,
 						     mclk_fs,
@@ -109,7 +111,9 @@ static int mt8183_da7219_hw_free(struct snd_pcm_substream *substream)
 	int ret = 0, j;
 
 	for_each_rtd_codec_dais(rtd, j, codec_dai) {
-		if (!strcmp(codec_dai->component->name, DA7219_DEV_NAME)) {
+		struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+
+		if (!strcmp(snd_soc_component_name(component), DA7219_DEV_NAME)) {
 			ret = snd_soc_dai_set_pll(codec_dai,
 						  0, DA7219_SYSCLK_MCLK, 0, 0);
 			if (ret < 0) {
@@ -138,8 +142,11 @@ mt8183_da7219_rt1015_i2s_hw_params(struct snd_pcm_substream *substream,
 	int ret = 0, i;
 
 	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-		if (!strcmp(codec_dai->component->name, RT1015_DEV0_NAME) ||
-		    !strcmp(codec_dai->component->name, RT1015_DEV1_NAME)) {
+		struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+		const char *name = snd_soc_component_name(component);
+
+		if (!strcmp(name, RT1015_DEV0_NAME) ||
+		    !strcmp(name, RT1015_DEV1_NAME)) {
 			ret = snd_soc_dai_set_pll(codec_dai, 0,
 						  RT1015_PLL_S_BCLK,
 						  rate * 64, rate * 256);
@@ -374,8 +381,9 @@ SND_SOC_DAILINK_DEFS(tdm,
 
 static int mt8183_da7219_max98357_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct mt8183_da7219_max98357_priv *priv =
-		snd_soc_card_get_drvdata(rtd->card);
+	struct mt8183_da7219_max98357_priv *priv = snd_soc_card_to_priv(rtd->card);
+	struct snd_soc_dai *dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int ret;
 
 	ret = snd_soc_card_jack_new(rtd->card, "HDMI Jack", SND_JACK_AVOUT,
@@ -383,15 +391,14 @@ static int mt8183_da7219_max98357_hdmi_init(struct snd_soc_pcm_runtime *rtd)
 	if (ret)
 		return ret;
 
-	return snd_soc_component_set_jack(snd_soc_rtd_to_codec(rtd, 0)->component,
-					  &priv->hdmi_jack, NULL);
+	return snd_soc_component_set_jack(component, &priv->hdmi_jack, NULL);
 }
 
 static int mt8183_bt_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *cmpnt_afe =
-		snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt_afe);
+	struct snd_soc_component *cmpnt_afe = snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
+	struct device *dev = snd_soc_component_to_dev(cmpnt_afe);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	int ret;
 
 	ret = mt8183_dai_i2s_set_share(afe, "I2S5", "I2S0");
@@ -404,9 +411,9 @@ static int mt8183_bt_init(struct snd_soc_pcm_runtime *rtd)
 
 static int mt8183_da7219_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *cmpnt_afe =
-		snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt_afe);
+	struct snd_soc_component *cmpnt_afe = snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
+	struct device *dev = snd_soc_component_to_dev(cmpnt_afe);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	int ret;
 
 	ret = mt8183_dai_i2s_set_share(afe, "I2S2", "I2S3");
@@ -577,11 +584,11 @@ static int
 mt8183_da7219_max98357_headset_init(struct snd_soc_component *component)
 {
 	int ret;
-	struct mt8183_da7219_max98357_priv *priv =
-			snd_soc_card_get_drvdata(component->card);
+	struct snd_soc_card *card = snd_soc_component_to_card(component);
+	struct mt8183_da7219_max98357_priv *priv = snd_soc_card_to_priv(card);
 
 	/* Enable Headset and 4 Buttons Jack detection */
-	ret = snd_soc_card_jack_new_pins(component->card,
+	ret = snd_soc_card_jack_new_pins(card,
 					 "Headset Jack",
 					 SND_JACK_HEADSET |
 					 SND_JACK_BTN_0 | SND_JACK_BTN_1 |
@@ -831,7 +838,7 @@ static int mt8183_da7219_max98357_dev_probe(struct platform_device *pdev)
 		goto put_hdmi_codec;
 	}
 
-	snd_soc_card_set_drvdata(card, priv);
+	snd_soc_card_set_priv(card, priv);
 
 	pinctrl = devm_pinctrl_get_select(&pdev->dev, PINCTRL_STATE_DEFAULT);
 	if (IS_ERR(pinctrl)) {

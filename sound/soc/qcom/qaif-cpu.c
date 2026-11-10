@@ -88,9 +88,11 @@ static int qaif_cif_daiops_hw_params(struct snd_pcm_substream *substream,
 				     struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct qaif_drv_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
-	unsigned int dai_id = dai->driver->id;
+	unsigned int dai_id = snd_soc_dai_id(dai);
 	unsigned int regval;
 	u32 reg;
 	int idx;
@@ -136,9 +138,11 @@ static int qaif_cif_daiops_trigger(struct snd_pcm_substream *substream,
 				   int cmd, struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct qaif_drv_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
-	unsigned int dai_id = dai->driver->id;
+	unsigned int dai_id = snd_soc_dai_id(dai);
 	struct regmap *map = drvdata->audio_qaif_map;
 	u32 reg;
 	int idx, ret;
@@ -185,18 +189,20 @@ static int qaif_cif_daiops_trigger(struct snd_pcm_substream *substream,
 static int qaif_cif_daiops_startup(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
-	struct qaif_drv_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	int ret;
 
 	ret = clk_prepare_enable(drvdata->aud_dma_clk);
 	if (ret) {
-		dev_err(dai->dev, "error enabling aud_dma clk: %d\n", ret);
+		dev_err(dev, "error enabling aud_dma clk: %d\n", ret);
 		return ret;
 	}
 
 	ret = clk_prepare_enable(drvdata->aud_dma_mem_clk);
 	if (ret) {
-		dev_err(dai->dev, "error enabling aud_dma_mem clk: %d\n", ret);
+		dev_err(dev, "error enabling aud_dma_mem clk: %d\n", ret);
 		clk_disable_unprepare(drvdata->aud_dma_clk);
 		return ret;
 	}
@@ -206,7 +212,9 @@ static int qaif_cif_daiops_startup(struct snd_pcm_substream *substream,
 static void qaif_cif_daiops_shutdown(struct snd_pcm_substream *substream,
 				     struct snd_soc_dai *dai)
 {
-	struct qaif_drv_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 
 	clk_disable_unprepare(drvdata->aud_dma_mem_clk);
 	clk_disable_unprepare(drvdata->aud_dma_clk);
@@ -231,32 +239,35 @@ EXPORT_SYMBOL_GPL(asoc_qcom_qaif_cif_dai_ops);
 static int qaif_aif_cpu_daiops_startup(struct snd_pcm_substream *substream,
 				       struct snd_soc_dai *dai)
 {
-	struct qaif_drv_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
+	int dai_id = snd_soc_dai_id(dai);
 	int idx, ret;
 
-	idx = v->get_dma_idx(dai->driver->id);
+	idx = v->get_dma_idx(dai_id);
 	if (idx < 0) {
-		dev_err(dai->dev, "Invalid DMA index: %d\n", idx);
+		dev_err(dev, "Invalid DMA index: %d\n", idx);
 		return -EINVAL;
 	}
 
 	ret = clk_prepare_enable(drvdata->aud_dma_clk);
 	if (ret) {
-		dev_err(dai->dev, "error enabling aud_dma clk: %d\n", ret);
+		dev_err(dev, "error enabling aud_dma clk: %d\n", ret);
 		return ret;
 	}
 
 	ret = clk_prepare_enable(drvdata->aud_dma_mem_clk);
 	if (ret) {
-		dev_err(dai->dev, "error enabling aud_dma_mem clk: %d\n", ret);
+		dev_err(dev, "error enabling aud_dma_mem clk: %d\n", ret);
 		clk_disable_unprepare(drvdata->aud_dma_clk);
 		return ret;
 	}
 
 	ret = clk_prepare_enable(drvdata->mi2s_bit_clk[idx]);
 	if (ret) {
-		dev_err(dai->dev, "error enabling mi2s bit clk: %d\n", ret);
+		dev_err(dev, "error enabling mi2s bit clk: %d\n", ret);
 		clk_disable_unprepare(drvdata->aud_dma_mem_clk);
 		clk_disable_unprepare(drvdata->aud_dma_clk);
 	}
@@ -266,15 +277,18 @@ static int qaif_aif_cpu_daiops_startup(struct snd_pcm_substream *substream,
 static void qaif_aif_cpu_daiops_shutdown(struct snd_pcm_substream *substream,
 					 struct snd_soc_dai *dai)
 {
-	struct qaif_drv_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
 	struct qaif_aif_config *cfg;
 	unsigned int enable_bit;
-	int idx = v->get_dma_idx(dai->driver->id);
+	int dai_id = snd_soc_dai_id(dai);
+	int idx = v->get_dma_idx(dai_id);
 	int ret;
 
 	if (idx < 0) {
-		dev_err(dai->dev, "Invalid DMA index: %d\n", idx);
+		dev_err(dev, "Invalid DMA index: %d\n", idx);
 		return;
 	}
 
@@ -289,7 +303,7 @@ static void qaif_aif_cpu_daiops_shutdown(struct snd_pcm_substream *substream,
 	ret = regmap_update_bits(drvdata->audio_qaif_map,
 				 QAIF_AUD_INTF_CTL_REG(idx), enable_bit, 0);
 	if (ret)
-		dev_err(dai->dev, "error clearing AIF enable bit: %d\n", ret);
+		dev_err(dev, "error clearing AIF enable bit: %d\n", ret);
 
 	clk_disable_unprepare(drvdata->mi2s_bit_clk[idx]);
 	clk_disable_unprepare(drvdata->aud_dma_mem_clk);
@@ -300,18 +314,21 @@ static int qaif_aif_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 					 struct snd_pcm_hw_params *params,
 					 struct snd_soc_dai *dai)
 {
-	struct qaif_drv_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
 	const struct qaif_aif_config *cfg;
 	struct regmap *map = drvdata->audio_qaif_map;
+	int dai_id = snd_soc_dai_id(dai);
 	snd_pcm_format_t format = params_format(params);
 	unsigned int channels = params_channels(params);
 	unsigned int slot_width;
 	int bitwidth, idx, ret;
 
-	idx = v->get_dma_idx(dai->driver->id);
+	idx = v->get_dma_idx(dai_id);
 	if (idx < 0) {
-		dev_err(dai->dev, "Invalid DMA index: %d\n", idx);
+		dev_err(dev, "Invalid DMA index: %d\n", idx);
 		return -EINVAL;
 	}
 
@@ -319,7 +336,7 @@ static int qaif_aif_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 
 	bitwidth = snd_pcm_format_width(format);
 	if (bitwidth < 0) {
-		dev_err(dai->dev, "invalid bit width given: %d\n", bitwidth);
+		dev_err(dev, "invalid bit width given: %d\n", bitwidth);
 		return bitwidth;
 	}
 
@@ -360,7 +377,7 @@ static int qaif_aif_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 	if (ret)
 		return ret;
 
-	if (qaif_is_aif_mi2s_port(dai->driver->id) && !cfg->slot_width) {
+	if (qaif_is_aif_mi2s_port(dai_id) && !cfg->slot_width) {
 		slot_width = bitwidth;
 		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 			drvdata->aif_intf_cfg[idx].slot_en_tx_mask =
@@ -372,7 +389,7 @@ static int qaif_aif_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 	} else {
 		slot_width = cfg->slot_width;
 		if (!slot_width || !cfg->slot_num) {
-			dev_err(dai->dev, "invalid TDM slot config: width=%u num=%u\n",
+			dev_err(dev, "invalid TDM slot config: width=%u num=%u\n",
 				slot_width, cfg->slot_num);
 			return -EINVAL;
 		}
@@ -427,15 +444,18 @@ static int qaif_aif_cpu_daiops_hw_params(struct snd_pcm_substream *substream,
 static int qaif_aif_cpu_daiops_trigger(struct snd_pcm_substream *substream,
 				       int cmd, struct snd_soc_dai *dai)
 {
-	struct qaif_drv_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
 	const struct qaif_aif_config *cfg;
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int enable_bit;
 	int idx, ret;
 
-	idx = v->get_dma_idx(dai->driver->id);
+	idx = v->get_dma_idx(dai_id);
 	if (idx < 0) {
-		dev_err(dai->dev, "Invalid DMA index: %d\n", idx);
+		dev_err(dev, "Invalid DMA index: %d\n", idx);
 		return -EINVAL;
 	}
 
@@ -454,7 +474,7 @@ static int qaif_aif_cpu_daiops_trigger(struct snd_pcm_substream *substream,
 		ret = regmap_update_bits(drvdata->audio_qaif_map,
 					 QAIF_AUD_INTF_CTL_REG(idx), enable_bit, enable_bit);
 		if (ret)
-			dev_err(dai->dev, "error setting AIF enable bit: %d\n", ret);
+			dev_err(dev, "error setting AIF enable bit: %d\n", ret);
 		return ret;
 	case SNDRV_PCM_TRIGGER_STOP:
 	case SNDRV_PCM_TRIGGER_SUSPEND:
@@ -462,10 +482,10 @@ static int qaif_aif_cpu_daiops_trigger(struct snd_pcm_substream *substream,
 		ret = regmap_update_bits(drvdata->audio_qaif_map,
 					 QAIF_AUD_INTF_CTL_REG(idx), enable_bit, 0);
 		if (ret)
-			dev_err(dai->dev, "error clearing AIF enable bit: %d\n", ret);
+			dev_err(dev, "error clearing AIF enable bit: %d\n", ret);
 		return ret;
 	default:
-		dev_err(dai->dev, "invalid trigger cmd %d\n", cmd);
+		dev_err(dev, "invalid trigger cmd %d\n", cmd);
 		return -EINVAL;
 	}
 }
@@ -475,9 +495,12 @@ static int qaif_aif_cpu_daiops_set_tdm_slot(struct snd_soc_dai *dai,
 					    unsigned int rx_mask, int slots,
 					    int slot_width)
 {
-	struct qaif_drv_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
-	int idx = v->get_dma_idx(dai->driver->id);
+	int dai_id = snd_soc_dai_id(dai);
+	int idx = v->get_dma_idx(dai_id);
 	struct qaif_aif_config *cfg;
 
 	if (idx < 0)
@@ -503,9 +526,12 @@ static int qaif_aif_cpu_daiops_set_sysclk(struct snd_soc_dai *dai,
 					  int clk_id, unsigned int freq,
 					  int dir)
 {
-	struct qaif_drv_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
-	int idx = v->get_dma_idx(dai->driver->id);
+	int dai_id = snd_soc_dai_id(dai);
+	int idx = v->get_dma_idx(dai_id);
 
 	if (idx < 0)
 		return -EINVAL;
@@ -520,9 +546,12 @@ static int qaif_aif_cpu_daiops_set_sysclk(struct snd_soc_dai *dai,
 static int qaif_aif_cpu_daiops_set_fmt(struct snd_soc_dai *dai,
 				       unsigned int fmt)
 {
-	struct qaif_drv_data *drvdata = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qaif_drv_data *drvdata = dev_get_drvdata(dev);
 	const struct qaif_variant *v = drvdata->variant;
-	int idx = v->get_dma_idx(dai->driver->id);
+	int dai_id = snd_soc_dai_id(dai);
+	int idx = v->get_dma_idx(dai_id);
 	struct qaif_aif_config *cfg;
 
 	if (idx < 0)
@@ -545,7 +574,7 @@ static int qaif_aif_cpu_daiops_set_fmt(struct snd_soc_dai *dai,
 		cfg->sync_delay = QAIF_AIF_SYNC_DELAY_SAME;
 		break;
 	default:
-		dev_err(dai->dev, "unsupported format 0x%x\n",
+		dev_err(dev, "unsupported format 0x%x\n",
 			fmt & SND_SOC_DAIFMT_FORMAT_MASK);
 		return -EINVAL;
 	}
@@ -558,7 +587,7 @@ static int qaif_aif_cpu_daiops_set_fmt(struct snd_soc_dai *dai,
 		cfg->sync_src = 0;
 		break;
 	default:
-		dev_err(dai->dev, "unsupported clock provider mode\n");
+		dev_err(dev, "unsupported clock provider mode\n");
 		return -EINVAL;
 	}
 
@@ -575,7 +604,7 @@ static int qaif_aif_cpu_daiops_set_fmt(struct snd_soc_dai *dai,
 					   SND_SOC_DAIFMT_NB_IF;
 			break;
 		default:
-			dev_err(dai->dev, "bit clock inversion is not supported\n");
+			dev_err(dev, "bit clock inversion is not supported\n");
 			return -EINVAL;
 		}
 	}
@@ -603,7 +632,7 @@ EXPORT_SYMBOL_GPL(asoc_qcom_qaif_aif_cpu_dai_ops);
 
 static const struct snd_soc_component_driver qaif_cpu_comp_driver = {
 	.name = "qaif-cpu",
-	.of_xlate_dai_name = snd_soc_of_xlate_dai_name,
+	.of_xlate_dai_name = snd_soc_component_of_simple_xlate_dai_name,
 };
 
 static const struct regmap_config audio_qaif_regmap_config = {

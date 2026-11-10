@@ -19,32 +19,33 @@
 int asoc_sdw_rt_dmic_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_dai *dai)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct snd_soc_component *component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *component_dev = snd_soc_component_to_dev(component);
+	struct device *card_dev = snd_soc_card_to_dev(card);
 	struct sdw_slave *sdw_peripheral = NULL;
+	const char *name_prefix = snd_soc_component_name_prefix(component);
 	char *mic_name;
 	int rt1320_dmic_num = 0, part_id, i;
-
-	component = dai->component;
 
 	/*
 	 * rt715-sdca (aka rt714) is a special case that uses different name in card->components
 	 * and component->name_prefix.
 	 */
-	if (!strcmp(component->name_prefix, "rt714"))
-		mic_name = devm_kasprintf(card->dev, GFP_KERNEL, "rt715-sdca");
+	if (!strcmp(name_prefix, "rt714"))
+		mic_name = devm_kasprintf(card_dev, GFP_KERNEL, "rt715-sdca");
 	else
-		mic_name = devm_kasprintf(card->dev, GFP_KERNEL, "%s", component->name_prefix);
+		mic_name = devm_kasprintf(card_dev, GFP_KERNEL, "%s", name_prefix);
 	if (!mic_name)
 		return -ENOMEM;
 
 	/*
 	 * If there is any rt1320/rt1321 DMIC belonging to this card, try to count the `cfg-mics`
 	 * to be used in card->components.
-	 * Note: The rt1320 drivers register the peripheral dev to component->dev, so get the
-	 * sdw_peripheral from component->dev.
+	 * Note: The rt1320 drivers register the peripheral dev to component_dev, so get the
+	 * sdw_peripheral from component_dev.
 	 */
-	if (is_sdw_slave(component->dev))
-		sdw_peripheral = dev_to_sdw_dev(component->dev);
+	if (is_sdw_slave(component_dev))
+		sdw_peripheral = dev_to_sdw_dev(component_dev);
 	if (sdw_peripheral &&
 	    (sdw_peripheral->id.part_id == 0x1320 || sdw_peripheral->id.part_id == 0x1321)) {
 		part_id = sdw_peripheral->id.part_id;
@@ -53,9 +54,9 @@ int asoc_sdw_rt_dmic_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_da
 		 * function SmartMic type in this card.
 		 */
 		for_each_card_components(card, component) {
-			if (!is_sdw_slave(component->dev))
+			if (!is_sdw_slave(component_dev))
 				continue;
-			sdw_peripheral = dev_to_sdw_dev(component->dev);
+			sdw_peripheral = dev_to_sdw_dev(component_dev);
 			if (sdw_peripheral->id.part_id != part_id)
 				continue;
 			for (i = 0; i < sdw_peripheral->sdca_data.num_functions; i++) {
@@ -66,19 +67,21 @@ int asoc_sdw_rt_dmic_rtd_init(struct snd_soc_pcm_runtime *rtd, struct snd_soc_da
 				}
 			}
 		}
-		card->components = devm_kasprintf(card->dev, GFP_KERNEL,
-						  "%s mic:%s cfg-mics:%d", card->components,
-						  mic_name, rt1320_dmic_num);
+		snd_soc_card_set_components(card, devm_kasprintf(card_dev, GFP_KERNEL,
+						  "%s mic:%s cfg-mics:%d",
+						  snd_soc_card_components(card),
+						  mic_name, rt1320_dmic_num));
 	} else {
-		card->components = devm_kasprintf(card->dev, GFP_KERNEL,
-						  "%s mic:%s", card->components,
-						  mic_name);
+		snd_soc_card_set_components(card, devm_kasprintf(card_dev, GFP_KERNEL,
+						  "%s mic:%s",
+						  snd_soc_card_components(card),
+						  mic_name));
 	}
 
-	if (!card->components)
+	if (!snd_soc_card_components(card))
 		return -ENOMEM;
 
-	dev_dbg(card->dev, "card->components: %s\n", card->components);
+	dev_dbg(card_dev, "card->components: %s\n", snd_soc_card_components(card));
 
 	return 0;
 }

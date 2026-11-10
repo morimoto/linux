@@ -59,7 +59,8 @@ static SOC_ENUM_SINGLE_DECL(speaker_mode,
 
 static void wait_for_dc_servo(struct snd_soc_component *component, unsigned int op)
 {
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 	unsigned int reg;
 	int count = 0;
 	int timeout;
@@ -70,7 +71,7 @@ static void wait_for_dc_servo(struct snd_soc_component *component, unsigned int 
 	/* Trigger the command */
 	snd_soc_component_write(component, WM8993_DC_SERVO_0, val);
 
-	dev_dbg(component->dev, "Waiting for DC servo...\n");
+	dev_dbg(dev, "Waiting for DC servo...\n");
 
 	if (hubs->dcs_done_irq)
 		timeout = 4;
@@ -87,12 +88,11 @@ static void wait_for_dc_servo(struct snd_soc_component *component, unsigned int 
 			msleep(1);
 
 		reg = snd_soc_component_read(component, WM8993_DC_SERVO_0);
-		dev_dbg(component->dev, "DC servo: %x\n", reg);
+		dev_dbg(dev, "DC servo: %x\n", reg);
 	} while (reg & op && count < timeout);
 
 	if (reg & op)
-		dev_err(component->dev, "Timed out waiting for DC Servo %x\n",
-			op);
+		dev_err(dev, "Timed out waiting for DC Servo %x\n", op);
 }
 
 irqreturn_t wm_hubs_dcs_done(int irq, void *data)
@@ -107,33 +107,34 @@ EXPORT_SYMBOL_GPL(wm_hubs_dcs_done);
 
 static bool wm_hubs_dac_hp_direct(struct snd_soc_component *component)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	int reg;
 
 	/* If we're going via the mixer we'll need to do additional checks */
 	reg = snd_soc_component_read(component, WM8993_OUTPUT_MIXER1);
 	if (!(reg & WM8993_DACL_TO_HPOUT1L)) {
 		if (reg & ~WM8993_DACL_TO_MIXOUTL) {
-			dev_vdbg(component->dev, "Analogue paths connected: %x\n",
+			dev_vdbg(dev, "Analogue paths connected: %x\n",
 				 reg & ~WM8993_DACL_TO_HPOUT1L);
 			return false;
 		} else {
-			dev_vdbg(component->dev, "HPL connected to mixer\n");
+			dev_vdbg(dev, "HPL connected to mixer\n");
 		}
 	} else {
-		dev_vdbg(component->dev, "HPL connected to DAC\n");
+		dev_vdbg(dev, "HPL connected to DAC\n");
 	}
 
 	reg = snd_soc_component_read(component, WM8993_OUTPUT_MIXER2);
 	if (!(reg & WM8993_DACR_TO_HPOUT1R)) {
 		if (reg & ~WM8993_DACR_TO_MIXOUTR) {
-			dev_vdbg(component->dev, "Analogue paths connected: %x\n",
+			dev_vdbg(dev, "Analogue paths connected: %x\n",
 				 reg & ~WM8993_DACR_TO_HPOUT1R);
 			return false;
 		} else {
-			dev_vdbg(component->dev, "HPR connected to mixer\n");
+			dev_vdbg(dev, "HPR connected to mixer\n");
 		}
 	} else {
-		dev_vdbg(component->dev, "HPR connected to DAC\n");
+		dev_vdbg(dev, "HPR connected to DAC\n");
 	}
 
 	return true;
@@ -149,7 +150,8 @@ struct wm_hubs_dcs_cache {
 static bool wm_hubs_dcs_cache_get(struct snd_soc_component *component,
 				  struct wm_hubs_dcs_cache **entry)
 {
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 	struct wm_hubs_dcs_cache *cache;
 	unsigned int left, right;
 
@@ -172,13 +174,14 @@ static bool wm_hubs_dcs_cache_get(struct snd_soc_component *component,
 
 static void wm_hubs_dcs_cache_set(struct snd_soc_component *component, u16 dcs_cfg)
 {
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 	struct wm_hubs_dcs_cache *cache;
 
 	if (hubs->no_cache_dac_hp_direct)
 		return;
 
-	cache = devm_kzalloc(component->dev, sizeof(*cache), GFP_KERNEL);
+	cache = devm_kzalloc(dev, sizeof(*cache), GFP_KERNEL);
 	if (!cache)
 		return;
 
@@ -196,7 +199,8 @@ static void wm_hubs_dcs_cache_set(struct snd_soc_component *component, u16 dcs_c
 static int wm_hubs_read_dc_servo(struct snd_soc_component *component,
 				  u16 *reg_l, u16 *reg_r)
 {
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 	u16 dcs_reg, reg;
 	int ret = 0;
 
@@ -241,7 +245,8 @@ static int wm_hubs_read_dc_servo(struct snd_soc_component *component,
  */
 static void enable_dc_servo(struct snd_soc_component *component)
 {
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 	struct wm_hubs_dcs_cache *cache;
 	s8 offset;
 	u16 reg_l, reg_r, dcs_cfg, dcs_reg;
@@ -259,7 +264,7 @@ static void enable_dc_servo(struct snd_soc_component *component)
 	 * callibrated DC servo offset stored then use that. */
 	if (wm_hubs_dac_hp_direct(component) &&
 	    wm_hubs_dcs_cache_get(component, &cache)) {
-		dev_dbg(component->dev, "Using cached DCS offset %x for %d,%d\n",
+		dev_dbg(dev, "Using cached DCS offset %x for %d,%d\n",
 			cache->dcs_cfg, cache->left, cache->right);
 		snd_soc_component_write(component, dcs_reg, cache->dcs_cfg);
 		wait_for_dc_servo(component,
@@ -285,29 +290,29 @@ static void enable_dc_servo(struct snd_soc_component *component)
 	if (wm_hubs_read_dc_servo(component, &reg_l, &reg_r) < 0)
 		return;
 
-	dev_dbg(component->dev, "DCS input: %x %x\n", reg_l, reg_r);
+	dev_dbg(dev, "DCS input: %x %x\n", reg_l, reg_r);
 
 	/* Apply correction to DC servo result */
 	if (hubs->dcs_codes_l || hubs->dcs_codes_r) {
-		dev_dbg(component->dev,
+		dev_dbg(dev,
 			"Applying %d/%d code DC servo correction\n",
 			hubs->dcs_codes_l, hubs->dcs_codes_r);
 
 		/* HPOUT1R */
 		offset = (s8)reg_r;
-		dev_dbg(component->dev, "DCS right %d->%d\n", offset,
+		dev_dbg(dev, "DCS right %d->%d\n", offset,
 			offset + hubs->dcs_codes_r);
 		offset += hubs->dcs_codes_r;
 		dcs_cfg = (u8)offset << WM8993_DCS_DAC_WR_VAL_1_SHIFT;
 
 		/* HPOUT1L */
 		offset = (s8)reg_l;
-		dev_dbg(component->dev, "DCS left %d->%d\n", offset,
+		dev_dbg(dev, "DCS left %d->%d\n", offset,
 			offset + hubs->dcs_codes_l);
 		offset += hubs->dcs_codes_l;
 		dcs_cfg |= (u8)offset;
 
-		dev_dbg(component->dev, "DCS result: %x\n", dcs_cfg);
+		dev_dbg(dev, "DCS result: %x\n", dcs_cfg);
 
 		/* Do it */
 		snd_soc_component_write(component, dcs_reg, dcs_cfg);
@@ -332,7 +337,8 @@ static int wm8993_put_dc_servo(struct snd_kcontrol *kcontrol,
 			       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 	int ret;
 
 	ret = snd_soc_put_volsw(kcontrol, ucontrol);
@@ -497,7 +503,8 @@ static int hp_supply_event(struct snd_soc_dapm_widget *w,
 			   struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -520,7 +527,7 @@ static int hp_supply_event(struct snd_soc_dapm_widget *w,
 					    WM8993_HPOUT1R_DLY);
 			break;
 		default:
-			dev_err(component->dev, "Unknown HP startup mode %d\n",
+			dev_err(dev, "Unknown HP startup mode %d\n",
 				hubs->hp_startup_mode);
 			break;
 		}
@@ -616,7 +623,8 @@ static int lineout_event(struct snd_soc_dapm_widget *w,
 			 struct snd_kcontrol *control, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 	bool *flag;
 
 	switch (w->shift) {
@@ -646,7 +654,8 @@ static int micbias_event(struct snd_soc_dapm_widget *w,
 			 struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 
 	switch (w->shift) {
 	case WM8993_MICB1_ENA_SHIFT:
@@ -666,7 +675,8 @@ static int micbias_event(struct snd_soc_dapm_widget *w,
 
 void wm_hubs_update_class_w(struct snd_soc_component *component)
 {
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 	int enable = WM8993_CP_DYN_V | WM8993_CP_DYN_FREQ;
 
 	if (!wm_hubs_dac_hp_direct(component))
@@ -675,7 +685,7 @@ void wm_hubs_update_class_w(struct snd_soc_component *component)
 	if (hubs->check_class_w_digital && !hubs->check_class_w_digital(component))
 		enable = false;
 
-	dev_vdbg(component->dev, "Class W %s\n", str_enabled_disabled(enable));
+	dev_vdbg(dev, "Class W %s\n", str_enabled_disabled(enable));
 
 	snd_soc_component_update_bits(component, WM8993_CLASS_W_0,
 			    WM8993_CP_DYN_V | WM8993_CP_DYN_FREQ, enable);
@@ -1143,7 +1153,7 @@ int wm_hubs_add_analogue_controls(struct snd_soc_component *component)
 			    WM8993_MIXOUTR_ZC | WM8993_MIXOUT_VU,
 			    WM8993_MIXOUTR_ZC | WM8993_MIXOUT_VU);
 
-	snd_soc_add_component_controls(component, analogue_snd_controls,
+	snd_soc_component_add_controls(component, analogue_snd_controls,
 			     ARRAY_SIZE(analogue_snd_controls));
 
 	snd_soc_dapm_new_controls(dapm, analogue_dapm_widgets,
@@ -1155,7 +1165,8 @@ EXPORT_SYMBOL_GPL(wm_hubs_add_analogue_controls);
 int wm_hubs_add_analogue_routes(struct snd_soc_component *component,
 				int lineout1_diff, int lineout2_diff)
 {
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	hubs->component = component;
@@ -1195,7 +1206,8 @@ int wm_hubs_handle_analogue_pdata(struct snd_soc_component *component,
 				  int micbias1_delay, int micbias2_delay,
 				  int micbias1_lvl, int micbias2_lvl)
 {
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 
 	hubs->lineout1_se = !lineout1_diff;
 	hubs->lineout2_se = !lineout2_diff;
@@ -1241,7 +1253,8 @@ EXPORT_SYMBOL_GPL(wm_hubs_handle_analogue_pdata);
 
 void wm_hubs_vmid_ena(struct snd_soc_component *component)
 {
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 	int val = 0;
 
 	if (hubs->lineout1_se)
@@ -1258,7 +1271,8 @@ EXPORT_SYMBOL_GPL(wm_hubs_vmid_ena);
 void wm_hubs_set_bias_level(struct snd_soc_component *component,
 			    enum snd_soc_bias_level level)
 {
-	struct wm_hubs_data *hubs = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm_hubs_data *hubs = dev_get_drvdata(dev);
 	int mask, val;
 
 	switch (level) {

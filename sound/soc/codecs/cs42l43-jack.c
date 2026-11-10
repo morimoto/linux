@@ -86,7 +86,8 @@ static void cs42l43_apply_accdet_config(struct cs42l43_codec *priv,
 int cs42l43_set_jack(struct snd_soc_component *component,
 		     struct snd_soc_jack *jack, void *d)
 {
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	struct cs42l43 *cs42l43 = priv->core;
 	/* This tip sense invert is always set, HW wants an inverted signal */
 	unsigned int tip_deb = CS42L43_TIPSENSE_INV_MASK;
@@ -883,7 +884,8 @@ SOC_ENUM_SINGLE_VIRT_DECL(cs42l43_jack_enum, cs42l43_jack_text);
 int cs42l43_jack_get(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 
 	guard(mutex)(&priv->jack_lock);
 	ucontrol->value.integer.value[0] = priv->jack_override;
@@ -894,7 +896,8 @@ int cs42l43_jack_get(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *u
 int cs42l43_jack_put(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct cs42l43_codec *priv = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct cs42l43_codec *priv = dev_get_drvdata(dev);
 	struct cs42l43 *cs42l43 = priv->core;
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int override = ucontrol->value.integer.value[0];
