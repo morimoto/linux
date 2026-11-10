@@ -6,10 +6,8 @@
 //          Amadeusz Slawinski <amadeuszx.slawinski@linux.intel.com>
 //
 
-#include <linux/cleanup.h>
 #include <linux/acpi.h>
 #include <acpi/nhlt.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include "avs.h"
 #include "control.h"

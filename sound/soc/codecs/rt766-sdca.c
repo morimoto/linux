@@ -11,13 +11,9 @@
 #include <linux/delay.h>
 #include <linux/init.h>
 #include <sound/initval.h>
-#include <sound/jack.h>
 #include <linux/kernel.h>
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
 #include <linux/soundwire/sdw_registers.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/sdw.h>
 #include <sound/sdca.h>
 #include <sound/sdca_asoc.h>
@@ -25,8 +21,7 @@
 #include <sound/sdca_hid.h>
 #include <sound/sdca_regmap.h>
 #include <sound/sdca_interrupts.h>
-#include <linux/slab.h>
-#include <sound/soc-dapm.h>
+#include <sound/soc.h>
 #include <sound/tlv.h>
 #include "rt766-sdca.h"
 #include "rt-sdw-common.h"

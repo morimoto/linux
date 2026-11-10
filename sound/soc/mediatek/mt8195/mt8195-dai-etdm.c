@@ -7,10 +7,8 @@
  *         Trevor Wu <trevor.wu@mediatek.com>
  */
 
-#include <linux/delay.h>
 #include <linux/pm_runtime.h>
 #include <linux/regmap.h>
-#include <sound/pcm_params.h>
 #include "mt8195-afe-clk.h"
 #include "mt8195-afe-common.h"
 #include "mt8195-reg.h"

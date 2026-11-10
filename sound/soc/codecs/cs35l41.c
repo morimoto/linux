@@ -8,19 +8,8 @@
 
 #include <linux/acpi.h>
 #include <acpi/acpi_bus.h>
-#include <linux/delay.h>
-#include <linux/err.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/moduleparam.h>
 #include <linux/pm_runtime.h>
-#include <linux/property.h>
-#include <sound/initval.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
 
 #include "cs35l41.h"

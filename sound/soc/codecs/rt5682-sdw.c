@@ -5,28 +5,14 @@
 // Copyright 2019 Realtek Semiconductor Corp.
 // Author: Oder Chiou <oder_chiou@realtek.com>
 //
-
-#include <linux/cleanup.h>
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/pm.h>
 #include <linux/acpi.h>
 #include <linux/pm_runtime.h>
 #include <linux/regulator/consumer.h>
-#include <linux/mutex.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_type.h>
 #include <linux/soundwire/sdw_registers.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/jack.h>
 #include <sound/sdw.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/initval.h>
 #include <sound/tlv.h>
 
 #include "rt5682.h"

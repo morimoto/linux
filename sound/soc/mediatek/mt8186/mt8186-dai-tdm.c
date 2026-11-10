@@ -5,9 +5,6 @@
 // Copyright (c) 2022 MediaTek Inc.
 // Author: Jiaxin Yu <jiaxin.yu@mediatek.com>
 
-#include <linux/regmap.h>
-#include <sound/pcm_params.h>
-
 #include "mt8186-afe-clk.h"
 #include "mt8186-afe-common.h"
 #include "mt8186-afe-gpio.h"

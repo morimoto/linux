@@ -11,17 +11,7 @@
 /*
  * Generic Hardware interface for ACP Audio I2S controller
  */
-
-#include <linux/platform_device.h>
-#include <linux/module.h>
-#include <linux/err.h>
-#include <linux/io.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
-#include <linux/dma-mapping.h>
-#include <linux/bitfield.h>
-
 #include "amd.h"
 
 #define DRV_NAME "acp_i2s_playcap"

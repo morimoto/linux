@@ -7,11 +7,7 @@
 #ifndef _MESON_AXG_TDM_H
 #define _MESON_AXG_TDM_H
 
-#include <linux/clk.h>
-#include <linux/regmap.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
 
 #define AXG_TDM_NUM_LANES	4
 #define AXG_TDM_CHANNEL_MAX	128

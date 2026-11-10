@@ -6,15 +6,10 @@
  */
 
 #include <linux/clk.h>
-#include <linux/device.h>
 #include <linux/io.h>
-#include <linux/module.h>
 #include <linux/of_platform.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/reset.h>
-#include <linux/slab.h>
 #include <sound/soc.h>
 #include "tegra30_ahub.h"
 

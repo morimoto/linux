@@ -10,22 +10,10 @@
 
 #include <crypto/sha2.h>
 #include <linux/acpi.h>
-#include <linux/delay.h>
-#include <linux/device.h>
-#include <linux/cleanup.h>
-#include <linux/io.h>
-#include <linux/jiffies.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/of_address.h>
 #include <linux/of_reserved_mem.h>
 #include <linux/platform_data/cros_ec_commands.h>
 #include <linux/platform_data/cros_ec_proto.h>
-#include <linux/platform_device.h>
-#include <linux/string_choices.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 

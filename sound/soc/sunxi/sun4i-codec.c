@@ -10,23 +10,11 @@
  * Based on the Allwinner SDK driver, released under the GPL.
  */
 
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <linux/delay.h>
-#include <linux/slab.h>
 #include <linux/clk.h>
-#include <linux/regmap.h>
 #include <linux/reset.h>
 #include <linux/gpio/consumer.h>
 
-#include <sound/core.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/initval.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 

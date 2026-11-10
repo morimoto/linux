@@ -7,15 +7,7 @@
  */
 
 #include <linux/clk.h>
-#include <linux/device.h>
-#include <linux/err.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
 
 #include "lpass-lpaif-reg.h"
 #include "lpass.h"

@@ -5,14 +5,6 @@
  * Copyright (c) 2015, ROCKCHIP CORPORATION.  All rights reserved.
  */
 
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
-#include <linux/delay.h>
-#include <sound/core.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include "rockchip_i2s.h"
 #include "../codecs/rt5645.h"

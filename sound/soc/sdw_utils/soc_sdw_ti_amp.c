@@ -5,12 +5,7 @@
  *  soc_sdw_ti_amp - Helpers to handle TI's soundwire based codecs
  */
 
-#include <linux/device.h>
-#include <linux/errno.h>
 #include <linux/input.h>
-#include <sound/jack.h>
-#include <sound/soc-acpi.h>
-#include <sound/soc-dai.h>
 #include <sound/soc.h>
 #include <sound/soc_sdw_utils.h>
 

@@ -7,11 +7,6 @@
  * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
  */
 
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/pm.h>
 #include <linux/firmware.h>
 #include <linux/gcd.h>
 #include <linux/gpio/consumer.h>
@@ -19,13 +14,7 @@
 #include <linux/pm_runtime.h>
 #include <linux/regulator/consumer.h>
 #include <linux/regulator/fixed.h>
-#include <linux/slab.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/jack.h>
-#include <sound/initval.h>
 #include <sound/tlv.h>
 #include <sound/wm2200.h>
 

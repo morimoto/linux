@@ -95,17 +95,10 @@
  * see
  *	AK4613_ENABLE_TDM_TEST
  */
-#include <linux/cleanup.h>
 #include <linux/clk.h>
-#include <linux/delay.h>
 #include <linux/i2c.h>
-#include <linux/slab.h>
-#include <linux/of.h>
 #include <linux/of_graph.h>
-#include <linux/module.h>
-#include <linux/regmap.h>
 #include <sound/soc.h>
-#include <sound/pcm_params.h>
 #include <sound/tlv.h>
 
 #define PW_MGMT1	0x00 /* Power Management 1 */

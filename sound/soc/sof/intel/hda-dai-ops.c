@@ -5,7 +5,6 @@
 //
 // Copyright(c) 2022 Intel Corporation
 
-#include <sound/pcm_params.h>
 #include <sound/hdaudio_ext.h>
 #include <sound/hda_register.h>
 #include <sound/hda-mlink.h>

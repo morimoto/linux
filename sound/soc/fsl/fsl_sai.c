@@ -5,20 +5,12 @@
 // Copyright 2012-2015 Freescale Semiconductor, Inc.
 
 #include <linux/clk.h>
-#include <linux/delay.h>
 #include <linux/dmaengine.h>
 #include <linux/firmware/imx/sm.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/pinctrl/consumer.h>
 #include <linux/pm_qos.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
-#include <linux/time.h>
-#include <sound/core.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 #include <linux/mfd/syscon.h>
 #include <linux/mfd/syscon/imx6q-iomuxc-gpr.h>
 

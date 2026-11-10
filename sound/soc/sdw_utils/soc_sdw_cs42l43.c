@@ -7,17 +7,12 @@
 /*
  *  soc_sdw_cs42l43 - Helpers to handle CS42L43 from generic machine driver
  */
-#include <linux/device.h>
-#include <linux/errno.h>
 #include <linux/input.h>
-#include <sound/jack.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_type.h>
 #include <sound/cs42l43.h>
-#include <sound/control.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dapm.h>
 #include <sound/soc_sdw_utils.h>
 
 #define CS42L43_SPK_VOLUME_0DB	128 /* 0dB Max */

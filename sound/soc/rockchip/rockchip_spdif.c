@@ -10,15 +10,11 @@
  */
 
 #include <linux/bitfield.h>
-#include <linux/module.h>
-#include <linux/delay.h>
 #include <linux/clk.h>
 #include <linux/pm_runtime.h>
 #include <linux/mfd/syscon.h>
-#include <linux/regmap.h>
-#include <sound/pcm_params.h>
-#include <sound/pcm_iec958.h>
 #include <sound/dmaengine_pcm.h>
+#include <sound/pcm_iec958.h>
 
 #include "rockchip_spdif.h"
 

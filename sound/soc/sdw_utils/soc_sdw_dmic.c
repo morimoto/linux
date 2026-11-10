@@ -9,7 +9,6 @@
 
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dapm.h>
 #include <sound/soc_sdw_utils.h>
 
 static const struct snd_soc_dapm_widget dmic_widgets[] = {

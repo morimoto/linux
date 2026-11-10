@@ -8,26 +8,14 @@
  *  Co-author: Meng-Huang Kuo <mhkuo@nuvoton.com>
  */
 
-#include <linux/module.h>
-#include <linux/delay.h>
-#include <linux/init.h>
 #include <linux/int_log.h>
 #include <linux/i2c.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
 #include <linux/clk.h>
 #include <linux/acpi.h>
 #include <linux/math64.h>
 #include <linux/semaphore.h>
-
-#include <sound/initval.h>
 #include <sound/tlv.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/jack.h>
-
 
 #include "nau8825.h"
 

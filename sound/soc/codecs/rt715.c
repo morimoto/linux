@@ -8,25 +8,12 @@
  *
  */
 
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/delay.h>
 #include <linux/i2c.h>
 #include <linux/pm_runtime.h>
-#include <linux/pm.h>
 #include <linux/soundwire/sdw.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
-#include <linux/platform_device.h>
 #include <linux/regulator/consumer.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/sdw.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/initval.h>
 #include <sound/tlv.h>
 #include <sound/hda_verbs.h>
 

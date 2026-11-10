@@ -3,30 +3,13 @@
 
 #include <linux/atomic.h>
 #include <linux/clk.h>
-#include <linux/device.h>
-#include <linux/dma-mapping.h>
 #include <linux/firmware.h>
-#include <linux/interrupt.h>
-#include <linux/kobject.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/miscdevice.h>
-#include <linux/of.h>
-#include <linux/of_address.h>
-#include <linux/of_irq.h>
-#include <linux/of_platform.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/sched/signal.h>
-#include <linux/sysfs.h>
-#include <linux/types.h>
 #include <linux/gcd.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
-#include <sound/core.h>
 
 #include "fsl_easrc.h"
 #include "imx-pcm.h"

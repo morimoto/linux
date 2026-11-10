@@ -8,10 +8,6 @@
 // Author: Maruthi Srinivas Bayyavarapu <maruthis@xilinx.com>
 
 #include <linux/io.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <linux/property.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #define DRV_NAME "xlnx_i2s"

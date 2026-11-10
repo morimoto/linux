@@ -7,14 +7,9 @@
  *  soc_sdw_rt700 - Helpers to handle RT700 from generic machine driver
  */
 
-#include <linux/device.h>
-#include <linux/errno.h>
 #include <linux/input.h>
-#include <sound/control.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dapm.h>
-#include <sound/jack.h>
 #include <sound/soc_sdw_utils.h>
 
 static const struct snd_soc_dapm_route rt700_map[] = {

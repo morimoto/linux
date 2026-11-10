@@ -10,18 +10,9 @@
  *   Copyright (C) 2006 Lennert Buytenhek <buytenh@wantstofly.org>
  */
 
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/slab.h>
 #include <linux/clk.h>
 #include <linux/io.h>
-#include <linux/of.h>
-
-#include <sound/core.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/initval.h>
 #include <sound/soc.h>
 
 #include <linux/soc/cirrus/ep93xx.h>

@@ -6,8 +6,6 @@
 
 #include <linux/bitfield.h>
 #include <linux/bitops.h>
-#include <linux/regmap.h>
-#include <sound/pcm_params.h>
 #include "an7581-afe-common.h"
 #include "an7581-reg.h"
 

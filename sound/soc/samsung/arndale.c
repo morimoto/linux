@@ -4,15 +4,8 @@
 //
 //  Author: Claude <claude@insginal.co.kr>
 
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
 #include <linux/clk.h>
-
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 
 #include "../codecs/wm8994.h"
 #include "i2s.h"

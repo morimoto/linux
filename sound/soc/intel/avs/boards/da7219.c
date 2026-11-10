@@ -5,15 +5,9 @@
 // Author: Cezary Rojewski <cezary.rojewski@intel.com>
 //
 
-#include <linux/module.h>
 #include <linux/platform_data/x86/soc.h>
-#include <linux/platform_device.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dapm.h>
 #include <uapi/linux/input-event-codes.h>
 #include "../../../codecs/da7219.h"
 #include "../utils.h"

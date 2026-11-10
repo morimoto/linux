@@ -3,24 +3,12 @@
 // Driver for the Texas Instruments TAS2764 CODEC
 // Copyright (C) 2020 Texas Instruments Inc.
 
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/err.h>
-#include <linux/init.h>
-#include <linux/delay.h>
 #include <linux/hwmon.h>
-#include <linux/pm.h>
 #include <linux/i2c.h>
 #include <linux/gpio/consumer.h>
 #include <linux/regulator/consumer.h>
-#include <linux/regmap.h>
-#include <linux/of.h>
 #include <linux/of_device.h>
-#include <linux/slab.h>
 #include <sound/soc.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/initval.h>
 #include <sound/tlv.h>
 
 #include "tas2764.h"

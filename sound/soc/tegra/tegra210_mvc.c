@@ -5,15 +5,8 @@
 // tegra210_mvc.c - Tegra210 MVC driver
 
 #include <linux/clk.h>
-#include <linux/device.h>
 #include <linux/io.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #include "tegra210_mvc.h"

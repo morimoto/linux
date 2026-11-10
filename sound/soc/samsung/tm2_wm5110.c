@@ -7,9 +7,6 @@
 
 #include <linux/clk.h>
 #include <linux/gpio/consumer.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #include "i2s.h"

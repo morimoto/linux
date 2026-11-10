@@ -5,17 +5,13 @@
 //                    Cirrus Logic International Semiconductor Ltd.
 
 #include <linux/acpi.h>
-#include <linux/device.h>
 #include <linux/gpio/consumer.h>
 #include <linux/iopoll.h>
-#include <linux/module.h>
 #include <linux/of_irq.h>
 #include <linux/pm_runtime.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_registers.h>
 #include <linux/soundwire/sdw_type.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/sdw.h>
 #include <sound/soc.h>
 

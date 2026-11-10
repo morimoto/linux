@@ -4,27 +4,13 @@
 //
 // Copyright 2010-2011 Freescale Semiconductor, Inc. All Rights Reserved.
 
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/slab.h>
-#include <linux/pm.h>
 #include <linux/i2c.h>
 #include <linux/clk.h>
-#include <linux/log2.h>
-#include <linux/of.h>
-#include <linux/regmap.h>
 #include <linux/regulator/driver.h>
 #include <linux/regulator/machine.h>
 #include <linux/regulator/consumer.h>
-#include <sound/core.h>
 #include <sound/tlv.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/initval.h>
 
 #include "sgtl5000.h"
 

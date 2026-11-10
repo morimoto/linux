@@ -8,16 +8,11 @@
 
 #include <linux/bitfield.h>
 #include <linux/clk.h>
-#include <linux/completion.h>
-#include <linux/delay.h>
-#include <linux/module.h>
 #include <linux/of_platform.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/reset.h>
 
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 
 /* SPDIF-rx Register Map */
 #define STM32_SPDIFRX_CR	0x00

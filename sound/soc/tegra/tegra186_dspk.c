@@ -4,14 +4,7 @@
 // tegra186_dspk.c - Tegra186 DSPK driver
 
 #include <linux/clk.h>
-#include <linux/device.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
-#include <sound/core.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include "tegra186_dspk.h"
 #include "tegra_cif.h"

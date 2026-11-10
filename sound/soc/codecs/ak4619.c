@@ -13,13 +13,8 @@
 #include <linux/clk.h>
 #include <linux/gpio/consumer.h>
 #include <linux/i2c.h>
-#include <linux/slab.h>
 #include <linux/of_device.h>
-#include <linux/module.h>
-#include <linux/regmap.h>
 #include <sound/soc.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/tlv.h>
 
 /*

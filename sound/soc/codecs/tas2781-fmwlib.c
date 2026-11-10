@@ -10,15 +10,8 @@
 #include <linux/crc8.h>
 #include <linux/firmware.h>
 #include <linux/i2c.h>
-#include <linux/init.h>
-#include <linux/interrupt.h>
 #include <linux/limits.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/of_irq.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 #include <sound/tas2781.h>

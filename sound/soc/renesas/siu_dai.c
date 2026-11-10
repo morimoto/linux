@@ -5,16 +5,12 @@
 // Copyright (C) 2009-2010 Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 // Copyright (C) 2006 Carlos Munoz <carlos@kenati.com>
 
-#include <linux/delay.h>
 #include <linux/firmware.h>
 #include <linux/pm_runtime.h>
-#include <linux/slab.h>
-#include <linux/module.h>
 
 #include <asm/clock.h>
 #include <asm/siu.h>
 
-#include <sound/control.h>
 #include <sound/soc.h>
 
 #include "siu.h"

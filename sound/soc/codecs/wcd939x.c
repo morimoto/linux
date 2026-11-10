@@ -5,25 +5,12 @@
  * Copyright (c) 2023, Linaro Limited
  */
 
-#include <linux/module.h>
-#include <linux/slab.h>
-#include <linux/platform_device.h>
-#include <linux/cleanup.h>
-#include <linux/device.h>
-#include <linux/delay.h>
 #include <linux/gpio/consumer.h>
-#include <linux/kernel.h>
 #include <linux/pm_runtime.h>
 #include <linux/component.h>
 #include <sound/tlv.h>
 #include <linux/of_graph.h>
-#include <linux/of.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <linux/regmap.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <linux/regulator/consumer.h>
 #include <linux/usb/typec_mux.h>
 #include <linux/usb/typec_altmode.h>

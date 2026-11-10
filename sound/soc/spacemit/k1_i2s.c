@@ -5,8 +5,6 @@
 #include <linux/clk.h>
 #include <linux/reset.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 
 #define SSCR			0x00	/* SPI/I2S top control register */
 #define SSFCR			0x04	/* SPI/I2S FIFO control register */

@@ -6,30 +6,10 @@
  * Author: Oder Chiou <oder_chiou@realtek.com>
  */
 
-#include <linux/cleanup.h>
-#include <linux/bits.h>
-#include <linux/delay.h>
 #include <linux/firmware.h>
-#include <linux/fs.h>
 #include <linux/i2c.h>
-#include <linux/init.h>
-#include <linux/interrupt.h>
-#include <linux/irqdomain.h>
-#include <linux/irq.h>
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/platform_device.h>
-#include <linux/pm.h>
-#include <linux/property.h>
-#include <linux/regmap.h>
 #include <linux/spi/spi.h>
-#include <linux/workqueue.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/initval.h>
 #include <sound/tlv.h>
 
 #include "rl6231.h"

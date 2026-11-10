@@ -9,7 +9,6 @@
 #ifndef ASOC_MADERA_H
 #define ASOC_MADERA_H
 
-#include <linux/completion.h>
 #include <sound/soc.h>
 #include <sound/madera-pdata.h>
 

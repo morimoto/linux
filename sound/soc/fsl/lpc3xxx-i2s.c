@@ -5,19 +5,9 @@
 // Copyright (C) 2008 NXP Semiconductors
 // Copyright 2023 Timesys Corporation <piotr.wojtaszczyk@timesys.com>
 
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/interrupt.h>
-#include <linux/device.h>
-#include <linux/delay.h>
 #include <linux/clk.h>
 #include <linux/io.h>
-
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/initval.h>
 #include <sound/soc.h>
 
 #include "lpc3xxx-i2s.h"

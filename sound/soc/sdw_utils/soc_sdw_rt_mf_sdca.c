@@ -7,14 +7,10 @@
  *  - Helpers to handle RT Multifunction Codec from generic machine driver
  */
 
-#include <linux/device.h>
-#include <linux/errno.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_type.h>
-#include <sound/control.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dapm.h>
 #include <sound/soc_sdw_utils.h>
 
 #define CODEC_NAME_SIZE	6

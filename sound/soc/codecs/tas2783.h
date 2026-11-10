@@ -11,8 +11,6 @@
  * Author: Niranjan H Y <niranjanhy@ti.com>
  * Author: Baojun Xu <baojun.xu@ti.com>
  */
-#include <linux/workqueue.h>
-
 #ifndef __TAS2783_H__
 #define __TAS2783_H__
 

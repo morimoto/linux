@@ -8,12 +8,9 @@
  */
 
 #include <linux/clk.h>
-#include <linux/delay.h>
-#include <linux/module.h>
 #include <linux/gpio/consumer.h>
 #include <linux/pm_runtime.h>
 #include <linux/regulator/consumer.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 

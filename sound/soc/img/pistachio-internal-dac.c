@@ -8,14 +8,9 @@
  */
 
 #include <linux/clk.h>
-#include <linux/delay.h>
 #include <linux/mfd/syscon.h>
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
-
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #define PISTACHIO_INTERNAL_DAC_CTRL			0x40
