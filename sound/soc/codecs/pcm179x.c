@@ -7,18 +7,8 @@
  *     Michael Trimarchi <michael@amarulasolutions.com>
  */
 
-#include <linux/module.h>
-#include <linux/slab.h>
-#include <linux/kernel.h>
-#include <linux/device.h>
-
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/initval.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
-#include <linux/of.h>
 
 #include "pcm179x.h"
 

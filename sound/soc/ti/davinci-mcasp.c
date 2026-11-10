@@ -12,27 +12,16 @@
  * Copyright:   (C) 2009  Texas Instruments, India
  */
 
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/device.h>
-#include <linux/slab.h>
-#include <linux/delay.h>
 #include <linux/io.h>
 #include <linux/clk.h>
 #include <linux/pm_runtime.h>
-#include <linux/of.h>
 #include <linux/of_graph.h>
 #include <linux/platform_data/davinci_asp.h>
 #include <linux/math64.h>
 #include <linux/bitmap.h>
 #include <linux/gpio/driver.h>
-#include <linux/property.h>
 
 #include <sound/asoundef.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/initval.h>
 #include <sound/soc.h>
 #include <sound/dmaengine_pcm.h>
 

@@ -7,13 +7,8 @@
 
 #include <linux/pci.h>
 #include <linux/bitops.h>
-#include <linux/module.h>
 #include <linux/io.h>
-#include <linux/delay.h>
-#include <linux/platform_device.h>
 #include <linux/acpi.h>
-#include <linux/interrupt.h>
-#include <sound/pcm_params.h>
 #include <linux/pm_runtime.h>
 #include <linux/iopoll.h>
 #include <linux/soundwire/sdw_amd.h>

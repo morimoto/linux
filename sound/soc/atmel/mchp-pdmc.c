@@ -10,14 +10,8 @@
 
 #include <linux/bitfield.h>
 #include <linux/clk.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
-
-#include <sound/core.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/tlv.h>
 
 /*

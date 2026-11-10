@@ -8,22 +8,10 @@
  */
 
 #include <linux/clk.h>
-#include <linux/device.h>
-#include <linux/dmaengine.h>
-#include <linux/minmax.h>
-#include <linux/module.h>
-#include <linux/of_irq.h>
-#include <linux/of_platform.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/reset.h>
-#include <linux/types.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/initval.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
 
 #define TDM_PCMGBCR			0x00
 	#define PCMGBCR_ENABLE		BIT(0)

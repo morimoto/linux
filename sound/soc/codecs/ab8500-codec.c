@@ -14,27 +14,11 @@
  *         for ST-Ericsson.
  */
 
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/device.h>
-#include <linux/slab.h>
-#include <linux/moduleparam.h>
-#include <linux/init.h>
-#include <linux/pm.h>
-#include <linux/platform_device.h>
 #include <linux/mfd/abx500/ab8500.h>
 #include <linux/mfd/abx500.h>
 #include <linux/mfd/abx500/ab8500-sysctrl.h>
 #include <linux/mfd/abx500/ab8500-codec.h>
-#include <linux/regulator/consumer.h>
-#include <linux/of.h>
-
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/initval.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
 
 #include "ab8500-codec.h"

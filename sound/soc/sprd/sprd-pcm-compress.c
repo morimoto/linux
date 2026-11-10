@@ -4,10 +4,6 @@
 #include <linux/dma-mapping.h>
 #include <linux/dmaengine.h>
 #include <linux/dma/sprd-dma.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/compress_driver.h>
 

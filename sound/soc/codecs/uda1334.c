@@ -4,17 +4,8 @@
 //
 // Based on WM8523 ALSA SoC Audio driver written by Mark Brown
 
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/slab.h>
 #include <linux/gpio/consumer.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/initval.h>
 
 #define UDA1334_NUM_RATES 6
 

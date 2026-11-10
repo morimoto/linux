@@ -26,18 +26,9 @@
 //    0xb8 at reset), so every write here is read-modify-write.
 
 #include <linux/bitfield.h>
-#include <linux/cleanup.h>
 #include <linux/clk.h>
-#include <linux/delay.h>
 #include <linux/i2c.h>
-#include <linux/module.h>
-#include <linux/mutex.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
-
-#include <sound/control.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 

@@ -13,16 +13,10 @@
 //         Binbin Zhou <zhoubinbin@loongson.cn>
 
 #include <linux/bitfield.h>
-#include <linux/module.h>
 #include <linux/acpi.h>
 #include <linux/clk.h>
-#include <linux/delay.h>
 #include <linux/i2c.h>
-#include <linux/regmap.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
 
 #include "es8323.h"

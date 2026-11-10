@@ -9,8 +9,6 @@
 #include <linux/bitops.h>
 #include <linux/regmap.h>
 
-#include <sound/pcm_params.h>
-
 #include "mt8196-afe-clk.h"
 #include "mt8196-afe-common.h"
 #include "mt8196-interconnection.h"

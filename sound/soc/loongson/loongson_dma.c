@@ -7,14 +7,10 @@
 //         Binbin ZHou <zhoubinbin@loongson.cn>
 //
 
-#include <linux/module.h>
 #include <linux/io-64-nonatomic-lo-hi.h>
-#include <linux/delay.h>
 #include <linux/pm_runtime.h>
 #include <linux/dma-mapping.h>
 #include <sound/soc.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include "loongson_i2s.h"
 
 /* Internal DMA dma_order Register */

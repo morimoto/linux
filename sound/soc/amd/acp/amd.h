@@ -11,10 +11,8 @@
 #ifndef __AMD_ACP_H
 #define __AMD_ACP_H
 
-#include <sound/pcm.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dai.h>
 
 #include "acp_common.h"
 #include "chip_offset_byte.h"
