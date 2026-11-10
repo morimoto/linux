@@ -226,6 +226,8 @@ void snd_soc_pcm_component_delay(struct snd_pcm_substream *substream,
  * In soc-pcm
  */
 int soc_new_pcm(struct snd_soc_pcm_runtime *rtd);
+void snd_soc_runtime_stream_user_update(struct snd_soc_pcm_runtime *rtd,
+					int stream, int action);
 
 /*
  * In soc-link
