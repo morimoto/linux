@@ -53,9 +53,10 @@ static int cz_da7219_init(struct snd_soc_pcm_runtime *rtd)
 	int ret;
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 
-	dev_info(rtd->dev, "codec dai name = %s\n", codec_dai->name);
+	dev_info(rtd->dev, "codec dai name = %s\n", snd_soc_dai_name(codec_dai));
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, DA7219_CLKSRC_MCLK,
 				     CZ_PLAT_CLK, SND_SOC_CLOCK_IN);
@@ -71,11 +72,11 @@ static int cz_da7219_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 	}
 
-	da7219_dai_wclk = devm_clk_get(component->dev, "da7219-dai-wclk");
+	da7219_dai_wclk = devm_clk_get(dev, "da7219-dai-wclk");
 	if (IS_ERR(da7219_dai_wclk))
 		return PTR_ERR(da7219_dai_wclk);
 
-	da7219_dai_bclk = devm_clk_get(component->dev, "da7219-dai-bclk");
+	da7219_dai_bclk = devm_clk_get(dev, "da7219-dai-bclk");
 	if (IS_ERR(da7219_dai_bclk))
 		return PTR_ERR(da7219_dai_bclk);
 
@@ -87,7 +88,7 @@ static int cz_da7219_init(struct snd_soc_pcm_runtime *rtd)
 					 cz_jack_pins,
 					 ARRAY_SIZE(cz_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+		dev_err(snd_soc_card_to_dev(card), "HP jack creation failed %d\n", ret);
 		return ret;
 	}
 
@@ -133,15 +134,16 @@ static int cz_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 	int ret;
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *codec_dev = snd_soc_component_to_dev(component);
 
-	dev_info(codec_dai->dev, "codec dai name = %s\n", codec_dai->name);
+	dev_info(codec_dev, "codec dai name = %s\n", snd_soc_dai_name(codec_dai));
 
 	/* Set codec sysclk */
 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5682_SCLK_S_PLL2,
 				     RT5682_PLL_FREQ, SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(codec_dai->dev,
+		dev_err(codec_dev,
 			"Failed to set rt5682 SYSCLK: %d\n", ret);
 		return ret;
 	}
@@ -149,15 +151,15 @@ static int cz_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 	ret = snd_soc_dai_set_pll(codec_dai, RT5682_PLL2, RT5682_PLL2_S_MCLK,
 				  CZ_PLAT_CLK, RT5682_PLL_FREQ);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set rt5682 PLL: %d\n", ret);
+		dev_err(codec_dev, "can't set rt5682 PLL: %d\n", ret);
 		return ret;
 	}
 
-	rt5682_dai_wclk = devm_clk_get(component->dev, "rt5682-dai-wclk");
+	rt5682_dai_wclk = devm_clk_get(codec_dev, "rt5682-dai-wclk");
 	if (IS_ERR(rt5682_dai_wclk))
 		return PTR_ERR(rt5682_dai_wclk);
 
-	rt5682_dai_bclk = devm_clk_get(component->dev, "rt5682-dai-bclk");
+	rt5682_dai_bclk = devm_clk_get(codec_dev, "rt5682-dai-bclk");
 	if (IS_ERR(rt5682_dai_bclk))
 		return PTR_ERR(rt5682_dai_bclk);
 
@@ -169,7 +171,7 @@ static int cz_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 					 cz_jack_pins,
 					 ARRAY_SIZE(cz_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "HP jack creation failed %d\n", ret);
+		dev_err(snd_soc_card_to_dev(card), "HP jack creation failed %d\n", ret);
 		return ret;
 	}
 
@@ -245,7 +247,7 @@ static int cz_da7219_play_startup(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_platform_info *machine = snd_soc_card_get_drvdata(card);
+	struct acp_platform_info *machine = snd_soc_card_to_priv(card);
 
 	/*
 	 * On this platform for PCM device we support stereo
@@ -266,7 +268,7 @@ static int cz_da7219_cap_startup(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_platform_info *machine = snd_soc_card_get_drvdata(card);
+	struct acp_platform_info *machine = snd_soc_card_to_priv(card);
 
 	/*
 	 * On this platform for PCM device we support stereo
@@ -288,7 +290,7 @@ static int cz_max_startup(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_platform_info *machine = snd_soc_card_get_drvdata(card);
+	struct acp_platform_info *machine = snd_soc_card_to_priv(card);
 
 	/*
 	 * On this platform for PCM device we support stereo
@@ -309,7 +311,7 @@ static int cz_dmic0_startup(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_platform_info *machine = snd_soc_card_get_drvdata(card);
+	struct acp_platform_info *machine = snd_soc_card_to_priv(card);
 
 	/*
 	 * On this platform for PCM device we support stereo
@@ -330,7 +332,7 @@ static int cz_dmic1_startup(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_platform_info *machine = snd_soc_card_get_drvdata(card);
+	struct acp_platform_info *machine = snd_soc_card_to_priv(card);
 
 	/*
 	 * On this platform for PCM device we support stereo
@@ -357,7 +359,7 @@ static int cz_rt5682_play_startup(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_platform_info *machine = snd_soc_card_get_drvdata(card);
+	struct acp_platform_info *machine = snd_soc_card_to_priv(card);
 
 	/*
 	 * On this platform for PCM device we support stereo
@@ -378,7 +380,7 @@ static int cz_rt5682_cap_startup(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_platform_info *machine = snd_soc_card_get_drvdata(card);
+	struct acp_platform_info *machine = snd_soc_card_to_priv(card);
 
 	/*
 	 * On this platform for PCM device we support stereo
@@ -400,7 +402,7 @@ static int cz_rt5682_max_startup(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_platform_info *machine = snd_soc_card_get_drvdata(card);
+	struct acp_platform_info *machine = snd_soc_card_to_priv(card);
 
 	/*
 	 * On this platform for PCM device we support stereo
@@ -421,7 +423,7 @@ static int cz_rt5682_dmic0_startup(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_platform_info *machine = snd_soc_card_get_drvdata(card);
+	struct acp_platform_info *machine = snd_soc_card_to_priv(card);
 
 	/*
 	 * On this platform for PCM device we support stereo
@@ -442,7 +444,7 @@ static int cz_rt5682_dmic1_startup(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_card *card = rtd->card;
-	struct acp_platform_info *machine = snd_soc_card_get_drvdata(card);
+	struct acp_platform_info *machine = snd_soc_card_to_priv(card);
 
 	/*
 	 * On this platform for PCM device we support stereo
@@ -794,7 +796,7 @@ static int cz_probe(struct platform_device *pdev)
 	if (!machine)
 		return -ENOMEM;
 
-	snd_soc_card_set_drvdata(card, machine);
+	snd_soc_card_set_priv(card, machine);
 	ret = devm_snd_soc_card_register(card, card_driver);
 	if (ret) {
 		return dev_err_probe(&pdev->dev, ret,

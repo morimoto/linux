@@ -165,10 +165,10 @@ static const struct snd_soc_ops bdw_rt5650_fe_ops = {
 
 static int bdw_rt5650_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct bdw_rt5650_priv *bdw_rt5650 =
-		snd_soc_card_get_drvdata(rtd->card);
+	struct bdw_rt5650_priv *bdw_rt5650 = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	/* Enable codec ASRC function for Stereo DAC/Stereo1 ADC/DMIC/I2S1.
@@ -195,13 +195,13 @@ static int bdw_rt5650_init(struct snd_soc_pcm_runtime *rtd)
 	if (snd_soc_card_jack_new_pins(rtd->card, "Headphone Jack",
 			SND_JACK_HEADPHONE, &headphone_jack,
 			&headphone_jack_pin, 1)) {
-		dev_err(component->dev, "Can't create headphone jack\n");
+		dev_err(dev, "Can't create headphone jack\n");
 	}
 
 	/* Create and initialize mic jack */
 	if (snd_soc_card_jack_new_pins(rtd->card, "Mic Jack",
 			SND_JACK_MICROPHONE, &mic_jack, &mic_jack_pin, 1)) {
-		dev_err(component->dev, "Can't create mic jack\n");
+		dev_err(dev, "Can't create mic jack\n");
 	}
 
 	rt5645_set_jack_detect(component, &headphone_jack, &mic_jack, NULL);

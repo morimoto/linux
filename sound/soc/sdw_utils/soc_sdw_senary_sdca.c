@@ -46,7 +46,7 @@ int asoc_sdw_senary_sdca_spk_rtd_init(struct snd_soc_pcm_runtime *rtd, struct sn
 	int ret;
 
 	/* Match by DAI name prefix (e.g. sn624x-sdca-aif2). */
-	const struct codec_route_map *route_map = get_codec_route_map(dai->name);
+	const struct codec_route_map *route_map = get_codec_route_map(snd_soc_dai_name(dai));
 
 	if (!route_map) {
 		dev_err(rtd->dev, "failed to get codec name and route map\n");

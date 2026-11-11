@@ -30,7 +30,7 @@ static int gx_card_i2s_be_hw_params(struct snd_pcm_substream *substream,
 				    struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct meson_card *priv = snd_soc_card_get_drvdata(rtd->card);
+	struct meson_card *priv = snd_soc_card_to_priv(rtd->card);
 	struct gx_dai_link_i2s_data *be =
 		(struct gx_dai_link_i2s_data *)priv->link_data[rtd->id];
 
@@ -45,10 +45,10 @@ static int gx_card_parse_i2s(struct snd_soc_card *card,
 			     struct device_node *node,
 			     int *index)
 {
-	struct meson_card *priv = snd_soc_card_get_drvdata(card);
+	struct meson_card *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_dai_link *link = &priv->card_driver.dai_link[*index];
 	struct gx_dai_link_i2s_data *be;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 
 	/* Allocate i2s link parameters */
 	be = devm_kzalloc(dev, sizeof(*be), GFP_KERNEL);
@@ -80,10 +80,10 @@ static int gx_card_cpu_identify(struct snd_soc_dai_link_component *c,
 static int gx_card_add_link(struct snd_soc_card *card, struct device_node *np,
 			    int *index)
 {
-	struct meson_card *priv = snd_soc_card_get_drvdata(card);
+	struct meson_card *priv = snd_soc_card_to_priv(card);
 	struct snd_soc_dai_link *dai_link = &priv->card_driver.dai_link[*index];
 	struct snd_soc_dai_link_component *cpu;
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	cpu = devm_kzalloc(dev, sizeof(*cpu), GFP_KERNEL);

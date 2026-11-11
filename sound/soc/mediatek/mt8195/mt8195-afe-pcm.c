@@ -87,8 +87,9 @@ static int mt8195_memif_fs(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_component *component =
 			snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
-	int id = snd_soc_rtd_to_cpu(rtd, 0)->id;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	int id = snd_soc_dai_id(snd_soc_rtd_to_cpu(rtd, 0));
 	struct mtk_base_afe_memif *memif = &afe->memif[id];
 	int fs = mt8195_afe_fs_timing(rate);
 
@@ -207,13 +208,16 @@ static int mt8195_afe_memif_is_ul(int id)
 static const struct mt8195_afe_channel_merge*
 mt8195_afe_found_cm(struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	int id = -EINVAL;
 
-	if (mt8195_afe_memif_is_ul(dai->id) == 0)
+	if (mt8195_afe_memif_is_ul(dai_id) == 0)
 		return NULL;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case MT8195_AFE_MEMIF_UL9:
 		id = MT8195_AFE_CM0;
 		break;
@@ -229,7 +233,7 @@ mt8195_afe_found_cm(struct snd_soc_dai *dai)
 
 	if (id < 0) {
 		dev_dbg(afe->dev, "%s, memif %d cannot find CM!\n",
-			__func__, dai->id);
+			__func__, dai_id);
 		return NULL;
 	}
 
@@ -282,9 +286,11 @@ mt8195_afe_paired_memif_clk_prepare(struct snd_pcm_substream *substream,
 				    int enable)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
-	int id = snd_soc_rtd_to_cpu(rtd, 0)->id;
+	int id = snd_soc_dai_id(snd_soc_rtd_to_cpu(rtd, 0));
 	int clk_id;
 	int ret;
 
@@ -319,9 +325,11 @@ mt8195_afe_paired_memif_clk_enable(struct snd_pcm_substream *substream,
 				   int enable)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
-	int id = snd_soc_rtd_to_cpu(rtd, 0)->id;
+	int id = snd_soc_dai_id(snd_soc_rtd_to_cpu(rtd, 0));
 	int clk_id;
 	int ret;
 
@@ -360,8 +368,10 @@ static int mt8195_afe_fe_startup(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
-	int id = snd_soc_rtd_to_cpu(rtd, 0)->id;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	int id = snd_soc_dai_id(snd_soc_rtd_to_cpu(rtd, 0));
 	int ret = 0;
 
 	ret = mt8195_afe_paired_memif_clk_prepare(substream, dai, 1);
@@ -411,8 +421,10 @@ static int mt8195_afe_fe_hw_params(struct snd_pcm_substream *substream,
 				   struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
-	int id = snd_soc_rtd_to_cpu(rtd, 0)->id;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	int id = snd_soc_dai_id(snd_soc_rtd_to_cpu(rtd, 0));
 	struct mtk_base_afe_memif *memif = &afe->memif[id];
 	const struct mtk_base_memif_data *data = memif->data;
 	const struct mt8195_afe_channel_merge *cm = mt8195_afe_found_cm(dai);
@@ -445,7 +457,9 @@ static int mt8195_afe_fe_trigger(struct snd_pcm_substream *substream, int cmd,
 				 struct snd_soc_dai *dai)
 {
 	int ret = 0;
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	const struct mt8195_afe_channel_merge *cm = mt8195_afe_found_cm(dai);
 
 	switch (cmd) {
@@ -1498,7 +1512,8 @@ static int mt8195_memif_1x_en_sel_put(struct snd_kcontrol *kcontrol,
 				      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_dai_memif_priv *memif_priv;
 	unsigned int dai_id = kcontrol->id.device;
@@ -1521,7 +1536,8 @@ static int mt8195_asys_irq_1x_en_sel_put(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	struct mt8195_afe_private *afe_priv = afe->platform_priv;
 	unsigned int id = kcontrol->id.device;
 	long val = ucontrol->value.integer.value[0];

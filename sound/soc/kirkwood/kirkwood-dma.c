@@ -20,7 +20,11 @@
 static struct kirkwood_dma_data *kirkwood_priv(struct snd_pcm_substream *subs)
 {
 	struct snd_soc_pcm_runtime *soc_runtime = snd_soc_substream_to_rtd(subs);
-	return snd_soc_dai_get_drvdata(snd_soc_rtd_to_cpu(soc_runtime, 0));
+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(soc_runtime, 0);
+	struct snd_soc_component *cpu_component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(cpu_component);
+
+	return dev_get_drvdata(cpu_dev);
 }
 
 static const struct snd_pcm_hardware kirkwood_dma_snd_hw = {
@@ -241,15 +245,15 @@ static int kirkwood_dma_new(struct snd_soc_component *component,
 			    struct snd_soc_pcm_runtime *rtd)
 {
 	size_t size = kirkwood_dma_snd_hw.buffer_bytes_max;
-	struct snd_card *card = rtd->card->snd_card;
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	int ret;
 
-	ret = dma_coerce_mask_and_coherent(card->dev, DMA_BIT_MASK(32));
+	ret = dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
 	if (ret)
 		return ret;
 
 	snd_pcm_set_managed_buffer_all(rtd->pcm, SNDRV_DMA_TYPE_DEV,
-				       card->dev, size, size);
+				       dev, size, size);
 
 	return 0;
 }

@@ -180,7 +180,8 @@ static int rk3308_codec_pop_sound_set(struct snd_soc_dapm_widget *w,
 				      int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rk3308_codec_priv *rk3308 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3308_codec_priv *rk3308 = dev_get_drvdata(dev);
 	unsigned int val = (event == SND_SOC_DAPM_POST_PMU) ?
 		RK3308_DAC_HPOUT_POP_SOUND_x_WORK :
 		RK3308_DAC_HPOUT_POP_SOUND_x_INIT;
@@ -197,7 +198,8 @@ static int rk3308_codec_dac_output_vcm_event(struct snd_soc_dapm_widget *w,
 					     int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rk3308_codec_priv *rk3308 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3308_codec_priv *rk3308 = dev_get_drvdata(dev);
 	unsigned int val;
 
 	if (rk3308->codec_ver != ACODEC_VERSION_B)
@@ -252,7 +254,8 @@ static int rk3308_codec_lineout_event(struct snd_soc_dapm_widget *w,
 				      int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct rk3308_codec_priv *rk3308 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3308_codec_priv *rk3308 = dev_get_drvdata(dev);
 	unsigned int mask = RK3308_DAC_LINEOUT_POP_SOUND_L_MSK << w->shift;
 	unsigned int val;
 
@@ -578,8 +581,9 @@ static const struct snd_soc_dapm_route rk3308_codec_dapm_routes[] = {
 static int rk3308_codec_set_dai_fmt(struct snd_soc_dai *codec_dai,
 				    unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
-	struct rk3308_codec_priv *rk3308 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3308_codec_priv *rk3308 = dev_get_drvdata(dev);
 	const unsigned int inv_bits = fmt & SND_SOC_DAIFMT_INV_MASK;
 	const bool inv_bitclk =
 		(inv_bits & SND_SOC_DAIFMT_IB_IF) ||
@@ -767,8 +771,9 @@ static int rk3308_codec_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rk3308_codec_priv *rk3308 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3308_codec_priv *rk3308 = dev_get_drvdata(dev);
 
 	return (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) ?
 		rk3308_codec_dac_dig_config(rk3308, params) :
@@ -818,7 +823,8 @@ static struct snd_soc_dai_driver rk3308_codec_dai_driver = {
 
 static void rk3308_codec_reset(struct snd_soc_component *component)
 {
-	struct rk3308_codec_priv *rk3308 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3308_codec_priv *rk3308 = dev_get_drvdata(dev);
 
 	reset_control_assert(rk3308->reset);
 	usleep_range(10000, 11000);     /* estimated value */
@@ -879,7 +885,8 @@ static int rk3308_codec_initialize(struct rk3308_codec_priv *rk3308)
 
 static int rk3308_codec_probe(struct snd_soc_component *component)
 {
-	struct rk3308_codec_priv *rk3308 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3308_codec_priv *rk3308 = dev_get_drvdata(dev);
 
 	rk3308->component = component;
 
@@ -892,7 +899,8 @@ static int rk3308_codec_probe(struct snd_soc_component *component)
 static int rk3308_codec_set_bias_level(struct snd_soc_component *component,
 				       enum snd_soc_bias_level level)
 {
-	struct rk3308_codec_priv *rk3308 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rk3308_codec_priv *rk3308 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
 	switch (level) {
