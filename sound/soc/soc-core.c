@@ -1492,7 +1492,7 @@ struct snd_soc_component *snd_soc_component_new(struct device *dev, const char *
 }
 EXPORT_SYMBOL_GPL(snd_soc_component_new);
 
-static void snd_soc_del_component_unlocked(struct snd_soc_component *component)
+static void snd_soc_component_unregister_unlocked(struct snd_soc_component *component)
 {
 	struct snd_soc_card *card = component->card;
 
@@ -1503,6 +1503,14 @@ static void snd_soc_del_component_unlocked(struct snd_soc_component *component)
 
 	list_del(&component->list);
 }
+
+void snd_soc_component_unregister(struct snd_soc_component *component)
+{
+	guard(mutex)(&client_mutex);
+
+	snd_soc_component_unregister_unlocked(component);
+}
+EXPORT_SYMBOL_GPL(snd_soc_component_unregister);
 
 int snd_soc_component_register(struct snd_soc_component *component,
 			       struct snd_soc_dai_driver *dai_drv,
@@ -1539,7 +1547,7 @@ int snd_soc_component_register(struct snd_soc_component *component,
 
 err_cleanup:
 	if (ret < 0)
-		snd_soc_del_component_unlocked(component);
+		snd_soc_component_unregister_unlocked(component);
 
 	return ret;
 }
@@ -1583,7 +1591,7 @@ void snd_soc_unregister_component_by_driver(struct device *dev,
 		if (!component)
 			break;
 
-		snd_soc_del_component_unlocked(component);
+		snd_soc_component_unregister_unlocked(component);
 	}
 }
 EXPORT_SYMBOL_GPL(snd_soc_unregister_component_by_driver);
