@@ -378,7 +378,9 @@ omap_mcbsp_set_st_ch##channel##_volume(struct snd_kcontrol *kc,		\
 				       struct snd_ctl_elem_value *uc)	\
 {									\
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kc);		\
-	struct omap_mcbsp *mcbsp = snd_soc_dai_get_drvdata(cpu_dai);	\
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);\
+	struct device *dev = snd_soc_component_to_dev(component);	\
+	struct omap_mcbsp *mcbsp = dev_get_drvdata(dev);		\
 	struct soc_mixer_control *mc =					\
 		(struct soc_mixer_control *)kc->private_value;		\
 	int max = mc->max;						\
@@ -397,7 +399,9 @@ omap_mcbsp_get_st_ch##channel##_volume(struct snd_kcontrol *kc,		\
 				       struct snd_ctl_elem_value *uc)	\
 {									\
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kc);		\
-	struct omap_mcbsp *mcbsp = snd_soc_dai_get_drvdata(cpu_dai);	\
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);\
+	struct device *dev = snd_soc_component_to_dev(component);	\
+	struct omap_mcbsp *mcbsp = dev_get_drvdata(dev);		\
 	s16 chgain;							\
 									\
 	if (omap_mcbsp_st_get_chgain(mcbsp, channel, &chgain))		\
@@ -414,7 +418,9 @@ static int omap_mcbsp_st_put_mode(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct omap_mcbsp *mcbsp = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_mcbsp *mcbsp = dev_get_drvdata(dev);
 	u8 value = ucontrol->value.integer.value[0];
 
 	if (value == omap_mcbsp_st_is_enabled(mcbsp))
@@ -432,7 +438,9 @@ static int omap_mcbsp_st_get_mode(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_dai *cpu_dai = snd_kcontrol_chip(kcontrol);
-	struct omap_mcbsp *mcbsp = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_mcbsp *mcbsp = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = omap_mcbsp_st_is_enabled(mcbsp);
 	return 0;
@@ -466,7 +474,9 @@ OMAP_MCBSP_ST_CONTROLS(3);
 int omap_mcbsp_st_add_controls(struct snd_soc_pcm_runtime *rtd, int port_id)
 {
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct omap_mcbsp *mcbsp = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct omap_mcbsp *mcbsp = dev_get_drvdata(dev);
 
 	if (!mcbsp->st_data) {
 		dev_warn(mcbsp->dev, "No sidetone data for port\n");
@@ -475,11 +485,11 @@ int omap_mcbsp_st_add_controls(struct snd_soc_pcm_runtime *rtd, int port_id)
 
 	switch (port_id) {
 	case 2: /* McBSP 2 */
-		return snd_soc_add_dai_controls(cpu_dai,
+		return snd_soc_dai_add_controls(cpu_dai,
 					omap_mcbsp2_st_controls,
 					ARRAY_SIZE(omap_mcbsp2_st_controls));
 	case 3: /* McBSP 3 */
-		return snd_soc_add_dai_controls(cpu_dai,
+		return snd_soc_dai_add_controls(cpu_dai,
 					omap_mcbsp3_st_controls,
 					ARRAY_SIZE(omap_mcbsp3_st_controls));
 	default:

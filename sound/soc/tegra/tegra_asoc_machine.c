@@ -79,7 +79,7 @@ static int tegra_machine_event(struct snd_soc_dapm_widget *w,
 			       struct snd_kcontrol *k, int event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct tegra_machine *machine = snd_soc_card_get_drvdata(card);
+	struct tegra_machine *machine = snd_soc_card_to_priv(card);
 
 	if (!snd_soc_dapm_widget_name_cmp(w, "Int Spk") ||
 	    !snd_soc_dapm_widget_name_cmp(w, "Speakers"))
@@ -141,7 +141,8 @@ static const struct snd_kcontrol_new tegra_machine_controls[] = {
 int tegra_asoc_machine_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct tegra_machine *machine = snd_soc_card_get_drvdata(card);
+	struct tegra_machine *machine = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	const char *jack_name;
 	int err;
 
@@ -191,7 +192,7 @@ int tegra_asoc_machine_init(struct snd_soc_pcm_runtime *rtd)
 	}
 
 	if (machine->gpiod_mic_det && machine->asoc->add_mic_jack) {
-		err = snd_soc_card_jack_new_pins(rtd->card, "Mic Jack",
+		err = snd_soc_card_jack_new_pins(card, "Mic Jack",
 						 SND_JACK_MICROPHONE,
 						 &tegra_machine_mic_jack,
 						 tegra_machine_mic_jack_pins,
@@ -204,7 +205,7 @@ int tegra_asoc_machine_init(struct snd_soc_pcm_runtime *rtd)
 		tegra_machine_mic_jack_gpio.data = machine;
 		tegra_machine_mic_jack_gpio.desc = machine->gpiod_mic_det;
 
-		if (of_property_read_bool(card->dev->of_node,
+		if (of_property_read_bool(dev->of_node,
 					  "nvidia,coupled-mic-hp-det")) {
 			tegra_machine_mic_jack_gpio.desc = machine->gpiod_hp_det;
 			tegra_machine_mic_jack_gpio.jack_status_check = coupled_mic_hp_check;
@@ -314,7 +315,8 @@ static int tegra_machine_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	struct snd_soc_card *card = rtd->card;
-	struct tegra_machine *machine = snd_soc_card_get_drvdata(card);
+	struct tegra_machine *machine = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	unsigned int srate = params_rate(params);
 	unsigned int mclk = machine->asoc->mclk_rate(srate);
 	unsigned int clk_id = machine->asoc->mclk_id;
@@ -347,7 +349,7 @@ static int tegra_machine_hw_params(struct snd_pcm_substream *substream,
 			new_baseclock = 368640000;
 		break;
 	default:
-		dev_err(card->dev, "Invalid sound rate: %u\n", srate);
+		dev_err(dev, "Invalid sound rate: %u\n", srate);
 		return -EINVAL;
 	}
 
@@ -360,13 +362,13 @@ static int tegra_machine_hw_params(struct snd_pcm_substream *substream,
 
 		err = clk_set_rate(machine->clk_pll_a, new_baseclock);
 		if (err) {
-			dev_err(card->dev, "Can't set pll_a rate: %d\n", err);
+			dev_err(dev, "Can't set pll_a rate: %d\n", err);
 			return err;
 		}
 
 		err = clk_set_rate(machine->clk_pll_a_out0, mclk);
 		if (err) {
-			dev_err(card->dev, "Can't set pll_a_out0 rate: %d\n", err);
+			dev_err(dev, "Can't set pll_a_out0 rate: %d\n", err);
 			return err;
 		}
 
@@ -374,7 +376,7 @@ static int tegra_machine_hw_params(struct snd_pcm_substream *substream,
 
 		err = clk_prepare_enable(machine->clk_cdev1);
 		if (err) {
-			dev_err(card->dev, "Can't enable cdev1: %d\n", err);
+			dev_err(dev, "Can't enable cdev1: %d\n", err);
 			return err;
 		}
 
@@ -384,7 +386,7 @@ static int tegra_machine_hw_params(struct snd_pcm_substream *substream,
 
 	err = snd_soc_dai_set_sysclk(codec_dai, clk_id, mclk, SND_SOC_CLOCK_IN);
 	if (err < 0) {
-		dev_err(card->dev, "codec_dai clock not set: %d\n", err);
+		dev_err(dev, "codec_dai clock not set: %d\n", err);
 		return err;
 	}
 
@@ -467,7 +469,7 @@ int tegra_asoc_machine_probe(struct platform_device *pdev)
 	machine->asoc = asoc;
 	machine->mic_jack = &tegra_machine_mic_jack;
 	machine->hp_jack_gpio = &tegra_machine_hp_jack_gpio;
-	snd_soc_card_set_drvdata(card, machine);
+	snd_soc_card_set_priv(card, machine);
 
 	gpiod = devm_gpiod_get_optional(dev, "nvidia,hp-mute", GPIOD_OUT_HIGH);
 	machine->gpiod_hp_mute = gpiod;
@@ -505,7 +507,7 @@ int tegra_asoc_machine_probe(struct platform_device *pdev)
 		return dev_err_probe(dev, PTR_ERR(gpiod),
 				     "failed to get ext-mic-en GPIO\n");
 
-	err = snd_soc_of_parse_card_name(card, "nvidia,model");
+	err = snd_soc_card_of_parse_name(card, "nvidia,model");
 	if (err)
 		return err;
 

@@ -852,7 +852,8 @@ static int q6apm_audio_probe(struct snd_soc_component *component)
 
 static void q6apm_audio_remove(struct snd_soc_component *component)
 {
-	struct q6apm *apm = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct q6apm *apm = dev_get_drvdata(dev);
 	struct audioreach_graph_info *info;
 	int id;
 

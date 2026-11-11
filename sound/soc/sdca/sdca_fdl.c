@@ -156,7 +156,7 @@ static char *fdl_get_sku_filename(struct device *dev,
 
 	/*
 	 * Try to find pci_dev manually because the card may not be ready to be
-	 * used for snd_soc_card_get_pci_ssid yet
+	 * used for snd_soc_card_driver_get_pci_ssid() yet
 	 */
 	while (parent) {
 		if (dev_is_pci(parent)) {

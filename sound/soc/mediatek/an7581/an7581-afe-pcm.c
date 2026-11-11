@@ -115,15 +115,18 @@ static int an7581_memif_irq_fs(struct snd_pcm_substream *substream, unsigned int
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_component *component = snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 
 	return an7581_afe_rate_transform(afe->dev, rate);
 }
 
 static int an7581_afe_fe_startup(struct snd_pcm_substream *substream, struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
 	int ret;
 
 	ret = mtk_afe_fe_startup(substream, dai);

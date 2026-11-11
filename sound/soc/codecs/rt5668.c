@@ -856,7 +856,8 @@ static void rt5668_enable_push_button_irq(struct snd_soc_component *component,
 static int rt5668_headset_detect(struct snd_soc_component *component,
 		int jack_insert)
 {
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	unsigned int val, count;
 
@@ -896,7 +897,7 @@ static int rt5668_headset_detect(struct snd_soc_component *component,
 		rt5668->jack_type = 0;
 	}
 
-	dev_dbg(component->dev, "jack_type = %d\n", rt5668->jack_type);
+	dev_dbg(dev, "jack_type = %d\n", rt5668->jack_type);
 	return rt5668->jack_type;
 }
 
@@ -932,7 +933,8 @@ static void rt5668_jd_check_handler(struct work_struct *work)
 static int rt5668_set_jack_detect(struct snd_soc_component *component,
 	struct snd_soc_jack *hs_jack, void *data)
 {
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
 
 	switch (rt5668->pdata.jd_src) {
 	case RT5668_JD1:
@@ -967,7 +969,7 @@ static int rt5668_set_jack_detect(struct snd_soc_component *component,
 		break;
 
 	default:
-		dev_warn(component->dev, "Wrong JD source\n");
+		dev_warn(dev, "Wrong JD source\n");
 		break;
 	}
 
@@ -980,10 +982,17 @@ static void rt5668_jack_detect_handler(struct work_struct *work)
 {
 	struct rt5668_priv *rt5668 =
 		container_of(work, struct rt5668_priv, jack_detect_work.work);
+	struct device *dev;
+	struct snd_soc_card *card;
 	int val, btn_type;
 
-	if (!rt5668->component ||
-	    !snd_soc_card_is_instantiated(rt5668->component->card)) {
+	if (!rt5668->component)
+		return;
+
+	dev = snd_soc_component_to_dev(rt5668->component);
+	card = snd_soc_component_to_card(rt5668->component);
+
+	if (!snd_soc_card_is_instantiated(card)) {
 		/* card not yet ready, try later */
 		mod_delayed_work(system_power_efficient_wq,
 				 &rt5668->jack_detect_work, msecs_to_jiffies(15));
@@ -1036,9 +1045,7 @@ static void rt5668_jack_detect_handler(struct work_struct *work)
 				break;
 			default:
 				btn_type = 0;
-				dev_err(rt5668->component->dev,
-					"Unexpected button code 0x%04x\n",
-					btn_type);
+				dev_err(dev, "Unexpected button code 0x%04x\n", btn_type);
 				break;
 			}
 		}
@@ -1128,9 +1135,9 @@ static int rt5668_div_sel(struct rt5668_priv *rt5668,
 static int set_dmic_clk(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
 	int idx;
 	static const int div[] = {2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128};
 
@@ -1145,9 +1152,9 @@ static int set_dmic_clk(struct snd_soc_dapm_widget *w,
 static int set_filter_clk(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
-	struct snd_soc_component *component =
-		snd_soc_dapm_to_component(w->dapm);
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
 	int ref, val, reg, idx;
 	static const int div[] = {1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48};
 
@@ -1825,7 +1832,7 @@ static const struct snd_soc_dapm_route rt5668_dapm_routes[] = {
 static int rt5668_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 			unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	unsigned int val = 0;
 
 	switch (slots) {
@@ -1877,23 +1884,24 @@ static int rt5668_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 static int rt5668_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int len_1 = 0, len_2 = 0;
 	int pre_div, frame_size;
 
-	rt5668->lrck[dai->id] = params_rate(params);
-	pre_div = rl6231_get_clk_info(rt5668->sysclk, rt5668->lrck[dai->id]);
+	rt5668->lrck[dai_id] = params_rate(params);
+	pre_div = rl6231_get_clk_info(rt5668->sysclk, rt5668->lrck[dai_id]);
 
 	frame_size = snd_soc_params_to_frame_size(params);
 	if (frame_size < 0) {
-		dev_err(component->dev, "Unsupported frame size: %d\n",
-			frame_size);
+		dev_err(dev, "Unsupported frame size: %d\n", frame_size);
 		return -EINVAL;
 	}
 
-	dev_dbg(dai->dev, "lrck is %dHz and pre_div is %d for iis %d\n",
-				rt5668->lrck[dai->id], pre_div, dai->id);
+	dev_dbg(dev, "lrck is %dHz and pre_div is %d for iis %d\n",
+				rt5668->lrck[dai_id], pre_div, dai_id);
 
 	switch (params_width(params)) {
 	case 16:
@@ -1918,7 +1926,7 @@ static int rt5668_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT5668_AIF1:
 		snd_soc_component_update_bits(component, RT5668_I2S1_SDP,
 			RT5668_I2S1_DL_MASK, len_1);
@@ -1954,7 +1962,7 @@ static int rt5668_hw_params(struct snd_pcm_substream *substream,
 				RT5668_I2S2_MONO_DIS);
 		break;
 	default:
-		dev_err(component->dev, "Invalid dai->id: %d\n", dai->id);
+		dev_err(dev, "Invalid dai_id: %d\n", dai_id);
 		return -EINVAL;
 	}
 
@@ -1963,16 +1971,18 @@ static int rt5668_hw_params(struct snd_pcm_substream *substream,
 
 static int rt5668_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int reg_val = 0, tdm_ctrl = 0;
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
-		rt5668->master[dai->id] = 1;
+		rt5668->master[dai_id] = 1;
 		break;
 	case SND_SOC_DAIFMT_CBC_CFC:
-		rt5668->master[dai->id] = 0;
+		rt5668->master[dai_id] = 0;
 		break;
 	default:
 		return -EINVAL;
@@ -1986,13 +1996,13 @@ static int rt5668_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		tdm_ctrl |= RT5668_TDM_S_BP_INV;
 		break;
 	case SND_SOC_DAIFMT_NB_IF:
-		if (dai->id == RT5668_AIF1)
+		if (dai_id == RT5668_AIF1)
 			tdm_ctrl |= RT5668_TDM_S_LP_INV | RT5668_TDM_M_BP_INV;
 		else
 			return -EINVAL;
 		break;
 	case SND_SOC_DAIFMT_IB_IF:
-		if (dai->id == RT5668_AIF1)
+		if (dai_id == RT5668_AIF1)
 			tdm_ctrl |= RT5668_TDM_S_BP_INV | RT5668_TDM_S_LP_INV |
 				    RT5668_TDM_M_BP_INV | RT5668_TDM_M_LP_INV;
 		else
@@ -2021,7 +2031,7 @@ static int rt5668_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		return -EINVAL;
 	}
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case RT5668_AIF1:
 		snd_soc_component_update_bits(component, RT5668_I2S1_SDP,
 			RT5668_I2S_DF_MASK, reg_val);
@@ -2029,17 +2039,17 @@ static int rt5668_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 			RT5668_TDM_MS_MASK | RT5668_TDM_S_BP_MASK |
 			RT5668_TDM_DF_MASK | RT5668_TDM_M_BP_MASK |
 			RT5668_TDM_M_LP_MASK | RT5668_TDM_S_LP_MASK,
-			tdm_ctrl | rt5668->master[dai->id]);
+			tdm_ctrl | rt5668->master[dai_id]);
 		break;
 	case RT5668_AIF2:
-		if (rt5668->master[dai->id] == 0)
+		if (rt5668->master[dai_id] == 0)
 			reg_val |= RT5668_I2S2_MS_S;
 		snd_soc_component_update_bits(component, RT5668_I2S2_SDP,
 			RT5668_I2S2_MS_MASK | RT5668_I2S_BP_MASK |
 			RT5668_I2S_DF_MASK, reg_val);
 		break;
 	default:
-		dev_err(component->dev, "Invalid dai->id: %d\n", dai->id);
+		dev_err(dev, "Invalid dai_id: %d\n", dai_id);
 		return -EINVAL;
 	}
 	return 0;
@@ -2048,7 +2058,8 @@ static int rt5668_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int rt5668_set_component_sysclk(struct snd_soc_component *component,
 		int clk_id, int source, unsigned int freq, int dir)
 {
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
 	unsigned int reg_val = 0, src = 0;
 
 	if (freq == rt5668->sysclk && clk_id == rt5668->sysclk_src)
@@ -2072,7 +2083,7 @@ static int rt5668_set_component_sysclk(struct snd_soc_component *component,
 		src = RT5668_CLK_SRC_RCCLK;
 		break;
 	default:
-		dev_err(component->dev, "Invalid clock id (%d)\n", clk_id);
+		dev_err(dev, "Invalid clock id (%d)\n", clk_id);
 		return -EINVAL;
 	}
 	snd_soc_component_update_bits(component, RT5668_GLB_CLK,
@@ -2087,8 +2098,7 @@ static int rt5668_set_component_sysclk(struct snd_soc_component *component,
 	rt5668->sysclk = freq;
 	rt5668->sysclk_src = clk_id;
 
-	dev_dbg(component->dev, "Sysclk is %dHz and clock id is %d\n",
-		freq, clk_id);
+	dev_dbg(dev, "Sysclk is %dHz and clock id is %d\n", freq, clk_id);
 
 	return 0;
 }
@@ -2097,7 +2107,8 @@ static int rt5668_set_component_pll(struct snd_soc_component *component,
 		int pll_id, int source, unsigned int freq_in,
 		unsigned int freq_out)
 {
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
 	struct rl6231_pll_code pll_code;
 	int ret;
 
@@ -2106,7 +2117,7 @@ static int rt5668_set_component_pll(struct snd_soc_component *component,
 		return 0;
 
 	if (!freq_in || !freq_out) {
-		dev_dbg(component->dev, "PLL disabled\n");
+		dev_dbg(dev, "PLL disabled\n");
 
 		rt5668->pll_in = 0;
 		rt5668->pll_out = 0;
@@ -2125,17 +2136,17 @@ static int rt5668_set_component_pll(struct snd_soc_component *component,
 				RT5668_PLL1_SRC_MASK, RT5668_PLL1_SRC_BCLK1);
 		break;
 	default:
-		dev_err(component->dev, "Unknown PLL Source %d\n", source);
+		dev_err(dev, "Unknown PLL Source %d\n", source);
 		return -EINVAL;
 	}
 
 	ret = rl6231_pll_calc(freq_in, freq_out, &pll_code);
 	if (ret < 0) {
-		dev_err(component->dev, "Unsupported input clock %d\n", freq_in);
+		dev_err(dev, "Unsupported input clock %d\n", freq_in);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "bypass=%d m=%d n=%d k=%d\n",
+	dev_dbg(dev, "bypass=%d m=%d n=%d k=%d\n",
 		pll_code.m_bp, (pll_code.m_bp ? 0 : pll_code.m_code),
 		pll_code.n_code, pll_code.k_code);
 
@@ -2154,10 +2165,12 @@ static int rt5668_set_component_pll(struct snd_soc_component *component,
 
 static int rt5668_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 {
-	struct snd_soc_component *component = dai->component;
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
+	int dai_id = snd_soc_dai_id(dai);
 
-	rt5668->bclk[dai->id] = ratio;
+	rt5668->bclk[dai_id] = ratio;
 
 	switch (ratio) {
 	case 64:
@@ -2171,7 +2184,7 @@ static int rt5668_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 			RT5668_I2S2_BCLK_MS2_32);
 		break;
 	default:
-		dev_err(dai->dev, "Invalid bclk ratio %d\n", ratio);
+		dev_err(dev, "Invalid bclk ratio %d\n", ratio);
 		return -EINVAL;
 	}
 
@@ -2181,7 +2194,8 @@ static int rt5668_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 static int rt5668_set_bias_level(struct snd_soc_component *component,
 			enum snd_soc_bias_level level)
 {
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
 
 	switch (level) {
 	case SND_SOC_BIAS_PREPARE:
@@ -2215,12 +2229,13 @@ static int rt5668_set_bias_level(struct snd_soc_component *component,
 
 static int rt5668_probe(struct snd_soc_component *component)
 {
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
 
 	rt5668->component = component;
 
 	if (rt5668->irq_disabled) {
-		enable_irq(to_i2c_client(component->dev)->irq);
+		enable_irq(to_i2c_client(dev)->irq);
 		rt5668->irq_disabled = false;
 	}
 
@@ -2229,8 +2244,9 @@ static int rt5668_probe(struct snd_soc_component *component)
 
 static void rt5668_remove(struct snd_soc_component *component)
 {
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
-	struct i2c_client *i2c = to_i2c_client(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
+	struct i2c_client *i2c = to_i2c_client(dev);
 
 	if (rt5668->irq_acquired) {
 		disable_irq(i2c->irq);
@@ -2246,7 +2262,8 @@ static void rt5668_remove(struct snd_soc_component *component)
 #ifdef CONFIG_PM
 static int rt5668_suspend(struct snd_soc_component *component)
 {
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt5668->regmap, true);
 	regcache_mark_dirty(rt5668->regmap);
@@ -2255,7 +2272,8 @@ static int rt5668_suspend(struct snd_soc_component *component)
 
 static int rt5668_resume(struct snd_soc_component *component)
 {
-	struct rt5668_priv *rt5668 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct rt5668_priv *rt5668 = dev_get_drvdata(dev);
 
 	regcache_cache_only(rt5668->regmap, false);
 	regcache_sync(rt5668->regmap);

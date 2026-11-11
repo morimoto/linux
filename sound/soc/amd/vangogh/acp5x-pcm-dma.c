@@ -202,6 +202,7 @@ static void config_acp5x_dma(struct i2s_stream_instance *rtd, int direction)
 static int acp5x_dma_open(struct snd_soc_component *component,
 			  struct snd_pcm_substream *substream)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_pcm_runtime *runtime;
 	struct snd_soc_pcm_runtime *prtd;
 	struct i2s_dev_data *adata;
@@ -211,7 +212,7 @@ static int acp5x_dma_open(struct snd_soc_component *component,
 	runtime = substream->runtime;
 	prtd = snd_soc_substream_to_rtd(substream);
 	component = snd_soc_rtdcom_lookup(prtd, DRV_NAME);
-	adata = dev_get_drvdata(component->dev);
+	adata = dev_get_drvdata(dev);
 
 	i2s_data = kzalloc_obj(*i2s_data);
 	if (!i2s_data)
@@ -225,7 +226,7 @@ static int acp5x_dma_open(struct snd_soc_component *component,
 	ret = snd_pcm_hw_constraint_integer(runtime,
 					    SNDRV_PCM_HW_PARAM_PERIODS);
 	if (ret < 0) {
-		dev_err(component->dev, "set integer constraint failed\n");
+		dev_err(dev, "set integer constraint failed\n");
 		kfree(i2s_data);
 		return ret;
 	}
@@ -244,6 +245,7 @@ static int acp5x_dma_hw_params(struct snd_soc_component *component,
 			       struct snd_pcm_substream *substream,
 			       struct snd_pcm_hw_params *params)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct i2s_stream_instance *rtd;
 	struct snd_soc_pcm_runtime *prtd;
 	struct snd_soc_card *card;
@@ -253,8 +255,8 @@ static int acp5x_dma_hw_params(struct snd_soc_component *component,
 
 	prtd = snd_soc_substream_to_rtd(substream);
 	card = prtd->card;
-	pinfo = snd_soc_card_get_drvdata(card);
-	adata = dev_get_drvdata(component->dev);
+	pinfo = snd_soc_card_to_priv(card);
+	adata = dev_get_drvdata(dev);
 	rtd = substream->runtime->private_data;
 
 	if (!rtd)
@@ -283,7 +285,7 @@ static int acp5x_dma_hw_params(struct snd_soc_component *component,
 			}
 		}
 	} else {
-		dev_err(component->dev, "pinfo failed\n");
+		dev_err(dev, "pinfo failed\n");
 		return -EINVAL;
 	}
 	size = params_buffer_bytes(params);
@@ -314,7 +316,8 @@ static snd_pcm_uframes_t acp5x_dma_pointer(struct snd_soc_component *component,
 static int acp5x_dma_new(struct snd_soc_component *component,
 			 struct snd_soc_pcm_runtime *rtd)
 {
-	struct device *parent = component->dev->parent;
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct device *parent = dev->parent;
 
 	snd_pcm_set_managed_buffer_all(rtd->pcm, SNDRV_DMA_TYPE_DEV,
 				       parent, MIN_BUFFER, MAX_BUFFER);
@@ -324,13 +327,14 @@ static int acp5x_dma_new(struct snd_soc_component *component,
 static int acp5x_dma_close(struct snd_soc_component *component,
 			   struct snd_pcm_substream *substream)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct snd_soc_pcm_runtime *prtd;
 	struct i2s_dev_data *adata;
 	struct i2s_stream_instance *ins;
 
 	prtd = snd_soc_substream_to_rtd(substream);
 	component = snd_soc_rtdcom_lookup(prtd, DRV_NAME);
-	adata = dev_get_drvdata(component->dev);
+	adata = dev_get_drvdata(dev);
 	ins = substream->runtime->private_data;
 	if (!ins)
 		return -EINVAL;

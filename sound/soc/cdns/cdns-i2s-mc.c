@@ -291,8 +291,11 @@ static irqreturn_t cdns_i2s_mc_isr(int irq, void *devid)
 
 static int cdns_i2s_mc_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 {
-	struct cdns_i2s_mc_priv *i2s_mc_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(component);
+	struct cdns_i2s_mc_priv *i2s_mc_priv = dev_get_drvdata(cpu_dev);
 	struct device *dev = i2s_mc_priv->dev;
+	int cpu_dai_id = snd_soc_dai_id(cpu_dai);
 	u32 ctrl = 0, dev_conf = 0;
 
 	dev_dbg(dev, "fmt = 0x%x\n", fmt);
@@ -307,7 +310,7 @@ static int cdns_i2s_mc_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 			   i2s_mc_priv->pin_tx_mask |
 			   (u8)~i2s_mc_priv->pin_rx_mask);
 
-	if (cpu_dai->id == I2S_MC_AIF1) {
+	if (cpu_dai_id == I2S_MC_AIF1) {
 		/* DAI hardware signal polarity */
 		switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
 		case SND_SOC_DAIFMT_NB_NF:
@@ -388,7 +391,7 @@ static int cdns_i2s_mc_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 				   I2S_DEV_CONF_TRAN_WS_DSP_MODE, dev_conf);
 		regmap_update_bits(i2s_mc_priv->regmap, I2S_CTRL,
 				   I2S_CTRL_T_MS | I2S_CTRL_TR_CFG, ctrl);
-	} else if (cpu_dai->id == I2S_MC_AIF2) {
+	} else if (cpu_dai_id == I2S_MC_AIF2) {
 		/* DAI hardware signal polarity */
 		switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
 		case SND_SOC_DAIFMT_NB_NF:
@@ -478,7 +481,9 @@ static int cdns_i2s_mc_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 static int cdns_i2s_mc_prepare(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *cpu_dai)
 {
-	struct cdns_i2s_mc_priv *i2s_mc_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(component);
+	struct cdns_i2s_mc_priv *i2s_mc_priv = dev_get_drvdata(cpu_dev);
 	u32 ctrl = 0, fifo = 0;
 
 	/*
@@ -558,9 +563,10 @@ static int cdns_i2s_mc_prepare(struct snd_pcm_substream *substream,
 
 static bool cdns_i2s_mc_other_dai_active(struct snd_soc_dai *cpu_dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
 	struct snd_soc_dai *dai;
 
-	for_each_component_dais(cpu_dai->component, dai) {
+	for_each_component_dais(component, dai) {
 		if (dai == cpu_dai)
 			continue;
 		if (snd_soc_dai_active(dai))
@@ -574,7 +580,9 @@ static int cdns_i2s_mc_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *cpu_dai)
 {
-	struct cdns_i2s_mc_priv *i2s_mc_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(component);
+	struct cdns_i2s_mc_priv *i2s_mc_priv = dev_get_drvdata(cpu_dev);
 	struct device *dev = i2s_mc_priv->dev;
 	u32 rate, sample_rate = 0;
 	u32 slots, slot_width, resolution, ctrl;
@@ -692,7 +700,9 @@ static int cdns_i2s_mc_hw_params(struct snd_pcm_substream *substream,
 static int cdns_i2s_mc_trigger(struct snd_pcm_substream *substream,
 			       int cmd, struct snd_soc_dai *cpu_dai)
 {
-	struct cdns_i2s_mc_priv *i2s_mc_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(component);
+	struct cdns_i2s_mc_priv *i2s_mc_priv = dev_get_drvdata(cpu_dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -720,7 +730,9 @@ static int cdns_i2s_mc_trigger(struct snd_pcm_substream *substream,
 
 static int cdns_i2s_mc_dai_probe(struct snd_soc_dai *cpu_dai)
 {
-	struct cdns_i2s_mc_priv *i2s_mc_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(component);
+	struct cdns_i2s_mc_priv *i2s_mc_priv = dev_get_drvdata(cpu_dev);
 	u32 ctrl = 0, cid_ctrl = 0;
 
 	/*
@@ -741,10 +753,10 @@ static int cdns_i2s_mc_dai_probe(struct snd_soc_dai *cpu_dai)
 			   I2S_CID_CTRL_STROBE_TS | I2S_CID_CTRL_STROBE_RS |
 			   I2S_CID_CTRL_INTREQ_MASK, cid_ctrl);
 
-	snd_soc_dai_init_dma_data(cpu_dai, &i2s_mc_priv->playback_dma_data,
-				  &i2s_mc_priv->capture_dma_data);
+	snd_soc_dai_stream_dma_data_set_playback(cpu_dai, &i2s_mc_priv->playback_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(cpu_dai,  &i2s_mc_priv->capture_dma_data);
 
-	snd_soc_dai_set_drvdata(cpu_dai, i2s_mc_priv);
+	dev_set_drvdata(cpu_dev, i2s_mc_priv);
 
 	return 0;
 }
