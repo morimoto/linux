@@ -179,11 +179,8 @@ int snd_soc_component_device_link_add(struct snd_soc_component *component)
 
 	component->card_device_link = device_link_add(card_dev, component_dev,
 						      DL_FLAG_STATELESS);
-	if (!component->card_device_link) {
-		dev_warn(card_dev, "Could not create device link to %s\n",
-			 dev_name(component_dev));
-		return -EINVAL;
-	}
+	if (!component->card_device_link)
+		return soc_component_ret(component, -EINVAL);
 
 	return 0;
 }
@@ -1264,7 +1261,7 @@ int snd_soc_pcm_component_copy(struct snd_pcm_substream *substream,
 				component->driver->copy(component, substream,
 					channel, pos, iter, bytes));
 
-	return -EINVAL;
+	return snd_soc_ret(rtd->dev, -EINVAL, "\n");
 }
 
 struct page *snd_soc_pcm_component_page(struct snd_pcm_substream *substream,
@@ -1303,7 +1300,7 @@ int snd_soc_pcm_component_mmap(struct snd_pcm_substream *substream,
 				component->driver->mmap(component,
 							substream, vma));
 
-	return -EINVAL;
+	return snd_soc_ret(rtd->dev, -EINVAL, "\n");
 }
 
 int snd_soc_pcm_component_new(struct snd_soc_pcm_runtime *rtd)
@@ -1488,7 +1485,8 @@ int snd_soc_pcm_component_ack(struct snd_pcm_substream *substream)
 	/* FIXME: use 1st pointer */
 	for_each_rtd_components(rtd, i, component)
 		if (component->driver->ack)
-			return component->driver->ack(component, substream);
+			return soc_component_ret(component,
+						 component->driver->ack(component, substream));
 
 	return 0;
 }
@@ -1629,14 +1627,15 @@ int snd_soc_component_probe(struct snd_soc_component *component, struct snd_soc_
 				component->name,
 				snd_soc_card_name(card),
 				snd_soc_card_name(component->card));
-			return -ENODEV;
+			ret = -ENODEV;
+			goto err;
 		}
 		return 0;
 	}
 
 	ret = snd_soc_component_module_get_when_probe(component);
 	if (ret < 0)
-		return ret;
+		goto err;
 
 	component->card = card;
 	snd_soc_component_set_name_prefix(component);
@@ -1649,19 +1648,13 @@ int snd_soc_component_probe(struct snd_soc_component *component, struct snd_soc_
 					component->driver->dapm_widgets,
 					component->driver->num_dapm_widgets);
 
-	if (ret != 0) {
-		dev_err(component->dev,
-			"Failed to create new controls %d\n", ret);
+	if (ret != 0)
 		goto err_probe;
-	}
 
 	for_each_component_dais(component, dai) {
 		ret = snd_soc_dapm_new_dai_widgets(dapm, dai);
-		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to create DAI widgets %d\n", ret);
+		if (ret != 0)
 			goto err_probe;
-		}
 	}
 
 	if (component->driver->probe) {
@@ -1703,8 +1696,8 @@ int snd_soc_component_probe(struct snd_soc_component *component, struct snd_soc_
 err_probe:
 	if (ret < 0)
 		snd_soc_component_remove(component, probed);
-
-	return ret;
+err:
+	return soc_component_ret(component, ret);
 }
 
 struct snd_soc_component
@@ -1797,7 +1790,7 @@ static int snd_soc_register_dais(struct snd_soc_component *component,
 err:
 	snd_soc_unregister_dais(component);
 
-	return ret;
+	return soc_component_ret(component, ret);
 }
 
 #define ENDIANNESS_MAP(name)						\
@@ -1929,7 +1922,7 @@ err_cleanup:
 	if (ret < 0)
 		snd_soc_component_unregister_unlocked(component);
 
-	return ret;
+	return soc_component_ret(component, ret);
 }
 EXPORT_SYMBOL_GPL(snd_soc_component_register);
 
@@ -2009,14 +2002,14 @@ int devm_snd_soc_register_component(struct device *dev,
 	*ptr = component;
 	devres_add(dev, ptr);
 
-	return ret;
+	return 0;
 
 free_devres:
 	devres_free(ptr);
 free_component:
 	devm_kfree(dev, component);
 err:
-	return ret;
+	return snd_soc_ret(dev, ret, "\n");
 }
 EXPORT_SYMBOL_GPL(devm_snd_soc_register_component);
 
