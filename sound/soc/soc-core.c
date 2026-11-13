@@ -235,7 +235,7 @@ void snd_soc_close_delayed_work(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_dai_driver *codec_driver = snd_soc_dai_to_driver(codec_dai);
 	int playback = SNDRV_PCM_STREAM_PLAYBACK;
 
-	snd_soc_dpcm_mutex_lock(rtd);
+	guard(pcm_mutex)(rtd->card);
 
 	dev_dbg(rtd->dev,
 		"ASoC: pop wq checking: %s status: %s waiting: %s\n",
@@ -250,8 +250,6 @@ void snd_soc_close_delayed_work(struct snd_soc_pcm_runtime *rtd)
 		snd_soc_dapm_stream_event(rtd, playback,
 					  SND_SOC_DAPM_STREAM_STOP);
 	}
-
-	snd_soc_dpcm_mutex_unlock(rtd);
 }
 EXPORT_SYMBOL_GPL(snd_soc_close_delayed_work);
 
