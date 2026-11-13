@@ -16,9 +16,6 @@
 #include <sound/soc.h>
 #include "soc-internal.h"
 
-
-DEFINE_GUARD(snd_soc_card_mutex, struct snd_soc_card *,
-	     snd_soc_card_mutex_lock(_T), snd_soc_card_mutex_unlock(_T))
 #define soc_pcm_ret(rtd, ret) snd_soc_ret(rtd->dev, ret, "on %s\n", rtd->dai_link->name)
 
 /* is the current PCM operation for this FE ? */
@@ -445,7 +442,7 @@ static int soc_pcm_shared_bclk_rule_rate(struct snd_pcm_hw_params *params,
 	int i;
 
 	/* Protect the rtd list traversal with the ASoC card mutex helper. */
-	guard(snd_soc_card_mutex)(card);
+	guard(card_mutex)(card);
 
 	dai_bclk = snd_soc_dai_get_bclk(dai);
 	dai_bclk_ratio = snd_soc_dai_get_bclk_ratio(dai);
