@@ -230,7 +230,7 @@ static int soc_compr_open_fe(struct snd_compr_stream *cstream)
 	int stream = cstream->direction; /* SND_COMPRESS_xxx is same as SNDRV_PCM_STREAM_xxx */
 	int ret;
 
-	snd_soc_card_mutex_lock(fe->card);
+	guard(card_mutex)(fe->card);
 
 	ret = soc_compr_alloc_fe_runtime(fe, stream);
 	if (ret < 0)
@@ -292,14 +292,11 @@ static int soc_compr_open_fe(struct snd_compr_stream *cstream)
 		goto be_err;
 	}
 out:
-	snd_soc_card_mutex_unlock(fe->card);
-
 	return 0;
 
 be_err:
 	soc_compr_free_fe_runtime(fe, stream);
 	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_NO;
-	snd_soc_card_mutex_unlock(fe->card);
 
 	return soc_compr_ret(fe, ret);
 }
@@ -321,7 +318,7 @@ static int soc_compr_free_fe(struct snd_compr_stream *cstream)
 	if (fe->dpcm[stream].state == SND_SOC_DPCM_STATE_START)
 		cstream->ops->trigger(cstream, SNDRV_PCM_TRIGGER_STOP);
 
-	snd_soc_card_mutex_lock(fe->card);
+	guard(card_mutex)(fe->card);
 
 	{
 		/* avoid scoped_guard() for simple code */
@@ -356,7 +353,6 @@ static int soc_compr_free_fe(struct snd_compr_stream *cstream)
 	/* all BEs are shut down and disconnected, the runtime is unused now */
 	soc_compr_free_fe_runtime(fe, stream);
 
-	snd_soc_card_mutex_unlock(fe->card);
 	return 0;
 }
 
@@ -454,46 +450,48 @@ static int soc_compr_trigger_fe(struct snd_compr_stream *cstream, int cmd)
 	else
 		fe_first = true;
 
-	snd_soc_card_mutex_lock(fe->card);
+	{
+		/* avoid scoped_guard() to allow goto */
+		guard(card_mutex)(fe->card);
 
-	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_FE;
+		fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_FE;
 
-	switch (cmd) {
-	case SNDRV_PCM_TRIGGER_START:
-	case SNDRV_PCM_TRIGGER_RESUME:
-	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-		ret = soc_compr_trigger_fe_be(cstream, cmd, fe_first);
-		break;
-	case SNDRV_PCM_TRIGGER_STOP:
-	case SNDRV_PCM_TRIGGER_SUSPEND:
-	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-		ret = soc_compr_trigger_fe_be(cstream, cmd, !fe_first);
-		break;
-	default:
-		ret = -EINVAL;
-		break;
-	}
+		switch (cmd) {
+		case SNDRV_PCM_TRIGGER_START:
+		case SNDRV_PCM_TRIGGER_RESUME:
+		case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
+			ret = soc_compr_trigger_fe_be(cstream, cmd, fe_first);
+			break;
+		case SNDRV_PCM_TRIGGER_STOP:
+		case SNDRV_PCM_TRIGGER_SUSPEND:
+		case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
+			ret = soc_compr_trigger_fe_be(cstream, cmd, !fe_first);
+			break;
+		default:
+			ret = -EINVAL;
+			break;
+		}
 
-	if (ret < 0)
-		goto err;
+		if (ret < 0)
+			goto err;
 
-	switch (cmd) {
-	case SNDRV_PCM_TRIGGER_START:
-	case SNDRV_PCM_TRIGGER_RESUME:
-	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-		fe->dpcm[stream].state = SND_SOC_DPCM_STATE_START;
-		break;
-	case SNDRV_PCM_TRIGGER_STOP:
-	case SNDRV_PCM_TRIGGER_SUSPEND:
-		fe->dpcm[stream].state = SND_SOC_DPCM_STATE_STOP;
-		break;
-	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-		fe->dpcm[stream].state = SND_SOC_DPCM_STATE_PAUSED;
-		break;
-	}
+		switch (cmd) {
+		case SNDRV_PCM_TRIGGER_START:
+		case SNDRV_PCM_TRIGGER_RESUME:
+		case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
+			fe->dpcm[stream].state = SND_SOC_DPCM_STATE_START;
+			break;
+		case SNDRV_PCM_TRIGGER_STOP:
+		case SNDRV_PCM_TRIGGER_SUSPEND:
+			fe->dpcm[stream].state = SND_SOC_DPCM_STATE_STOP;
+			break;
+		case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
+			fe->dpcm[stream].state = SND_SOC_DPCM_STATE_PAUSED;
+			break;
+		}
 err:
-	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_NO;
-	snd_soc_card_mutex_unlock(fe->card);
+		fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_NO;
+	}
 out:
 	return soc_compr_ret(fe, ret);
 }
@@ -551,7 +549,7 @@ static int soc_compr_set_params_fe(struct snd_compr_stream *cstream,
 	int stream = cstream->direction; /* SND_COMPRESS_xxx is same as SNDRV_PCM_STREAM_xxx */
 	int ret;
 
-	snd_soc_card_mutex_lock(fe->card);
+	guard(card_mutex)(fe->card);
 
 	/*
 	 * Create an empty hw_params for the BE as the machine driver must
@@ -604,7 +602,6 @@ static int soc_compr_set_params_fe(struct snd_compr_stream *cstream,
 
 out:
 	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_NO;
-	snd_soc_card_mutex_unlock(fe->card);
 
 	return soc_compr_ret(fe, ret);
 }
