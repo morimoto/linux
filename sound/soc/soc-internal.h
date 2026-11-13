@@ -308,4 +308,8 @@ struct snd_soc_pcm_runtime * :	snd_soc_dpcm_mutex_unlock_r)(x)
 struct snd_soc_card * :		snd_soc_card_dpcm_mutex_assert_held, \
 struct snd_soc_pcm_runtime * :	snd_soc_dpcm_mutex_assert_held_r)(x)
 
+DEFINE_GUARD(pcm_mutex, struct snd_soc_card *,
+	     snd_soc_card_dpcm_mutex_lock(_T),
+	     snd_soc_card_dpcm_mutex_unlock(_T));
+
 #endif /* __SOC_INTERNAL_H */
