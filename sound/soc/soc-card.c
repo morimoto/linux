@@ -1144,7 +1144,8 @@ static int snd_soc_card_bind(struct snd_soc_card *card)
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	int ret;
 
-	snd_soc_card_mutex_lock_root(card);
+	guard(card_mutex_root)(card);
+
 	snd_soc_card_fill_dummy_dai(card);
 
 	snd_soc_dapm_init(dapm, card, NULL);
@@ -1305,7 +1306,6 @@ probe_end:
 		list_add(&card->unbind_list, &unbind_list_head);
 		ret = 0;
 	}
-	snd_soc_card_mutex_unlock(card);
 
 	return soc_card_ret(card, ret);
 }

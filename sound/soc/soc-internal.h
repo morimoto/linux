@@ -287,5 +287,8 @@ DEFINE_GUARD(pcm_mutex, struct snd_soc_card *,
 DEFINE_GUARD(card_mutex, struct snd_soc_card *,
 	     snd_soc_card_mutex_lock(_T),
 	     snd_soc_card_mutex_unlock(_T))
+DEFINE_GUARD(card_mutex_root, struct snd_soc_card *,
+	     snd_soc_card_mutex_lock_root(_T),
+	     snd_soc_card_mutex_unlock(_T))
 
 #endif /* __SOC_INTERNAL_H */
