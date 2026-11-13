@@ -284,5 +284,8 @@ void dpcm_dapm_stream_event(struct snd_soc_pcm_runtime *fe, int dir, int event);
 DEFINE_GUARD(pcm_mutex, struct snd_soc_card *,
 	     snd_soc_card_dpcm_mutex_lock(_T),
 	     snd_soc_card_dpcm_mutex_unlock(_T));
+DEFINE_GUARD(card_mutex, struct snd_soc_card *,
+	     snd_soc_card_mutex_lock(_T),
+	     snd_soc_card_mutex_unlock(_T))
 
 #endif /* __SOC_INTERNAL_H */
