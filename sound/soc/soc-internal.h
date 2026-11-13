@@ -281,33 +281,6 @@ void dpcm_dapm_stream_event(struct snd_soc_pcm_runtime *fe, int dir, int event);
 /*
  *	PCM helper functions
  */
-static inline void snd_soc_dpcm_mutex_lock_r(struct snd_soc_pcm_runtime *rtd)
-{
-	snd_soc_card_dpcm_mutex_lock(rtd->card);
-}
-
-static inline void snd_soc_dpcm_mutex_unlock_r(struct snd_soc_pcm_runtime *rtd)
-{
-	snd_soc_card_dpcm_mutex_unlock(rtd->card);
-}
-
-static inline void snd_soc_dpcm_mutex_assert_held_r(struct snd_soc_pcm_runtime *rtd)
-{
-	snd_soc_card_dpcm_mutex_assert_held(rtd->card);
-}
-
-#define snd_soc_dpcm_mutex_lock(x) _Generic((x),		\
-struct snd_soc_card * :		snd_soc_card_dpcm_mutex_lock,	\
-struct snd_soc_pcm_runtime * :	snd_soc_dpcm_mutex_lock_r)(x)
-
-#define snd_soc_dpcm_mutex_unlock(x) _Generic((x),		\
-struct snd_soc_card * :		snd_soc_card_dpcm_mutex_unlock,	\
-struct snd_soc_pcm_runtime * :	snd_soc_dpcm_mutex_unlock_r)(x)
-
-#define snd_soc_dpcm_mutex_assert_held(x) _Generic((x),		\
-struct snd_soc_card * :		snd_soc_card_dpcm_mutex_assert_held, \
-struct snd_soc_pcm_runtime * :	snd_soc_dpcm_mutex_assert_held_r)(x)
-
 DEFINE_GUARD(pcm_mutex, struct snd_soc_card *,
 	     snd_soc_card_dpcm_mutex_lock(_T),
 	     snd_soc_card_dpcm_mutex_unlock(_T));
