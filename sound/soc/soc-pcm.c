@@ -233,13 +233,16 @@ static ssize_t dpcm_state_read_file(struct file *file, char __user *user_buf,
 	if (!buf)
 		return soc_pcm_ret(fe, -ENOMEM);
 
-	snd_soc_dpcm_mutex_lock(fe);
-	for_each_pcm_streams(stream)
-		if (snd_soc_dai_stream_valid(snd_soc_rtd_to_cpu(fe, 0), stream))
-			offset += dpcm_show_state(fe, stream,
-						  buf + offset,
-						  out_count - offset);
-	snd_soc_dpcm_mutex_unlock(fe);
+	{
+		/* avoid scoped_guard() for simple code */
+		guard(pcm_mutex)(fe->card);
+
+		for_each_pcm_streams(stream)
+			if (snd_soc_dai_stream_valid(snd_soc_rtd_to_cpu(fe, 0), stream))
+				offset += dpcm_show_state(fe, stream,
+							  buf + offset,
+							  out_count - offset);
+	}
 
 	ret = simple_read_from_buffer(user_buf, count, ppos, buf, offset);
 
@@ -352,7 +355,7 @@ void snd_soc_runtime_stream_user_update(struct snd_soc_pcm_runtime *rtd,
 	struct snd_soc_dai *dai;
 	int i;
 
-	snd_soc_dpcm_mutex_assert_held(rtd);
+	snd_soc_card_dpcm_mutex_assert_held(rtd->card);
 
 	for_each_rtd_dais(rtd, i, dai)
 		snd_soc_dai_stream_user_update(dai, stream, update);
@@ -399,7 +402,7 @@ void dpcm_dapm_stream_event(struct snd_soc_pcm_runtime *fe, int dir, int event)
 {
 	struct snd_soc_dpcm *dpcm;
 
-	snd_soc_dpcm_mutex_assert_held(fe);
+	snd_soc_card_dpcm_mutex_assert_held(fe->card);
 
 	for_each_dpcm_be(fe, dir, dpcm) {
 
@@ -780,7 +783,7 @@ static int soc_pcm_clean(struct snd_soc_pcm_runtime *rtd,
 	struct snd_soc_dai *dai;
 	int i;
 
-	snd_soc_dpcm_mutex_assert_held(rtd);
+	snd_soc_card_dpcm_mutex_assert_held(rtd->card);
 
 	if (!rollback) {
 		snd_soc_runtime_stream_user_update(rtd, substream->stream, -1);
@@ -816,9 +819,10 @@ static int soc_pcm_close(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 
-	snd_soc_dpcm_mutex_lock(rtd);
+	guard(pcm_mutex)(rtd->card);
+
 	soc_pcm_clean(rtd, substream, 0);
-	snd_soc_dpcm_mutex_unlock(rtd);
+
 	return 0;
 }
 
@@ -871,7 +875,7 @@ static int __soc_pcm_open(struct snd_soc_pcm_runtime *rtd,
 	struct snd_soc_dai *dai;
 	int i, ret = 0;
 
-	snd_soc_dpcm_mutex_assert_held(rtd);
+	snd_soc_card_dpcm_mutex_assert_held(rtd->card);
 
 	for_each_rtd_components(rtd, i, component) {
 		struct device *dev = snd_soc_component_to_dev(component);
@@ -940,12 +944,10 @@ err:
 static int soc_pcm_open(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	int ret;
 
-	snd_soc_dpcm_mutex_lock(rtd);
-	ret = __soc_pcm_open(rtd, substream);
-	snd_soc_dpcm_mutex_unlock(rtd);
-	return ret;
+	guard(pcm_mutex)(rtd->card);
+
+	return __soc_pcm_open(rtd, substream);
 }
 
 /*
@@ -959,7 +961,7 @@ static int __soc_pcm_prepare(struct snd_soc_pcm_runtime *rtd,
 	struct snd_soc_dai *dai;
 	int i, ret = 0;
 
-	snd_soc_dpcm_mutex_assert_held(rtd);
+	snd_soc_card_dpcm_mutex_assert_held(rtd->card);
 
 	ret = snd_soc_link_prepare(substream);
 	if (ret < 0)
@@ -1002,11 +1004,8 @@ out:
 static int soc_pcm_prepare(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	int ret;
 
-	snd_soc_dpcm_mutex_lock(rtd);
-	ret = __soc_pcm_prepare(rtd, substream);
-	snd_soc_dpcm_mutex_unlock(rtd);
+	guard(pcm_mutex)(rtd->card);
 
 	/*
 	 * Don't use soc_pcm_ret() on .prepare callback to lower error log severity
@@ -1014,7 +1013,7 @@ static int soc_pcm_prepare(struct snd_pcm_substream *substream)
 	 * We don't want to log an error since we do not want to give userspace a way to do a
 	 * denial-of-service attack on the syslog / diskspace.
 	 */
-	return ret;
+	return __soc_pcm_prepare(rtd, substream);
 }
 
 static void soc_pcm_codec_params_fixup(struct snd_pcm_hw_params *params,
@@ -1037,7 +1036,7 @@ static int soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
 	struct snd_soc_dai *dai;
 	int i;
 
-	snd_soc_dpcm_mutex_assert_held(rtd);
+	snd_soc_card_dpcm_mutex_assert_held(rtd->card);
 
 	/* clear the corresponding DAIs parameters when going to be inactive */
 	for_each_rtd_dais(rtd, i, dai) {
@@ -1071,12 +1070,10 @@ static int soc_pcm_hw_clean(struct snd_soc_pcm_runtime *rtd,
 static int soc_pcm_hw_free(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	int ret;
 
-	snd_soc_dpcm_mutex_lock(rtd);
-	ret = soc_pcm_hw_clean(rtd, substream, 0);
-	snd_soc_dpcm_mutex_unlock(rtd);
-	return ret;
+	guard(pcm_mutex)(rtd->card);
+
+	return soc_pcm_hw_clean(rtd, substream, 0);
 }
 
 /*
@@ -1093,7 +1090,7 @@ static int __soc_pcm_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params tmp_params;
 	int i, ret = 0;
 
-	snd_soc_dpcm_mutex_assert_held(rtd);
+	snd_soc_card_dpcm_mutex_assert_held(rtd->card);
 
 	ret = snd_soc_dai_symmetric_params(substream, params);
 	if (ret)
@@ -1198,12 +1195,10 @@ static int soc_pcm_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	int ret;
 
-	snd_soc_dpcm_mutex_lock(rtd);
-	ret = __soc_pcm_hw_params(substream, params);
-	snd_soc_dpcm_mutex_unlock(rtd);
-	return ret;
+	guard(pcm_mutex)(rtd->card);
+
+	return __soc_pcm_hw_params(substream, params);
 }
 
 #define TRIGGER_MAX 3
@@ -1332,7 +1327,7 @@ static int dpcm_be_connect(struct snd_soc_pcm_runtime *fe,
 	struct snd_pcm_substream *be_substream;
 	struct snd_soc_dpcm *dpcm;
 
-	snd_soc_dpcm_mutex_assert_held(fe);
+	snd_soc_card_dpcm_mutex_assert_held(fe->card);
 
 	/* only add new dpcms */
 	for_each_dpcm_be(fe, stream, dpcm)
@@ -1410,7 +1405,7 @@ void dpcm_be_disconnect(struct snd_soc_pcm_runtime *fe, int stream)
 	struct snd_pcm_substream *substream = snd_soc_dpcm_get_substream(fe, stream);
 	LIST_HEAD(deleted_dpcms);
 
-	snd_soc_dpcm_mutex_assert_held(fe);
+	snd_soc_card_dpcm_mutex_assert_held(fe->card);
 
 	snd_pcm_stream_lock_irq(substream);
 	for_each_dpcm_be_safe(fe, stream, dpcm, d) {
@@ -2014,7 +2009,7 @@ static int dpcm_fe_dai_shutdown(struct snd_pcm_substream *substream)
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(substream);
 	int stream = substream->stream;
 
-	snd_soc_dpcm_mutex_assert_held(fe);
+	snd_soc_card_dpcm_mutex_assert_held(fe->card);
 
 	dpcm_set_fe_update_state(fe, stream, SND_SOC_DPCM_UPDATE_FE);
 
@@ -2080,7 +2075,8 @@ static int dpcm_fe_dai_hw_free(struct snd_pcm_substream *substream)
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(substream);
 	int stream = substream->stream;
 
-	snd_soc_dpcm_mutex_lock(fe);
+	guard(pcm_mutex)(fe->card);
+
 	dpcm_set_fe_update_state(fe, stream, SND_SOC_DPCM_UPDATE_FE);
 
 	dev_dbg(fe->dev, "ASoC: hw_free FE %s\n", fe->dai_link->name);
@@ -2095,7 +2091,6 @@ static int dpcm_fe_dai_hw_free(struct snd_pcm_substream *substream)
 	fe->dpcm[stream].state = SND_SOC_DPCM_STATE_HW_FREE;
 	dpcm_set_fe_update_state(fe, stream, SND_SOC_DPCM_UPDATE_NO);
 
-	snd_soc_dpcm_mutex_unlock(fe);
 	return 0;
 }
 
@@ -2183,7 +2178,8 @@ static int dpcm_fe_dai_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(substream);
 	int ret, stream = substream->stream;
 
-	snd_soc_dpcm_mutex_lock(fe);
+	guard(pcm_mutex)(fe->card);
+
 	dpcm_set_fe_update_state(fe, stream, SND_SOC_DPCM_UPDATE_FE);
 
 	memcpy(&fe->dpcm[stream].hw_params, params,
@@ -2205,7 +2201,6 @@ static int dpcm_fe_dai_hw_params(struct snd_pcm_substream *substream,
 
 out:
 	dpcm_set_fe_update_state(fe, stream, SND_SOC_DPCM_UPDATE_NO);
-	snd_soc_dpcm_mutex_unlock(fe);
 
 	return soc_pcm_ret(fe, ret);
 }
@@ -2541,7 +2536,7 @@ static int dpcm_fe_dai_prepare(struct snd_pcm_substream *substream)
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(substream);
 	int stream = substream->stream, ret = 0;
 
-	snd_soc_dpcm_mutex_lock(fe);
+	guard(pcm_mutex)(fe->card);
 
 	dev_dbg(fe->dev, "ASoC: prepare FE %s\n", fe->dai_link->name);
 
@@ -2560,7 +2555,6 @@ static int dpcm_fe_dai_prepare(struct snd_pcm_substream *substream)
 
 out:
 	dpcm_set_fe_update_state(fe, stream, SND_SOC_DPCM_UPDATE_NO);
-	snd_soc_dpcm_mutex_unlock(fe);
 
 	/*
 	 * Don't use soc_pcm_ret() on .prepare callback to lower error log severity
@@ -2735,7 +2729,8 @@ int snd_soc_dpcm_runtime_update(struct snd_soc_card *card)
 	struct snd_soc_pcm_runtime *fe;
 	int ret = 0;
 
-	snd_soc_dpcm_mutex_lock(card);
+	guard(pcm_mutex)(card);
+
 	/* shutdown all old paths first */
 	for_each_card_rtds(card, fe) {
 		ret = soc_dpcm_fe_runtime_update(fe, 0);
@@ -2749,10 +2744,7 @@ int snd_soc_dpcm_runtime_update(struct snd_soc_card *card)
 		if (ret)
 			goto out;
 	}
-
 out:
-	snd_soc_dpcm_mutex_unlock(card);
-
 	return snd_soc_ret(dev, ret, "failed\n");
 }
 EXPORT_SYMBOL_GPL(snd_soc_dpcm_runtime_update);
@@ -2763,7 +2755,7 @@ static void dpcm_fe_dai_cleanup(struct snd_pcm_substream *fe_substream)
 	struct snd_soc_dpcm *dpcm;
 	int stream = fe_substream->stream;
 
-	snd_soc_dpcm_mutex_assert_held(fe);
+	snd_soc_card_dpcm_mutex_assert_held(fe->card);
 
 	/* mark FE's links ready to prune */
 	for_each_dpcm_be(fe, stream, dpcm)
@@ -2777,12 +2769,11 @@ static int dpcm_fe_dai_close(struct snd_pcm_substream *fe_substream)
 	struct snd_soc_pcm_runtime *fe = snd_soc_substream_to_rtd(fe_substream);
 	int ret;
 
-	snd_soc_dpcm_mutex_lock(fe);
+	guard(pcm_mutex)(fe->card);
+
 	ret = dpcm_fe_dai_shutdown(fe_substream);
 
 	dpcm_fe_dai_cleanup(fe_substream);
-
-	snd_soc_dpcm_mutex_unlock(fe);
 
 	return soc_pcm_ret(fe, ret);
 }
@@ -2794,7 +2785,7 @@ static int dpcm_fe_dai_open(struct snd_pcm_substream *fe_substream)
 	int ret;
 	int stream = fe_substream->stream;
 
-	snd_soc_dpcm_mutex_lock(fe);
+	guard(pcm_mutex)(fe->card);
 
 	ret = dpcm_path_get(fe, stream, &list);
 	if (ret < 0)
@@ -2822,8 +2813,6 @@ static int dpcm_fe_dai_open(struct snd_pcm_substream *fe_substream)
 put_path:
 	dpcm_path_put(&list);
 open_end:
-	snd_soc_dpcm_mutex_unlock(fe);
-
 	return soc_pcm_ret(fe, ret);
 }
 
