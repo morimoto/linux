@@ -53,29 +53,30 @@ static int soc_compr_clean(struct snd_compr_stream *cstream, int rollback)
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
 	int stream = cstream->direction; /* SND_COMPRESS_xxx is same as SNDRV_PCM_STREAM_xxx */
 
-	snd_soc_dpcm_mutex_lock(rtd);
+	{
+		/* avoid scoped_guard() */
+		guard(pcm_mutex)(rtd->card);
 
-	if (!rollback)
-		snd_soc_runtime_stream_user_update(rtd, stream, -1);
+		if (!rollback)
+			snd_soc_runtime_stream_user_update(rtd, stream, -1);
 
-	snd_soc_dai_digital_mute(codec_dai, 1, stream);
+		snd_soc_dai_digital_mute(codec_dai, 1, stream);
 
-	if (!snd_soc_dai_is_active(cpu_dai))
-		snd_soc_dai_symmetric_set_params(cpu_dai, NULL);
+		if (!snd_soc_dai_is_active(cpu_dai))
+			snd_soc_dai_symmetric_set_params(cpu_dai, NULL);
 
-	if (!snd_soc_dai_is_active(codec_dai))
-		snd_soc_dai_symmetric_set_params(codec_dai, NULL);
+		if (!snd_soc_dai_is_active(codec_dai))
+			snd_soc_dai_symmetric_set_params(codec_dai, NULL);
 
-	snd_soc_link_compr_shutdown(cstream, rollback);
+		snd_soc_link_compr_shutdown(cstream, rollback);
 
-	snd_soc_compr_components_free(cstream, rollback);
+		snd_soc_compr_components_free(cstream, rollback);
 
-	snd_soc_dai_compr_shutdown(cpu_dai, cstream, rollback);
+		snd_soc_dai_compr_shutdown(cpu_dai, cstream, rollback);
 
-	if (!rollback)
-		snd_soc_dapm_stream_stop(rtd, stream);
-
-	snd_soc_dpcm_mutex_unlock(rtd);
+		if (!rollback)
+			snd_soc_dapm_stream_stop(rtd, stream);
+	}
 
 	snd_soc_pcm_component_pm_runtime_put(rtd, cstream, rollback);
 
@@ -96,26 +97,26 @@ static int soc_compr_open(struct snd_compr_stream *cstream)
 
 	ret = snd_soc_pcm_component_pm_runtime_get(rtd, cstream);
 	if (ret < 0)
-		goto err_no_lock;
-
-	snd_soc_dpcm_mutex_lock(rtd);
-
-	ret = snd_soc_dai_compr_startup(cpu_dai, cstream);
-	if (ret < 0)
 		goto err;
+	{
+		/* avoid scoped_guard() to allow goto */
+		guard(pcm_mutex)(rtd->card);
 
-	ret = snd_soc_compr_components_open(cstream);
-	if (ret < 0)
-		goto err;
+		ret = snd_soc_dai_compr_startup(cpu_dai, cstream);
+		if (ret < 0)
+			goto err;
 
-	ret = snd_soc_link_compr_startup(cstream);
-	if (ret < 0)
-		goto err;
+		ret = snd_soc_compr_components_open(cstream);
+		if (ret < 0)
+			goto err;
 
-	snd_soc_runtime_stream_user_update(rtd, stream, 1);
+		ret = snd_soc_link_compr_startup(cstream);
+		if (ret < 0)
+			goto err;
+
+		snd_soc_runtime_stream_user_update(rtd, stream, 1);
+	}
 err:
-	snd_soc_dpcm_mutex_unlock(rtd);
-err_no_lock:
 	if (ret < 0)
 		soc_compr_clean(cstream, 1);
 
@@ -193,7 +194,7 @@ static void soc_compr_set_fe_runtime(struct snd_soc_pcm_runtime *fe, int stream)
 	struct snd_pcm_runtime *runtime;
 	struct snd_soc_dpcm *dpcm;
 
-	snd_soc_dpcm_mutex_assert_held(fe);
+	snd_soc_card_dpcm_mutex_assert_held(fe->card);
 
 	if (!fe_substream || !fe_substream->runtime)
 		return;
@@ -239,55 +240,62 @@ static int soc_compr_open_fe(struct snd_compr_stream *cstream)
 	if (ret < 0)
 		goto be_err;
 
-	snd_soc_dpcm_mutex_lock(fe);
+	{
+		/* avoid scoped_guard() to allow goto */
+		guard(pcm_mutex)(fe->card);
 
-	/* calculate valid and active FE <-> BE dpcms */
-	dpcm_add_paths(fe, stream, &list);
+		/* calculate valid and active FE <-> BE dpcms */
+		dpcm_add_paths(fe, stream, &list);
 
-	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_FE;
+		fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_FE;
 
-	ret = dpcm_be_dai_startup(fe, stream);
-	if (ret < 0) {
-		/* clean up all links */
-		for_each_dpcm_be(fe, stream, dpcm)
-			dpcm->state = SND_SOC_DPCM_LINK_STATE_FREE;
+		ret = dpcm_be_dai_startup(fe, stream);
+		if (ret < 0) {
+			/* clean up all links */
+			for_each_dpcm_be(fe, stream, dpcm)
+				dpcm->state = SND_SOC_DPCM_LINK_STATE_FREE;
 
-		dpcm_be_disconnect(fe, stream);
+			dpcm_be_disconnect(fe, stream);
+			goto out;
+		}
+
+		ret = snd_soc_dai_compr_startup(cpu_dai, cstream);
+		if (ret < 0)
+			goto out;
+
+		ret = snd_soc_compr_components_open(cstream);
+		if (ret < 0)
+			goto open_err;
+
+		ret = snd_soc_link_compr_startup(cstream);
+		if (ret < 0)
+			goto machine_err;
+
+		dpcm_clear_pending_state(fe, stream);
+		dpcm_path_put(&list);
+
+		fe->dpcm[stream].state = SND_SOC_DPCM_STATE_OPEN;
+		fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_NO;
+
+		snd_soc_runtime_stream_user_update(fe, stream, 1);
+
+		/* success */
 		goto out;
+
+		/* error handling in guard() */
+	machine_err:
+		snd_soc_compr_components_free(cstream, 1);
+	open_err:
+		snd_soc_dai_compr_shutdown(cpu_dai, cstream, 1);
+	out:
+		dpcm_path_put(&list);
+		goto be_err;
 	}
-
-	ret = snd_soc_dai_compr_startup(cpu_dai, cstream);
-	if (ret < 0)
-		goto out;
-
-	ret = snd_soc_compr_components_open(cstream);
-	if (ret < 0)
-		goto open_err;
-
-	ret = snd_soc_link_compr_startup(cstream);
-	if (ret < 0)
-		goto machine_err;
-
-	dpcm_clear_pending_state(fe, stream);
-	dpcm_path_put(&list);
-
-	fe->dpcm[stream].state = SND_SOC_DPCM_STATE_OPEN;
-	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_NO;
-
-	snd_soc_runtime_stream_user_update(fe, stream, 1);
-	snd_soc_dpcm_mutex_unlock(fe);
-
+out:
 	snd_soc_card_mutex_unlock(fe->card);
 
 	return 0;
 
-machine_err:
-	snd_soc_compr_components_free(cstream, 1);
-open_err:
-	snd_soc_dai_compr_shutdown(cpu_dai, cstream, 1);
-out:
-	dpcm_path_put(&list);
-	snd_soc_dpcm_mutex_unlock(fe);
 be_err:
 	soc_compr_free_fe_runtime(fe, stream);
 	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_NO;
@@ -315,27 +323,29 @@ static int soc_compr_free_fe(struct snd_compr_stream *cstream)
 
 	snd_soc_card_mutex_lock(fe->card);
 
-	snd_soc_dpcm_mutex_lock(fe);
-	snd_soc_runtime_stream_user_update(fe, stream, -1);
+	{
+		/* avoid scoped_guard() for simple code */
+		guard(pcm_mutex)(fe->card);
 
-	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_FE;
+		snd_soc_runtime_stream_user_update(fe, stream, -1);
 
-	dpcm_be_dai_hw_free(fe, stream);
+		fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_FE;
 
-	dpcm_be_dai_shutdown(fe, stream);
+		dpcm_be_dai_hw_free(fe, stream);
 
-	/* mark FE's links ready to prune */
-	for_each_dpcm_be(fe, stream, dpcm)
-		dpcm->state = SND_SOC_DPCM_LINK_STATE_FREE;
+		dpcm_be_dai_shutdown(fe, stream);
 
-	dpcm_dapm_stream_event(fe, stream, SND_SOC_DAPM_STREAM_STOP);
+		/* mark FE's links ready to prune */
+		for_each_dpcm_be(fe, stream, dpcm)
+			dpcm->state = SND_SOC_DPCM_LINK_STATE_FREE;
 
-	fe->dpcm[stream].state = SND_SOC_DPCM_STATE_CLOSE;
-	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_NO;
+		dpcm_dapm_stream_event(fe, stream, SND_SOC_DAPM_STREAM_STOP);
 
-	dpcm_be_disconnect(fe, stream);
+		fe->dpcm[stream].state = SND_SOC_DPCM_STATE_CLOSE;
+		fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_NO;
 
-	snd_soc_dpcm_mutex_unlock(fe);
+		dpcm_be_disconnect(fe, stream);
+	}
 
 	snd_soc_link_compr_shutdown(cstream, 0);
 
@@ -358,7 +368,7 @@ static int soc_compr_trigger(struct snd_compr_stream *cstream, int cmd)
 	int stream = cstream->direction; /* SND_COMPRESS_xxx is same as SNDRV_PCM_STREAM_xxx */
 	int ret;
 
-	snd_soc_dpcm_mutex_lock(rtd);
+	guard(pcm_mutex)(rtd->card);
 
 	ret = snd_soc_component_compr_trigger(cstream, cmd);
 	if (ret < 0)
@@ -378,7 +388,6 @@ static int soc_compr_trigger(struct snd_compr_stream *cstream, int cmd)
 	}
 
 out:
-	snd_soc_dpcm_mutex_unlock(rtd);
 
 	return soc_compr_ret(rtd, ret);
 }
@@ -497,40 +506,38 @@ static int soc_compr_set_params(struct snd_compr_stream *cstream,
 	int stream = cstream->direction; /* SND_COMPRESS_xxx is same as SNDRV_PCM_STREAM_xxx */
 	int ret;
 
-	snd_soc_dpcm_mutex_lock(rtd);
+	{
+		/* avoid scoped_guard() to allow goto */
+		guard(pcm_mutex)(rtd->card);
 
-	/*
-	 * First we call set_params for the CPU DAI, then the component
-	 * driver this should configure the SoC side. If the machine has
-	 * compressed ops then we call that as well. The expectation is
-	 * that these callbacks will configure everything for this compress
-	 * path, like configuring a PCM port for a CODEC.
-	 */
-	ret = snd_soc_dai_compr_set_params(cpu_dai, cstream, params);
-	if (ret < 0)
-		goto err;
+		/*
+		 * First we call set_params for the CPU DAI, then the component
+		 * driver this should configure the SoC side. If the machine has
+		 * compressed ops then we call that as well. The expectation is
+		 * that these callbacks will configure everything for this compress
+		 * path, like configuring a PCM port for a CODEC.
+		 */
+		ret = snd_soc_dai_compr_set_params(cpu_dai, cstream, params);
+		if (ret < 0)
+			goto err;
 
-	ret = snd_soc_component_compr_set_params(cstream, params);
-	if (ret < 0)
-		goto err;
+		ret = snd_soc_component_compr_set_params(cstream, params);
+		if (ret < 0)
+			goto err;
 
-	ret = snd_soc_link_compr_set_params(cstream);
-	if (ret < 0)
-		goto err;
+		ret = snd_soc_link_compr_set_params(cstream);
+		if (ret < 0)
+			goto err;
 
-	snd_soc_dapm_stream_event(rtd, stream, SND_SOC_DAPM_STREAM_START);
+		snd_soc_dapm_stream_event(rtd, stream, SND_SOC_DAPM_STREAM_START);
 
-	/* cancel any delayed stream shutdown that is pending */
-	rtd->pop_wait = 0;
-	snd_soc_dpcm_mutex_unlock(rtd);
+		/* cancel any delayed stream shutdown that is pending */
+		rtd->pop_wait = 0;
+	}
 
 	cancel_delayed_work_sync(&rtd->delayed_work);
-
-	return 0;
-
+	ret = 0;
 err:
-	snd_soc_dpcm_mutex_unlock(rtd);
-
 	return soc_compr_ret(rtd, ret);
 }
 
@@ -556,17 +563,23 @@ static int soc_compr_set_params_fe(struct snd_compr_stream *cstream,
 
 	fe->dpcm[stream].runtime_update = SND_SOC_DPCM_UPDATE_FE;
 
-	snd_soc_dpcm_mutex_lock(fe);
-	ret = dpcm_be_dai_hw_params(fe, stream);
-	if (!ret)
-		soc_compr_set_fe_runtime(fe, stream);
-	snd_soc_dpcm_mutex_unlock(fe);
+	{
+		/* avoid scoped_guard() for simple code */
+		guard(pcm_mutex)(fe->card);
+
+		ret = dpcm_be_dai_hw_params(fe, stream);
+		if (!ret)
+			soc_compr_set_fe_runtime(fe, stream);
+	}
 	if (ret < 0)
 		goto out;
 
-	snd_soc_dpcm_mutex_lock(fe);
-	ret = dpcm_be_dai_prepare(fe, stream);
-	snd_soc_dpcm_mutex_unlock(fe);
+	{
+		/* avoid scoped_guard() for simple code */
+		guard(pcm_mutex)(fe->card);
+
+		ret = dpcm_be_dai_prepare(fe, stream);
+	}
 	if (ret < 0)
 		goto out;
 
@@ -581,9 +594,12 @@ static int soc_compr_set_params_fe(struct snd_compr_stream *cstream,
 	ret = snd_soc_link_compr_set_params(cstream);
 	if (ret < 0)
 		goto out;
-	snd_soc_dpcm_mutex_lock(fe);
-	dpcm_dapm_stream_event(fe, stream, SND_SOC_DAPM_STREAM_START);
-	snd_soc_dpcm_mutex_unlock(fe);
+	{
+		/* avoid scoped_guard() for simple code */
+		guard(pcm_mutex)(fe->card);
+
+		dpcm_dapm_stream_event(fe, stream, SND_SOC_DAPM_STREAM_START);
+	}
 	fe->dpcm[stream].state = SND_SOC_DPCM_STATE_PREPARE;
 
 out:
@@ -600,7 +616,7 @@ static int soc_compr_get_params(struct snd_compr_stream *cstream,
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	int ret = 0;
 
-	snd_soc_dpcm_mutex_lock(rtd);
+	guard(pcm_mutex)(rtd->card);
 
 	ret = snd_soc_dai_compr_get_params(cpu_dai, cstream, params);
 	if (ret < 0)
@@ -608,8 +624,6 @@ static int soc_compr_get_params(struct snd_compr_stream *cstream,
 
 	ret = snd_soc_component_compr_get_params(cstream, params);
 err:
-	snd_soc_dpcm_mutex_unlock(rtd);
-
 	return soc_compr_ret(rtd, ret);
 }
 
@@ -619,7 +633,7 @@ static int soc_compr_ack(struct snd_compr_stream *cstream, size_t bytes)
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	int ret;
 
-	snd_soc_dpcm_mutex_lock(rtd);
+	guard(pcm_mutex)(rtd->card);
 
 	ret = snd_soc_dai_compr_ack(cpu_dai, cstream, bytes);
 	if (ret < 0)
@@ -627,8 +641,6 @@ static int soc_compr_ack(struct snd_compr_stream *cstream, size_t bytes)
 
 	ret = snd_soc_component_compr_ack(cstream, bytes);
 err:
-	snd_soc_dpcm_mutex_unlock(rtd);
-
 	return soc_compr_ret(rtd, ret);
 }
 
@@ -639,7 +651,7 @@ static int soc_compr_pointer(struct snd_compr_stream *cstream,
 	int ret;
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 
-	snd_soc_dpcm_mutex_lock(rtd);
+	guard(pcm_mutex)(rtd->card);
 
 	ret = snd_soc_dai_compr_pointer(cpu_dai, cstream, tstamp);
 	if (ret < 0)
@@ -647,8 +659,6 @@ static int soc_compr_pointer(struct snd_compr_stream *cstream,
 
 	ret = snd_soc_component_compr_pointer(cstream, tstamp);
 out:
-	snd_soc_dpcm_mutex_unlock(rtd);
-
 	return soc_compr_ret(rtd, ret);
 }
 
