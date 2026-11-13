@@ -181,9 +181,6 @@ b983d47b8e8f2 pwm: rcar: Add SCMI clock support for R-Car X5H PWM driver
 d237466d40574 arm64: dts: renesas: ironhide-coresight: Add Coresight support
 35bf27d8ee50b arm64: defconfig: Enable ARM-SMMU-V3 as defconfig
 491e6f6c41851 iommu/arm-smmu-v3: Add suspend/resume support for Renesas RCar Gen5
-0e019db4a1c22 arm64: dts: renesas: add scmi clock for RWDT driver
-57baa7b965bc5 renesas: watchdog: enable clock and support devicetree fallback rate
-7c9883b7f7d9c renesas: watchdog: add compatible string to support R-Car Gen5 Soc.
 46d70efe141e4 ufs/host/ufs-renesas-rcar-gen5: Reorder Module Standby sequence of UFS to avoid HW limitation on R-Car Gen5
 115d1ea408294 drivers/ufs/host/ufs-renesas-rcar-gen5: Use PA_INITIAL_ADAPT instead of PA_NO_ADAPT
 8be09cd032cf5 ufs: renesas: ufs-renesas-rcar-gen5: Resume control on R-Car X5H
@@ -252,9 +249,6 @@ a7848c71abd00 rcar_canxl: Implement CRC computation
 774f76be3e581 can: rcar_canxl: Fix data reception issue
 a8526aa0d3886 can: rcar_canxl: Support CAN-FD frame on CAN-XL bus
 91220af9e7278 can: rcar_canxl: Add support for X5H SoC
-aa9efcb4a4199 wwdt: rcar: add suspend/resume support
-66f594fe8aec4 wwdt: rcar: add window watchdog support on R-Car X5H
-9fa86c4e31cf8 MAINTAINERS: add Renesas WWDT driver
 0fb4821812362 arm64: dts: ironhide: drop unused I2C sensor node in I3C
 7f17b5cba2d14 can: rcar_canfd: set clock rate to match hardware specification
 cf95bd44b7149 arm64: dts: r8a78000: add fallback clockrate for CANFD driver
@@ -345,7 +339,6 @@ f648f715ebf51 dt-bindings: PCI: renesas: Add R-Car Gen5 PCIe 6.0 Host
 e01ad8b50eb2e dt-bindings: PCI: renesas: Add R-Car Gen5 PCIe 4.0 Host
 39084392d5f87 dt-bindings: rsnd: Add r8a78000 support
 6ab3ffd2aed3b dt-bindings: ufs: renesas: Add efuse registers area
-064604aa92fb0 dt-bindings: window watchdog: Document R-Car X5H support
 568551619e42e dt-bindings: can: renesas,rcar-canfd: Document R-Car X5H support
 2ebeba3752c23 dt-bindings: spi: renesas,sh-msiof: Add support for R-Car X5H
 16a877ca49134 dt-bindings: spi: renesas,sh-msiof: Add description of clock handling
@@ -353,7 +346,6 @@ e01ad8b50eb2e dt-bindings: PCI: renesas: Add R-Car Gen5 PCIe 4.0 Host
 cb963104516ee dt-bindings: timer: renesas, cmt: Document R-Car X5H CMT support
 83da77cedc91a dt-bindings: pwm: tpu: Add support for X5H
 29feba9b974d6 dt-bindings: pwm: Add support for X5H
-24860955c72ec dt-bindings: watchdog: Document R-Car X5H support
 fc101563d8751 dt-bindings: can: renesas,rcar-canxl: Document R-Car X5H support
 86dab7bc86e8e arm64: dts: renesas: r8a78000: Update PCIe 6.0 device tree
 799f1b44d451c arm64: dts: renesas: r8a78000: Remove redundant DMAC-pp clock
@@ -362,7 +354,6 @@ a7278b003908f arm64: dts: renesas: r8a78000: Update SCP definitions for (H)SCIF
 a623c7c718af8 arm64: dts: renesas: r8a78000: Update power domain, clock and reset for PCIe6 align with SCMI
 204fbda40f135 arm64: dts: renesas: r8a78000: Add power-domains, clocks, resets definitions for display nodes
 534d7ba105728 arm64: dts: renesas: ironhide: Add DP-TX pinctrl for hotplug support
-9f0770d446d98 arm64: dts: r8a78000: add clock rate for WWDT driver
 ff6d491230d9e arm64: dts: renesas: ironhide-common: Add additional CMA region
 1e979bce1ab85 arm64: dts: renesas: ironhide-common: Move LDR region to 0x8E20_0000
 18744cf7eb39d arm64: dts: renesas: r8a78000: Add SCMI vendor protocol node
@@ -370,7 +361,6 @@ ff6d491230d9e arm64: dts: renesas: ironhide-common: Add additional CMA region
 2ef8e6f331355 arm64: dts: renesas: r8a78000: Add dummy clocks and reset for MSIOF
 adb2064dea79e arm64: dts: r8a78000: add scmi reset for UFS
 3c358a29102b2 arm64: dts: renesas: r8a78000: rpc: update definitions
-a69fefceeb7f7 arm64: dts: r8a78000: add scmi clk and reset for WWDT
 b90c221c43fd1 arm64: dts: r8a78000: add scmi reset for I3C driver
 608af6c7c1be5 arm64: dts: r8a78000: add scmi reset for CAN-XL
 9ac9b5ba02769 arm64: dts: r8a78000: Add RAM clock for CAN-FD driver
@@ -381,8 +371,6 @@ dbb3437e5f13e arm64: dts: renesas: ironhide: Correct interface property for MP-P
 aca04a722ff81 arch: arm64: dts: Add resets property for PCIe4/6 dts node
 01681b137614b arm64: dts: renesas: r8a78000: Update PCIe6 interrupts and add corresponding interrupt-names
 37e2ad90236fd arm64: renesas: r8a78000: Update to get,set clock rate from sd_clock for SDHI driver
-6042410ffe14e arm64: dts: renesas: ironhide: Enable WWDT0-19 node
-fe6f331c77dde arm64: dts: renesas: r8a78000: Add INTC for WWDT node
 3d4d0b8e2710b arm64: dts: renesas: ironhide: Refactor Ironhide board components.
 ed189e1a2a040 arm64: dts: renesas: r8a78000: Add SCMI clock for Audio
 cc66bafcf7c7d arm64: dts: renesas: r8a78000: Add SCMI clock for PWM and TPU drivers
@@ -430,8 +418,6 @@ f8adb7485b5d7 arch: arm64: renesas: r8a78000: Enable PFC for USB
 1cb7b8e68c068 arm64: dts: renesas: ironhide: Update memory map and reserved area
 5a9d47c1fa82e arm64: dts: renesas: ironhide: Add Sound support
 65e7eb97d99e6 arm64: dts: renesas: r8a78000: R-Car Sound support
-6e448be75c2d9 arch: arm64: renesas: r8a78000: Enable WWDT node
-9845a7ade0df3 arm64: dts: renesas: r8a78000: Add WWDT device tree node
 712fc1e5881ac arm64: dts: renesas: ironhide: Enable CAN-XL node
 833865e118ead arm64: dts: renesas: r8a78000: Add CANXL node
 ef84af6cd6abc arm64: dts: renesas: ironhide: Enable CANFD node
@@ -492,8 +478,6 @@ bf8314173dab3 arm64: dts: renesas: r8a78000: Add Ethernet Switch3 node
 87d940809a0f4 arm64: dts: renesas: ironhide: Enable Multi-Protocol PHY
 0130742e92942 arm64: dts: renesas: r8a78000: Add device tree node for Multi-Protocol PHY
 fe68e3cdd29ca arm64: dts: renesas: ironhide: set I2C0 clock to 100 kHz
-f1fff70b759ab arm64: dts: renesas: r8a78000: Enable RWDT node
-4952d02b69cd0 arm64: dts: renesas: r8a78000: add RCLK Watchdog node
 bc6921c34b12a arm64: dts: renesas: r8a78000: Add Reset node
 f7e334e63df9a arm64: dts: renesas: r8a78000: Add I2C EEPROM device
 04a12b959e6cd ARM: renesas: Add R8A78000 Ironhide board code

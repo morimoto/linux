@@ -1,5 +1,14 @@
 # Empty line below is needed
 
+# Upstream does not need special clock handling for SCMI clocks
+9f0770d446d98 arm64: dts: r8a78000: add clock rate for WWDT driver
+# WWDT0-19 do not get enabled in the generic upstream DT unless there is a use case
+6042410ffe14e arm64: dts: renesas: ironhide: Enable WWDT0-19 node
+# WWDT20 is explicitly marked as SCP-only
+6e448be75c2d9 arch: arm64: renesas: r8a78000: Enable WWDT node
+# Upstream does not need special clock handling for SCMI clocks
+0e019db4a1c22 arm64: dts: renesas: add scmi clock for RWDT driver
+57baa7b965bc5 renesas: watchdog: enable clock and support devicetree fallback rate
 # Workaround for rmmod, correct fix is to solve the vdev lifetime management
 8b6658813f574 media: rcar-csi2: Remove v4l2_async_notifier_cleanup in remove function
 # Style change
