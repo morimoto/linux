@@ -80,7 +80,6 @@ v7.3      / media: v4l2-isp: Rename v4l2_isp_params_buffer_size
 v6.19     / media: v4l2-isp: Rename block_info to block_type_info
 Local     / arm64: dts: renesas: sparrow-hawk: Always enable edge connector I2C busses
 v7.2      / media: rcar-vin: Drop min_queued_buffers
-Local     / PCI: rcar-gen4: Limit Max_Read_Request_Size to 256 Bytes
 Local     / arm64: dts: renesas: r8a78000: Add MDLC nodes
 Local     / arm64: dts: renesas: r8a78000: Add CPG node
 v7.3      / pmdomain: renesas: Add R-Car X5H MDLC driver
@@ -135,8 +134,6 @@ v7.0      / arm64: dts: renesas: r8a78000: Fix out-of-range SPI interrupt number
 v7.1      / dt-bindings: firmware: arm,scmi: Document arm,no-completion-irq property
 v7.1      / firmware: arm_scmi: Implement arm,no-completion-irq property
 v7.0      / mailbox: remove unneeded double quotation
-v6.19     / media: i2c: imx219: Replace exposure magic value with named constant
-v6.19     / media: i2c: imx219: Propagate errors from control range updates
 v6.19     / media: i2c: imx219: Simplify imx219_get_binning() function
 v6.19     / drm/panel: ilitek-ili9881c: Add configuration for 5" Raspberry Pi 720x1280
 v6.19     / drm/panel: ilitek-ili9881c: Turn ILI9881C_COMMAND_INSTR() parameters lowercase
