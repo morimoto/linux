@@ -42,6 +42,7 @@ static int asoc_sdw_mx8373_enable_spk_pin(struct snd_pcm_substream *substream, b
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai;
 	struct snd_soc_dai *cpu_dai;
+	struct snd_soc_component *cpu_component;
 	int ret;
 	int j;
 
@@ -50,12 +51,14 @@ static int asoc_sdw_mx8373_enable_spk_pin(struct snd_pcm_substream *substream, b
 		return 0;
 
 	cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	cpu_component = snd_soc_dai_to_component(cpu_dai);
 	for_each_rtd_codec_dais(rtd, j, codec_dai) {
-		struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(cpu_dai->component);
+		struct snd_soc_component *codec_component = snd_soc_dai_to_component(codec_dai);
+		struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(cpu_component);
+		const char *codec_name_prefix = snd_soc_component_name_prefix(codec_component);
 		char pin_name[16];
 
-		snprintf(pin_name, ARRAY_SIZE(pin_name), "%s Spk",
-			 codec_dai->component->name_prefix);
+		snprintf(pin_name, ARRAY_SIZE(pin_name), "%s Spk", codec_name_prefix);
 
 		if (enable)
 			ret = snd_soc_dapm_enable_pin(dapm, pin_name);
@@ -117,6 +120,8 @@ int asoc_sdw_maxim_init(struct snd_soc_card *card,
 			struct asoc_sdw_codec_info *info,
 			bool playback)
 {
+	struct device *dev = snd_soc_card_to_dev(card);
+
 	info->amp_num++;
 
 	maxim_part_id = info->part_id;
@@ -131,7 +136,7 @@ int asoc_sdw_maxim_init(struct snd_soc_card *card,
 		dai_links->ops = &max_98373_sdw_ops;
 		break;
 	default:
-		dev_err(card->dev, "Invalid maxim_part_id %#x\n", maxim_part_id);
+		dev_err(dev, "Invalid maxim_part_id %#x\n", maxim_part_id);
 		return -EINVAL;
 	}
 	return 0;

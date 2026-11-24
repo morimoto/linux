@@ -30,7 +30,8 @@
 
 void da7219_aad_jack_det(struct snd_soc_component *component, struct snd_soc_jack *jack)
 {
-	struct da7219_priv *da7219 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7219_priv *da7219 = dev_get_drvdata(dev);
 
 	da7219->aad->jack = jack;
 	da7219->aad->jack_inserted = false;
@@ -54,7 +55,8 @@ static void da7219_aad_btn_det_work(struct work_struct *work)
 		container_of(work, struct da7219_aad_priv, btn_det_work);
 	struct snd_soc_component *component = da7219_aad->component;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct da7219_priv *da7219 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7219_priv *da7219 = dev_get_drvdata(dev);
 	u8 statusa, micbias_ctrl;
 	bool micbias_up = false;
 	int retries = 0;
@@ -80,7 +82,7 @@ static void da7219_aad_btn_det_work(struct work_struct *work)
 	} while ((!micbias_up) && (retries < DA7219_AAD_MICBIAS_CHK_RETRIES));
 
 	if (retries >= DA7219_AAD_MICBIAS_CHK_RETRIES)
-		dev_warn(component->dev, "Mic bias status check timed out");
+		dev_warn(dev, "Mic bias status check timed out");
 
 	da7219->micbias_on_event = true;
 
@@ -110,7 +112,8 @@ static void da7219_aad_hptest_work(struct work_struct *work)
 		container_of(work, struct da7219_aad_priv, hptest_work);
 	struct snd_soc_component *component = da7219_aad->component;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct da7219_priv *da7219 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7219_priv *da7219 = dev_get_drvdata(dev);
 
 	__le16 tonegen_freq_hptest;
 	u8 pll_srm_sts, pll_ctrl, gain_ramp_ctrl, accdet_cfg8;
@@ -125,7 +128,7 @@ static void da7219_aad_hptest_work(struct work_struct *work)
 	if (da7219->mclk) {
 		ret = clk_prepare_enable(da7219->mclk);
 		if (ret) {
-			dev_err(component->dev, "Failed to enable mclk - %d\n", ret);
+			dev_err(dev, "Failed to enable mclk - %d\n", ret);
 			mutex_unlock(&da7219->pll_lock);
 			mutex_unlock(&da7219->ctrl_lock);
 			snd_soc_dapm_mutex_unlock(dapm);
@@ -352,7 +355,8 @@ static irqreturn_t da7219_aad_irq_thread(int irq, void *data)
 	struct da7219_aad_priv *da7219_aad = data;
 	struct snd_soc_component *component = da7219_aad->component;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct da7219_priv *da7219 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7219_priv *da7219 = dev_get_drvdata(dev);
 	u8 events[DA7219_AAD_IRQ_REG_MAX];
 	u8 statusa;
 	int i, ret, report = 0, mask = 0;
@@ -361,7 +365,7 @@ static irqreturn_t da7219_aad_irq_thread(int irq, void *data)
 	ret = regmap_bulk_read(da7219->regmap, DA7219_ACCDET_IRQ_EVENT_A,
 			       events, DA7219_AAD_IRQ_REG_MAX);
 	if (ret) {
-		dev_warn_ratelimited(component->dev, "Failed to read IRQ events: %d\n", ret);
+		dev_warn_ratelimited(dev, "Failed to read IRQ events: %d\n", ret);
 		return IRQ_NONE;
 	}
 
@@ -387,7 +391,7 @@ static irqreturn_t da7219_aad_irq_thread(int irq, void *data)
 	regmap_bulk_write(da7219->regmap, DA7219_ACCDET_IRQ_EVENT_A,
 			  events, DA7219_AAD_IRQ_REG_MAX);
 
-	dev_dbg(component->dev, "IRQ events = 0x%x|0x%x, status = 0x%x\n",
+	dev_dbg(dev, "IRQ events = 0x%x|0x%x, status = 0x%x\n",
 		events[DA7219_AAD_IRQ_REG_A], events[DA7219_AAD_IRQ_REG_B],
 		statusa);
 
@@ -762,7 +766,8 @@ static struct da7219_aad_pdata *da7219_aad_fw_to_pdata(struct device *dev)
 
 static void da7219_aad_handle_pdata(struct snd_soc_component *component)
 {
-	struct da7219_priv *da7219 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7219_priv *da7219 = dev_get_drvdata(dev);
 	struct da7219_aad_priv *da7219_aad = da7219->aad;
 	struct da7219_pdata *pdata = da7219->pdata;
 
@@ -895,7 +900,8 @@ static void da7219_aad_handle_pdata(struct snd_soc_component *component)
 
 static void da7219_aad_handle_gnd_switch_time(struct snd_soc_component *component)
 {
-	struct da7219_priv *da7219 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7219_priv *da7219 = dev_get_drvdata(dev);
 	struct da7219_aad_priv *da7219_aad = da7219->aad;
 	u8 jack_det;
 
@@ -927,7 +933,8 @@ static void da7219_aad_handle_gnd_switch_time(struct snd_soc_component *componen
 #ifdef CONFIG_PM
 void da7219_aad_suspend(struct snd_soc_component *component)
 {
-	struct da7219_priv *da7219 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7219_priv *da7219 = dev_get_drvdata(dev);
 	struct da7219_aad_priv *da7219_aad = da7219->aad;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	u8 micbias_ctrl;
@@ -961,7 +968,8 @@ void da7219_aad_suspend(struct snd_soc_component *component)
 
 void da7219_aad_resume(struct snd_soc_component *component)
 {
-	struct da7219_priv *da7219 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7219_priv *da7219 = dev_get_drvdata(dev);
 	struct da7219_aad_priv *da7219_aad = da7219->aad;
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 
@@ -990,7 +998,8 @@ void da7219_aad_resume(struct snd_soc_component *component)
 
 int da7219_aad_init(struct snd_soc_component *component)
 {
-	struct da7219_priv *da7219 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7219_priv *da7219 = dev_get_drvdata(dev);
 	struct da7219_aad_priv *da7219_aad = da7219->aad;
 	u8 mask[DA7219_AAD_IRQ_REG_MAX];
 	int ret;
@@ -1008,7 +1017,7 @@ int da7219_aad_init(struct snd_soc_component *component)
 
 	da7219_aad->aad_wq = create_singlethread_workqueue("da7219-aad");
 	if (!da7219_aad->aad_wq) {
-		dev_err(component->dev, "Failed to create aad workqueue\n");
+		dev_err(dev, "Failed to create aad workqueue\n");
 		return -ENOMEM;
 	}
 
@@ -1021,7 +1030,7 @@ int da7219_aad_init(struct snd_soc_component *component)
 				   IRQF_TRIGGER_LOW | IRQF_ONESHOT,
 				   "da7219-aad", da7219_aad);
 	if (ret) {
-		dev_err(component->dev, "Failed to request IRQ: %d\n", ret);
+		dev_err(dev, "Failed to request IRQ: %d\n", ret);
 		return ret;
 	}
 
@@ -1035,7 +1044,8 @@ int da7219_aad_init(struct snd_soc_component *component)
 
 void da7219_aad_exit(struct snd_soc_component *component)
 {
-	struct da7219_priv *da7219 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct da7219_priv *da7219 = dev_get_drvdata(dev);
 	struct da7219_aad_priv *da7219_aad = da7219->aad;
 	u8 mask[DA7219_AAD_IRQ_REG_MAX];
 

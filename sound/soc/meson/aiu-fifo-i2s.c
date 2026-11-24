@@ -48,23 +48,19 @@ static const struct snd_pcm_hardware fifo_i2s_pcm = {
 static int aiu_fifo_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	unsigned int val;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 	case SNDRV_PCM_TRIGGER_RESUME:
 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-		ret = regmap_write(component->regmap, AIU_RST_SOFT, AIU_RST_SOFT_I2S_FAST);
+		ret = snd_soc_component_write(component, AIU_RST_SOFT, AIU_RST_SOFT_I2S_FAST);
 		if (ret < 0)
-			return snd_soc_ret(component->dev, ret,
-					   "Failed to write register on trigger");
+			return snd_soc_ret(dev, ret, "Failed to write register on trigger");
 
-		ret = regmap_read(component->regmap, AIU_I2S_SYNC, &val);
-		if (ret < 0)
-			return snd_soc_ret(component->dev, ret,
-					   "Failed to read register on trigger");
+		snd_soc_component_read(component, AIU_I2S_SYNC);
 		break;
 	}
 
@@ -74,7 +70,7 @@ static int aiu_fifo_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 static int aiu_fifo_i2s_prepare(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int ret;
 
 	ret = aiu_fifo_prepare(substream, dai);
@@ -96,8 +92,9 @@ static int aiu_fifo_i2s_hw_params(struct snd_pcm_substream *substream,
 				  struct snd_pcm_hw_params *params,
 				  struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aiu_fifo *fifo = snd_soc_dai_dma_data_get_playback(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct aiu_fifo *fifo = snd_soc_dai_stream_dma_data_get_playback(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int val;
 	int ret;
 
@@ -117,7 +114,7 @@ static int aiu_fifo_i2s_hw_params(struct snd_pcm_substream *substream,
 		val = 0;
 		break;
 	default:
-		dev_err(dai->dev, "Unsupported physical width %u\n",
+		dev_err(dev, "Unsupported physical width %u\n",
 			params_physical_width(params));
 		return -EINVAL;
 	}
@@ -161,8 +158,9 @@ const struct snd_soc_dai_ops aiu_fifo_i2s_dai_ops = {
 
 int aiu_fifo_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aiu *aiu = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aiu *aiu = dev_get_drvdata(dev);
 	struct aiu_fifo *fifo;
 	int ret;
 
@@ -170,7 +168,7 @@ int aiu_fifo_i2s_dai_probe(struct snd_soc_dai *dai)
 	if (ret)
 		return ret;
 
-	fifo = snd_soc_dai_dma_data_get_playback(dai);
+	fifo = snd_soc_dai_stream_dma_data_get_playback(dai);
 
 	fifo->pcm = &fifo_i2s_pcm;
 	fifo->mem_offset = AIU_MEM_I2S_START;

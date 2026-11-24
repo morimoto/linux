@@ -236,7 +236,8 @@ static int hac_hw_params(struct snd_pcm_substream *substream,
 			 struct snd_pcm_hw_params *params,
 			 struct snd_soc_dai *dai)
 {
-	struct hac_priv *hac = &hac_cpu_data[dai->id];
+	int id = snd_soc_dai_id(dai);
+	struct hac_priv *hac = &hac_cpu_data[id];
 	int d = substream->stream == SNDRV_PCM_STREAM_PLAYBACK ? 0 : 1;
 
 	switch (params->msbits) {

@@ -448,6 +448,7 @@ static int snd_soc_clip_to_platform_max(struct snd_kcontrol *kctl)
 int snd_soc_limit_volume(struct snd_soc_card *card, const char *name, int max)
 {
 	struct snd_kcontrol *kctl;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret = -EINVAL;
 
 	/* Sanity check for name and max */
@@ -465,8 +466,7 @@ int snd_soc_limit_volume(struct snd_soc_card *card, const char *name, int max)
 		}
 	} else {
 		/* Some cards blindly add limits for multiple variants. */
-		dev_dbg(card->dev, "Volume limit for unknown control '%s'\n",
-			name);
+		dev_dbg(dev, "Volume limit for unknown control '%s'\n", name);
 	}
 
 	return ret;
@@ -478,7 +478,7 @@ int snd_soc_bytes_info(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_bytes *params = (void *)kcontrol->private_value;
-	int val_bytes = snd_soc_component_regmap_val_bytes(component);
+	int val_bytes = snd_soc_component_regmap_get_val_bytes(component);
 
 	uinfo->type = SNDRV_CTL_ELEM_TYPE_BYTES;
 	uinfo->count = params->num_regs * val_bytes;
@@ -492,11 +492,12 @@ int snd_soc_bytes_get(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_bytes *params = (void *)kcontrol->private_value;
-	int val_bytes = snd_soc_component_regmap_val_bytes(component);
+	struct regmap *regmap = snd_soc_component_to_regmap(component);
+	int val_bytes = snd_soc_component_regmap_get_val_bytes(component);
 	int ret;
 
-	if (component->regmap)
-		ret = regmap_raw_read(component->regmap, params->base,
+	if (regmap)
+		ret = regmap_raw_read(regmap, params->base,
 				      ucontrol->value.bytes.data,
 				      params->num_regs * val_bytes);
 	else
@@ -530,11 +531,12 @@ int snd_soc_bytes_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_bytes *params = (void *)kcontrol->private_value;
-	int val_bytes = snd_soc_component_regmap_val_bytes(component);
+	struct regmap *regmap = snd_soc_component_to_regmap(component);
+	int val_bytes = snd_soc_component_regmap_get_val_bytes(component);
 	unsigned int val, mask;
 	int ret, len;
 
-	if (!component->regmap || !params->num_regs)
+	if (!regmap || !params->num_regs)
 		return -EINVAL;
 
 	len = params->num_regs * val_bytes;
@@ -550,7 +552,7 @@ int snd_soc_bytes_put(struct snd_kcontrol *kcontrol,
 	 * copy.
 	 */
 	if (params->mask) {
-		ret = regmap_read(component->regmap, params->base, &val);
+		ret = regmap_read(regmap, params->base, &val);
 		if (ret != 0)
 			return ret;
 
@@ -563,13 +565,13 @@ int snd_soc_bytes_put(struct snd_kcontrol *kcontrol,
 			break;
 		case 2:
 			mask = ~params->mask;
-			ret = regmap_parse_val(component->regmap, &mask, &mask);
+			ret = regmap_parse_val(regmap, &mask, &mask);
 			if (ret != 0)
 				return ret;
 
 			((u16 *)data)[0] &= mask;
 
-			ret = regmap_parse_val(component->regmap, &val, &val);
+			ret = regmap_parse_val(regmap, &val, &val);
 			if (ret != 0)
 				return ret;
 
@@ -577,13 +579,13 @@ int snd_soc_bytes_put(struct snd_kcontrol *kcontrol,
 			break;
 		case 4:
 			mask = ~params->mask;
-			ret = regmap_parse_val(component->regmap, &mask, &mask);
+			ret = regmap_parse_val(regmap, &mask, &mask);
 			if (ret != 0)
 				return ret;
 
 			((u32 *)data)[0] &= mask;
 
-			ret = regmap_parse_val(component->regmap, &val, &val);
+			ret = regmap_parse_val(regmap, &val, &val);
 			if (ret != 0)
 				return ret;
 
@@ -594,7 +596,7 @@ int snd_soc_bytes_put(struct snd_kcontrol *kcontrol,
 		}
 	}
 
-	return regmap_raw_write(component->regmap, params->base, data, len);
+	return regmap_raw_write(regmap, params->base, data, len);
 }
 EXPORT_SYMBOL_GPL(snd_soc_bytes_put);
 
@@ -679,7 +681,7 @@ int snd_soc_get_xr_sx(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_mreg_control *mc =
 		(struct soc_mreg_control *)kcontrol->private_value;
-	int val_bytes = snd_soc_component_regmap_val_bytes(component);
+	int val_bytes = snd_soc_component_regmap_get_val_bytes(component);
 	unsigned int regbase = mc->regbase;
 	unsigned int regcount = mc->regcount;
 	unsigned int regwshift = val_bytes * BITS_PER_BYTE;
@@ -724,7 +726,7 @@ int snd_soc_put_xr_sx(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct soc_mreg_control *mc =
 		(struct soc_mreg_control *)kcontrol->private_value;
-	int val_bytes = snd_soc_component_regmap_val_bytes(component);
+	int val_bytes = snd_soc_component_regmap_get_val_bytes(component);
 	unsigned int regbase = mc->regbase;
 	unsigned int regcount = mc->regcount;
 	unsigned int regwshift = val_bytes * BITS_PER_BYTE;

@@ -110,7 +110,8 @@ static const char *const dsp_cmd_table[] = {
 
 static int nau8310_dsp_idle(struct snd_soc_component *cp)
 {
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8310->regmap;
 	unsigned int idle_pattern, timeout = NAU8310_DSP_IDLE_RETRY * USEC_PER_MSEC;
 	int ret = 0;
@@ -200,6 +201,7 @@ static int nau8310_message_to_dsp(struct snd_soc_component *cp,
 	const struct nau8310_cmd_info *cmd_info, int frag_len,
 	int param_offset, int param_size, void *param_data)
 {
+	struct device *dev = snd_soc_component_to_dev(cp);
 	unsigned int payload;
 	int ret, padding = 0, frag_cnt = 0;
 
@@ -229,7 +231,7 @@ static int nau8310_message_to_dsp(struct snd_soc_component *cp,
 	snd_soc_component_write(cp, NAU8310_RF000_DSP_COMM, payload);
 
 	if (frag_cnt != frag_len) {
-		dev_err(cp->dev, "message error (CMD_ID 0x%x, LEN 0x%x) !!!",
+		dev_err(dev, "message error (CMD_ID 0x%x, LEN 0x%x) !!!",
 			cmd_info->cmd_id, frag_cnt);
 		return -EPROTO;
 	}
@@ -263,8 +265,8 @@ static int nau8310_validate_trailing(struct snd_soc_component *cp,
 {
 	int ret, len_pos, pad_len;
 	unsigned int payload;
-	struct device *dev = cp->dev;
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 
 	/* reading trailing fragment */
 	ret = regmap_read(nau8310->regmap, NAU8310_RF000_DSP_COMM, &payload);
@@ -294,8 +296,8 @@ static int nau8310_read_data_payload(struct snd_soc_component *cp,
 	int frag_len, bool msg_param,
 	void *data, int data_size, int *data_count)
 {
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
-	struct device *dev = cp->dev;
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	unsigned int payload;
 	u32 *data_buf = data;
 	int i, j, ret;
@@ -334,8 +336,8 @@ static int nau8310_reply_from_dsp(struct snd_soc_component *cp,
 	const struct nau8310_cmd_info *cmd_info, int data_size,
 	void *data)
 {
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
-	struct device *dev = cp->dev;
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	int ret, frag_len, pad_len_exp, data_count = 0;
 
 	ret = nau8310_dsp_replied(nau8310, &frag_len);
@@ -497,7 +499,8 @@ static int nau8310_dsp_snd_soc_dapm_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	unsigned int mask = (1 << fls(mc->max)) - 1;
@@ -539,7 +542,8 @@ static int nau8310_dsp_clock_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *cp = snd_soc_dapm_to_component(w->dapm);
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	int ret = 0;
 
 	mutex_lock(&nau8310->lock);
@@ -548,13 +552,13 @@ static int nau8310_dsp_clock_event(struct snd_soc_dapm_widget *w,
 		ret = nau8310_dsp_exec_command(cp, NAU8310_DSP_CMD_CLK_RESTART,
 			0, 0, NULL, 0, NULL);
 		if (ret)
-			dev_err(cp->dev, "Send DSP command %s fail (%d)",
+			dev_err(dev, "Send DSP command %s fail (%d)",
 				dsp_cmd_table[NAU8310_DSP_CMD_CLK_RESTART], ret);
 	} else {
 		ret = nau8310_dsp_exec_command(cp, NAU8310_DSP_CMD_CLK_STOP,
 			0, 0, NULL, 0, NULL);
 		if (ret)
-			dev_err(cp->dev, "Send DSP command %s fail (%d)",
+			dev_err(dev, "Send DSP command %s fail (%d)",
 				dsp_cmd_table[NAU8310_DSP_CMD_CLK_STOP], ret);
 	}
 
@@ -580,10 +584,10 @@ static const struct snd_soc_dapm_route nau8310_dsp_dapm_routes[] = {
 
 static int nau8310_dsp_set_kcs_setup(struct snd_soc_component *cp)
 {
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct nau8310_kcs_setup kcs_setup_comp = {0};
 	struct nau8310_kcs_setup *kcs_setup = &kcs_setup_comp;
-	struct device *dev = cp->dev;
 	const struct firmware *fw;
 	int ret, status = 0, buf_off, buf_len;
 
@@ -641,7 +645,7 @@ err:
 
 int nau8310_dsp_init(struct snd_soc_component *cp)
 {
-	struct regmap *regmap = cp->regmap;
+	struct regmap *regmap = snd_soc_component_to_regmap(cp);
 
 	nau8310_software_reset(regmap);
 
@@ -656,21 +660,22 @@ int nau8310_dsp_init(struct snd_soc_component *cp)
 
 int nau8310_dsp_setup_controls(struct snd_soc_component *cp)
 {
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = nau8310->dapm;
 	int ret;
 
 	ret = snd_soc_dapm_new_controls(dapm, nau8310_dsp_dapm_widgets,
 		ARRAY_SIZE(nau8310_dsp_dapm_widgets));
 	if (ret) {
-		dev_err(cp->dev, "Add DSP widget fail (%d)", ret);
+		dev_err(dev, "Add DSP widget fail (%d)", ret);
 		return ret;
 	}
 
 	ret = snd_soc_dapm_add_routes(dapm, nau8310_dsp_dapm_routes,
 		ARRAY_SIZE(nau8310_dsp_dapm_routes));
 	if (ret) {
-		dev_err(cp->dev, "Add DSP route fail (%d)", ret);
+		dev_err(dev, "Add DSP route fail (%d)", ret);
 		return ret;
 	}
 

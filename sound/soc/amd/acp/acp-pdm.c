@@ -29,7 +29,8 @@ static int acp_dmic_prepare(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *dai)
 {
 	struct acp_stream *stream = substream->runtime->private_data;
-	struct device *dev = dai->component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_chip_info *chip;
 	u32 physical_addr, size_dmic, period_bytes;
 	unsigned int dmic_ctrl;
@@ -63,7 +64,8 @@ static int acp_dmic_prepare(struct snd_pcm_substream *substream,
 static int acp_dmic_dai_trigger(struct snd_pcm_substream *substream,
 				int cmd, struct snd_soc_dai *dai)
 {
-	struct device *dev = dai->component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_chip_info *chip = dev_get_platdata(dev);
 	unsigned int dma_enable;
 	int ret = 0;
@@ -107,7 +109,8 @@ static int acp_dmic_dai_trigger(struct snd_pcm_substream *substream,
 static int acp_dmic_hwparams(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *hwparams, struct snd_soc_dai *dai)
 {
-	struct device *dev = dai->component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_chip_info *chip = dev_get_platdata(dev);
 	unsigned int channels, ch_mask;
 
@@ -129,7 +132,7 @@ static int acp_dmic_hwparams(struct snd_pcm_substream *substream,
 
 	chip->ch_mask = ch_mask;
 	if (params_format(hwparams) != SNDRV_PCM_FORMAT_S32_LE) {
-		dev_err(dai->dev, "Invalid format:%d\n", params_format(hwparams));
+		dev_err(dev, "Invalid format:%d\n", params_format(hwparams));
 		return -EINVAL;
 	}
 
@@ -143,7 +146,8 @@ static int acp_dmic_dai_startup(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
 	struct acp_stream *stream = substream->runtime->private_data;
-	struct device *dev = dai->component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_chip_info *chip = dev_get_platdata(dev);
 	u32 ext_int_ctrl;
 
@@ -163,7 +167,8 @@ static int acp_dmic_dai_startup(struct snd_pcm_substream *substream,
 static void acp_dmic_dai_shutdown(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct device *dev = dai->component->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct acp_chip_info *chip = dev_get_platdata(dev);
 	u32 ext_int_ctrl;
 

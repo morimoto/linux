@@ -297,7 +297,7 @@ static int spitz_probe(struct platform_device *pdev)
 	if (IS_ERR(gpiod_mute_r))
 		return PTR_ERR(gpiod_mute_r);
 
-	ret = devm_snd_soc_card_register(&pdev->dev, &snd_soc_spitz);
+	ret = devm_snd_soc_register_card(&pdev->dev, &snd_soc_spitz);
 	if (ret)
 		dev_err(&pdev->dev, "snd_soc_card_register() failed: %d\n",
 			ret);

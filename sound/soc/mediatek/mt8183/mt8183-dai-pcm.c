@@ -182,16 +182,19 @@ static int mtk_dai_pcm_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *dai)
 {
-	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
-	struct snd_soc_dapm_widget *p = snd_soc_dai_get_widget_playback(dai);
-	struct snd_soc_dapm_widget *c = snd_soc_dai_get_widget_capture(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct mtk_base_afe *afe = dev_get_drvdata(dev);
+	struct snd_soc_dapm_widget *p = snd_soc_dai_stream_widget_get_playback(dai);
+	struct snd_soc_dapm_widget *c = snd_soc_dai_stream_widget_get_capture(dai);
+	int dai_id = snd_soc_dai_id(dai);
 	unsigned int rate = params_rate(params);
-	unsigned int rate_reg = mt8183_rate_transform(afe->dev, rate, dai->id);
+	unsigned int rate_reg = mt8183_rate_transform(afe->dev, rate, dai_id);
 	unsigned int pcm_con = 0;
 
 	dev_dbg(afe->dev, "%s(), id %d, stream %d, rate %d, rate_reg %d, widget active p %d, c %d\n",
 		__func__,
-		dai->id,
+		dai_id,
 		substream->stream,
 		rate,
 		rate_reg,
@@ -200,7 +203,7 @@ static int mtk_dai_pcm_hw_params(struct snd_pcm_substream *substream,
 	if (p->active || c->active)
 		return 0;
 
-	switch (dai->id) {
+	switch (dai_id) {
 	case MT8183_DAI_PCM_1:
 		pcm_con |= AUD_BCLK_OUT_INV_NO_INVERSE << PCM_BCLK_OUT_INV_SFT;
 		pcm_con |= AUD_TX_LCH_RPT_NO_REPEAT << PCM_TX_LCH_RPT_SFT;
@@ -231,7 +234,7 @@ static int mtk_dai_pcm_hw_params(struct snd_pcm_substream *substream,
 		break;
 	default:
 		dev_warn(afe->dev, "%s(), id %d not support\n",
-			 __func__, dai->id);
+			 __func__, dai_id);
 		return -EINVAL;
 	}
 

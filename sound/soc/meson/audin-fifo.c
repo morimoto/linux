@@ -78,9 +78,11 @@ struct audin_fifo_dai_data {
 static unsigned int audin_fifo_pos(struct snd_soc_dai *dai,
 				   struct snd_pcm_runtime *runtime)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct snd_soc_dai_driver *driver = snd_soc_dai_to_driver(dai);
 	unsigned int ptr = lower_32_bits(runtime->dma_addr);
 
-	regmap_read(dai->component->regmap, dai->driver->base + AUDIN_FIFO_PTR, &ptr);
+	ptr = snd_soc_component_read(component, driver->base + AUDIN_FIFO_PTR);
 
 	return ptr - lower_32_bits(runtime->dma_addr);
 }
@@ -94,14 +96,15 @@ static ktime_t audin_fifo_bytes_to_ns(struct audin_fifo_dai_data *data,
 static int audin_fifo_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 				  struct snd_soc_dai *dai)
 {
-	struct audin_fifo_dai_data *data = snd_soc_dai_dma_data_get_capture(dai);
-	struct snd_soc_component *component = dai->component;
+	struct audin_fifo_dai_data *data = snd_soc_dai_stream_dma_data_get(dai, SNDRV_PCM_STREAM_CAPTURE);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct snd_soc_dai_driver *driver = snd_soc_dai_to_driver(dai);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
 	case SNDRV_PCM_TRIGGER_RESUME:
 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-		snd_soc_component_update_bits(component, dai->driver->base + AUDIN_FIFO_CTRL,
+		snd_soc_component_update_bits(component, driver->base + AUDIN_FIFO_CTRL,
 					      AUDIN_FIFO_CTRL_EN,
 					      AUDIN_FIFO_CTRL_EN);
 		WRITE_ONCE(data->running, true);
@@ -119,7 +122,7 @@ static int audin_fifo_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 		 * properly stopped in sync_stop() and shutdown() callbacks.
 		 */
 		hrtimer_try_to_cancel(&data->polling_timer);
-		snd_soc_component_update_bits(component, dai->driver->base + AUDIN_FIFO_CTRL,
+		snd_soc_component_update_bits(component, driver->base + AUDIN_FIFO_CTRL,
 					      AUDIN_FIFO_CTRL_EN, 0);
 		break;
 	default:
@@ -132,8 +135,9 @@ static int audin_fifo_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 static int audin_fifo_dai_prepare(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
-	struct audin_fifo_dai_data *data = snd_soc_dai_dma_data_get_capture(dai);
-	struct snd_soc_component *component = dai->component;
+	struct audin_fifo_dai_data *data = snd_soc_dai_stream_dma_data_get(dai, SNDRV_PCM_STREAM_CAPTURE);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct snd_soc_dai_driver *driver = snd_soc_dai_to_driver(dai);
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	dma_addr_t dma_end = runtime->dma_addr + runtime->dma_bytes - AUDIN_FIFO_LANE_SIZE;
 	unsigned int val;
@@ -144,19 +148,19 @@ static int audin_fifo_dai_prepare(struct snd_pcm_substream *substream,
 	 * Setup memory boundaries.
 	 * Note: DMA has a 32-bit mask, so it's OK to take lower 32 bits.
 	 */
-	snd_soc_component_write(component, dai->driver->base + AUDIN_FIFO_START,
+	snd_soc_component_write(component, driver->base + AUDIN_FIFO_START,
 				lower_32_bits(runtime->dma_addr));
-	snd_soc_component_write(component, dai->driver->base + AUDIN_FIFO_PTR,
+	snd_soc_component_write(component, driver->base + AUDIN_FIFO_PTR,
 				lower_32_bits(runtime->dma_addr));
-	snd_soc_component_write(component, dai->driver->base + AUDIN_FIFO_END,
+	snd_soc_component_write(component, driver->base + AUDIN_FIFO_END,
 				lower_32_bits(dma_end));
 
 	/* Load new addresses (both LOAD and UG are self-clearing). */
 	val = AUDIN_FIFO_CTRL_LOAD | AUDIN_FIFO_CTRL_UG;
-	snd_soc_component_update_bits(component, dai->driver->base + AUDIN_FIFO_CTRL, val, val);
+	snd_soc_component_update_bits(component, driver->base + AUDIN_FIFO_CTRL, val, val);
 
 	/* Reset (RST is self-clearing). */
-	snd_soc_component_update_bits(component, dai->driver->base + AUDIN_FIFO_CTRL,
+	snd_soc_component_update_bits(component, driver->base + AUDIN_FIFO_CTRL,
 				      AUDIN_FIFO_CTRL_RST,
 				      AUDIN_FIFO_CTRL_RST);
 
@@ -167,8 +171,9 @@ static int audin_fifo_dai_hw_params(struct snd_pcm_substream *substream,
 				    struct snd_pcm_hw_params *params,
 				    struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct audin_fifo_dai_data *data = snd_soc_dai_dma_data_get_capture(dai);
+	struct snd_soc_dai_driver *driver = snd_soc_dai_to_driver(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct audin_fifo_dai_data *data = snd_soc_dai_stream_dma_data_get(dai, SNDRV_PCM_STREAM_CAPTURE);
 	unsigned int val;
 
 	/*
@@ -177,13 +182,13 @@ static int audin_fifo_dai_hw_params(struct snd_pcm_substream *substream,
 	 * which means that we drop the LSB.
 	 */
 	val = FIELD_PREP(AUDIN_FIFO_CTRL1_DIN_POS_01_MASK, 1);
-	snd_soc_component_update_bits(component, dai->driver->base + AUDIN_FIFO_CTRL1,
+	snd_soc_component_update_bits(component, driver->base + AUDIN_FIFO_CTRL1,
 				      AUDIN_FIFO_CTRL1_DIN_POS_01_MASK,
 				      val);
 
 	/* Set sample size to 2 bytes (16 bit) */
 	val = FIELD_PREP(AUDIN_FIFO_CTRL1_DIN_BYTE_NUM_MASK, 1);
-	snd_soc_component_update_bits(component, dai->driver->base + AUDIN_FIFO_CTRL1,
+	snd_soc_component_update_bits(component, driver->base + AUDIN_FIFO_CTRL1,
 				      AUDIN_FIFO_CTRL1_DIN_BYTE_NUM_MASK,
 				      val);
 
@@ -200,7 +205,7 @@ static int audin_fifo_dai_hw_params(struct snd_pcm_substream *substream,
 	 * the FIFO.
 	 */
 	val = FIELD_PREP(AUDIN_FIFO_CTRL_CHAN_MASK, 1);
-	snd_soc_component_update_bits(component, dai->driver->base + AUDIN_FIFO_CTRL,
+	snd_soc_component_update_bits(component, driver->base + AUDIN_FIFO_CTRL,
 				      AUDIN_FIFO_CTRL_CHAN_MASK, val);
 
 	/*
@@ -211,7 +216,7 @@ static int audin_fifo_dai_hw_params(struct snd_pcm_substream *substream,
 	 * in 16 bit format.
 	 */
 	val = FIELD_PREP(AUDIN_FIFO_CTRL_ENDIAN_MASK, 6);
-	snd_soc_component_update_bits(component, dai->driver->base + AUDIN_FIFO_CTRL,
+	snd_soc_component_update_bits(component, driver->base + AUDIN_FIFO_CTRL,
 				      AUDIN_FIFO_CTRL_ENDIAN_MASK, val);
 
 	/* Used by the polling timer to convert a byte count into a delay. */
@@ -227,6 +232,8 @@ static int audin_fifo_dai_hw_params(struct snd_pcm_substream *substream,
 static int audin_fifo_dai_startup(struct snd_pcm_substream *substream,
 				  struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	snd_soc_set_runtime_hwparams(substream, &audin_fifo_pcm_hw);
@@ -235,7 +242,7 @@ static int audin_fifo_dai_startup(struct snd_pcm_substream *substream,
 					 SNDRV_PCM_HW_PARAM_BUFFER_BYTES,
 					 AUDIN_FIFO_I2S_BLOCK);
 	if (ret < 0) {
-		dev_err(dai->dev, "Failed to set constraint on buffer_bytes %d\n", ret);
+		dev_err(dev, "Failed to set constraint on buffer_bytes %d\n", ret);
 		return ret;
 	}
 
@@ -243,7 +250,7 @@ static int audin_fifo_dai_startup(struct snd_pcm_substream *substream,
 					 SNDRV_PCM_HW_PARAM_PERIOD_BYTES,
 					 AUDIN_FIFO_I2S_BLOCK);
 	if (ret < 0) {
-		dev_err(dai->dev, "Failed to set constraint on period_bytes %d\n", ret);
+		dev_err(dev, "Failed to set constraint on period_bytes %d\n", ret);
 		return ret;
 	}
 
@@ -253,7 +260,7 @@ static int audin_fifo_dai_startup(struct snd_pcm_substream *substream,
 static void audin_fifo_dai_shutdown(struct snd_pcm_substream *substream,
 				    struct snd_soc_dai *dai)
 {
-	struct audin_fifo_dai_data *data = snd_soc_dai_dma_data_get_capture(dai);
+	struct audin_fifo_dai_data *data = snd_soc_dai_stream_dma_data_get(dai, SNDRV_PCM_STREAM_CAPTURE);
 
 	hrtimer_cancel(&data->polling_timer);
 }
@@ -261,20 +268,22 @@ static void audin_fifo_dai_shutdown(struct snd_pcm_substream *substream,
 static int audin_fifo_dai_pcm_new(struct snd_soc_pcm_runtime *rtd,
 				  struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
-	ret = dma_coerce_mask_and_coherent(dai->dev, DMA_BIT_MASK(32));
+	ret = dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
 	if (ret) {
-		dev_err(dai->dev, "Failed to set DMA mask %d\n", ret);
+		dev_err(dev, "Failed to set DMA mask %d\n", ret);
 		return ret;
 	}
 
 	ret = snd_pcm_set_managed_buffer_all(rtd->pcm, SNDRV_DMA_TYPE_DEV,
-					     dai->dev,
+					     dev,
 					     audin_fifo_pcm_hw.buffer_bytes_max,
 					     audin_fifo_pcm_hw.buffer_bytes_max);
 	if (ret) {
-		dev_err(dai->dev, "Failed to set PCM managed buffer %d\n", ret);
+		dev_err(dev, "Failed to set PCM managed buffer %d\n", ret);
 		return ret;
 	}
 
@@ -341,14 +350,14 @@ static int audin_fifo_dai_probe(struct snd_soc_dai *dai)
 	hrtimer_setup(&data->polling_timer, audin_fifo_timer_cb, CLOCK_MONOTONIC,
 		      HRTIMER_MODE_REL_SOFT);
 
-	snd_soc_dai_dma_data_set_capture(dai, data);
+	snd_soc_dai_stream_dma_data_set(dai, SNDRV_PCM_STREAM_CAPTURE, data);
 
 	return 0;
 }
 
 static int audin_fifo_dai_remove(struct snd_soc_dai *dai)
 {
-	kfree(snd_soc_dai_dma_data_get_capture(dai));
+	kfree(snd_soc_dai_stream_dma_data_get(dai, SNDRV_PCM_STREAM_CAPTURE));
 
 	return 0;
 }
@@ -383,7 +392,7 @@ int audin_fifo_sync_stop(struct snd_soc_component *component, struct snd_pcm_sub
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *dai = snd_soc_rtd_to_cpu(rtd, 0);
-	struct audin_fifo_dai_data *data = snd_soc_dai_dma_data_get_capture(dai);
+	struct audin_fifo_dai_data *data = snd_soc_dai_stream_dma_data_get(dai, SNDRV_PCM_STREAM_CAPTURE);
 
 	hrtimer_cancel(&data->polling_timer);
 	WRITE_ONCE(data->running, false);

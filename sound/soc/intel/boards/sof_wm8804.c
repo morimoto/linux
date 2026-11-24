@@ -50,9 +50,10 @@ static int sof_wm8804_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(rtd->card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *codec = codec_dai->component;
+	struct snd_soc_component *codec = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	const int sysclk = 27000000; /* This is fixed on this board */
 	int samplerate;
 	long mclk_freq;
@@ -98,7 +99,7 @@ static int sof_wm8804_hw_params(struct snd_pcm_substream *substream,
 		sampling_freq = 0x0e;
 		break;
 	default:
-		dev_err(rtd->card->dev,
+		dev_err(dev,
 			"unsupported samplerate %d\n", samplerate);
 		return -EINVAL;
 	}
@@ -126,15 +127,14 @@ static int sof_wm8804_hw_params(struct snd_pcm_substream *substream,
 	snd_soc_dai_set_clkdiv(codec_dai, WM8804_MCLK_DIV, mclk_div);
 	ret = snd_soc_dai_set_pll(codec_dai, 0, 0, sysclk, mclk_freq);
 	if (ret < 0) {
-		dev_err(rtd->card->dev, "Failed to set WM8804 PLL\n");
+		dev_err(dev, "Failed to set WM8804 PLL\n");
 		return ret;
 	}
 
 	ret = snd_soc_dai_set_sysclk(codec_dai, WM8804_TX_CLKSRC_PLL,
 				     sysclk, SND_SOC_CLOCK_OUT);
 	if (ret < 0) {
-		dev_err(rtd->card->dev,
-			"Failed to set WM8804 SYSCLK: %d\n", ret);
+		dev_err(dev, "Failed to set WM8804 SYSCLK: %d\n", ret);
 		return ret;
 	}
 
@@ -276,7 +276,7 @@ static int sof_wm8804_probe(struct platform_device *pdev)
 
 	acpi_dev_put(adev);
 
-	snd_soc_card_set_drvdata(card, ctx);
+	snd_soc_card_set_priv(card, ctx);
 
 	return devm_snd_soc_card_register(card, &sof_wm8804_card_driver);
 }

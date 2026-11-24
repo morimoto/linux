@@ -62,15 +62,15 @@ static int sdw_params_stream(struct device *dev,
 			     struct sdw_intel_stream_params_data *params_data)
 {
 	struct snd_soc_dai *d = params_data->dai;
-	struct snd_soc_dapm_widget *w = snd_soc_dai_get_widget(d, params_data->substream->stream);
+	struct snd_soc_dapm_widget *w = snd_soc_dai_stream_widget_get(d, params_data->substream->stream);
 	struct snd_sof_dai_config_data data = { 0 };
 
 	if (!w) {
 		dev_err(dev, "%s widget not found, check amp link num in the topology\n",
-			d->name);
+			snd_soc_dai_name(d));
 		return -EINVAL;
 	}
-	data.dai_index = (params_data->link_id << 8) | d->id;
+	data.dai_index = (params_data->link_id << 8) | snd_soc_dai_id(d);
 	data.dai_data = params_data->alh_stream_id;
 	data.dai_node_id = data.dai_data;
 
@@ -80,7 +80,7 @@ static int sdw_params_stream(struct device *dev,
 static int sdw_params_free(struct device *dev, struct sdw_intel_stream_free_data *free_data)
 {
 	struct snd_soc_dai *d = free_data->dai;
-	struct snd_soc_dapm_widget *w = snd_soc_dai_get_widget(d, free_data->substream->stream);
+	struct snd_soc_dapm_widget *w = snd_soc_dai_stream_widget_get(d, free_data->substream->stream);
 	struct snd_sof_dev *sdev = widget_to_sdev(w);
 
 	if (sdev->pdata->ipc_type == SOF_IPC_TYPE_4) {

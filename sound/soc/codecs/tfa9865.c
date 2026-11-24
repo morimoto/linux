@@ -81,7 +81,8 @@ static int tfa9865_ampe_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct tfa9865 *tfa9865 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tfa9865 *tfa9865 = dev_get_drvdata(dev);
 
 	guard(mutex)(&tfa9865->lock);
 	tfa9865->powered = SND_SOC_DAPM_EVENT_ON(event);
@@ -178,19 +179,20 @@ static int tfa9865_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int sr;
 
 	/* Only the 32-bit I2S slots configured at reset are supported */
 	if (params_physical_width(params) != 32) {
-		dev_err(component->dev, "unsupported slot width: %d\n",
+		dev_err(dev, "unsupported slot width: %d\n",
 			params_physical_width(params));
 		return -EINVAL;
 	}
 
 	sr = tfa9865_find_sample_rate(params_rate(params));
 	if (sr < 0) {
-		dev_err(component->dev, "unsupported sample rate: %d\n",
+		dev_err(dev, "unsupported sample rate: %d\n",
 			params_rate(params));
 		return sr;
 	}
@@ -202,7 +204,9 @@ static int tfa9865_hw_params(struct snd_pcm_substream *substream,
 
 static int tfa9865_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct tfa9865 *tfa9865 = snd_soc_component_get_drvdata(dai->component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct tfa9865 *tfa9865 = dev_get_drvdata(dev);
 
 	guard(mutex)(&tfa9865->lock);
 	tfa9865->unmuted = !mute;

@@ -184,7 +184,9 @@ static int uni_reader_prepare_tdm(struct snd_pcm_runtime *runtime,
 static int uni_reader_prepare(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *reader = priv->dai_data.uni;
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	int transfer_size, trigger_limit, ret;
@@ -335,7 +337,9 @@ static int uni_reader_stop(struct uniperif *reader)
 static int  uni_reader_trigger(struct snd_pcm_substream *substream,
 			       int cmd, struct snd_soc_dai *dai)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *reader = priv->dai_data.uni;
 
 	switch (cmd) {
@@ -351,7 +355,9 @@ static int  uni_reader_trigger(struct snd_pcm_substream *substream,
 static int uni_reader_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *reader = priv->dai_data.uni;
 	int ret;
 
@@ -380,7 +386,9 @@ static int uni_reader_startup(struct snd_pcm_substream *substream,
 static void uni_reader_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
-	struct sti_uniperiph_data *priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct sti_uniperiph_data *priv = dev_get_drvdata(dev);
 	struct uniperif *reader = priv->dai_data.uni;
 
 	guard(spinlock_irqsave)(&reader->irq_lock);

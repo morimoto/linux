@@ -194,8 +194,9 @@ static int es7202_hw_init(struct es7202_priv *es7202)
 
 static int es7202_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 {
-	struct snd_soc_component *component = dai->component;
-	struct es7202_priv *es7202 = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es7202_priv *es7202 = dev_get_drvdata(dev);
 
 	if (stream == SNDRV_PCM_STREAM_PLAYBACK)
 		return 0;
@@ -221,14 +222,16 @@ static struct snd_soc_dai_driver es7202_dai = {
 
 static int es7202_suspend(struct snd_soc_component *component)
 {
-	struct es7202_priv *es7202 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es7202_priv *es7202 = dev_get_drvdata(dev);
 
 	return es7202_mute_pdm(es7202, true);
 }
 
 static int es7202_resume(struct snd_soc_component *component)
 {
-	struct es7202_priv *es7202 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct es7202_priv *es7202 = dev_get_drvdata(dev);
 	int ret;
 
 	/* re-run the power-up sequence to bring the analog front-end back up */

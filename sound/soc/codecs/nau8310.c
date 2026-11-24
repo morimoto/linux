@@ -290,7 +290,8 @@ static int nau8310_clkdet_put(struct snd_kcontrol *kcontrol,
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct snd_soc_component *cp = snd_kcontrol_chip(kcontrol);
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8310->regmap;
 	unsigned int max = mc->max, min = mc->min, val;
 	unsigned int mask = (1 << fls(max)) - 1;
@@ -316,7 +317,8 @@ static int nau8310_clkdet_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cp = snd_kcontrol_chip(kcontrol);
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = nau8310->clock_detection;
 
@@ -327,7 +329,8 @@ static int nau8310_biq_coeff_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cp = snd_kcontrol_chip(kcontrol);
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct soc_bytes_ext *params = (void *)kcontrol->private_value;
 	int i, reg_val;
 	__be16 *val = (__be16 *)ucontrol->value.bytes.data;
@@ -348,7 +351,8 @@ static int nau8310_biq_coeff_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *cp = snd_kcontrol_chip(kcontrol);
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct soc_bytes_ext *params = (void *)kcontrol->private_value;
 	__be16 *data = NULL;
 	int i;
@@ -514,7 +518,8 @@ static int nau8310_clock_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *cp = snd_soc_dapm_to_component(w->dapm);
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -535,7 +540,8 @@ static int nau8310_powerup_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *cp = snd_soc_dapm_to_component(w->dapm);
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8310->regmap;
 
 	if (nau8310->clock_detection)
@@ -555,7 +561,8 @@ static int nau8310_adc_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *cp = snd_soc_dapm_to_component(w->dapm);
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8310->regmap;
 
 	switch (event) {
@@ -578,7 +585,8 @@ static int nau8310_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *cp = snd_soc_dapm_to_component(w->dapm);
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8310->regmap;
 
 	/* Soft mute to prevent the pop noise */
@@ -1002,7 +1010,8 @@ static int nau8310_clock_config(struct nau8310 *nau8310, int fs, int mclk)
 
 static int nau8310_switch_internal_osc(struct snd_soc_component *cp)
 {
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	int ret;
 
 	/* For internal Ring OSC, the default fs apply to 48kHz */
@@ -1022,7 +1031,8 @@ static int nau8310_switch_internal_osc(struct snd_soc_component *cp)
 static int nau8310_set_sysclk(struct snd_soc_component *cp,
 	int clk_id, int source, unsigned int freq, int dir)
 {
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	int ret;
 
 	switch (clk_id) {
@@ -1050,8 +1060,9 @@ static int nau8310_set_sysclk(struct snd_soc_component *cp,
 static int nau8310_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params, struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *cp = dai->component;
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct snd_soc_component *cp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	unsigned int val_len = 0;
 	int fs, ret;
 
@@ -1090,8 +1101,9 @@ static int nau8310_hw_params(struct snd_pcm_substream *substream,
 
 static int nau8310_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *cp = dai->component;
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct snd_soc_component *cp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8310->regmap;
 	unsigned int ctrl1_val = 0, ctrl2_val = 0;
 
@@ -1224,9 +1236,9 @@ static int nau8310_validate_rx_slots(struct device *dev, unsigned int rx_mask,
 static int nau8310_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 	unsigned int rx_mask, int slots, int slot_width)
 {
-	struct snd_soc_component *cp = dai->component;
-	struct device *dev = cp->dev;
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct snd_soc_component *cp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8310->regmap;
 	unsigned int ctrl0_val = 0, ctrl_val = 0;
 	int ret = 0;
@@ -1269,8 +1281,9 @@ static int nau8310_set_tdm_slot(struct snd_soc_dai *dai, unsigned int tx_mask,
 static int nau8310_startup(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *cp = dai->component;
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct snd_soc_component *cp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 
 	flush_work(&nau8310->load_fw_work);
 
@@ -1288,8 +1301,9 @@ static int nau8310_startup(struct snd_pcm_substream *substream,
 static void nau8310_shutdown(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *cp = dai->component;
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct snd_soc_component *cp = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 
 	if (nau8310_dsp_active(cp) && substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		snd_soc_dapm_disable_pin(nau8310->dapm, "Sense");
@@ -1354,7 +1368,8 @@ err:
 
 static int nau8310_codec_probe(struct snd_soc_component *cp)
 {
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(cp);
 	int ret = 0;
 
@@ -1382,7 +1397,8 @@ err:
 
 static int __maybe_unused nau8310_suspend(struct snd_soc_component *cp)
 {
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8310->regmap;
 
 	cancel_work_sync(&nau8310->load_fw_work);
@@ -1399,7 +1415,8 @@ static int __maybe_unused nau8310_suspend(struct snd_soc_component *cp)
 
 static int __maybe_unused nau8310_resume(struct snd_soc_component *cp)
 {
-	struct nau8310 *nau8310 = snd_soc_component_get_drvdata(cp);
+	struct device *dev = snd_soc_component_to_dev(cp);
+	struct nau8310 *nau8310 = dev_get_drvdata(dev);
 	struct regmap *regmap = nau8310->regmap;
 	int ret = 0;
 

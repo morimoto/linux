@@ -52,7 +52,7 @@ audin_formatter_i2s_get_stream(struct snd_soc_dapm_widget *w)
 	if (!be)
 		return NULL;
 
-	return snd_soc_dai_dma_data_get_capture(be);
+	return snd_soc_dai_stream_dma_data_get(be, SNDRV_PCM_STREAM_CAPTURE);
 }
 
 static void audin_formatter_i2s_enable(struct regmap *map)

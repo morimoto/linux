@@ -166,7 +166,9 @@ static irqreturn_t esai_isr(int irq, void *devid)
 static int fsl_esai_divisor_cal(struct snd_soc_dai *dai, bool tx, u32 ratio,
 				bool usefp, u32 fp)
 {
-	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_esai *esai_priv = dev_get_drvdata(dai_dev);
 	u32 psr, pm = 999, maxfp, prod, sub, savesub, i, j;
 
 	maxfp = usefp ? 16 : 1;
@@ -175,11 +177,11 @@ static int fsl_esai_divisor_cal(struct snd_soc_dai *dai, bool tx, u32 ratio,
 		goto out_fp;
 
 	if (ratio > 2 * 8 * 256 * maxfp || ratio < 2) {
-		dev_err(dai->dev, "the ratio is out of range (2 ~ %d)\n",
+		dev_err(dai_dev, "the ratio is out of range (2 ~ %d)\n",
 				2 * 8 * 256 * maxfp);
 		return -EINVAL;
 	} else if (ratio % 2) {
-		dev_err(dai->dev, "the raio must be even if using upper divider\n");
+		dev_err(dai_dev, "the raio must be even if using upper divider\n");
 		return -EINVAL;
 	}
 
@@ -227,7 +229,7 @@ static int fsl_esai_divisor_cal(struct snd_soc_dai *dai, bool tx, u32 ratio,
 	}
 
 	if (pm == 999) {
-		dev_err(dai->dev, "failed to calculate proper divisors\n");
+		dev_err(dai_dev, "failed to calculate proper divisors\n");
 		return -EINVAL;
 	}
 
@@ -260,7 +262,9 @@ out_fp:
 static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 				   unsigned int freq, int dir)
 {
-	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_esai *esai_priv = dev_get_drvdata(dai_dev);
 	struct clk *clksrc = esai_priv->extalclk;
 	bool tx = (clk_id <= ESAI_HCKT_EXTAL || esai_priv->synchronous);
 	bool in = dir == SND_SOC_CLOCK_IN;
@@ -269,7 +273,7 @@ static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 	int ret;
 
 	if (freq == 0) {
-		dev_err(dai->dev, "%sput freq of HCK%c should not be 0Hz\n",
+		dev_err(dai_dev, "%sput freq of HCK%c should not be 0Hz\n",
 			in ? "in" : "out", tx ? 'T' : 'R');
 		return -EINVAL;
 	}
@@ -304,7 +308,7 @@ static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 	}
 
 	if (IS_ERR(clksrc)) {
-		dev_err(dai->dev, "no assigned %s clock\n",
+		dev_err(dai_dev, "no assigned %s clock\n",
 			(clk_id % 2) ? "extal" : "fsys");
 		return PTR_ERR(clksrc);
 	}
@@ -320,7 +324,7 @@ static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 
 	/* Block if clock source can not be divided into the required rate */
 	if (ret != 0 && clk_rate / ret < 1000) {
-		dev_err(dai->dev, "failed to derive required HCK%c rate\n",
+		dev_err(dai_dev, "failed to derive required HCK%c rate\n",
 				tx ? 'T' : 'R');
 		return -EINVAL;
 	}
@@ -332,7 +336,7 @@ static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
 		goto out;
 	} else if (ratio < 2) {
 		/* The ratio should be no less than 2 if using other sources */
-		dev_err(dai->dev, "failed to derive required HCK%c rate\n",
+		dev_err(dai_dev, "failed to derive required HCK%c rate\n",
 				tx ? 'T' : 'R');
 		return -EINVAL;
 	}
@@ -362,7 +366,9 @@ out:
  */
 static int fsl_esai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
 {
-	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dai_dev = snd_soc_component_to_dev(component);
+	struct fsl_esai *esai_priv = dev_get_drvdata(dai_dev);
 	u32 hck_rate = esai_priv->hck_rate[tx];
 	u32 sub, ratio = hck_rate / freq;
 	int ret;
@@ -380,14 +386,14 @@ static int fsl_esai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
 
 	/* Block if clock source can not be divided into the required rate */
 	if (sub != 0 && hck_rate / sub < 1000) {
-		dev_err(dai->dev, "failed to derive required SCK%c rate\n",
+		dev_err(dai_dev, "failed to derive required SCK%c rate\n",
 				tx ? 'T' : 'R');
 		return -EINVAL;
 	}
 
 	/* The ratio should be contented by FP alone if bypassing PM and PSR */
 	if (!esai_priv->sck_div[tx] && (ratio > 16 || ratio == 0)) {
-		dev_err(dai->dev, "the ratio is out of range (1 ~ 16)\n");
+		dev_err(dai_dev, "the ratio is out of range (1 ~ 16)\n");
 		return -EINVAL;
 	}
 
@@ -405,7 +411,9 @@ static int fsl_esai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
 static int fsl_esai_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
 				     u32 rx_mask, int slots, int slot_width)
 {
-	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_esai *esai_priv = dev_get_drvdata(dev);
 
 	regmap_update_bits(esai_priv->regmap, REG_ESAI_TCCR,
 			   ESAI_xCCR_xDC_MASK, ESAI_xCCR_xDC(slots));
@@ -423,7 +431,9 @@ static int fsl_esai_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
 
 static int fsl_esai_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_esai *esai_priv = dev_get_drvdata(dev);
 	u32 xcr = 0, xccr = 0, mask;
 
 	/* DAI mode */
@@ -512,7 +522,9 @@ static int fsl_esai_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 static int fsl_esai_startup(struct snd_pcm_substream *substream,
 			    struct snd_soc_dai *dai)
 {
-	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_esai *esai_priv = dev_get_drvdata(dev);
 
 	if (!snd_soc_dai_active(dai)) {
 		/* Set synchronous mode */
@@ -537,7 +549,9 @@ static int fsl_esai_hw_params(struct snd_pcm_substream *substream,
 			      struct snd_pcm_hw_params *params,
 			      struct snd_soc_dai *dai)
 {
-	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_esai *esai_priv = dev_get_drvdata(dev);
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	u32 width = params_width(params);
 	u32 channels = params_channels(params);
@@ -755,7 +769,9 @@ static void fsl_esai_hw_reset(struct work_struct *work)
 static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
 			    struct snd_soc_dai *dai)
 {
-	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_esai *esai_priv = dev_get_drvdata(dev);
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 
 	esai_priv->channels[tx] = substream->runtime->channels;
@@ -782,10 +798,12 @@ static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
 
 static int fsl_esai_dai_probe(struct snd_soc_dai *dai)
 {
-	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fsl_esai *esai_priv = dev_get_drvdata(dev);
 
-	snd_soc_dai_init_dma_data(dai, &esai_priv->dma_params_tx,
-				  &esai_priv->dma_params_rx);
+	snd_soc_dai_stream_dma_data_set_playback(dai, &esai_priv->dma_params_tx);
+	snd_soc_dai_stream_dma_data_set_capture(dai,  &esai_priv->dma_params_rx);
 
 	return 0;
 }

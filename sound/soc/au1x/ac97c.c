@@ -190,8 +190,10 @@ static struct snd_ac97_bus_ops ac97c_bus_ops = {
 static int alchemy_ac97c_startup(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
-	struct au1xpsc_audio_data *ctx = snd_soc_dai_get_drvdata(dai);
-	snd_soc_dai_set_dma_data(dai, substream, &ctx->dmaids[0]);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct au1xpsc_audio_data *ctx = dev_get_drvdata(dev);
+	snd_soc_dai_stream_dma_data_set(dai, substream, &ctx->dmaids[0]);
 	return 0;
 }
 

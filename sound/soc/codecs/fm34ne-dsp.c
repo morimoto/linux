@@ -97,7 +97,8 @@ static int fm34ne_dsp_ext_state_control(struct snd_soc_dapm_widget *w,
 					struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct fm34ne_dsp *dsp = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fm34ne_dsp *dsp = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -113,7 +114,8 @@ static int fm34ne_dsp_int_state_control(struct snd_soc_dapm_widget *w,
 					struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
-	struct fm34ne_dsp *dsp = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fm34ne_dsp *dsp = dev_get_drvdata(dev);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -185,7 +187,8 @@ static void fm34ne_dsp_disable_hw(struct fm34ne_dsp *dsp)
 
 static int fm34ne_dsp_probe(struct snd_soc_component *component)
 {
-	struct fm34ne_dsp *dsp = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fm34ne_dsp *dsp = dev_get_drvdata(dev);
 	int ret;
 
 	ret = fm34ne_dsp_enable_hw(dsp);
@@ -225,7 +228,8 @@ exit:
 
 static void fm34ne_dsp_remove(struct snd_soc_component *component)
 {
-	struct fm34ne_dsp *dsp = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct fm34ne_dsp *dsp = dev_get_drvdata(dev);
 
 	fm34ne_dsp_disable_hw(dsp);
 }

@@ -227,7 +227,8 @@ static int pcm512x_overclock_pll_get(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = pcm512x->overclock_pll;
 	return 0;
@@ -238,7 +239,8 @@ static int pcm512x_overclock_pll_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 
 	switch (snd_soc_dapm_get_bias_level(dapm)) {
 	case SND_SOC_BIAS_OFF:
@@ -256,7 +258,8 @@ static int pcm512x_overclock_dsp_get(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = pcm512x->overclock_dsp;
 	return 0;
@@ -267,7 +270,8 @@ static int pcm512x_overclock_dsp_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 
 	switch (snd_soc_dapm_get_bias_level(dapm)) {
 	case SND_SOC_BIAS_OFF:
@@ -285,7 +289,8 @@ static int pcm512x_overclock_dac_get(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 
 	ucontrol->value.integer.value[0] = pcm512x->overclock_dac;
 	return 0;
@@ -296,7 +301,8 @@ static int pcm512x_overclock_dac_put(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 
 	switch (snd_soc_dapm_get_bias_level(dapm)) {
 	case SND_SOC_BIAS_OFF:
@@ -399,7 +405,8 @@ static int pcm512x_digital_playback_switch_get(struct snd_kcontrol *kcontrol,
 					       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 
 	guard(mutex)(&pcm512x->mutex);
 	ucontrol->value.integer.value[0] = !(pcm512x->mute & 0x4);
@@ -412,7 +419,8 @@ static int pcm512x_digital_playback_switch_put(struct snd_kcontrol *kcontrol,
 					       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 	int ret, changed = 0;
 
 	guard(mutex)(&pcm512x->mutex);
@@ -429,8 +437,7 @@ static int pcm512x_digital_playback_switch_put(struct snd_kcontrol *kcontrol,
 	if (changed) {
 		ret = pcm512x_update_mute(pcm512x);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to update digital mute: %d\n", ret);
+			dev_err(dev, "Failed to update digital mute: %d\n", ret);
 			return ret;
 		}
 	}
@@ -583,9 +590,9 @@ static int pcm512x_hw_rule_rate(struct snd_pcm_hw_params *params,
 static int pcm512x_dai_startup_master(struct snd_pcm_substream *substream,
 				      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
-	struct device *dev = dai->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 	struct snd_pcm_hw_constraint_ratnums *constraints_no_pll;
 	struct snd_ratnum *rats_no_pll;
 
@@ -624,9 +631,9 @@ static int pcm512x_dai_startup_master(struct snd_pcm_substream *substream,
 static int pcm512x_dai_startup_slave(struct snd_pcm_substream *substream,
 				     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
-	struct device *dev = dai->dev;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 	struct regmap *regmap = pcm512x->regmap;
 
 	if (IS_ERR(pcm512x->sclk)) {
@@ -650,8 +657,9 @@ static int pcm512x_dai_startup_slave(struct snd_pcm_substream *substream,
 static int pcm512x_dai_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 
 	switch (pcm512x->fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
 	case SND_SOC_DAIFMT_CBP_CFP:
@@ -669,7 +677,8 @@ static int pcm512x_dai_startup(struct snd_pcm_substream *substream,
 static int pcm512x_set_bias_level(struct snd_soc_component *component,
 				  enum snd_soc_bias_level level)
 {
-	struct pcm512x_priv *pcm512x = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 	int ret;
 
 	switch (level) {
@@ -681,8 +690,7 @@ static int pcm512x_set_bias_level(struct snd_soc_component *component,
 		ret = regmap_update_bits(pcm512x->regmap, PCM512x_POWER,
 					 PCM512x_RQST, 0);
 		if (ret != 0) {
-			dev_err(component->dev, "Failed to remove standby: %d\n",
-				ret);
+			dev_err(dev, "Failed to remove standby: %d\n", ret);
 			return ret;
 		}
 		break;
@@ -691,8 +699,7 @@ static int pcm512x_set_bias_level(struct snd_soc_component *component,
 		ret = regmap_update_bits(pcm512x->regmap, PCM512x_POWER,
 					 PCM512x_RQST, PCM512x_RQST);
 		if (ret != 0) {
-			dev_err(component->dev, "Failed to request standby: %d\n",
-				ret);
+			dev_err(dev, "Failed to request standby: %d\n", ret);
 			return ret;
 		}
 		break;
@@ -704,9 +711,9 @@ static int pcm512x_set_bias_level(struct snd_soc_component *component,
 static unsigned long pcm512x_find_sck(struct snd_soc_dai *dai,
 				      unsigned long bclk_rate)
 {
-	struct device *dev = dai->dev;
-	struct snd_soc_component *component = dai->component;
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 	unsigned long sck_rate;
 	int pow2;
 
@@ -750,9 +757,9 @@ static int pcm512x_find_pll_coeff(struct snd_soc_dai *dai,
 				  unsigned long pllin_rate,
 				  unsigned long pll_rate)
 {
-	struct device *dev = dai->dev;
-	struct snd_soc_component *component = dai->component;
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 	unsigned long common;
 	int R, J, D, P;
 	unsigned long K; /* 10000 * J.D */
@@ -858,8 +865,9 @@ static unsigned long pcm512x_pllin_dac_rate(struct snd_soc_dai *dai,
 					    unsigned long osr_rate,
 					    unsigned long pllin_rate)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 	unsigned long dac_rate;
 
 	if (!pcm512x->pll_out)
@@ -888,9 +896,9 @@ static unsigned long pcm512x_pllin_dac_rate(struct snd_soc_dai *dai,
 static int pcm512x_set_dividers(struct snd_soc_dai *dai,
 				struct snd_pcm_hw_params *params)
 {
-	struct device *dev = dai->dev;
-	struct snd_soc_component *component = dai->component;
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 	unsigned long pllin_rate = 0;
 	unsigned long pll_rate;
 	unsigned long sck_rate;
@@ -1014,8 +1022,7 @@ static int pcm512x_set_dividers(struct snd_soc_dai *dai,
 		ret = regmap_update_bits(pcm512x->regmap, PCM512x_DAC_REF,
 					 PCM512x_SDAC, PCM512x_SDAC_GPIO);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to set gpio as dacref: %d\n", ret);
+			dev_err(dev, "Failed to set gpio as dacref: %d\n", ret);
 			return ret;
 		}
 
@@ -1023,8 +1030,7 @@ static int pcm512x_set_dividers(struct snd_soc_dai *dai,
 		ret = regmap_update_bits(pcm512x->regmap, PCM512x_GPIO_DACIN,
 					 PCM512x_GREF, gpio);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to set gpio %d as dacin: %d\n",
+			dev_err(dev, "Failed to set gpio %d as dacin: %d\n",
 				pcm512x->pll_in, ret);
 			return ret;
 		}
@@ -1052,8 +1058,7 @@ static int pcm512x_set_dividers(struct snd_soc_dai *dai,
 		ret = regmap_update_bits(pcm512x->regmap, PCM512x_DAC_REF,
 					 PCM512x_SDAC, PCM512x_SDAC_SCK);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to set sck as dacref: %d\n", ret);
+			dev_err(dev, "Failed to set sck as dacref: %d\n", ret);
 			return ret;
 		}
 
@@ -1147,18 +1152,18 @@ static int pcm512x_set_dividers(struct snd_soc_dai *dai,
 	ret = regmap_update_bits(pcm512x->regmap, PCM512x_FS_SPEED_MODE,
 				 PCM512x_FSSP, fssp);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to set fs speed: %d\n", ret);
+		dev_err(dev, "Failed to set fs speed: %d\n", ret);
 		return ret;
 	}
 
-	dev_dbg(component->dev, "DSP divider %d\n", dsp_div);
-	dev_dbg(component->dev, "DAC divider %d\n", dac_div);
-	dev_dbg(component->dev, "NCP divider %d\n", ncp_div);
-	dev_dbg(component->dev, "OSR divider %d\n", osr_div);
-	dev_dbg(component->dev, "BCK divider %d\n", bclk_div);
-	dev_dbg(component->dev, "LRCK divider %d\n", lrclk_div);
-	dev_dbg(component->dev, "IDAC %d\n", idac);
-	dev_dbg(component->dev, "1<<FSSP %d\n", 1 << fssp);
+	dev_dbg(dev, "DSP divider %d\n", dsp_div);
+	dev_dbg(dev, "DAC divider %d\n", dac_div);
+	dev_dbg(dev, "NCP divider %d\n", ncp_div);
+	dev_dbg(dev, "OSR divider %d\n", osr_div);
+	dev_dbg(dev, "BCK divider %d\n", bclk_div);
+	dev_dbg(dev, "LRCK divider %d\n", lrclk_div);
+	dev_dbg(dev, "IDAC %d\n", idac);
+	dev_dbg(dev, "1<<FSSP %d\n", 1 << fssp);
 
 	return 0;
 }
@@ -1167,13 +1172,14 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 	int alen;
 	int gpio;
 	int ret;
 
-	dev_dbg(component->dev, "hw_params %u Hz, %u channels\n",
+	dev_dbg(dev, "hw_params %u Hz, %u channels\n",
 		params_rate(params),
 		params_channels(params));
 
@@ -1191,15 +1197,14 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 		alen = PCM512x_ALEN_32;
 		break;
 	default:
-		dev_err(component->dev, "Bad frame size: %d\n",
-			params_width(params));
+		dev_err(dev, "Bad frame size: %d\n", params_width(params));
 		return -EINVAL;
 	}
 
 	ret = regmap_update_bits(pcm512x->regmap, PCM512x_I2S_1,
 				 PCM512x_ALEN, alen);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to set frame size: %d\n", ret);
+		dev_err(dev, "Failed to set frame size: %d\n", ret);
 		return ret;
 	}
 
@@ -1208,9 +1213,7 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 		ret = regmap_update_bits(pcm512x->regmap, PCM512x_ERROR_DETECT,
 					 PCM512x_DCAS, 0);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to enable clock divider autoset: %d\n",
-				ret);
+			dev_err(dev, "Failed to enable clock divider autoset: %d\n", ret);
 			return ret;
 		}
 		goto skip_pll;
@@ -1219,13 +1222,13 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 	if (pcm512x->pll_out) {
 		ret = regmap_write(pcm512x->regmap, PCM512x_FLEX_A, 0x11);
 		if (ret != 0) {
-			dev_err(component->dev, "Failed to set FLEX_A: %d\n", ret);
+			dev_err(dev, "Failed to set FLEX_A: %d\n", ret);
 			return ret;
 		}
 
 		ret = regmap_write(pcm512x->regmap, PCM512x_FLEX_B, 0xff);
 		if (ret != 0) {
-			dev_err(component->dev, "Failed to set FLEX_B: %d\n", ret);
+			dev_err(dev, "Failed to set FLEX_B: %d\n", ret);
 			return ret;
 		}
 
@@ -1238,9 +1241,7 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 					 | PCM512x_IDSK | PCM512x_IDCH
 					 | PCM512x_DCAS);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to ignore auto-clock failures: %d\n",
-				ret);
+			dev_err(dev, "Failed to ignore auto-clock failures: %d\n", ret);
 			return ret;
 		}
 	} else {
@@ -1253,9 +1254,7 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 					 | PCM512x_IDSK | PCM512x_IDCH
 					 | PCM512x_DCAS | PCM512x_IPLK);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to ignore auto-clock failures: %d\n",
-				ret);
+			dev_err(dev, "Failed to ignore auto-clock failures: %d\n", ret);
 			return ret;
 		}
 
@@ -1269,24 +1268,22 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 			ret = regmap_write(pcm512x->regmap,
 					   PCM512x_PLL_COEFF_0, 0x01);
 			if (ret != 0) {
-				dev_err(component->dev,
-					"Failed to set pll coefficient: %d\n", ret);
+				dev_err(dev, "Failed to set pll coefficient: %d\n", ret);
 				return ret;
 			}
 			ret = regmap_write(pcm512x->regmap,
 					   PCM512x_PLL_COEFF_1, 0x04);
 			if (ret != 0) {
-				dev_err(component->dev,
-					"Failed to set pll coefficient: %d\n", ret);
+				dev_err(dev, "Failed to set pll coefficient: %d\n", ret);
 				return ret;
 			}
 			ret = regmap_write(pcm512x->regmap,
 					   PCM512x_PLL_EN, 0x01);
-			dev_dbg(component->dev, "Enabling PLL for TAS575x\n");
+			dev_dbg(dev, "Enabling PLL for TAS575x\n");
 		}
 
 		if (ret != 0) {
-			dev_err(component->dev, "Failed to set pll mode: %d\n", ret);
+			dev_err(dev, "Failed to set pll mode: %d\n", ret);
 			return ret;
 		}
 	}
@@ -1299,8 +1296,7 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 		ret = regmap_update_bits(pcm512x->regmap, PCM512x_PLL_REF,
 					 PCM512x_SREF, PCM512x_SREF_GPIO);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to set gpio as pllref: %d\n", ret);
+			dev_err(dev, "Failed to set gpio as pllref: %d\n", ret);
 			return ret;
 		}
 
@@ -1308,8 +1304,7 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 		ret = regmap_update_bits(pcm512x->regmap, PCM512x_GPIO_PLLIN,
 					 PCM512x_GREF, gpio);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to set gpio %d as pllin: %d\n",
+			dev_err(dev, "Failed to set gpio %d as pllin: %d\n",
 				pcm512x->pll_in, ret);
 			return ret;
 		}
@@ -1317,7 +1312,7 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 		ret = regmap_update_bits(pcm512x->regmap, PCM512x_PLL_EN,
 					 PCM512x_PLLE, PCM512x_PLLE);
 		if (ret != 0) {
-			dev_err(component->dev, "Failed to enable pll: %d\n", ret);
+			dev_err(dev, "Failed to enable pll: %d\n", ret);
 			return ret;
 		}
 
@@ -1325,7 +1320,7 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 		ret = regmap_update_bits(pcm512x->regmap, PCM512x_GPIO_EN,
 					 gpio, gpio);
 		if (ret != 0) {
-			dev_err(component->dev, "Failed to enable gpio %d: %d\n",
+			dev_err(dev, "Failed to enable gpio %d: %d\n",
 				pcm512x->pll_out, ret);
 			return ret;
 		}
@@ -1334,7 +1329,7 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 		ret = regmap_update_bits(pcm512x->regmap, gpio,
 					 PCM512x_GxSL, PCM512x_GxSL_PLLCK);
 		if (ret != 0) {
-			dev_err(component->dev, "Failed to output pll on %d: %d\n",
+			dev_err(dev, "Failed to output pll on %d: %d\n",
 				ret, pcm512x->pll_out);
 			return ret;
 		}
@@ -1343,14 +1338,14 @@ static int pcm512x_hw_params(struct snd_pcm_substream *substream,
 	ret = regmap_update_bits(pcm512x->regmap, PCM512x_SYNCHRONIZE,
 				 PCM512x_RQSY, PCM512x_RQSY_HALT);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to halt clocks: %d\n", ret);
+		dev_err(dev, "Failed to halt clocks: %d\n", ret);
 		return ret;
 	}
 
 	ret = regmap_update_bits(pcm512x->regmap, PCM512x_SYNCHRONIZE,
 				 PCM512x_RQSY, PCM512x_RQSY_RESUME);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to resume clocks: %d\n", ret);
+		dev_err(dev, "Failed to resume clocks: %d\n", ret);
 		return ret;
 	}
 
@@ -1360,8 +1355,9 @@ skip_pll:
 
 static int pcm512x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 	int afmt;
 	int offset = 0;
 	int clock_output;
@@ -1389,7 +1385,7 @@ static int pcm512x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 				 PCM512x_BCKP | PCM512x_BCKO | PCM512x_LRKO,
 				 clock_output);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to enable clock output: %d\n", ret);
+		dev_err(dev, "Failed to enable clock output: %d\n", ret);
 		return ret;
 	}
 
@@ -1397,7 +1393,7 @@ static int pcm512x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 				 PCM512x_RLRK | PCM512x_RBCK,
 				 provider_mode);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to enable provider mode: %d\n", ret);
+		dev_err(dev, "Failed to enable provider mode: %d\n", ret);
 		return ret;
 	}
 
@@ -1418,22 +1414,21 @@ static int pcm512x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		afmt = PCM512x_AFMT_DSP;
 		break;
 	default:
-		dev_err(component->dev, "unsupported DAI format: 0x%x\n",
-			pcm512x->fmt);
+		dev_err(dev, "unsupported DAI format: 0x%x\n", pcm512x->fmt);
 		return -EINVAL;
 	}
 
 	ret = regmap_update_bits(pcm512x->regmap, PCM512x_I2S_1,
 				 PCM512x_AFMT, afmt);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to set data format: %d\n", ret);
+		dev_err(dev, "Failed to set data format: %d\n", ret);
 		return ret;
 	}
 
 	ret = regmap_update_bits(pcm512x->regmap, PCM512x_I2S_2,
 				 0xFF, offset);
 	if (ret != 0) {
-		dev_err(component->dev, "Failed to set data offset: %d\n", ret);
+		dev_err(dev, "Failed to set data offset: %d\n", ret);
 		return ret;
 	}
 
@@ -1444,8 +1439,9 @@ static int pcm512x_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 
 static int pcm512x_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 
 	if (ratio > 256)
 		return -EINVAL;
@@ -1457,8 +1453,9 @@ static int pcm512x_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
 
 static int pcm512x_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
-	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct pcm512x_priv *pcm512x = dev_get_drvdata(dev);
 	int ret;
 	unsigned int mute_det;
 
@@ -1471,8 +1468,7 @@ static int pcm512x_mute(struct snd_soc_dai *dai, int mute, int direction)
 					 PCM512x_RQML | PCM512x_RQMR,
 					 PCM512x_RQML | PCM512x_RQMR);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to set digital mute: %d\n", ret);
+			dev_err(dev, "Failed to set digital mute: %d\n", ret);
 			return ret;
 		}
 
@@ -1484,8 +1480,7 @@ static int pcm512x_mute(struct snd_soc_dai *dai, int mute, int direction)
 		pcm512x->mute &= ~0x1;
 		ret = pcm512x_update_mute(pcm512x);
 		if (ret != 0) {
-			dev_err(component->dev,
-				"Failed to update digital mute: %d\n", ret);
+			dev_err(dev, "Failed to update digital mute: %d\n", ret);
 			return ret;
 		}
 

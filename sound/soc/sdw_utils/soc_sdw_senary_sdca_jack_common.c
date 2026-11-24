@@ -78,47 +78,48 @@ int asoc_sdw_senary_sdca_jack_rtd_init(struct snd_soc_pcm_runtime *rtd, struct s
 {
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct snd_soc_component *component;
 	struct snd_soc_jack *jack;
+	struct device *dev = snd_soc_card_to_dev(card);
 	const struct snd_soc_dapm_route *routes = senary_sdca_jack_map;
 	const char *prefix;
 	int nroutes = ARRAY_SIZE(senary_sdca_jack_map);
 	int ret;
 
-	component = dai->component;
-	prefix = component->name_prefix;
+	component = snd_soc_dai_to_component(dai);
+	prefix = snd_soc_component_name_prefix(component);
 	/*
 	 * codec_conf should set name_prefix to "sn624x" before DAPM widgets
 	 * are created. If that match fails, name_prefix is NULL: strstr()
 	 * oopses, and the widgets keep the bare names from the codec driver.
 	 */
 	if (!prefix) {
-		dev_warn(card->dev,
-			 "sn624x jack: component %s has no name_prefix\n",
-			 component->name);
+		dev_warn(dev, "sn624x jack: component %s has no name_prefix\n",
+			 snd_soc_component_name(component));
 		prefix = "sn624x";
 		routes = senary_sdca_jack_map_bare;
 		nroutes = ARRAY_SIZE(senary_sdca_jack_map_bare);
 	} else if (!strstr(prefix, "sn624x")) {
-		dev_err(card->dev, "%s is not supported\n", prefix);
+		dev_err(dev, "%s is not supported\n", prefix);
 		return -EINVAL;
 	}
 
-	card->components = devm_kasprintf(card->dev, GFP_KERNEL,
-					  "%s hs:%s-sdca",
-					  card->components, prefix);
-	if (!card->components)
+	snd_soc_card_set_components(card,
+				devm_kasprintf(dev, GFP_KERNEL,
+					"%s hs:%s-sdca",
+					snd_soc_card_components(card),
+					prefix));
+	if (!snd_soc_card_components(card))
 		return -ENOMEM;
 
 	ret = snd_soc_dapm_add_routes(dapm, routes, nroutes);
 	if (ret) {
-		dev_err(card->dev, "senary sdca jack map addition failed: %d\n",
-			ret);
+		dev_err(dev, "senary sdca jack map addition failed: %d\n", ret);
 		return ret;
 	}
 
-	ret = snd_soc_card_jack_new_pins(rtd->card, "Headset Jack",
+	ret = snd_soc_card_jack_new_pins(card, "Headset Jack",
 					 SND_JACK_HEADSET | SND_JACK_BTN_0 |
 					 SND_JACK_BTN_1 | SND_JACK_BTN_2 |
 					 SND_JACK_BTN_3,
@@ -126,8 +127,7 @@ int asoc_sdw_senary_sdca_jack_rtd_init(struct snd_soc_pcm_runtime *rtd, struct s
 					 senary_sdca_jack_pins,
 					 ARRAY_SIZE(senary_sdca_jack_pins));
 	if (ret) {
-		dev_err(rtd->card->dev, "Headset Jack creation failed: %d\n",
-			ret);
+		dev_err(dev, "Headset Jack creation failed: %d\n", ret);
 		return ret;
 	}
 
@@ -141,8 +141,7 @@ int asoc_sdw_senary_sdca_jack_rtd_init(struct snd_soc_pcm_runtime *rtd, struct s
 	ret = snd_soc_component_set_jack(component, jack, NULL);
 
 	if (ret)
-		dev_err(rtd->card->dev, "Headset Jack call-back failed: %d\n",
-			ret);
+		dev_err(dev, "Headset Jack call-back failed: %d\n", ret);
 
 	return ret;
 }
@@ -150,7 +149,7 @@ EXPORT_SYMBOL_NS(asoc_sdw_senary_sdca_jack_rtd_init, "SND_SOC_SDW_UTILS");
 
 int asoc_sdw_senary_sdca_jack_exit(struct snd_soc_card *card, struct snd_soc_dai_link *dai_link)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 
 	if (!ctx->headset_codec_dev)
 		return 0;
@@ -175,7 +174,7 @@ int asoc_sdw_senary_sdca_jack_init(struct snd_soc_card *card,
 				   struct asoc_sdw_codec_info *info,
 				   bool playback)
 {
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct device *sdw_dev;
 	int ret;
 

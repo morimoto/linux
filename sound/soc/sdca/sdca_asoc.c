@@ -156,7 +156,7 @@ static int ge_put_enum_double(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_dapm_context *dapm = snd_soc_dapm_kcontrol_to_dapm(kcontrol);
 	struct snd_soc_component *component = snd_soc_dapm_to_component(dapm);
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int *item = ucontrol->value.enumerated.item;
 	unsigned int reg = e->reg;
@@ -432,6 +432,7 @@ static int entity_pde_event(struct snd_soc_dapm_widget *widget,
 			    struct snd_kcontrol *kctl, int event)
 {
 	struct snd_soc_component *component = snd_soc_dapm_to_component(widget->dapm);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct sdca_entity *entity = widget->priv;
 	int from, to;
 	int ret;
@@ -452,14 +453,14 @@ static int entity_pde_event(struct snd_soc_dapm_widget *widget,
 		return 0;
 	}
 
-	ret = sdca_asoc_pde_poll_actual_ps(component->regmap,
+	ret = sdca_asoc_pde_poll_actual_ps(snd_soc_component_to_regmap(component),
 					   SDW_SDCA_CTL_FUNC(widget->reg),
 					   SDW_SDCA_CTL_ENT(widget->reg),
 					   from, to,
 					   entity->pde.max_delay,
 					   entity->pde.num_max_delay);
 	if (ret)
-		dev_err(component->dev, "%s: pde transition %x -> %x failed: %d\n",
+		dev_err(dev, "%s: pde transition %x -> %x failed: %d\n",
 			entity->label, from, to, ret);
 
 	return ret;
@@ -974,7 +975,7 @@ static int volatile_get_volsw(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = pm_runtime_resume_and_get(dev);
@@ -995,7 +996,7 @@ static int volatile_put_volsw(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-	struct device *dev = component->dev;
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = pm_runtime_resume_and_get(dev);
@@ -1615,7 +1616,7 @@ int sdca_asoc_set_constraints(struct device *dev, struct sdw_slave *sdw,
 		17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
 	};
 	struct sdca_asoc_constraints *constraints = snd_soc_dai_to_priv(dai);
-	struct sdca_entity *entity = &function->entities[dai->id];
+	struct sdca_entity *entity = &function->entities[snd_soc_dai_id(dai)];
 	unsigned int port_ch_mask, cluster_ch_mask;
 	int port;
 	int ret;
@@ -1691,7 +1692,7 @@ int sdca_asoc_get_port(struct device *dev, struct regmap *regmap,
 		       struct sdca_function_data *function,
 		       struct snd_soc_dai *dai)
 {
-	struct sdca_entity *entity = &function->entities[dai->id];
+	struct sdca_entity *entity = &function->entities[snd_soc_dai_id(dai)];
 	struct sdca_control_range *range;
 	unsigned int reg, val;
 	int sel = -EINVAL;
@@ -1891,7 +1892,7 @@ int sdca_asoc_hw_params(struct device *dev, struct regmap *regmap,
 			struct snd_pcm_hw_params *params,
 			struct snd_soc_dai *dai)
 {
-	struct sdca_entity *entity = &function->entities[dai->id];
+	struct sdca_entity *entity = &function->entities[snd_soc_dai_id(dai)];
 	int channels = params_channels(params);
 	int width = params_width(params);
 	int rate = params_rate(params);

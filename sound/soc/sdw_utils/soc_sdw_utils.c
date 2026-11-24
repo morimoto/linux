@@ -1794,9 +1794,10 @@ static int asoc_sdw_find_codec_info_dai_index(const struct asoc_sdw_codec_info *
 int asoc_sdw_rtd_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_card *card = rtd->card;
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	struct asoc_sdw_codec_info *codec_info;
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct snd_soc_dai *dai;
 	struct sdw_slave *sdw_peripheral;
 	const char *spk_components = NULL;
@@ -1805,10 +1806,15 @@ int asoc_sdw_rtd_init(struct snd_soc_pcm_runtime *rtd)
 	int i;
 
 	for_each_rtd_codec_dais(rtd, i, dai) {
-		if (is_sdw_slave(dai->component->dev))
-			sdw_peripheral = dev_to_sdw_dev(dai->component->dev);
-		else if (dai->component->dev->parent && is_sdw_slave(dai->component->dev->parent))
-			sdw_peripheral = dev_to_sdw_dev(dai->component->dev->parent);
+		struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+		const char *dai_name = snd_soc_dai_name(dai);
+		const char *component_name = snd_soc_component_name(component);
+		struct device *dev = snd_soc_component_to_dev(component);
+
+		if (is_sdw_slave(dev))
+			sdw_peripheral = dev_to_sdw_dev(dev);
+		else if (dev->parent && is_sdw_slave(dev->parent))
+			sdw_peripheral = dev_to_sdw_dev(dev->parent);
 		else
 			continue;
 
@@ -1816,7 +1822,7 @@ int asoc_sdw_rtd_init(struct snd_soc_pcm_runtime *rtd)
 		if (!codec_info)
 			return -EINVAL;
 
-		dai_index = asoc_sdw_find_codec_info_dai_index(codec_info, dai->name);
+		dai_index = asoc_sdw_find_codec_info_dai_index(codec_info, dai_name);
 		WARN_ON(dai_index < 0);
 
 		/*
@@ -1828,9 +1834,9 @@ int asoc_sdw_rtd_init(struct snd_soc_pcm_runtime *rtd)
 		if (codec_info->dais[dai_index].rtd_init_done)
 			continue;
 
-		dev_dbg(card->dev, "%#x/%s initializing for %s/%s\n",
+		dev_dbg(dev, "%#x/%s initializing for %s/%s\n",
 			codec_info->part_id, codec_info->dais[dai_index].dai_name,
-			dai->component->name, dai->name);
+			component_name, dai_name);
 
 		/*
 		 * Add card controls and dapm widgets for the first codec dai.
@@ -1841,10 +1847,10 @@ int asoc_sdw_rtd_init(struct snd_soc_pcm_runtime *rtd)
 			goto skip_add_controls_widgets;
 
 		if (codec_info->dais[dai_index].controls) {
-			ret = snd_soc_add_card_controls(card, codec_info->dais[dai_index].controls,
+			ret = snd_soc_card_add_controls(card, codec_info->dais[dai_index].controls,
 							codec_info->dais[dai_index].num_controls);
 			if (ret) {
-				dev_err(card->dev, "%#x-%#x controls addition failed: %d\n",
+				dev_err(dev, "%#x-%#x controls addition failed: %d\n",
 					codec_info->vendor_id, codec_info->part_id, ret);
 				return ret;
 			}
@@ -1854,7 +1860,7 @@ int asoc_sdw_rtd_init(struct snd_soc_pcm_runtime *rtd)
 							codec_info->dais[dai_index].widgets,
 							codec_info->dais[dai_index].num_widgets);
 			if (ret) {
-				dev_err(card->dev, "%#x-%#x widgets addition failed: %d\n",
+				dev_err(dev, "%#x-%#x widgets addition failed: %d\n",
 					codec_info->vendor_id, codec_info->part_id, ret);
 				return ret;
 			}
@@ -1884,11 +1890,11 @@ skip_add_controls_widgets:
 
 			if (!spk_components)
 				spk_components =
-					devm_kasprintf(card->dev, GFP_KERNEL, "%s", component);
+					devm_kasprintf(dev, GFP_KERNEL, "%s", component);
 			else
 				/* Append component name to spk_components */
 				spk_components =
-					devm_kasprintf(card->dev, GFP_KERNEL,
+					devm_kasprintf(dev, GFP_KERNEL,
 						       "%s+%s", spk_components, component);
 
 			if (!spk_components)
@@ -1900,9 +1906,10 @@ skip_add_controls_widgets:
 
 	if (spk_components) {
 		/* Update card components for speaker components */
-		card->components = devm_kasprintf(card->dev, GFP_KERNEL, "%s spk:%s",
-						  card->components, spk_components);
-		if (!card->components)
+		snd_soc_card_set_components(card, devm_kasprintf(dev, GFP_KERNEL, "%s spk:%s",
+								 snd_soc_card_components(card),
+								 spk_components));
+		if (!snd_soc_card_components(card))
 			return -ENOMEM;
 	}
 
@@ -1928,7 +1935,7 @@ int asoc_sdw_prepare(struct snd_pcm_substream *substream)
 
 	sdw_stream = snd_soc_dai_get_stream(dai, substream->stream);
 	if (IS_ERR(sdw_stream)) {
-		dev_err(rtd->dev, "no stream found for DAI %s\n", dai->name);
+		dev_err(rtd->dev, "no stream found for DAI %s\n", snd_soc_dai_name(dai));
 		return PTR_ERR(sdw_stream);
 	}
 
@@ -1948,7 +1955,7 @@ int asoc_sdw_trigger(struct snd_pcm_substream *substream, int cmd)
 
 	sdw_stream = snd_soc_dai_get_stream(dai, substream->stream);
 	if (IS_ERR(sdw_stream)) {
-		dev_err(rtd->dev, "no stream found for DAI %s\n", dai->name);
+		dev_err(rtd->dev, "no stream found for DAI %s\n", snd_soc_dai_name(dai));
 		return PTR_ERR(sdw_stream);
 	}
 
@@ -2053,7 +2060,7 @@ int asoc_sdw_hw_free(struct snd_pcm_substream *substream)
 
 	sdw_stream = snd_soc_dai_get_stream(dai, substream->stream);
 	if (IS_ERR(sdw_stream)) {
-		dev_err(rtd->dev, "no stream found for DAI %s\n", dai->name);
+		dev_err(rtd->dev, "no stream found for DAI %s\n", snd_soc_dai_name(dai));
 		return PTR_ERR(sdw_stream);
 	}
 
@@ -2130,11 +2137,13 @@ const char *asoc_sdw_get_codec_name(struct device *dev,
 	if (dai_info->codec_name) {
 		struct snd_soc_component *component;
 
-		component = snd_soc_lookup_component_by_name(dai_info->codec_name);
+		component = snd_soc_component_lookup_by_name(dai_info->codec_name);
 		if (component) {
+			const char *component_name = snd_soc_component_name(component);
+
 			dev_dbg(dev, "%s found component %s for codec_name %s\n",
-				__func__, component->name, dai_info->codec_name);
-			return devm_kstrdup(dev, component->name, GFP_KERNEL);
+				__func__, component_name, dai_info->codec_name);
+			return devm_kstrdup(dev, component_name, GFP_KERNEL);
 		} else {
 			dev_dbg(dev, "%s component %s is not registered yet\n",
 				__func__, dai_info->codec_name);
@@ -2169,7 +2178,8 @@ void asoc_sdw_mc_dailink_exit_loop(struct snd_soc_card *card,
 				   struct snd_soc_card_driver *card_driver)
 {
 	struct snd_soc_dai_link *dai_link;
-	struct asoc_sdw_mc_private *ctx = snd_soc_card_get_drvdata(card);
+	struct asoc_sdw_mc_private *ctx = snd_soc_card_to_priv(card);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 	int i, j;
 
@@ -2189,9 +2199,7 @@ void asoc_sdw_mc_dailink_exit_loop(struct snd_soc_card *card,
 				/* Do the .exit function if the codec dai is used in the link */
 				ret = codec_info_list[i].dais[j].exit(card, dai_link);
 				if (ret)
-					dev_warn(card->dev,
-						 "codec exit failed %d\n",
-						 ret);
+					dev_warn(dev, "codec exit failed %d\n", ret);
 				break;
 			}
 		}
@@ -2324,7 +2332,7 @@ static int is_sdca_aux_dev_present(struct device *dev,
 int asoc_sdw_count_sdw_endpoints(struct snd_soc_card *card,
 				 int *num_devs, int *num_ends, int *num_aux)
 {
-	struct device *dev = card->dev;
+	struct device *dev = snd_soc_card_to_dev(card);
 	struct snd_soc_acpi_mach *mach = dev_get_platdata(dev);
 	struct snd_soc_acpi_mach_params *mach_params = &mach->mach_params;
 	const struct snd_soc_acpi_link_adr *adr_link;
@@ -2511,12 +2519,14 @@ int asoc_sdw_parse_sdw_endpoints(struct device *dev,
 				if (ret == 0)
 					continue;
 
-				component = snd_soc_lookup_component_by_name(codec_info->auxs[j].codec_name);
+				component = snd_soc_component_lookup_by_name(codec_info->auxs[j].codec_name);
 				if (component) {
+					const char *component_name = snd_soc_component_name(component);
+
 					dev_dbg(dev, "%s found component %s for aux name %s\n",
-						__func__, component->name,
+						__func__, component_name,
 						codec_info->auxs[j].codec_name);
-					soc_aux->dlc.name = component->name;
+					soc_aux->dlc.name = component_name;
 				} else {
 					dev_dbg(dev, "%s the aux component %s is not registered yet\n",
 						__func__, codec_info->auxs[j].codec_name);

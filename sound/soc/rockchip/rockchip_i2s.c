@@ -119,7 +119,10 @@ static int i2s_runtime_resume(struct device *dev)
 
 static inline struct rk_i2s_dev *to_info(struct snd_soc_dai *dai)
 {
-	return snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+
+	return dev_get_drvdata(dev);
 }
 
 static int rockchip_snd_txctrl(struct rk_i2s_dev *i2s, int on)
@@ -241,10 +244,12 @@ static int rockchip_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 				unsigned int fmt)
 {
 	struct rk_i2s_dev *i2s = to_info(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int mask = 0, val = 0;
 	int ret = 0;
 
-	ret = pm_runtime_resume_and_get(cpu_dai->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret)
 		return ret;
 	mask = I2S_CKR_MSS_MASK;
@@ -343,7 +348,7 @@ static int rockchip_i2s_set_fmt(struct snd_soc_dai *cpu_dai,
 	regmap_update_bits(i2s->regmap, I2S_RXCR, mask, val);
 
 err_pm_put:
-	pm_runtime_put(cpu_dai->dev);
+	pm_runtime_put(dev);
 
 	return ret;
 }
@@ -354,6 +359,7 @@ static int rockchip_i2s_hw_params(struct snd_pcm_substream *substream,
 {
 	struct rk_i2s_dev *i2s = to_info(dai);
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
 	unsigned int val = 0;
 	unsigned int mclk_rate, bclk_rate, div_bclk, div_lrck;
 
@@ -454,7 +460,7 @@ static int rockchip_i2s_hw_params(struct snd_pcm_substream *substream,
 			   I2S_DMACR_RDL(16));
 
 	val = I2S_CKR_TRCM_TXRX;
-	if (dai->driver->symmetric_rate && rtd->dai_link->symmetric_rate)
+	if (dai_driver->symmetric_rate && rtd->dai_link->symmetric_rate)
 		val = I2S_CKR_TRCM_TXONLY;
 
 	regmap_update_bits(i2s->regmap, I2S_CKR,
@@ -530,11 +536,12 @@ static int rockchip_i2s_set_sysclk(struct snd_soc_dai *cpu_dai, int clk_id,
 
 static int rockchip_i2s_dai_probe(struct snd_soc_dai *dai)
 {
-	struct rk_i2s_dev *i2s = snd_soc_dai_get_drvdata(dai);
+	struct rk_i2s_dev *i2s = to_info(dai);
 
-	snd_soc_dai_init_dma_data(dai,
-		i2s->has_playback ? &i2s->playback_dma_data : NULL,
-		i2s->has_capture  ? &i2s->capture_dma_data  : NULL);
+	if (i2s->has_playback)
+		snd_soc_dai_stream_dma_data_set_playback(dai, &i2s->playback_dma_data);
+	if (i2s->has_capture)
+		snd_soc_dai_stream_dma_data_set_capture(dai,  &i2s->capture_dma_data);
 
 	return 0;
 }

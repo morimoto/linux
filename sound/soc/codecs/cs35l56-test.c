@@ -48,7 +48,7 @@ KUNIT_DEFINE_ACTION_WRAPPER(device_remove_software_node_wrapper,
 KUNIT_DEFINE_ACTION_WRAPPER(cs35l56_remove_wrapper, cs35l56_remove,
 			    struct cs35l56_private *)
 
-KUNIT_DEFINE_ACTION_WRAPPER(snd_soc_unregister_card_wrapper, snd_soc_unregister_card,
+KUNIT_DEFINE_ACTION_WRAPPER(snd_soc_unregister_card_wrapper, snd_soc_card_unregister,
 			    struct snd_soc_card *)
 
 struct cs35l56_test_priv {
@@ -334,7 +334,8 @@ static void cs35l56_test_system_name_from_ssid(struct kunit *test)
 	struct cs35l56_private *cs35l56 = priv->cs35l56_priv;
 
 	cs35l56->speaker_id = -1;
-	snd_soc_card_set_pci_ssid(cs35l56->component->card, 0x12b4, 0xa7c8);
+	snd_soc_card_set_pci_ssid(snd_soc_component_to_card(cs35l56->component),
+				  0x12b4, 0xa7c8);
 
 	KUNIT_EXPECT_EQ(test, cs35l56_get_firmware_uid(cs35l56), 0);
 	KUNIT_EXPECT_EQ(test, cs35l56_set_fw_name(cs35l56->component), 0);
@@ -347,7 +348,8 @@ static void cs35l56_test_system_name_from_ssid_and_spkid(struct kunit *test)
 	struct cs35l56_private *cs35l56 = priv->cs35l56_priv;
 
 	cs35l56->speaker_id = 1;
-	snd_soc_card_set_pci_ssid(cs35l56->component->card, 0x12b4, 0xa7c8);
+	snd_soc_card_set_pci_ssid(snd_soc_component_to_card(cs35l56->component),
+				  0x12b4, 0xa7c8);
 
 	KUNIT_EXPECT_EQ(test, cs35l56_get_firmware_uid(cs35l56), 0);
 	KUNIT_EXPECT_EQ(test, cs35l56_set_fw_name(cs35l56->component), 0);
@@ -359,10 +361,11 @@ static void cs35l56_test_system_name_with_feid_fev(struct kunit *test)
 	const struct cs35l56_test_param *param = test->param_value;
 	struct cs35l56_test_priv *priv = test->priv;
 	struct cs35l56_private *cs35l56 = priv->cs35l56_priv;
+	struct snd_soc_card *card = snd_soc_component_to_card(cs35l56->component);
 
 	cs35l56->speaker_id = param->speaker_id;
 	if (param->has_ssid)
-		snd_soc_card_set_pci_ssid(cs35l56->component->card, 0x12b4, 0xa7c8);
+		snd_soc_card_set_pci_ssid(card, 0x12b4, 0xa7c8);
 
 	KUNIT_EXPECT_EQ(test, cs35l56_get_firmware_uid(cs35l56), 0);
 	KUNIT_EXPECT_EQ(test, cs35l56_set_fw_name(cs35l56->component), param->ret);
@@ -526,7 +529,8 @@ static void cs35l56_test_ssidexv2_suffix_sdw(struct kunit *test)
 	cs35l56->sdw_unique_id = 5;
 
 	/* Set a SSID to enable lookup of SSIDExV2 */
-	snd_soc_card_set_pci_ssid(cs35l56->component->card, PCI_VENDOR_ID_DELL, 0x1234);
+	snd_soc_card_set_pci_ssid(snd_soc_component_to_card(cs35l56->component),
+				  PCI_VENDOR_ID_DELL, 0x1234);
 
 	priv->ssidexv2 = "10281234_01_BB_CC";
 
@@ -552,7 +556,8 @@ static void cs35l56_test_ssidexv2_suffix_i2cspi(struct kunit *test)
 	test_hack_component_setup_name_prefix(cs35l56->component, "AMP1");
 
 	/* Set a SSID to enable lookup of SSIDExV2 */
-	snd_soc_card_set_pci_ssid(cs35l56->component->card, PCI_VENDOR_ID_DELL, 0x1234);
+	snd_soc_card_set_pci_ssid(snd_soc_component_to_card(cs35l56->component),
+				  PCI_VENDOR_ID_DELL, 0x1234);
 
 	priv->ssidexv2 = "10281234_01_BB_CC";
 
@@ -591,7 +596,8 @@ static void cs35l56_test_l56_b0_ssidexv2_ignored_suffix_sdw(struct kunit *test)
 	cs35l56->sdw_unique_id = 5;
 
 	/* Set a SSID to enable lookup of SSIDExV2 */
-	snd_soc_card_set_pci_ssid(cs35l56->component->card, PCI_VENDOR_ID_DELL, 0x1234);
+	snd_soc_card_set_pci_ssid(snd_soc_component_to_card(cs35l56->component),
+				  PCI_VENDOR_ID_DELL, 0x1234);
 
 	priv->ssidexv2 = "10281234_01_BB_CC";
 
@@ -861,11 +867,16 @@ static void cs35l56_test_dummy_dsp_work(struct work_struct *work)
  * Probing the component must not access the ASP1 registers. The driver does
  * not necessarily own them.
  */
+static struct snd_soc_card_driver card_driver = {
+	.default_name = "cs35l56-test",
+	.owner = THIS_MODULE,
+};
+
 static void cs35l56_test_component_probe_omits_asp(struct kunit *test)
 {
 	struct cs35l56_test_priv *priv = test->priv;
 	struct cs35l56_private *cs35l56 = priv->cs35l56_priv;
-	struct snd_soc_card *card = cs35l56->component->card;
+	struct snd_soc_card *card = snd_soc_component_to_card(cs35l56->component);
 	struct snd_soc_aux_dev *aux;
 	struct faux_device *card_dev;
 
@@ -902,15 +913,12 @@ static void cs35l56_test_component_probe_omits_asp(struct kunit *test)
 	aux = kunit_kzalloc(test, sizeof(*aux), GFP_KERNEL);
 	KUNIT_ASSERT_NOT_NULL(test, aux);
 	aux->dlc.name = dev_name(cs35l56->base.dev);
-	card->name = "cs35l56-test";
-	card->dev = &card_dev->dev;
-	card->owner = THIS_MODULE;
-	card->aux_dev = aux;
-	card->num_aux_devs = 1;
-	KUNIT_ASSERT_EQ(test, 0, snd_soc_register_card(card));
+	card_driver.aux_dev = aux;
+	card_driver.num_aux_devs = 1;
+	KUNIT_ASSERT_EQ(test, 0, snd_soc_card_register(card, &card_driver));
 	KUNIT_ASSERT_EQ(test, 0,
 			kunit_add_action_or_reset(test, snd_soc_unregister_card_wrapper, card));
-	KUNIT_ASSERT_TRUE(test, card->instantiated);
+	KUNIT_ASSERT_TRUE(test, snd_soc_card_is_instantiated(card));
 
 	/*
 	 * Flush cache to ensure there aren't cached values for the ASP registers.
@@ -964,7 +972,7 @@ static int cs35l56_test_case_init_common(struct kunit *test)
 
 	cs35l56->component = snd_soc_component_new(cs35l56->base.dev, NULL, NULL);
 	KUNIT_ASSERT_NOT_NULL(test, cs35l56->component);
-	snd_soc_component_set_drvdata(cs35l56->component, cs35l56);
+	dev_set_drvdata(cs35l56->base.dev, cs35l56);
 	test_hack_component_setup(cs35l56->component, card, NULL);
 
 	if (param) {

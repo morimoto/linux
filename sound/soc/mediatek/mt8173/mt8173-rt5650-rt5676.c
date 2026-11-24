@@ -86,8 +86,11 @@ static struct snd_soc_jack mt8173_rt5650_rt5676_jack;
 static int mt8173_rt5650_rt5676_init(struct snd_soc_pcm_runtime *runtime)
 {
 	struct snd_soc_card *card = runtime->card;
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(runtime, 0)->component;
-	struct snd_soc_component *component_sub = snd_soc_rtd_to_codec(runtime, 1)->component;
+	struct snd_soc_dai *codec0_dai = snd_soc_rtd_to_codec(runtime, 0);
+	struct snd_soc_dai *codec1_dai = snd_soc_rtd_to_codec(runtime, 1);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec0_dai);
+	struct snd_soc_component *component_sub = snd_soc_dai_to_component(codec1_dai);
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret;
 
 	rt5645_sel_asrc_clk_src(component,
@@ -112,7 +115,7 @@ static int mt8173_rt5650_rt5676_init(struct snd_soc_pcm_runtime *runtime)
 					 mt8173_rt5650_rt5676_jack_pins,
 					 ARRAY_SIZE(mt8173_rt5650_rt5676_jack_pins));
 	if (ret) {
-		dev_err(card->dev, "Can't new Headset Jack %d\n", ret);
+		dev_err(dev, "Can't new Headset Jack %d\n", ret);
 		return ret;
 	}
 

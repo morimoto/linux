@@ -30,8 +30,9 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 				  struct snd_kcontrol *k, int  event)
 {
 	struct snd_soc_card *card = snd_soc_dapm_to_card(w->dapm);
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(card);
 	struct snd_soc_dai *codec_dai;
+	struct device *dev = snd_soc_card_to_dev(card);
 	int ret = 0;
 
 	if (ctx->da7219.pll_bypass)
@@ -40,7 +41,7 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 	/* PLL SRM mode */
 	codec_dai = snd_soc_card_get_codec_dai(card, DIALOG_CODEC_DAI);
 	if (!codec_dai) {
-		dev_err(card->dev, "Codec dai not found; Unable to set/unset codec pll\n");
+		dev_err(dev, "Codec dai not found; Unable to set/unset codec pll\n");
 		return -EIO;
 	}
 
@@ -48,14 +49,14 @@ static int platform_clock_control(struct snd_soc_dapm_widget *w,
 		ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_MCLK,
 					  0, 0);
 		if (ret)
-			dev_err(card->dev, "failed to stop PLL: %d\n", ret);
+			dev_err(dev, "failed to stop PLL: %d\n", ret);
 	} else if (SND_SOC_DAPM_EVENT_ON(event)) {
-		dev_dbg(card->dev, "pll srm mode\n");
+		dev_dbg(dev, "pll srm mode\n");
 
 		ret = snd_soc_dai_set_pll(codec_dai, 0, DA7219_SYSCLK_PLL_SRM,
 					  0, DA7219_PLL_FREQ_OUT_98304);
 		if (ret)
-			dev_err(card->dev, "failed to start PLL: %d\n", ret);
+			dev_err(dev, "failed to start PLL: %d\n", ret);
 	}
 
 	return ret;
@@ -105,9 +106,9 @@ static struct snd_soc_jack_pin jack_pins[] = {
 
 static int da7219_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(rtd->card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(rtd->card);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	struct snd_soc_jack *jack = &ctx->headset_jack;
 	int mclk_rate, ret;
 
@@ -172,14 +173,14 @@ static int da7219_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 static void da7219_codec_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	snd_soc_component_set_jack(component, NULL, NULL);
 }
 
 static int card_late_probe(struct snd_soc_card *card)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(card);
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	int err;
 

@@ -414,7 +414,9 @@ static irqreturn_t cdns_i2s_sc_isr(int irq, void *devid)
 static int cdns_i2s_sc_set_tdm_slot(struct snd_soc_dai *cpu_dai, unsigned int tx_mask,
 				    unsigned int rx_mask, int slots, int slot_width)
 {
-	struct cdns_i2s_sc_priv *i2s_sc_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(component);
+	struct cdns_i2s_sc_priv *i2s_sc_priv = dev_get_drvdata(cpu_dev);
 	struct device *dev = i2s_sc_priv->dev;
 
 	dev_dbg(dev, "tx_mask = 0x%x, rx_mask = 0x%x, slots = %d, slot_width = %d\n",
@@ -452,7 +454,9 @@ static int cdns_i2s_sc_set_tdm_slot(struct snd_soc_dai *cpu_dai, unsigned int tx
 
 static int cdns_i2s_sc_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 {
-	struct cdns_i2s_sc_priv *i2s_sc_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(component);
+	struct cdns_i2s_sc_priv *i2s_sc_priv = dev_get_drvdata(cpu_dev);
 	struct device *dev = i2s_sc_priv->dev;
 	u32 ctrl = 0, ctrl_mask = 0;
 
@@ -541,7 +545,9 @@ static int cdns_i2s_sc_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 static int cdns_i2s_sc_prepare(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *cpu_dai)
 {
-	struct cdns_i2s_sc_priv *i2s_sc_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(component);
+	struct cdns_i2s_sc_priv *i2s_sc_priv = dev_get_drvdata(cpu_dev);
 
 	/*
 	 * The transceiver clock must stay on across the FIFO reset below,
@@ -605,7 +611,9 @@ static int cdns_i2s_sc_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params,
 				 struct snd_soc_dai *cpu_dai)
 {
-	struct cdns_i2s_sc_priv *i2s_sc_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(component);
+	struct cdns_i2s_sc_priv *i2s_sc_priv = dev_get_drvdata(cpu_dev);
 	struct device *dev = i2s_sc_priv->dev;
 	u32 slots, slot_width, resolution, val;
 	u32 rate, sample_rate, frame_slots;
@@ -743,7 +751,9 @@ static int cdns_i2s_sc_hw_params(struct snd_pcm_substream *substream,
 static int cdns_i2s_sc_trigger(struct snd_pcm_substream *substream,
 			       int cmd, struct snd_soc_dai *cpu_dai)
 {
-	struct cdns_i2s_sc_priv *i2s_sc_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(component);
+	struct cdns_i2s_sc_priv *i2s_sc_priv = dev_get_drvdata(cpu_dev);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -775,7 +785,9 @@ static int cdns_i2s_sc_trigger(struct snd_pcm_substream *substream,
 
 static int cdns_i2s_sc_dai_probe(struct snd_soc_dai *cpu_dai)
 {
-	struct cdns_i2s_sc_priv *i2s_sc_priv = snd_soc_dai_get_drvdata(cpu_dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(cpu_dai);
+	struct device *cpu_dev = snd_soc_component_to_dev(component);
+	struct cdns_i2s_sc_priv *i2s_sc_priv = dev_get_drvdata(cpu_dev);
 	u32 ctrl = 0;
 
 	/*
@@ -803,10 +815,10 @@ static int cdns_i2s_sc_dai_probe(struct snd_soc_dai *cpu_dai)
 	/* TDM mode disable, default works in standard stereo I2S mode */
 	regmap_update_bits(i2s_sc_priv->regmap, I2S_TDM_CTRL, I2S_TDM_CTRL_TDM_EN, 0);
 
-	snd_soc_dai_init_dma_data(cpu_dai, &i2s_sc_priv->playback_dma_data,
-				  &i2s_sc_priv->capture_dma_data);
+	snd_soc_dai_stream_dma_data_set_playback(cpu_dai, &i2s_sc_priv->playback_dma_data);
+	snd_soc_dai_stream_dma_data_set_capture(cpu_dai,  &i2s_sc_priv->capture_dma_data);
 
-	snd_soc_dai_set_drvdata(cpu_dai, i2s_sc_priv);
+	dev_set_drvdata(cpu_dev, i2s_sc_priv);
 
 	return 0;
 }

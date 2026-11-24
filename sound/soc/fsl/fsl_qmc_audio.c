@@ -57,10 +57,11 @@ struct qmc_dai_prtd {
 static int qmc_audio_pcm_new(struct snd_soc_component *component,
 			     struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_card *card = rtd->card->snd_card;
+	struct snd_card *card = snd_soc_card_to_snd_card(rtd->card);
+	struct device *dev = snd_soc_card_to_dev(rtd->card);
 	int ret;
 
-	ret = dma_coerce_mask_and_coherent(card->dev, DMA_BIT_MASK(32));
+	ret = dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
 	if (ret)
 		return ret;
 
@@ -199,11 +200,12 @@ static void qmc_audio_pcm_read_complete(void *context, size_t length, unsigned i
 static int qmc_audio_pcm_trigger(struct snd_soc_component *component,
 				 struct snd_pcm_substream *substream, int cmd)
 {
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct qmc_dai_prtd *prtd = substream->runtime->private_data;
 	int ret;
 
 	if (!prtd->qmc_dai) {
-		dev_err(component->dev, "qmc_dai is not set\n");
+		dev_err(dev, "qmc_dai is not set\n");
 		return -EINVAL;
 	}
 
@@ -273,7 +275,8 @@ static int qmc_audio_of_xlate_dai_name(struct snd_soc_component *component,
 				       const struct of_phandle_args *args,
 				       const char **dai_name)
 {
-	struct qmc_audio *qmc_audio = dev_get_drvdata(component->dev);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qmc_audio *qmc_audio = dev_get_drvdata(dev);
 	struct snd_soc_dai_driver *dai_driver;
 	int id = args->args[0];
 	int i;
@@ -346,14 +349,19 @@ static const struct snd_soc_component_driver qmc_audio_soc_platform = {
 
 static unsigned int qmc_dai_get_index(struct snd_soc_dai *dai)
 {
-	struct qmc_audio *qmc_audio = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct snd_soc_dai_driver *dai_driver = snd_soc_dai_to_driver(dai);
+	struct qmc_audio *qmc_audio = dev_get_drvdata(dev);
 
-	return dai->driver - qmc_audio->dai_drivers;
+	return dai_driver - qmc_audio->dai_drivers;
 }
 
 static struct qmc_dai *qmc_dai_get_data(struct snd_soc_dai *dai)
 {
-	struct qmc_audio *qmc_audio = snd_soc_dai_get_drvdata(dai);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct qmc_audio *qmc_audio = dev_get_drvdata(dev);
 	unsigned int index;
 
 	index = qmc_dai_get_index(dai);
@@ -547,12 +555,14 @@ static int qmc_dai_constraints_noninterleaved(struct snd_pcm_substream *substrea
 static int qmc_dai_startup(struct snd_pcm_substream *substream,
 			   struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct qmc_dai_prtd *prtd = substream->runtime->private_data;
 	struct qmc_dai *qmc_dai;
 
 	qmc_dai = qmc_dai_get_data(dai);
 	if (!qmc_dai) {
-		dev_err(dai->dev, "Invalid dai\n");
+		dev_err(dev, "Invalid dai\n");
 		return -EINVAL;
 	}
 
@@ -567,6 +577,8 @@ static int qmc_dai_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	struct qmc_chan_param chan_param = {0};
 	unsigned int nb_chans_used;
 	struct qmc_dai *qmc_dai;
@@ -575,7 +587,7 @@ static int qmc_dai_hw_params(struct snd_pcm_substream *substream,
 
 	qmc_dai = qmc_dai_get_data(dai);
 	if (!qmc_dai) {
-		dev_err(dai->dev, "Invalid dai\n");
+		dev_err(dev, "Invalid dai\n");
 		return -EINVAL;
 	}
 
@@ -588,7 +600,7 @@ static int qmc_dai_hw_params(struct snd_pcm_substream *substream,
 				1 : params_channels(params);
 
 	if (nb_chans_used > qmc_dai->nb_chans_avail) {
-		dev_err(dai->dev, "Not enough qmc_chans. Need %u, avail %u\n",
+		dev_err(dev, "Not enough qmc_chans. Need %u, avail %u\n",
 			nb_chans_used, qmc_dai->nb_chans_avail);
 		return -EINVAL;
 	}
@@ -599,8 +611,7 @@ static int qmc_dai_hw_params(struct snd_pcm_substream *substream,
 		for (i = 0; i < nb_chans_used; i++) {
 			ret = qmc_chan_set_param(qmc_dai->qmc_chans[i], &chan_param);
 			if (ret) {
-				dev_err(dai->dev, "qmc_chans[%u], set param failed %d\n",
-					i, ret);
+				dev_err(dev, "qmc_chans[%u], set param failed %d\n", i, ret);
 				return ret;
 			}
 		}
@@ -615,6 +626,8 @@ static int qmc_dai_hw_params(struct snd_pcm_substream *substream,
 static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 			   struct snd_soc_dai *dai)
 {
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int nb_chans_used;
 	struct qmc_dai *qmc_dai;
 	unsigned int i;
@@ -624,7 +637,7 @@ static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
 
 	qmc_dai = qmc_dai_get_data(dai);
 	if (!qmc_dai) {
-		dev_err(dai->dev, "Invalid dai\n");
+		dev_err(dev, "Invalid dai\n");
 		return -EINVAL;
 	}
 

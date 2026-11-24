@@ -40,8 +40,8 @@ static struct snd_soc_jack_pin jack_pins[] = {
 
 static int sof_nau8825_codec_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(rtd->card);
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct sof_card_private *ctx = snd_soc_card_to_priv(rtd->card);
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 	struct snd_soc_jack *jack = &ctx->headset_jack;
 	int ret;
 
@@ -77,7 +77,7 @@ static int sof_nau8825_codec_init(struct snd_soc_pcm_runtime *rtd)
 
 static void sof_nau8825_codec_exit(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_component *component = snd_soc_rtd_to_codec(rtd, 0)->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(snd_soc_rtd_to_codec(rtd, 0));
 
 	snd_soc_component_set_jack(component, NULL, NULL);
 }
@@ -87,6 +87,8 @@ static int sof_nau8825_hw_params(struct snd_pcm_substream *substream,
 {
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int clk_freq, ret;
 
 	clk_freq = sof_dai_get_bclk(rtd); /* BCLK freq */
@@ -100,7 +102,7 @@ static int sof_nau8825_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_sysclk(codec_dai, NAU8825_CLK_FLL_BLK, 0,
 				     SND_SOC_CLOCK_IN);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set BCLK clock %d\n", ret);
+		dev_err(dev, "can't set BCLK clock %d\n", ret);
 		return ret;
 	}
 
@@ -108,7 +110,7 @@ static int sof_nau8825_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_pll(codec_dai, 0, 0, clk_freq,
 				  params_rate(params) * 256);
 	if (ret < 0) {
-		dev_err(codec_dai->dev, "can't set BCLK: %d\n", ret);
+		dev_err(dev, "can't set BCLK: %d\n", ret);
 		return ret;
 	}
 
@@ -121,7 +123,7 @@ static const struct snd_soc_ops sof_nau8825_ops = {
 
 static int sof_card_late_probe(struct snd_soc_card *card)
 {
-	struct sof_card_private *ctx = snd_soc_card_get_drvdata(card);
+	struct sof_card_private *ctx = snd_soc_card_to_priv(card);
 	struct snd_soc_dapm_context *dapm = snd_soc_card_to_dapm(card);
 	int err;
 

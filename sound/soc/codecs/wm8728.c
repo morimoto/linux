@@ -70,7 +70,7 @@ static const struct snd_soc_dapm_route wm8728_intercon[] = {
 
 static int wm8728_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 mute_reg = snd_soc_component_read(component, WM8728_DACCTL);
 
 	if (mute)
@@ -85,7 +85,7 @@ static int wm8728_hw_params(struct snd_pcm_substream *substream,
 	struct snd_pcm_hw_params *params,
 	struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	u16 dac = snd_soc_component_read(component, WM8728_DACCTL);
 
 	dac &= ~0x18;
@@ -111,7 +111,7 @@ static int wm8728_hw_params(struct snd_pcm_substream *substream,
 static int wm8728_set_dai_fmt(struct snd_soc_dai *codec_dai,
 		unsigned int fmt)
 {
-	struct snd_soc_component *component = codec_dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(codec_dai);
 	u16 iface = snd_soc_component_read(component, WM8728_IFCTL);
 
 	/* Currently only I2S is supported by the driver, though the
@@ -159,7 +159,8 @@ static int wm8728_set_dai_fmt(struct snd_soc_dai *codec_dai,
 static int wm8728_set_bias_level(struct snd_soc_component *component,
 				 enum snd_soc_bias_level level)
 {
-	struct wm8728_priv *wm8728 = snd_soc_component_get_drvdata(component);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct wm8728_priv *wm8728 = dev_get_drvdata(dev);
 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
 	u16 reg;
 

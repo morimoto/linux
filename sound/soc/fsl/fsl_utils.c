@@ -225,15 +225,16 @@ int fsl_asoc_get_xr_sx(struct snd_kcontrol *kcontrol,
 		       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret)
 		return ret;
 
 	ret = snd_soc_get_xr_sx(kcontrol, ucontrol);
 
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return ret;
 }
@@ -243,9 +244,10 @@ int fsl_asoc_put_xr_sx(struct snd_kcontrol *kcontrol,
 		       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret)
 		return ret;
 
@@ -257,7 +259,7 @@ int fsl_asoc_put_xr_sx(struct snd_kcontrol *kcontrol,
 	if (ret > 0)
 		ret = 0;
 
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return ret;
 }
@@ -267,15 +269,16 @@ int fsl_asoc_get_enum_double(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret)
 		return ret;
 
 	ret = snd_soc_get_enum_double(kcontrol, ucontrol);
 
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return ret;
 }
@@ -285,9 +288,10 @@ int fsl_asoc_put_enum_double(struct snd_kcontrol *kcontrol,
 			     struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret)
 		return ret;
 
@@ -299,7 +303,7 @@ int fsl_asoc_put_enum_double(struct snd_kcontrol *kcontrol,
 	if (ret > 0)
 		ret = 0;
 
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return ret;
 }
@@ -309,15 +313,16 @@ int fsl_asoc_get_volsw(struct snd_kcontrol *kcontrol,
 		       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret)
 		return ret;
 
 	ret = snd_soc_get_volsw(kcontrol, ucontrol);
 
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return ret;
 }
@@ -327,9 +332,10 @@ int fsl_asoc_put_volsw(struct snd_kcontrol *kcontrol,
 		       struct snd_ctl_elem_value *ucontrol)
 {
 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret = 0;
 
-	ret = pm_runtime_resume_and_get(component->dev);
+	ret = pm_runtime_resume_and_get(dev);
 	if (ret)
 		return ret;
 
@@ -341,7 +347,7 @@ int fsl_asoc_put_volsw(struct snd_kcontrol *kcontrol,
 	if (ret > 0)
 		ret = 0;
 
-	pm_runtime_put_autosuspend(component->dev);
+	pm_runtime_put_autosuspend(dev);
 
 	return ret;
 }

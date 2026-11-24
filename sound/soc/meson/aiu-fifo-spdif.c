@@ -58,7 +58,8 @@ static void fifo_spdif_dcu_enable(struct snd_soc_component *component,
 static int fifo_spdif_trigger(struct snd_pcm_substream *substream, int cmd,
 			      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	int ret;
 
 	ret = aiu_fifo_trigger(substream, cmd, dai);
@@ -69,20 +70,18 @@ static int fifo_spdif_trigger(struct snd_pcm_substream *substream, int cmd,
 	case SNDRV_PCM_TRIGGER_START:
 	case SNDRV_PCM_TRIGGER_RESUME:
 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-		ret = regmap_write(component->regmap, AIU_RST_SOFT, AIU_RST_SOFT_958_FAST);
+		ret = snd_soc_component_write(component, AIU_RST_SOFT, AIU_RST_SOFT_958_FAST);
 		if (ret < 0)
-			return snd_soc_ret(component->dev, ret,
-					   "Failed to write register on trigger");
+			return snd_soc_ret(dev, ret, "Failed to write register on trigger");
 
 		fifo_spdif_dcu_enable(component, true);
 		break;
 	case SNDRV_PCM_TRIGGER_SUSPEND:
 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
 	case SNDRV_PCM_TRIGGER_STOP:
-		ret = regmap_write(component->regmap, AIU_RST_SOFT, AIU_RST_SOFT_958_FAST);
+		ret = snd_soc_component_write(component, AIU_RST_SOFT, AIU_RST_SOFT_958_FAST);
 		if (ret < 0)
-			return snd_soc_ret(component->dev, ret,
-					   "Failed to write register on trigger");
+			return snd_soc_ret(dev, ret, "Failed to write register on trigger");
 
 		fifo_spdif_dcu_enable(component, false);
 		break;
@@ -96,7 +95,7 @@ static int fifo_spdif_trigger(struct snd_pcm_substream *substream, int cmd,
 static int fifo_spdif_prepare(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
 	int ret;
 
 	ret = aiu_fifo_prepare(substream, dai);
@@ -118,7 +117,8 @@ static int fifo_spdif_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
 	unsigned int val;
 	int ret;
 
@@ -136,7 +136,7 @@ static int fifo_spdif_hw_params(struct snd_pcm_substream *substream,
 	case 32:
 		break;
 	default:
-		dev_err(dai->dev, "Unsupported physical width %u\n",
+		dev_err(dev, "Unsupported physical width %u\n",
 			params_physical_width(params));
 		return -EINVAL;
 	}
@@ -178,8 +178,9 @@ const struct snd_soc_dai_ops aiu_fifo_spdif_dai_ops = {
 
 int aiu_fifo_spdif_dai_probe(struct snd_soc_dai *dai)
 {
-	struct snd_soc_component *component = dai->component;
-	struct aiu *aiu = snd_soc_component_get_drvdata(component);
+	struct snd_soc_component *component = snd_soc_dai_to_component(dai);
+	struct device *dev = snd_soc_component_to_dev(component);
+	struct aiu *aiu = dev_get_drvdata(dev);
 	struct aiu_fifo *fifo;
 	int ret;
 
@@ -187,7 +188,7 @@ int aiu_fifo_spdif_dai_probe(struct snd_soc_dai *dai)
 	if (ret)
 		return ret;
 
-	fifo = snd_soc_dai_dma_data_get_playback(dai);
+	fifo = snd_soc_dai_stream_dma_data_get_playback(dai);
 
 	fifo->pcm = &fifo_spdif_pcm;
 	fifo->mem_offset = AIU_MEM_IEC958_START;
