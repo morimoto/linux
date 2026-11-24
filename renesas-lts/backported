@@ -36,7 +36,6 @@ v6.19     / media: v4l2-isp: Rename block_info to block_type_info
 Local     / arm64: dts: renesas: sparrow-hawk: Always enable edge connector I2C busses
 v7.2      / media: rcar-vin: Drop min_queued_buffers
 v7.1      / media: renesas: vin: Fix RAW8 (again)
-Local     / PCI: rcar-gen4: Limit Max_Read_Request_Size to 256 Bytes
 v6.19     / dma-buf: heaps: cma: Create CMA heap for each CMA reserved region
 v6.19     / doc: dma-buf: List the heaps by name
 v6.19     / Documentation: dma-buf: heaps: Add naming guidelines
@@ -83,7 +82,6 @@ v6.14     / net: renesas: rswitch: add mdio C22 support
 v6.14     / net: renesas: rswitch: use generic MPSM operation for mdio C45
 v6.14     / net: renesas: rswitch: align mdio C45 operations with datasheet
 v6.17     / ASoC: rsnd: tidyup direction name on rsnd_dai_connect()
-v6.14     / PCI: Add enable_device() and disable_device() callbacks for bridges
 v7.0      / arm64: dts: renesas: sparrow-hawk: Reserve first 128 MiB of DRAM
 v7.1      / arm64: dts: renesas: sparrow-hawk: Add overlay for Olimex MIPI-HDMI adapter
 v7.1      / arm64: dts: renesas: sparrow-hawk: Add overlay for WaveShare Display 13.3"
