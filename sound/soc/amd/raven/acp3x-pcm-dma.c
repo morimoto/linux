@@ -4,15 +4,8 @@
 //
 //Copyright 2016 Advanced Micro Devices, Inc.
 
-#include <linux/platform_device.h>
-#include <linux/module.h>
-#include <linux/err.h>
-#include <linux/io.h>
 #include <linux/pm_runtime.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
-
 #include "acp3x.h"
 
 #define DRV_NAME "acp3x_rv_i2s_dma"

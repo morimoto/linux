@@ -3,16 +3,9 @@
 //		Audio amplifier
 // Copyright (C) 2022 Texas Instruments Inc.
 
-#include <linux/module.h>
-#include <linux/err.h>
-#include <linux/pm.h>
 #include <linux/i2c.h>
 #include <linux/gpio/consumer.h>
-#include <linux/regmap.h>
-#include <linux/of.h>
 #include <sound/soc.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/tlv.h>
 
 #include "tas2780.h"

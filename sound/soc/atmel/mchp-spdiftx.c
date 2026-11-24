@@ -8,14 +8,9 @@
 
 #include <linux/bitfield.h>
 #include <linux/clk.h>
-#include <linux/io.h>
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
-#include <linux/spinlock.h>
-
 #include <sound/asoundef.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 /*

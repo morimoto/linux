@@ -6,23 +6,11 @@
 /* WSA885X codec driver */
 
 #include <linux/bitfield.h>
-#include <linux/delay.h>
 #include <linux/gpio/consumer.h>
 #include <linux/i2c.h>
-#include <linux/interrupt.h>
-#include <linux/mutex.h>
-#include <linux/module.h>
-#include <linux/property.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
 #include <linux/reset.h>
-#include <linux/slab.h>
-#include <linux/string.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
 
 /* Control Registers - Audio Processing */

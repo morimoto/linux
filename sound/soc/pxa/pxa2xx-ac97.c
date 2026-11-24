@@ -7,15 +7,11 @@
  * Copyright:	MontaVista Software Inc.
  */
 
-#include <linux/init.h>
 #include <linux/io.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
 #include <linux/dmaengine.h>
 #include <linux/dma/pxa-dma.h>
 
 #include <sound/ac97/controller.h>
-#include <sound/core.h>
 #include <sound/ac97_codec.h>
 #include <sound/soc.h>
 #include <sound/dmaengine_pcm.h>

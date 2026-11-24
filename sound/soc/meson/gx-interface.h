@@ -8,11 +8,8 @@
 #define _MESON_GX_INTERFACE_H
 
 #include <linux/clk.h>
-#include <linux/regmap.h>
 #include <linux/spinlock.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
 
 struct gx_iface {
 	struct clk *mclk;

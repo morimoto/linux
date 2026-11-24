@@ -6,13 +6,8 @@
 #include <linux/bitfield.h>
 #include <linux/clk.h>
 #include <linux/of_irq.h>
-#include <linux/of_platform.h>
-#include <linux/module.h>
-#include <linux/regmap.h>
 #include <linux/reset.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
 
 #include "axg-fifo.h"
 

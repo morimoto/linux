@@ -3,17 +3,9 @@
  * Internal adc codec for cv1800b compatible SoC
  *
  */
-#include <linux/module.h>
-#include <linux/platform_device.h>
 #include <sound/soc.h>
 #include <linux/bitfield.h>
-#include <linux/bits.h>
 #include <sound/tlv.h>
-#include <sound/soc-component.h>
-#include <sound/control.h>
-#include <linux/io.h>
-#include <linux/kernel.h>
-#include <linux/bitops.h>
 
 #define CV1800B_RXADC_WORD_LEN 16
 #define CV1800B_RXADC_CHANNELS 2

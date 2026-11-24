@@ -6,13 +6,11 @@
 
 #include <linux/clk.h>
 #include <linux/dmaengine.h>
-#include <linux/module.h>
 #include <linux/of_irq.h>
 #include <linux/of_platform.h>
 #include <linux/pm_runtime.h>
 #include <linux/workqueue.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 
 #include "fsl_esai.h"
 #include "imx-pcm.h"

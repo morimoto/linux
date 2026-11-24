@@ -6,16 +6,9 @@
 //          Amadeusz Slawinski <amadeuszx.slawinski@linux.intel.com>
 //
 
-#include <linux/acpi.h>
-#include <linux/module.h>
 #include <linux/dmi.h>
-#include <linux/pci.h>
 #include <acpi/nhlt.h>
-#include <linux/platform_device.h>
-#include <sound/hda_codec.h>
-#include <sound/hda_register.h>
-#include <sound/soc-acpi.h>
-#include <sound/soc-component.h>
+#include <sound/soc.h>
 #include "avs.h"
 #include "debug.h"
 #include "pcm.h"

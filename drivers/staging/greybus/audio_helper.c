@@ -3,9 +3,7 @@
  * Greybus Audio Sound SoC helper APIs
  */
 
-#include <sound/core.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include "audio_helper.h"
 
 #define gbaudio_dapm_for_each_direction(dir) \

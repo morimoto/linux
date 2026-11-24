@@ -9,17 +9,10 @@
 #include <linux/bitfield.h>
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
-#include <linux/delay.h>
-#include <linux/module.h>
-#include <linux/of_irq.h>
-#include <linux/of_platform.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/reset.h>
-#include <linux/spinlock.h>
 
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 
 #define STM32_I2S_CR1_REG	0x0
 #define STM32_I2S_CFG1_REG	0x08

@@ -9,11 +9,7 @@
  */
 
 #include <linux/input.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/pm_runtime.h>
-#include <sound/jack.h>
-#include <sound/pcm_params.h>
 #include <sound/rt5682.h>
 #include <sound/soc.h>
 #include "../../codecs/mt6359.h"

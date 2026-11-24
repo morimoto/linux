@@ -6,28 +6,10 @@
  * Author: Oder Chiou <oder_chiou@realtek.com>
  */
 
-#include <linux/cleanup.h>
-#include <linux/module.h>
-#include <linux/input.h>
 #include <linux/spi/spi.h>
-#include <linux/device.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/interrupt.h>
-#include <linux/irq.h>
-#include <linux/slab.h>
-#include <linux/sched.h>
-#include <linux/uaccess.h>
 #include <linux/regulator/consumer.h>
-#include <linux/pm_qos.h>
-#include <linux/sysfs.h>
 #include <linux/clk.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/initval.h>
 #include <sound/tlv.h>
 
 #include "rt5514-spi.h"

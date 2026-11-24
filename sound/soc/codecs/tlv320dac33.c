@@ -7,22 +7,10 @@
  * Copyright:   (C) 2009 Nokia Corporation
  */
 
-#include <linux/cleanup.h>
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/pm.h>
 #include <linux/i2c.h>
-#include <linux/interrupt.h>
 #include <linux/gpio/consumer.h>
 #include <linux/regulator/consumer.h>
-#include <linux/slab.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/initval.h>
 #include <sound/tlv.h>
 
 #include "tlv320dac33.h"

@@ -8,17 +8,10 @@
 
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of_irq.h>
-#include <linux/of_platform.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 
 #include <sound/asoundef.h>
-#include <sound/core.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 
 #include "stm32_sai.h"
 

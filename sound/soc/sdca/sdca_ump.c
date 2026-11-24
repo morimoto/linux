@@ -8,12 +8,10 @@
  */
 
 #include <linux/dev_printk.h>
-#include <linux/device.h>
-#include <linux/regmap.h>
 #include <sound/sdca.h>
 #include <sound/sdca_function.h>
 #include <sound/sdca_ump.h>
-#include <sound/soc-component.h>
+#include <sound/soc.h>
 #include <linux/soundwire/sdw_registers.h>
 
 /**

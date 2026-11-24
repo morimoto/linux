@@ -6,17 +6,9 @@
 
 #include <linux/bits.h>
 #include <linux/bitfield.h>
-#include <linux/device.h>
 #include <linux/i2c.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/regmap.h>
-
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
-
 
 #define SSM3515_PWR		0x00
 #define SSM3515_PWR_APWDN_EN	BIT(7)

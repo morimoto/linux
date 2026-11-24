@@ -8,20 +8,8 @@
 
 #include <sound/soc.h>
 #include <sound/tlv.h>
-#include <sound/soc-dapm.h>
-#include <sound/soc-dai.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-
-#include <linux/platform_device.h>
-#include <linux/of.h>
 #include <linux/clk.h>
-#include <linux/regmap.h>
-#include <linux/device.h>
 #include <linux/mfd/syscon.h>
-#include <linux/module.h>
-#include <linux/io.h>
-
 #include "inno_rk3036.h"
 
 struct rk3036_codec_priv {

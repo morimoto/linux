@@ -7,7 +7,6 @@
 //
 //
 
-#include <sound/pcm_params.h>
 #include "ipc3-priv.h"
 #include "ops.h"
 #include "sof-priv.h"

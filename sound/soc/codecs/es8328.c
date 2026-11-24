@@ -8,16 +8,7 @@
  */
 
 #include <linux/clk.h>
-#include <linux/delay.h>
-#include <linux/module.h>
-#include <linux/pm.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
 #include <linux/regulator/consumer.h>
-#include <sound/core.h>
-#include <sound/initval.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 #include "es8328.h"

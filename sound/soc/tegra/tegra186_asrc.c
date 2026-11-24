@@ -4,16 +4,8 @@
 // tegra186_asrc.c - Tegra186 ASRC driver
 
 #include <linux/clk.h>
-#include <linux/delay.h>
-#include <linux/device.h>
 #include <linux/io.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #include "tegra186_asrc.h"

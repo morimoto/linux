@@ -8,11 +8,7 @@
 
 #include <linux/bitfield.h>
 #include <linux/input.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/pm_runtime.h>
-#include <sound/jack.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include "mt8188-afe-common.h"
 #include "../../codecs/nau8825.h"

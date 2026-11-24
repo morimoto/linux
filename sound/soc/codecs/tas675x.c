@@ -7,21 +7,13 @@
  */
 
 #include <linux/bitfield.h>
-#include <linux/module.h>
-#include <linux/mutex.h>
 #include <linux/i2c.h>
-#include <linux/regmap.h>
 #include <linux/gpio/consumer.h>
 #include <linux/regulator/consumer.h>
-#include <linux/delay.h>
-#include <linux/property.h>
-#include <linux/interrupt.h>
-#include <linux/workqueue.h>
 #include <linux/pm_runtime.h>
 #include <linux/iopoll.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
-#include <sound/pcm_params.h>
 
 #include "tas675x.h"
 

@@ -7,14 +7,11 @@
 // Author: Nicolin Chen <nicoleotsuka@gmail.com>
 
 #include <linux/clk.h>
-#include <linux/delay.h>
 #include <linux/dma-mapping.h>
-#include <linux/module.h>
 #include <linux/of_platform.h>
 #include <linux/dma/imx-dma.h>
 #include <linux/pm_runtime.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 
 #include "fsl_asrc.h"
 

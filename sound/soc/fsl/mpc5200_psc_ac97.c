@@ -5,12 +5,6 @@
 // Copyright (C) 2009 Jon Smirl, Digispeaker
 // Author: Jon Smirl <jonsmirl@gmail.com>
 
-#include <linux/module.h>
-#include <linux/delay.h>
-#include <linux/time.h>
-
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #include <asm/time.h>

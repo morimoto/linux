@@ -3,23 +3,9 @@
 // Copyright (c) 2018, Linaro Limited
 
 #include <dt-bindings/sound/qcom,q6afe.h>
-#include <linux/slab.h>
-#include <linux/kernel.h>
-#include <linux/uaccess.h>
-#include <linux/wait.h>
-#include <linux/jiffies.h>
-#include <linux/sched.h>
-#include <linux/module.h>
-#include <linux/kref.h>
-#include <linux/of.h>
 #include <linux/of_platform.h>
-#include <linux/spinlock.h>
-#include <linux/delay.h>
 #include <linux/soc/qcom/apr.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include "q6dsp-errno.h"
 #include "q6core.h"
 #include "q6afe.h"

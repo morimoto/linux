@@ -9,17 +9,8 @@
 // Based on MAX98357A.c
 
 #include <linux/acpi.h>
-#include <linux/device.h>
-#include <linux/err.h>
 #include <linux/gpio/consumer.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
-#include <sound/soc-dapm.h>
 
 struct nau8315_priv {
 	struct gpio_desc *enable;

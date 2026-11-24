@@ -6,12 +6,8 @@
 //          Amadeusz Slawinski <amadeuszx.slawinski@linux.intel.com>
 //
 
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dapm.h>
 #include "../utils.h"
 
 static const struct snd_kcontrol_new card_controls[] = {

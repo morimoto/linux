@@ -6,23 +6,13 @@
 //
 //
 
-#include <linux/cleanup.h>
-#include <linux/device.h>
-#include <linux/module.h>
 #include <linux/soundwire/sdw.h>
 #include <linux/soundwire/sdw_type.h>
 #include <linux/soundwire/sdw_registers.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <linux/pm_runtime.h>
 #include <sound/sdw.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
-#include <linux/interrupt.h>
-#include <linux/irq.h>
-#include <sound/jack.h>
 #include <sound/sdca_asoc.h>
 #include "es9356.h"
 

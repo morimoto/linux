@@ -10,16 +10,10 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include <linux/cleanup.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
 #include <linux/hdmi.h>
 #include <drm/drm_edid.h>
 #include <drm/drm_eld.h>
-#include <sound/pcm_params.h>
-#include <sound/jack.h>
 #include <sound/soc.h>
 #include <sound/hdaudio_ext.h>
 #include <sound/hda_i915.h>

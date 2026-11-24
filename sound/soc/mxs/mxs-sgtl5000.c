@@ -3,14 +3,7 @@
  * Copyright 2011 Freescale Semiconductor, Inc.
  */
 
-#include <linux/module.h>
-#include <linux/device.h>
-#include <linux/of.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
-#include <sound/jack.h>
-#include <sound/soc-dapm.h>
 
 #include "../codecs/sgtl5000.h"
 #include "mxs-saif.h"

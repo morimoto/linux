@@ -4,15 +4,7 @@
 //
 // Copyright (C) 2021 Advanced Micro Devices, Inc. All rights reserved.
 
-#include <linux/platform_device.h>
-#include <linux/module.h>
-#include <linux/err.h>
-#include <linux/io.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
-#include <linux/dma-mapping.h>
-
 #include "acp5x.h"
 
 #define DRV_NAME "acp5x_i2s_playcap"

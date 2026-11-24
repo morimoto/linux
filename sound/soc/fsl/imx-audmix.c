@@ -11,11 +11,9 @@
  */
 
 #include <linux/device/devres.h>
-#include <linux/module.h>
 #include <linux/of_platform.h>
 #include <linux/clk.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include "fsl_sai.h"
 #include "fsl_audmix.h"
 

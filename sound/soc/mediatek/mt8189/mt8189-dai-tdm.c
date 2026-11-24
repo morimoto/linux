@@ -7,9 +7,6 @@
  */
 
 #include <linux/regmap.h>
-
-#include <sound/pcm_params.h>
-
 #include "mt8189-afe-clk.h"
 #include "mt8189-afe-common.h"
 #include "mt8189-interconnection.h"

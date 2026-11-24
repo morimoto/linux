@@ -7,23 +7,9 @@
  * Initially based on sound/soc/codecs/wm8350.c
  */
 
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/pm.h>
 #include <linux/i2c.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
-#include <sound/jack.h>
-#include <sound/initval.h>
 #include <asm/div64.h>
 #include "lm49453.h"
 

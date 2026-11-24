@@ -7,11 +7,7 @@
 // Author: Shunli Wang <shunli.wang@mediatek.com>
 
 #include <linux/input.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <linux/pinctrl/consumer.h>
-#include <sound/jack.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #include "../../codecs/da7219.h"

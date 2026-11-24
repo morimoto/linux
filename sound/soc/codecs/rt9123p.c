@@ -5,18 +5,8 @@
 // Author: ChiYuan Huang <cy_huang@richtek.com>
 
 #include <linux/acpi.h>
-#include <linux/delay.h>
-#include <linux/err.h>
 #include <linux/gpio/consumer.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
-#include <linux/property.h>
-#include <sound/pcm.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
-#include <sound/soc-dapm.h>
 
 struct rt9123p_priv {
 	struct gpio_desc *enable;

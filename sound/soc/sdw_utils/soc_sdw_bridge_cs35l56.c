@@ -7,11 +7,6 @@
  * soc_sdw_bridge_cs35l56 - codec helper functions for handling CS35L56 Smart AMP
  */
 
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
 #include <sound/soc_sdw_utils.h>

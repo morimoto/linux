@@ -12,12 +12,9 @@
  * Machine Driver Legacy Support for ACP HW block
  */
 
-#include <sound/core.h>
-#include <sound/pcm_params.h>
 #include <sound/soc-acpi.h>
-#include <sound/soc-dapm.h>
+#include <sound/soc.h>
 #include <linux/dmi.h>
-#include <linux/module.h>
 
 #include "acp-mach.h"
 #include "acp3x-es83xx/acp3x-es83xx.h"

@@ -6,21 +6,12 @@
 //
 
 #include <linux/clk.h>
-#include <linux/completion.h>
-#include <linux/delay.h>
 #include <linux/gpio/consumer.h>
 #include <linux/i2c.h>
-#include <linux/jiffies.h>
-#include <linux/module.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
-#include <linux/slab.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
-#include <linux/workqueue.h>
 
 #include "cs4234.h"
 

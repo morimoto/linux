@@ -6,13 +6,8 @@
 //
 //
 
-#include <linux/module.h>
 #include <linux/pm_runtime.h>
 #include <linux/soundwire/sdw_registers.h>
-#include <linux/slab.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/sdw.h>
 #include <sound/tlv.h>
 #include "rt712-sdca.h"

@@ -7,17 +7,9 @@
  */
 
 #include <linux/clk.h>
-#include <linux/delay.h>
-#include <linux/device.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
 #include <linux/io.h>
 #include <linux/ioport.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/spear_dma.h>
 #include <sound/spear_spdif.h>

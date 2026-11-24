@@ -7,11 +7,7 @@
 
 #include <linux/clk.h>
 #include <linux/io.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #define DRV_NAME	"xtfpga-i2s"

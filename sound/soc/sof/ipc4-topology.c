@@ -7,9 +7,7 @@
 //
 //
 #include <linux/bitfield.h>
-#include <linux/cleanup.h>
 #include <uapi/sound/sof/tokens.h>
-#include <sound/pcm_params.h>
 #include <sound/sof/ext_manifest4.h>
 #include <sound/intel-nhlt.h>
 #include "sof-priv.h"

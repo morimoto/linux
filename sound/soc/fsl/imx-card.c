@@ -1,17 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0+
 // Copyright 2017-2021 NXP
 
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/slab.h>
 #include <linux/gpio/consumer.h>
-#include <linux/of.h>
 #include <linux/i2c.h>
 #include <linux/clk.h>
 #include <sound/soc.h>
-#include <sound/pcm_params.h>
-#include <sound/pcm.h>
-#include <sound/soc-dapm.h>
 #include <sound/simple_card_utils.h>
 
 #include "fsl_sai.h"

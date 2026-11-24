@@ -12,15 +12,7 @@
 #include <linux/unaligned.h>
 #include <linux/acpi.h>
 #include <linux/clk.h>
-#include <linux/delay.h>
 #include <linux/i2c.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
-#include <linux/units.h>
-#include <linux/workqueue.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #include "nau8360-dsp.h"

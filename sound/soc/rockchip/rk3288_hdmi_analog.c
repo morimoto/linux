@@ -9,16 +9,8 @@
  *	    Romain Perier <romain.perier@collabora.com>
  */
 
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
 #include <linux/gpio/consumer.h>
-#include <sound/core.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 
 #include "rockchip_i2s.h"
 

@@ -13,16 +13,10 @@
 
 #include <linux/dmi.h>
 #include <linux/gpio/consumer.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
 #include <linux/acpi.h>
 #include <linux/clk.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/soc-acpi.h>
-#include <sound/jack.h>
 #include "../../codecs/max98090.h"
 #include "../atom/sst-atom-controls.h"
 #include "../../codecs/ts3a227e.h"

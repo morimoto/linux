@@ -8,14 +8,11 @@
 // Author: Weidong Wang <wangweidong.a@awinic.com>
 //
 
-#include <linux/cleanup.h>
 #include <linux/i2c.h>
 #include <linux/firmware.h>
 #include <linux/bitops.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
 #include <sound/soc.h>
-#include <sound/pcm_params.h>
 #include <sound/tlv.h>
 #include "aw88261.h"
 #include "aw88395/aw88395_data_type.h"

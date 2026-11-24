@@ -6,17 +6,11 @@
  * Copyright (c) 2025 Collabora Ltd.
  */
 
-#include <linux/module.h>
 #include <linux/mfd/syscon.h>
-#include <linux/delay.h>
 #include <linux/of_device.h>
 #include <linux/clk.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
 #include <linux/reset.h>
-#include <linux/spinlock.h>
-#include <sound/pcm_params.h>
 #include <sound/dmaengine_pcm.h>
 #include <sound/tlv.h>
 

@@ -1,19 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <linux/clk.h>
-#include <linux/delay.h>
 #include <linux/io.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <linux/string.h>
 #include <linux/dev_printk.h>
 
 #include <linux/bitfield.h>
-#include <linux/bits.h>
 #include <linux/limits.h>
 #include <linux/overflow.h>
 

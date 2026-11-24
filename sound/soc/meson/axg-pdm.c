@@ -4,13 +4,7 @@
 // Author: Jerome Brunet <jbrunet@baylibre.com>
 
 #include <linux/clk.h>
-#include <linux/module.h>
-#include <linux/of_irq.h>
-#include <linux/of_platform.h>
-#include <linux/regmap.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
-#include <sound/pcm_params.h>
 
 #define PDM_CTRL			0x00
 #define  PDM_CTRL_EN			BIT(31)

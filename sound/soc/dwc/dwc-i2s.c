@@ -9,19 +9,11 @@
  */
 
 #include <linux/clk.h>
-#include <linux/device.h>
-#include <linux/init.h>
 #include <linux/io.h>
-#include <linux/interrupt.h>
 #include <linux/mfd/syscon.h>
-#include <linux/module.h>
 #include <linux/reset.h>
-#include <linux/slab.h>
 #include <linux/pm_runtime.h>
-#include <linux/property.h>
 #include <sound/designware_i2s.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/dmaengine_pcm.h>
 #include "local.h"

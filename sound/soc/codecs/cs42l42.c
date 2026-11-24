@@ -9,26 +9,11 @@
  * Author: Michael White <michael.white@cirrus.com>
  */
 
-#include <linux/cleanup.h>
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/types.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/regmap.h>
-#include <linux/slab.h>
 #include <linux/acpi.h>
-#include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
-#include <linux/property.h>
 #include <linux/regulator/consumer.h>
 #include <linux/gpio/consumer.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/initval.h>
 #include <sound/tlv.h>
 #include <dt-bindings/sound/cs42l42.h>
 

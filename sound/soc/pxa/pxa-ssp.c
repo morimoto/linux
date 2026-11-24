@@ -11,21 +11,12 @@
  */
 
 #include <linux/init.h>
-#include <linux/module.h>
-#include <linux/slab.h>
-#include <linux/platform_device.h>
 #include <linux/clk.h>
-#include <linux/io.h>
 #include <linux/pxa2xx_ssp.h>
-#include <linux/of.h>
 #include <linux/dmaengine.h>
 
 #include <asm/irq.h>
 
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/initval.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/dmaengine_pcm.h>
 

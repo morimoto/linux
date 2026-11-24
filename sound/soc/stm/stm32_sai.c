@@ -8,14 +8,11 @@
 
 #include <linux/bitfield.h>
 #include <linux/clk.h>
-#include <linux/delay.h>
-#include <linux/module.h>
 #include <linux/of_platform.h>
 #include <linux/pinctrl/consumer.h>
 #include <linux/reset.h>
 
 #include <sound/dmaengine_pcm.h>
-#include <sound/core.h>
 
 #include "stm32_sai.h"
 

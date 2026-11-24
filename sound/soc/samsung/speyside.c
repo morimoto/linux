@@ -5,11 +5,8 @@
 // Copyright 2011 Wolfson Microelectronics
 
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/jack.h>
 #include <linux/gpio/machine.h>
 #include <linux/gpio/consumer.h>
-#include <linux/module.h>
 
 #include "../codecs/wm8996.h"
 #include "../codecs/wm9081.h"

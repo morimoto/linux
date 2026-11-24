@@ -4,12 +4,6 @@
  */
 
 #include <dt-bindings/sound/qcom,q6afe.h>
-#include <linux/module.h>
-#include <linux/platform_device.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
-#include <sound/jack.h>
 #include <sound/soc.h>
 #include <linux/soundwire/sdw.h>
 #include <uapi/linux/input-event-codes.h>

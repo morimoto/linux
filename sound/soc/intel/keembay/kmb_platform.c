@@ -7,13 +7,8 @@
 
 #include <linux/bitrev.h>
 #include <linux/clk.h>
-#include <linux/dma-mapping.h>
 #include <linux/io.h>
-#include <linux/module.h>
-#include <linux/of.h>
 #include <sound/dmaengine_pcm.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include "kmb_platform.h"
 

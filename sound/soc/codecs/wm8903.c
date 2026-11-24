@@ -11,27 +11,11 @@
  *  - TDM mode configuration.
  */
 
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/init.h>
-#include <linux/cleanup.h>
-#include <linux/completion.h>
-#include <linux/delay.h>
 #include <linux/gpio/driver.h>
-#include <linux/pm.h>
 #include <linux/i2c.h>
-#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
-#include <linux/slab.h>
-#include <linux/irq.h>
-#include <linux/mutex.h>
-#include <sound/core.h>
-#include <sound/jack.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/tlv.h>
 #include <sound/soc.h>
-#include <sound/initval.h>
 #include <sound/wm8903.h>
 #include <trace/events/asoc.h>
 

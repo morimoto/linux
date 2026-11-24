@@ -3,21 +3,11 @@
 // Copyright (c) 2018, Linaro Limited
 
 #include <dt-bindings/sound/qcom,q6asm.h>
-#include <linux/init.h>
-#include <linux/err.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
-#include <linux/slab.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
-#include <sound/pcm.h>
-#include <linux/spinlock.h>
 #include <sound/compress_driver.h>
 #include <asm/div64.h>
 #include <asm/dma.h>
 #include <linux/dma-mapping.h>
-#include <sound/pcm_params.h>
 #include "q6asm.h"
 #include "q6routing.h"
 #include "q6dsp-errno.h"

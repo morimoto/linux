@@ -10,16 +10,7 @@
  *   o Support for AC97 Codec, S/PDIF
  */
 
-#include <linux/init.h>
-#include <linux/slab.h>
-#include <linux/module.h>
-#include <linux/device.h>
-#include <linux/regmap.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
 #include <sound/ac97_codec.h>
-#include <sound/initval.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/tlv.h>
 

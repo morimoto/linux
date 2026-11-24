@@ -4,11 +4,7 @@
 // Author: Jerome Brunet <jbrunet@baylibre.com>
 
 #include <linux/bitfield.h>
-#include <linux/clk.h>
-#include <linux/regmap.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dai.h>
 
 #include "aiu.h"
 #include "aiu-fifo.h"

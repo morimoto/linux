@@ -9,22 +9,9 @@
  * Mylène Josserand <mylene.josserand@free-electrons.com>
  */
 
-#include <linux/module.h>
-#include <linux/delay.h>
 #include <linux/clk.h>
-#include <linux/input.h>
-#include <linux/io.h>
-#include <linux/irq.h>
-#include <linux/mutex.h>
-#include <linux/of.h>
 #include <linux/pm_runtime.h>
-#include <linux/regmap.h>
-#include <linux/log2.h>
-
-#include <sound/jack.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <sound/soc-dapm.h>
 #include <sound/tlv.h>
 
 #define SUN8I_SYSCLK_CTL				0x00c

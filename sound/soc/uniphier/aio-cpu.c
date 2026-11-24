@@ -5,17 +5,8 @@
 // Copyright (c) 2016-2018 Socionext Inc.
 
 #include <linux/clk.h>
-#include <linux/errno.h>
-#include <linux/kernel.h>
 #include <linux/mfd/syscon.h>
-#include <linux/module.h>
-#include <linux/of.h>
-#include <linux/of_platform.h>
-#include <linux/platform_device.h>
 #include <linux/reset.h>
-#include <sound/core.h>
-#include <sound/pcm.h>
-#include <sound/pcm_params.h>
 #include <sound/soc.h>
 
 #include "aio.h"
