@@ -737,7 +737,7 @@ static int adav80x_dai_startup(struct snd_pcm_substream *substream,
 	struct device *dev = snd_soc_component_to_dev(component);
 	struct adav80x *adav80x = dev_get_drvdata(dev);
 
-	if (!snd_soc_component_active(component) || !adav80x->rate)
+	if (!snd_soc_component_is_active(component) || !adav80x->rate)
 		return 0;
 
 	return snd_pcm_hw_constraint_single(substream->runtime,
@@ -751,7 +751,7 @@ static void adav80x_dai_shutdown(struct snd_pcm_substream *substream,
 	struct device *dev = snd_soc_component_to_dev(component);
 	struct adav80x *adav80x = dev_get_drvdata(dev);
 
-	if (!snd_soc_component_active(component))
+	if (!snd_soc_component_is_active(component))
 		adav80x->rate = 0;
 }
 
