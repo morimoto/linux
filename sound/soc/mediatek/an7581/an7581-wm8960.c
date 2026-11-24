@@ -50,7 +50,7 @@ static struct snd_soc_dai_link an7581_wm8960_dai_links[] = {
 		.no_pcm = 1,
 		.dai_fmt = SND_SOC_DAIFMT_I2S |
 			SND_SOC_DAIFMT_NB_NF |
-			SND_SOC_DAIFMT_CBP_CFP |
+			SND_SOC_DAIFMT_BP_FP |
 			SND_SOC_DAIFMT_GATED,
 		SND_SOC_DAILINK_REG(codec),
 	},

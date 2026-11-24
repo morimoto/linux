@@ -522,11 +522,11 @@ static int cdns_i2s_sc_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 
 	/* DAI hardware clock masters */
 	switch (fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		ctrl &= ~I2S_CTRL_MS_CFG;
 		i2s_sc_priv->is_master_mode = false;
 		break;
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		ctrl |= I2S_CTRL_MS_CFG;
 		i2s_sc_priv->is_master_mode = true;
 		break;

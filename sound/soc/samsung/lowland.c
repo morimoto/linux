@@ -102,7 +102,7 @@ static struct snd_soc_dai_link lowland_dai[] = {
 		.name = "CPU",
 		.stream_name = "CPU",
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
-				SND_SOC_DAIFMT_CBP_CFP,
+				SND_SOC_DAIFMT_BP_FP,
 		.init = lowland_wm5100_init,
 		SND_SOC_DAILINK_REG(cpu),
 	},
@@ -110,7 +110,7 @@ static struct snd_soc_dai_link lowland_dai[] = {
 		.name = "Baseband",
 		.stream_name = "Baseband",
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
-				SND_SOC_DAIFMT_CBP_CFP,
+				SND_SOC_DAIFMT_BP_FP,
 		.ignore_suspend = 1,
 		SND_SOC_DAILINK_REG(baseband),
 	},
@@ -118,7 +118,7 @@ static struct snd_soc_dai_link lowland_dai[] = {
 		.name = "Sub Speaker",
 		.stream_name = "Sub Speaker",
 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
-				SND_SOC_DAIFMT_CBP_CFP,
+				SND_SOC_DAIFMT_BP_FP,
 		.ignore_suspend = 1,
 		.c2c_params = &sub_params,
 		.num_c2c_params = 1,

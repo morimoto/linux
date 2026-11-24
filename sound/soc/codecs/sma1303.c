@@ -1222,7 +1222,7 @@ static int sma1303_dai_set_fmt_amp(struct snd_soc_dai *dai,
 
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		dev_dbg(dev, "%s : %s\n", __func__, "I2S/TDM Device mode");
 		ret += sma1303_regmap_update_bits(sma1303,
 				SMA1303_01_INPUT1_CTRL1,
@@ -1231,7 +1231,7 @@ static int sma1303_dai_set_fmt_amp(struct snd_soc_dai *dai,
 				NULL);
 		break;
 
-	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_BP_FP:
 		dev_dbg(dev, "%s : %s\n", __func__, "I2S/TDM Controller mode");
 		ret += sma1303_regmap_update_bits(sma1303,
 				SMA1303_01_INPUT1_CTRL1,

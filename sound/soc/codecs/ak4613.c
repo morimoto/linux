@@ -539,7 +539,7 @@ static int ak4613_dai_set_fmt(struct snd_soc_dai *dai, unsigned int format)
 
 	fmt = format & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK;
 	switch (fmt) {
-	case SND_SOC_DAIFMT_CBC_CFC:
+	case SND_SOC_DAIFMT_BC_FC:
 		break;
 	default:
 		/*

@@ -1725,13 +1725,13 @@ static void set_link_hw_format(struct snd_soc_dai_link *link,
 		fsync_provider = (hw_config->fsync_provider ==
 				SND_SOC_TPLG_FSYNC_CP);
 		if (bclk_provider && fsync_provider)
-			link->dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
+			link->dai_fmt |= SND_SOC_DAIFMT_BP_FP;
 		else if (!bclk_provider && fsync_provider)
-			link->dai_fmt |= SND_SOC_DAIFMT_CBC_CFP;
+			link->dai_fmt |= SND_SOC_DAIFMT_BC_FP;
 		else if (bclk_provider && !fsync_provider)
-			link->dai_fmt |= SND_SOC_DAIFMT_CBP_CFC;
+			link->dai_fmt |= SND_SOC_DAIFMT_BP_FC;
 		else
-			link->dai_fmt |= SND_SOC_DAIFMT_CBC_CFC;
+			link->dai_fmt |= SND_SOC_DAIFMT_BC_FC;
 	}
 }
 

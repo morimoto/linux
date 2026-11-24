@@ -147,7 +147,7 @@ static int sc7280_rt5682_init(struct snd_soc_pcm_runtime *rtd)
 			SNDRV_PCM_STREAM_PLAYBACK);
 	}
 	snd_soc_dai_set_fmt(codec_dai,
-				SND_SOC_DAIFMT_CBC_CFC |
+				SND_SOC_DAIFMT_BC_FC |
 				SND_SOC_DAIFMT_NB_NF |
 				SND_SOC_DAIFMT_I2S);
 
@@ -277,8 +277,8 @@ static void sc7280_snd_shutdown(struct snd_pcm_substream *substream)
 
 static int sc7280_snd_startup(struct snd_pcm_substream *substream)
 {
-	unsigned int fmt = SND_SOC_DAIFMT_CBC_CFC;
-	unsigned int codec_dai_fmt = SND_SOC_DAIFMT_CBC_CFC;
+	unsigned int fmt = SND_SOC_DAIFMT_BC_FC;
+	unsigned int codec_dai_fmt = SND_SOC_DAIFMT_BC_FC;
 	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
 	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
